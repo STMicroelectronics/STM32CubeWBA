@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+  <project>
+    <path>$WS_DIR$\Secure\RCC_ClockConfig_TrustZone_S.ewp</path>
+  </project><project>
+    <path>$WS_DIR$\NonSecure\RCC_ClockConfig_TrustZone_NS.ewp</path>
+  </project>
+  <batchBuild />
+</workspace>

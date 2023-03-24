@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for STM32 Middleware WPAN</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="./_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="stm32-middleware-wpan"><mark>STM32 Middleware WPAN</mark></h1>
+<p>Copyright © 2022 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>Wireless Personal Area Network Middleware supporting Bluetooth Low Energy 5.3.</p>
+<p>The following features are supported for BLE 5.3:</p>
+<ul>
+<li>Advertising</li>
+<li>Scanning</li>
+<li>Master / Slave Connection</li>
+<li>Data length extension</li>
+<li>Privacy</li>
+<li>LE Encryption</li>
+<li>Legacy Pairing, LE secure connections</li>
+<li>2Mbit</li>
+<li>Long Range</li>
+<li>Channel Selection Algorithm #2</li>
+<li>Direct Test Mode</li>
+<li>GATT Client / Server</li>
+<li>Extended Advertising/Scanning</li>
+<li>Periodic Advertising/Synchronisation</li>
+<li>Periodic Sync Transfer</li>
+<li>GATT Caching</li>
+<li>LE L2CAP Connection Oriented channel</li>
+</ul>
+<p>The maximum number of connections is limited to 20, this release of CubeFW is configured to have a maximum number of links set to 8.</p>
+<p>The list of BLE commands is documented in the following file: <a href="ble/stack/doc/STM32WBA_BLE_Wireless_Interface.html">STM32WBA_BLE_Wireless_Interface.html</a></p>
+<p>The BLE Stack user manual is available at following location : <a href="ble/stack/doc/STM32WBA_BLE_Stack_User_Manual.html">STM32WBA_BLE_Stack_User_Manual.html</a></p>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" checked aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<p>First official release for WBA</p>
+<ul>
+<li>Known limitations:
+<ul>
+<li>ID 143688 : Radio Deep Sleep mode shall not be used if we want to use white lists, resolving lists or periodic advertiser lists.</li>
+<li>ID 144507 : The BleStack_Process function should also be called when a BLE stack callback function is called by the platform software(PKA, timer).</li>
+<li>ID 143393 : [THREADX] RNG and PKA tasks priorities must be higher than BLE Host stack task.</li>
+<li>ID 143395 : [THREADX] No Uart traces supported while in low power modes.</li>
+<li>ID 144495 : Radio Calibration is not supported on standby mode.</li>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
