@@ -217,11 +217,9 @@
           <state>USE_FULL_LL_DRIVER</state>
           <state>PHY_2_10_a</state>
           <state>PHY_40nm_2_30_a_A1</state>
-          <state>NVM_ADAPT</state>
           <state>BLE</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA52xx</state>
-          <state>USE_FULL_ASSERT</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -368,13 +366,14 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
-          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../System/Modules/Flash</state>
           <state>$PROJ_DIR$/../System/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
           <state>$PROJ_DIR$/../System/Config/Flash</state>
           <state>$PROJ_DIR$/../System/Config/LowPower</state>
+          <state>$PROJ_DIR$/../System/Modules/RFControl</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1156,10 +1155,10 @@
             <name>$PROJ_DIR$\..\STM32_WPAN\Target\bpka.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$/../STM32_WPAN/Target/ll_sys_if.c</name>
+            <name>$PROJ_DIR$\..\STM32_WPAN\Target\ll_sys_if.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$/../STM32_WPAN/Target/host_stack_if.c</name>
+            <name>$PROJ_DIR$\..\STM32_WPAN\Target\host_stack_if.c</name>
           </file>
         </group>
       </group>
@@ -1171,6 +1170,12 @@
             <name>Debug_GPIO</name>
             <file>
               <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
+            </file>
+          </group>
+          <group>
+            <name>LowPower</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Config\LowPower\user_low_power_config.c</name>
             </file>
           </group>
         </group>
@@ -1243,9 +1248,18 @@
             </file>
           </group>
           <group>
+            <name>RFControl</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Modules\RFControl\rf_antenna_switch.c</name>
+            </file>
+          </group>
+          <group>
             <name>RTDebug</name>
             <file>
               <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug_dtb.c</name>
             </file>
           </group>
           <file>
@@ -1270,7 +1284,7 @@
         <group>
           <name>Startup</name>
           <file>
-            <name>$PROJ_DIR$/../System/Startup/stm32wbaxx_ResetHandler.S</name>
+            <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
           </file>
         </group>
       </group>
@@ -1405,9 +1419,6 @@
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_hclk_client.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
           </file>
           <file>
@@ -1429,9 +1440,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_hclk_client.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</name>
@@ -1466,6 +1474,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</name>
+    </file>
+  </group>
+  <group>
+    <name>Doc</name>
+    <file>
+      <name>$PROJ_DIR$/../README.md</name>
     </file>
   </group>
 </project>

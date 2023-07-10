@@ -31,24 +31,27 @@ This example behaves as follows:
    - AES128 CTR decryption
    - AES256 CTR decryption
 
-When resorting to IAR Embedded Workbench IDE, AES algorithms processing status
+- When resorting to IAR Embedded Workbench IDE, AES algorithms processing status
 are displayed on debugger Terminal I/O as follows: View --> Terminal I/O.
-When resorting to MDK-ARM KEIL IDE, AES algorithms processing status 
+
+- When resorting to MDK-ARM KEIL IDE, AES algorithms processing status 
 are displayed on debugger as follows:  View --> Serial Viewer --> Debug (printf) Viewer.
-When resorting to STM32CubeIDE:
 
+- When resorting to STM32CubeIDE:
 Command Code is displayed on debugger as follows: Window--> Show View--> Console.
-In Debug configuration :
 
-- Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
-- Window\ Startup,add the command "monitor arm semihosting enable"
+  In Debug configuration :
+
+   - Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
+   - Window\Startup, add the command "monitor arm semihosting enable"
 
 Results can be displayed on PC (through HyperTerminal or TeraTerm) by Virtual Com Port
-in enabling USE_VCP_CONNECTION compilation switch and with the proper configuration
+by enabling USE_VCP_CONNECTION compilation switch with adding (#define USE_VCP_CONNECTION  1) in
+stm32wbaxx_nucleo_conf.h and with the proper configuration
 (115200 bauds, 8 bits data, 1 stop bit, no parity, no HW flow control).
 
 When all ciphering and deciphering operations are successful, LD1 is turned on.
-In case of ciphering or deciphering issue, LD3 is turned on. 
+In case of ciphering or deciphering issue, LD3 is turned on.
 
 ### <b>Keywords</b>
 
@@ -56,14 +59,14 @@ Security, Cryptography, CRYPT, AES, ECB, CBC, CTR, MAC, USART
 
 ### <b>Directory contents</b>
 
-  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_nucleo_conf.h     BSP configuration file
-  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_hal_conf.h        HAL configuration file
-  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_it.h              Interrupt handlers header file
-  - CRYP/CRYP_AESModes/Inc/main.h                       Header for main.c module  
-  - CRYP/CRYP_AESModes/Src/stm32wbaxx_it.c              Interrupt handlers
-  - CRYP/CRYP_AESModes/Src/main.c                       Main program
-  - CRYP/CRYP_AESModes/Src/stm32wbaxx_hal_msp.c         HAL MSP module
-  - CRYP/CRYP_AESModes/Src/system_stm32wbaxx.c          STM32WBAxx system source file
+  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_nucleo_conf.h  BSP configuration file
+  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_hal_conf.h     HAL configuration file
+  - CRYP/CRYP_AESModes/Inc/stm32wbaxx_it.h           Interrupt handlers header file
+  - CRYP/CRYP_AESModes/Inc/main.h                    Header for main.c module  
+  - CRYP/CRYP_AESModes/Src/stm32wbaxx_it.c           Interrupt handlers
+  - CRYP/CRYP_AESModes/Src/main.c                    Main program
+  - CRYP/CRYP_AESModes/Src/stm32wbaxx_hal_msp.c      HAL MSP module
+  - CRYP/CRYP_AESModes/Src/system_stm32wbaxx.c       STM32WBAxx system source file
 
 
 ### <b>Hardware and Software environment</b>
@@ -74,6 +77,8 @@ Security, Cryptography, CRYPT, AES, ECB, CBC, CTR, MAC, USART
     NUCLEO-WBA52CG board and can be easily tailored to any other supported
     device and development board.
 
+  - To be able to display data on MDK-ARM debugger please make sure to close the SB12
+
 ### <b>How to use it ?</b>
 
 In order to make the program work, you must do the following:
@@ -81,4 +86,3 @@ In order to make the program work, you must do the following:
  - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Run the example
-

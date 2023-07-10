@@ -1,13 +1,12 @@
-#add command to generated the file
+::add command to generated the file
 set "projectdir=%~dp0"
 pushd %projectdir%\..\..\..\..\..\..\..\Middlewares\Third_Party\
 set Third_Party=%cd%
 popd
-set "python=C:\Data\tools\Python\Python39-5\python "
 set "TFM_TEST_PATH=%Third_Party%\trustedfirmware\test"
 set "TFM_PATH=%Third_Party%\trustedfirmware"
 set "TOOLS=%Third_Party%\trustedfirmware\tools"
-::recopy config for generation 
+::recopy config for generation
 set "CONFIG=%projectdir%\..\..\Secure\Src"
 set "PARTITION=%Third_Party%\trustedfirmware\secure_fw\partitions"
 ::config from application
@@ -53,6 +52,11 @@ copy %TFM_TEST_PATH%\test_services\tfm_core_test\tfm_core_test %projectdir% /Y
 copy %CONFIG%\tfm_app_rot.yaml %projectdir% /Y
 copy %CONFIG%\tfm_platform.yaml %projectdir% /Y
 dir %TOOLS% > %1\output.txt 2>&1
-#%python% %TOOLS%\dist\pyscript\tfm_parse_manifest_list.py -o %projectdir%\g -m %projectdir%\tfm_manifest_list.yaml -f %projectdir%\tfm_generated_file_list.yaml >> %1\output.txt 2>&1
-%TOOLS%\dist\tfm_parse_manifest_list\tfm_parse_manifest_list.exe -o %projectdir%\g -m %projectdir%\tfm_manifest_list.yaml -f %projectdir%\tfm_generated_file_list.yaml >> %1\output.txt 2>&1
+
+set "tfm_parse_manifest_list=%TOOLS%\dist\tfm_parse_manifest_list\tfm_parse_manifest_list.exe"
+if exist %tfm_parse_manifest_list% (
+%tfm_parse_manifest_list% -o %projectdir%\g -m %projectdir%\tfm_manifest_list.yaml -f %projectdir%\tfm_generated_file_list.yaml >> %1\output.txt 2>&1
+) else (
+python %TOOLS%\dist\pyscript\tfm_parse_manifest_list.py -o %projectdir%\g -m %projectdir%\tfm_manifest_list.yaml -f %projectdir%\tfm_generated_file_list.yaml >> %1\output.txt 2>&1
+)
 iccarm.exe --cpu=Cortex-M33 -DBL2 -DTFM_PSA_API -DTFM_PARTITION_PLATFORM  -I%1\..\..\..\Linker  %1\tfm_common_s.icf  --silent --preprocess=ns %1\tfm_common_s.icf.i > %1\output.txt 2>&1

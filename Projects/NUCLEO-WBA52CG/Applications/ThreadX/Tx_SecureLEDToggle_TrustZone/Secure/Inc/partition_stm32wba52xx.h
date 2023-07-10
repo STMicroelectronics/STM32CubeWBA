@@ -75,20 +75,19 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-
-#define SAU_INIT_START0     0x0C000000      /* start address of SAU region 0 */
+#define SAU_INIT_START0     0x08080000      /* start address of SAU region 0 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END0       0x0C07FFFF      /* end address of SAU region 0 */
+#define SAU_INIT_END0       0x080FFFFF      /* end address of SAU region 0 */
 
 /*
 //     <o>Region is
 //         <0=>Non-Secure
 //         <1=>Secure, Non-Secure Callable
 */
-#define SAU_INIT_NSC0       1
+#define SAU_INIT_NSC0       0
 /*
 //   </e>
 */
@@ -102,12 +101,12 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START1     0x08080000      /* start address of SAU region 1 */
+#define SAU_INIT_START1     0x0BF88000      /* start address of SAU region 1 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END1       0x080FFFFF      /* end address of SAU region 1 */
+#define SAU_INIT_END1       0x0BF97FFF      /* end address of SAU region 1 */
 
 /*
 //     <o>Region is
@@ -128,19 +127,19 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START2     0x20010000      /* start address of SAU region 2 */
+#define SAU_INIT_START2     0x0C07E000      /* start address of SAU region 2 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END2       0x2001FFFF      /* end address of SAU region 2 */
+#define SAU_INIT_END2       0x0C07FFFF      /* end address of SAU region 2 */
 
 /*
 //     <o>Region is
 //         <0=>Non-Secure
 //         <1=>Secure, Non-Secure Callable
 */
-#define SAU_INIT_NSC2       0
+#define SAU_INIT_NSC2       1
 /*
 //   </e>
 */
@@ -154,19 +153,19 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START3     0x30000000      /* start address of SAU region 3 */
+#define SAU_INIT_START3     0x20010000      /* start address of SAU region 3 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END3       0x3000FFFF      /* end address of SAU region 3 */
+#define SAU_INIT_END3       0x2001FFFF      /* end address of SAU region 3 */
 
 /*
 //     <o>Region is
 //         <0=>Non-Secure
 //         <1=>Secure, Non-Secure Callable
 */
-#define SAU_INIT_NSC3       1
+#define SAU_INIT_NSC3       0
 /*
 //   </e>
 */
@@ -424,23 +423,23 @@
 //   <o.3>  GPDMA_Channel6_IRQn   <0=> Secure state
 //   <o.4>  GPDMA_Channel7_IRQn   <0=> Secure state
 //   <o.5>  TIM1_BRK_IRQn         <0=> Secure state
-//   <o.6> TIM1_UP_IRQn           <0=> Secure state
-//   <o.7> TIM1_TRG_COM_IRQn      <0=> Secure state
-//   <o.8> TIM1_CC_IRQn           <0=> Secure state
-//   <o.9> TIM2_IRQn              <0=> Secure state
+//   <o.6>  TIM1_UP_IRQn          <0=> Secure state
+//   <o.7>  TIM1_TRG_COM_IRQn     <0=> Secure state
+//   <o.8>  TIM1_CC_IRQn          <0=> Secure state
+//   <o.9>  TIM2_IRQn             <0=> Secure state
 //   <o.10> TIM3_IRQn             <0=> Secure state
 //   <o.11> I2C1_EV_IRQn          <0=> Secure state
 //   <o.12> I2C1_ER_IRQn          <0=> Secure state
-//   <o.13> I2C3_EV_IRQn          <0=> Secure state
-//   <o.14> I2C3_ER_IRQn          <0=> Secure state
-//   <o.15> SPI1_IRQn             <0=> Secure state
-//   <o.16> USART1_IRQn           <0=> Secure state
-//   <o.17> USART2_IRQn           <0=> Secure state
-//   <o.18> LPUART1_IRQn          <0=> Secure state
-//   <o.19> LPTIM1_IRQn           <0=> Secure state
-//   <o.20> LPTIM2_IRQn           <0=> Secure state
-//   <o.21> TIM16_IRQn            <1=> Non-Secure state
-//   <o.22> TIM17_IRQn            <0=> Secure state
+//   <o.13> SPI1_IRQn             <0=> Secure state
+//   <o.14> USART1_IRQn           <0=> Secure state
+//   <o.15> USART2_IRQn           <0=> Secure state
+//   <o.16> LPUART1_IRQn          <0=> Secure state
+//   <o.17> LPTIM1_IRQn           <0=> Secure state
+//   <o.18> LPTIM2_IRQn           <0=> Secure state
+//   <o.19> TIM16_IRQn            <1=> Non-Secure state
+//   <o.20> TIM17_IRQn            <0=> Secure state
+//   <o.22> I2C3_EV_IRQn          <0=> Secure state
+//   <o.23> I2C3_ER_IRQn          <0=> Secure state
 //   <o.25> TSC_IRQn              <0=> Secure state
 //   <o.26> AES_IRQn              <0=> Secure state
 //   <o.27> RNG_IRQn              <0=> Secure state

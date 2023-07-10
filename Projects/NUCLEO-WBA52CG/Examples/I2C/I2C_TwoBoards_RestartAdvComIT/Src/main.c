@@ -114,14 +114,35 @@ __IO uint32_t uwTransferEnded           = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+#if defined(__ICCARM__)
+__ATTRIBUTES size_t __write(int, const unsigned char *, size_t);
+#endif /* __ICCARM__ */
+
 static void FlushBuffer8(uint8_t* pBuffer1, uint16_t BufferLength);
+
+#if (USE_VCP_CONNECTION == 0)
 #if defined(__GNUC__) && defined(MASTER_BOARD) && !defined(__ARMCC_VERSION)
-extern void initialise_monitor_handles(void); /*rtt*/
+extern void initialise_monitor_handles(void);
 #endif
+#endif /* USE_VCP_CONNECTION */
+
+#if defined(__ICCARM__)
+/* New definition from EWARM V9, compatible with EWARM8 */
+int iar_fputc(int ch);
+#define PUTCHAR_PROTOTYPE int iar_fputc(int ch)
+#elif defined ( __CC_ARM ) || defined(__ARMCC_VERSION)
+/* ARM Compiler 5/6*/
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#elif defined(__GNUC__)
+#if (USE_VCP_CONNECTION == 1)
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#endif /* USE_VCP_CONNECTION */
+#endif /* __ICCARM__ */
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -136,9 +157,11 @@ extern void initialise_monitor_handles(void); /*rtt*/
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+#if (USE_VCP_CONNECTION == 0)
 #if defined(__GNUC__) && defined(MASTER_BOARD) && !defined(__ARMCC_VERSION)
-  initialise_monitor_handles(); /*rtt*/
+  initialise_monitor_handles();
 #endif
+#endif /* USE_VCP_CONNECTION */
   /* STM32WBAxx HAL library initialization:
        - Systick timer is configured by default as source of time base, but user
              can eventually implement his proper time base source (a general purpose
@@ -168,8 +191,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_I2C1_Init();
   MX_ICACHE_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   /* Configure LD1 and LD3 */
   BSP_LED_Init(LD1);
@@ -564,16 +587,29 @@ static void MX_GPIO_Init(void)
   * @param  f: pointer to file (not used)
   * @retval The character transmitted
   */
-#ifdef __GNUC__
-/* With GCC, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-int __io_putchar(int ch)
-#else
-int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+
+#if defined(__ICCARM__)
+size_t __write(int file, unsigned char const *ptr, size_t len)
+{
+  size_t idx;
+  unsigned char const *pdata = ptr;
+
+  for (idx = 0; idx < len; idx++)
+  {
+    iar_fputc((int)*pdata);
+    pdata++;
+  }
+  return len;
+}
+#endif /* __ICCARM__ */
+
+/**
+  * @brief  Redirect console output to COM
+  */
+PUTCHAR_PROTOTYPE
 {
   /* Place your implementation of fputc here */
-  /* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
+  /* e.g. write a character to the COM and Loop until the end of transmission */
   HAL_UART_Transmit(&UartHandle, (uint8_t *)&ch, 1, UART_TIMEOUT_VALUE); 
 
   return ch;

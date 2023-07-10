@@ -49,16 +49,51 @@
 <li>GATT Caching</li>
 <li>LE L2CAP Connection Oriented channel</li>
 </ul>
-<p>The maximum number of connections is limited to 20, this release of CubeFW is configured to have a maximum number of links set to 8.</p>
+<p>The maximum number of connections is limited to 20.</p>
 <p>The list of BLE commands is documented in the following file: <a href="ble/stack/doc/STM32WBA_BLE_Wireless_Interface.html">STM32WBA_BLE_Wireless_Interface.html</a></p>
 <p>The BLE Stack user manual is available at following location : <a href="ble/stack/doc/STM32WBA_BLE_Stack_User_Manual.html">STM32WBA_BLE_Stack_User_Manual.html</a></p>
+<p>Different Bluetooth® Low Energy Host Stack variants are available in the STM32WBA package, depending on project requirements. Depending on the variant, the associated Link Layer library must be included in the project:</p>
+<ul>
+<li><em>stm32wba_ble_stack_full.a</em>: <strong>full host stack</strong> + <strong>ST LL controller</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
+<li><em>stm32wba_ble_stack_basic.a</em>: <strong>basic host stack</strong> + <strong>ST LL controller (basic features)</strong>, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
+<li><em>stm32wba_ble_stack_llo.a</em>: <strong>ST LL controller only</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
+<li><em>stm32wba_ble_stack_llobasic.a</em>: <strong>ST LL controller (basic features)</strong> only, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
+</ul>
 </div>
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section1" checked aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
+<input type="checkbox" id="collapse-section2" checked aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>BLE:
+<ul>
+<li>Maximum number of simultaneous connections supported by the device is now 20 : requires library LinkLayer_BLE_Basic_20_links_lib.a</li>
+<li>New RF-PHY settings which allow to pass FCC regulatory requirements (specifically FCC Band edge measurement) have been integrated</li>
+<li>Add ble_legacy.h include : file which ensures the compatibility with previous BLE Stack naming.</li>
+<li>Update BLE types and names in include files.</li>
+<li>ID 143688 : Radio Deep Sleep mode can be used with white lists, resolving lists or periodic advertiser lists.</li>
+<li>ID 143240 : Calibration improvement :calibration is done channel by channel from radio interrupt. Calibration is not delaying Link Layer scheduling activities. </li>
+<li>ID 146629 : Fix issue of events conflict with multi links.</li>
+<li>ID 144736 : Scan response Data handled correctly when it is set after the advertising enabling.</li>
+<li>ID 149353 : Channel Map update wrong behavior fixed.</li>
+</ul></li>
+<li>Known limitations:
+<ul>
+<li>ID 144495 : Radio Calibration is not supported on standby mode.</li>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 145802 : Pairing request fails with error SMP timeout when connection interval set to max value: 4s.</li>
+<li>ID 150795/151333 : Sleep timer overflow (each 36h) stops RF activities ongoing.</li>
+<li>ID 150914 : Wrong CONNECT_IND packet not correctly handled.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

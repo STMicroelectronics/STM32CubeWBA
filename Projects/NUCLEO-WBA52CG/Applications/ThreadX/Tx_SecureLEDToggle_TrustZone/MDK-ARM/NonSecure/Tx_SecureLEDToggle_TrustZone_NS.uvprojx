@@ -10,13 +10,13 @@
       <TargetName>Tx_SecureLEDToggle_TrustZone_NS</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6180000::V6.18::ARMCLANG</pCCUsed>
+      <pCCUsed>6140001::V6.14.1::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAx_DFP.0.0.1</PackID>
+          <PackID>Keil.STM32WBAx_DFP.1.0.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20010000-0x2001FFFF) IROM(0x08080000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32WBA52CGUx$CMSIS\SVD\STM32WBAxx.svd</SFDFile>
+          <SFDFile>$$Device:STM32WBA52CGUx$CMSIS\SVD\STM32WBA52.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -362,7 +362,7 @@
             </VariousControls>
           </Aads>
           <LDads>
-            <umfTarg>1</umfTarg>
+            <umfTarg>0</umfTarg>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
             <noStLib>0</noStLib>
@@ -371,7 +371,7 @@
             <TextAddressRange></TextAddressRange>
             <DataAddressRange></DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile></ScatterFile>
+            <ScatterFile>stm32wba52xx_flash_ns.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc>../../Secure_nsclib/secure_nsclib.o
@@ -389,7 +389,7 @@
             <File>
               <FileName>startup_stm32wba52xx.s</FileName>
               <FileType>2</FileType>
-              <FilePath>startup_stm32wba52xx.s</FilePath>
+              <FilePath>../startup_stm32wba52xx.s</FilePath>
             </File>
           </Files>
         </Group>

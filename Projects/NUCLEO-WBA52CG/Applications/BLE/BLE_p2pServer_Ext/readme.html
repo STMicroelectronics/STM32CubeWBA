@@ -55,6 +55,7 @@
 <li>BLE_p2pServer_Ext/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
 <li>BLE_p2pServer_Ext/System/Config/Flash/simple_nvm_arbiter_conf.h Configuration header for simple_nvm_arbiter.c module</li>
 <li>BLE_p2pServer_Ext/System/Config/LowPower/app_sys.h Header for app_sys.c</li>
+<li>BLE_p2pServer_Ext/System/Config/LowPower/user_low_power_config.h Header for user_low_power_config.c</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/hw.h This file contains the interface of STM32 HW drivers</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/hw_if.h Hardware Interface</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
@@ -63,7 +64,6 @@
 <li>BLE_p2pServer_Ext/System/Modules/adc_ctrl.h Header for ADC client manager module</li>
 <li>BLE_p2pServer_Ext/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
 <li>BLE_p2pServer_Ext/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
-<li>BLE_p2pServer_Ext/System/Modules/general_config.h This file contains definitions that can be changed to configure some modules of the STM32 firmware application</li>
 <li>BLE_p2pServer_Ext/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
 <li>BLE_p2pServer_Ext/System/Modules/scm.h Header for scm.c module</li>
 <li>BLE_p2pServer_Ext/System/Modules/stm_list.h Header file for linked list library</li>
@@ -78,9 +78,11 @@
 <li>BLE_p2pServer_Ext/System/Modules/MemoryManager/advanced_memory_manager.h Header for advance_memory_manager.c module</li>
 <li>BLE_p2pServer_Ext/System/Modules/MemoryManager/stm32_mm.h Header for stm32_mm.c module</li>
 <li>BLE_p2pServer_Ext/System/Modules/Nvm/nvm.h This file contains the interface of the NVM manager</li>
+<li>BLE_p2pServer_Ext/System/Modules/RFControl/rf_antenna_switch.h RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_p2pServer_Ext/System/Modules/RTDebug/debug_signals.h Real Time Debug module System and Link Layer signal definition</li>
 <li>BLE_p2pServer_Ext/System/Modules/RTDebug/local_debug_tables.h Real Time Debug module System and Link Layer signal</li>
 <li>BLE_p2pServer_Ext/System/Modules/RTDebug/RTDebug.h Real Time Debug module API declaration</li>
+<li>BLE_p2pServer_Ext/System/Modules/RTDebug/RTDebug_dtb.h Real Time Debug module API declaration for DTB usage</li>
 <li>BLE_p2pServer_Ext/Core/Src/app_entry.c Entry point of the application</li>
 <li>BLE_p2pServer_Ext/Core/Src/main.c Main program body</li>
 <li>BLE_p2pServer_Ext/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
@@ -97,6 +99,7 @@
 <li>BLE_p2pServer_Ext/STM32_WPAN/Target/ll_sys_if.c Source file for initiating the system sequencer</li>
 <li>BLE_p2pServer_Ext/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
 <li>BLE_p2pServer_Ext/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
+<li>BLE_p2pServer_Ext/System/Config/LowPower/user_low_power_config.c Low power related user configuration</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/hw_aes.c This file contains the AES driver for STM32WBA</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/hw_otp.c This file contains the OTP driver</li>
 <li>BLE_p2pServer_Ext/System/Interfaces/hw_pka.c This file contains the PKA driver for STM32WBA</li>
@@ -120,7 +123,9 @@
 <li>BLE_p2pServer_Ext/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager</li>
 <li>BLE_p2pServer_Ext/System/Modules/MemoryManager/stm32_mm.c Memory Manager</li>
 <li>BLE_p2pServer_Ext/System/Modules/Nvm/nvm_emul.c This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose</li>
+<li>BLE_p2pServer_Ext/System/Modules/RFControl/rf_antenna_switch.c RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_p2pServer_Ext/System/Modules/RTDebug/RTDebug.c Real Time Debug module API definition</li>
+<li>BLE_p2pServer_Ext/System/Modules/RTDebug/RTDebug_dtb.c Real Time Debug module API definition for DTB usage</li>
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
@@ -134,7 +139,7 @@
 <li>Rebuild all files and load your image into target memory</li>
 <li>Run the example</li>
 </ul>
-<p>You can interact with p2pServer_Ext application with a smartphone:</p>
+<p><strong>You can interact with p2pServer_Ext application with a smartphone:</strong></p>
 <ul>
 <li>Install and launch ST BLE Toolbox application on android or iOS smartphone
 <ul>
@@ -145,7 +150,7 @@
 <li>You can see data advertised by p2pServer_Ext application.</li>
 <li>Moreover, you can connect to the legacy adverting set, your device act like in p2pServer application.</li>
 </ul>
-<p>You can interact with p2pServer_Ext application with another Nucleo board running p2pClient_Ext:</p>
+<p><strong>You can interact with p2pServer_Ext application with another Nucleo board running p2pClient_Ext:</strong></p>
 <ul>
 <li>Power up p2pClient_Ext devices next to p2pServer_Ext device.</li>
 <li>On p2pClient_Ext device button B1 click, to start scanning
@@ -154,7 +159,7 @@
 <li>Then, on p2pClient_Ext device button B3 click, connection is performed.</li>
 </ul></li>
 </ul>
-<p>You can interact with p2pServer_Ext application with another Nucleo board running p2pClient:</p>
+<p><strong>You can interact with p2pServer_Ext application with another Nucleo board running p2pClient:</strong></p>
 <ul>
 <li>Power up p2pClient devices next to p2pServer_Ext device.</li>
 <li>On p2pClient device button B1 click, to start scanning

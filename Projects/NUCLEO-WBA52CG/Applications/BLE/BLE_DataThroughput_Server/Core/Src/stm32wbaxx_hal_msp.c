@@ -70,7 +70,6 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 0 */
 
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_RCC_HSEM_CLK_ENABLE();
 
   /* System interrupt init*/
 
@@ -79,11 +78,8 @@ void HAL_MspInit(void)
   HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(RADIO_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
-  /* HSEM_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(HSEM_IRQn, 15, 0);
-  HAL_NVIC_EnableIRQ(HSEM_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
 
@@ -245,7 +241,7 @@ void HAL_RNG_MspInit(RNG_HandleTypeDef* hrng)
   /** Initializes the peripherals clock
   */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RNG;
-    PeriphClkInit.RngClockSelection = RCC_RNGCLKSOURCE_LSE;
+    PeriphClkInit.RngClockSelection = RCC_RNGCLKSOURCE_HSI;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {
       Error_Handler();
@@ -253,6 +249,9 @@ void HAL_RNG_MspInit(RNG_HandleTypeDef* hrng)
 
     /* Peripheral clock enable */
     __HAL_RCC_RNG_CLK_ENABLE();
+    /* RNG interrupt Init */
+    HAL_NVIC_SetPriority(RNG_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(RNG_IRQn);
   /* USER CODE BEGIN RNG_MspInit 1 */
 
   /* USER CODE END RNG_MspInit 1 */
@@ -275,6 +274,9 @@ void HAL_RNG_MspDeInit(RNG_HandleTypeDef* hrng)
   /* USER CODE END RNG_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RNG_CLK_DISABLE();
+
+    /* RNG interrupt DeInit */
+    HAL_NVIC_DisableIRQ(RNG_IRQn);
   /* USER CODE BEGIN RNG_MspDeInit 1 */
 
   /* USER CODE END RNG_MspDeInit 1 */

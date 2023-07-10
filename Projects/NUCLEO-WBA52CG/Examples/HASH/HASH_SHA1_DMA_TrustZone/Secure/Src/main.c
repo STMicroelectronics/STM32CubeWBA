@@ -56,9 +56,9 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 static void NonSecure_Init(void);
 static void MX_GPDMA1_Init(void);
 static void MX_GPIO_Init(void);
-static void MX_HASH_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_GTZC_S_Init(void);
+static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 static void SystemIsolation_Config(void);
 /* USER CODE END PFP */
@@ -112,8 +112,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPDMA1_Init();
   MX_GPIO_Init();
-  MX_HASH_Init();
   MX_ICACHE_Init();
+  MX_HASH_Init();
   /* USER CODE BEGIN 2 */
 
   /* Secure SysTick should rather be suspended before calling non-secure  */
@@ -359,15 +359,10 @@ static void SystemIsolation_Config(void)
   MPCBB_desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
   MPCBB_desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
   MPCBB_desc.AttributeConfig.MPCBB_LockConfig_array[0] = 0x00000000U;  /* Locked configuration */
-  for(index=0; index<2; index++)
+  for(index=0; index<4; index++)
   {
     /* Secure blocks */
     MPCBB_desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0xFFFFFFFFU;
-  }
-  for(index=2; index<4; index++)
-  {
-    /* Non-secure blocks */
-    MPCBB_desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0x00000000U;
   }
 
   if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_desc) != HAL_OK)

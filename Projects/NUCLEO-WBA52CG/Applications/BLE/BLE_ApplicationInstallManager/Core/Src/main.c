@@ -40,19 +40,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc4;
-
-CRC_HandleTypeDef hcrc;
-
-RAMCFG_HandleTypeDef hramcfg_SRAM1;
-
-RNG_HandleTypeDef hrng;
-
-RTC_HandleTypeDef hrtc;
-
-UART_HandleTypeDef huart1;
-DMA_HandleTypeDef handle_GPDMA1_Channel1;
-DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* USER CODE BEGIN PV */
 

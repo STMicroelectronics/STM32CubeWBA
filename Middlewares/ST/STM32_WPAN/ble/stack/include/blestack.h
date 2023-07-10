@@ -129,7 +129,7 @@ typedef struct
 
   /* Number of allocated memory blocks
    */
-  uint8_t mblockCount;
+  uint16_t mblockCount;
 
   /* Maximum supported ATT_MTU size
    */

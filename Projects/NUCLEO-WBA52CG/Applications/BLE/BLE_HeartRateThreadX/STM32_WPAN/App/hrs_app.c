@@ -36,7 +36,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -68,7 +67,7 @@ typedef struct
 
 /* MEAS_REQ_TASK related defines */
 #define MEAS_REQ_TASK_STACK_SIZE    (256*7)
-#define MEAS_REQ_TASK_PRIO          (7)
+#define MEAS_REQ_TASK_PRIO          (15)
 #define MEAS_REQ_TASK_PREEM_TRES    (0)
 
 #define HRS_APP_MEASUREMENT_INTERVAL (1000)
@@ -168,7 +167,7 @@ void HRS_APP_EvtRx(HRS_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case HRS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
@@ -204,7 +203,7 @@ void HRS_APP_Init(void)
   HRS_Data_t msg_conf;
   CHAR * pStack;
 
-/* Create timer for Heart Rate Measurement */
+  /* Create timer for Heart Rate Measurement */
   UTIL_TIMER_Create(&(HRS_APP_Context.TimerMeasurement_Id),
                     HRS_APP_MEASUREMENT_INTERVAL,
                     UTIL_TIMER_PERIODIC,
@@ -301,6 +300,7 @@ static void HRS_APP_Measurements_timCB(void *arg)
    * is not sent if there is a pending one
    */
   tx_semaphore_put(&MEAS_REQ_Thread_Sem);
+
   return;
 }
 
@@ -339,11 +339,15 @@ static void HRS_APP_Measurements(void)
   APP_DBG_MSG("Heart Rate value = %d bpm \n", HRS_APP_Context.MeasurementVal.MeasurementValue);
   APP_DBG_MSG("Energy expended = %d kJ \n", HRS_APP_Context.MeasurementVal.EnergyExpended);
   
-  /* Flags update */
+  /**
+   * Flags update
+   */
   a_HRS_UpdateCharData[0] = HRS_APP_Context.MeasurementVal.Flags;
   hrm_char_length = 1;
 
-  /* Heart Rate Measurement Value */
+  /**
+   *  Heart Rate Measurement Value
+   */
   if ( (HRS_APP_Context.MeasurementVal.Flags) &  HRS_HRM_VALUE_FORMAT_UINT16 )
   {
     a_HRS_UpdateCharData[hrm_char_length] = (uint8_t)(HRS_APP_Context.MeasurementVal.MeasurementValue & 0xFF);
@@ -357,7 +361,9 @@ static void HRS_APP_Measurements(void)
     hrm_char_length++;
   }
 
-  /* Energy Expended */
+  /**
+   *  Energy Expended
+   */
   if ((HRS_APP_Context.MeasurementVal.Flags) &  HRS_HRM_ENERGY_EXPENDED_PRESENT)
   {
     a_HRS_UpdateCharData[hrm_char_length] = (uint8_t)(HRS_APP_Context.MeasurementVal.EnergyExpended & 0xFF);
@@ -366,7 +372,9 @@ static void HRS_APP_Measurements(void)
     hrm_char_length++;
   }
 
-  /* RR Interval Values */
+  /**
+   *  RR Interval Values
+   */
   if ((HRS_APP_Context.MeasurementVal.Flags) &  HRS_HRM_RR_INTERVAL_PRESENT)
   {
     uint8_t index;
@@ -466,6 +474,7 @@ static void HRS_APP_Measurements_Entry(unsigned long thread_input)
     tx_mutex_get(&LINK_LAYER_Thread_Mutex, TX_WAIT_FOREVER);
     HRS_APP_Measurements();
     tx_mutex_put(&LINK_LAYER_Thread_Mutex);
+    tx_thread_relinquish();
   }
 }
 /* USER CODE END FD_LOCAL_FUNCTIONS*/

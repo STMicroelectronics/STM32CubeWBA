@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/event_manager.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/event_manager.h#1 $*/
 /**
  ********************************************************************************
  * @file    event_manager.h
@@ -74,9 +74,6 @@ typedef enum {
 	RAL_SM_DONE_EVENT,
 	MAC_SM_DONE_EVENT,
 	ED_TMR_EVENT,
-#if RADIO_CSMA
-	CSMA_TMR_EVENT,
-#endif
 #endif /*SUPPORT_MAC*/
 #if ((SUPPORT_BLE)||(SUPPORT_MAC_HCI_UART)||(SUPPORT_ANT_HCI_UART) || (SUPPORT_AUG_MAC_HCI_UART))
 	HCI_TRANSPORT_HANDLER, /* handler for the HCI transport events; handling events from HCI to Host */
@@ -140,7 +137,7 @@ typedef enum {
  *
  * @retval None.
  */
-void emngr_init();
+void emngr_init(void);
 
 /**
  * @brief  Used to reset the event manager structure.

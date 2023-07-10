@@ -68,8 +68,8 @@ uint8_t *pBufferReadyForReception;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -118,8 +118,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
   MX_ICACHE_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /*## Configure UART peripheral for reception process (using LL) ##########*/  

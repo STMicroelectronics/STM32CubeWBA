@@ -11,25 +11,28 @@ Ciphering/Deciphering with a 128-bit long key is used with data type set to 8-bi
 
 This example unrolls as follows:
 
-- AES Encryption (Plain Data --> Encrypted Data)
-- AES Decryption with key derivation (Encrypted Data --> Decrypted Data)
+ - AES Encryption (Plain Data --> Encrypted Data)
+ - AES Decryption with key derivation (Encrypted Data --> Decrypted Data)
 
-Plain data, encrypted data and decrypted data are displayed on debugger terminal IO.
-Note that when resorting to MDK-ARM KEIL IDE, plain data, encrypted data and decrypted
+When resorting to IAR Embedded workbench, plain data, encrypted data
+and decrypted data are displayed on debugger terminal IO.
+
+When resorting to MDK-ARM KEIL IDE, plain data, encrypted data and decrypted
 data are displayed on debugger as follows:  View --> Serial Viewer --> Debug (printf) Viewer.
+
 When resorting to STM32CubeIDE:
 Command Code is displayed on debugger as follows: Window--> Show View--> Console.
 
-In Debug configuration :
-
-- Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
-- window\ Startup,add the command "monitor arm semihosting enable"
+ - In Debug configuration :
+   - Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
+   - Window\Startup, add the command "monitor arm semihosting enable"
 
 When all ciphering and deciphering operations are successful, LD1 is turned on.
 In case of ciphering or deciphering issue, LD3 toggle each 200ms.
 
-The Plain data, encrypted data and decrypted data can be displayed on a PC
-HyperTerminal using the UART. USE_VCP_CONNECTION=1 must be added in command line.
+The Plain data, encrypted data and decrypted data can be displayed on a PC HyperTerminal using the
+UART by enabling USE_VCP_CONNECTION compilation switch with adding (#define USE_VCP_CONNECTION  1) in
+stm32wbaxx_nucleo_conf.h.
 
 ### <b>Keywords</b>
 
@@ -50,24 +53,32 @@ Security, Cryptography, CRYPT, AES, ECB, DMA, cipher, UART
 
 ### <b>Directory contents</b>
 
-  - CRYP/CRYP_DMA/Inc/stm32wbaxx_nucleo_conf.h BSP configuration file
-  - CRYP/CRYP_DMA/Inc/stm32wbaxx_hal_conf.h    HAL configuration file
-  - CRYP/CRYP_DMA/Inc/stm32wbaxx_it.h          Interrupt handlers header file
-  - CRYP/CRYP_DMA/Inc/main.h                   Header for main.c module
-  - CRYP/CRYP_DMA/Src/stm32wbaxx_it.c          Interrupt handlers
-  - CRYP/CRYP_DMA/Src/main.c                   Main program
-  - CRYP/CRYP_DMA/Src/stm32wbaxx_hal_msp.c     HAL MSP module
-  - CRYP/CRYP_DMA/Src/system_stm32wbaxx.c      STM32WBAxx system source file
+  - CRYP/CRYP_DMA/Inc/stm32wbaxx_nucleo_conf.h  BSP configuration file
+  - CRYP/CRYP_DMA/Inc/stm32wbaxx_hal_conf.h     HAL configuration file
+  - CRYP/CRYP_DMA/Inc/stm32wbaxx_it.h           Interrupt handlers header file
+  - CRYP/CRYP_DMA/Inc/main.h                    Header for main.c module
+  - CRYP/CRYP_DMA/Src/stm32wbaxx_it.c           Interrupt handlers
+  - CRYP/CRYP_DMA/Src/main.c                    Main program
+  - CRYP/CRYP_DMA/Src/stm32wbaxx_hal_msp.c      HAL MSP module
+  - CRYP/CRYP_DMA/Src/system_stm32wbaxx.c       STM32WBAxx system source file
 
 
 ### <b>Hardware and Software environment</b>
 
-   - This example runs on STM32WBA52CGUx devices.
+  - This example runs on STM32WBA52CGUx devices.
 
-    - This example has been tested with a STM32WBA52CGUx embedded on an
-    NUCLEO-WBA52CG board and can be easily tailored to any other supported
-    device and development board.
+  - This example has been tested with NUCLEO-WBA52CG board with socket using STM32WBA52CGUx plugged-in
+    and can be easily tailored to any other supported device and development board.
 
+  - To be able to display data on MDK-ARM debugger please make sure to close the SB12.
+
+  - Hyperterminal configuration:
+    - BaudRate = 115200 baud
+    - Word Length = 8 Bits
+    - One Stop Bit
+    - No parity
+    - Hardware flow control disabled (RTS and CTS signals)
+    - Receive and transmit enabled
 
 ### <b>How to use it ?</b>
 
@@ -76,4 +87,3 @@ In order to make the program work, you must do the following:
  - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Run the example
-

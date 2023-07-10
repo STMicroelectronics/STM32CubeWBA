@@ -90,9 +90,9 @@
  *   mentioned parameters.
 */
 #if (BASIC_FEATURES != 0)
-#define BLE_FIXED_BUFFER_SIZE_BYTES  308   /* Basic Features */
+#define BLE_FIXED_BUFFER_SIZE_BYTES  268   /* Basic Features */
 #else
-#define BLE_FIXED_BUFFER_SIZE_BYTES  564   /* Full stack */
+#define BLE_FIXED_BUFFER_SIZE_BYTES  524   /* Full stack */
 #endif
 
 /*

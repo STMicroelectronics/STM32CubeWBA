@@ -64,8 +64,8 @@ volatile uint32_t AlarmA, Wut;
 static void NonSecure_Init(void);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_GTZC_S_Init(void);
 static void MX_RTC_Init(void);
+static void MX_GTZC_S_Init(void);
 /* USER CODE BEGIN PFP */
 static void RTC_TestBackUpRegisters(void);
 

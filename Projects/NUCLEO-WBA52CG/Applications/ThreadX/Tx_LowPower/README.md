@@ -5,10 +5,10 @@ This application demonstrates how to configure ThreadX to operate in low power m
 
 The main entry function tx_application_define() is then called by ThreadX during kernel start, at this stage, the application creates 1 thread and 1 semaphore:
 
-  - MainThread (Prio : 10; Preemption Threshold : 10)
-  - Semaphore
+  - tx_app_thread (Prio : 10; Preemption Threshold : 10)
+  - Semaphore (Initial count = 0 to prevent its acquisition by the MainThread, on the application start)
 
-- 'MainThread':
+- 'tx_app_thread':
   + Try to acquire Semaphore, wait indefinitely for it.
   + On Success toggle the 'LED_GREEN' each 500ms for 5 seconds.
   + repeat the steps above
@@ -34,7 +34,8 @@ When exiting from LowPower mode the application :
 
 ####  <b>Expected success behavior</b>
 
-LED_GREEN toggles every 500ms for 5 seconds each time user press the user button.
+  - LED_RED is on when system is in LowPower mode.
+  - LED_GREEN toggles every 500ms for 5 seconds each time user press the user button.
 
 #### <b>Error behaviors</b>
 

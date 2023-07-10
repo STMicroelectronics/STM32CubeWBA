@@ -5,19 +5,19 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
 It demonstrates how to create and destroy multiple threads using Azure RTOS ThreadX APIs. In addition, it shows how to use preemption threshold between threads and change priorities on-fly.
 The main entry function tx_application_define() is then called by ThreadX during kernel start, at this stage, the application creates 3 threads with different priorities :
 
-  - MainThread (Prio : 5; Preemption Threshold : 5)
+  - tx_app_thread (Prio : 5; Preemption Threshold : 5)
   - ThreadOne (Prio : 10; Preemption Threshold : 9)
   - ThreadTwo (Prio : 10; Preemption Threshold : 10)
 
-Once started, the <b>MainThread</b> is suspended waiting for the event flag.
+Once started, the <b>tx_app_thread</b> is suspended waiting for the event flag.
 The *ThreadOne* starts to toggle the *LED_GREEN* each 500ms and <b>ThreadTwo</b> cannot as its priority is less than the *ThreadOne* threshold.
-After 5 seconds it sends an event *THREAD_ONE_EVT* to the <b>MainThread</b>.
+After 5 seconds it sends an event *THREAD_ONE_EVT* to the <b>tx_app_thread</b>.
 
-After receiving the *THREAD_ONE_EVT*, the <b>MainThread</b> change the <b>ThreadTwo</b> priority to 8 and its preemption threshold to 8 to be more than the *ThreadOne* threshold then waits for an event.
+After receiving the *THREAD_ONE_EVT*, the <b>tx_app_thread</b> change the <b>ThreadTwo</b> priority to 8 and its preemption threshold to 8 to be more than the *ThreadOne* threshold then waits for an event.
 
-Now, the <b>ThreadTwo</b> can preempt the <b>ThreadOne</b> and start toggling the *LED_GREEN* each 200ms for 5 seconds. Once done it send the <b>THREAD_TWO_EVT</b> to <b>MainThread</b>.
-Once *ThreadTwo_Evt* is received, the <b>MainThread</b> resets the <b>ThreadTwo</b> priority and preemption threshold to their original values (10, 10), <b>ThreadOne</b> is rescheduled and the above scenario is redone.
-After repeating the sequence above 3 times, the <b>MainThread</b> should destroy <b>ThreadOne</b> and <b>ThreadTwo</b> and toggles the *LED_GREEN* each 1 second for ever.
+Now, the <b>ThreadTwo</b> can preempt the <b>ThreadOne</b> and start toggling the *LED_GREEN* each 200ms for 5 seconds. Once done it send the <b>THREAD_TWO_EVT</b> to <b>tx_app_thread</b>.
+Once *ThreadTwo_Evt* is received, the <b>tx_app_thread</b> resets the <b>ThreadTwo</b> priority and preemption threshold to their original values (10, 10), <b>ThreadOne</b> is rescheduled and the above scenario is redone.
+After repeating the sequence above 3 times, the <b>tx_app_thread</b> should destroy <b>ThreadOne</b> and <b>ThreadTwo</b> and toggles the *LED_GREEN* each 1 second for ever.
 
 ####  <b>Expected success behavior</b>
 
@@ -53,7 +53,7 @@ None
     + For MDK-ARM:
 	```
     either define the RW_IRAM1 region in the ".sct" file
-    or modify the line below in "tx_low_level_initilize.s to match the memory region being used
+    or modify the line below in "tx_low_level_initilize.S to match the memory region being used
         LDR r1, =|Image$$RW_IRAM1$$ZI$$Limit|
 	```
     + For STM32CubeIDE add the following section into the .ld file:

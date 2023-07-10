@@ -635,6 +635,7 @@ void LL_SECU_CheckStaticProtections(void)
   flash_option_bytes_bank1.BootAddrConfig = OB_BOOTADDR_SEC0;
   HAL_FLASHEx_OBGetConfig(&flash_option_bytes_bank1);
 
+
 #ifdef TFM_ENABLE_SET_OB
   /* Clean the option configuration */
   flash_option_bytes_bank1.OptionType = 0;
@@ -724,6 +725,7 @@ void LL_SECU_CheckStaticProtections(void)
     Error_Handler();
   }
 #endif /* TFM_WRP_LOCK_ENABLE */
+
 #endif /* TFM_WRP_PROTECT_ENABLE */
 
 #ifdef  TFM_HDP_PROTECT_ENABLE
@@ -887,7 +889,6 @@ static void rdp_level(uint32_t rdplevel, uint32_t current_rdplevel)
   flash_option_bytes_bank.RDPLevel = rdplevel;
   BOOT_LOG_INF("Programming RDP to %x", rdplevel);
   BOOT_LOG_INF("Unplug/Plug jumper JP2 (IDD)");
-
   /* Unlock the Flash to enable the flash control register access */
   HAL_FLASH_Unlock();
 

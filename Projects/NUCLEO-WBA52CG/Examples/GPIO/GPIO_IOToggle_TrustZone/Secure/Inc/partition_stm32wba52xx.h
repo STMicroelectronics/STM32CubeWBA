@@ -81,7 +81,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END0       0x081FFFFF      /* end address of SAU region 0 */
+#define SAU_INIT_END0       0x080FFFFF      /* end address of SAU region 0 */
 
 /*
 //     <o>Region is
@@ -424,23 +424,23 @@
 //   <o.3>  GPDMA_Channel6_IRQn   <0=> Secure state
 //   <o.4>  GPDMA_Channel7_IRQn   <0=> Secure state
 //   <o.5>  TIM1_BRK_IRQn         <0=> Secure state
-//   <o.6> TIM1_UP_IRQn           <0=> Secure state
-//   <o.7> TIM1_TRG_COM_IRQn      <0=> Secure state
-//   <o.8> TIM1_CC_IRQn           <0=> Secure state
-//   <o.9> TIM2_IRQn              <0=> Secure state
+//   <o.6>  TIM1_UP_IRQn          <0=> Secure state
+//   <o.7>  TIM1_TRG_COM_IRQn     <0=> Secure state
+//   <o.8>  TIM1_CC_IRQn          <0=> Secure state
+//   <o.9>  TIM2_IRQn             <0=> Secure state
 //   <o.10> TIM3_IRQn             <0=> Secure state
 //   <o.11> I2C1_EV_IRQn          <0=> Secure state
 //   <o.12> I2C1_ER_IRQn          <0=> Secure state
-//   <o.13> I2C3_EV_IRQn          <0=> Secure state
-//   <o.14> I2C3_ER_IRQn          <0=> Secure state
-//   <o.15> SPI1_IRQn             <0=> Secure state
-//   <o.16> USART1_IRQn           <0=> Secure state
-//   <o.17> USART2_IRQn           <0=> Secure state
-//   <o.18> LPUART1_IRQn          <0=> Secure state
-//   <o.19> LPTIM1_IRQn           <0=> Secure state
-//   <o.20> LPTIM2_IRQn           <0=> Secure state
-//   <o.21> TIM16_IRQn            <0=> Secure state
-//   <o.22> TIM17_IRQn            <0=> Secure state
+//   <o.13> SPI1_IRQn             <0=> Secure state
+//   <o.14> USART1_IRQn           <0=> Secure state
+//   <o.15> USART2_IRQn           <0=> Secure state
+//   <o.16> LPUART1_IRQn          <0=> Secure state
+//   <o.17> LPTIM1_IRQn           <0=> Secure state
+//   <o.18> LPTIM2_IRQn           <0=> Secure state
+//   <o.19> TIM16_IRQn            <0=> Secure state
+//   <o.20> TIM17_IRQn            <0=> Secure state
+//   <o.22> I2C3_EV_IRQn          <0=> Secure state
+//   <o.23> I2C3_ER_IRQn          <0=> Secure state
 //   <o.25> TSC_IRQn              <0=> Secure state
 //   <o.26> AES_IRQn              <0=> Secure state
 //   <o.27> RNG_IRQn              <0=> Secure state

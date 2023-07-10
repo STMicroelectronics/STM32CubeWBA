@@ -35,7 +35,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -139,7 +138,7 @@ void DIS_APP_EvtRx(DIS_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case DIS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 

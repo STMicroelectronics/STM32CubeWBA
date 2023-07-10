@@ -103,10 +103,12 @@
 #define HCI_SUCCESS_ERR_CODE                                           0x00U
 #define HCI_UNKNOWN_HCI_COMMAND_ERR_CODE                               0x01U
 #define HCI_UNKNOWN_CONNECTION_IDENTIFIER_ERR_CODE                     0x02U
+#define HCI_HARDWARE_FAILURE_ERR_CODE                                  0x03U
 #define HCI_AUTHENTICATION_FAILURE_ERR_CODE                            0x05U
 #define HCI_PIN_OR_KEY_MISSING_ERR_CODE                                0x06U
 #define HCI_MEMORY_CAPACITY_EXCEEDED_ERR_CODE                          0x07U
 #define HCI_CONNECTION_TIMEOUT_ERR_CODE                                0x08U
+#define HCI_CONNECTION_LIMIT_EXCEEDED_ERR_CODE                         0x09U
 #define HCI_CONNECTION_ALREADY_EXISTS_ERR_CODE                         0x0BU
 #define HCI_COMMAND_DISALLOWED_ERR_CODE                                0x0CU
 #define HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE            0x11U
@@ -144,9 +146,9 @@
 
 /* HCI_LE_Set_Advertising_Parameters: Advertising_Filter_Policy */
 #define HCI_ADV_FILTER_NO                              0x00U
-#define HCI_ADV_FILTER_WHITELIST_SCAN                  0x01U
-#define HCI_ADV_FILTER_WHITELIST_CONNECT               0x02U
-#define HCI_ADV_FILTER_WHITELIST_SCAN_CONNECT          0x03U
+#define HCI_ADV_FILTER_ACC_LIST_USED_FOR_SCAN          0x01U
+#define HCI_ADV_FILTER_ACC_LIST_USED_FOR_CONNECT       0x02U
+#define HCI_ADV_FILTER_ACC_LIST_USED_FOR_ALL           0x03U
 
 /* HCI_LE_Set_[Advertising/Scan]_Parameters: Own_Address_Type */
 #define HCI_OWN_ADDR_TYPE_PUBLIC                       0x00U
@@ -160,13 +162,13 @@
 
 /* HCI_LE_Set_Scan_Parameters: Scanning_Filter_Policy */
 #define HCI_SCAN_FILTER_NO                             0x00U
-#define HCI_SCAN_FILTER_WHITELIST                      0x01U
-#define HCI_SCAN_FILTER_NO_EVEN_RPA                    0x02U
-#define HCI_SCAN_FILTER_WHITELIST_BUT_RPA              0x03U
+#define HCI_SCAN_FILTER_ACC_LIST_USED                  0x01U
+#define HCI_SCAN_FILTER_NO_EXT                         0x02U
+#define HCI_SCAN_FILTER_ACC_LIST_USED_EXT              0x03U
 
 /* HCI_LE_Create_Connection: Initiator_Filter_Policy */
 #define HCI_INIT_FILTER_NO                             0x00U
-#define HCI_INIT_FILTER_WHITELIST                      0x01U
+#define HCI_INIT_FILTER_ACC_LIST_USED                  0x01U
 
 /* HCI_LE_Read_PHY: TX_PHY */
 #define HCI_TX_PHY_LE_1M                               0x01U
@@ -239,6 +241,12 @@
 /* HCI_LE_Set_Privacy_Mode: Privacy_Mode */
 #define HCI_PRIV_MODE_NETWORK                          0x00U
 #define HCI_PRIV_MODE_DEVICE                           0x01U
+
+/* Bluetooth Core Specification versions
+ */
+#define BLE_CORE_5_2                     11
+#define BLE_CORE_5_3                     12
+#define BLE_CORE_5_4                     13
 
 
 #endif /* BLE_STD_H__ */

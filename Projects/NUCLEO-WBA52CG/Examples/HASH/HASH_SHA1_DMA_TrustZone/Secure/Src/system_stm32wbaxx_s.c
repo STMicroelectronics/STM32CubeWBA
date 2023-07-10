@@ -340,7 +340,7 @@ void SystemCoreClockUpdate(void)
       pllr = ((tmp2 & RCC_PLL1DIVR_PLL1R) >> RCC_PLL1DIVR_PLL1R_Pos) + 1U;
 
       /* Check if fractional part is enable */
-      if (tmp1 & RCC_PLL1CFGR_PLL1FRACEN != 0x00u)
+      if ((tmp1 & RCC_PLL1CFGR_PLL1FRACEN) != 0x00u)
       {
         fracn = ((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos);
       }

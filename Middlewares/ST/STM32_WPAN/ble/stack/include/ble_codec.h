@@ -91,7 +91,8 @@ uint8_t BLE_SendIsoDataInToCodec( uint16_t iso_connection_handle,
 
 void BLE_LeSyncEvent( uint8_t group_id,
                       uint32_t next_anchor_point,
-                      uint32_t time_stamp );
+                      uint32_t time_stamp,
+                      uint32_t next_sdu_delivery_timeout );
 
 void BLE_IsochronousGroupEvent( uint16_t opcode,
                                 uint8_t status,
@@ -113,5 +114,7 @@ void BLE_SendIsoDataToLinkLayer( uint16_t iso_connection_handle,
 
 
 
-void BLE_CalibrationCallback( void );
+void BLE_CalibrationCallback(uint32_t TimeStamp);
+
+void BLE_SynchronizationAudioClock(void);
 #endif /* BLE_CODEC_H__ */

@@ -18,6 +18,7 @@
   */
 /* USER CODE END Header */
 #include "app_debug.h"
+#include "RTDebug_dtb.h"
 
 /****************************/
 /** Application debug APIs **/
@@ -73,6 +74,12 @@ void RT_DEBUG_GPIO_Init(void)
       HAL_PWREx_EnableStandbyIORetention(pwr_gpio_port, general_debug_table[cpt].GPIO_pin);
     }
   }
+
+#if(RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* RT_DEBUG_DTB */
 #endif /* RT_DEBUG_GPIO_MODULE */
 }
 

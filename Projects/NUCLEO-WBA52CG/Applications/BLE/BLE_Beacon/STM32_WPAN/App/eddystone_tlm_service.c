@@ -101,7 +101,7 @@ static tBleStatus EddystoneTLM_Init(EddystoneTLM_InitTypeDef *EddystoneTLM_Init)
 /* Put the device in a non-connectable mode. */
   ret = aci_gap_set_discoverable(ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
                                  AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
-                                 CFG_BLE_ADDRESS_TYPE, NO_WHITE_LIST_USE,           /*< Use the public address, with no white list. */
+                                 CFG_BD_ADDRESS_TYPE, NO_WHITE_LIST_USE,   /*< Use the public address, with no white list. */
                                  0, NULL,                                  /*< Do not use a local name. */
                                  0, NULL,                                  /*< Do not include the service UUID list. */
                                  0, 0);                                    /*< Do not set a slave connection interval. */
@@ -149,7 +149,13 @@ static tBleStatus EddystoneTLM_Init(EddystoneTLM_InitTypeDef *EddystoneTLM_Init)
 static void EddystoneTLM(void *arg)
 {
   tBleStatus ret;
+  uint8_t UrlScheme     = URL_PREFIX;
+  uint8_t Url[]         = PHYSICAL_WEB_URL;
 
+  EddystoneURL_InitStruct.UrlScheme = UrlScheme;
+  EddystoneURL_InitStruct.Url = Url;
+  EddystoneURL_InitStruct.UrlLength = sizeof(Url) - 1;
+  
   if(tlm_adv == TRUE)
   { /* Advertising of TLM */
     ret = aci_gap_set_non_discoverable();

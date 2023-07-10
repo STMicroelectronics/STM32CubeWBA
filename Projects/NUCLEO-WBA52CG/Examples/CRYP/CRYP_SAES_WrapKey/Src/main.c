@@ -73,9 +73,9 @@ uint32_t Encryptedkey[8];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RNG_Init(void);
 static void MX_SAES_AES_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -116,20 +116,20 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  /* Configure LD2, LD1 */
-  BSP_LED_Init(LD2);
+  /* Configure LD3, LD1 */
+  BSP_LED_Init(LD3);
   BSP_LED_Init(LD1);
 
-  /* Turn LD2, LD1 off */
-  BSP_LED_Off(LD2);
+  /* Turn LD3, LD1 off */
+  BSP_LED_Off(LD3);
   BSP_LED_Off(LD1);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RNG_Init();
   MX_SAES_AES_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
   /* User key AESKey256 encryption*/
   if (HAL_CRYPEx_WrapKey(&hcryp, AESKey256,  Encryptedkey, TIMEOUT_VALUE) != HAL_OK)

@@ -37,6 +37,10 @@ typedef struct{
   uint16_t  WritefwdCharHdle;                  /**< WRITEFWD Characteristic Handle */
   uint16_t  NotiffwdCharHdle;                  /**< NOTIFFWD Characteristic Handle */
   uint16_t  DevinfoCharHdle;                  /**< DEVINFO Characteristic Handle */
+/* USER CODE BEGIN Context */
+  /* Place holder for Characteristic Descriptors Handle*/
+
+/* USER CODE END Context */
 }P2PR_Context_t;
 
 /* Private defines -----------------------------------------------------------*/
@@ -142,10 +146,15 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
       switch(p_blecore_evt->ecode)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
+          notification.ConnectionHandle         = p_attribute_modified->Connection_Handle;
+          notification.AttributeHandle          = p_attribute_modified->Attr_Handle;
+          notification.DataTransfered.Length    = p_attribute_modified->Attr_Data_Length;
+          notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
           if(p_attribute_modified->Attr_Handle == (P2PR_Context.NotiffwdCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
@@ -237,20 +246,21 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
           else if(p_attribute_modified->Attr_Handle == (P2PR_Context.WritefwdCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-            notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
-            notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
-            /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+
             notification.EvtOpcode = P2PR_WRITEFWD_WRITE_NO_RESP_EVT;
+            /* USER CODE BEGIN Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+
+            /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             P2PR_Notification(&notification);
           } /* if(p_attribute_modified->Attr_Handle == (P2PR_Context.WritefwdCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-          break;
-
+          break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+        }
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
@@ -258,9 +268,10 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          break;
-
+          break;/* ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
@@ -268,7 +279,8 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-          break;
+          break;/* ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         {
           aci_gatt_tx_pool_available_event_rp0 *p_tx_pool_available_event;
@@ -278,8 +290,8 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
           
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-        }
           break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
+        }
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
           aci_att_exchange_mtu_resp_event_rp0 *p_exchange_mtu;
@@ -290,9 +302,8 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
           APP_DBG_MSG("  MTU exchanged size = %d\n",p_exchange_mtu->Server_RX_MTU);
           UTIL_SEQ_SetEvt(1 << CFG_IDLEEVT_NODE_MTU_EXCHANGED_COMPLETE);
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-
+          break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
-          break;
         /* USER CODE BEGIN BLECORE_EVT */
 
         /* USER CODE END BLECORE_EVT */
@@ -336,6 +347,8 @@ void P2PR_Init(void)
 {
   Char_UUID_t  uuid;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  uint8_t max_attr_record;
+
   /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */
 
   /* USER CODE END SVCCTL_InitService1Svc_1 */
@@ -356,12 +369,21 @@ void P2PR_Init(void)
    *                                1 for NOTIFFWD configuration descriptor +
    *                                1 for DEVINFO configuration descriptor +
    *                              = 9
+   * This value doesn't take into account number of descriptors manually added
+   * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
+  max_attr_record = 9;
+
+  /* USER CODE BEGIN SVCCTL_InitService */
+  /* max_attr_record to be updated if descriptors have been added */
+
+  /* USER CODE END SVCCTL_InitService */
+
   COPY_P2PR_UUID(uuid.Char_UUID_128);
   ret = aci_gatt_add_service(UUID_TYPE_128,
                              (Service_UUID_t *) &uuid,
                              PRIMARY_SERVICE,
-                             9,
+                             max_attr_record,
                              &(P2PR_Context.P2prSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -395,6 +417,10 @@ void P2PR_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : WRITEFWD\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char1 */
+
+  /* USER CODE END SVCCTL_InitService1Char1 */
+
   /**
    * NOTIFFWD
    */
@@ -418,6 +444,10 @@ void P2PR_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : NOTIFFWD\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char2 */
+
+  /* USER CODE END SVCCTL_InitService1Char2 */
+
   /**
    * DEVINFO
    */
@@ -440,6 +470,10 @@ void P2PR_Init(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : DEVINFO\n");
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+
+  /* USER CODE END SVCCTL_InitService1Char3 */
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
 

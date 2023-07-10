@@ -53,9 +53,9 @@ __IO FlagStatus TamperStatus;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TAMP_RTC_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -105,9 +105,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RTC_Init();
   MX_TAMP_RTC_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* Check if Tamper is not detected */

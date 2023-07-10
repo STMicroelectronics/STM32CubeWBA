@@ -51,9 +51,10 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_LPTIM1_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
+void Enable_LSI(void);
 void EnterStop1Mode(void);
 /* USER CODE END PFP */
 
@@ -92,12 +93,14 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
+   /* Enable the LSI Clock */
+  Enable_LSI();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_LPTIM1_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* Enter STOP 1 mode */
@@ -153,22 +156,12 @@ void SystemClock_Config(void)
   {
   }
 
-   /* Intermediate AHB prescaler 2 when target frequency clock is higher than 80 MHz */
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
-
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1R);
 
    /* Wait till System clock is ready */
   while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R)
   {
   }
-
-  /* Insure 1us transition state at intermediate medium speed clock based on DWT*/
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-  DWT->CYCCNT = 0;
-  while(DWT->CYCCNT < 100);
 
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAHB5Prescaler(LL_RCC_AHB5_DIV_4);
@@ -319,6 +312,17 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void Enable_LSI(void)
+{
+  /* Enable LSI Oscillator */
+  LL_RCC_LSI1_SetPrescaler(LL_RCC_LSI_DIV_1);
+  LL_RCC_LSI1_Enable();
+  
+  while(LL_RCC_LSI1_IsReady() != 1) 
+  {
+  };
+}
 
 /**
   * @brief  Function to configure and enter in STOP 1 Mode.

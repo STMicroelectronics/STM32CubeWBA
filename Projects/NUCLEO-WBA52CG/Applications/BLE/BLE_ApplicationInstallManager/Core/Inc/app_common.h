@@ -32,8 +32,6 @@ extern "C"{
 #include <stdarg.h>
 
 #include "app_conf.h"
-#include "hw.h"
-#include "ll_sys.h"
 
 /* -------------------------------- *
  *  Basic definitions               *

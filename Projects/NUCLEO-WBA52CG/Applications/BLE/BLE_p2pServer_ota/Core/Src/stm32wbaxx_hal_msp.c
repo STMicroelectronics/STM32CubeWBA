@@ -78,7 +78,7 @@ void HAL_MspInit(void)
   HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(RADIO_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */

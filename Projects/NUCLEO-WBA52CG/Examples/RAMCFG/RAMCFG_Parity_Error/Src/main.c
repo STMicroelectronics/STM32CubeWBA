@@ -81,8 +81,8 @@ __IO uint32_t Parity_error_interrupt_count  = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RAMCFG_Init(void);
+static void MX_ICACHE_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 static void DMA_Init(uint32_t AllocationPort);
@@ -138,8 +138,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RAMCFG_Init();
+  MX_ICACHE_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 

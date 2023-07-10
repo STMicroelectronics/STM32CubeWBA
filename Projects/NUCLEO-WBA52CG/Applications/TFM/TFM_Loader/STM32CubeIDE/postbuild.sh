@@ -9,8 +9,8 @@ loader_s=$projectdir"/../../Secure/Release/TFM_Loader_Secure.bin"
 binarydir=$projectdir"/../../../Binary"
 loader_ns=$projectdir"/TFM_Loader_NonSecure.bin"
 loader=$binarydir"/loader.bin"
-loader_ns_size=24576
-loader_s_size=16384
+loader_ns_size=
+loader_s_size=
 current_directory=`pwd`
 echo $current_directory
 cd $projectdir"/../../../../../../../../Middlewares/Third_Party/mcuboot"

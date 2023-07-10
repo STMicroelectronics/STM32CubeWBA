@@ -27,6 +27,8 @@
 #include "ble_timer.h"
 #include "advanced_memory_manager.h"
 #include "app_conf.h"
+#include "ll_sys.h"
+#include "stm32_seq.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -40,8 +42,10 @@ typedef struct
 
 /* Private variables ---------------------------------------------------------*/
 tListNode BLE_TIMER_List;
+static BLE_TIMER_t* BLE_TIMER_timer;
 
 /* Private functions prototype------------------------------------------------*/
+void BLE_TIMER_Background(void);
 static void BLE_TIMER_Callback(void* arg);
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint8_t id);
 
@@ -49,6 +53,9 @@ void BLE_TIMER_Init(void)
 {
   /* This function initializes the timer Queue */
   LST_init_head(&BLE_TIMER_List);
+
+  /* Register Timer background task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
 
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
@@ -104,16 +111,22 @@ void BLE_TIMER_Stop(uint8_t id){
   }
 }
 
+void BLE_TIMER_Background(void)
+{
+  BLEPLATCB_TimerExpiry( (uint8_t)BLE_TIMER_timer->id);
+  HostStack_Process( );
+
+  /* Delete the BLE_TIMER_timer from the list */
+  LST_remove_node((tListNode *)BLE_TIMER_timer);
+
+  (void)AMM_Free((uint32_t *)BLE_TIMER_timer);
+}
+
 static void BLE_TIMER_Callback(void* arg)
 {
-  BLE_TIMER_t* timer = (BLE_TIMER_t*)arg;
+  BLE_TIMER_timer = (BLE_TIMER_t*)arg;
 
-  BLEPLATCB_TimerExpiry( (uint8_t)timer->id);
-
-  /* Delete the timer from the list */
-  LST_remove_node((tListNode *)timer);
-
-  (void)AMM_Free((uint32_t *)timer);
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_TIMER_BCKGND, CFG_SEQ_PRIO_0);
 }
 
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint8_t id)

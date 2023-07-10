@@ -164,12 +164,7 @@ APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_H
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 /* USER CODE BEGIN EF */
-void APP_Central_BLE_Key_Button1_Action(void);
-void APP_Central_BLE_Key_Button2_Action(void);
-void APP_Central_BLE_Key_Button3_Action(void);
-void COC_CENTRAL_APP_Notification( COC_APP_ConnHandle_Not_evt_t *pNotification );
-void CentralSendData( void );
-
+void COC_CENTRAL_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification);
 void BLE_SVC_L2CAP_Conn_Update(uint16_t ConnectionHandle, uint16_t conn1, uint16_t conn2);
 /* USER CODE END EF */
 

@@ -70,7 +70,6 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 0 */
 
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_RCC_HSEM_CLK_ENABLE();
 
   /* System interrupt init*/
 
@@ -79,11 +78,8 @@ void HAL_MspInit(void)
   HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(RADIO_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
-  /* HSEM_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(HSEM_IRQn, 14, 0);
-  HAL_NVIC_EnableIRQ(HSEM_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
 

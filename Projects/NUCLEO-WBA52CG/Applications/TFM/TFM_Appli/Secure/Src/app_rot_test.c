@@ -72,8 +72,8 @@ void Test_Execute(void)
 /* Flash programming by 64 bits */
 #define SHIFT_FLASH_WRITE (8U-1U)
 #if !defined (__ARM_FEATURE_CMSE) || (__ARM_FEATURE_CMSE != 3U)
-static __attribute__((__aligned__(4))) uint32_t DMA_NON_SECURE[2] = {  0, 0 };
-const  __attribute__((__aligned__(4))) uint32_t DMA_CONST[2] = {  0xfeedbeef, 0xcacadada };
+static __attribute__((__aligned__(16))) uint32_t DMA_NON_SECURE[2] = {  0, 0 };
+const  __attribute__((__aligned__(16))) uint32_t DMA_CONST[2] = {  0xfeedbeef, 0xcacadada };
 
 
 const TestProtection_t aProtectTests[] =
@@ -88,8 +88,6 @@ const TestProtection_t aProtectTests[] =
     {NS_RAM_ALIAS(S_DATA_START - S_RAM_ALIAS(0) - 4096), "Exec NS RAM", TEST_WRITE_EXEC, NOT_APPLICABLE, DENIED},
     { (uint32_t)DMA_CONST, "NPRIV SEC", TEST_READ_DMA, NOT_APPLICABLE, ALLOWED },
     { (uint32_t)DMA_NON_SECURE, "NPRIV SEC", TEST_WRITE_DMA, NOT_APPLICABLE,  ALLOWED},
-    { (uint32_t) &GTZC_TZIC->IER3, "GTZC_TZIC IER3", TEST_WRITE_PERIPH, NOT_APPLICABLE, DENIED},
-    { (uint32_t) &GTZC_TZIC->IER3, "GTZC_TZIC IER3", TEST_READ_PERIPH, NOT_APPLICABLE, DENIED},
     { NS_ROM_ALIAS(FLASH_ITS_AREA_OFFSET), "ITS Read ", TEST_READ_DMA, NOT_APPLICABLE, DENIED},
     { S_RAM_ALIAS(BOOT_TFM_SHARED_DATA_BASE - _SRAM1_BASE_S), "Secure Write", TEST_WRITE_DMA, NOT_APPLICABLE, DENIED},
     {0x00000000, "Execution successful", TEST_END}

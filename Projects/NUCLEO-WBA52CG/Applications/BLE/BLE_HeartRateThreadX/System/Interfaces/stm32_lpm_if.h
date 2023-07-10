@@ -129,6 +129,18 @@ void enter_standby_notification(void);
   */
 void exit_standby_notification(void);
 
+/**
+  * @brief Backup CPU peripheral registers selected in @ref register_backup_table
+  * @note Implemented in stm32wbaxx_ResetHandler.s
+  */
+void backup_system_register(void);
+
+/**
+  * @brief Restore CPU peripheral registers selected in @ref register_backup_table
+  * @note Implemented in stm32wbaxx_ResetHandler.s
+  */
+void restore_system_register(void);
+
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

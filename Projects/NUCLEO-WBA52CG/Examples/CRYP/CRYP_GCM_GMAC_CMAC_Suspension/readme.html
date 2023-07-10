@@ -38,12 +38,6 @@ Low priority message GCM header then GCM payload phases are in turn suspended th
 - Next, an AES GMAC low-priority message processing is suspended due to the interruption by a high priority messages CMAC processing.<br />
 Low-priority message GMAC header phase is suspended then resumed.</p>
 <p>Low and high-priority blocks AES outputs are compared with expected outputs.</p>
-<p>When resorting to IAR Embedded Workbench IDE, AES algorithms processing status are displayed on debugger Terminal I/O as follows: View –&gt; Terminal I/O.</p>
-<p>When resorting to MDK-ARM KEIL IDE, AES algorithms processing status are displayed on debugger as follows: View –&gt; Serial Viewer –&gt; Debug (printf) Viewer.</p>
-<p>When resorting to ATOLLIC TrueSTUDIO IDE: debug –&gt; view –&gt; others –&gt;SWV console.</p>
-<p>When resorting to AC6 SW4STM32 IDE:<br />
-In Debug configuration window Startup, in addition to “monitor reset halt” add the command “monitor arm semihosting enable”<br />
-Command Code is displayed on debugger as follows: Window –&gt; Show View –&gt; Console.</p>
 <p>When all ciphering and deciphering operations are successful, LED1 is turned on. In case of ciphering or deciphering issue, LED3 is turned on.</p>
 <p>This project is targeted to run on STM32WBA device on boards from STMicroelectronics.</p>
 <p>The reference template project configures the maximum system clock frequency at 100Mhz in non-secure<br />

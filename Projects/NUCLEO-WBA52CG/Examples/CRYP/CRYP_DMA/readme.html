@@ -31,14 +31,18 @@
 <li>AES Encryption (Plain Data –&gt; Encrypted Data)</li>
 <li>AES Decryption with key derivation (Encrypted Data –&gt; Decrypted Data)</li>
 </ul>
-<p>Plain data, encrypted data and decrypted data are displayed on debugger terminal IO. Note that when resorting to MDK-ARM KEIL IDE, plain data, encrypted data and decrypted data are displayed on debugger as follows: View –&gt; Serial Viewer –&gt; Debug (printf) Viewer. When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console.</p>
-<p>In Debug configuration :</p>
+<p>When resorting to IAR Embedded workbench, plain data, encrypted data and decrypted data are displayed on debugger terminal IO.</p>
+<p>When resorting to MDK-ARM KEIL IDE, plain data, encrypted data and decrypted data are displayed on debugger as follows: View –&gt; Serial Viewer –&gt; Debug (printf) Viewer.</p>
+<p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console.</p>
+<ul>
+<li>In Debug configuration :
 <ul>
 <li>Window, select the Debug probe : ST-LINK(OpenOCD)</li>
-<li>window Startup,add the command “monitor arm semihosting enable”</li>
+<li>Window, add the command “monitor arm semihosting enable”</li>
+</ul></li>
 </ul>
 <p>When all ciphering and deciphering operations are successful, LD1 is turned on. In case of ciphering or deciphering issue, LD3 toggle each 200ms.</p>
-<p>The Plain data, encrypted data and decrypted data can be displayed on a PC HyperTerminal using the UART. USE_VCP_CONNECTION=1 must be added in command line.</p>
+<p>The Plain data, encrypted data and decrypted data can be displayed on a PC HyperTerminal using the UART by enabling USE_VCP_CONNECTION compilation switch with adding (#define USE_VCP_CONNECTION 1) in stm32wbaxx_nucleo_conf.h.</p>
 <h3 id="keywords"><b>Keywords</b></h3>
 <p>Security, Cryptography, CRYPT, AES, ECB, DMA, cipher, UART</p>
 <h4 id="notes"><b>Notes</b></h4>
@@ -59,11 +63,19 @@
 </ul>
 <h3 id="hardware-and-software-environment"><b>Hardware and Software environment</b></h3>
 <ul>
-<li>This example runs on STM32WBA52CGUx devices.</li>
+<li><p>This example runs on STM32WBA52CGUx devices.</p></li>
+<li><p>This example has been tested with NUCLEO-WBA52CG board with socket using STM32WBA52CGUx plugged-in and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>To be able to display data on MDK-ARM debugger please make sure to close the SB12.</p></li>
+<li><p>Hyperterminal configuration:</p>
+<ul>
+<li>BaudRate = 115200 baud</li>
+<li>Word Length = 8 Bits</li>
+<li>One Stop Bit</li>
+<li>No parity</li>
+<li>Hardware flow control disabled (RTS and CTS signals)</li>
+<li>Receive and transmit enabled</li>
+</ul></li>
 </ul>
-<pre><code>- This example has been tested with a STM32WBA52CGUx embedded on an
-NUCLEO-WBA52CG board and can be easily tailored to any other supported
-device and development board.</code></pre>
 <h3 id="how-to-use-it"><b>How to use it ?</b></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>

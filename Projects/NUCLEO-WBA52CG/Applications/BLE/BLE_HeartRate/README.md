@@ -31,6 +31,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HeartRate/System/Config/Debug_GPIO/debug_config.h                           Real Time Debug module general configuration file 
   - BLE_HeartRate/System/Config/Flash/simple_nvm_arbiter_conf.h                     Configuration header for simple_nvm_arbiter.c module 
   - BLE_HeartRate/System/Config/LowPower/app_sys.h                                  Header for app_sys.c 
+  - BLE_HeartRate/System/Config/LowPower/user_low_power_config.h                    Header for user_low_power_config.c
   - BLE_HeartRate/System/Interfaces/hw.h                                            This file contains the interface of STM32 HW drivers
   - BLE_HeartRate/System/Interfaces/hw_if.h                                         Hardware Interface 
   - BLE_HeartRate/System/Interfaces/stm32_lpm_if.h                                  Header for stm32_lpm_if.c module (device specific LP management) 
@@ -39,7 +40,6 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HeartRate/System/Modules/adc_ctrl.h                                         Header for ADC client manager module 
   - BLE_HeartRate/System/Modules/ble_timer.h                                        This header defines the timer functions used by the BLE stack 
   - BLE_HeartRate/System/Modules/dbg_trace.h                                        Header for dbg_trace.c 
-  - BLE_HeartRate/System/Modules/general_config.h                                   This file contains definitions that can be changed to configure some modules of the STM32 firmware application
   - BLE_HeartRate/System/Modules/otp.h                                              Header file for One Time Programmable (OTP) area 
   - BLE_HeartRate/System/Modules/scm.h                                              Header for scm.c module 
   - BLE_HeartRate/System/Modules/stm_list.h                                         Header file for linked list library
@@ -54,9 +54,11 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HeartRate/System/Modules/MemoryManager/advanced_memory_manager.h            Header for advance_memory_manager.c module 
   - BLE_HeartRate/System/Modules/MemoryManager/stm32_mm.h                           Header for stm32_mm.c module 
   - BLE_HeartRate/System/Modules/Nvm/nvm.h                                          This file contains the interface of the NVM manager
+  - BLE_HeartRate/System/Modules/RFControl/rf_antenna_switch.h                      RF related module to handle dedictated GPIOs for antenna switch
   - BLE_HeartRate/System/Modules/RTDebug/debug_signals.h                            Real Time Debug module System and Link Layer signal definition 
   - BLE_HeartRate/System/Modules/RTDebug/local_debug_tables.h                       Real Time Debug module System and Link Layer signal 
   - BLE_HeartRate/System/Modules/RTDebug/RTDebug.h                                  Real Time Debug module API declaration 
+  - BLE_HeartRate/System/Modules/RTDebug/RTDebug_dtb.h                              Real Time Debug module API declaration for DTB usage
   - BLE_HeartRate/Core/Src/app_entry.c                                              Entry point of the application 
   - BLE_HeartRate/Core/Src/main.c                                                   Main program body 
   - BLE_HeartRate/Core/Src/stm32wbaxx_hal_msp.c                                     This file provides code for the MSP Initialization and de-Initialization codes
@@ -74,6 +76,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HeartRate/STM32_WPAN/Target/ll_sys_if.c                                     Source file for initiating the system sequencer 
   - BLE_HeartRate/STM32_WPAN/Target/power_table.c                                   This file contains supported power tables 
   - BLE_HeartRate/System/Config/Debug_GPIO/app_debug.c                              Real Time Debug module application side APIs 
+  - BLE_HeartRate/System/Config/LowPower/user_low_power_config.c                    Low power related user configuration
   - BLE_HeartRate/System/Interfaces/hw_aes.c                                        This file contains the AES driver for STM32WBA 
   - BLE_HeartRate/System/Interfaces/hw_otp.c                                        This file contains the OTP driver
   - BLE_HeartRate/System/Interfaces/hw_pka.c                                        This file contains the PKA driver for STM32WBA 
@@ -97,7 +100,9 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HeartRate/System/Modules/MemoryManager/advanced_memory_manager.c            Memory Manager 
   - BLE_HeartRate/System/Modules/MemoryManager/stm32_mm.c                           Memory Manager 
   - BLE_HeartRate/System/Modules/Nvm/nvm_emul.c                                     This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose
+  - BLE_HeartRate/System/Modules/RFControl/rf_antenna_switch.c                      RF related module to handle dedictated GPIOs for antenna switch
   - BLE_HeartRate/System/Modules/RTDebug/RTDebug.c                                  Real Time Debug module API definition 
+  - BLE_HeartRate/System/Modules/RTDebug/RTDebug_dtb.c                              Real Time Debug module API definition for DTB usage
 
 ### __Hardware and Software environment__
 
@@ -114,33 +119,25 @@ In order to make the program work, you must do the following:
 
  On the android/ios device, enable the Bluetooth communications, and if not done before:
 
-   - Install the ST BLE Sensor application on the android/ios device:
-	   - <a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
-	   - <a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a>
-
-   - You can also install the ST BLE Toolbox application on the android device:
+   - Install the ST BLE Toolbox application on the android device:
      - <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
      - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a>
+
+   - You can also install the ST BLE Sensor application on the android/ios device:
+	   - <a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
+	   - <a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a>
 	
  Power on the Nucleo board with the BLE_HeartRate application.
 
- - Then, click on the App icon, ST BLE Sensor (android/ios device),
-   connect to a device,
-   select the HR_xx in the device list.
- - The Heart Rate is displayed each second on the smartphone.
- - Pairing is supported: 
-   - Button B1 clears the security database, 
-   - Button B2 requests the slave req pairing.
- - This example supports switch to 2Mbits PHY, Button B3 is used to enable the feature.
+- Then, click on the App icon, ST BLE Toolbox (android/ios device),
+   You can either open ST BLE Sensor application (android/ios device).
 
- You can either open ST BLE Toolbox application (android/ios device).
+- In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs,
+  you can reset the energy measurement.
+   - Pairing is supported: button B2 clears the security database when the device is not connected. 
+   When connected with a client, button B2 send the slave pairing request, here a popup asks you to associate your device.
+   You can either bond from the smartphone by clicking on Bond button in the ST BLE Toolbox application interface.
+   - This example supports switch to 2Mbits PHY, pressing button B1 while connected allows to switch between 1Mbits PHY and 2Mbits PHY.
+   - After 60s of advertising, the application switch from fast advertising to low power advertising, pressing button B1 while advertising allows to restart fast advertising.
+   - Pressing button B3 while connected allows to update the connection interval. 
 
- - Select the HR_xx in the device list and connect to the device.
- - Scroll right and select Heart Rate interface,
- - HearRate and energy measurement are launched and displayed in graphs,
-   you can reset the energy measurement.
- - Pairing is supported: 
-   - Button B1 clears the security database, 
-   - Button B2 requests the slave req pairing, here a popup asks you to associate your device.
- - You can either bond from the smartphone by clicking on Bond Button.
- - This example supports switch to 2Mbits PHY, Button B3 is used to enable the feature.

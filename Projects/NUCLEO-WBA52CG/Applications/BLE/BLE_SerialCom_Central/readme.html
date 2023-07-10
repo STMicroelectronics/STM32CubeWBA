@@ -46,6 +46,7 @@
 <li>BLE_SerialCom_Central/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
 <li>BLE_SerialCom_Central/System/Config/Flash/simple_nvm_arbiter_conf.h Configuration header for simple_nvm_arbiter.c module</li>
 <li>BLE_SerialCom_Central/System/Config/LowPower/app_sys.h Header for app_sys.c</li>
+<li>BLE_SerialCom_Central/System/Config/LowPower/user_low_power_config.h Header for user_low_power_config.c</li>
 <li>BLE_SerialCom_Central/System/Interfaces/hw.h This file contains the interface of STM32 HW drivers.</li>
 <li>BLE_SerialCom_Central/System/Interfaces/hw_if.h Hardware Interface</li>
 <li>BLE_SerialCom_Central/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
@@ -54,7 +55,6 @@
 <li>BLE_SerialCom_Central/System/Modules/adc_ctrl.h Header for ADC client manager module</li>
 <li>BLE_SerialCom_Central/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
 <li>BLE_SerialCom_Central/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
-<li>BLE_SerialCom_Central/System/Modules/general_config.h This file contains definitions that can be changed to configure some modules of the STM32 firmware application.</li>
 <li>BLE_SerialCom_Central/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
 <li>BLE_SerialCom_Central/System/Modules/scm.h Header for scm.c module</li>
 <li>BLE_SerialCom_Central/System/Modules/stm_list.h Header file for linked list library.</li>
@@ -69,9 +69,11 @@
 <li>BLE_SerialCom_Central/System/Modules/MemoryManager/advanced_memory_manager.h Header for advance_memory_manager.c module</li>
 <li>BLE_SerialCom_Central/System/Modules/MemoryManager/stm32_mm.h Header for stm32_mm.c module</li>
 <li>BLE_SerialCom_Central/System/Modules/Nvm/nvm.h This file contains the interface of the NVM manager.</li>
+<li>BLE_SerialCom_Central/System/Modules/RFControl/rf_antenna_switch.h RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_SerialCom_Central/System/Modules/RTDebug/debug_signals.h Real Time Debug module System and Link Layer signal definition</li>
 <li>BLE_SerialCom_Central/System/Modules/RTDebug/local_debug_tables.h Real Time Debug module System and Link Layer signal</li>
 <li>BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug.h Real Time Debug module API declaration</li>
+<li>BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug_dtb.h Real Time Debug module API declaration for DTB usage</li>
 <li>BLE_SerialCom_Central/Core/Src/app_entry.c Entry point of the application</li>
 <li>BLE_SerialCom_Central/Core/Src/main.c Main program body</li>
 <li>BLE_SerialCom_Central/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
@@ -86,6 +88,7 @@
 <li>BLE_SerialCom_Central/STM32_WPAN/Target/ll_sys_if.c Source file for initiating the system sequencer</li>
 <li>BLE_SerialCom_Central/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
 <li>BLE_SerialCom_Central/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
+<li>BLE_SerialCom_Central/System/Config/LowPower/user_low_power_config.c Low power related user configuration</li>
 <li>BLE_SerialCom_Central/System/Interfaces/hw_aes.c This file contains the AES driver for STM32WBA</li>
 <li>BLE_SerialCom_Central/System/Interfaces/hw_otp.c This file contains the OTP driver.</li>
 <li>BLE_SerialCom_Central/System/Interfaces/hw_pka.c This file contains the PKA driver for STM32WBA</li>
@@ -109,29 +112,52 @@
 <li>BLE_SerialCom_Central/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager</li>
 <li>BLE_SerialCom_Central/System/Modules/MemoryManager/stm32_mm.c Memory Manager</li>
 <li>BLE_SerialCom_Central/System/Modules/Nvm/nvm_emul.c This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose.</li>
+<li>BLE_SerialCom_Central/System/Modules/RFControl/rf_antenna_switch.c RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug.c Real Time Debug module API definition</li>
+<li>BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug_dtb.c Real Time Debug module API definition for DTB usage</li>
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
 <li>This example runs on STM32WBA52xx devices. Connect the Nucleo Board to your PC with a USB cable type A to mini-B to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following: - Open IAR toolchain - Rebuild all files and flash the board with the executable file.</p>
+<p>In order to make the program work, you must do the following:</p>
+<ul>
+<li>Open IAR toolchain</li>
+<li>Rebuild all files and flash the board with the executable file.</li>
+</ul>
 <p>Two STM32WBA nucleo boards are used. One board is configured as central thanks to BLE_SerialCom_Central and the other as peripheral thanks to BLE_SerialCom_Peripheral. The central board supports the Data transfer by sending L2CAP data through a COC link.</p>
 <p>No service is added.</p>
 <p>After BLE link is established, a Connection Oriented Channel (COC) is established (full stack is necessary for COC) Data are exchanged through the COC link.</p>
 <p>Open a VT100 terminal on Central and Peripheral side (ST Link Com Port, <span class="citation" data-cites="115200">@115200</span> bauds). This application has to be used in front of BLE_p2pPeripheral_COC.</p>
-<p>At reset application initialization is done. - The peripheral device starts advertising. - Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_BLE_COC). - After BLE connection: - the client establishes a COC channel.</p>
+<p>At reset application initialization is done.</p>
 <ul>
+<li>The peripheral device starts advertising.</li>
+<li>Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_BLE_COC).</li>
+<li>After BLE connection:</li>
+<li><p>the client establishes a COC channel.</p></li>
 <li>When link is ready: display “CONNECTION READY”</li>
 <li>Configure the terminal with settings local echo.</li>
 <li>When Append LF is configured, enter data using keyboard, check that data are correctly received on peer device.</li>
-<li>When Append nothing is configured, enter data using keyboard, data are sent when buffer of 20 bytes is full.</li>
+<li><p>When Append nothing is configured, enter data using keyboard, data are sent when buffer of 20 bytes is full.</p></li>
 </ul>
-<p>On server side when connected: - B2 sends slave security request</p>
-<p>On server side when idle: - B2 clear database</p>
-<p>On client side when connected: - B2 sends pairing request - B3 changes connection interval update</p>
-<p>On client side when idle: - B2 clear database</p>
+<p>On server side when connected:</p>
+<ul>
+<li>B2 sends slave security request</li>
+</ul>
+<p>On server side when idle:</p>
+<ul>
+<li>B2 clear database</li>
+</ul>
+<p>On client side when connected:</p>
+<ul>
+<li>B2 sends pairing request</li>
+<li>B3 changes connection interval update</li>
+</ul>
+<p>On client side when idle:</p>
+<ul>
+<li>B2 clear database</li>
+</ul>
 </div>
 </div>
 </body>

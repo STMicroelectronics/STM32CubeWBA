@@ -42,11 +42,9 @@ typedef enum
   HRS_HRME,
   HRS_BSL,
   HRS_HRCP,
-
   /* USER CODE BEGIN Service1_CharOpcode_t */
 
   /* USER CODE END Service1_CharOpcode_t */
-
   HRS_CHAROPCODE_LAST
 } HRS_CharOpcode_t;
 
@@ -56,11 +54,9 @@ typedef enum
   HRS_HRME_NOTIFY_DISABLED_EVT,
   HRS_BSL_READ_EVT,
   HRS_HRCP_WRITE_EVT,
-
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
   HRS_RESET_ENERGY_EXPENDED_EVT,
   /* USER CODE END Service1_OpcodeEvt_t */
-
   HRS_BOOT_REQUEST_EVT
 } HRS_OpcodeEvt_t;
 
@@ -72,7 +68,6 @@ typedef struct
   /* USER CODE BEGIN Service1_Data_t */
 
   /* USER CODE END Service1_Data_t */
-
 } HRS_Data_t;
 
 typedef struct
@@ -80,12 +75,11 @@ typedef struct
   HRS_OpcodeEvt_t       EvtOpcode;
   HRS_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service1_NotificationEvt_t */
 
   /* USER CODE END Service1_NotificationEvt_t */
-
 } HRS_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

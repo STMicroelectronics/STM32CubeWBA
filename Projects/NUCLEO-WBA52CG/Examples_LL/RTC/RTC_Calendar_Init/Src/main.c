@@ -85,8 +85,8 @@ uint32_t Timeout = 0; /* Variable used for Timeout management */
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_RTC_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t Enter_RTC_InitMode(void);
 uint32_t Exit_RTC_InitMode(void);
@@ -206,8 +206,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_RTC_Init();
   MX_ICACHE_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
   /* Turn-on LD1 to indicate that calendar has been well configured */
@@ -268,22 +268,12 @@ void SystemClock_Config(void)
   {
   }
 
-   /* Intermediate AHB prescaler 2 when target frequency clock is higher than 80 MHz */
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
-
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1R);
 
    /* Wait till System clock is ready */
   while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R)
   {
   }
-
-  /* Insure 1us transition state at intermediate medium speed clock based on DWT*/
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-  DWT->CYCCNT = 0;
-  while(DWT->CYCCNT < 100);
 
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAHB5Prescaler(LL_RCC_AHB5_DIV_4);

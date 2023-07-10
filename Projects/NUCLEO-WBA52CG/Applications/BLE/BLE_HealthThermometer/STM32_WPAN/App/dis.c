@@ -37,6 +37,10 @@ typedef struct{
   uint16_t  MansCharHdle;                  /**< MANS Characteristic Handle */
   uint16_t  MonsCharHdle;                  /**< MONS Characteristic Handle */
   uint16_t  SyidCharHdle;                  /**< SYID Characteristic Handle */
+/* USER CODE BEGIN Context */
+  /* Place holder for Characteristic Descriptors Handle*/
+
+/* USER CODE END Context */
 }DIS_Context_t;
 
 /* Private defines -----------------------------------------------------------*/
@@ -136,6 +140,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
       switch(p_blecore_evt->ecode)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
@@ -143,9 +148,10 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-          break;
-
+          break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+        }
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
@@ -153,9 +159,10 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          break;
-
+          break;/* ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
@@ -163,7 +170,8 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-          break;
+          break;/* ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         {
           aci_gatt_tx_pool_available_event_rp0 *p_tx_pool_available_event;
@@ -173,8 +181,8 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
 
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-        }
           break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
+        }
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
           aci_att_exchange_mtu_resp_event_rp0 *p_exchange_mtu;
@@ -184,9 +192,8 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
 
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-
+          break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
-          break;
         /* USER CODE BEGIN BLECORE_EVT */
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
         case ACI_GATT_INDICATION_VSEVT_CODE:
@@ -245,6 +252,8 @@ void DIS_Init(void)
 {
   Char_UUID_t  uuid;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  uint8_t max_attr_record;
+
   /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */
 
   /* USER CODE END SVCCTL_InitService1Svc_1 */
@@ -263,12 +272,21 @@ void DIS_Init(void)
    *                                2 for MONS +
    *                                2 for SYID +
    *                              = 7
+   * This value doesn't take into account number of descriptors manually added
+   * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
+  max_attr_record = 7;
+
+  /* USER CODE BEGIN SVCCTL_InitService */
+  /* max_attr_record to be updated if descriptors have been added */
+
+  /* USER CODE END SVCCTL_InitService */
+
   uuid.Char_UUID_16 = 0x180a;
   ret = aci_gatt_add_service(UUID_TYPE_16,
                              (Service_UUID_t *) &uuid,
                              PRIMARY_SERVICE,
-                             7,
+                             max_attr_record,
                              &(DIS_Context.DisSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -302,6 +320,10 @@ void DIS_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : MANS\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char1 */
+
+  /* USER CODE END SVCCTL_InitService1Char1 */
+
   /**
    * MONS
    */
@@ -325,6 +347,10 @@ void DIS_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : MONS\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char2 */
+
+  /* USER CODE END SVCCTL_InitService1Char2 */
+
   /**
    * SYID
    */
@@ -347,6 +373,10 @@ void DIS_Init(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : SYID\n");
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+
+  /* USER CODE END SVCCTL_InitService1Char3 */
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
 

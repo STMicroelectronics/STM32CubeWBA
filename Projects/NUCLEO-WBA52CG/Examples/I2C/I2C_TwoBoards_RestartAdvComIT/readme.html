@@ -30,10 +30,10 @@
 <p>At the beginning of the main program the HAL_Init() function is called to reset all the peripherals, initialize the Flash interface and the systick. Then the SystemClock_Config() function is used to configure the system clock (SYSCLK) to run at 100 MHz.</p>
 <p>The I2C peripheral configuration is ensured by the HAL_I2C_Init() function. This later is calling the HAL_I2C_MspInit()function which core is implementing the configuration of the needed I2C resources according to the used hardware (CLOCK, GPIO and NVIC). You may update this function to change I2C configuration.</p>
 <p>The USER push-button is used to initiate a communication between Master device to Slave. User can initiate a new communication after each previous transfer completed.</p>
-<p>The I2C communication is then initiated. The project is split in two parts the Master Board and the Slave Board</p>
+<p>The I2C communication is then initiated. The project is split in two parts the Master Board and the Slave Board :</p>
 <ul>
-<li>Master Board The HAL_I2C_Master_Sequential_Transmit_IT() and the HAL_I2C_Master_Sequential_Receive_IT() functions allow respectively the transmission and the reception of a predefined data buffer in Master mode.</li>
-<li>Slave Board The HAL_I2C_EnableListen_IT(), HAL_I2C_Slave_Sequential_Receive_IT() and the HAL_I2C_Slave_Sequential_Transmit_IT() functions allow respectively the “Listen” the I2C bus for address match code event, reception and the transmission of a predefined data buffer in Slave mode.</li>
+<li><p>Master Board : The HAL_I2C_Master_Sequential_Transmit_IT() and the HAL_I2C_Master_Sequential_Receive_IT() functions allow respectively the transmission and the reception of a predefined data buffer in Master mode.</p></li>
+<li><p>Slave Board : The HAL_I2C_EnableListen_IT(), HAL_I2C_Slave_Sequential_Receive_IT() and the HAL_I2C_Slave_Sequential_Transmit_IT() functions allow respectively the “Listen” the I2C bus for address match code event, reception and the transmission of a predefined data buffer in Slave mode.</p></li>
 </ul>
 <p>The user can choose between Master and Slave through “#define MASTER_BOARD” in the “main.c” file. If the Master board is used, the “#define MASTER_BOARD” must be uncommented. If the Slave board is used the “#define MASTER_BOARD” must be commented.</p>
 <p>Example execution:</p>
@@ -43,13 +43,13 @@
 </ul>
 <p>This action initiate a write request by Master through HAL_I2C_Master_Sequential_Transmit_IT() or a write then read request through HAL_I2C_Master_Sequential_Transmit_IT() then HAL_I2C_Master_Sequential_Receive_IT() routine depends on Command Code type. Initially at power on Slave device through Interrupt “Listen” the I2C bus to perform an acknowledge of Match Address when necessary. This “Listen” action is initiated by calling HAL_I2C_EnableListen_IT().</p>
 <p>Command code type is decomposed in two categories :</p>
-<ol type="1">
-<li><p>Action Command code :</p>
-<ol type="a">
-<li>Type of command which need an internal action from Slave Device without sending any specific answer to Master.</li>
-<li>I2C sequence is composed like that : _____________________________________________________________________________________ |<em>START</em>|<em>Slave_Address</em>|<em>Wr</em>|<em>A</em>|<em>Command_Code_BYTE_1</em>|<em>A</em>|<em>Command_Code_BYTE_2</em>|<em>A</em>|…. ________________________________ |<em>Command_Code_BYTE_M</em>|<em>A</em>|<em>STOP</em>|</li>
-</ol></li>
-</ol>
+<p>1- Action Command code :</p>
+<pre><code>a. Type of command which need an internal action from Slave Device without sending any specific answer to Master.
+b. I2C sequence is composed like that :
+ _____________________________________________________________________________________
+|_START_|_Slave_Address_|_Wr_|_A_|_Command_Code_BYTE_1_|_A_|_Command_Code_BYTE_2_|_A_|....
+ ________________________________
+|_Command_Code_BYTE_M_|_A_|_STOP_|</code></pre>
 <p>First of all, through HAL_I2C_Master_Sequential_Transmit_IT() routine, Master device generate an I2C start condition with the Slave address and a write bit condition. In Slave side, when address Slave match code is received on I2C1, an event interrupt (ADDR) occurs. I2C1 IRQ Handler routine is then calling HAL_I2C_AddrCallback() which check Address Match Code and direction Write (Transmit) to call the correct HAL_I2C_Slave_Sequential_Receive_IT() function. This will allow Slave to enter in receiver mode and then acknowledge Master to send the Command code bytes through Interrupt. The Command code data is received and treated byte per byte through HAL_I2C_SlaveRxCpltCallback() in Slave side until a STOP condition.</p>
 <p>And so in Master side, each time the Slave acknowledge the byte received, Master transfer the next data from flash memory buffer to I2C1 TXDR register until “Action Command code” Transfer completed. Master auto-generate a Stop condition when transfer is achieved.</p>
 <p>The STOP condition generate a STOP interrupt and initiate the end of reception on Slave side. Thanks to HAL_I2C_ListenCpltCallback(), Slave is informed of the end of Communication with Master and “Listen” mode is also terminated.</p>
@@ -67,30 +67,48 @@
 <li>LD3 is slowly blinking (1 sec. period) when there is an error in communication process.(communication is stopped if any, using infinite loop)</li>
 </ul>
 <p>These LEDs status are keeped at same value during 1 Second and then clear, this will allow to monitor a next transfer status.</p>
-<p>Also only on Master board side, Terminal I/O can be used to watch the Action Command Code sent by Master and associated Slave action with IDE in debug mode. Depending of IDE, to watch content of Terminal I/O note that</p>
+<p>Also only on Master board side, Terminal I/O can be used to watch the Action Command Code sent by Master and associated Slave action with IDE in debug mode. Depending of IDE, to watch content of Terminal I/O note that :</p>
 <ul>
 <li><p>When resorting to EWARM IAR IDE: Command Code is displayed on debugger as follows: View –&gt; Terminal I/O</p></li>
 <li><p>When resorting to MDK-ARM KEIL IDE: Command Code could not be displayed on debugger but user can use the Virtual Com port of the NUCLEO-WBA52CG to display Command Code on PC side using an hyperterminal. See below, information related to this possibility.</p></li>
-<li><p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console. In Debug configuration :</p>
+<li><p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console.</p>
+<p>In Debug configuration :</p>
 <ul>
 <li>Window, select the Debug probe : ST-LINK(OpenOCD)</li>
 <li>Window,add the command “monitor arm semihosting enable”</li>
 </ul></li>
 </ul>
-<p>Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com.</p>
+<p>Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com:</p>
+<ul>
+<li><p>When resorting to EWARM IAR IDE: Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration</p></li>
+<li><p>When resorting to MDK-ARM KEIL IDE: Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :</p>
+<ul>
+<li>remove the “__DBG_ITM” from MDK-ARM Settings –&gt; C/C++ (AC6) –&gt; Preprocessor Symbols –&gt; Define</li>
+<li>uncheck “Trace Enable” from MDK-ARM Settings –&gt; Debug –&gt; Settings –&gt; Trace</li>
+<li>exclude “Retarget.c” from MDK-ARM Project</li>
+</ul></li>
+<li><p>When resorting to STM32CubeIDE (Debug and Release) : Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :</p>
+<ul>
+<li>uncheck “exclude resource from build” for “syscall.c” file</li>
+<li>remove “-specs=rdimon.specs -lc -lrdimon” from from cubeIDE Propreties –&gt; C/C++ Build –&gt; Settings –&gt; Tool Settings –&gt; MCU GCC linker –&gt; Miscellaneous</li>
+</ul></li>
+</ul>
 <p>In order to select use of Virtual Com port feature of STLINK for connection between NUCLEO-WBA52CG and PC, User has to set USE_VCP_CONNECTION define to 1 in main.h file. If so, please ensure that USART communication between the target MCU and ST-LINK MCU is properly enabled on HW board in order to support Virtual Com Port (Default HW SB configuration allows use of VCP)</p>
-<ol start="2" type="1">
-<li><p>Request Command code :</p>
-<ol type="a">
-<li>Type of command which need a specific data answer from Slave Device.</li>
-<li>I2C sequence is composed like that : _____________________________________________________________________________________ |<em>START</em>|<em>Slave_Address</em>|<em>Wr</em>|<em>A</em>|<em>Command_Code_BYTE_1</em>|<em>A</em>|<em>Command_Code_BYTE_2</em>|<em>A</em>|…. ______________________________________________________________________________ |<em>Command_Code_BYTE_M</em>|<em>A</em>|<em>RESTART</em>|<em>Slave_Address</em>|<em>Rd</em>|<em>A</em>|<em>Data_BYTE_1</em>|<em>A</em>|… ___________________________________________ |<em>Data_BYTE_2</em>|<em>A</em>|<em>Data_BYTE_N</em>|<em>NA</em>|<em>STOP</em>|</li>
-</ol></li>
-</ol>
+<p>2- Request Command code :</p>
+<pre><code>a. Type of command which need a specific data answer from Slave Device.
+b. I2C sequence is composed like that :
+ _____________________________________________________________________________________
+|_START_|_Slave_Address_|_Wr_|_A_|_Command_Code_BYTE_1_|_A_|_Command_Code_BYTE_2_|_A_|....
+ ______________________________________________________________________________
+|_Command_Code_BYTE_M_|_A_|_RESTART_|_Slave_Address_|_Rd_|_A_|_Data_BYTE_1_|_A_|...
+ ___________________________________________
+|_Data_BYTE_2_|_A_|_Data_BYTE_N_|_NA_|_STOP_|</code></pre>
 <p>First of all, through HAL_I2C_Master_Sequential_Transmit_IT() routine, Master device generate an I2C start condition with the Slave address and a write bit condition. In Slave side, when address Slave match code is received on I2C1, an event interrupt (ADDR) occurs. I2C1 IRQ Handler routine is then calling HAL_I2C_AddrCallback() which check Address Match Code and direction Write (Transmit) to call the correct HAL_I2C_Slave_Sequential_Receive_IT() function. This will allow Slave to enter in receiver mode and then acknowledge Master to send the Command code bytes through Interrupt. The Command code data is received and treated byte per byte through HAL_I2C_SlaveRxCpltCallback() in Slave side. If data received match with a Internal Command Code, set the associated index, which will use for Transmission process when requested by Master</p>
 <p>And so in Master side, each time the Slave acknowledge the byte received, Master transfer the next data from flash memory buffer to I2C1 TXDR register until “Request Command code” transfer completed.</p>
 <p>Then through HAL_I2C_Master_Sequential_Receive_IT() routine, Master device generate a RESTART condition with Slave address and a read bit condition. In Slave side, when address Slave match code is received on I2C1, an event interrupt (ADDR) occurs. I2C1 IRQ Handler routine is then calling HAL_I2C_AddrCallback() which check Address Match Code and direction Read (Reception) to call the correct HAL_I2C_Slave_Sequential_Transmit_IT() function. Slave enter in transmitter mode and send send answer bytes through interrupt until end of transfer size. Master auto-generate a NACK and STOP condition to inform the Slave that the transfer and communication are finished.</p>
 <p>The STOP condition generate a STOP interrupt and initiate the end of reception on Slave side. Thanks to HAL_I2C_ListenCpltCallback(), Slave is informed of the end of Communication with Master and “Listen” mode is also terminated.</p>
-<p>NUCLEO-WBA52CG board’s LEDs can be used to monitor the transfer status in both side: Slave board side :</p>
+<p>NUCLEO-WBA52CG board’s LEDs can be used to monitor the transfer status in both side:</p>
+<p>Slave board side :</p>
 <ul>
 <li>LD1 is turned ON when the reception process is completed.</li>
 <li>LD1 is turned OFF when the transmission process is completed.</li>
@@ -109,13 +127,28 @@
 <ul>
 <li><p>When resorting to EWARM IAR IDE: Command Code is displayed on debugger as follows: View –&gt; Terminal I/O</p></li>
 <li><p>When resorting to MDK-ARM KEIL IDE: Command Code could not be displayed on debugger but user can use the Virtual Com port of the NUCLEO-WBA52CG to display Command Code on PC side using an hyperterminal. See below, information related to this possibility.</p></li>
-<li><p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console. In Debug configuration :</p>
+<li><p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console.</p>
+<p>In Debug configuration :</p>
 <ul>
 <li>Window, select the Debug probe : ST-LINK(OpenOCD)</li>
 <li>Window,add the command “monitor arm semihosting enable”</li>
 </ul></li>
 </ul>
-<p>Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com.</p>
+<p>Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com:</p>
+<ul>
+<li><p>When resorting to EWARM IAR IDE: Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration</p></li>
+<li><p>When resorting to MDK-ARM KEIL IDE: Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :</p>
+<ul>
+<li>remove the “__DBG_ITM” from MDK-ARM Settings –&gt; C/C++ (AC6) –&gt; Preprocessor Symbols –&gt; Define</li>
+<li>uncheck “Trace Enable” from MDK-ARM Settings –&gt; Debug –&gt; Settings –&gt; Trace</li>
+<li>exclude “Retarget.c” from MDK-ARM Project</li>
+</ul></li>
+<li><p>When resorting to STM32CubeIDE (Debug and Release) : Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :</p>
+<ul>
+<li>uncheck “exclude resource from build” for “syscall.c” file</li>
+<li>remove “-specs=rdimon.specs -lc -lrdimon” from from cubeIDE Propreties –&gt; C/C++ Build –&gt; Settings –&gt; Tool Settings –&gt; MCU GCC linker –&gt; Miscellaneous</li>
+</ul></li>
+</ul>
 <p>In order to select use of Virtual Com port feature of STLINK for connection between NUCLEO-WBA52CG and PC, User has to set USE_VCP_CONNECTION define to 1 in main.h file. If so, please ensure that USART communication between the target MCU and ST-LINK MCU is properly enabled on HW board in order to support Virtual Com Port (Default HW SB configuration allows use of VCP)</p>
 <h4 id="notes"><b>Notes</b></h4>
 <ol type="1">
@@ -140,6 +173,7 @@
 <ul>
 <li><p>This example runs on STM32WBA52xx devices.</p></li>
 <li><p>This example has been tested with NUCLEO-WBA52CG board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>To be able to display data on MDK-ARM debugger please make sure to close the SB12.</p></li>
 <li><p>NUCLEO-WBA52CG Set-up</p>
 <ul>
 <li>Connect I2C_SCL line of Master board (PB2, Arduino D15 CN6 pin 10, Morpho CN4 pin 3) to I2C_SCL line of Slave Board (PB2, Arduino D15 CN6 pin 10, Morpho CN4 pin 3).</li>

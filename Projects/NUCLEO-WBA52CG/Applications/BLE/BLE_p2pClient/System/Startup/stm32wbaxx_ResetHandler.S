@@ -27,7 +27,14 @@
         EXTERN  SYS_WAITING_CYCLES_25
 
         IMPORT  backup_MSP
+        IMPORT  register_backup_table
+        IMPORT  register_backup_table_size
+
         EXPORT  CPUcontextSave
+        EXPORT  CPUcontextSave
+        EXPORT  backup_system_register
+        EXPORT  restore_system_register
+
         PUBLIC Reset_Handler
         SECTION .text:CODE:NOROOT:REORDER(2)
 Reset_Handler
@@ -75,6 +82,68 @@ CPUcontextRestore
         MOV    R11, R6
         MOV    R12, R7
         POP   { R4 - R7, PC }        /*load R4-R7 and PC (5 words) from the stack */
+
+backup_system_register
+/* R0 -> register_backup_table array current item address */
+/* R1 -> loop counter (from register_backup_table_size to 0) */
+/* R2 -> register_backup_table array current item value */
+
+backup_loop_init:
+        LDR    R0, =register_backup_table        /* R0 points to the first array item */
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          /* R1 contains the number of registers in the array */
+
+backup_loop_iter:
+        /* Offset processing */
+        LDR    R2, [R0], #4                      /* R2 contains the register_backup_table current item (register address) */
+                                                 /* R0 points to the next register_backup_table item (uint32_t items -> 4 bytes added to previous address) */
+
+        /* Register value backup */
+        LDR    R2, [R2]                          /* R2 contains now the register value to backup */
+        PUSH   {R2}                              /* Push register value into the stack */
+
+        /* Loop iteration control */
+        SUBS   R1, #1                            /* Decrement loop counter by 1 and update APSR (Application Processor Status Register) */
+        BNE    backup_loop_iter                  /* Loop continues until Z flag is set (still array item to handle) */
+
+backup_loop_end:
+        BX LR                                    /* Return to caller */
+
+restore_system_register
+/* R0 -> register_backup_table array current item address */
+/* R1 -> loop counter (from register_backup_table_size to 0) */
+/* R2 -> register_backup_table array current item value */
+
+restore_loop_init:
+        LDR    R0, =register_backup_table         /* R0 points to the first array item */
+
+        /* Reverse loop: counter initial value processing */
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          /* R1 contains the number of registers in the array */
+        SUB    R1, #1                            /* R1 now contains last array item index (register_backup_table_size - 1) */
+
+        /* Reverse loop: apply offset to current array index (point to last array element) */
+        ADD    R0, R1, LSL #2                    /* R0 now points to last array item (register_backup_table + (register_backup_table_size - 1) * 4) */
+
+        ADD    R1, #1                            /* Re-add 1 to R1 (array length) */
+
+/* Reverse loop */
+restore_loop_iter:
+        /* Offset processing  */
+        LDR    R2, [R0], #-4                     /* R2 contains the register_backup_table current item (register address) */
+                                                 /* R0 now points to the previous register_backup_table item (uint32_t items -> 4 bytes subtracted to previous address) */
+
+        /* Register value restoration */
+        POP    {R3}                              /* Head of stack popped into R3. R3 contains register value to restore */
+        STR    R3, [R2]                          /* Write backuped value into the register */
+
+        /* Loop iteration control */
+        SUBS   R1, #1                            /* Decrement loop counter by 1 and update APSR (Application Processor Status Register) */
+        BNE    restore_loop_iter                 /* Loop continues until Z flag is set (still array item to handle) */
+
+restore_loop_end:
+        BX LR                                    /* Return to caller */
+
 /* end of specific code section for standby */
 
         END
@@ -108,13 +177,19 @@ CPUcontextRestore
 ; Reset_Handler
 Reset_Handler    PROC
                  EXPORT  Reset_Handler
-		IMPORT  SystemInit
-        IMPORT  __main
-        IMPORT  is_boot_from_standby
-        IMPORT  backup_MSP
-		IMPORT  enter_standby_notification
-	    IMPORT  exit_standby_notification
-	    EXPORT  CPUcontextSave
+
+		 IMPORT  SystemInit
+                 IMPORT  __main
+                 IMPORT  is_boot_from_standby
+                 IMPORT  backup_MSP
+		 IMPORT  enter_standby_notification
+                 IMPORT  exit_standby_notification
+                 IMPORT  register_backup_table
+                 IMPORT  register_backup_table_size
+
+     EXPORT  CPUcontextSave
+                 EXPORT  backup_system_register
+                 EXPORT  restore_system_register
 ; If we exit from standby mode, restore CPU context and jump to asleep point.
         BL      is_boot_from_standby
         CMP     R0, #1
@@ -162,6 +237,67 @@ CPUcontextRestore
         POP   { R4 - R7, PC }        ; load R4-R7 and PC (5 words) from the stack.
 ; end of specific code section for standby.
 
+backup_system_register
+; R0 -> register_backup_table array current item address
+; R1 -> loop counter (from register_backup_table_size to 0)
+; R2 -> register_backup_table array current item value
+
+backup_loop_init
+        LDR    R0, =register_backup_table         ; R0 points to the first array item
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          ; R1 contains the number of registers in the array
+
+backup_loop_iter
+        ; Offset processing
+        LDR    R2, [R0], #4                      ; R2 contains the register_backup_table current item (register address)
+                                                 ; R0 points to the next register_backup_table item (uint32_t items -> 4 bytes added to previous address)
+
+        ; Register value backup
+        LDR    R2, [R2]                          ; R2 contains now the register value to backup
+        PUSH   {R2}                              ; Push register value into the stack
+
+        ; Loop iteration control
+        SUBS   R1, #1                            ; Decrement loop counter by 1 and update APSR (Application Processor Status Register)
+        BNE    backup_loop_iter                  ; Loop continues until Z flag is set (still array item to handle)
+
+backup_loop_end
+        BX LR                                    ; Return to caller
+
+restore_system_register
+; R0 -> register_backup_table array current item address
+; R1 -> loop counter (from register_backup_table_size to 0)
+; R2 -> register_backup_table array current item value
+
+restore_loop_init
+        LDR    R0, =register_backup_table         ; R0 points to the first array item
+
+        ; Reverse loop: counter initial value processing
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          ; R1 contains the number of registers in the array
+        SUB    R1, #1                            ; R1 now contains last array item index (register_backup_table_size - 1)
+
+        ; Reverse loop: apply offset to current array index (point to last array element)
+        ADD    R0, R1, LSL #2                    ; R0 now points to last array item (register_backup_table + (register_backup_table_size - 1) * 4)
+
+        ADD    R1, #1                            ; Re-add 1 to R1 (array length)
+
+; Reverse loop
+restore_loop_iter
+        ; Offset processing
+        LDR    R2, [R0], #-4                     ; R2 contains the register_backup_table current item (register address)
+                                                 ; R0 now points to the previous register_backup_table item (uint32_t items -> 4 bytes subtracted to previous address)
+
+        ; Register value restoration
+        POP    {R3}                              ; Head of stack popped into R3. R3 contains register value to restore
+        STR    R3, [R2]                          ; Write backuped value into the register
+
+        ; Loop iteration control
+        SUBS   R1, #1                            ; Decrement loop counter by 1 and update APSR (Application Processor Status Register)
+        BNE    restore_loop_iter                 ; Loop continues until Z flag is set (still array item to handle)
+
+restore_loop_end
+        BX LR                                    ; Return to caller
+
         END
 #endif /* __clang__ */
 
@@ -200,6 +336,9 @@ CPUcontextRestore
   .extern  enter_standby_notification
   .extern  exit_standby_notification
   .extern  SYS_WAITING_CYCLES_25
+
+  .global backup_system_register
+  .global restore_system_register
 
 /* INIT_BSS macro is used to fill the specified region [start : end] with zeros */
 .macro INIT_BSS start, end
@@ -303,6 +442,69 @@ CPUcontextRestore:
         MOV    R11, R6
         MOV    R12, R7
         POP   { R4 - R7, PC }        /*load R4-R7 and PC (5 words) from the stack */
+
+backup_system_register:
+/* R0 -> register_backup_table array current item address */
+/* R1 -> loop counter (from register_backup_table_size to 0) */
+/* R2 -> register_backup_table array current item value */
+
+backup_loop_init:
+        LDR    R0, =register_backup_table        /* R0 points to the first array item */
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          /* R1 contains the number of registers in the array */
+
+backup_loop_iter:
+        /* Offset processing */
+        LDR    R2, [R0], #4                      /* R2 contains the register_backup_table current item (register address) */
+                                                 /* R0 points to the next register_backup_table item (uint32_t items -> 4 bytes added to previous address) */
+
+        /* Register value backup */
+        LDR    R2, [R2]                          /* R2 contains now the register value to backup */
+        PUSH   {R2}                              /* Push register value into the stack */
+
+        /* Loop iteration control */
+        SUBS   R1, #1                            /* Decrement loop counter by 1 and update APSR (Application Processor Status Register) */
+        BNE    backup_loop_iter                  /* Loop continues until Z flag is set (still array item to handle) */
+
+backup_loop_end:
+        BX LR                                    /* Return to caller */
+
+restore_system_register:
+/* R0 -> register_backup_table array current item address */
+/* R1 -> loop counter (from register_backup_table_size to 0) */
+/* R2 -> register_backup_table array current item value */
+
+restore_loop_init:
+        LDR    R0, =register_backup_table         /* R0 points to the first array item */
+
+        /* Reverse loop: counter initial value processing */
+        LDR    R1, =register_backup_table_size
+        LDR    R1, [R1]                          /* R1 contains the number of registers in the array */
+        SUB    R1, #1                            /* R1 now contains last array item index (register_backup_table_size - 1) */
+
+        /* Reverse loop: apply offset to current array index (point to last array element) */
+        LSL    R1, #2              /* Left shift R1 by 2 */
+        ADD    R0, R1              /* R0 now points to last array item (register_backup_table + (register_backup_table_size - 1) * 4) */
+
+        LSR    R1, #2                            /* Reverse left shift operation on R1 */
+        ADD    R1, #1                            /* Re-add 1 to R1 (array length) */
+
+/* Reverse loop */
+restore_loop_iter:
+        /* Offset processing  */
+        LDR    R2, [R0], #-4                     /* R2 contains the register_backup_table current item (register address) */
+                                                 /* R0 now points to the previous register_backup_table item (uint32_t items -> 4 bytes subtracted to previous address) */
+
+        /* Register value restoration */
+        POP    {R3}                              /* Head of stack popped into R3. R3 contains register value to restore */
+        STR    R3, [R2]                          /* Write backuped value into the register */
+
+        /* Loop iteration control */
+        SUBS   R1, #1                            /* Decrement loop counter by 1 and update APSR (Application Processor Status Register) */
+        BNE    restore_loop_iter                 /* Loop continues until Z flag is set (still array item to handle) */
+
+restore_loop_end:
+        BX LR                                    /* Return to caller */
 /* end of specific code section for standby */
         .end
 #endif /* __GNUC__ */

@@ -38,6 +38,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Tx_Thread_Sync.ioc</locationURI>
 		</link>
 		<link>
+			<name>Doc/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
+		</link>
+		<link>
 			<name>Application/User/app_azure_rtos.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/app_azure_rtos.c</locationURI>
@@ -516,6 +521,16 @@
 			<name>Middlewares/ThreadX/Core/tx_thread_interrupt_control.S</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_interrupt_control.S</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/Core/tx_thread_interrupt_disable.S</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_interrupt_disable.S</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/Core/tx_thread_interrupt_restore.S</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m33/gnu/src/tx_thread_interrupt_restore.S</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/Core/tx_thread_preemption_change.c</name>

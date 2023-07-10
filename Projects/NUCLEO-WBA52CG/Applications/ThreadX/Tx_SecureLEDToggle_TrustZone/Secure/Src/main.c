@@ -53,8 +53,8 @@
 /* Private function prototypes -----------------------------------------------*/
 static void NonSecure_Init(void);
 static void MX_GPIO_Init(void);
-static void MX_GTZC_S_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_GTZC_S_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -220,14 +220,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pin : LED2_Pin */
+  GPIO_InitStruct.Pin = LED2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED2_GPIO_Port, &GPIO_InitStruct);
+
+  /*IO attributes management functions */
+  HAL_GPIO_ConfigPinAttributes(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_NSEC);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -245,8 +248,6 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  HAL_GPIO_WritePin(LD3_GPIO_PORT, LD3_PIN, GPIO_PIN_RESET);
   while (1)
   {
   }
@@ -266,6 +267,10 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* Infinite loop */
+  while (1)
+  {
+  }
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

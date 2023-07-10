@@ -161,7 +161,7 @@
 /* BL2 partitions size */
 #define FLASH_S_PARTITION_SIZE          (0x06000) /* 24K KB for S partition */
 #if !defined(MCUBOOT_PRIMARY_ONLY)
-#define FLASH_NS_PARTITION_SIZE         (0x40000) /* 262 KB for NS partition */
+#define FLASH_NS_PARTITION_SIZE         (0x32000) /* 200 KB for NS partition */
 #else
 #define FLASH_NS_PARTITION_SIZE         (0x80000) /* 520 KB for NS partition */
 

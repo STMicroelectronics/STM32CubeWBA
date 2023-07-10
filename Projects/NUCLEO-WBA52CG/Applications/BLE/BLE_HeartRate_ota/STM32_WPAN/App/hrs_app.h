@@ -59,9 +59,7 @@ typedef struct
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define CFG_DEV_ID_HEART_RATE                   (0x89)
-#define CFG_BOARD_ID_WBA                        (0x8B)
-#define CFG_FW_DATA3_FUOTA                      (0x01)
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

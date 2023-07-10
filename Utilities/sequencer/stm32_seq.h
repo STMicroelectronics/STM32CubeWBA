@@ -212,6 +212,15 @@ void UTIL_SEQ_Run( UTIL_SEQ_bm_t Mask_bm );
 void UTIL_SEQ_RegTask( UTIL_SEQ_bm_t TaskId_bm, uint32_t Flags, void (*Task)( void ) );
 
 /**
+ * @brief This function checks if a task is registered
+ *
+ * @param TaskId_bm The Id of the task
+ *        It shall be (1<<task_id) where task_id is the number assigned when the task has been registered
+ * @retval 0 if not 1 if true
+ */
+uint32_t UTIL_SEQ_IsRegisteredTask( UTIL_SEQ_bm_t TaskId_bm );
+
+/**
  * @brief This function requests a task to be executed
  *
  * @param TaskId_bm The Id of the task

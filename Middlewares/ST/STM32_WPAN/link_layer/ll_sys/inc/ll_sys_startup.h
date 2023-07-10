@@ -20,6 +20,8 @@
 #define LL_SYS_STARTUP_H
 
 /* Link Layer system interface startup module functions  ************************************************/
+#if BLE
 void ll_sys_ble_cntrl_init(hst_cbk hostCallback);
+#endif
 
 #endif /* LL_SYS_STARTUP_H */

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/ll_intf.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/ll_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_intf_cmds.h
@@ -49,6 +49,14 @@ typedef uint32_t ble_stat_t;
  * 	that the given state machine on a state other that a connection state 
  */
 #define LINK_STATUS_DEFAULT_HANDLE		0xFFFF
+
+
+/**
+ *  This defined values are used to check for the range of values that the
+ * 	channel classification parameters take (both min_spacing and max_delay)
+ */
+#define CHANNEL_CLASSIFICATION_REPORTING_TIMING_PARAM_MIN		5
+#define CHANNEL_CLASSIFICATION_REPORTING_TIMING_PARAM_MAX		150
 
 extern const struct hci_dispatch_tbl* p_dis_tbl;
 /*================================= Enumerations =====================================*/
@@ -285,6 +293,7 @@ typedef struct _ble_intf_sync_evnt_st{
 	uint8_t group_id;	/* identifier of the CIG or BIG*/
 	uint32_t next_anchor_point;	/* the time stamp in microseconds at the Controller clock of the next expected CIG or BIG anchor point */
 	uint32_t time_stamp; /* the time stamp in microseconds at the Controller clock, this represent the time at which the Trigger is generated */
+	uint32_t nxt_sdu_delivery_timeout;
 } ble_intf_sync_evnt_st;
 #endif /* (SUPPORT_CONNECTED_ISOCHRONOUS &&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) || (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) */
 
@@ -447,6 +456,17 @@ typedef struct _le_path_loss_threshold_evnt_st {
 } le_path_loss_threshold_evnt_st;
 #endif /* SUPPORT_LE_POWER_CONTROL */
 
+#if SUPPORT_LE_ENHANCED_CONN_UPDATE
+/* struct holding the subrate parameters used in posting subrate change event to the host */
+typedef struct _le_subrate_change_evnt_st{
+		uint16_t conn_handle_id;
+		uint16_t subrate_factor;
+		uint16_t peripheral_latency;
+		uint16_t continuation_num;
+		uint16_t supervisionTo;
+		uint8_t status;
+}le_subrate_change_evnt_st;
+#endif /* SUPPORT_LE_ENHANCED_CONN_UPDATE */
 /**
  * @brief Data contained in extended create connection command for each PHY.
  *
@@ -1315,6 +1335,16 @@ struct hci_dispatch_tbl {
  */
 	 void (*ll_intf_send_iso_data_from_cntrlr_to_host)(const iso_sdu_buf_hdr_p frst_sdu_ptr, const uint16_t iso_conn_hndl);
 #endif /* (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) || (SUPPORT_SYNC_ISOCHRONOUS) */
+#if SUPPORT_LE_ENHANCED_CONN_UPDATE
+	 /**
+	  * @brief  Send the subrate change event to the host.
+	  *
+	  * @param  ptr_le_subrate_change_evnt  	: [in] pointer to struct holding the changed subrate parameters to notify the host of it.
+	  *
+	  * @retval None
+	  */
+	 void (*ll_intf_le_subrate_change_event)(const le_subrate_change_evnt_st * ptr_le_subrate_change_evnt);
+#endif /* SUPPORT_LE_ENHANCED_CONN_UPDATE */
 
 #if END_OF_RADIO_ACTIVITY_REPORTING
 /**
@@ -1547,6 +1577,23 @@ typedef union _hci_cmds_params_un
 #endif /* SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION */
 } hci_cmds_params_un;
 
+
+
+
+#if SUPPORT_LE_ENHANCED_CONN_UPDATE
+
+
+/* struct holding the default subrate values requested by master's host also used to hold the values requested by the host from le_subrate_req */
+typedef struct subrate_default_params_st{
+  uint16_t subrate_min;     /*the minimum subrate factor allowed in requests by a Peripheral Range: 0x0001 to 0x01F4*/
+  uint16_t subrate_max;     /*the maximum subrate factor allowed in requests by a Peripheral Range: 0x0001 to 0x01F4*/
+  uint16_t max_latency;     /*the maximum slavePeripheral latency allowed in requests by a Peripheral,in units of subrated connection intervals Range: 0x0000 to 0x01F3*/
+  uint16_t continuation_num;/*the minimum number of underlying connection events to remain active after a packet is sent or received in requests by a Peripheral Range: 0x0000 to 0x01F3*/
+  uint16_t supervisionTO;   /*the maximum supervision timeout allowed in requests by a Peripheral Range: 0x000A to 0x0C80*/
+}subrate_default_params_t;
+
+#endif /* SUPPORT_LE_ENHANCED_CONN_UPDATE */
+
 /* Exported  Definition ------------------------------------------------------*/
 #if ((SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) || (SUPPORT_SYNC_ISOCHRONOUS))
 typedef void (*vendor_specific_from_cntrl_to_host_cbk)(const iso_sdu_buf_hdr_p, const uint16_t conn_hndl);
@@ -1594,6 +1641,7 @@ ble_stat_t ll_intf_reset(void);
 /** @ingroup  controller_info
  *  @{
  */
+#if(SUPPORT_SLAVE_CONNECTION || SUPPORT_MASTER_CONNECTION)
 /**
  * @brief  Read the maximum size of the data portion of HCI LE ACL Data Packets sent from the Host to the Controller .
  *
@@ -1604,7 +1652,7 @@ ble_stat_t ll_intf_reset(void);
  */
 ble_stat_t ll_intf_le_read_buffer_size(uint16_t *le_acl_data_pkt_length,
 	uint8_t *total_num_le_acl_data_pkts);
-
+#endif /*(SUPPORT_SLAVE_CONNECTION || SUPPORT_MASTER_CONNECTION)*/
 /*##### Controller Information HCI Commands' Group #####*/
 
 /**
@@ -1862,7 +1910,9 @@ ble_stat_t ll_intf_disconnect(uint16_t conn_handle_id, uint8_t reason);
 */
 /*##### Physical Links HCI Commands' Group #####*/
 
-#if SUPPORT_MASTER_CONNECTION || (SUPPORT_LE_EXTENDED_ADVERTISING && (SUPPORT_SLAVE_CONNECTION || SUPPORT_EXPLCT_BROADCASTER_ROLE))
+#if SUPPORT_MASTER_CONNECTION	||																			\
+ 	(SUPPORT_SLAVE_CONNECTION && SUPPORT_CHANNEL_CLASSIFICATION)	||  									\
+	(SUPPORT_LE_EXTENDED_ADVERTISING && (SUPPORT_SLAVE_CONNECTION || SUPPORT_EXPLCT_BROADCASTER_ROLE))
 /** @ingroup  chnlmap_cfg  Channel Map Commands
  * @{
  */
@@ -1878,7 +1928,7 @@ ble_stat_t ll_intf_disconnect(uint16_t conn_handle_id, uint8_t reason);
 ble_stat_t ll_intf_le_set_host_channel_classification(uint8_t channel_map[]);
 /**@}
  */
-#endif /* SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION || (SUPPORT_EXPLCT_BROADCASTER_ROLE && SUPPORT_LE_EXTENDED_ADVERTISING) */
+#endif /* SUPPORT_MASTER_CONNECTION || (SUPPORT_SLAVE_CONNECTION && SUPPORT_CHANNEL_CLASSIFICATION) || (SUPPORT_EXPLCT_BROADCASTER_ROLE && SUPPORT_LE_EXTENDED_ADVERTISING) */
 
 /*##### Host Flow Control  HCI Commands' Group #####*/
 /** @ingroup  white_list_cfg White list Commands
@@ -1924,10 +1974,26 @@ ble_stat_t ll_intf_le_read_white_list_size(uint8_t *white_list_size);
 /**  @}
 */
 
-#if (SUPPORT_PRIVACY)
 /** @ingroup  privacy_cfg
  *  @{
  */
+
+#if (SUPPORT_PRIVACY &&(SUPPORT_EXPLCT_BROADCASTER_ROLE || SUPPORT_SLAVE_CONNECTION || SUPPORT_BRD_ISOCHRONOUS))
+/**
+ * @brief  Set the reasons that trigger generating RPA
+ * bit0 : regenerate when adv data change
+ * bit1 : regenerate when scan response data change
+ *
+ * @param[in]  handler		handler to the advertising set to assign its change_reason parameter
+ * @param[in]  chng_resns   the new change_reason value bit 0 : Change the address whenever the advertising data changes bit 1 : Change the address whenever the scan response data changes
+ *
+ * @retval ble_stat_t : Command status to be sent to the Host.
+ */
+ble_stat_t ll_intf_le_set_data_related_address_changes_command(uint8_t handler, uint8_t chng_resns);
+#endif /*SUPPORT_PRIVACY &&(SUPPORT_EXPLCT_BROADCASTER_ROLE || SUPPORT_SLAVE_CONNECTION || SUPPORT_BRD_ISOCHRONOUS)*/
+
+
+#if (SUPPORT_PRIVACY)
 /**
  * @brief  Used to add one device to the list of address translations used to resolve Resolvable Private
  * 	   Addresses in the Controller
@@ -2232,6 +2298,29 @@ ble_stat_t ll_intf_le_receiver_test_v3(le_rx_test_v3_cmd_st *ptr_hci_cmd_params)
  */
 ble_stat_t ll_intf_le_transmitter_test_v3(le_tx_test_v3_cmd_st *ptr_hci_cmd_params);
 #endif /* SUPPORT_AOA_AOD */
+
+
+#if SUPPORT_CHANNEL_CLASSIFICATION
+/**
+ * @brief Read the current channel assessment mode of the controller
+ *
+ * @param  ptr_assessment_mode	: [out] A pointer to the channel assessment mode used by the controller
+ *
+ * @retval ble_stat_t : Command status to be sent to the Host.
+ */
+ble_stat_t ll_intf_read_afh_chnl_assessment_mode(uint8_t *ptr_assessment_mode);
+
+/**
+ * @brief Write channel assessment mode to be used by the controller
+ *
+ * @param  assessment_mode	: [in] channel assessment mode set by the host to be used by the controller
+ *
+ * @retval ble_stat_t : Command status to be sent to the Host.
+ */
+ble_stat_t ll_intf_write_afh_chnl_assessment_mode(uint8_t assessment_mode);
+#endif /* SUPPORT_CHANNEL_CLASSIFICATION */
+
+
 /**  @}
 */
 
@@ -3465,7 +3554,7 @@ ble_stat_t ll_intf_rmv_cig(uint8_t cig_id);
 /**  @}
 */
 
-typedef void (*ll_intf_clbr_cb_t)(void);
+typedef void (*ll_intf_clbr_cb_t)(uint32_t);
 
 /** @ingroup  clbr_cbk_cfg Calibration Callback
  * @{
@@ -3487,7 +3576,7 @@ void ll_intf_rgstr_clbr_cbk(ll_intf_clbr_cb_t clbr_cb);
  *
  * @retval Pointer to the allocated ISO packet
  */
-void* ll_intf_alloc_iso_pkt();
+void* ll_intf_alloc_iso_pkt(void);
 /**@}
  */
 
@@ -3602,7 +3691,24 @@ ble_stat_t ll_intf_read_connection_accept_tout(uint16_t *ptr_accept_tout);
  */
 ble_stat_t ll_intf_set_cstm_rssi_golden_range(int lower_limit , int upper_limit);
 #endif /* (SUPPORT_LE_POWER_CONTROL) */
+#if ((SUPPORT_LE_ENHANCED_CONN_UPDATE || SUPPORT_CONNECTED_ISOCHRONOUS )&&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))
+/**  @}
+*/
 
+/** @ingroup  controller_info
+ *  @{
+ */
+/*=============== LE Set Host Feature Command ===============*/
+/**
+ * @brief  : The HCI_LE_Set_Host_Feature command is used by the Host to set or clear a bit controlled by the Host in the Link Layer FeatureSet stored in the Controller
+ *
+ * @param  bit_num     		: bit number to be changed
+ * @param  bit_value     	: value to be stored in the link_layer features
+ *
+ * @retval ble_stat_t	: Command status.
+ */
+ble_stat_t ll_intf_le_set_host_feature(uint8_t bit_num, uint8_t bit_value);
+#endif /* #if ((SUPPORT_LE_ENHANCED_CONN_UPDATE || SUPPORT_CONNECTED_ISOCHRONOUS )&&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) */
 #if((SUPPORT_CONNECTED_ISOCHRONOUS &&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) \
 	||(SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS))
 
@@ -3643,22 +3749,7 @@ ble_stat_t ll_intf_rmv_iso_data_path(uint16_t conn_hndl, uint8_t data_path_dirc)
 ble_stat_t ll_intf_le_iso_test_end(uint16_t conn_hndl, uint32_t* rcvd_pckt_cntr,
 		uint32_t * missed_pckt_cntr, uint32_t *failed_pckt_cntr);
 
-/**  @}
-*/
 
-/** @ingroup  controller_info
- *  @{
- */
-/*=============== LE Set Host Feature Command ===============*/
-/**
- * @brief  : The HCI_LE_Set_Host_Feature command is used by the Host to set or clear a bit controlled by the Host in the Link Layer FeatureSet stored in the Controller
- *
- * @param  bit_num     		: bit number to be changed
- * @param  bit_value     	: value to be stored in the link_layer features
- *
- * @retval ble_stat_t	: Command status.
- */
-ble_stat_t ll_intf_le_set_host_feature(uint8_t bit_num, uint8_t bit_value);
 
 #if(SUPPORT_BRD_ISOCHRONOUS|| SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION || SUPPORT_SYNC_ISOCHRONOUS)
 
@@ -3803,6 +3894,20 @@ ble_stat_t ll_intf_curb_sleep_state(uint8_t state);
  * @retval ble_state_t : Command status
  */
 ble_stat_t ll_intf_config_ll_ctx_params(uint8_t allow_low_isr, uint8_t run_post_evnt_frm_isr);
+
+
+
+/**
+* @brief  Get the value of link layer timer in microsecond aligned with sleep timer clock edge
+* Microsecond timing can be calculated as Return value (steps) * Multiplier /divider taking into consideration to implement calculation in good accuracy
+*
+* @param  multiplier : Value that should be multiplied by the return steps
+* @param  divider    : the product of the steps and multiplier should be divided by this value
+*
+* @retval number of steps : Read number of steps.
+* @note Caller should call it in a critical section to make sure the timing is not drifted by interrupt serving
+*/
+uint32_t ll_intf_get_aligned_us_now(uint32_t*  multiplier ,   uint32_t *divider);
 /**@}
  */
 
@@ -4030,6 +4135,55 @@ ble_stat_t ll_intf_set_end_of_activity_mask(uint16_t mask);
  * @retval ble_stat_t	: Command status.
  */
 ble_stat_t ll_intf_get_link_status(uint8_t *sm_status, uint8_t *link_conn_handle);
+
+#if (SUPPORT_MASTER_CONNECTION && SUPPORT_CHANNEL_CLASSIFICATION)
+/**
+ * @brief this function is used control the channel reporting mode of the controller
+ * @param[in]  conn_handle_id	: identifier of the connection.
+ * @param[in]  ptr_reporting_params		: pointer to structure holding the reporting parameters as follows:
+ * 					report_mode		: reporting mode value.
+ * 										0 : disable
+ * 										1 : enable
+ * 					min_spacing 	:min spacing value (min time between
+ * 									2 consecutive LL_CHANNEL_STATUS 
+ * 									"unit of 200 ms")
+ * 										5 (1 sec) <= min_spacing <= 150 (30 sec)
+ * 					max_delay 		:max delay value (max time between
+ * 									channel classification change and 
+ * 									LL_CHANNEL_STATUS sending "unit of 200 ms")
+ * 										5 (1 sec) <= max_delay <= 150 (30 sec)
+ * @retval status.
+ */
+ble_stat_t ll_intf_cntrl_chnl_clsfction_report(uint16_t conn_handle_id, void *ptr_reporting_params);
+#endif /* (SUPPORT_MASTER_CONNECTION && SUPPORT_CHANNEL_CLASSIFICATION) */
+
+#if SUPPORT_LE_ENHANCED_CONN_UPDATE
+/*===============  LE Set Default Subrate Parameters  ===============*/
+/**
+ * @brief Used to save default subrate parameters to be used to test the future incoming subrate requests from the slave against them to decide whether to accept or reject them
+ *
+ * @param  subrate_default_params : [in] pointer to structure includes all subrate default parameters from the host.
+ *
+ * @retval Status(0:SUCCESS, 0xXX:ERROR_CODE)..
+ */
+ble_stat_t ll_intf_le_set_default_subrate(
+		subrate_default_params_t * subrate_default_params
+				);
+/*===============  LE Subrate Request  ===============*/
+/**
+ * @brief Used to process the subrate request from the host to start the subrate procedure based on the current controller role in the input connection.
+ *
+ * @param  conn_handle_id : [in] the identifier of the ACL connection to start the subrate procedure on it.
+ *
+ * @param  subrate_default_params : [in] structure includes all subrate parameters from the host to start the procedure based on them.
+ *
+ * @retval Status(0:SUCCESS, 0xXX:ERROR_CODE).
+ */
+ble_stat_t ll_intf_le_subrate_req(
+			uint16_t conn_handle      ,
+			subrate_default_params_t subrate_requested_param
+			);
+#endif /* SUPPORT_LE_ENHANCED_CONN_UPDATE */
 
 /**  @}
 */

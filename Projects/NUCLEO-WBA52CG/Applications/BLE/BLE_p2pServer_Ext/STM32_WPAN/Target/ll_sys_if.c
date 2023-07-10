@@ -72,14 +72,26 @@ void ll_sys_bg_process_init(void)
   */
 void ll_sys_schedule_bg_process(void)
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_SEQ_PRIO_0);
 }
 
+/**
+  * @brief  Link Layer configuration phase before application startup.
+  * @param  None
+  * @retval None
+  */
 void ll_sys_config_params(void)
 {
+  /* Configure link layer behavior for low ISR use and next event scheduling method:
+   * - SW low ISR is used.
+   * - Next event is scheduled from ISR.
+   */
   ll_intf_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  /* Initialize link layer temperature measurement background task */
   ll_sys_bg_temperature_measurement_init();
+
+  /* Link layer IP uses temperature based calibration instead of periodic one */
   ll_intf_set_temperature_sensor_state();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
@@ -96,31 +108,62 @@ void ll_sys_bg_temperature_measurement_init(void)
   UTIL_SEQ_RegTask( 1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, UTIL_SEQ_RFU, request_temperature_measurement);
 }
 
+/**
+  * @brief  Request backroud task processing for temperature measurement
+  * @param  None
+  * @retval None
+  */
 void ll_sys_bg_temperature_measurement(void)
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, CFG_SEQ_PRIO_0);
 }
 
+/**
+  * @brief  Request temperature measurement
+  * @param  None
+  * @retval None
+  */
 void request_temperature_measurement(void)
 {
   int16_t temperature_value = 0;
 
+  /* Enter limited critical section : disable all the interrupts with priority higher than RCC one
+   * Concerns link layer interrupts (high and SW low) or any other high priority user system interrupt
+   */
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO<<4);
+
+  /* Request ADC IP activation */
   adc_ctrl_req(SYS_ADC_LL_EVT, ADC_ON);
+
+  /* Get temperature from ADC dedicated channel */
   temperature_value = adc_ctrl_request_temperature();
+
+  /* Request ADC IP deactivation */
   adc_ctrl_req(SYS_ADC_LL_EVT, ADC_OFF);
+
+  /* Give the temperature information to the link layer */
   ll_intf_set_temperature_value(temperature_value);
+
+  /* Exit limited critical section */
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();
 }
 
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
+/**
+  * @brief  Enable RTOS context switch.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_EnableOSContextSwitch(void)
 {
-
 }
 
+/**
+  * @brief  Disable RTOS context switch.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_DisableOSContextSwitch(void)
 {
-
 }

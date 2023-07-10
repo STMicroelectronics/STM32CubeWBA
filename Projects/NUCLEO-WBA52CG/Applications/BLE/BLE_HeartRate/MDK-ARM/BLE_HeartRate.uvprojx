@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAx_DFP.0.0.1</PackID>
+          <PackID>Keil.STM32WBAx_DFP.1.0.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -48,7 +48,7 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>BLE_HeartRate\</OutputDirectory>
+          <OutputDirectory>BLE_HeartRate\Exe\</OutputDirectory>
           <OutputName>BLE_HeartRate</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
@@ -80,9 +80,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -138,7 +138,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2V8M.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -314,7 +314,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>6</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_ASSERT,USE_FULL_LL_DRIVER,PHY_2_10_a,PHY_40nm_2_30_a_A1,NVM_ADAPT,MBEDTLS_NO_PLATFORM_ENTROPY,MBEDTLS_CONFIG_FILE=&lt;crypto_config.h&gt;,BLE,USE_HAL_DRIVER,STM32WBA52xx</Define>
+              <Define>USE_FULL_LL_DRIVER,PHY_2_10_a,PHY_40nm_2_30_a_A1,BLE,USE_HAL_DRIVER,STM32WBA52xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Modules/baes;../System/Modules/Flash;../System/Modules/MemoryManager;../System/Modules/Nvm;../System/Modules/RTDebug;../System/Config/Debug_GPIO;../System/Config/LowPower;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Middlewares/Third_Party/mbed-crypto/3rdparty/everest/include/everest;../../../../../../Middlewares/Third_Party/mbed-crypto/3rdparty/everest/include/everest/kremlin;../../../../../../Middlewares/Third_Party/mbed-crypto/3rdparty/everest/include/everest/kremlin/internal;../../../../../../Middlewares/Third_Party/mbed-crypto/3rdparty/everest/include/everest/vs2010;../../../../../../Middlewares/Third_Party/mbed-crypto/include/mbedtls;../../../../../../Middlewares/Third_Party/mbed-crypto/include/psa;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Modules/baes;../System/Modules/Flash;../System/Modules/MemoryManager;../System/Modules/Nvm;../System/Modules/RTDebug;../System/Modules/RFControl;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -353,7 +353,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
-            <ClangAsOpt>1</ClangAsOpt>
+            <ClangAsOpt>3</ClangAsOpt>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -414,6 +414,16 @@
               <FileName>stm32wbaxx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32wbaxx_hal_msp.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Startup</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32wbaxx_ResetHandler.S</FileName>
+              <FileType>2</FileType>
+              <FilePath>../System/Startup/stm32wbaxx_ResetHandler.S</FilePath>
             </File>
           </Files>
         </Group>
@@ -500,6 +510,21 @@
               <FileType>1</FileType>
               <FilePath>../System/Modules/RTDebug/RTDebug.c</FilePath>
             </File>
+            <File>
+              <FileName>RTDebug_dtb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../System/Modules/RTDebug/RTDebug_dtb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Modules/RFControl</GroupName>
+          <Files>
+            <File>
+              <FileName>rf_antenna_switch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../System/Modules/RFControl/rf_antenna_switch.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -573,6 +598,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Application/User/System/Config/LowPower</GroupName>
+          <Files>
+            <File>
+              <FileName>user_low_power_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../System/Config/LowPower/user_low_power_config.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Application/User/System/Config/Debug_GPIO</GroupName>
           <Files>
             <File>
@@ -638,12 +673,12 @@
             <File>
               <FileName>ll_sys_if.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\STM32_WPAN\Target\ll_sys_if.c</FilePath>
+              <FilePath>../STM32_WPAN/Target/ll_sys_if.c</FilePath>
             </File>
             <File>
               <FileName>host_stack_if.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\STM32_WPAN\Target\host_stack_if.c</FilePath>
+              <FilePath>../STM32_WPAN/Target/host_stack_if.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -841,11 +876,6 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</FilePath>
             </File>
             <File>
-              <FileName>ll_sys_hclk_client.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_hclk_client.c</FilePath>
-            </File>
-            <File>
               <FileName>ll_sys_intf.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</FilePath>
@@ -903,119 +933,12 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User/System/Startup</GroupName>
-          <GroupOption>
-            <CommonProperty>
-              <UseCPPCompiler>0</UseCPPCompiler>
-              <RVCTCodeConst>0</RVCTCodeConst>
-              <RVCTZI>0</RVCTZI>
-              <RVCTOtherData>0</RVCTOtherData>
-              <ModuleSelection>0</ModuleSelection>
-              <IncludeInBuild>2</IncludeInBuild>
-              <AlwaysBuild>2</AlwaysBuild>
-              <GenerateAssemblyFile>2</GenerateAssemblyFile>
-              <AssembleAssemblyFile>2</AssembleAssemblyFile>
-              <PublicsOnly>2</PublicsOnly>
-              <StopOnExitCode>11</StopOnExitCode>
-              <CustomArgument></CustomArgument>
-              <IncludeLibraryModules></IncludeLibraryModules>
-              <ComprImg>1</ComprImg>
-            </CommonProperty>
-            <GroupArmAds>
-              <Cads>
-                <interw>2</interw>
-                <Optim>0</Optim>
-                <oTime>2</oTime>
-                <SplitLS>2</SplitLS>
-                <OneElfS>2</OneElfS>
-                <Strict>2</Strict>
-                <EnumInt>2</EnumInt>
-                <PlainCh>2</PlainCh>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <wLevel>4</wLevel>
-                <uThumb>2</uThumb>
-                <uSurpInc>2</uSurpInc>
-                <uC99>2</uC99>
-                <uGnu>2</uGnu>
-                <useXO>2</useXO>
-                <v6Lang>0</v6Lang>
-                <v6LangP>0</v6LangP>
-                <vShortEn>2</vShortEn>
-                <vShortWch>2</vShortWch>
-                <v6Lto>2</v6Lto>
-                <v6WtE>2</v6WtE>
-                <v6Rtti>2</v6Rtti>
-                <VariousControls>
-                  <MiscControls></MiscControls>
-                  <Define></Define>
-                  <Undefine></Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Cads>
-              <Aads>
-                <interw>2</interw>
-                <Ropi>2</Ropi>
-                <Rwpi>2</Rwpi>
-                <thumb>2</thumb>
-                <SplitLS>2</SplitLS>
-                <SwStkChk>2</SwStkChk>
-                <NoWarn>2</NoWarn>
-                <uSurpInc>2</uSurpInc>
-                <useXO>2</useXO>
-                <ClangAsOpt>1</ClangAsOpt>
-                <VariousControls>
-                  <MiscControls></MiscControls>
-                  <Define></Define>
-                  <Undefine></Undefine>
-                  <IncludePath></IncludePath>
-                </VariousControls>
-              </Aads>
-            </GroupArmAds>
-          </GroupOption>
+          <GroupName>Doc</GroupName>
           <Files>
             <File>
-              <FileName>stm32wbaxx_ResetHandler.S</FileName>
-              <FileType>2</FileType>
-              <FilePath>../System/Startup/stm32wbaxx_ResetHandler.S</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>1</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Aads>
-                    <interw>2</interw>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <thumb>2</thumb>
-                    <SplitLS>2</SplitLS>
-                    <SwStkChk>2</SwStkChk>
-                    <NoWarn>2</NoWarn>
-                    <uSurpInc>2</uSurpInc>
-                    <useXO>2</useXO>
-                    <ClangAsOpt>3</ClangAsOpt>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Aads>
-                </FileArmAds>
-              </FileOption>
+              <FileName>README.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\README.md</FilePath>
             </File>
           </Files>
         </Group>

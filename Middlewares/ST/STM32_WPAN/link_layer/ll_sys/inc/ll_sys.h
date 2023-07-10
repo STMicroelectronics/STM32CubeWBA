@@ -50,13 +50,13 @@ typedef enum
 } ll_sys_radio_hclk_client_t;
 
 /**
-  * @brief  Link Layer radio bus clock state
+  * @brief  Link Layer deep sleep state
   */
 typedef enum
 {
-  LL_SYS_RADIO_HCLK_OFF = 0x00,
-  LL_SYS_RADIO_HCLK_ON  = 0x01, 
-} ll_sys_radio_hclk_state_t;
+  LL_SYS_DP_SLP_DISABLED = 0x00,
+  LL_SYS_DP_SLP_ENABLED, 
+} ll_sys_dp_slp_state_t;
 
 /* Link Layer system interface general module functions  ************************************************/
 void ll_sys_init(void);
@@ -92,10 +92,7 @@ void ll_sys_disable_os_context_switch(void);
 ll_sys_status_t ll_sys_dp_slp_init(void);
 ll_sys_status_t ll_sys_dp_slp_enter(uint32_t dp_slp_duration);
 ll_sys_status_t ll_sys_dp_slp_exit(void);
+ll_sys_dp_slp_state_t ll_sys_dp_slp_get_state(void);
 void ll_sys_dp_slp_wakeup_evt_clbk(void const *ptr_arg);
-
-/* Link Layer system interface radio bus clock client module functions  ************************************************/
-void ll_sys_radio_hclk_ctrl_init(void);
-void ll_sys_radio_hclk_ctrl_req(ll_sys_radio_hclk_client_t client, ll_sys_radio_hclk_state_t enable);
 
 #endif /* LL_SYS_H */

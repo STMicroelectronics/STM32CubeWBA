@@ -77,7 +77,9 @@
                     </folderInfo>
                 </configuration>
             </storageModule>
-            <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+            <storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+                <externalSettings containerId="SBSFU_Loader_Secure;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
+            </storageModule>
         </cconfiguration>
     </storageModule>
     <storageModule moduleId="org.eclipse.cdt.core.pathentry"/>

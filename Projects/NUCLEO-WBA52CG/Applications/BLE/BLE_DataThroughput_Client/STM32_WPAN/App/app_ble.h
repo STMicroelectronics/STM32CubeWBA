@@ -103,7 +103,7 @@ typedef struct
   uint16_t L2CAP_Length;
   uint16_t Interval_Min;
   uint16_t Interval_Max;
-  uint16_t Slave_Latency;
+  uint16_t Latency;
   uint16_t Timeout_Multiplier;
 } APP_BLE_Conn_Update_req_t;
 
@@ -113,7 +113,7 @@ typedef struct
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-#define P2P_DEVICE_COUNT_MAX (CFG_BLE_NUM_LINK - 1)
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -138,14 +138,7 @@ APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_H
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 /* USER CODE BEGIN EF */
-void APP_BLE_Key_Button1_Action(void);
-void APP_BLE_Key_Button2_Action(void);
-void APP_BLE_Key_Button3_Action(void);
 uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen );
-void BLE_SVC_GAP_Change_PHY(void);
-void BLE_SVC_GAP_Security_Req(void);
-void BLE_SVC_L2CAP_Conn_Update(void);
-void Resume_Write(void);
 /* USER CODE END EF */
 
 #ifdef __cplusplus

@@ -62,11 +62,6 @@
 
 /* USER CODE END PD */
 
-/* External variables --------------------------------------------------------*/
-/* USER CODE BEGIN EV */
-
-/* USER CODE END EV */
-
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 

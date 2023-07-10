@@ -189,7 +189,7 @@ extern "C" {
 
 /* ################## HASH peripheral configuration ########################## */
 
-#define USE_HAL_HASH_SUSPEND_RESUME   0U
+#define USE_HAL_HASH_SUSPEND_RESUME   1U
 
 
 /* Includes ------------------------------------------------------------------*/

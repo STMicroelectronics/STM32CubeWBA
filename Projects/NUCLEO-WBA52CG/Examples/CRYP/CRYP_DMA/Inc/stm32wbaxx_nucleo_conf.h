@@ -31,8 +31,15 @@ extern "C" {
 #define USE_NUCLEO_64      1U
 
 /* Usage of COM feature */
+#if (USE_VCP_CONNECTION == 1)
+#define USE_BSP_COM_FEATURE 1U
+#define USE_COM_LOG         1U
+
+#else
 #define USE_BSP_COM_FEATURE 0U
 #define USE_COM_LOG         0U
+
+#endif /* USE_VCP_CONNECTION */
 
 /* Button interrupt priorities */
 #define BSP_B1_IT_PRIORITY 0x0FUL  /* Default is lowest priority level */

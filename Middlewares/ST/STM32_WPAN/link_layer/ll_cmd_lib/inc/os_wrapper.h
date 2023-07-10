@@ -1,9 +1,23 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/os_wrapper.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/os_wrapper.h#1 $*/
 /**
  ********************************************************************************
  * @file    os_wrapper.h
  * @brief   Wrapper header for OS porting
  ******************************************************************************
+ *
+ * \n\n<b>References</b>\n
+ * -Documents folder .
+ *
+ * <b>Edit History For File</b>\n
+ *  This section contains comments describing changes made to this file.\n
+ *  Notice that changes are listed in reverse chronological order.\n
+ * <table border>
+ * <tr>
+ *   <td><b> PLEASE UPDATE with when date </b></td>
+ *   <td><b> PLEASE UPDATE with who made the changes </b></td>
+ *   <td><b> PLEASE UPDATE WITH what, where, why the changes were made</b></td>
+ * </tr>
+ * </table>\n
  */
 
 /* Define to prevent recursive inclusion */
@@ -224,7 +238,7 @@ void os_timer_set_prio(os_timer_id timer_id ,
  *
  * @retval get the priority of the SW timers head
  */
-uint8_t os_timer_is_any_near_sw_timer_hg_prio();
+uint8_t os_timer_is_any_near_sw_timer_hg_prio(void);
 
 
 /**
@@ -465,7 +479,7 @@ void* os_shrd_mem_alloc(
  * @param None.
  * @return is_rtos_enabled : TRUE: RTOS enabled. FALSE: otherwise
  */
-uint8_t os_wrapper_is_rtos_used();
+uint8_t os_wrapper_is_rtos_used(void);
 
 #endif /* INCLUDE_CONN_MNGR_H_ */
 

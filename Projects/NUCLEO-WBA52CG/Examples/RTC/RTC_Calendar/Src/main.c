@@ -55,8 +55,8 @@ __IO uint32_t RTCStatus = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_RTC_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 static void RTC_CalendarShow(uint8_t *showtime, uint8_t *showdate);
 
@@ -107,8 +107,8 @@ BSP_LED_Init(LD2);
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_RTC_Init();
   MX_ICACHE_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
   /* Turn on LD1*/

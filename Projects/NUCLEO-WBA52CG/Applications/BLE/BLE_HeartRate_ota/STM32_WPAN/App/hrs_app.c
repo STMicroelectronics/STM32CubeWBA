@@ -36,7 +36,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -158,7 +157,7 @@ void HRS_APP_EvtRx(HRS_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case HRS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
@@ -192,7 +191,7 @@ void HRS_APP_Init(void)
 
   /* USER CODE BEGIN Service1_APP_Init */
   HRS_Data_t msg_conf;
-  
+
   /* Create timer for Heart Rate Measurement */
   UTIL_TIMER_Create(&(HRS_APP_Context.TimerMeasurement_Id),
                     HRS_APP_MEASUREMENT_INTERVAL,
@@ -277,7 +276,7 @@ static void HRS_APP_Measurements_timCB(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask(1<<CFG_TASK_MEAS_REQ_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1<<CFG_TASK_MEAS_REQ_ID, CFG_SEQ_PRIO_0);
 
   return;
 }

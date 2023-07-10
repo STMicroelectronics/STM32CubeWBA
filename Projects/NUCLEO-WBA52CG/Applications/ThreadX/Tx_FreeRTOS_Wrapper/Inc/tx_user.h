@@ -208,6 +208,19 @@
 
 /*#define TX_TIMER_ENABLE_PERFORMANCE_INFO*/
 
+/* Define if the execution change notify is enabled. */
+
+/*#define TX_ENABLE_EXECUTION_CHANGE_NOTIFY*/
+
+/* Define the get system state macro. */
+
+/*#define TX_THREAD_GET_SYSTEM_STATE() _tx_thread_system_state */
+
+/* Define the check for whether or not to call the
+    _tx_thread_system_return function (TX_THREAD_SYSTEM_RETURN_CHECK(c)). */
+
+/*#define TX_THREAD_SYSTEM_RETURN_CHECK (c)  ((ULONG) _tx_thread_preempt_disable)*/
+
 /* Define the common timer tick reference for use by other middleware components. */
 
 #define TX_TIMER_TICKS_PER_SECOND                1000

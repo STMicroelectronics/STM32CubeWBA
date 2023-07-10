@@ -171,8 +171,8 @@ static void MX_GTZC_S_Init(void)
   MPCBB_Area_Desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0xFFFFFFFF;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0xFFFFFFFF;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0x00000000;
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[3] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[3] =   0xFFFFFFFF;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0xFFFFFFFF;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0xFFFFFFFF;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0xFFFFFFFF;

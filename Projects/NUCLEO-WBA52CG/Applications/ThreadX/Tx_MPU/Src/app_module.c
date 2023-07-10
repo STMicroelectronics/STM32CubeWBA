@@ -57,7 +57,7 @@ PROCESSING_FINISHED       = 44
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define UNUSED(x) (void)(x)
-
+void    default_module_start(ULONG id);
 /* Define the pool space in the bss section of the module. ULONG is used to
    get word alignment. */
 #if defined(__GNUC__) || defined(__CC_ARM)

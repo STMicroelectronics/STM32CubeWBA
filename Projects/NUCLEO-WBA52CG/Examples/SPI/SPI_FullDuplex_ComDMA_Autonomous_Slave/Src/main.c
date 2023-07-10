@@ -67,8 +67,8 @@ __IO uint32_t wTransferState = TRANSFER_WAIT;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_GPDMA1_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 /* USER CODE END PFP */
@@ -117,8 +117,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_ICACHE_Init();
   MX_SPI1_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
   MX_Queue_tx_Config();
   HAL_DMAEx_List_LinkQ(&handle_GPDMA1_Channel7, &Queue_tx);

@@ -1,15 +1,15 @@
 
-##  <b>Tx_Thread_MsgQueue application description</b>
+##  <b>Tx_Thread_MsgQueue Application Description</b>
 
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX message queue APIs.
 It demonstrates how to send and receive messages between threads using ThreadX message queue APIs. In addition, it shows how to use the event chaining feature.
 The main entry function tx_application_define() is then called by ThreadX during kernel start, at this stage, the application creates 3 threads with different
 priorities and 2 message queues :
 
-  - MsgSenderThreadOne (Priority : 5; Preemption Threshold : 5)
+  - tx_app_thread (Priority : 5; Preemption Threshold : 5)
   - MsgSenderThreadTwo (Priority : 5; Preemption Threshold : 5)
   - MsgReceiverThread (Priority : 10; Preemption Threshold : 10)
-  - MsgQueueOne (shared by MsgSenderThreadOne and MsgReceiverThread)
+  - MsgQueueOne (shared by tx_app_thread and MsgReceiverThread)
   - MsgQueueTwo (shared by MsgSenderThreadTwo and MsgReceiverThread)
 
 <i> MsgSenderThreadOne</i> puts the message <i>TOGGLE_LED</i> on <i>MsgQueueOne</i> each 200 ms.

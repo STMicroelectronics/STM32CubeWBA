@@ -44,19 +44,6 @@
 
 /* USER CODE END EC */
 
-/* Private defines -----------------------------------------------------------*/
-
-/* USER CODE BEGIN PD */
-#define TX_APP_MEM_POOL_SIZE                               10*1024
-#define MODULE_MANAGER_THREAD_PRIO                         4
-#define MODULE_MANAGER_THREAD_PREEMPTION_THRESHOLD         MODULE_MANAGER_THREAD_PRIO
-/* USER CODE END PD */
-
-/* Main thread defines -------------------------------------------------------*/
-/* USER CODE BEGIN MTD */
-
-/* USER CODE END MTD */
-
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
@@ -70,6 +57,13 @@ void MX_ThreadX_Process(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
+
+/* Private defines -----------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+#define TX_APP_MEM_POOL_SIZE                               10*1024
+#define MODULE_MANAGER_THREAD_PRIO                         4
+#define MODULE_MANAGER_THREAD_PREEMPTION_THRESHOLD         MODULE_MANAGER_THREAD_PRIO
+/* USER CODE END PD */
 
 /* USER CODE BEGIN 1 */
 

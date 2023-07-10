@@ -96,22 +96,13 @@
 /** @addtogroup STM32WBAxx_System_Private_Defines
   * @{
   */
-
-#if !defined  (HSE_VALUE)
-  #define HSE_VALUE    (32000000U) /*!< Value of the External oscillator in Hz */
+#if !defined (HSE_VALUE)
+#define HSE_VALUE     (32000000U) /*!< Value of the External oscillator in Hz */
 #endif /* HSE_VALUE */
 
-#if !defined  (HSI_VALUE)
-  #define HSI_VALUE    (16000000U) /*!< Value of the Internal oscillator in Hz*/
+#if !defined (HSI_VALUE)
+#define HSI_VALUE     (16000000U) /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
-
-#if !defined  (LSI_VALUE)
- #define LSI_VALUE     (32000UL)   /*!< Value of LSI in Hz*/
-#endif /* LSI_VALUE */
-
-#if !defined  (LSE_VALUE)
-  #define LSE_VALUE    (32768UL)   /*!< Value of LSE in Hz*/
-#endif /* LSE_VALUE */
 
 /* Note: Following vector table addresses must be defined in line with linker
          configuration. */
@@ -195,6 +186,7 @@ void SystemInit(void)
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
 #endif
+
 }
 
 /**

@@ -77,9 +77,6 @@ const RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct_RTC =
 #if defined (LPTIM2)
     .Lptim2ClockSelection = 0,
 #endif
-#if defined (LPTIM2)
-    .Lptim2ClockSelection = 0,
-#endif
 #if defined (SPI1)
     .Spi1ClockSelection = 0,
 #endif

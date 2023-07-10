@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/hci.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/hci.h#1 $*/
 /**
  ********************************************************************************
  * @file    hci.h
@@ -123,7 +123,6 @@ void hci_free_msg(
 /** @ingroup  ext_hci_cmds External HCI Commands
  * @{
  */
-#if !SUPPORT_HCI_EVENT_ONLY || SUPPORT_HCI_EVENT_ONLY_TESTING
 /**
  * @brief Registers a custom callback function to be called when the
  * 		  hci_cstm_pckt_hndlr() cannot resolve the OCF.
@@ -133,7 +132,7 @@ void hci_free_msg(
  * @retval False if the cbk is null, True otherwise.
  */
 uint8_t hci_rgstr_ble_external_custom_cbk(ble_ext_custm_cb_t ext_custm_cbk);
-#endif /*!SUPPORT_HCI_EVENT_ONLY || SUPPORT_HCI_EVENT_ONLY_TESTING*/
+
 /**@}
  */
 

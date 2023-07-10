@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/common_types.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/common_types.h#1 $*/
 /**
  ********************************************************************************
  * @file    common_types.h
@@ -74,7 +74,9 @@
 #if((!SUPPORT_BLE)&&(SUPPORT_MAC)&&(SUPPORT_ANT))
 #error "BLE controller must be enabled to support MAC and ANT Coexistence"
 #endif
-
+#if (SUPPORT_LE_ENHANCED_CONN_UPDATE) && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION)
+#error "LE Enhanced Connection Update(subrating) enabled only if master or slave enabled"
+#endif /* (SUPPORT_LE_ENHANCED_CONN_UPDATE) && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION) */
 #define SUPPORT_COEXISTENCE							((SUPPORT_BLE&&SUPPORT_MAC) || (SUPPORT_BLE&&SUPPORT_ANT))
 #define SUPPORT_ANT_COEXISTENCE						(SUPPORT_BLE&&SUPPORT_ANT)
 /****************** User configuration **********************************/
@@ -334,6 +336,7 @@ typedef enum {
 #if (SUPPORT_MAC && SUPPORT_MAC_HCI_UART)
 	HCI_MAC_REQ = 0x0A,
 	HCI_MAC_CFM = 0x0B,
+	HCI_MAC_KEY_TBL_CFM = 0x0E,
 #endif /* SUPPORT_MAC && SUPPORT_MAC_HCI_UART */
 #if (SUPPORT_ANT_HCI_UART)
 	HCI_ANT_REQ = 0x07,
@@ -369,6 +372,7 @@ typedef enum {
 #endif /* (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) */
 #if (SUPPORT_MAC && SUPPORT_MAC_HCI_UART)
 #define BLE_BUFF_HDR_MAC_CMD_PCK		(1<<6)
+#define BLE_BUFF_HDR_MAC_KEY_TBL_CMD_PCK		((1<<7)|(1<<4))
 #endif /* (SUPPORT_MAC && SUPPORT_MAC_HCI_UART) */
 #if (SUPPORT_ANT_HCI_UART)
 #define BLE_BUFF_HDR_ANT_CMD_PCK		(1<<7)

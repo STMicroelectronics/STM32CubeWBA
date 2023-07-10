@@ -75,7 +75,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>0</IsCurrentTarget>
+        <IsCurrentTarget>1</IsCurrentTarget>
       </OPTFL>
       <CpuCode>18</CpuCode>
       <DebugOpt>
@@ -233,7 +233,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>1</IsCurrentTarget>
+        <IsCurrentTarget>0</IsCurrentTarget>
       </OPTFL>
       <CpuCode>18</CpuCode>
       <DebugOpt>
@@ -335,7 +335,7 @@
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\..\..\..\..\..\Middlewares\ST\threadx\common_modules\module_manager\inc\txm_module_manager_dispatch.h</Filename>
+          <Filename>C:\git\wba_master\Firmware\Middlewares\ST\threadx\common_modules\module_manager\inc\txm_module_manager_dispatch.h</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\Tx_ModuleManager\../../../../../../Middlewares/ST/threadx/common_modules/module_manager/inc/txm_module_manager_dispatch.h\1912</Expression>
         </Bp>

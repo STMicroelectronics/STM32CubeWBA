@@ -38,6 +38,10 @@ typedef struct{
   uint16_t  Tx_CharCharHdle;                  /**< TX_CHAR Characteristic Handle */
   uint16_t  Rx_CharCharHdle;                  /**< RX_CHAR Characteristic Handle */
   uint16_t  Through_CharCharHdle;                  /**< THROUGH_CHAR Characteristic Handle */
+/* USER CODE BEGIN Context */
+  /* Place holder for Characteristic Descriptors Handle*/
+
+/* USER CODE END Context */
 }DT_SERV_Context_t;
 
 /* Private defines -----------------------------------------------------------*/
@@ -68,6 +72,7 @@ static uint8_t g_notification_n_1;
 
 uint16_t packet_lost = 0;
 uint32_t DTS_N=0;
+uint16_t MTUSizeValue;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -148,10 +153,15 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
       switch(p_blecore_evt->ecode)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
+          notification.ConnectionHandle         = p_attribute_modified->Connection_Handle;
+          notification.AttributeHandle          = p_attribute_modified->Attr_Handle;
+          notification.DataTransfered.Length    = p_attribute_modified->Attr_Data_Length;
+          notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
           if(p_attribute_modified->Attr_Handle == (DT_SERV_Context.Tx_CharCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
@@ -243,6 +253,8 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
           else if(p_attribute_modified->Attr_Handle == (DT_SERV_Context.Rx_CharCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
+
+            notification.EvtOpcode = DT_SERV_RX_CHAR_WRITE_NO_RESP_EVT;
             /* USER CODE BEGIN Service1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length; 
 
@@ -274,16 +286,16 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
             notification.DataTransfered.pPayload_n_1 = notification.DataTransfered.pPayload_n;
             g_notification_n_1 = notification.DataTransfered.pPayload_n;
             /* USER CODE END Service1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-            notification.EvtOpcode = DT_SERV_RX_CHAR_WRITE_NO_RESP_EVT;
             DT_SERV_Notification(&notification);
           } /* if(p_attribute_modified->Attr_Handle == (DT_SERV_Context.Rx_CharCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-          break;
-
+          break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+        }
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
@@ -291,9 +303,10 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          break;
-
+          break;/* ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
@@ -301,7 +314,8 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-          break;
+          break;/* ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         {
           aci_gatt_tx_pool_available_event_rp0 *p_tx_pool_available_event;
@@ -311,8 +325,8 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
           Resume_Notification();
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-        }
           break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
+        }
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
           aci_att_exchange_mtu_resp_event_rp0 *p_exchange_mtu;
@@ -320,14 +334,21 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
           UNUSED(p_exchange_mtu);
 
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
+          if (p_exchange_mtu->Server_RX_MTU < DATA_NOTIFICATION_MAX_PACKET_SIZE)
+          {
+            MTUSizeValue = p_exchange_mtu->Server_RX_MTU - 3;
+          }
+          else
+          {
+            MTUSizeValue = DATA_NOTIFICATION_MAX_PACKET_SIZE;
+          }
           APP_DBG_MSG(">>== Connection Handle = %d \n",p_exchange_mtu->Connection_Handle );
-          APP_DBG_MSG(">>== MTU_size = %d \n",p_exchange_mtu->Server_RX_MTU );
+          APP_DBG_MSG(">>== MTU_size = %d \n",MTUSizeValue );
           APP_DBG_MSG("\r\n\r");
           
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-
+          break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
-          break;
         /* USER CODE BEGIN BLECORE_EVT */
 
         /* USER CODE END BLECORE_EVT */
@@ -371,6 +392,8 @@ void DT_SERV_Init(void)
 {
   Char_UUID_t  uuid;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  uint8_t max_attr_record;
+
   /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */
 
   /* USER CODE END SVCCTL_InitService1Svc_1 */
@@ -391,12 +414,21 @@ void DT_SERV_Init(void)
    *                                1 for TX_CHAR configuration descriptor +
    *                                1 for THROUGH_CHAR configuration descriptor +
    *                              = 9
+   * This value doesn't take into account number of descriptors manually added
+   * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
+  max_attr_record = 9;
+
+  /* USER CODE BEGIN SVCCTL_InitService */
+  /* max_attr_record to be updated if descriptors have been added */
+
+  /* USER CODE END SVCCTL_InitService */
+
   COPY_DT_SERV_UUID(uuid.Char_UUID_128);
   ret = aci_gatt_add_service(UUID_TYPE_128,
                              (Service_UUID_t *) &uuid,
                              PRIMARY_SERVICE,
-                             9,
+                             max_attr_record,
                              &(DT_SERV_Context.Dt_servSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -430,6 +462,10 @@ void DT_SERV_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : TX_CHAR\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char1 */
+
+  /* USER CODE END SVCCTL_InitService1Char1 */
+
   /**
    * RX_CHAR
    */
@@ -453,6 +489,10 @@ void DT_SERV_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : RX_CHAR\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService1Char2 */
+
+  /* USER CODE END SVCCTL_InitService1Char2 */
+
   /**
    * THROUGH_CHAR
    */
@@ -475,6 +515,10 @@ void DT_SERV_Init(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : THROUGH_CHAR\n");
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+
+  /* USER CODE END SVCCTL_InitService1Char3 */
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
 

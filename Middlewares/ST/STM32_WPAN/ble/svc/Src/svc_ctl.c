@@ -38,6 +38,14 @@ SVC_CTL_p_EvtHandler_t SVCCTL_CltHandlerTable[BLE_CFG_CLT_MAX_NBR_CB];
 uint8_t NbreOfRegisteredHandler;
 } SVCCTL_CltHandler_t;
 
+typedef struct
+{
+#if (BLE_CFG_MAX_NBR_CB > 0)
+SVC_CTL_p_EvtHandler_t SVCCTL_HandlerTable[BLE_CFG_MAX_NBR_CB];
+#endif
+uint8_t NbreOfRegisteredHandler;
+} SVCCTL_Handler_t;
+
 /* Private defines -----------------------------------------------------------*/
 #define SVCCTL_EGID_EVT_MASK   0xFF00
 #define SVCCTL_GATT_EVT_TYPE   0x0C00
@@ -46,6 +54,7 @@ uint8_t NbreOfRegisteredHandler;
 /* Private variables ---------------------------------------------------------*/
 SVCCTL_EvtHandler_t SVCCTL_EvtHandler;
 SVCCTL_CltHandler_t SVCCTL_CltHandler;
+SVCCTL_Handler_t SVCCTL_Handler;
 
 /* Private functions ----------------------------------------------------------*/
 /* Weak functions -------------------------------------------------------------*/
@@ -54,12 +63,13 @@ SVCCTL_CltHandler_t SVCCTL_CltHandler;
 
 void SVCCTL_Init( void )
 {
- 
+
   /**
    * Initialize the number of registered Handler
    */
   SVCCTL_EvtHandler.NbreOfRegisteredHandler = 0;
   SVCCTL_CltHandler.NbreOfRegisteredHandler = 0;
+  SVCCTL_Handler.NbreOfRegisteredHandler = 0;
 
   return;
 }
@@ -93,6 +103,23 @@ void SVCCTL_RegisterCltHandler( SVC_CTL_p_EvtHandler_t pfBLE_SVC_Client_Event_Ha
   SVCCTL_CltHandler.NbreOfRegisteredHandler++;
 #else
   (void)(pfBLE_SVC_Client_Event_Handler);
+#endif
+
+  return;
+}
+
+/**
+ * @brief  BLE Controller initialization
+ * @param  None
+ * @retval None
+ */
+void SVCCTL_RegisterHandler( SVC_CTL_p_EvtHandler_t pfBLE_SVC_Event_Handler )
+{
+#if (BLE_CFG_MAX_NBR_CB > 0)
+  SVCCTL_Handler.SVCCTL_HandlerTable[SVCCTL_Handler.NbreOfRegisteredHandler] = pfBLE_SVC_Event_Handler;
+  SVCCTL_Handler.NbreOfRegisteredHandler++;
+#else
+  (void)(pfBLE_SVC_Event_Handler);
 #endif
 
   return;
@@ -160,18 +187,43 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_UserEvtRx( void *pckt )
           break;
 
         default:
+#if (BLE_CFG_MAX_NBR_CB > 0)
+          /* For event handler */
+          for(index = 0; index <SVCCTL_Handler.NbreOfRegisteredHandler; index++)
+          {
+            event_notification_status = SVCCTL_Handler.SVCCTL_HandlerTable[index](pckt);
+            /**
+             * When a GATT event has been acknowledged by a Client, there is no need to call the other registered handlers
+             * a GATT event is relevant for only one Client
+             */
+            if (event_notification_status != SVCCTL_EvtNotAck)
+            {
+              /**
+               *  The event has been managed. The Event processing should be stopped
+               */
+              break;
+            }
+          }
+#endif
           break;
       }
     }
       break; /* HCI_HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE_SPECIFIC */
 
     default:
+#if (BLE_CFG_MAX_NBR_CB > 0)
+      /* For event handler */
+      for(index = 0; index <SVCCTL_Handler.NbreOfRegisteredHandler; index++)
+      {
+        event_notification_status = SVCCTL_Handler.SVCCTL_HandlerTable[index](pckt);
+      }
+#endif
       break;
   }
 
   /**
    * When no registered handlers (either Service or Client) has acknowledged the GATT event, it is reported to the application
-   * a GAP event is always reported to the applicaiton.
+   * a GAP event is always reported to the application.
    */
   switch (event_notification_status)
   {

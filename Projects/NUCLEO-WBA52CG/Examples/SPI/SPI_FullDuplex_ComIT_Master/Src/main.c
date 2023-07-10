@@ -66,8 +66,8 @@ __IO uint32_t wTransferState = TRANSFER_WAIT;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_SPI3_Init(void);
 /* USER CODE BEGIN PFP */
 static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 /* USER CODE END PFP */
@@ -113,8 +113,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI3_Init();
   MX_ICACHE_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
 /* Configure LD1, and LD2  */

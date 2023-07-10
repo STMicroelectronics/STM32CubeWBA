@@ -42,11 +42,9 @@ typedef enum
   P2PR_WRITEFWD,
   P2PR_NOTIFFWD,
   P2PR_DEVINFO,
-
   /* USER CODE BEGIN Service1_CharOpcode_t */
 
   /* USER CODE END Service1_CharOpcode_t */
-
   P2PR_CHAROPCODE_LAST
 } P2PR_CharOpcode_t;
 
@@ -58,11 +56,9 @@ typedef enum
   P2PR_NOTIFFWD_NOTIFY_DISABLED_EVT,
   P2PR_DEVINFO_NOTIFY_ENABLED_EVT,
   P2PR_DEVINFO_NOTIFY_DISABLED_EVT,
-
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
 
   /* USER CODE END Service1_OpcodeEvt_t */
-
   P2PR_BOOT_REQUEST_EVT
 } P2PR_OpcodeEvt_t;
 
@@ -74,7 +70,6 @@ typedef struct
   /* USER CODE BEGIN Service1_Data_t */
 
   /* USER CODE END Service1_Data_t */
-
 } P2PR_Data_t;
 
 typedef struct
@@ -82,12 +77,11 @@ typedef struct
   P2PR_OpcodeEvt_t       EvtOpcode;
   P2PR_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service1_NotificationEvt_t */
 
   /* USER CODE END Service1_NotificationEvt_t */
-
 } P2PR_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

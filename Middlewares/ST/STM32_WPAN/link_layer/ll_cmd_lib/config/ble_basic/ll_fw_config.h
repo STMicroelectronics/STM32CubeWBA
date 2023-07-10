@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/ll_fw_config.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.21a-SOW07PatchV1/firmware/shrd_utils/inc/ll_fw_config.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_fw_config.h
@@ -33,6 +33,10 @@
 #define MAX_NUM_CNCRT_STAT_MCHNS					8 /* Set maximum number of states the controller can support */
 #define USE_NON_ACCURATE_32K_SLEEP_CLK				1 /* Allow to drive the sleep clock by sources other than the default crystal oscillator source.*/
 													   /*LL can use crystal oscillator or RTC or RCO to drive the sleep clock.This selection is done via "DEFAULT_SLEEP_CLOCK_SOURCE" macro. */
+
+/* 5.3 features */
+#define SUPPORT_CHANNEL_CLASSIFICATION    0
+#define SUPPORT_LE_ENHANCED_CONN_UPDATE    0
 
 /* Non-standard features configurations */
 #define NUM_OF_CTSM_EMNGR_HNDLS						1 /* Number of custom handles in event manager to be used for app specific needs */

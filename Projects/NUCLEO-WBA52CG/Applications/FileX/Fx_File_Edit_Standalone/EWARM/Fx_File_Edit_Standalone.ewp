@@ -214,9 +214,9 @@
         <debug>1</debug>
         <option>
           <name>CCDefines</name>
+          <state>FX_INCLUDE_USER_DEFINE_FILE</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA52xx</state>
-          <state>FX_INCLUDE_USER_DEFINE_FILE</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -337,15 +337,15 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
+          <state>$PROJ_DIR$/../FileX/App</state>
+          <state>$PROJ_DIR$/../FileX/Target</state>
           <state>$PROJ_DIR$/../Core/Inc</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
-          <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
-          <state>$PROJ_DIR$/../FileX/App</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/filex/common/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/filex/ports/generic/inc</state>
-          <state>$PROJ_DIR$/../FileX/Target</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -593,7 +593,7 @@
         </option>
         <option>
           <name>AOutputFile</name>
-          <state>$FILE_BNAME$.o</state>
+          <state></state>
         </option>
         <option>
           <name>ALimitErrorsCheck</name>
@@ -991,7 +991,7 @@
         </option>
         <option>
           <name>IlinkTrustzoneImportLibraryOut</name>
-          <state>Fx_File_Edit_Standalone_import_lib.o</state>
+          <state></state>
         </option>
         <option>
           <name>OILinkExtraOption</name>

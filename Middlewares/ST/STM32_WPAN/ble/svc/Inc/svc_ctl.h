@@ -145,7 +145,20 @@ typedef PACKED(struct) _evt_blecore_aci
    * @retval None
    */
   void SVCCTL_RegisterCltHandler( SVC_CTL_p_EvtHandler_t pfBLE_SVC_Client_Event_Handler );
-  
+
+  /**
+   * @brief  This API registers a handler to be called when a GAP user event is received from the BLE core device. When
+   *         a Profile is created, it could register a callback to be notified when a GAP event is received from the
+   *         BLE core device.
+   *         As soon as one handler registered acknowledges positively the event, the ble_controller stops calling the
+   *         registered handlers.
+   *         This handler is called in the TL_BLE_HCI_UserEvtProc() context
+   *
+   * @param  pfBLE_SVC_Event_Handler: This is the  handler that the ble_controller calls to report a GAP
+   *         event received.
+   * @retval None
+   */
+void SVCCTL_RegisterHandler( SVC_CTL_p_EvtHandler_t pfBLE_SVC_Event_Handler );
 
   /**
    * @brief  This API is used to resume the User Event Flow that has been stopped in return of SVCCTL_UserEvtRx()

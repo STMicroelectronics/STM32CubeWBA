@@ -5,7 +5,7 @@
   * @author  MCD Application Team
   * @brief   ThreadX applicative file
   ******************************************************************************
-    * @attention
+  * @attention
   *
   * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
@@ -43,19 +43,18 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+  TX_THREAD tx_app_thread;
 /* USER CODE BEGIN PV */
-TX_THREAD ThreadOne;
-TX_THREAD ThreadTwo;
-APP_SYNC_TYPE SyncObject;
-
-extern UART_HandleTypeDef huart1;
+  TX_THREAD ThreadTwo;
+  APP_SYNC_TYPE SyncObject;
+  extern UART_HandleTypeDef huart1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-VOID ThreadOne_Entry(ULONG thread_input);
-VOID ThreadTwo_Entry(ULONG thread_input);
-static VOID Led_Toggle(uint16_t led_pin, GPIO_TypeDef *led_port, UINT iter);
+  VOID ThreadTwo_Entry(ULONG thread_input);
+  static VOID Led_Toggle(uint16_t led_pin, GPIO_TypeDef *led_port, UINT iter);
+  static VOID App_Delay(ULONG Delay);
 /* USER CODE END PFP */
 
 /**
@@ -66,35 +65,38 @@ static VOID Led_Toggle(uint16_t led_pin, GPIO_TypeDef *led_port, UINT iter);
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
   UINT ret = TX_SUCCESS;
-  /* USER CODE BEGIN App_ThreadX_MEM_POOL */
-  /* USER CODE END App_ThreadX_MEM_POOL */
-  /* USER CODE BEGIN App_ThreadX_Init */
-#if (USE_STATIC_ALLOCATION == 1)
-  CHAR *pointer;
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
-  /* Allocate the stack for ThreadOne.  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer, APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  /* USER CODE BEGIN App_ThreadX_MEM_POOL */
+
+  /* USER CODE END App_ThreadX_MEM_POOL */
+CHAR *pointer;
+
+  /* Allocate the stack for Thread One  */
+  if (tx_byte_allocate(byte_pool, (VOID**) &pointer,
+                       TX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
-    ret = TX_POOL_ERROR;
+    return TX_POOL_ERROR;
+  }
+   /* Create Thread One.  */
+  if (tx_thread_create(&tx_app_thread, "Thread One", ThreadOne_Entry, 0, pointer,
+                       TX_APP_STACK_SIZE, TX_APP_THREAD_PRIO, TX_APP_THREAD_PREEMPTION_THRESHOLD,
+                       TX_APP_THREAD_TIME_SLICE, TX_APP_THREAD_AUTO_START) != TX_SUCCESS)
+  {
+    return TX_THREAD_ERROR;
   }
 
-  /* Create ThreadOne.  */
-  if (tx_thread_create(&ThreadOne, "Thread One", ThreadOne_Entry, 0, pointer, APP_STACK_SIZE, THREAD_ONE_PRIO,
-                       THREAD_ONE_PREEMPTION_THRESHOLD, DEFAULT_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    ret = TX_THREAD_ERROR;
-  }
+  /* USER CODE BEGIN App_ThreadX_Init */
 
   /* Allocate the stack for ThreadTwo.  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer, APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,  TX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
     ret = TX_POOL_ERROR;
   }
 
   /* Create ThreadTwo.  */
-  if (tx_thread_create(&ThreadTwo, "Thread Two", ThreadTwo_Entry, 0, pointer, APP_STACK_SIZE, THREAD_TWO_PRIO,
-                       THREAD_TWO_PREEMPTION_THRESHOLD, DEFAULT_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+  if (tx_thread_create(&ThreadTwo, "Thread Two", ThreadTwo_Entry, 0, pointer,  TX_APP_STACK_SIZE, TX_APP_THREAD_PRIO,
+                       TX_APP_THREAD_PREEMPTION_THRESHOLD, TX_APP_THREAD_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
   {
     ret = TX_THREAD_ERROR;
   }
@@ -104,38 +106,19 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   {
     ret = TX_SYNC_ERROR;
   }
-#endif
+
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
 }
-
-  /**
-  * @brief  MX_ThreadX_Init
-  * @param  None
-  * @retval None
-  */
-void MX_ThreadX_Init(void)
-{
-  /* USER CODE BEGIN  Before_Kernel_Start */
-
-  /* USER CODE END  Before_Kernel_Start */
-
-  tx_kernel_enter();
-
-  /* USER CODE BEGIN  Kernel_Start_Error */
-
-  /* USER CODE END  Kernel_Start_Error */
-}
-
-/* USER CODE BEGIN 1 */
 /**
-  * @brief  Function implementing the ThreadOne thread.
-  * @param  thread_input: Not used
+  * @brief  Function implementing the ThreadOne_Entry thread.
+  * @param  thread_input: Not used.
   * @retval None
   */
 void ThreadOne_Entry(ULONG thread_input)
 {
+  /* USER CODE BEGIN ThreadOne_Entry */
   UNUSED(thread_input);
   ULONG iteration = 0;
 
@@ -167,7 +150,28 @@ void ThreadOne_Entry(ULONG thread_input)
     }
     iteration++;
   }
+  /* USER CODE END ThreadOne_Entry */
 }
+
+  /**
+  * @brief  MX_ThreadX_Init
+  * @param  None
+  * @retval None
+  */
+void MX_ThreadX_Init(void)
+{
+  /* USER CODE BEGIN  Before_Kernel_Start */
+
+  /* USER CODE END  Before_Kernel_Start */
+
+  tx_kernel_enter();
+
+  /* USER CODE BEGIN  Kernel_Start_Error */
+
+  /* USER CODE END  Kernel_Start_Error */
+}
+
+/* USER CODE BEGIN 1 */
 
 /**
   * @brief  Function implementing the ThreadTwo thread.
@@ -225,10 +229,21 @@ static VOID Led_Toggle(uint16_t led_pin, GPIO_TypeDef *led_port, UINT iter)
   {
     HAL_GPIO_TogglePin(led_port, led_pin);
     /* Toggle the Led each 500ms */
-    tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND/2);
+    App_Delay(50);
   }
 
   HAL_GPIO_WritePin(led_port, led_pin, GPIO_PIN_SET);
+}
+
+/**
+  * @brief  Application Delay function.
+  * @param  Delay : number of ticks to wait
+  * @retval None
+  */
+void App_Delay(ULONG Delay)
+{
+  ULONG initial_time = tx_time_get();
+  while ((tx_time_get() - initial_time) < Delay);
 }
 
 /* USER CODE END 1 */

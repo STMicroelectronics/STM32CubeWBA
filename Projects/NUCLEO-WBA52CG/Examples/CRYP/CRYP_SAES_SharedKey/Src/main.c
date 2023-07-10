@@ -75,9 +75,9 @@ uint32_t Encryptedkey[8];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RNG_Init(void);
 static void MX_SAES_AES_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -129,9 +129,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RNG_Init();
   MX_SAES_AES_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* User key AESKey256 encryption to be shared */

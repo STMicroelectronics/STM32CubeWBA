@@ -37,6 +37,27 @@
 
 /* Private typedef -----------------------------------------------------------*/
 
+/* USER CODE BEGIN PTD */
+typedef enum
+{
+  COC_START_TIMER_EVT,
+  COC_STOP_TIMER_EVT,
+  COC_NOTIFICATION_INFO_RECEIVED_EVT,
+} COC_Client_Opcode_Notification_evt_t;
+
+typedef struct
+{
+  uint8_t * pPayload;
+  uint8_t     Length;
+}COC_Client_Data_t;
+
+typedef struct
+{
+  COC_Client_Opcode_Notification_evt_t  COC_Client_Evt_Opcode;
+  COC_Client_Data_t DataTransfered;
+}COC_Client_App_Notification_evt_t;
+/* USER CODE END PTD */
+
 typedef enum
 {
   NOTIFICATION_INFO_RECEIVED_EVT,
@@ -83,27 +104,6 @@ typedef struct
 /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
-
-/* USER CODE BEGIN PTD */
-typedef enum
-{
-  COC_START_TIMER_EVT,
-  COC_STOP_TIMER_EVT,
-  COC_NOTIFICATION_INFO_RECEIVED_EVT,
-} COC_Client_Opcode_Notification_evt_t;
-
-typedef struct
-{
-  uint8_t * pPayload;
-  uint8_t     Length;
-}COC_Client_Data_t;
-
-typedef struct
-{
-  COC_Client_Opcode_Notification_evt_t  COC_Client_Evt_Opcode;
-  COC_Client_Data_t DataTransfered;
-}COC_Client_App_Notification_evt_t;
-/* USER CODE END PTD */
 
 /* Private defines ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
@@ -154,6 +154,7 @@ static void gatt_cmd_resp_wait(void);
 static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16_t size, uint8_t error);
 static void RxUART_Init(void);
 static void COC_CENTRAL_APP_Terminal_Init(void);
+static void CentralSendData(void);
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -181,7 +182,7 @@ void GATT_CLIENT_APP_Init(void)
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
     
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_COC_CENTRAL_TX_REQ_ID, UTIL_SEQ_RFU, CentralSendData );
+  UTIL_SEQ_RegTask(1U << CFG_TASK_COC_CENTRAL_TX_REQ_ID, UTIL_SEQ_RFU, CentralSendData);
 
   COC_CENTRAL_APP_Terminal_Init();
   BleCoCContextCentral.cocFlag = 0;
@@ -944,7 +945,7 @@ static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16
       buffCocTxLen = buffUartRxIndex;
       
       buffUartRxIndex = 0;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_COC_CENTRAL_TX_REQ_ID, CFG_SCH_PRIO_0);      
+      UTIL_SEQ_SetTask(1U << CFG_TASK_COC_CENTRAL_TX_REQ_ID, CFG_SEQ_PRIO_0);      
     }    
   }
   else
@@ -956,7 +957,7 @@ static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16
   return;
  }
 
-void CentralSendData( void )
+static void CentralSendData( void )
 {
   tBleStatus status = BLE_STATUS_INVALID_PARAMS;
   
@@ -973,64 +974,4 @@ void CentralSendData( void )
   return;
 }
 
-void COC_CENTRAL_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification)
-{
-  tBleStatus        ret = BLE_STATUS_INVALID_PARAMS;
-  uint8_t i;
-
-  switch(pNotification->CoC_Evt_Opcode)
-  {    
-  case BLE_CONN_HANDLE_EVT :    
-    BleCoCContextCentral.Conn_Handle = pNotification->ConnectionHandle;
-    
-    break;
-  
-  case BLE_CONN_UPDATE_EVT:
-    BleCoCContextCentral.SPSM = 0x0002;
-    BleCoCContextCentral.Max_Transmission_Unit = 0x0023;
-    BleCoCContextCentral.Max_Payload_Size = 0x0023;
-    BleCoCContextCentral.Initial_Credits = 0x0003;
-    BleCoCContextCentral.Channel_Number = 0x01;
-    
-    if (BleCoCContextCentral.cocFlag != 1)
-    {
-      APP_DBG_MSG("==>> Start Connection Oriented Channel\n");
-      ret = aci_l2cap_coc_connect(BleCoCContextCentral.Conn_Handle, 
-                                  BleCoCContextCentral.SPSM, 
-                                  BleCoCContextCentral.Max_Transmission_Unit, 
-                                  BleCoCContextCentral.Max_Payload_Size, 
-                                  BleCoCContextCentral.Initial_Credits, 
-                                  BleCoCContextCentral.Channel_Number);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        APP_DBG_MSG("  Fail   : aci_l2cap_coc_connect command, result: 0x%02X\n", ret);
-      }
-      else
-      {
-        APP_DBG_MSG("  Success: aci_l2cap_coc_connect command\n");
-      }
-    }
-      break;
-
-    case BLE_DISCON_HANDLE_EVT :
-      {
-        BSP_LED_Off(LED_BLUE); 
-      }
-      break;
-      
-    case L2CAP_DATA_RECEIVED:
-    {
-      /* display received data */
-      for (i = 0 ; i < pNotification->DataLength ; i++)
-      {
-        APP_DBG_MSG("%c", pNotification->DataTable[i]);
-      }
-    }
-    break;
-
-    default:
-      break;
-  }
-  return;
-}
 /* USER CODE END LF */

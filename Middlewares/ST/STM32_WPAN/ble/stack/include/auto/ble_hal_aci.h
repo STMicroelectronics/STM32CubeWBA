@@ -35,7 +35,7 @@ tBleStatus aci_hal_get_fw_build_number( uint16_t* Build_Number );
 /**
  * @brief ACI_HAL_WRITE_CONFIG_DATA
  * This command writes a value to a configure data structure. It is useful to
- * setup directly some parameters for the system in the runtime.
+ * setup directly some parameters for the BLE stack.
  * Note: the static random address set by this command is taken into account by
  * the GAP only when it receives the ACI_GAP_INIT command.
  * 
@@ -45,17 +45,21 @@ tBleStatus aci_hal_get_fw_build_number( uint16_t* Build_Number );
  *        - 0x00: CONFIG_DATA_PUBADDR_OFFSET;
  *          Bluetooth public address; 6 bytes
  *        - 0x08: CONFIG_DATA_ER_OFFSET;
- *          Encryption root key used to derive LTK and CSRK; 16 bytes
+ *          Encryption root key used to derive LTK (legacy) and CSRK; 16 bytes
  *        - 0x18: CONFIG_DATA_IR_OFFSET;
- *          Identity root key used to derive LTK and CSRK; 16 bytes
+ *          Identity root key used to derive DHK (legacy) and IRK; 16 bytes
  *        - 0x2E: CONFIG_DATA_RANDOM_ADDRESS_OFFSET;
  *          Static Random Address; 6 bytes
+ *        - 0x34: CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET;
+ *          GAP service additional record number
+ *        - 0x35: CONFIG_DATA_SC_KEY_TYPE_OFFSET;
+ *          Secure Connections key type (0: "normal", 1: "debug"); 1 byte
  *        - 0xB0: CONFIG_DATA_SMP_MODE_OFFSET;
  *          SMP mode (0: "normal", 1: "bypass", 2: "no blacklist"); 1 byte
- *        - 0xC0: CONFIG_DATA_LL_SCAN_CHAN_MAP_OFFSET;
+ *        - 0xC0: CONFIG_DATA_LL_SCAN_CHAN_MAP_OFFSET (only for STM32WB);
  *          LL scan channel map (same format as Primary_Adv_Channel_Map); 1
  *          byte
- *        - 0xC1: CONFIG_DATA_LL_BG_SCAN_MODE_OFFSET;
+ *        - 0xC1: CONFIG_DATA_LL_BG_SCAN_MODE_OFFSET (only for STM32WB);
  *          LL background scan mode (0: "BG scan disabled", 1: "BG scan
  *          enabled"); 1 byte
  * @param Length Length of data to be written
@@ -77,9 +81,9 @@ tBleStatus aci_hal_write_config_data( uint8_t Offset,
  *        - 0x00: CONFIG_DATA_PUBADDR_OFFSET;
  *          Bluetooth public address; 6 bytes
  *        - 0x08: CONFIG_DATA_ER_OFFSET;
- *          Encryption root key used to derive LTK and CSRK; 16 bytes
+ *          Encryption root key used to derive LTK (legacy) and CSRK; 16 bytes
  *        - 0x18: CONFIG_DATA_IR_OFFSET
- *          Identity root key used to derive LTK and CSRK; 16 bytes
+ *          Identity root key used to derive DHK (legacy) and IRK; 16 bytes
  *        - 0x2E: CONFIG_DATA_RANDOM_ADDRESS_OFFSET;
  *          Static Random Address; 6 bytes
  * @param[out] Data_Length Length of Data in octets
@@ -92,17 +96,20 @@ tBleStatus aci_hal_read_config_data( uint8_t Offset,
 
 /**
  * @brief ACI_HAL_SET_TX_POWER_LEVEL
- * This command sets the TX power level of the device. By controlling the
- * PA_LEVEL, that determines the output power level (dBm) at the IC pin.
- * When the system starts up or reboots, the default TX power level will be
- * used, which is the maximum value of 6 dBm. Once this command is given, the
- * output power will be changed instantly, regardless if there is Bluetooth
- * communication going on or not. For example, for debugging purpose, the
- * device can be set to advertise all the time. And use this command to observe
- * the signal strength changing.
- * The system will keep the last received TX power level from the command, i.e.
- * the 2nd command overwrites the previous TX power level. The new TX power
- * level remains until another Set TX Power command, or the system reboots.
+ * This command sets the TX power level of the device. By controlling the PA
+ * level, that determines the output power level (dBm) at the IC pin.
+ * When the system starts up or reboots, the default TX power level is used,
+ * which is the maximum value. Once this command is given, the output power
+ * changes instantly, regardless if there is Bluetooth communication going on
+ * or not. For example, for debugging purpose, the device can be set to
+ * advertise all the time. By using this command, one can then observe the
+ * evolution of the TX signal strength.
+ * The system keeps the last received TX power level from the command, i.e. the
+ * 2nd command overwrites the previous TX power level. The new TX power level
+ * remains until another ACI_HAL_SET_TX_POWER_LEVEL command, or the system
+ * reboots. However, note that the advertising extensions commands allow, per
+ * advertising set, to override the value of TX power determined by
+ * ACI_HAL_SET_TX_POWER_LEVEL command (e.g. see ACI_GAP_ADV_SET_CONFIGURATION).
  * Refer to Annex for the dBm corresponding values of PA_Level parameter.
  * 
  * @param En_High_Power Enable High Power mode - Deprecated and ignored
@@ -146,9 +153,9 @@ tBleStatus aci_hal_le_tx_test_packet_number( uint32_t* Number_Of_Packets );
  * 
  * @param RF_Channel BLE Channel ID, from 0x00 to 0x27 meaning (2.402 +
  *        0.002*0xXX) GHz
- *        Device will continuously emit 0s, that means that the tone
- *        will be at the channel center frequency less the maximum
- *        frequency deviation (250kHz).
+ *        Device will continuously emit 0s, that means that the tone will be at
+ *        the channel center frequency minus the maximum frequency deviation
+ *        (250 kHz).
  *        Values:
  *        - 0x00 ... 0x27
  * @param Freq_offset Frequency Offset for tone channel
@@ -211,7 +218,9 @@ tBleStatus aci_hal_get_anchor_period( uint32_t* Anchor_Period,
 
 /**
  * @brief ACI_HAL_SET_EVENT_MASK
- * This command is used to enable/disable the generation of HAL events
+ * This command is used to enable/disable the generation of HAL events. If the
+ * bit in the Event_Mask is set to a one, then the event associated with that
+ * bit will be enabled.
  * 
  * @param Event_Mask Mask to enable/disable generation of HAL events
  *        Flags:
@@ -237,12 +246,12 @@ tBleStatus aci_hal_set_event_mask( uint32_t Event_Mask );
  *        - 0x05: Central connection
  *        - 0x06: TX test mode
  *        - 0x07: RX test mode
- *        - 0x09: Periodic Advertising
- *        - 0x0A: Periodic Sync
- *        - 0x0B: Iso Broadcast
- *        - 0x0C: Iso Sync
- *        - 0x0D: Iso Peripheral Connection
- *        - 0x0E: Iso Central Connection
+ *        - 0x09: Periodic advertising
+ *        - 0x0A: Periodic sync
+ *        - 0x0B: Iso broadcast
+ *        - 0x0C: Iso sync
+ *        - 0x0D: Iso peripheral connection
+ *        - 0x0E: Iso central connection
  * @param[out] Link_Connection_Handle Array of connection handles (2 bytes).
  *        Valid only if the corresponding link status is "connected"
  * @return Value indicating success or error code.
@@ -251,7 +260,7 @@ tBleStatus aci_hal_get_link_status_v2( uint8_t* Link_Status,
                                        uint16_t* Link_Connection_Handle );
 
 /**
- * @brief ACI_HAL_GET_PM_DEBUG_INFO
+ * @brief ACI_HAL_GET_PM_DEBUG_INFO_V2
  * This command is used to retrieve TX, RX and total buffer count allocated for
  * ACL packets.
  * 
@@ -260,23 +269,23 @@ tBleStatus aci_hal_get_link_status_v2( uint8_t* Link_Status,
  * @param[out] Allocated_MBlocks Overall allocated MBlocks
  * @return Value indicating success or error code.
  */
-tBleStatus aci_hal_get_pm_debug_info( uint8_t* Allocated_For_TX,
-                                      uint8_t* Allocated_For_RX,
-                                      uint8_t* Allocated_MBlocks );
+tBleStatus aci_hal_get_pm_debug_info_v2( uint16_t* Allocated_For_TX,
+                                         uint16_t* Allocated_For_RX,
+                                         uint16_t* Allocated_MBlocks );
 
 /**
- * @brief ACI_HAL_SET_SLAVE_LATENCY
- * This command is used to disable/enable the slave latency feature during a
- * connection. Note that, by default, the slave latency is enabled at
+ * @brief ACI_HAL_SET_PERIPHERAL_LATENCY
+ * This command is used to disable/enable the Peripheral latency feature during
+ * a connection. Note that, by default, the Peripheral latency is enabled at
  * connection time.
  * 
- * @param Enable Enable/disable slave latency.
+ * @param Enable Enable/disable Peripheral latency.
  *        Values:
- *        - 0x00: Slave latency is disabled
- *        - 0x01: Slave latency is enabled
+ *        - 0x00: Peripheral latency is disabled
+ *        - 0x01: Peripheral latency is enabled
  * @return Value indicating success or error code.
  */
-tBleStatus aci_hal_set_slave_latency( uint8_t Enable );
+tBleStatus aci_hal_set_peripheral_latency( uint8_t Enable );
 
 /**
  * @brief ACI_HAL_SET_SYNC_EVENT_CONFIG

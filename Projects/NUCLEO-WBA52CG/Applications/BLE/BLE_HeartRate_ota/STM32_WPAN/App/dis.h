@@ -44,11 +44,9 @@ typedef enum
   DIS_SNS,
   DIS_HRS,
   DIS_FRS,
-
   /* USER CODE BEGIN Service2_CharOpcode_t */
 
   /* USER CODE END Service2_CharOpcode_t */
-
   DIS_CHAROPCODE_LAST
 } DIS_CharOpcode_t;
 
@@ -59,11 +57,9 @@ typedef enum
   DIS_SNS_READ_EVT,
   DIS_HRS_READ_EVT,
   DIS_FRS_READ_EVT,
-
   /* USER CODE BEGIN Service2_OpcodeEvt_t */
 
   /* USER CODE END Service2_OpcodeEvt_t */
-
   DIS_BOOT_REQUEST_EVT
 } DIS_OpcodeEvt_t;
 
@@ -75,7 +71,6 @@ typedef struct
   /* USER CODE BEGIN Service2_Data_t */
 
   /* USER CODE END Service2_Data_t */
-
 } DIS_Data_t;
 
 typedef struct
@@ -83,12 +78,11 @@ typedef struct
   DIS_OpcodeEvt_t       EvtOpcode;
   DIS_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service2_NotificationEvt_t */
 
   /* USER CODE END Service2_NotificationEvt_t */
-
 } DIS_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

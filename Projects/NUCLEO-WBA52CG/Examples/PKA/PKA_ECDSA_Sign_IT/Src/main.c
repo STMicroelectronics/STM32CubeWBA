@@ -56,9 +56,9 @@ __IO uint32_t operationComplete = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RNG_Init(void);
 static void MX_PKA_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -106,9 +106,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RNG_Init();
   MX_PKA_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   
@@ -117,6 +117,7 @@ int main(void)
   in.modulusSize =     prime256v1_Prime_len;
   in.coefSign =        prime256v1_A_sign;
   in.coef =            prime256v1_absA;
+  in.coefB =           prime256v1_B;
   in.modulus =         prime256v1_Prime;
   in.basePointX =      prime256v1_GeneratorX;
   in.basePointY =      prime256v1_GeneratorY;
@@ -209,7 +210,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL1.PLLM = 4;
   RCC_OscInitStruct.PLL1.PLLN = 25;
   RCC_OscInitStruct.PLL1.PLLP = 2;
-  RCC_OscInitStruct.PLL1.PLLQ = 8;
+  RCC_OscInitStruct.PLL1.PLLQ = 4;
   RCC_OscInitStruct.PLL1.PLLR = 2;
   RCC_OscInitStruct.PLL1.PLLFractional = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)

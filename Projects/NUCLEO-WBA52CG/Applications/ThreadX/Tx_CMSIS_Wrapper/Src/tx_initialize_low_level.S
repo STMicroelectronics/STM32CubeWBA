@@ -21,7 +21,7 @@
 //  Caution: Make sure that ThreadX does not need more than the provided heap memory (64KBytes in this example).
 //  Read more in STM32CubeIDE User Guide, chapter: "Linker script".
 
-//#define USE_DYNAMIC_MEMORY_ALLOCATION
+#define USE_DYNAMIC_MEMORY_ALLOCATION
 
 #if defined (__clang__)
 /**************************************************************************/
@@ -45,7 +45,7 @@
 /**************************************************************************/
 /**************************************************************************/
 
-SYSTEM_CLOCK      =   100000000
+SYSTEM_CLOCK      =   12500000
 SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 100) -1)
 
 /**************************************************************************/
@@ -132,7 +132,7 @@ _tx_initialize_low_level:
     MOV     r0, #0xE000E000                         // Build address of NVIC registers
     LDR     r1, =SYSTICK_CYCLES
     STR     r1, [r0, #0x14]                         // Setup SysTick Reload Value
-    MOV     r1, #0x7                                // Build SysTick Control Enable Value
+    MOV     r1, #0x3                                // Build SysTick Control Enable Value
     STR     r1, [r0, #0x10]                         // Setup SysTick Control
 
     /* Configure handler priorities.  */
@@ -262,7 +262,7 @@ __tx_DBGHandler:
     EXTERN  __vector_table
 ;
 ;
-SYSTEM_CLOCK      EQU   100000000
+SYSTEM_CLOCK      EQU   12500000
 SYSTICK_CYCLES    EQU   ((SYSTEM_CLOCK / 100) -1)
 ;
 ;
@@ -361,7 +361,7 @@ _tx_initialize_low_level:
     MOV     r0, #0xE000E000                         ; Build address of NVIC registers
     LDR     r1, =SYSTICK_CYCLES
     STR     r1, [r0, #0x14]                         ; Setup SysTick Reload Value
-    MOV     r1, #0x7                                ; Build SysTick Control Enable Value
+    MOV     r1, #0x3                                ; Build SysTick Control Enable Value
     STR     r1, [r0, #0x10]                         ; Setup SysTick Control
 ;
 ;    /* Configure handler priorities.  */
@@ -457,7 +457,7 @@ __tx_DBGHandler:
 /**************************************************************************/
 /**************************************************************************/
 
-SYSTEM_CLOCK      =   100000000
+SYSTEM_CLOCK      =   12500000
 SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 100) -1)
 
 /**************************************************************************/
@@ -543,7 +543,7 @@ _tx_initialize_low_level:
     MOV     r0, #0xE000E000                         // Build address of NVIC registers
     LDR     r1, =SYSTICK_CYCLES
     STR     r1, [r0, #0x14]                         // Setup SysTick Reload Value
-    MOV     r1, #0x7                                // Build SysTick Control Enable Value
+    MOV     r1, #0x3                                // Build SysTick Control Enable Value
     STR     r1, [r0, #0x10]                         // Setup SysTick Control
 
     /* Configure handler priorities.  */

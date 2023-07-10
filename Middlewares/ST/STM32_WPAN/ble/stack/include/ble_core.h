@@ -35,5 +35,8 @@
 /* BLE stack buffer size definitions */
 #include "ble_bufsize.h"
 
+/* BLE stack legacy definitions */
+#include "ble_legacy.h"
+
 
 #endif /* BLE_CORE_H__ */

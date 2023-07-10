@@ -159,9 +159,6 @@ typedef __PACKED_STRUCT
 /* Exported functions ---------------------------------------------*/
 void APP_BLE_Init(void);
 /* USER CODE BEGIN EF */
-void APP_BLE_Key_Button1_Action(void);
-void APP_BLE_Key_Button2_Action(void);
-void APP_BLE_Key_Button3_Action(void);
 
 /* USER CODE END EF */
 

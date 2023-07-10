@@ -43,8 +43,8 @@
 /**
  * Define Advertising parameters
  */
-#define CFG_ADV_BD_ADDRESS                (0x000000000000)
-#define CFG_BLE_ADDRESS_TYPE              GAP_PUBLIC_ADDR /**< Bluetooth address types defined in ble_defs.h */
+#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
 #define ADV_INTERVAL_MIN                  (0x0080)
 #define ADV_INTERVAL_MAX                  (0x00A0)
@@ -63,23 +63,14 @@
 #define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
 
 /**
- * Define IO capabilities
+ * Define Input Output capabilities
  */
-#define CFG_IO_CAPABILITY_DISPLAY_ONLY        (0x00)
-#define CFG_IO_CAPABILITY_DISPLAY_YES_NO      (0x01)
-#define CFG_IO_CAPABILITY_KEYBOARD_ONLY       (0x02)
-#define CFG_IO_CAPABILITY_NO_INPUT_NO_OUTPUT  (0x03)
-#define CFG_IO_CAPABILITY_KEYBOARD_DISPLAY    (0x04)
-
-#define CFG_IO_CAPABILITY                     CFG_IO_CAPABILITY_DISPLAY_YES_NO
+#define CFG_IO_CAPABILITY                (IO_CAP_DISPLAY_YES_NO)
 
 /**
- * Define MITM modes
+ * Define Man In The Middle modes
  */
-#define CFG_MITM_PROTECTION_NOT_REQUIRED      (0x00)
-#define CFG_MITM_PROTECTION_REQUIRED          (0x01)
-
-#define CFG_MITM_PROTECTION                   CFG_MITM_PROTECTION_REQUIRED
+#define CFG_MITM_PROTECTION              (MITM_PROTECTION_REQUIRED)
 
 /**
  * Define Secure Connections Support
@@ -93,16 +84,7 @@
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOT_SUPPORTED            (0x00)
-#define CFG_KEYPRESS_SUPPORTED                (0x01)
-
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     CFG_KEYPRESS_NOT_SUPPORTED
-
-/**
- * Numeric Comparison Answers
- */
-#define YES (0x01)
-#define NO  (0x00)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive LTK and CSRK
@@ -126,25 +108,19 @@
 /* USER CODE END Specific_Parameters */
 
 /******************************************************************************
- * Information Table
- *
-  * Version
-  * [0:3]   = Build - 0: Untracked - 15:Released - x: Tracked version
-  * [4:7]   = branch - 0: Mass Market - x: ...
-  * [8:15]  = Subversion
-  * [16:23] = Version minor
-  * [24:31] = Version major
-  *
- ******************************************************************************/
-#define CFG_FW_MAJOR_VERSION      (0)
-#define CFG_FW_MINOR_VERSION      (0)
-#define CFG_FW_SUBVERSION         (1)
-#define CFG_FW_BRANCH             (0)
-#define CFG_FW_BUILD              (0)
-
-/******************************************************************************
  * BLE Stack
  ******************************************************************************/
+/**
+ * BLE stack options, bitmap to active or not some features at BleStack_Init() function call.
+ */
+#define CFG_BLE_OPTIONS             (0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0 | \
+                                     0)
 
 /**
  * Maximum number of simultaneous connections that the device will support.
@@ -173,7 +149,7 @@
  * Maximum supported ATT_MTU size
  * This setting should be aligned with ATT_MTU value configured in the ble host
  */
-#define CFG_BLE_MAX_ATT_MTU         (247)
+#define CFG_BLE_ATT_MTU_MAX         (251)
 
 /**
  * Size of the storage area for Attribute values
@@ -193,67 +169,32 @@
 #define CFG_BLE_ATTR_PREPARE_WRITE_VALUE_SIZE       (30)
 
 #define CFG_BLE_MBLOCK_COUNT_MARGIN                 (0x15)
-#define CFG_BLE_MAX_COC_NUMBER                      (64)
-#define CFG_BLE_MAX_COC_MPS                         (248)
-#define CFG_BLE_MAX_COC_INITIATOR_NBR               (32)
+
 #define PREP_WRITE_LIST_SIZE                        (BLE_DEFAULT_PREP_WRITE_LIST_SIZE)
 
-#define BLE_MEM_BLOCK_TX(mtu) \
-          (DIVC((mtu) + 4U, BLE_MEM_BLOCK_SIZE) + 1U)
-#define BLE_MEM_BLOCK_RX(mtu, n_link) \
-          ((DIVC((mtu) + 4U, BLE_MEM_BLOCK_SIZE) + 1U) * (n_link))
-#define BLE_MEM_BLOCK_MTU(mtu, n_link) \
-          (BLE_MEM_BLOCK_TX(mtu) + BLE_MEM_BLOCK_RX(mtu, n_link))
 /**
  * Number of allocated memory blocks used to transmit and receive data packets
  */
 #define CFG_BLE_MBLOCK_COUNT (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                       CFG_BLE_MAX_ATT_MTU, CFG_BLE_NUM_LINK) \
+                                       CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
                                    + CFG_BLE_MBLOCK_COUNT_MARGIN)
-/**
- * Options
- * Each definition below may be added together to build the Options value
- * WARNING : Only one definition per bit shall be added to build the Options value
- */
-#define BLE_INIT_OPTIONS_LL_ONLY                              (1<<0)
-#define BLE_INIT_OPTIONS_LL_HOST                              (0<<0)
-
-#define BLE_INIT_OPTIONS_NO_SVC_CHANGE_DESC                   (1<<1)
-#define BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC                 (0<<1)
-
-#define BLE_INIT_OPTIONS_DEVICE_NAME_RO                       (1<<2)
-#define BLE_INIT_OPTIONS_DEVICE_NAME_RW                       (0<<2)
-
-#define BLE_INIT_OPTIONS_POWER_CLASS_1                        (1<<7)
-#define BLE_INIT_OPTIONS_POWER_CLASS_2_3                      (0<<7)
-
-/**
- * BLE stack Options flags to be configured with:
- * - BLE_INIT_OPTIONS_LL_ONLY
- * - BLE_INIT_OPTIONS_LL_HOST
- * - BLE_INIT_OPTIONS_NO_SVC_CHANGE_DESC
- * - BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC
- * - BLE_INIT_OPTIONS_DEVICE_NAME_RO
- * - BLE_INIT_OPTIONS_DEVICE_NAME_RW
- * - BLE_INIT_OPTIONS_POWER_CLASS_1
- * - BLE_INIT_OPTIONS_POWER_CLASS_2_3
- * which are used to set following configuration bits:
- * (bit 0): 1: LL only
- *          0: LL + host
- * (bit 1): 1: no service change desc.
- *          0: with service change desc.
- * (bit 2): 1: device name Read-Only
- *          0: device name R/W
- * (bit 7): 1: LE Power Class 1
- *          0: LE Power Class 2-3
- * other bits: reserved (shall be set to 0)
- */
-#define CFG_BLE_OPTIONS  (BLE_INIT_OPTIONS_LL_HOST | BLE_INIT_OPTIONS_WITH_SVC_CHANGE_DESC | BLE_INIT_OPTIONS_DEVICE_NAME_RW | BLE_INIT_OPTIONS_POWER_CLASS_2_3)
 
 /**
  * Maximum supported Devices in BLE Database
  */
-#define CFG_BLE_MAX_DDB_ENTRIES         (20)
+#define CFG_BLE_MAX_DDB_ENTRIES     (20)
+
+/**
+ * Appearance of device set into BLE GAP
+ */
+#define CFG_GAP_APPEARANCE          (GAP_APPEARANCE_UNKNOWN)
+
+/**
+ * Connection Oriented Channel parameters
+ */
+#define CFG_BLE_COC_NBR_MAX                         (64)
+#define CFG_BLE_COC_MPS_MAX                         (248)
+#define CFG_BLE_COC_INITIATOR_NBR_MAX               (32)
 
 /* USER CODE BEGIN BLE_Stack */
 
@@ -337,8 +278,8 @@ typedef enum
 #define CFG_DEBUG_APP_TRACE         (1)
 
 /* New implementation using stm32_adv_trace */
-#define APP_DBG(...)                                      \
-{                                                                 \
+#define APP_DBG(...)                                                                  \
+{                                                                                     \
   UTIL_ADV_TRACE_COND_FSend(VLEVEL_L, ~0x0, ADV_TRACE_TIMESTAMP_ENABLE, __VA_ARGS__); \
 }
 
@@ -398,11 +339,6 @@ typedef enum
  */
 #define SYS_MAX_MSG                 (200U)
 
-/**
- * Timeout for advertising
- */
-#define INITIAL_ADV_TIMEOUT         (60*1000) /**< 60s */
-
 /* USER CODE BEGIN Traces */
 
 /* USER CODE END Traces */
@@ -418,49 +354,33 @@ typedef enum
 /* USER CODE END Log_level */
 
 /******************************************************************************
- * Scheduler
+ * Sequencer
  ******************************************************************************/
 
 /**
- * These are the lists of task id registered to the scheduler
+ * These are the lists of task id registered to the sequencer
  * Each task id shall be in the range [0:31]
- * This mechanism allows to implement a generic code in the API TL_BLE_HCI_StatusNot() to comply with
- * the requirement that a HCI/ACI command shall never be sent if there is already one pending
  */
-
-/**< Add in that list all tasks that may send a ACI/HCI command */
 typedef enum
 {
   CFG_TASK_HCI_ASYNCH_EVT_ID,
-  /* USER CODE BEGIN CFG_Task_Id_With_HCI_Cmd_t */
-  CFG_TASK_PB1_BUTTON_PUSHED_ID,
-  CFG_TASK_PB2_BUTTON_PUSHED_ID,
-  CFG_TASK_PB3_BUTTON_PUSHED_ID,
-  CFG_TASK_ADV_CANCEL_ID,
-  CFG_TASK_SEND_NOTIF_ID,
-
-  /* USER CODE END CFG_Task_Id_With_HCI_Cmd_t */
   CFG_TASK_LINK_LAYER,
   CFG_TASK_LINK_LAYER_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
-  CFG_LAST_TASK_ID_WITH_HCICMD,                                               /**< Shall be LAST in the list */
-} CFG_Task_Id_With_HCI_Cmd_t;
-
-/**< Add in that list all tasks that never send a ACI/HCI command */
-typedef enum
-{
-  CFG_FIRST_TASK_ID_WITH_NO_HCICMD = CFG_LAST_TASK_ID_WITH_HCICMD - 1,        /**< Shall be FIRST in the list */
   CFG_TASK_BPKA,
   CFG_TASK_HW_RNG,
   CFG_TASK_AMM_BCKGND,
   CFG_TASK_FLASH_MANAGER_BCKGND,
-  /* USER CODE BEGIN CFG_Task_Id_With_NO_HCI_Cmd_t */
-
-  /* USER CODE END CFG_Task_Id_With_NO_HCI_Cmd_t */
-  CFG_LAST_TASK_ID_WITH_NO_HCICMD                                             /**< Shall be LAST in the list */
-} CFG_Task_Id_With_NO_HCI_Cmd_t;
-
-#define CFG_TASK_NBR    CFG_LAST_TASK_ID_WITH_NO_HCICMD
+  CFG_TASK_BLE_TIMER_BCKGND,
+  /* USER CODE BEGIN CFG_Task_Id_t */
+  TASK_BUTTON_1,
+  TASK_BUTTON_2,
+  TASK_BUTTON_3,
+  CFG_TASK_ADV_CANCEL_ID,
+  CFG_TASK_SEND_NOTIF_ID,
+  /* USER CODE END CFG_Task_Id_t */
+  CFG_TASK_NBR /* Shall be LAST in the list */
+} CFG_Task_Id_t;
 
 /* USER CODE BEGIN DEFINE_TASK */
 
@@ -468,17 +388,17 @@ typedef enum
 
 /**
  * This is the list of priority required by the application
- * Each Id shall be in the range 0..31
+ * Shall be in the range 0..31
  */
 typedef enum
 {
-  CFG_SCH_PRIO_0,
-  CFG_SCH_PRIO_1,
-  /* USER CODE BEGIN CFG_SCH_Prio_Id_t */
+  CFG_SEQ_PRIO_0 = 0,
+  CFG_SEQ_PRIO_1,
+  /* USER CODE BEGIN CFG_SEQ_Prio_Id_t */
 
-  /* USER CODE END CFG_SCH_Prio_Id_t */
-  CFG_PRIO_NBR
-} CFG_SCH_Prio_Id_t;
+  /* USER CODE END CFG_SEQ_Prio_Id_t */
+  CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
+} CFG_SEQ_Prio_Id_t;
 
 /**
  * This is a bit mapping over 32bits listing all events id supported in the application
@@ -494,27 +414,10 @@ typedef enum
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
-/**
- * Do not enable ALIGN mode
- * Used only by BLE Test Fw
- */
-#define CFG_NVM_ALIGN                       (1)
-
-  /**
-   * This is the max size of data the BLE Stack needs to write in NVM
-   * This is different to the size allocated in the EEPROM emulator
-   * The BLE Stack shall write all data at an address in the range of [0 : (x-1)]
-   * The size is a number of 32bits values
-   * NOTE:
-   * THIS VALUE SHALL BE IN LINE WITH THE BLOCK DEFINE IN THE SCATTER FILE BLOCK_STACKLIB_FLASH_DATA
-   * There are 8x32bits = 32 Bytes header in the EEPROM for each sector.
-   * a page is a collection of 1 or more sectors
-   */
-#define CFG_NVM_BLE_MAX_SIZE                ((128*20)/4)
 
 #define CFG_SNVMA_START_SECTOR_ID     (FLASH_PAGE_NB - 2u)
 
-#define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (FLASH_PAGE_NB - 2u)))
+#define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
 
 /* USER CODE BEGIN NVM_Configuration */
 
@@ -536,26 +439,23 @@ typedef enum
  ******************************************************************************/
 
 #define RT_DEBUG_GPIO_MODULE         (0)
+#define RT_DEBUG_DTB                 (0)
 
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
+/* Link Layer uses radio low interrupt (0 --> NO ; 1 --> YES) */
+#define USE_RADIO_LOW_ISR                   (1)
 
-#define USE_RADIO_LOW_ISR                   (1)            /* Link Layer uses radio low interrupt (0 --> NO)
-                                                                                                     (1 --> YES)
-                                                               */
+/* Link Layer event scheduling (0 --> NO, next event schediling is done at background ; 1 --> YES) */
+#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
-#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)            /* Link Layer uses radio low interrupt (0 --> NO --> Next event schediling is done at background)
-                                                                                                     (1 --> YES)
-                                                               */
-
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)       /* Link Layer uses temperature based calibration (0 --> NO)
-                                                            *                                               (1 --> YES)
-                                                            */
+/* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
+#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */

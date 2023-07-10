@@ -155,6 +155,12 @@ AMM_Function_Error_t AMM_Init (const AMM_InitParameters_t * const p_InitParams)
   {
     error = AMM_ERROR_BAD_POOL_CONFIG;
   }
+  /* Check that Virtual memories can not be declared without a proper configuration list */
+  else if ((p_InitParams->VirtualMemoryNumber != 0x00) &&
+           (p_InitParams->p_VirtualMemoryConfigList == NULL))
+  {
+      error = AMM_ERROR_BAD_VIRTUAL_CONFIG;
+  }
   else
   {
     neededPoolSize = p_InitParams->VirtualMemoryNumber * AMM_VIRTUAL_INFO_ELEMENT_SIZE;
@@ -165,15 +171,15 @@ AMM_Function_Error_t AMM_Init (const AMM_InitParameters_t * const p_InitParams)
          memIdx++)
     {
       /* Add the amount of needed space for this virtual memory */
-      neededPoolSize = neededPoolSize + p_InitParams->a_VirtualMemoryConfigList[memIdx].BufferSize;
+      neededPoolSize = neededPoolSize + p_InitParams->p_VirtualMemoryConfigList[memIdx].BufferSize;
 
       /* Check the virtual memory ID. Shall not be zero */
-      if (p_InitParams->a_VirtualMemoryConfigList[memIdx].Id == 0)
+      if (p_InitParams->p_VirtualMemoryConfigList[memIdx].Id == 0)
       {
         error = AMM_ERROR_BAD_VIRTUAL_CONFIG;
       }
       /* Check if size is not zero */
-      else if (p_InitParams->a_VirtualMemoryConfigList[memIdx].BufferSize == 0)
+      else if (p_InitParams->p_VirtualMemoryConfigList[memIdx].BufferSize == 0)
       {
         error = AMM_ERROR_BAD_VIRTUAL_CONFIG;
       }
@@ -261,8 +267,8 @@ AMM_Function_Error_t AMM_Init (const AMM_InitParameters_t * const p_InitParams)
                memIdx < AmmVirtualMemoryNumber;
                memIdx++)
           {
-            p_AmmVirtualMemoryList[memIdx].Id = p_InitParams->a_VirtualMemoryConfigList[memIdx].Id;
-            p_AmmVirtualMemoryList[memIdx].RequiredSize = p_InitParams->a_VirtualMemoryConfigList[memIdx].BufferSize;
+            p_AmmVirtualMemoryList[memIdx].Id = p_InitParams->p_VirtualMemoryConfigList[memIdx].Id;
+            p_AmmVirtualMemoryList[memIdx].RequiredSize = p_InitParams->p_VirtualMemoryConfigList[memIdx].BufferSize;
             p_AmmVirtualMemoryList[memIdx].OccupiedSize = 0x00;
 
             AmmRequiredVirtualMemorySize = AmmRequiredVirtualMemorySize + p_AmmVirtualMemoryList[memIdx].RequiredSize;

@@ -112,7 +112,7 @@
 
 /*#define TX_MINIMUM_STACK                200*/
 
-/* Determine if timer expirations (application timers, timeouts, and tx_thread_sleep calls
+/* Determine if timer expirations (application timers, timeouts, and tx_thread_sleep) calls
    should be processed within the a system timer thread or directly in the timer ISR.
    By default, the timer thread is used. When the following is defined, the timer expiration
    processing is done directly from the timer ISR, thereby eliminating the timer thread control
@@ -210,7 +210,7 @@
 
 /* Define the common timer tick reference for use by other middleware components. */
 
-/*#define TX_TIMER_TICKS_PER_SECOND                100*/
+#define TX_TIMER_TICKS_PER_SECOND                128
 
 /* Defined, the basic parameter error checking is disabled. */
 

@@ -56,6 +56,7 @@
 <li>BLE_p2pServer_ota/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
 <li>BLE_p2pServer_ota/System/Config/Flash/simple_nvm_arbiter_conf.h Configuration header for simple_nvm_arbiter.c module</li>
 <li>BLE_p2pServer_ota/System/Config/LowPower/app_sys.h Header for app_sys.c</li>
+<li>BLE_p2pServer_ota/System/Config/LowPower/user_low_power_config.h Header for user_low_power_config.c</li>
 <li>BLE_p2pServer_ota/System/Interfaces/hw.h This file contains the interface of STM32 HW drivers.</li>
 <li>BLE_p2pServer_ota/System/Interfaces/hw_if.h Hardware Interface</li>
 <li>BLE_p2pServer_ota/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
@@ -64,7 +65,6 @@
 <li>BLE_p2pServer_ota/System/Modules/adc_ctrl.h Header for ADC client manager module</li>
 <li>BLE_p2pServer_ota/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
 <li>BLE_p2pServer_ota/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
-<li>BLE_p2pServer_ota/System/Modules/general_config.h This file contains definitions that can be changed to configure some modules of the STM32 firmware application.</li>
 <li>BLE_p2pServer_ota/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
 <li>BLE_p2pServer_ota/System/Modules/scm.h Header for scm.c module</li>
 <li>BLE_p2pServer_ota/System/Modules/stm_list.h Header file for linked list library.</li>
@@ -79,9 +79,11 @@
 <li>BLE_p2pServer_ota/System/Modules/MemoryManager/advanced_memory_manager.h Header for advance_memory_manager.c module</li>
 <li>BLE_p2pServer_ota/System/Modules/MemoryManager/stm32_mm.h Header for stm32_mm.c module</li>
 <li>BLE_p2pServer_ota/System/Modules/Nvm/nvm.h This file contains the interface of the NVM manager.</li>
+<li>BLE_p2pServer_ota/System/Modules/RFControl/rf_antenna_switch.h RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_p2pServer_ota/System/Modules/RTDebug/debug_signals.h Real Time Debug module System and Link Layer signal definition</li>
 <li>BLE_p2pServer_ota/System/Modules/RTDebug/local_debug_tables.h Real Time Debug module System and Link Layer signal</li>
 <li>BLE_p2pServer_ota/System/Modules/RTDebug/RTDebug.h Real Time Debug module API declaration</li>
+<li>BLE_p2pServer_ota/System/Modules/RTDebug/RTDebug_dtb.h Real Time Debug module API declaration for DTB usage</li>
 <li>BLE_p2pServer_ota/Core/Src/app_entry.c Entry point of the application</li>
 <li>BLE_p2pServer_ota/Core/Src/main.c Main program body</li>
 <li>BLE_p2pServer_ota/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
@@ -99,6 +101,7 @@
 <li>BLE_p2pServer_ota/STM32_WPAN/Target/ll_sys_if.c Source file for initiating the system sequencer</li>
 <li>BLE_p2pServer_ota/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
 <li>BLE_p2pServer_ota/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
+<li>BLE_p2pServer_ota/System/Config/LowPower/user_low_power_config.c Low power related user configuration</li>
 <li>BLE_p2pServer_ota/System/Interfaces/hw_aes.c This file contains the AES driver for STM32WBA</li>
 <li>BLE_p2pServer_ota/System/Interfaces/hw_otp.c This file contains the OTP driver.</li>
 <li>BLE_p2pServer_ota/System/Interfaces/hw_pka.c This file contains the PKA driver for STM32WBA</li>
@@ -122,7 +125,9 @@
 <li>BLE_p2pServer_ota/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager</li>
 <li>BLE_p2pServer_ota/System/Modules/MemoryManager/stm32_mm.c Memory Manager</li>
 <li>BLE_p2pServer_ota/System/Modules/Nvm/nvm_emul.c This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose.</li>
+<li>BLE_p2pServer_ota/System/Modules/RFControl/rf_antenna_switch.c RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_p2pServer_ota/System/Modules/RTDebug/RTDebug.c Real Time Debug module API definition</li>
+<li>BLE_p2pServer_ota/System/Modules/RTDebug/RTDebug_dtb.c Real Time Debug module API definition for DTB usage</li>
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
@@ -130,48 +135,57 @@
 <li>Another STM32WBAxx Nucleo board may be necessary to run p2pClient or p2pRouter application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following: - Open your preferred toolchain - Rebuild all files and load your image into target memory: BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000 BLE_p2pServer_ota binary is downloaded at the memory address 0x08004000 - Run the example</p>
+<p>In order to make the program work, you must do the following: - Verify that the Maximum supported ATT_MTU size configured in app_conf.h file is 251 bytes - Open your preferred toolchain - Rebuild all files and load your image into target memory: BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000 BLE_p2pServer_ota binary is downloaded at the memory address 0x08004000 - Run the example</p>
 <p><strong>You can interact with p2pServer_ota application with a smartphone:</strong></p>
 <ul>
 <li>Install and launch ST BLE Toolbox or ST BLE Sensor applications on android or iOS smartphone
 <ul>
 <li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
 <li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
-<li><a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a></li>
+<li><a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
+<ul>
 <li><a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a></li>
 </ul></li>
-<li>Connect to STM32WBA device, select P2PS_WBAxx device in the list, where xx is the 2 last digits of the BD ADDRESS..</li>
-<li>On p2pServer device B1 click, a notification message is sent toward connected smartphone.</li>
-<li>On smartphone interface a write message can be sent toward connected p2pServer device.</li>
-</ul>
-<p><strong>You can interact with p2pServer_ota application with another Nucleo board:</strong></p>
-<ul>
-<li>Power up p2pClient devices next to p2pServer device.</li>
-<li>On p2pClient device button B1 click, scan and then connect is initiated to a p2pServer device surrounding.
-<ul>
-<li>On p2pServer device button B1 click, a notification message is sent toward connected p2pClient device.</li>
-<li>On p2pClient device button B1 click, a write message is sent toward connected p2pServer device.</li>
 </ul></li>
-</ul>
-<p>Adertising is stopped after 60s, button B1 click allows to restart it. When not connected, button B2 click allows to clear security database. Once connected, button B3 click allows to update connection interval parameters.</p>
-<ul>
 <li>Power on the Nucleo board with the BLE_ApplicationInstallManager and BLE_p2pServer_ota applications.</li>
 <li>Open ST BLE Toolbox application: select the P2PS_WBAxx in the device list, where xx is the 2 last digits of the BD ADDRESS.</li>
 <li><p>Scroll right and select either the P2P Server interface or the Over The Air Update Server interface</p></li>
-<li>In the P2P Server interface, click on the LED icon to switch On/Off LED1 of the Nucleo board.</li>
+<li>In the P2P Server interface:
+<ul>
+<li>Click on the LED icon of the application interface to switch On/Off LED1 of the Nucleo board.</li>
 <li>Press the Button B1 of the board to notify the smartphone application.</li>
-<li><p>You can change connection update interval by pressing Button B2.</p></li>
-<li>In the Over The Air Update Server interface, select the STM32WBA device type</li>
+<li>You can change connection update interval by pressing Button B3.</li>
+</ul></li>
+<li>In the Over The Air Update Server interface, select the STM32WBA device type.
+<ul>
 <li>The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary</li>
 <li>Memory mapping is defined as following: the sectors 0 and 1 is reserved for the BLE_ApplicationInstallManager application, sector 2 to sector 61 are dedicated to BLE_p2pServer_ota application, sector 62 to sector 122 are dedicated for the new application, sector 123 is dedicated to User Configuration Data, sector 124 to sector 127 reserved for NVM and Static<br />
 </li>
 <li>When selecting Application Binary the default Address offset 0x07C000 is displayed, the download address of the new application is then: 0x0807C000. An address offset between 0x07C000 to (0x0F4000 - size in sectors of the new application) can be chosen.</li>
 <li>When selecting the User Conf Binary, the Address offset to choose is the address offset of the configured User Configuration Data area defined in the app_conf.h header file, 0x0F6000 in the current BLE_HearRate_ota application example.</li>
-<li>With SELECT FILE you can choose the binary of the new application or the binary of the User Configuration Data to download</li>
+<li>With SELECT FILE you can choose the binary of the new application with OTA or the binary of the User Configuration Data to download</li>
 <li>After this binary choice, a calculated Number of sectors to erase is displayed resulting of the size in sectors of the application or the user configuration data to download</li>
 <li>With the Force it choice, the Number of sectors to erase can be forced or not</li>
 <li>After selecting download icon, the download is in progress</li>
-<li><p>In the case of a new application download, a reboot on this new application is done at the end of the download</p></li>
+<li>In the case of a new application download, a reboot on this new application is done at the end of the download</li>
+</ul></li>
+</ul>
+<p><strong>You can interact with p2pServer_ota application with another Nucleo board:</strong></p>
+<ul>
+<li>Power up p2pClient devices next to p2pServer device.</li>
+<li>On p2pClient device button B1 click, scan and then connect is initiated to a p2pServer device surrounding.</li>
+<li>Once connected:
+<ul>
+<li>On p2pServer device button B1 click, a notification message is sent toward connected p2pClient device.</li>
+<li>On p2pClient device button B1 click, a write message is sent toward connected p2pServer device.</li>
+</ul></li>
+<li>Adertising is stopped after 60s, button B1 click allows to restart it.</li>
+<li>When not connected, button B2 click allows to clear security database.</li>
+<li>Once connected, button B3 click allows to update connection interval parameters.</li>
+</ul>
+<p>Multi connection support:</p>
+<ul>
+<li>Pressing button B2 while the device is already connected starts a new advertising to allow multi-connection.</li>
 </ul>
 </div>
 </div>

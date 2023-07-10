@@ -6,7 +6,7 @@ header-includes: <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png
 ::: {.row}
 ::: {.col-sm-12 .col-lg-8}
 
-# <b>SBSFU Application Description</b>
+## <b>SBSFU Application Description</b>
 
 The SBSFU provides a Root of Trust solution including Secure Boot and Secure Firmware Update functionalities that is used before
 executing the application and provides an example of secure service (GPIO toggle) that is isolated from the non-secure application

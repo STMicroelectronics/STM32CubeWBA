@@ -30,12 +30,18 @@
 
 /* USER CODE END EFP */
 
+/**
+  * @brief  BLE Host stack processing request.
+  * @param  None
+  * @retval None
+  */
 void HostStack_Process(void)
 {
   /* USER CODE BEGIN HostStack_Process 0 */
 
   /* USER CODE END HostStack_Process 0 */
 
+  /* Process BLE Host stack */
   BleStackCB_Process();
 
   /* USER CODE BEGIN HostStack_Process 1 */
@@ -43,11 +49,17 @@ void HostStack_Process(void)
   /* USER CODE END HostStack_Process 1 */
 }
 
+/**
+  * @brief  BLE Host stack processing callback.
+  * @param  None
+  * @retval None
+  */
 void BleStackCB_Process(void)
 {
   /* USER CODE BEGIN BleStackCB_Process 0 */
 
   /* USER CODE END BleStackCB_Process 0 */
+  /* BLE Host stack processing through background task */
   tx_semaphore_put(&BLE_HOST_Thread_Sem);
 
   /* USER CODE BEGIN BleStackCB_Process 1 */

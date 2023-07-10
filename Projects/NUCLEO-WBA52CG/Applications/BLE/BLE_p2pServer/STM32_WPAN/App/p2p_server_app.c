@@ -35,7 +35,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
  typedef struct{
     uint8_t             Device_Led_Selection;
@@ -172,7 +171,7 @@ void P2P_SERVER_APP_EvtRx(P2P_SERVER_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case P2P_SERVER_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 

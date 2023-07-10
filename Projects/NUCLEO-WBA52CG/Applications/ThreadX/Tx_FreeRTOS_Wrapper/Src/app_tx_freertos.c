@@ -114,6 +114,7 @@ void LEDThread_Entry(void *argument)
 
     /* Delay for 500ms */
     vTaskDelay(pdMS_TO_TICKS(500));
+
   }
 }
 /* USER CODE END 1 */

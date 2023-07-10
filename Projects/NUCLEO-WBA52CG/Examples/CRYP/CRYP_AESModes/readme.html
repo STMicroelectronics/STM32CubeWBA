@@ -50,13 +50,17 @@
 <li>AES256 CTR decryption</li>
 </ul></li>
 </ol>
-<p>When resorting to IAR Embedded Workbench IDE, AES algorithms processing status are displayed on debugger Terminal I/O as follows: View –&gt; Terminal I/O. When resorting to MDK-ARM KEIL IDE, AES algorithms processing status are displayed on debugger as follows: View –&gt; Serial Viewer –&gt; Debug (printf) Viewer. When resorting to STM32CubeIDE:</p>
-<p>Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console. In Debug configuration :</p>
+<ul>
+<li><p>When resorting to IAR Embedded Workbench IDE, AES algorithms processing status are displayed on debugger Terminal I/O as follows: View –&gt; Terminal I/O.</p></li>
+<li><p>When resorting to MDK-ARM KEIL IDE, AES algorithms processing status are displayed on debugger as follows: View –&gt; Serial Viewer –&gt; Debug (printf) Viewer.</p></li>
+<li><p>When resorting to STM32CubeIDE: Command Code is displayed on debugger as follows: Window–&gt; Show View–&gt; Console.</p>
+<p>In Debug configuration :</p>
 <ul>
 <li>Window, select the Debug probe : ST-LINK(OpenOCD)</li>
-<li>Window Startup,add the command “monitor arm semihosting enable”</li>
+<li>Window, add the command “monitor arm semihosting enable”</li>
+</ul></li>
 </ul>
-<p>Results can be displayed on PC (through HyperTerminal or TeraTerm) by Virtual Com Port in enabling USE_VCP_CONNECTION compilation switch and with the proper configuration (115200 bauds, 8 bits data, 1 stop bit, no parity, no HW flow control).</p>
+<p>Results can be displayed on PC (through HyperTerminal or TeraTerm) by Virtual Com Port by enabling USE_VCP_CONNECTION compilation switch with adding (#define USE_VCP_CONNECTION 1) in stm32wbaxx_nucleo_conf.h and with the proper configuration (115200 bauds, 8 bits data, 1 stop bit, no parity, no HW flow control).</p>
 <p>When all ciphering and deciphering operations are successful, LD1 is turned on. In case of ciphering or deciphering issue, LD3 is turned on.</p>
 <h3 id="keywords"><b>Keywords</b></h3>
 <p>Security, Cryptography, CRYPT, AES, ECB, CBC, CTR, MAC, USART</p>
@@ -76,6 +80,7 @@
 <ul>
 <li><p>This example runs on STM32WBA52CGUx devices.</p></li>
 <li><p>This example has been tested with a STM32WBA52CGUx embedded on an NUCLEO-WBA52CG board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>To be able to display data on MDK-ARM debugger please make sure to close the SB12</p></li>
 </ul>
 <h3 id="how-to-use-it"><b>How to use it ?</b></h3>
 <p>In order to make the program work, you must do the following:</p>

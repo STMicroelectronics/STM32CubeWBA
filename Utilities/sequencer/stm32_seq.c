@@ -297,22 +297,26 @@ void UTIL_SEQ_Run( UTIL_SEQ_bm_t Mask_bm )
 
   /* the set of CurrentTaskIdx to no task running allows to call WaitEvt in the Pre/Post ilde context */
   CurrentTaskIdx = UTIL_SEQ_NOTASKRUNNING;
-  UTIL_SEQ_PreIdle( );
-
-  UTIL_SEQ_ENTER_CRITICAL_SECTION_IDLE( );
-  local_taskset = TaskSet;
-  local_evtset = EvtSet;
-  local_taskmask = TaskMask;
-  if ((local_taskset & local_taskmask & SuperMask) == 0U)
+  /* if a waited event is present, ignore the IDLE sequence */
+  if ((local_evtset & EvtWaited)== 0U)
   {
-    if ((local_evtset & EvtWaited)== 0U)
-    {
-      UTIL_SEQ_Idle( );
-    }
-  }
-  UTIL_SEQ_EXIT_CRITICAL_SECTION_IDLE( );
+    UTIL_SEQ_PreIdle( );
 
-  UTIL_SEQ_PostIdle( );
+    UTIL_SEQ_ENTER_CRITICAL_SECTION_IDLE( );
+    local_taskset = TaskSet;
+    local_evtset = EvtSet;
+    local_taskmask = TaskMask;
+    if ((local_taskset & local_taskmask & SuperMask) == 0U)
+    {
+      if ((local_evtset & EvtWaited)== 0U)
+      {
+        UTIL_SEQ_Idle( );
+      }
+    }
+    UTIL_SEQ_EXIT_CRITICAL_SECTION_IDLE( );
+
+    UTIL_SEQ_PostIdle( );
+  }
 
   /* restore the mask from UTIL_SEQ_Run() */
   SuperMask = super_mask_backup;
@@ -330,6 +334,20 @@ void UTIL_SEQ_RegTask(UTIL_SEQ_bm_t TaskId_bm, uint32_t Flags, void (*Task)( voi
   UTIL_SEQ_EXIT_CRITICAL_SECTION();
 
   return;
+}
+
+uint32_t UTIL_SEQ_IsRegisteredTask(UTIL_SEQ_bm_t TaskId_bm )
+{
+  uint32_t _status = 0;
+  UTIL_SEQ_ENTER_CRITICAL_SECTION();
+
+  if ( TaskCb[SEQ_BitPosition(TaskId_bm)] != NULL )
+  { 
+    _status = 1; 
+  }
+
+  UTIL_SEQ_EXIT_CRITICAL_SECTION();
+  return _status;
 }
 
 void UTIL_SEQ_SetTask( UTIL_SEQ_bm_t TaskId_bm , uint32_t Task_Prio )

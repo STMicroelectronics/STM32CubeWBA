@@ -18,7 +18,7 @@ HASH tool. Those values are compared to those computed by the HASH peripheral.
 
 ### <b>Keywords</b>
 
-System, Security, HASH, HMAC, SHA1, MD5, digest
+System, Security, HASH, SHA1, MD5, digest
 
 #### <b>Notes</b>
 
@@ -27,7 +27,7 @@ System, Security, HASH, HMAC, SHA1, MD5, digest
     a peripheral ISR process, then the SysTick interrupt must have higher priority (numerically lower)
     than the peripheral interrupt. Otherwise the caller ISR process will be blocked.
     To change the SysTick interrupt priority you have to use HAL_NVIC_SetPriority() function.
-      
+
  2. The application need to ensure that the SysTick time base is always set to 1 millisecond
     to have correct HAL operation.
 
@@ -36,14 +36,14 @@ System, Security, HASH, HMAC, SHA1, MD5, digest
   - HASH/HASH_SHA1MD5/Inc/stm32wbaxx_nucleo_conf.h BSP configuration file
   - HASH/HASH_SHA1MD5/Inc/stm32wbaxx_hal_conf.h    HAL configuration file
   - HASH/HASH_SHA1MD5/Inc/stm32wbaxx_it.h          Interrupt handlers header file
-  - HASH/HASH_SHA1MD5/Inc/main.h                   Header for main.c module  
+  - HASH/HASH_SHA1MD5/Inc/main.h                   Header for main.c module
   - HASH/HASH_SHA1MD5/Src/stm32wbaxx_it.c          Interrupt handlers
   - HASH/HASH_SHA1MD5/Src/main.c                   Main program
   - HASH/HASH_SHA1MD5/Src/stm32wbaxx_hal_msp.c     HAL MSP module
   - HASH/HASH_SHA1MD5/Src/system_stm32wbaxx.c      STM32WBAxx system source file
 
 
-### <b>Hardware and Software environment</b> 
+### <b>Hardware and Software environment</b>
 
   - This example runs on STM32WBA52CGUx devices.
 

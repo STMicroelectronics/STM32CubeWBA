@@ -37,7 +37,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 typedef enum
 {
@@ -93,7 +92,7 @@ typedef struct
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-
+extern uint16_t MTUSizeValue;
 /* USER CODE END EV */
 
 /* Private macros ------------------------------------------------------------*/
@@ -101,8 +100,8 @@ typedef struct
 #define DELAY_1S (1000)
 #define TIMEUNIT  1
 
-#define BOUNCE_THRESHOLD                20U
-#define LONG_PRESS_THRESHOLD            1000U
+#define BOUNCE_THRESHOLD                  (20U)
+#define LONG_PRESS_THRESHOLD              (1000U)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -143,7 +142,7 @@ void DT_SERV_Notification(DT_SERV_NotificationEvt_t *p_Notification)
     case DT_SERV_TX_CHAR_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
       DTS_Context.NotificationTransferReq = DTS_APP_TRANSFER_REQ_ON;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
       /* USER CODE END Service1Char1_NOTIFY_ENABLED_EVT */
       break;
 
@@ -208,7 +207,7 @@ void DT_SERV_APP_EvtRx(DT_SERV_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case DT_SERV_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
       DTS_Context.connectionstatus = APP_BLE_CONNECTED_SERVER;
@@ -254,17 +253,17 @@ void DT_SERV_APP_Init(void)
   
   UTIL_TIMER_SetPeriod(&(DT_SERV_APP_Context.TimerDataThroughputWrite_Id), DELAY_1S);
   
-  UTIL_SEQ_RegTask( 1<<CFG_TASK_DATA_PHY_UPDATE_ID, UTIL_SEQ_RFU, BLE_SVC_GAP_Change_PHY);
-  UTIL_SEQ_RegTask( 1<<CFG_TASK_CONN_INTERV_UPDATE_ID, UTIL_SEQ_RFU, BLE_SVC_L2CAP_Conn_Update);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DATA_PHY_UPDATE_ID, UTIL_SEQ_RFU, BLE_SVC_GAP_Change_PHY);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_CONN_INTERV_UPDATE_ID, UTIL_SEQ_RFU, BLE_SVC_L2CAP_Conn_Update);
   
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_DATA_TRANSFER_UPDATE_ID, UTIL_SEQ_RFU, SendData);
-  UTIL_SEQ_RegTask(1<<CFG_TASK_DATA_WRITE_ID, UTIL_SEQ_RFU, BLE_App_Delay_DataThroughput);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DATA_TRANSFER_UPDATE_ID, UTIL_SEQ_RFU, SendData);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DATA_WRITE_ID, UTIL_SEQ_RFU, BLE_App_Delay_DataThroughput);
   
   /**
    * Initialize data buffer
    */
   uint8_t i;
-  for (i=0 ; i<(DATA_NOTIFICATION_MAX_PACKET_SIZE-1) ; i++)
+  for (i = 0 ; i< (DATA_NOTIFICATION_MAX_PACKET_SIZE - 1) ; i++)
   {
     Notification_Data_Buffer[i] = i;
   }
@@ -296,7 +295,7 @@ void DTS_Button1TriggerReceived( void )
     {
       BSP_LED_On(LED_BLUE);
       DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_ON;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
     }
   }
   BleStackCB_Process();
@@ -320,7 +319,7 @@ void DTS_Button2TriggerReceived( void )
   }
   else
   {
-    UTIL_SEQ_SetTask(1 << CFG_TASK_CONN_INTERV_UPDATE_ID, CFG_SCH_PRIO_0);
+    UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_INTERV_UPDATE_ID, CFG_SEQ_PRIO_0);
   }
   BleStackCB_Process();
   return;
@@ -334,7 +333,7 @@ void DTS_Button3TriggerReceived( void )
   }
   else
   {
-    UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_PHY_UPDATE_ID, CFG_SCH_PRIO_0);
+    UTIL_SEQ_SetTask(1U << CFG_TASK_DATA_PHY_UPDATE_ID, CFG_SEQ_PRIO_0);
   }
   BleStackCB_Process();
   return;
@@ -417,7 +416,7 @@ static void BLE_App_Delay_DataThroughput(void)
 
 static void DataThroughput_proc(void *arg){
   
-  UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_WRITE_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_DATA_WRITE_ID, CFG_SEQ_PRIO_0);
 }
 
 static void SendData( void )
@@ -432,11 +431,11 @@ static void SendData( void )
     /*Data Packet to send to remote*/
     Notification_Data_Buffer[0] += 1;
     /* compute CRC */
-    crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (DATA_NOTIFICATION_MAX_PACKET_SIZE - 1));
-    Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE - 1] = crc_result;
+    crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (MTUSizeValue - 1));
+    Notification_Data_Buffer[MTUSizeValue - 1] = crc_result;
 
     DTS_Context.TxData.p_Payload = Notification_Data_Buffer;
-    DTS_Context.TxData.Length =  DATA_NOTIFICATION_MAX_PACKET_SIZE;
+    DTS_Context.TxData.Length =  MTUSizeValue;
 
     status = DT_SERV_UpdateValue(DT_SERV_TX_CHAR, (DT_SERV_Data_t *) &DTS_Context.TxData);
     
@@ -447,7 +446,7 @@ static void SendData( void )
     }
     else
     {
-      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
     }
   }
 
@@ -458,6 +457,6 @@ static void SendData( void )
 void Resume_Notification(void)
 {
   DTS_Context.DtFlowStatus = DTS_APP_FLOW_ON;
-  UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
 }
 /* USER CODE END FD_LOCAL_FUNCTIONS*/

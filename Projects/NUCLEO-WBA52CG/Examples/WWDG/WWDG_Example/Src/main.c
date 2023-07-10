@@ -56,8 +56,8 @@ uint32_t WwdgStatus = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_WWDG_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_WWDG_Init(void);
 /* USER CODE BEGIN PFP */
 static uint32_t TimeoutCalculation(uint32_t timevalue);
 
@@ -126,8 +126,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_WWDG_Init();
   MX_ICACHE_Init();
+  MX_WWDG_Init();
   /* USER CODE BEGIN 2 */
   /* Configure USER push-button */
   BSP_PB_Init(B1, BUTTON_MODE_EXTI);

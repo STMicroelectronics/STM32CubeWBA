@@ -35,10 +35,12 @@ void (*low_isr_callback)(void) = NULL;
 
 /* RNG handle */
 extern RNG_HandleTypeDef hrng;
-extern void HAL_Generate_Random_Bytes_To( uint8_t* out, uint8_t n );
+
+/* Link Layer temperature request from background */
 extern void ll_sys_bg_temperature_measurement(void);
 
 /* Radio critical sections */
+static uint32_t primask_bit = 0;
 volatile int32_t prio_high_isr_counter = 0;
 volatile int32_t prio_low_isr_counter = 0;
 volatile int32_t prio_sys_isr_counter = 0;
@@ -49,10 +51,7 @@ volatile uint32_t local_basepri_value = 0;
 volatile uint8_t radio_sw_low_isr_is_running_high_prio = 0;
 
 /**
-  * @brief  Configure the necessary clock sources for the radio :
-  *         -  HSE32 (bus clk)
-  *         -  LSE  (sleep clk)
-  *         Enable radio AHB5ENR peripheral bus clock
+  * @brief  Configure the necessary clock sources for the radio.
   * @param  None
   * @retval None
   */
@@ -65,6 +64,11 @@ void LINKLAYER_PLAT_ClockInit()
   __HAL_RCC_RADIO_CLK_ENABLE();
 }
 
+/**
+  * @brief  Link Layer active waiting loop.
+  * @param  delay: delay in us
+  * @retval None
+  */
 void LINKLAYER_PLAT_DelayUs(uint32_t delay)
 {
 __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
@@ -75,26 +79,32 @@ __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
 	while (Delay --);
 }
 
+/**
+  * @brief  Link Layer assertion API
+  * @param  condition: conditional statement to be checked.
+  * @retval None
+  */
 void LINKLAYER_PLAT_Assert(uint8_t condition)
 {
   assert_param(condition);
 }
 
-void LINKLAYER_PLAT_HclkEnable()
-{
-  __HAL_RCC_RADIO_CLK_ENABLE();
-}
-
-void LINKLAYER_PLAT_HclkDisable()
-{
-
-}
-
+/**
+  * @brief  Enable/disable the Link Layer active clock (baseband clock).
+  * @param  enable: boolean value to enable (1) or disable (0) the clock.
+  * @retval None
+  */
 void LINKLAYER_PLAT_WaitHclkRdy(void)
 {
+  /* Wait on radio bus clock readiness */
   while(HAL_RCCEx_GetRadioBusClockReadiness() != RCC_RADIO_BUS_CLOCK_READY);
 }
 
+/**
+  * @brief  Active wait on bus clock readiness.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
 {
   if(enable){
@@ -111,11 +121,39 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
   }
 }
 
+/**
+  * @brief  Link Layer RNG request.
+  * @param  ptr_rnd: pointer to the variable that hosts the number.
+  * @param  len: number of byte of anthropy to get.
+  * @retval None
+  */
 void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
 {
-  HAL_Generate_Random_Bytes_To( ptr_rnd, (uint8_t)len );
+  uint32_t nb_remaining_rng = len;
+  uint32_t generated_rng;
+
+  /* Get the requested RNGs (4 bytes by 4bytes) */
+  while(nb_remaining_rng >= 4)
+  {
+    generated_rng = 0;
+    HW_RNG_Get(1, &generated_rng);
+    memcpy((ptr_rnd+(len-nb_remaining_rng)), &generated_rng, 4);
+    nb_remaining_rng -=4;
+  }
+
+  /* Get the remaining number of RNGs */
+  if(nb_remaining_rng>0){
+    generated_rng = 0;
+    HW_RNG_Get(1, &generated_rng);
+    memcpy((ptr_rnd+(len-nb_remaining_rng)), &generated_rng, nb_remaining_rng);
+  }
 }
 
+/**
+  * @brief  Initialize Link Layer radio high priority interrupt.
+  * @param  intr_cb: function pointer to assign for the radio high priority ISR routine.
+  * @retval None
+  */
 void LINKLAYER_PLAT_SetupRadioIT(void (*intr_cb)())
 {
   radio_callback = intr_cb;
@@ -123,6 +161,11 @@ void LINKLAYER_PLAT_SetupRadioIT(void (*intr_cb)())
   HAL_NVIC_EnableIRQ((IRQn_Type) RADIO_INTR_NUM);
 }
 
+/**
+  * @brief  Initialize Link Layer SW low priority interrupt.
+  * @param  intr_cb: function pointer to assign for the SW low priority ISR routine.
+  * @retval None
+  */
 void LINKLAYER_PLAT_SetupSwLowIT(void (*intr_cb)())
 {
   low_isr_callback = intr_cb;
@@ -131,6 +174,11 @@ void LINKLAYER_PLAT_SetupSwLowIT(void (*intr_cb)())
   HAL_NVIC_EnableIRQ((IRQn_Type) RADIO_SW_LOW_INTR_NUM);
 }
 
+/**
+  * @brief  Trigger the link layer SW low interrupt.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_TriggerSwLowIT(uint8_t priority)
 {
   uint8_t low_isr_priority = RADIO_INTR_PRIO_LOW;
@@ -167,22 +215,48 @@ void LINKLAYER_PLAT_TriggerSwLowIT(uint8_t priority)
   HAL_NVIC_SetPendingIRQ((IRQn_Type) RADIO_SW_LOW_INTR_NUM);
 }
 
+/**
+  * @brief  Enable interrupts.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_EnableIRQ(void)
 {
   irq_counter = max(0,irq_counter-1);
 
   if(irq_counter == 0)
   {
-    __enable_irq();
+    /* When irq_counter reaches 0, restore primask bit */
+    __set_PRIMASK(primask_bit);
   }
 }
 
+/**
+  * @brief  Disable interrupts.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_DisableIRQ(void)
 {
+  if(irq_counter == 0)
+  {
+    /* Save primask bit at first interrupt disablement */
+    primask_bit= __get_PRIMASK();
+  }
   __disable_irq();
   irq_counter ++;
 }
 
+/**
+  * @brief  Enable specific interrupt group.
+  * @param  isr_type: mask for interrupt group to enable.
+  *         This parameter can be one of the following:
+  *         @arg LL_HIGH_ISR_ONLY: enable link layer high priority ISR.
+  *         @arg LL_LOW_ISR_ONLY: enable link layer SW low priority ISR.
+  *         @arg SYS_LOW_ISR: mask interrupts for all the other system ISR with
+  *              lower priority that link layer SW low interrupt.
+  * @retval None
+  */
 void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
 {
   if( (isr_type & LL_HIGH_ISR_ONLY) != 0 )
@@ -190,6 +264,7 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
     prio_high_isr_counter--;
     if(prio_high_isr_counter == 0)
     {
+      /* When specific counter for link layer high ISR reaches 0, interrupt is enabled */
       HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
     }
   }
@@ -199,6 +274,7 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
     prio_low_isr_counter--;
     if(prio_low_isr_counter == 0)
     {
+      /* When specific counter for link layer SW low ISR reaches 0, interrupt is enabled */
       HAL_NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
     }
 
@@ -209,11 +285,22 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
     prio_sys_isr_counter--;
     if(prio_sys_isr_counter == 0)
     {
+      /* Restore basepri value */
       __set_BASEPRI(local_basepri_value);
     }
   }
 }
 
+/**
+  * @brief  Disable specific interrupt group.
+  * @param  isr_type: mask for interrupt group to disable.
+  *         This parameter can be one of the following:
+  *         @arg LL_HIGH_ISR_ONLY: disable link layer high priority ISR.
+  *         @arg LL_LOW_ISR_ONLY: disable link layer SW low priority ISR.
+  *         @arg SYS_LOW_ISR: unmask interrupts for all the other system ISR with
+  *              lower priority that link layer SW low interrupt.
+  * @retval None
+  */
 void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
 {
   if( (isr_type & LL_HIGH_ISR_ONLY) != 0 )
@@ -221,6 +308,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
     prio_high_isr_counter++;
     if(prio_high_isr_counter == 1)
     {
+      /* When specific counter for link layer high ISR value is 1, interrupt is disabled */
       HAL_NVIC_DisableIRQ(RADIO_INTR_NUM);
     }
   }
@@ -230,6 +318,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
     prio_low_isr_counter++;
     if(prio_low_isr_counter == 1)
     {
+      /* When specific counter for link layer SW low ISR value is 1, interrupt is disabled */
       HAL_NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
     }
   }
@@ -239,22 +328,40 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
     prio_sys_isr_counter++;
     if(prio_sys_isr_counter == 1)
     {
+      /* Save basepri register value */
       local_basepri_value = __get_BASEPRI();
+
+      /* Mask all other interrupts with lower priority that link layer SW low ISR */
       __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW<<4);
     }
   }
 }
 
+/**
+  * @brief  Enable link layer high priority ISR only.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_EnableRadioIT(void)
 {
   HAL_NVIC_EnableIRQ((IRQn_Type) RADIO_INTR_NUM);
 }
 
+/**
+  * @brief  Disable link layer high priority ISR only.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_DisableRadioIT(void)
 {
   HAL_NVIC_DisableIRQ((IRQn_Type) RADIO_INTR_NUM);
 }
 
+/**
+  * @brief  Link Layer notification for radio activity start.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
@@ -262,6 +369,11 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
   scm_notifyradiostate(SCM_RADIO_ACTIVE);
 }
 
+/**
+  * @brief  Link Layer notification for radio activity end.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
@@ -269,6 +381,11 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
 }
 
+/**
+  * @brief  Link Layer requests temperature.
+  * @param  None
+  * @retval None
+  */
 void LINKLAYER_PLAT_RequestTemperature(void)
 {
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)

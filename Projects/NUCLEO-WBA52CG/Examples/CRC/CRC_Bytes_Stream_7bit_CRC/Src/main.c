@@ -82,8 +82,8 @@ uint32_t uwExpectedCRCValue_4 = 0x00000026;    /* Fourth byte stream CRC */
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_CRC_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -129,8 +129,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CRC_Init();
   MX_ICACHE_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   /* Configure LD2 and LD3 */
   BSP_LED_Init(LD2);

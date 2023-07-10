@@ -59,8 +59,8 @@ uint32_t WaitingDelay = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_IWDG_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -117,8 +117,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_IWDG_Init();
   MX_ICACHE_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   /* Configure USER push-button */

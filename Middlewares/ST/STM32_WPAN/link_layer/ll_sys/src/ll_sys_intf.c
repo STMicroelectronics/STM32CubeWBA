@@ -28,7 +28,6 @@
   */
 void ll_sys_init()
 {
-  ll_sys_radio_hclk_ctrl_init();
   LINKLAYER_PLAT_ClockInit();	
 }
 
@@ -122,13 +121,11 @@ void ll_sys_radio_evt_not(uint8_t start)
 {
   if(start)
   {
-    ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_EVT, LL_SYS_RADIO_HCLK_ON);
     LINKLAYER_PLAT_StartRadioEvt();
   }
   
   else
   {
-    ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_EVT, LL_SYS_RADIO_HCLK_OFF);
     LINKLAYER_PLAT_StopRadioEvt();
   }
 }
@@ -152,10 +149,8 @@ void ll_sys_bg_process(void)
 {
   if(emngr_can_mcu_sleep() == 0)
   {        
-    ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
     ll_sys_dp_slp_exit();
     emngr_handle_all_events();
-    ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
     
     HostStack_Process();
   }

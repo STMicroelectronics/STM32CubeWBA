@@ -55,9 +55,9 @@ uint8_t SBuffer[32] = {0};
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RNG_Init(void);
 static void MX_PKA_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 void     LED_On(void);
@@ -109,9 +109,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RNG_Init();
   MX_PKA_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
    LL_mDelay(1); 
   /* Set mode to ECDSA signature generation in interrupt mode */
@@ -234,22 +234,12 @@ void SystemClock_Config(void)
   {
   }
 
-   /* Intermediate AHB prescaler 2 when target frequency clock is higher than 80 MHz */
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
-
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1R);
 
    /* Wait till System clock is ready */
   while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1R)
   {
   }
-
-  /* Insure 1us transition state at intermediate medium speed clock based on DWT*/
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-  DWT->CYCCNT = 0;
-  while(DWT->CYCCNT < 100);
 
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
   LL_RCC_SetAHB5Prescaler(LL_RCC_AHB5_DIV_4);

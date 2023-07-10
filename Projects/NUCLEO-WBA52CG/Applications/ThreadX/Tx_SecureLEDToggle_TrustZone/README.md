@@ -4,9 +4,9 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
 The application is running ThreadX thread in non-secure context that is invoking a secure function to toggle a led each 1 sec.
 The main entry function tx_application_define() is called by ThreadX during kernel start, at the non-secure stage, the application creates 1 thread :
 
-  - MainThread (Prio : 5; Preemption Threshold : 5)
+  - tx_app_thread (Prio : 5; Preemption Threshold : 5)
 
-Once started, the <b>MainThread</b> toggle the LED_GREEN before sleeping for 1s.
+Once started, the <b>tx_app_thread</b> toggle the LED_GREEN before sleeping for 1s.
 
 This project is composed of two sub-projects:
 

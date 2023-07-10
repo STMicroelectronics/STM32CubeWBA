@@ -23,8 +23,6 @@
 #define APP_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "hw_if.h"
-#include "stm32_adv_trace.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -453,11 +451,6 @@ typedef enum
  */
 #define SYS_MAX_MSG                 (200U)
 
-/**
- * Timeout for advertising
- */
-#define INITIAL_ADV_TIMEOUT            (60*1000) /**< 60s */
-
 /* USER CODE BEGIN Traces */
 
 /* USER CODE END Traces */
@@ -526,13 +519,13 @@ typedef enum
  */
 typedef enum
 {
-    CFG_SCH_PRIO_0,
-    CFG_SCH_PRIO_1,
-  /* USER CODE BEGIN CFG_SCH_Prio_Id_t */
+    CFG_SEQ_PRIO_0,
+    CFG_SEQ_PRIO_1,
+  /* USER CODE BEGIN CFG_SEQ_PRIO_Id_t */
 
-  /* USER CODE END CFG_SCH_Prio_Id_t */
+  /* USER CODE END CFG_SEQ_PRIO_Id_t */
   CFG_PRIO_NBR
-} CFG_SCH_Prio_Id_t;
+} CFG_SEQ_PRIO_Id_t;
 
 /**
  * This is a bit mapping over 32bits listing all events id supported in the application
@@ -609,7 +602,7 @@ typedef enum
 
 #define RADIO_INTR_NUM            RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                   (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                    (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                    (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM     HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */

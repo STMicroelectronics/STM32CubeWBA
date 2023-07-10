@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAx_DFP.0.0.1</PackID>
+          <PackID>Keil.STM32WBAx_DFP.1.0.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32WBA52CGUx$CMSIS\SVD\STM32WBAxx.svd</SFDFile>
+          <SFDFile>$$Device:STM32WBA52CGUx$CMSIS\SVD\STM32WBA52.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -371,10 +371,11 @@
             <TextAddressRange></TextAddressRange>
             <DataAddressRange></DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile></ScatterFile>
+            <ScatterFile>stm32wba52xx_flash.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc></Misc>
+            <Misc>--diag_suppress L6314W
+--diag_suppress 1296</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>

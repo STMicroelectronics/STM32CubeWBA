@@ -697,7 +697,7 @@
       <archiveVersion>1</archiveVersion>
       <data>
         <prebuild>$PROJ_DIR$\prebuild.cmd "$PROJ_DIR$" "STM32WBA52xx"</prebuild>
-        <postbuild>cmd /C "cmd /C $PROJ_DIR$\postbuild.bat""</postbuild>
+        <postbuild>cmd /C "cmd /C $PROJ_DIR$\postbuild.bat"</postbuild>
       </data>
     </settings>
     <settings>
@@ -717,7 +717,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>Project.out</state>
+          <state>NUCLEO-WBA52CG.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>

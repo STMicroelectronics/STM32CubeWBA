@@ -12,25 +12,17 @@
   *           - Setup behavior of Floating Point Unit
   *           - Setup Interrupt Target
   *
-  ******************************************************************************/
-/*
-  * Copyright (c) 2023 STMicroelectronics, all rights reserved
+  ******************************************************************************
+  * @attention
   *
-  * SPDX-License-Identifier: Apache-2.0
-
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
- * Licensed under the Apache License, Version 2.0 (the License); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
- * http://www.apache.org/licenses/LICENSE-2.0
-   *
-
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+  ******************************************************************************
  */
 /* USER CODE END Header */
 
@@ -83,13 +75,12 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-
 #define SAU_INIT_START0     0x08080000      /* start address of SAU region 0 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END0       0x081FFFFF      /* end address of SAU region 0 */
+#define SAU_INIT_END0       0x080FFFFF      /* end address of SAU region 0 */
 
 /*
 //     <o>Region is
@@ -432,23 +423,23 @@
 //   <o.3>  GPDMA_Channel6_IRQn   <0=> Secure state
 //   <o.4>  GPDMA_Channel7_IRQn   <0=> Secure state
 //   <o.5>  TIM1_BRK_IRQn         <0=> Secure state
-//   <o.6> TIM1_UP_IRQn           <0=> Secure state
-//   <o.7> TIM1_TRG_COM_IRQn      <0=> Secure state
-//   <o.8> TIM1_CC_IRQn           <0=> Secure state
-//   <o.9> TIM2_IRQn              <0=> Secure state
+//   <o.6>  TIM1_UP_IRQn          <0=> Secure state
+//   <o.7>  TIM1_TRG_COM_IRQn     <0=> Secure state
+//   <o.8>  TIM1_CC_IRQn          <0=> Secure state
+//   <o.9>  TIM2_IRQn             <0=> Secure state
 //   <o.10> TIM3_IRQn             <0=> Secure state
 //   <o.11> I2C1_EV_IRQn          <0=> Secure state
 //   <o.12> I2C1_ER_IRQn          <0=> Secure state
-//   <o.13> I2C3_EV_IRQn          <0=> Secure state
-//   <o.14> I2C3_ER_IRQn          <0=> Secure state
-//   <o.15> SPI1_IRQn             <0=> Secure state
-//   <o.16> USART1_IRQn           <0=> Secure state
-//   <o.17> USART2_IRQn           <0=> Secure state
-//   <o.18> LPUART1_IRQn          <0=> Secure state
-//   <o.19> LPTIM1_IRQn           <0=> Secure state
-//   <o.20> LPTIM2_IRQn           <0=> Secure state
-//   <o.21> TIM16_IRQn            <0=> Secure state
-//   <o.22> TIM17_IRQn            <0=> Secure state
+//   <o.13> SPI1_IRQn             <0=> Secure state
+//   <o.14> USART1_IRQn           <0=> Secure state
+//   <o.15> USART2_IRQn           <0=> Secure state
+//   <o.16> LPUART1_IRQn          <0=> Secure state
+//   <o.17> LPTIM1_IRQn           <0=> Secure state
+//   <o.18> LPTIM2_IRQn           <0=> Secure state
+//   <o.19> TIM16_IRQn            <0=> Secure state
+//   <o.20> TIM17_IRQn            <0=> Secure state
+//   <o.22> I2C3_EV_IRQn          <0=> Secure state
+//   <o.23> I2C3_ER_IRQn          <0=> Secure state
 //   <o.25> TSC_IRQn              <0=> Secure state
 //   <o.26> AES_IRQn              <0=> Secure state
 //   <o.27> RNG_IRQn              <0=> Secure state

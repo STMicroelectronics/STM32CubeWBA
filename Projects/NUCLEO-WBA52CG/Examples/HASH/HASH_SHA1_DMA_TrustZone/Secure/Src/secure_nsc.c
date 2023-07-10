@@ -88,7 +88,9 @@ CMSE_NS_ENTRY ErrorStatus SECURE_HASH_SHA1_8BITS(uint8_t *pInputData, uint32_t I
     if (HAL_HASH_Start_DMA(&hhash, pInputData, InputDataSize,pOutputSignature) == HAL_OK)
     {
       /* Wait for DMA transfer to complete */
-      while (HAL_HASH_GetState(&hhash) == HAL_HASH_STATE_BUSY);
+      while (HAL_HASH_GetState(&hhash) == HAL_HASH_STATE_BUSY)
+      {
+      }
        ret = SUCCESS;
     }
     else

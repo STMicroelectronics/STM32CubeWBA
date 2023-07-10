@@ -61,8 +61,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
-static void MX_GPDMA1_Init(void);
-static void MX_ADC4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -106,12 +104,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
   MX_USART1_UART_Init();
   MX_ADC4_Init();
   MX_RNG_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -196,7 +194,8 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST|RCC_PERIPHCLK_SYSTICK;
+  PeriphClkInit.SystickClockSelection = RCC_SYSTICKCLKSOURCE_HCLK_DIV8;
   PeriphClkInit.RadioSlpTimClockSelection = RCC_RADIOSTCLKSOURCE_LSE;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -210,7 +209,7 @@ void PeriphCommonClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_ADC4_Init(void)
+void MX_ADC4_Init(void)
 {
 
   /* USER CODE BEGIN ADC4_Init 0 */
@@ -220,7 +219,7 @@ static void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-
+  memset(&hadc4, 0, sizeof(hadc4));
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -302,7 +301,7 @@ void MX_CRC_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPDMA1_Init(void)
+void MX_GPDMA1_Init(void)
 {
 
   /* USER CODE BEGIN GPDMA1_Init 0 */
@@ -544,7 +543,6 @@ void MX_USART1_UART_Init(void)
   */
 void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
@@ -552,72 +550,22 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-
-  /*Configure GPIO pins : PB11 PB10 PB9 PB8
-                           PB5 PB4 PB3 PB2
-                           PB1 PB0 PB15 PB14
-                           PB13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_10|GPIO_PIN_9|GPIO_PIN_8
-                          |GPIO_PIN_5|GPIO_PIN_4|GPIO_PIN_3|GPIO_PIN_2
-                          |GPIO_PIN_1|GPIO_PIN_0|GPIO_PIN_15|GPIO_PIN_14
-                          |GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PA7 PA6 PA5 PA3
-                           PA2 PA1 PA0 PA15
-                           PA12 PA11 PA10 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6|GPIO_PIN_5|GPIO_PIN_3
-                          |GPIO_PIN_2|GPIO_PIN_1|GPIO_PIN_0|GPIO_PIN_15
-                          |GPIO_PIN_12|GPIO_PIN_11|GPIO_PIN_10|GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB7 PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PH3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
   /*RT DEBUG GPIO_Init */
   RT_DEBUG_GPIO_Init();
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI6_IRQn, 9, 0);
-  HAL_NVIC_EnableIRQ(EXTI6_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI7_IRQn, 9, 0);
-  HAL_NVIC_EnableIRQ(EXTI7_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI13_IRQn, 9, 0);
-  HAL_NVIC_EnableIRQ(EXTI13_IRQn);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 #if (CFG_DBG_SUPPORTED == 0)
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_13;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitTypeDef DbgIOsInit = {0};
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_13;
+  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
   
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif
 /* USER CODE END MX_GPIO_Init_2 */
 }

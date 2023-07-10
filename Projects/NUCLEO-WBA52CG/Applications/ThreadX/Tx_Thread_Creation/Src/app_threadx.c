@@ -5,7 +5,7 @@
   * @author  MCD Application Team
   * @brief   ThreadX applicative file
   ******************************************************************************
-    * @attention
+  * @attention
   *
   * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "app_azure_rtos_config.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,19 +42,18 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+  TX_THREAD tx_app_thread;
 /* USER CODE BEGIN PV */
-TX_THREAD MainThread;
-TX_THREAD ThreadOne;
-TX_THREAD ThreadTwo;
-TX_EVENT_FLAGS_GROUP EventFlag;
+  TX_THREAD ThreadOne;
+  TX_THREAD ThreadTwo;
+  TX_EVENT_FLAGS_GROUP EventFlag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-void ThreadOne_Entry(ULONG thread_input);
-void ThreadTwo_Entry(ULONG thread_input);
-void MainThread_Entry(ULONG thread_input);
-void App_Delay(uint32_t Delay);
+  void ThreadOne_Entry(ULONG thread_input);
+  void ThreadTwo_Entry(ULONG thread_input);
+  void App_Delay(uint32_t Delay);
 /* USER CODE END PFP */
 
 /**
@@ -65,99 +64,77 @@ void App_Delay(uint32_t Delay);
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
   UINT ret = TX_SUCCESS;
+  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
 
   /* USER CODE END App_ThreadX_MEM_POOL */
-  /* USER CODE BEGIN App_ThreadX_Init */
-#if (USE_STATIC_ALLOCATION == 1)
-  CHAR *pointer;
-  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+CHAR *pointer;
 
-  /* Allocate the stack for MainThread.  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  /* Allocate the stack for Main Thread  */
+  if (tx_byte_allocate(byte_pool, (VOID**) &pointer,
+                       TX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
     return TX_POOL_ERROR;
   }
-
-  /* Create MainThread.  */
-  if (tx_thread_create(&MainThread, "Main Thread", MainThread_Entry, 0,
-                       pointer, APP_STACK_SIZE,
-                       MAIN_THREAD_PRIO, MAIN_THREAD_PREEMPTION_THRESHOLD,
-                       TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+   /* Create Main Thread.  */
+  if (tx_thread_create(&tx_app_thread, "Main Thread", MainThread_Entry, 0, pointer,
+                       TX_APP_STACK_SIZE, TX_APP_THREAD_PRIO, TX_APP_THREAD_PREEMPTION_THRESHOLD,
+                       TX_APP_THREAD_TIME_SLICE, TX_APP_THREAD_AUTO_START) != TX_SUCCESS)
   {
     return TX_THREAD_ERROR;
   }
 
-  /* Allocate the stack for ThreadOne.  */
+  /* USER CODE BEGIN App_ThreadX_Init */
+   /* Allocate the stack for ThreadOne.  */
   if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+                        TX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
-    return TX_POOL_ERROR;
+    ret = TX_POOL_ERROR;
   }
 
   /* Create ThreadOne.  */
   if (tx_thread_create(&ThreadOne, "Thread One", ThreadOne_Entry, 0,
-                       pointer, APP_STACK_SIZE,
+                       pointer,  TX_APP_STACK_SIZE,
                        THREAD_ONE_PRIO, THREAD_ONE_PREEMPTION_THRESHOLD,
                        TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    return TX_THREAD_ERROR;
+  {  
+    ret = TX_THREAD_ERROR;
   }
 
   /* Allocate the stack for ThreadTwo.  */
   if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+                        TX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
-    return TX_POOL_ERROR;
+    ret = TX_POOL_ERROR;
   }
 
   /* Create ThreadTwo.  */
   if (tx_thread_create(&ThreadTwo, "Thread Two", ThreadTwo_Entry, 0,
-                       pointer, APP_STACK_SIZE,
+                       pointer,  TX_APP_STACK_SIZE,
                        THREAD_TWO_PRIO, THREAD_TWO_PREEMPTION_THRESHOLD,
                        TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
   {
-    return TX_THREAD_ERROR;
+    ret = TX_THREAD_ERROR;
   }
 
   /* Create the event flags group.  */
   if (tx_event_flags_create(&EventFlag, "Event Flag") != TX_SUCCESS)
   {
-    return TX_GROUP_ERROR;
+    ret = TX_GROUP_ERROR;
   }
-#endif
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
 }
-
-  /**
-  * @brief  MX_ThreadX_Init
-  * @param  None
-  * @retval None
-  */
-void MX_ThreadX_Init(void)
-{
-  /* USER CODE BEGIN  Before_Kernel_Start */
-
-  /* USER CODE END  Before_Kernel_Start */
-
-  tx_kernel_enter();
-
-  /* USER CODE BEGIN  Kernel_Start_Error */
-
-  /* USER CODE END  Kernel_Start_Error */
-}
-
-/* USER CODE BEGIN 1 */
 /**
-  * @brief  Function implementing the MainThread thread.
-  * @param  thread_input: Not used
+  * @brief  Function implementing the MainThread_Entry thread.
+  * @param  thread_input: Not used.
   * @retval None
   */
 void MainThread_Entry(ULONG thread_input)
 {
+  /* USER CODE BEGIN MainThread_Entry */
   UINT old_prio = 0;
   UINT old_pre_threshold = 0;
   ULONG   actual_flags = 0;
@@ -204,8 +181,28 @@ void MainThread_Entry(ULONG thread_input)
     /* Thread sleep for 1s */
     tx_thread_sleep(100);
   }
+  /* USER CODE END MainThread_Entry */
 }
 
+  /**
+  * @brief  MX_ThreadX_Init
+  * @param  None
+  * @retval None
+  */
+void MX_ThreadX_Init(void)
+{
+  /* USER CODE BEGIN  Before_Kernel_Start */
+
+  /* USER CODE END  Before_Kernel_Start */
+
+  tx_kernel_enter();
+
+  /* USER CODE BEGIN  Kernel_Start_Error */
+
+  /* USER CODE END  Kernel_Start_Error */
+}
+
+/* USER CODE BEGIN 1 */
 /**
   * @brief  Function implementing the ThreadOne thread.
   * @param  thread_input: Not used

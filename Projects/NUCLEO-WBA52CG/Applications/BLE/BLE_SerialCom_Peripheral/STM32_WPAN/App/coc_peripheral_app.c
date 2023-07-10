@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    p2p_peripheral_app.c
+  * @file    coc_peripheral_app.c
   * @author  MCD Application Team
   * @brief   BLE peripheral COC Application
   ******************************************************************************
@@ -24,7 +24,6 @@
 #include "app_ble.h"
 #include "coc_peripheral_app.h"
 #include "stm32_seq.h"
-#include "stm32wbaxx_nucleo.h"
 #include "usart_if.h"
 #include "host_stack_if.h"
 
@@ -69,7 +68,7 @@ void COC_PERIPH_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification)
       }
       break;
     case BLE_CONN_HANDLE_EVT :
-      UTIL_SEQ_SetTask( 1<<CFG_TASK_CONN_UPDATE_REG_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_UPDATE_REG_ID, CFG_SEQ_PRIO_0);
       break;
     case BLE_DISCON_HANDLE_EVT :
       break;    
@@ -91,7 +90,7 @@ void COC_PERIPH_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification)
 
 void COC_PERIPH_APP_Init(void)
 {
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_COC_PERIPH_TX_REQ_ID, UTIL_SEQ_RFU, PeriphSendData );
+  UTIL_SEQ_RegTask(1U << CFG_TASK_COC_PERIPH_TX_REQ_ID, UTIL_SEQ_RFU, PeriphSendData );
   
   COC_PERIPH_APP_Terminal_Init();
 
@@ -139,7 +138,7 @@ static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t
       buffCocTxLen = buffUartRxIndex;
       
       buffUartRxIndex = 0;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_COC_PERIPH_TX_REQ_ID, CFG_SCH_PRIO_0);      
+      UTIL_SEQ_SetTask(1 << CFG_TASK_COC_PERIPH_TX_REQ_ID, CFG_SEQ_PRIO_0);      
     }    
   }
   else

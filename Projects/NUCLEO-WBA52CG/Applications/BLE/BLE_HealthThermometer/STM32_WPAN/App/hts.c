@@ -38,6 +38,10 @@ typedef struct{
   uint16_t  MnbsCharHdle;                  /**< MNBS Characteristic Handle */
   uint16_t  IntCharHdle;                  /**< INT Characteristic Handle */
   uint16_t  MeiCharHdle;                  /**< MEI Characteristic Handle */
+/* USER CODE BEGIN Context */
+  /* Place holder for Characteristic Descriptors Handle*/
+
+/* USER CODE END Context */
 }HTS_Context_t;
 
 /* Private defines -----------------------------------------------------------*/
@@ -141,10 +145,15 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
       switch(p_blecore_evt->ecode)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
+          notification.ConnectionHandle         = p_attribute_modified->Connection_Handle;
+          notification.AttributeHandle          = p_attribute_modified->Attr_Handle;
+          notification.DataTransfered.Length    = p_attribute_modified->Attr_Data_Length;
+          notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
           if(p_attribute_modified->Attr_Handle == (HTS_Context.TemmCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
@@ -282,19 +291,21 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           else if(p_attribute_modified->Attr_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
+
+            notification.EvtOpcode = HTS_MEI_WRITE_EVT;
             /* USER CODE BEGIN Service2_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
 
             /* USER CODE END Service2_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-            notification.EvtOpcode = HTS_MEI_WRITE_EVT;
             HTS_Notification(&notification);
           } /* if(p_attribute_modified->Attr_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-          break;
-
+          break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+        }
         case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
@@ -302,9 +313,10 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          break;
-
+          break;/* ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
+        {
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
@@ -355,7 +367,8 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-          break;
+          break;/* ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+        }
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         {
           aci_gatt_tx_pool_available_event_rp0 *p_tx_pool_available_event;
@@ -365,8 +378,8 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
 
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-        }
           break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
+        }
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
           aci_att_exchange_mtu_resp_event_rp0 *p_exchange_mtu;
@@ -376,9 +389,8 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
 
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-
+          break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
-          break;
         /* USER CODE BEGIN BLECORE_EVT */
 
         /* USER CODE END BLECORE_EVT */
@@ -422,6 +434,8 @@ void HTS_Init(void)
 {
   Char_UUID_t  uuid;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  uint8_t max_attr_record;
+
   /* USER CODE BEGIN SVCCTL_InitService2Svc_1 */
 
   /* USER CODE END SVCCTL_InitService2Svc_1 */
@@ -444,12 +458,21 @@ void HTS_Init(void)
    *                                1 for INT configuration descriptor +
    *                                1 for MEI configuration descriptor +
    *                              = 12
+   * This value doesn't take into account number of descriptors manually added
+   * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
+  max_attr_record = 12;
+
+  /* USER CODE BEGIN SVCCTL_InitService */
+  /* max_attr_record to be updated if descriptors have been added */
+
+  /* USER CODE END SVCCTL_InitService */
+
   uuid.Char_UUID_16 = 0x1809;
   ret = aci_gatt_add_service(UUID_TYPE_16,
                              (Service_UUID_t *) &uuid,
                              PRIMARY_SERVICE,
-                             12,
+                             max_attr_record,
                              &(HTS_Context.HtsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -483,6 +506,10 @@ void HTS_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : TEMM\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService2Char1 */
+
+  /* USER CODE END SVCCTL_InitService2Char1 */
+
   /**
    * MNBS
    */
@@ -505,6 +532,10 @@ void HTS_Init(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : MNBS\n");
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService2Char2 */
+
+  /* USER CODE END SVCCTL_InitService2Char2 */
 
   /**
    * INT
@@ -529,6 +560,10 @@ void HTS_Init(void)
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : INT\n");
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService2Char3 */
+
+  /* USER CODE END SVCCTL_InitService2Char3 */
+
   /**
    * MEI
    */
@@ -551,6 +586,10 @@ void HTS_Init(void)
   {
     APP_DBG_MSG("  Success: aci_gatt_add_char command   : MEI\n");
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService2Char4 */
+
+  /* USER CODE END SVCCTL_InitService2Char4 */
 
   /* USER CODE BEGIN SVCCTL_InitService2Svc_2 */
 

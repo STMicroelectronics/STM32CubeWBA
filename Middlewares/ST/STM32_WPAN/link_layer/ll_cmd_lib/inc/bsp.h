@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/bsp.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/bsp.h#1 $*/
 
 /**
  ********************************************************************************
@@ -127,6 +127,8 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_DATA_TO_CNTRLR                                       ,
 	DBG_IO_FREE_LL_PKT_HNDLR                                    ,
 	DBG_IO_PHY_INIT_CLBR_TRACE                                  ,
+	DBG_IO_PHY_RUNTIME_CLBR_TRACE                               ,
+	DBG_IO_PHY_CLBR_ISR											,
 	DBG_IO_PHY_INIT_CLBR_SINGLE_CH                              ,
 	DBG_IO_PHY_CLBR_STRTD                                       ,
 	DBG_IO_PHY_CLBR_EXEC                                        ,
@@ -293,7 +295,7 @@ void bus_write(uint8_t *buffer, uint16_t size);
  * @retval None
  *
  */
-void logger_init();
+void logger_init(void);
 
 /**
  * @brief   logger write
@@ -353,7 +355,7 @@ void disable_specific_irq (uint8_t isr_type);
  * otherwise Not SUCESS
  *
  */
-int bsp_init();
+int bsp_init(void);
 /**
  * @brief   dealy us  Function
  *
@@ -460,7 +462,7 @@ void bsp_switch_to_lw_isr(uint8_t priority);
  *
  * @retval None.
  */
-void bsp_wait_for_busclkrdy();
+void bsp_wait_for_busclkrdy(void);
 /**
  * @brief used to start temperature calculations
  * if the upper layer has informed the link layer by the existence of temperature sensor through @ref ll_intf_set_temperature_sensor_stat() or llhwc_cmn_set_temperature_sensor_stat()  . 
@@ -470,7 +472,7 @@ void bsp_wait_for_busclkrdy();
  * Once temperature is ready the upper layer should call @ref ll_intf_set_temperature_value() or llhwc_cmn_set_temperature_value() to inform Link Layer with new Temperature value
  * @retval None.
  */
-void bsp_request_temperature();
+void bsp_request_temperature(void);
 
 /**
  * @brief a function to set a certain gpio pin.
@@ -524,8 +526,8 @@ int logFile(void* devHandle, char* logStr);
 int logUart(void* devHandle, char* logStr);
 
 
-void bsp_assert_log(uint8_t condition, const char *ptr_func_name,  const int line);
-void bsp_assert(uint8_t condition);
+void bsp_assert_log(uint8_t condition, uint8_t severity, const char *ptr_func_name,  const int line);
+void bsp_assert(uint8_t condition, uint8_t severity);
 
 
 

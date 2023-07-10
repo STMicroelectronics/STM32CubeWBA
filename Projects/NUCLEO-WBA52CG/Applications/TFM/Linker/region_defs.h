@@ -30,10 +30,10 @@
 #define LOADER_S_PSP_STACK_SIZE 0x0000400
 
 
-#define S_HEAP_SIZE             0x0000800
+#define S_HEAP_SIZE             0x00000C0
 #define S_MSP_STACK_SIZE_INIT   0x0000400
-#define S_MSP_STACK_SIZE        0x0000800
-#define S_PSP_STACK_SIZE        0x0000800
+#define S_MSP_STACK_SIZE        0x0000200
+#define S_PSP_STACK_SIZE        0x0000700
 
 #define NS_HEAP_SIZE            0x0001000
 #define NS_MSP_STACK_SIZE       0x0000C00
@@ -260,7 +260,7 @@
 
 #if defined(MCUBOOT_EXT_LOADER) && LOADER_CODE_SIZE > LOADER_MAX_CODE_SIZE
 #error "Loader mapping overlapping slot %LOADER_CODE_SIZE %LOADER_MAX_CODE_SIZE"
-#endif /* LOADER_CODE_SIZE > LOADER_MAX_CODE_SIZE */
+#endif /* defined(MCUBOOT_EXT_LOADER) && LOADER_CODE_SIZE > LOADER_MAX_CODE_SIZE */
 
 /* TFM non volatile data (NVCNT/PS/ITS) region */
 #define TFM_NV_DATA_START                   (S_ROM_ALIAS(FLASH_NV_COUNTERS_AREA_OFFSET))

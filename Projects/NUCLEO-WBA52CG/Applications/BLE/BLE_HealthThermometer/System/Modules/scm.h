@@ -87,14 +87,14 @@ typedef struct{
 
 /**
   * @brief  System Clock Manager init code
-  * @param  scm_pll_config_t Initial PLL configuration
+  * @param  None
   * @retval None
   */
 void scm_init(void);
 
 /**
-  * @brief  Called at startup or out of Stop Mode.
-  *         Enable the HSE at the requested frequency.
+  * @brief  Setup the system clock source in usable configuration for Connectivity use cases.
+  *         Called at startup or out of low power modes.
   * @param  None
   * @retval None
   */
@@ -102,7 +102,7 @@ void scm_setup(void);
 
 /**
   * @brief  Configure the PLL mode and parameters before PLL selection as system clock.
-  * @param  scm_pll_config_t PLL coniguration to apply
+  * @param  p_pll_config PLL coniguration to apply
   * @retval None
   * @note   scm_pll_setconfig to be called before PLL activation (PLL set as system core clock)
   */
@@ -120,14 +120,14 @@ void scm_standbyexit(void);
   * @param  pll_frac Up to date fractional configuration.
   * @retval None
   * @note   A PLL update is requested only when the system clock is
-            running on the PLL with a different configuration that the
-            one required
+  *         running on the PLL with a different configuration that the
+  *         one required.
   */
 void scm_pll_fractional_update(uint32_t pll_frac);
 
 /**
   * @brief  Set the HSE clock to the requested frequency.
-  * @param  scm_user_id_t This parameter can be one of the following:
+  * @param  user_id This parameter can be one of the following:
   *         @arg SCM_USER_APP
   *         @arg SCM_USER_LL_FW
   * @param  sysclockconfig This parameter can be one of the following:
@@ -139,31 +139,49 @@ void scm_pll_fractional_update(uint32_t pll_frac);
 void scm_setsystemclock (scm_user_id_t user_id, scm_clockconfig_t sysclockconfig);
 
 /**
-  * @brief  Called each time the PLL config is ready
+  * @brief  Called each time the PLL is ready
   * @param  None
   * @retval None
+  * @note   This function is defined as weak in SCM module.
+  *         Can be overridden by user.
   */
-void scm_pllconfigready(void);
+void scm_pllready(void);
 
 /**
-  * @brief  Configure the Flash and SRAMs wait cycle when exit/entry to low power
-  * @param  ws_lp_config This parameter can be one of the following:
+  * @brief  Configure the Flash and SRAMs wait cycle (when required for system clock source change)
+  * @param  ws_lp_config: This parameter can be one of the following:
   *         @arg LP
   *         @arg RUN
+  *         @arg HSE16
+  *         @arg HSE32
+  *         @arg PLL
   * @retval None
   */
 void scm_setwaitstates(const scm_ws_lp_t ws_lp_config);
 
 /**
   * @brief  Notify the state of the Radio
-  * @param  scm_radio_state_t This parameter can be one of the following:
+  * @param  radio_state: This parameter can be one of the following:
   *         @arg SCM_RADIO_ACTIVE
   *         @arg SCM_RADIO_NOT_ACTIVE
   * @retval None
   */
 void scm_notifyradiostate(const scm_radio_state_t radio_state);
 
+/**
+  * @brief  SCM HSERDY interrupt handler.
+  *         Switch system clock on HSE.
+  * @param  None
+  * @retval None
+  */
 void scm_hserdy_isr(void);
+
+/**
+  * @brief  SCM PLLRDY interrupt handler.
+  *         Switch system clock on PLL.
+  * @param  None
+  * @retval None
+  */
 void scm_pllrdy_isr(void);
 
 #endif /* SCM_H */

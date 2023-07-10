@@ -124,7 +124,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>STM32WBA52CG	ST STM32WBA52CG</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -1074,7 +1074,7 @@
         <group>
             <name>EWARM</name>
             <file>
-                <name>$PROJ_DIR$\startup_stm32wba52xx.s</name>
+                <name>$PROJ_DIR$\..\startup_stm32wba52xx.s</name>
             </file>
         </group>
         <group>

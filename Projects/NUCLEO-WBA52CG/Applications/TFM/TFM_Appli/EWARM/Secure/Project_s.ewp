@@ -53,7 +53,7 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
@@ -235,7 +235,7 @@
           <state>ITS_CREATE_FLASH_LAYOUT</state>
           <state>PS_CREATE_FLASH_LAYOUT</state>
           <state>TFM_CRYPTO_IOVEC_BUFFER_SIZE=5120</state>
-          <state>TFM_CRYPTO_ENGINE_BUF_SIZE=0x1800</state>
+          <state>TFM_CRYPTO_ENGINE_BUF_SIZE=0x2800</state>
           <state>PS_MAX_ASSET_SIZE=2048</state>
           <state>PS_NUM_ASSETS=10</state>
           <state>ITS_MAX_ASSET_SIZE=2048</state>

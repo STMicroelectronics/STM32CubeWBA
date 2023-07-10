@@ -173,8 +173,8 @@ uint32_t TAG_GMAC[TAG_SIZE]={0};
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_AES_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_AES_Init(void);
 /* USER CODE BEGIN PFP */
 static void data_cmp(uint32_t *EncryptedText, uint32_t *RefText, uint32_t Size);
 static void HighPriorityMessage_Processing(void);
@@ -218,9 +218,13 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_AES_Init();
   MX_ICACHE_Init();
+  MX_AES_Init();
   /* USER CODE BEGIN 2 */
+
+  /* For testing purposes, request suspension now */
+  HAL_CRYP_ProcessSuspend(&hcryp);
+
   /*==========================================================================*/
   /* Start GCM enciphering of low priority message                            */
   /*==========================================================================*/
@@ -234,12 +238,12 @@ int main(void)
   {
     Error_Handler();
   }
-  
+
   /*================================================*/
   /* Process high priority data (in interrupt mode) */
   /*================================================*/
   HighPriorityMessage_Processing();
-  
+
   /* When done, resume low prio data processing
   - Context restore
   - processing resume */
@@ -250,14 +254,14 @@ int main(void)
 
   /* Wait for processing to be done */
   while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
+
   /*============================================================*/
   /* End of low priority data processing suspension/resumption  */
   /*============================================================*/
-  
+
   /* Compare the low priority message decrypted text with the expected one *****/
   data_cmp(Encryptedtext_LowPrio, Cyphertext_GCM, AES_PAYLOAD_SIZE_GCM);
-  
+
   /* Compute the authentication TAG */
   if (HAL_CRYPEx_AESGCM_GenerateAuthTAG(&hcryp, TAG, TIMEOUT_VALUE) != HAL_OK)
   {
@@ -282,26 +286,32 @@ int main(void)
   {
     Error_Handler();
   }
+
+  /* For testing purposes, request suspension now */
+  HAL_CRYP_ProcessSuspend(&hcryp);
+
   /* GMAC mode, so no payload processed */
   if (HAL_CRYP_Encrypt_IT(&hcryp, NULL, 0, NULL)!= HAL_OK)
   {
     Error_Handler();
   }
-    if (HAL_OK != HAL_CRYP_Suspend(&hcryp))
-    {
+
+  /* Carry out low prio data processing suspension and context saving */
+  if (HAL_OK != HAL_CRYP_Suspend(&hcryp))
+  {
     /* Processing Error */
     Error_Handler();
-    }
-    
+  }
+
   /*================================================*/
   /* Process high priority data (in interrupt mode) */
   /*================================================*/
     HighPriorityMessage_Processing();
-    
+
     /* When done, resume low prio data processing
     - Context restore
     - processing resume */
-    
+
     if (HAL_OK != HAL_CRYP_Resume(&hcryp))
     {
     /* Processing Error */
@@ -324,7 +334,7 @@ int main(void)
 
   /* Compare the derived tag with the expected one *************************/
   data_cmp(TAG_GMAC, ExpectedTAG_GMAC, TAG_SIZE);
-  
+
   /* Turn LED1 on */
   BSP_LED_On(LD1);
   /* USER CODE END 2 */
@@ -450,7 +460,7 @@ static void MX_ICACHE_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ICACHE_Init 2 */
-   
+
   /* USER CODE END ICACHE_Init 2 */
 
 }
@@ -501,8 +511,8 @@ static void HighPriorityMessage_Processing(void)
     if (HAL_CRYP_DeInit(&hcryp) != HAL_OK)
     {
       Error_Handler();
-    } 
-    
+    }
+
   /* Set the CRYP parameters */
   if (HAL_CRYP_Init(&hcryp) != HAL_OK)
   {

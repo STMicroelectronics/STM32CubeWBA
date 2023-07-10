@@ -42,11 +42,9 @@ typedef enum
   DIS_MANS,
   DIS_MONS,
   DIS_SYID,
-
   /* USER CODE BEGIN Service1_CharOpcode_t */
 
   /* USER CODE END Service1_CharOpcode_t */
-
   DIS_CHAROPCODE_LAST
 } DIS_CharOpcode_t;
 
@@ -55,11 +53,9 @@ typedef enum
   DIS_MANS_READ_EVT,
   DIS_MONS_READ_EVT,
   DIS_SYID_READ_EVT,
-
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
 
   /* USER CODE END Service1_OpcodeEvt_t */
-
   DIS_BOOT_REQUEST_EVT
 } DIS_OpcodeEvt_t;
 
@@ -71,7 +67,6 @@ typedef struct
   /* USER CODE BEGIN Service1_Data_t */
 
   /* USER CODE END Service1_Data_t */
-
 } DIS_Data_t;
 
 typedef struct
@@ -79,12 +74,11 @@ typedef struct
   DIS_OpcodeEvt_t       EvtOpcode;
   DIS_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service1_NotificationEvt_t */
 
   /* USER CODE END Service1_NotificationEvt_t */
-
 } DIS_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

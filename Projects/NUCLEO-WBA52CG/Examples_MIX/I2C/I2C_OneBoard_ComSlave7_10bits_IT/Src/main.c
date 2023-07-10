@@ -59,9 +59,9 @@ uint8_t aRxBuffer[RXBUFFERSIZE];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
 static void Flush_Buffer(uint8_t* pBuffer, uint16_t BufferLength);
@@ -101,9 +101,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_I2C1_Init();
   MX_I2C3_Init();
   MX_ICACHE_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
   /* Enable the Analog I2C Filter */

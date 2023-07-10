@@ -35,6 +35,15 @@
 
 /* Private typedef -----------------------------------------------------------*/
 
+/* USER CODE BEGIN PTD */
+
+typedef struct
+{
+  uint8_t selection;
+  uint8_t level;
+}P2PButton_t;
+/* USER CODE END PTD */
+
 typedef enum
 {
   NOTIFICATION_INFO_RECEIVED_EVT,
@@ -101,15 +110,6 @@ typedef struct
 /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
-
-/* USER CODE BEGIN PTD */
-
-typedef struct
-{
-  uint8_t selection;
-  uint8_t level;
-}P2PButton_t;
-/* USER CODE END PTD */
 
 /* Private defines ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
@@ -1036,13 +1036,13 @@ static void P2Pclient_write_char(void)
 
       if (ret != BLE_STATUS_SUCCESS)
       {
-        APP_DBG("aci_gatt_write_without_resp failed, connHdl=0x%04X, ValueHdl=0x%04X\n",
+        APP_DBG_MSG("aci_gatt_write_without_resp failed, connHdl=0x%04X, ValueHdl=0x%04X\n",
                 a_ClientContext[index].connHdl,
                 a_ClientContext[index].P2PWriteToServerValueHdl);
       }
       else
       {
-        APP_DBG("aci_gatt_write_without_resp success, connHdl=0x%04X, ValueHdl=0x%04X\n",
+        APP_DBG_MSG("aci_gatt_write_without_resp success, connHdl=0x%04X, ValueHdl=0x%04X\n",
           a_ClientContext[index].connHdl,
           a_ClientContext[index].P2PWriteToServerValueHdl);
       }

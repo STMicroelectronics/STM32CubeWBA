@@ -65,16 +65,14 @@ CMSE_NS_ENTRY void SECURE_RegisterCallback(SECURE_CallbackIDTypeDef CallbackId, 
     }
   }
 }
-
 /**
   * @brief  Secure treatment of non-secure push button interrupt.
   * @retval None
   */
 CMSE_NS_ENTRY void SECURE_LEDToggle(void)
 {
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+  HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 }
-
 /**
   * @}
   */

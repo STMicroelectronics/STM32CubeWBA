@@ -35,6 +35,7 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/debug_config.h               Real Time Debug module general configuration file 
   - BLE_DataThroughput_Client/System/Config/Flash/simple_nvm_arbiter_conf.h         Configuration header for simple_nvm_arbiter.c module 
   - BLE_DataThroughput_Client/System/Config/LowPower/app_sys.h                      Header for app_sys.c 
+  - BLE_DataThroughput_Client/System/Config/LowPower/user_low_power_config.h        Header for user_low_power_config.c
   - BLE_DataThroughput_Client/System/Interfaces/hw.h                                This file contains the interface of STM32 HW drivers. 
   - BLE_DataThroughput_Client/System/Interfaces/hw_if.h                             Hardware Interface 
   - BLE_DataThroughput_Client/System/Interfaces/stm32_lpm_if.h                      Header for stm32_lpm_if.c module (device specific LP management) 
@@ -43,7 +44,6 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Modules/adc_ctrl.h                             Header for ADC client manager module 
   - BLE_DataThroughput_Client/System/Modules/ble_timer.h                            This header defines the timer functions used by the BLE stack 
   - BLE_DataThroughput_Client/System/Modules/dbg_trace.h                            Header for dbg_trace.c 
-  - BLE_DataThroughput_Client/System/Modules/general_config.h                       This file contains definitions that can be changed to configure some modules of the STM32 firmware application.
   - BLE_DataThroughput_Client/System/Modules/otp.h                                  Header file for One Time Programmable (OTP) area 
   - BLE_DataThroughput_Client/System/Modules/scm.h                                  Header for scm.c module 
   - BLE_DataThroughput_Client/System/Modules/stm_list.h                             Header file for linked list library. 
@@ -55,12 +55,14 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Modules/Flash/rf_timing_synchro.h              Header for rf_timing_synchro.c module 
   - BLE_DataThroughput_Client/System/Modules/Flash/simple_nvm_arbiter.h             Header for simple_nvm_arbiter.c module 
   - BLE_DataThroughput_Client/System/Modules/Flash/simple_nvm_arbiter_common.h      Common header of simple_nvm_arbiter.c module 
-  - BLE_DataThroughput_Client/System/Modules/MemoryManager/advanced_memory_manager.hHeader for advance_memory_manager.c module 
+  - BLE_DataThroughput_Client/System/Modules/MemoryManager/advanced_memory_manager.h Header for advance_memory_manager.c module 
   - BLE_DataThroughput_Client/System/Modules/MemoryManager/stm32_mm.h               Header for stm32_mm.c module 
   - BLE_DataThroughput_Client/System/Modules/Nvm/nvm.h                              This file contains the interface of the NVM manager. 
+  - BLE_DataThroughput_Client/System/Modules/RFControl/rf_antenna_switch.h          RF related module to handle dedictated GPIOs for antenna switch
   - BLE_DataThroughput_Client/System/Modules/RTDebug/debug_signals.h                Real Time Debug module System and Link Layer signal definition 
   - BLE_DataThroughput_Client/System/Modules/RTDebug/local_debug_tables.h           Real Time Debug module System and Link Layer signal 
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug.h                      Real Time Debug module API declaration 
+  - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug_dtb.h                  Real Time Debug module API declaration for DTB usage
   - BLE_DataThroughput_Client/Core/Src/app_entry.c                                  Entry point of the application 
   - BLE_DataThroughput_Client/Core/Src/main.c                                       Main program body 
   - BLE_DataThroughput_Client/Core/Src/stm32wbaxx_hal_msp.c                         This file provides code for the MSP Initialization and de-Initialization codes.
@@ -75,6 +77,7 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/STM32_WPAN/Target/ll_sys_if.c                         Source file for initiating the system sequencer 
   - BLE_DataThroughput_Client/STM32_WPAN/Target/power_table.c                       This file contains supported power tables 
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/app_debug.c                  Real Time Debug module application side APIs 
+  - BLE_DataThroughput_Client/System/Config/LowPower/user_low_power_config.c        Low power related user configuration
   - BLE_DataThroughput_Client/System/Interfaces/hw_aes.c                            This file contains the AES driver for STM32WBA 
   - BLE_DataThroughput_Client/System/Interfaces/hw_otp.c                            This file contains the OTP driver. 
   - BLE_DataThroughput_Client/System/Interfaces/hw_pka.c                            This file contains the PKA driver for STM32WBA 
@@ -96,11 +99,12 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Modules/Flash/rf_timing_synchro.c              The RF Timing Synchronization module provides an interface to synchronize the flash processing versus the RF activity to make
 sure the RF timing is not broken
   - BLE_DataThroughput_Client/System/Modules/Flash/simple_nvm_arbiter.c             The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs.
-  - BLE_DataThroughput_Client/System/Modules/MemoryManager/advanced_memory_manager.cMemory Manager 
+  - BLE_DataThroughput_Client/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager 
   - BLE_DataThroughput_Client/System/Modules/MemoryManager/stm32_mm.c               Memory Manager
   - BLE_DataThroughput_Client/System/Modules/Nvm/nvm_emul.c                         This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose.
+  - BLE_DataThroughput_Client/System/Modules/RFControl/rf_antenna_switch.c          RF related module to handle dedictated GPIOs for antenna switch
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug.c                      Real Time Debug module API definition 
-
+  - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug_dtb.c                  Real Time Debug module API definition for DTB usage
 
 ### __Hardware and Software environment__
 
@@ -132,8 +136,8 @@ At reset application initialization is done.
  - The peripheral device starts advertising.
  - Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_DT_SERVER). 
  - After connection:
- - the client starts to search the data transfer service and characteristic.
- - the client enables the notification of the transmission characteristic.
+   - the client starts to search the data transfer service and characteristic.
+   - the client enables the notification of the transmission characteristic.
 
 On server side when connected:
 
@@ -142,6 +146,7 @@ On server side when connected:
  - B3 PHY toggle
 
 On server side when idle:
+
  - B2 clear database
 
 On client side when connected:

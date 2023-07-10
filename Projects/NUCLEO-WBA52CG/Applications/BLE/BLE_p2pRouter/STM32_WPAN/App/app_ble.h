@@ -117,7 +117,40 @@ typedef enum
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+/** 
+  * ST Manufacturer ID
+**/
+#define ST_MANUF_ID  0x30
 
+/** 
+  * BlueSTSDK Version
+**/
+enum
+{
+  BLUESTSDK_V1 =  0x01,
+  BLUESTSDK_V2 =  0x02
+};
+
+/** 
+  * BOARD ID 
+**/
+enum
+{
+  BOARD_ID_NUCLEO_WBA =  0x8B
+};
+
+/** 
+  * FIRMWARE ID 
+**/
+enum
+{
+  FW_ID_P2P_SERVER =  0x83,
+  FW_ID_P2P_ROUTER =  0x85,
+  FW_ID_DT_SERVER  =  0x88,
+  FW_ID_COC_PERIPH =  0x87,
+  FW_ID_HEART_RATE =  0x89,
+  FW_ID_HEALTH_THERMO = 0x8A
+};
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -144,9 +177,6 @@ void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 /* USER CODE BEGIN EF */
-void APP_BLE_Key_Button1_Action(void);
-void APP_BLE_Key_Button2_Action(void);
-void APP_BLE_Key_Button3_Action(void);
 
 /* USER CODE END EF */
 

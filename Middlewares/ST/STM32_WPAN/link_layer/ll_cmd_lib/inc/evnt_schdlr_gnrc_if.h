@@ -1,5 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/evnt_schdlr_gnrc_if.h#2 $*/
-
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/evnt_schdlr_gnrc_if.h#1 $*/
 /**
  ********************************************************************************
  * @file    evnt_schdlr_gnrc_if.h
@@ -65,7 +64,7 @@ typedef struct _extrnl_evnt_st_t{
 	 *   from event scheduler. @ref evnt_strtd_cbk should handle calling of @ref  evnt_schdlr_gnrc_evnt_cmplt  via timer or
 	 *   at the end of execution if the execution is blocking
 	 *
-	 *   if @ref slot_durn is set to zero “0” , event scheduler has given the on idle event unlimited grant.
+	 *   if @ref slot_durn is set to zero "0" , event scheduler has given the on idle event unlimited grant.
 	 *    It will be aborted later with a calling to evnt_abortd_cbk function.*/
 	uint32_t    				(*evnt_strtd_cbk)(ext_evnt_hndl_t evnt_hndl,
 						uint32_t slot_durn, void* priv_data_ptr);
@@ -79,6 +78,13 @@ typedef struct _extrnl_evnt_st_t{
 	 *  no need to call @ref evnt_schdlr_gnrc_evnt_cmpltafter calling this callback as it is called from scheduler itself.
 	 * */
 	uint32_t    				(*evnt_abortd_cbk)();
+#if (RADIO_CSMA)
+	/** Event coexistence error Callback Function. it will be called when @ref EXTRNL_GNRC event execution returned error.
+	 *  when  @ref evnt_strtd_cbk of @ref EXTRNL_GNRC failed at execution for any reason, this callback will be  called from event scheduler,
+	 *  it'll send the returned error to ral_tx_done to check if there will retransmission of failed packet or send the error to upper layers,
+	 * */
+	void    			     	(*coex_error_cbk)(uint32_t error);
+#endif /*end of (RADIO_CSMA)*/
 } extrnl_evnt_st_t;
 #if(SUPPORT_COEXISTENCE || SUPPORT_GNRC_SCHDLR_IF)
 /**

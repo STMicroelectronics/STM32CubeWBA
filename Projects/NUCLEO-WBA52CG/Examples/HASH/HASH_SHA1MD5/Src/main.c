@@ -101,8 +101,8 @@ __ALIGN_BEGIN static uint8_t aExpectSHA1Digest[20] __ALIGN_END = {0xf8, 0x59, 0x
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_HASH_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE END PFP */
@@ -149,8 +149,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_HASH_Init();
   MX_ICACHE_Init();
+  MX_HASH_Init();
   /* USER CODE BEGIN 2 */
   /* Configure LD1, LD2, LD3 */
   BSP_LED_Init(LD1);

@@ -19,6 +19,9 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+#include "arm_compat.h"
+#endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "main.h"
 #include "scm.h"
 #include "stm32_lpm_if.h"
@@ -44,11 +47,6 @@
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
-
-/* External variables -----------------------------------------------------------*/
-/* USER CODE BEGIN EV */
-
-/* USER CODE END EV */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -228,22 +226,28 @@ void PWR_EnterOffMode( void )
   __force_stores();
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 
-  /* Save all Cortex registers on stack and call WFI instruction */
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ACTIVE);
+
+  /* Save selected CPU peripheral regisers */
+  backup_system_register();
+
+  /* Save Cortex general purpose registers on stack and call WFI instruction */
   CPUcontextSave();
+
+  /* At this point, system comes out of standby. Restore selected CPU peripheral registers */
+  restore_system_register();
   SYS_WAITING_CYCLES_25();
+
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
+
   /* USER CODE BEGIN PWR_EnterOffMode_2 */
 
   /* USER CODE END PWR_EnterOffMode_2 */
 
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ENTER);
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ACTIVE);
 }
 
 void PWR_ExitOffMode( void )
 {
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_EXIT);
-
   /* USER CODE BEGIN PWR_ExitOffMode_1 */
 
   /* USER CODE END PWR_ExitOffMode_1 */
@@ -266,8 +270,20 @@ void PWR_ExitOffMode( void )
      * Restore SoC HW configuration
      ***********************************
      */
+
+    /* Enable AHB5ENR peripheral clock (bus CLK) */
+    __HAL_RCC_RADIO_CLK_ENABLE();
+
+    /* Apply Prefetch configuration is enabled */
+#if (PREFETCH_ENABLE != 0U)
+  __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+#endif /* PREFETCH_ENABLE */
+
     Standby_Restore_GPIO();
     MX_GPIO_Init();
+
+    SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
+    SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_EXIT);
 
     /* RNG */
     MX_RNG_Init();
@@ -275,12 +291,23 @@ void PWR_ExitOffMode( void )
     /* Restore ICACHE */
     MX_ICACHE_Init();
 
+    /* Restore ADC */
+    MX_ADC4_Init();
+
     /* Restore system clock configuration */
     scm_standbyexit();
 
     /* Enable RTC peripheral clock */
     LL_PWR_EnableBkUpAccess();
     __HAL_RCC_RTCAPB_CLK_ENABLE();
+
+    /* Important note: at this point, all the IOs configuration is done */
+
+    /* Clear all IOs retention status  */
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_A, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_B, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_C, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
   }
   else
   {
@@ -290,14 +317,6 @@ void PWR_ExitOffMode( void )
   /* USER CODE BEGIN PWR_ExitOffMode_2 */
 
   /* USER CODE END PWR_ExitOffMode_2 */
-
-  /* Important note: at this point, all the IOs configuration is done */
-
-  /* Clear all IOs retention status  */
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_A, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_B, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_C, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
 
   SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_EXIT);
 }

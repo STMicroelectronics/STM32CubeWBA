@@ -23,6 +23,7 @@
 #include "ble_std.h"
 
 #include "app_ble.h"
+#include "rf_antenna_switch.h"
 #include "lhci.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -190,3 +191,21 @@ void LHCI_C1_Read_Device_Information( BleCmdSerial_t *pcmd )
   return;
 }
 
+void LHCI_C1_RF_CONTROL_AntennaSwitch( BleCmdSerial_t *pcmd )
+{
+  LHCI_C1_RF_CONTROL_AntennaSwitch_cmd_t * p_param = (LHCI_C1_RF_CONTROL_AntennaSwitch_cmd_t *) pcmd->cmd.payload;
+
+  /* Call RF CONTROL Antenna Switch system interface */
+  RF_CONTROL_AntennaSwitch((rf_antenna_switch_state_t) p_param->enable);
+
+  /* LHCI_OPCODE_C1_RF_CONTROL_ANTENNA_SWITCH command response */
+  ((BleEvtSerial_t*) pcmd)->type = TL_LOCRSP_PKT_TYPE;
+  ((BleEvtSerial_t*) pcmd)->evt.evtcode = HCI_COMMAND_COMPLETE_EVT_CODE;
+  ((BleEvtSerial_t*) pcmd)->evt.plen = TL_EVT_CS_PAYLOAD_SIZE;
+
+  ((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->cmdcode = LHCI_OPCODE_C1_RF_CONTROL_ANTENNA_SWITCH;
+  ((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload[0]= 0x00;
+  ((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->numcmd = 1;
+
+  return;
+}

@@ -68,8 +68,8 @@ RAMCFG_HandleTypeDef hramcfg_SRAM2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_GPDMA1_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RAMCFG_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 void Fill_SRAM2Page_DMA(uint32_t PageIdx);
 
@@ -124,8 +124,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_ICACHE_Init();
   MX_RAMCFG_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
   /* Register MSP Init callback for RAMCFG peripheral */
   if (HAL_RAMCFG_RegisterCallback(&hramcfg_SRAM2, HAL_RAMCFG_MSPINIT_CB_ID, HAL_RAMCFG_MspInit) != HAL_OK)

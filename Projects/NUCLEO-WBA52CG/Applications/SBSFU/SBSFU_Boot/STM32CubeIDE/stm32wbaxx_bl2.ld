@@ -38,7 +38,7 @@ GROUP(libgcc.a libc.a libm.a libnosys.a)
 ENTRY(Reset_Handler)
 
 SECTIONS
-{   
+{
 	.provision :
 	{
      KEEP(*(.bootutil_key_cnt))
@@ -52,7 +52,7 @@ SECTIONS
      KEEP(*(.eat_curve_type))
      *keys.o(.text* .rodata*)
 	} > FLASH
-	
+
 	.BL2_NoHdp_Area :
     {
         KEEP(*(.BL2_NoHdp_Data))
@@ -64,7 +64,7 @@ SECTIONS
 
 	.text (BL2_CODE_START):
     {
-        
+
         KEEP(*(.vectors))
         __Vectors_End = .;
         __Vectors_Size = __Vectors_End - __Vectors;

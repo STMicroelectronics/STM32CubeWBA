@@ -35,7 +35,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -93,9 +92,9 @@ static HTS_APP_Context_t HTS_APP_Context;
 uint8_t a_HTS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-PLACE_IN_SECTION("BLE_APP_CONTEXT") static HTS_TemperatureValue_t HTS_Measurement[NB_SAVED_MEASURES];
-PLACE_IN_SECTION("BLE_APP_CONTEXT") static int8_t HTS_CurrentIndex, HTS_OldIndex;
-uint8_t HTS_FirstMeasurementDone = 0;
+static HTS_TemperatureValue_t HTS_Measurement[NB_SAVED_MEASURES];
+static int8_t HTS_CurrentIndex, HTS_OldIndex;
+static uint8_t HTS_FirstMeasurementDone = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -152,50 +151,50 @@ void HTS_Notification(HTS_NotificationEvt_t *p_Notification)
 
     case HTS_INT_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service2Char3_NOTIFY_ENABLED_EVT */
-        APP_DBG_MSG("HTS_INT_NOTIFY_ENABLED_EVT\n");
-        HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_ON;
-        UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
-        UTIL_TIMER_Start(&HTS_APP_Context.TimerIntTemp_Id);
+      APP_DBG_MSG("HTS_INT_NOTIFY_ENABLED_EVT\n");
+      HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_ON;
+      UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
+      UTIL_TIMER_Start(&HTS_APP_Context.TimerIntTemp_Id);
       /* USER CODE END Service2Char3_NOTIFY_ENABLED_EVT */
       break;
 
     case HTS_INT_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service2Char3_NOTIFY_DISABLED_EVT */
-        APP_DBG_MSG("HTS_INT_NOTIFY_DISABLED_EVT\n");
-        HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_OFF;
-        UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
+      APP_DBG_MSG("HTS_INT_NOTIFY_DISABLED_EVT\n");
+      HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_OFF;
+      UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
       /* USER CODE END Service2Char3_NOTIFY_DISABLED_EVT */
       break;
 
     case HTS_MEI_READ_EVT:
       /* USER CODE BEGIN Service2Char4_READ_EVT */
-        APP_DBG_MSG("HTS_MEI_READ_EVT\n");
-        if(p_Notification->RangeInterval != 0)
+      APP_DBG_MSG("HTS_MEI_READ_EVT\n");
+      if(p_Notification->RangeInterval != 0)
+      {
+        HTS_APP_Context.MeasurementIntervalChar = p_Notification->RangeInterval;
+        APP_DBG_MSG("HTS_MEI_READ_EVT: %d \n", 
+                        p_Notification->RangeInterval);
+        if(HTS_APP_Context.Mei_Indication_Status != Mei_INDICATION_OFF)
         {
-          HTS_APP_Context.MeasurementIntervalChar = p_Notification->RangeInterval;
-          APP_DBG_MSG("HTS_MEI_READ_EVT: %d \n", 
-                          p_Notification->RangeInterval);
-          if(HTS_APP_Context.Mei_Indication_Status != Mei_INDICATION_OFF)
+          if(HTS_APP_Context.Temm_Indication_Status == Temm_INDICATION_OFF)
           {
-            if(HTS_APP_Context.Temm_Indication_Status == Temm_INDICATION_OFF)
-            {
-              UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, 
-                          (HTS_APP_Context.MeasurementIntervalChar)*DEFAULT_HTS_MEASUREMENT_INTERVAL);
-              HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_ON;
-            }
-            else
-            {
-              UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasurement_Id);
-              UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, 
-                          (HTS_APP_Context.MeasurementIntervalChar)*DEFAULT_HTS_MEASUREMENT_INTERVAL);
-            }
+            UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, 
+                        (HTS_APP_Context.MeasurementIntervalChar)*DEFAULT_HTS_MEASUREMENT_INTERVAL);
+            HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_ON;
+          }
+          else
+          {
+            UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasurement_Id);
+            UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, 
+                        (HTS_APP_Context.MeasurementIntervalChar)*DEFAULT_HTS_MEASUREMENT_INTERVAL);
           }
         }
-        else
-        {
-          UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasurement_Id);
-          HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_OFF;
-        }
+      }
+      else
+      {
+        UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasurement_Id);
+        HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_OFF;
+      }
       /* USER CODE END Service2Char4_READ_EVT */
       break;
 
@@ -207,10 +206,10 @@ void HTS_Notification(HTS_NotificationEvt_t *p_Notification)
 
     case HTS_MEI_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service2Char4_INDICATE_ENABLED_EVT */
-        APP_DBG_MSG("HTS_MEI_INDICATE_ENABLED_EVT\n");
-        HTS_APP_Context.Mei_Indication_Status = Mei_INDICATION_ON;
-        UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasInt_Id);
-        UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasInt_Id, 2*DEFAULT_HTS_MEASUREMENT_INTERVAL);
+      APP_DBG_MSG("HTS_MEI_INDICATE_ENABLED_EVT\n");
+      HTS_APP_Context.Mei_Indication_Status = Mei_INDICATION_ON;
+      UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasInt_Id);
+      UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasInt_Id, 2*DEFAULT_HTS_MEASUREMENT_INTERVAL);
       /* USER CODE END Service2Char4_INDICATE_ENABLED_EVT */
       break;
 
@@ -244,7 +243,7 @@ void HTS_APP_EvtRx(HTS_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service2_APP_EvtRx_Service2_EvtOpcode */
 
-    /* USER CODE END Service2_Notification_Service2_EvtOpcode */
+    /* USER CODE END Service2_APP_EvtRx_Service2_EvtOpcode */
     case HTS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service2_APP_CONN_HANDLE_EVT */
 
@@ -346,7 +345,7 @@ static void HTS_APP_UpdateMeasurementInterval_timCb(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask( 1<<CFG_TASK_HTS_MEAS_INTERVAL_REQ_ID,CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask( 1<<CFG_TASK_HTS_MEAS_INTERVAL_REQ_ID,CFG_SEQ_PRIO_0);
   return;
 }
 
@@ -357,7 +356,7 @@ static void HTS_APP_Measurements_timCb(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask(1<<CFG_TASK_HTS_MEAS_REQ_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1<<CFG_TASK_HTS_MEAS_REQ_ID, CFG_SEQ_PRIO_0);
 
   return;
 }
@@ -369,7 +368,7 @@ static void HTS_APP_UpdateIntermediateTemperature_timCb(void *arg)
    * The background is the only place where the application can make sure a new aci command
    * is not sent if there is a pending one
    */
-  UTIL_SEQ_SetTask( 1<<CFG_TASK_HTS_INTERMEDIATE_TEMPERATURE_REQ_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask( 1<<CFG_TASK_HTS_INTERMEDIATE_TEMPERATURE_REQ_ID, CFG_SEQ_PRIO_0);
   
   return;
 }
@@ -626,11 +625,14 @@ static void HTS_APP_MeasurementInterval(void)
   uint8_t htm_char_length = 0;
 
   if(HTS_APP_Context.MeasurementIntervalChar < BLE_CFG_HTS_TEMPERATURE_INTERVAL_MAX_VALUE)
+  {
     HTS_APP_Context.MeasurementIntervalChar += 1;
+  }  
   else
+  {
     HTS_APP_Context.MeasurementIntervalChar = BLE_CFG_HTS_TEMPERATURE_INTERVAL_MIN_VALUE;
-  APP_DBG_MSG("Measurement Interval: %d \n", 
-                  HTS_APP_Context.MeasurementIntervalChar);
+  }
+  APP_DBG_MSG("Measurement Interval: %d \n", HTS_APP_Context.MeasurementIntervalChar);
 
   a_HTS_UpdateCharData[htm_char_length] = (uint8_t)(HTS_APP_Context.MeasurementIntervalChar & 0xFF);
   htm_char_length++;

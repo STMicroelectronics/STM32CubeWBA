@@ -74,8 +74,8 @@ __IO float    fConvertedData_OVS_EquivalentValue12bits = 4.4f; /* Calculation of
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ADC4_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_ADC4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -113,8 +113,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC4_Init();
   MX_ICACHE_Init();
+  MX_ADC4_Init();
   /* USER CODE BEGIN 2 */
 
   /* Initialize LED on board */

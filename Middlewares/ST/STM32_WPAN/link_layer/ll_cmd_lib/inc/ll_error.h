@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/ll_error.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/ll_error.h#1 $*/
 /**
  ********************************************************************************
  * @file    error.h
@@ -42,7 +42,7 @@
 #define		REPEATED_ATTEMPTS                                                           	0x17
 #define		PAIRING_NOT_ALLOWED                                                         	0x18
 #define		UNKNOWN_LMP_PDU                                                             	0x19
-#define		UNSUPPORTED_REMOTE_FEATURE_UNSUPPORTED_LMP_FEATURE                            	0x1A
+#define		UNSUPPORTED_REMOTE_FEATURE                                                  	0x1A
 #define		SCO_OFFSET_REJECTED                                                         	0x1B
 #define		SCO_INTERVAL_REJECTED                                                       	0x1C
 #define		SCO_AIR_MODE_REJECTED                                                       	0x1D
@@ -62,7 +62,7 @@
 #define		RESERVED_FOR_FUTURE_1                                                           0x2B
 #define		QOS_UNACCEPTABLE_PARAMETER                                                  	0x2C
 #define		QOS_REJECTED                                                                	0x2D
-#define		CHANNEL_CLASSIFICATION_NOT_SUPPORTED                                        	0x2E
+#define		CHANNEL_ASSESSMENT_NOT_SUPPORTED                                        	0x2E
 #define		INSUFFICIENT_SECURITY                                                       	0x2F
 #define		PARAMETER_OUT_OF_MANDATORY_RANGE                                            	0x30
 #define		RESERVED_FOR_FUTURE_2                                                           0x31
@@ -117,8 +117,16 @@
 #error LE Power Control feature shall be enabled only when the master role or slave role is enabled
 #endif /* #error */
 
-#if ((SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) && (!SUPPORT_LE_EXTENDED_ADVERTISING && !SUPPORT_LE_PERIODIC_ADVERTISING))
-#error Broadcast Isochronous feature shall be enabled only when extended advertising  or periodic advertisng is enabled
+#if ((SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) && (!SUPPORT_LE_PERIODIC_ADVERTISING))
+#error Broadcast Isochronous feature shall be enabled only when periodic advertisng is enabled
+#endif /* #error */
+
+#if (SUPPORT_PERIODIC_ADV_ADI && (!SUPPORT_LE_PERIODIC_ADVERTISING))
+#error Periodic Advertising ADI feature shall be enabled only when periodic advertisng is enabled
+#endif /* #error */
+
+#if ((SUPPORT_CHANNEL_CLASSIFICATION) && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION))
+#error Channel Classification feature shall be enabled only when the master role or slave role is enabled 
 #endif /* #error */
 
 

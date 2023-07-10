@@ -78,6 +78,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   htim2.Instance = TIM2;
 
   /* Initialize TIMx peripheral as follow:
+
   + Period = [(TIM_CNT_FREQ/TIM_FREQ) - 1]. to have a (1/TIM_FREQ) s time base.
   + Prescaler = (uwTimclock/TIM_CNT_FREQ - 1) to have a TIM_CNT_FREQ counter clock.
   + ClockDivision = 0

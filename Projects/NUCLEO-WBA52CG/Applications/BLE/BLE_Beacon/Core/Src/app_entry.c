@@ -24,7 +24,9 @@
 #include "main.h"
 #include "app_entry.h"
 #include "stm32_seq.h"
+#if (CFG_LPM_SUPPORTED == 1)
 #include "stm32_lpm.h"
+#endif /* CFG_LPM_SUPPORTED */
 #include "stm32_timer.h"
 #include "stm32_mm.h"
 #include "stm32_adv_trace.h"
@@ -71,24 +73,26 @@ static bool system_startup_done = FALSE;
 #endif /* CFG_LPM_SUPPORTED */
 
 static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
+{
+  /* Virtual Memory #1 */
+  {
+    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
+    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
+  },
+  /* Virtual Memory #2 */
+  {
+    .Id = CFG_AMM_VIRTUAL_APP_BLE,
+    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
+  },
+};
+
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
   .PoolSize = CFG_AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
-  .a_VirtualMemoryConfigList =
-  {
-    /* Virtual Memory #1 */
-    {
-      .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-      .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
-    },
-    /* Virtual Memory #2 */
-    {
-      .Id = CFG_AMM_VIRTUAL_APP_BLE,
-      .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
-    },
-  }
+  .p_VirtualMemoryConfigList = vmConfig
 };
 
 /* USER CODE BEGIN PV */
@@ -96,13 +100,13 @@ static AMM_InitParameters_t ammInitConfig =
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
 static void Config_HSE(void);
+static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
 
@@ -138,6 +142,11 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* USER CODE END PFP */
 
+/* External variables --------------------------------------------------------*/
+
+/* USER CODE BEGIN EV */
+/* USER CODE END EV */
+
 /* Functions Definition ------------------------------------------------------*/
 void MX_APPE_Config(void)
 {
@@ -149,6 +158,8 @@ uint32_t MX_APPE_Init(void *p_param)
 {
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
 
+  UNUSED(p_param);
+
   /* System initialization */
   System_Init();
 
@@ -158,10 +169,8 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Advance Memory Manager */
   AMM_Init (&ammInitConfig);
 
-  UNUSED(p_param);
-
   /* Register the AMM background task */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 
   /* Initialize the Simple NVM Arbiter */
   SNVMA_Init ((uint32_t *)CFG_SNVMA_START_ADDRESS);
@@ -170,13 +179,11 @@ uint32_t MX_APPE_Init(void *p_param)
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, UTIL_SEQ_RFU, FM_BackgroundProcess);
 
 /* USER CODE BEGIN APPE_Init_1 */
-
 /* USER CODE END APPE_Init_1 */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
   BPKA_Reset( );
 
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
-  HW_RNG_Start( );
+  RNG_Init();
 
   /* Disable flash before any use - RFTS */
   FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
@@ -197,8 +204,8 @@ uint32_t MX_APPE_Init(void *p_param)
 /* USER CODE BEGIN APPE_Init_2 */
 
 /* USER CODE END APPE_Init_2 */
-   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
-   return WPAN_SUCCESS;
+  APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+  return WPAN_SUCCESS;
 }
 
 /* USER CODE BEGIN FD */
@@ -215,10 +222,9 @@ static void Config_HSE(void)
 {
   OTP_Data_s* otp_ptr = NULL;
 
-  /**
-   * Read HSE_Tuning from OTP
-   */
-  if (OTP_Read(DEFAULT_OTP_IDX, &otp_ptr) != HAL_OK) {
+  /* Read HSE_Tuning from OTP */
+  if (OTP_Read(DEFAULT_OTP_IDX, &otp_ptr) != HAL_OK)
+  {
     /* OTP no present in flash, apply default gain */
     HAL_RCCEx_HSESetTrimming(0x0C);
   }
@@ -240,7 +246,7 @@ static void System_Init( void )
 #if (CFG_DEBUG_APP_TRACE != 0)
   /*Initialize the terminal using the USART2 */
   UTIL_ADV_TRACE_Init();
-  UTIL_ADV_TRACE_SetVerboseLevel(VLEVEL_L); /*!< functional traces*/
+  UTIL_ADV_TRACE_SetVerboseLevel(VLEVEL_L); /* functional traces*/
   UTIL_ADV_TRACE_SetRegion(~0x0);
 #endif
 
@@ -263,6 +269,7 @@ static void SystemPower_Config(void)
 {
   scm_init();
 
+#if (CFG_LPM_SUPPORTED == 1)
  /* Initialize low power manager */
   UTIL_LPM_Init();
 
@@ -273,7 +280,20 @@ static void SystemPower_Config(void)
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 #else
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_SUPPORTED */
+}
+
+/**
+ * @brief Initialize Random Number Generator module
+ */
+static void RNG_Init(void)
+{
+  HW_RNG_Start();
+
+  UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
+
+  return;
 }
 
 static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
@@ -325,7 +345,7 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_SUPPORTED == 1)
   LL_PWR_ClearFlag_STOP();
 
-  if(system_startup_done)
+  if(system_startup_done && UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE)
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
@@ -353,12 +373,12 @@ void UTIL_SEQ_PostIdle( void )
 
 void BPKACB_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BPKA, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_BPKA, CFG_SEQ_PRIO_0);
 }
 
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_SEQ_PRIO_0);
 }
 
 void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
@@ -372,21 +392,27 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
 void AMM_ProcessRequest (void)
 {
   /* Ask for AMM background task scheduling */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SEQ_PRIO_0);
 }
 
 void FM_ProcessRequest (void)
 {
   /* Schedule the background process */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SEQ_PRIO_0);
 }
-
-/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 
 #if (CFG_DEBUG_APP_TRACE != 0)
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* Do not switch off HSI clock as it is used for traces */
+  /* RNG module may not switch off HSI clock when traces are used */
+
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+
+  /* USER CODE END RNG_KERNEL_CLK_OFF */
 }
+
 #endif
+
+/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+
 /* USER CODE END FD_WRAP_FUNCTIONS */

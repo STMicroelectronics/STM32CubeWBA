@@ -37,6 +37,31 @@
 
 /* Private typedef -----------------------------------------------------------*/
 
+/* USER CODE BEGIN PTD */
+typedef struct
+{
+  /**
+   * ID of the Write timeout
+   */
+  UTIL_TIMER_Object_t TimerDataThroughput_Id;
+  /* USER CODE END Service1_APP_Context_t */
+  uint16_t              ConnectionHandle;
+} DT_CLI_APP_Context_t;
+
+typedef struct
+{
+  uint8_t *p_Payload;
+  uint8_t Length;
+
+  /* USER CODE BEGIN Service1_Data_t */
+  uint8_t pPayload_n_1;
+  uint8_t pPayload_n;
+  uint8_t Length32;
+  /* USER CODE END Service1_Data_t */
+
+} DT_Data_FromServer_t;
+/* USER CODE END PTD */
+
 typedef enum
 {
   NOTIFICATION_INFO_RECEIVED_EVT,
@@ -103,37 +128,28 @@ typedef struct
   DTC_App_Transfer_Req_Status_t ButtonTransferReq;
   DTC_App_Flow_Status_t DtFlowStatus;
   uint8_t connectionstatus;
+  uint16_t MTUSizeValue;
 /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
 
-/* USER CODE BEGIN PTD */
-typedef struct
-{
-  /**
-   * ID of the Write timeout
-   */
-  UTIL_TIMER_Object_t TimerDataThroughput_Id;
-  /* USER CODE END Service1_APP_Context_t */
-  uint16_t              ConnectionHandle;
-} DT_CLI_APP_Context_t;
-
-typedef struct
-{
-  uint8_t *p_Payload;
-  uint8_t Length;
-
-  /* USER CODE BEGIN Service1_Data_t */
-  uint8_t pPayload_n_1;
-  uint8_t pPayload_n;
-  uint8_t Length32;
-  /* USER CODE END Service1_Data_t */
-
-} DT_Data_FromServer_t;
-/* USER CODE END PTD */
-
 /* Private defines ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DT_TX_SERV_UUID                                               (0xFE80)
+#define DT_TX_CHAR_UUID                                               (0xFE81)
+#define DT_RX_CHAR_UUID                                               (0xFE82)
+#define DT_THROUGHPUT_CHAR_UUID                                       (0xFE83)
+
+#define TIMEUNIT  1
+     
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE     244
+/* USER CODE END PD */
+
+/* Private macros -------------------------------------------------------------*/
+#define UNPACK_2_BYTE_PARAMETER(ptr)  \
+        (uint16_t)((uint16_t)(*((uint8_t *)ptr))) |   \
+        (uint16_t)((((uint16_t)(*((uint8_t *)ptr + 1))) << 8))
+/* USER CODE BEGIN PM */
 #define COPY_UUID_16(uuid_struct, uuid_1, uuid_0)\
 do {\
     uuid_struct[0] = uuid_0; uuid_struct[1] = uuid_1;\
@@ -150,44 +166,7 @@ do {\
 #define COPY_DT_SERV_UUID(uuid_struct)       COPY_UUID_16(uuid_struct,0xfe,0x80)
 #define COPY_TX_CHAR_UUID(uuid_struct)       COPY_UUID_16(uuid_struct,0xfe,0x81)
 #define COPY_RX_CHAR_UUID(uuid_struct)       COPY_UUID_16(uuid_struct,0xfe,0x82)
-#define COPY_THROUGH_CHAR_UUID(uuid_struct)       COPY_UUID_16(uuid_struct,0xfe,0x83)
-
-#define DT_TX_SERV_UUID                                               (0xFE80)
-#define DT_TX_CHAR_UUID                                               (0xFE81)
-#define DT_RX_CHAR_UUID                                               (0xFE82)
-#define DT_THROUGHPUT_CHAR_UUID                                       (0xFE83)
-
-#define DELAY_1S (1000)
-#define TIMEUNIT  1
-
-#define UUID_128BIT_FORMAT              1
-
-#define UNPACK_2_BYTE_PARAMETER(ptr)  \
-    (uint16_t)((uint16_t)(*((uint8_t *)ptr))) |   \
-    (uint16_t)((((uint16_t)(*((uint8_t *)ptr + 1))) << 8))
-
-#define DEFAULT_TS_MEASUREMENT_INTERVAL   (1000000/CFG_TS_TICK_VAL)  /**< 1s */          
-#define TIMEUNIT                          1
-#define DATA_THROUGHPUT_MEASUREMENT       (TIMEUNIT*DEFAULT_TS_MEASUREMENT_INTERVAL)
-
-#define READ_RX                                                                0
-#define READ_TX                                                                1
-#define READ_RX_CCC_DESC                                                       2
-          
-#define WRITE_TX                                                               0
-#define WRITE_ENABLE_RX_NOTIFICATION                                           1
-#define WRITE_DISABLE_RX_NOTIFICATION                                          2
-
-#define TX_CHAR                                                                1
-#define RX_CHAR                                                                2
-/* USER CODE END PD */
-
-/* Private macros -------------------------------------------------------------*/
-#define UNPACK_2_BYTE_PARAMETER(ptr)  \
-        (uint16_t)((uint16_t)(*((uint8_t *)ptr))) |   \
-        (uint16_t)((((uint16_t)(*((uint8_t *)ptr + 1))) << 8))
-/* USER CODE BEGIN PM */
-
+#define COPY_THROUGH_CHAR_UUID(uuid_struct)  COPY_UUID_16(uuid_struct,0xfe,0x83)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -197,15 +176,15 @@ static uint16_t gattCharStartHdl = 0;
 static uint16_t gattCharValueHdl = 0;
 
 /* USER CODE BEGIN PV */
+static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* DATA_NOTIFICATION_MAX_PACKET_SIZE data + CRC */
 static DT_CLI_APP_Context_t DT_CLI_APP_Context;
 static uint16_t packet_lost;
 static uint32_t DataThroughputValue;
 static uint32_t packet_lost_local;
 static DT_CLI_NotificationEvt_t NotificationData;
 DTC_Context_t DTC_Context;
-uint32_t DTC_N=0;
+uint32_t dtc_n=0;
 uint32_t DataTransfered = 0;
-uint16_t Att_Mtu_Exchanged;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -227,9 +206,10 @@ static void gatt_cmd_resp_release(void);
 static void gatt_cmd_resp_wait(void);
 /* USER CODE BEGIN PFP */
 static void SendDataWrite(void);
-static uint8_t Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE]; /* DATA_NOTIFICATION_MAX_PACKET_SIZE data + CRC */
 static void DataThroughputNotif_proc(void *arg);
 static void DataT_Notification_Data( void );
+static void BLE_SVC_GAP_Security_Req(void);
+static void Resume_Write(void);
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -256,8 +236,8 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_all);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_WRITE_DATA_WO_RESP_ID, UTIL_SEQ_RFU, SendDataWrite);
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_SECURITY_REQ_ID, UTIL_SEQ_RFU, BLE_SVC_GAP_Security_Req); 
+  UTIL_SEQ_RegTask(1U << CFG_TASK_WRITE_DATA_WO_RESP_ID, UTIL_SEQ_RFU, SendDataWrite);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_SECURITY_REQ_ID, UTIL_SEQ_RFU, BLE_SVC_GAP_Security_Req); 
   
   UTIL_TIMER_Create(&(DT_CLI_APP_Context.TimerDataThroughput_Id),
                     0,
@@ -265,14 +245,14 @@ void GATT_CLIENT_APP_Init(void)
                     &DataThroughputNotif_proc, 
                     0);
     
-  UTIL_TIMER_SetPeriod(&(DT_CLI_APP_Context.TimerDataThroughput_Id), DELAY_1S);
+  UTIL_TIMER_SetPeriod(&(DT_CLI_APP_Context.TimerDataThroughput_Id), 1000);
   
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_DATA_FROM_SERVER_ID, UTIL_SEQ_RFU, DataT_Notification_Data); 
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DATA_FROM_SERVER_ID, UTIL_SEQ_RFU, DataT_Notification_Data); 
 
   /**
    * Initialize data buffer
    */
-  for (i=0 ; i<(DATA_NOTIFICATION_MAX_PACKET_SIZE-1) ; i++)
+  for (i = 0 ; i < (DATA_NOTIFICATION_MAX_PACKET_SIZE - 1) ; i++)
   {
     Notification_Data_Buffer[i] = i;
   }
@@ -479,7 +459,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           gatt_cmd_resp_wait();
           APP_DBG_MSG(" DTThroughputDescHdl =0x%04X\n",a_ClientContext[index].DTThroughputDescHdl);
         }
-		UTIL_SEQ_SetTask(1<<CFG_TASK_CONN_UPDATE_ID, CFG_SCH_PRIO_0);
+		    UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_UPDATE_ID, CFG_SEQ_PRIO_0);
         /* USER CODE END PROC_GATT_ENABLE_ALL_NOTIFICATIONS */
 
         if (result == BLE_STATUS_SUCCESS)
@@ -600,6 +580,15 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           APP_DBG_MSG("  MTU exchanged size = %d\n",exchange_mtu_resp->Server_RX_MTU );
           UNUSED(exchange_mtu_resp);
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
+          if (exchange_mtu_resp->Server_RX_MTU < DATA_NOTIFICATION_MAX_PACKET_SIZE)
+          {
+            a_ClientContext[0].MTUSizeValue = exchange_mtu_resp->Server_RX_MTU - 3;
+          }
+          else
+          {
+            a_ClientContext[0].MTUSizeValue = DATA_NOTIFICATION_MAX_PACKET_SIZE;
+          }
+          APP_DBG_MSG("  MTU_size = %d\n", a_ClientContext[0].MTUSizeValue);
           tBleStatus status;
 		  status = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
           if (status != BLE_STATUS_SUCCESS)
@@ -1064,12 +1053,12 @@ static void gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
     /* CRC computation */
     CRC_Result = APP_BLE_ComputeCRC8((uint8_t*) (p_evt->Attribute_Value), (p_evt->Attribute_Value_Length) - 1);
     /* get low weight byte */
-    CRC_Received = (uint8_t) (p_evt->Attribute_Value[DATA_NOTIFICATION_MAX_PACKET_SIZE-1]);
+    CRC_Received = (uint8_t) (p_evt->Attribute_Value[a_ClientContext[0].MTUSizeValue - 1]);
     
     if (CRC_Received != CRC_Result)
     {
-      DTC_N+=1;
-      APP_DBG_MSG("** data error **  N= %d \r\n",(int)DTC_N);
+      dtc_n += 1;
+      APP_DBG_MSG("** data error **  N= %d \r\n",(int32_t)dtc_n);
     }
     NotificationData.DataTransfered.pPayload_n_1 = NotificationData.DataTransfered.pPayload_n;
     if (DataTransfered == 0)
@@ -1106,7 +1095,7 @@ void DTC_Button1TriggerReceived( void )
 {
   if (DTC_Context.connectionstatus != APP_BLE_CONNECTED_CLIENT)
   {
-    UTIL_SEQ_SetTask(1<<CFG_TASK_START_SCAN_ID, CFG_SCH_PRIO_0);
+    UTIL_SEQ_SetTask(1U << CFG_TASK_START_SCAN_ID, CFG_SEQ_PRIO_0);
   }
   else
   {
@@ -1119,7 +1108,7 @@ void DTC_Button1TriggerReceived( void )
     {
       BSP_LED_On(LED_BLUE);
       DTC_Context.ButtonTransferReq = DTC_APP_TRANSFER_REQ_ON;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SEQ_PRIO_0);
     }
   }
   BleStackCB_Process();
@@ -1143,7 +1132,7 @@ void DTC_Button2TriggerReceived( void )
   }
   else
   {
-    UTIL_SEQ_SetTask(1 << CFG_TASK_SECURITY_REQ_ID, CFG_SCH_PRIO_0);
+    UTIL_SEQ_SetTask(1 << CFG_TASK_SECURITY_REQ_ID, CFG_SEQ_PRIO_0);
   }
   BleStackCB_Process();
   return;
@@ -1166,15 +1155,15 @@ static void SendDataWrite( void )
     /*Data Packet to send to remote*/
     Notification_Data_Buffer[0] += 1;
     /* compute CRC */
-    crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (DATA_NOTIFICATION_MAX_PACKET_SIZE - 1));
-    Notification_Data_Buffer[DATA_NOTIFICATION_MAX_PACKET_SIZE - 1] = crc_result;
+    crc_result = APP_BLE_ComputeCRC8((uint8_t*) Notification_Data_Buffer, (a_ClientContext[0].MTUSizeValue - 1));
+    Notification_Data_Buffer[a_ClientContext[0].MTUSizeValue - 1] = crc_result;
 
     DTC_Context.TxData.pPayload = Notification_Data_Buffer;
-    DTC_Context.TxData.Length =  DATA_NOTIFICATION_MAX_PACKET_SIZE;
+    DTC_Context.TxData.Length =  a_ClientContext[0].MTUSizeValue;
 
     status = aci_gatt_write_without_resp(a_ClientContext[0].connHdl,
                                          a_ClientContext[0].DTRXValueHdle,
-                                         DATA_NOTIFICATION_MAX_PACKET_SIZE,
+                                         a_ClientContext[0].MTUSizeValue,
                                          (const uint8_t*)(DTC_Context.TxData.pPayload));
     
     if (status == BLE_STATUS_INSUFFICIENT_RESOURCES)
@@ -1185,8 +1174,8 @@ static void SendDataWrite( void )
     }
     else
     {
-      UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_HOST, CFG_SCH_PRIO_0);
-      UTIL_SEQ_SetTask(1 << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
+      UTIL_SEQ_SetTask(1U << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SEQ_PRIO_0);
     }
   }
   BleStackCB_Process();
@@ -1194,29 +1183,29 @@ static void SendDataWrite( void )
   return;
 }
 
-void Resume_Write(void)
+static void Resume_Write(void)
 {
   DTC_Context.DtFlowStatus = DTC_APP_FLOW_ON;
-  UTIL_SEQ_SetTask(1 << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SCH_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SEQ_PRIO_0);
 }
 
-static void DataThroughputNotif_proc(void *arg){
-  
-  UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_FROM_SERVER_ID, CFG_SCH_PRIO_0);
+static void DataThroughputNotif_proc(void *arg)
+{
+  UTIL_SEQ_SetTask(1U << CFG_TASK_DATA_FROM_SERVER_ID, CFG_SEQ_PRIO_0);
 }
 
 static void DataT_Notification_Data( void )
 {
-    DataThroughputValue = (uint32_t)(DataTransfered / TIMEUNIT);
-    packet_lost_local = (uint32_t)(packet_lost / TIMEUNIT);
-    DataTransfered = 0;
-    packet_lost = 0;
+  DataThroughputValue = (uint32_t)(DataTransfered / TIMEUNIT);
+  packet_lost_local = (uint32_t)(packet_lost / TIMEUNIT);
+  DataTransfered = 0;
+  packet_lost = 0;
 
-    APP_DBG_MSG("  DataThroughput = %ld bytes/s lost = %ld \n",DataThroughputValue, packet_lost_local);
-    return;
+  APP_DBG_MSG("  DataThroughput = %ld bytes/s lost = %ld \n",DataThroughputValue, packet_lost_local);
+  return;
 }
 
-void BLE_SVC_GAP_Security_Req( void )
+static void BLE_SVC_GAP_Security_Req( void )
 {
   tBleStatus status;
   

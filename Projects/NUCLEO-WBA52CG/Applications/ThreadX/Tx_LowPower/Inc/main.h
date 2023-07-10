@@ -53,17 +53,17 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void EXTI13_IRQHandler(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LD2_Pin GPIO_PIN_11
-#define LD2_GPIO_Port GPIOB
-#define LD3_Pin GPIO_PIN_8
-#define LD3_GPIO_Port GPIOB
-#define B1_Pin GPIO_PIN_13
-#define B1_GPIO_Port GPIOC
-#define B1_EXTI_IRQn EXTI13_IRQn
+#define LED2_Pin GPIO_PIN_11
+#define LED2_GPIO_Port GPIOB
+#define LED3_Pin GPIO_PIN_8
+#define LED3_GPIO_Port GPIOB
+#define BUTTON_USER_Pin GPIO_PIN_13
+#define BUTTON_USER_GPIO_Port GPIOC
+#define BUTTON_USER_EXTI_IRQn EXTI13_IRQn
 
 /* USER CODE BEGIN Private defines */
 

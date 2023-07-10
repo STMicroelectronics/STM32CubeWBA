@@ -4,6 +4,6 @@ HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo
 Define=
 HALModule=EXTI;UART
 [Groups]
-Doc=../README.md;../Expected_Results.md;
+Doc=../README.md;
 Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
 Drivers/STM32WBAxx_HAL_Driver=../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c;

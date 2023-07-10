@@ -33,6 +33,7 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_SerialCom_Central/System/Config/Debug_GPIO/debug_config.h                   Real Time Debug module general configuration file 
   - BLE_SerialCom_Central/System/Config/Flash/simple_nvm_arbiter_conf.h             Configuration header for simple_nvm_arbiter.c module 
   - BLE_SerialCom_Central/System/Config/LowPower/app_sys.h                          Header for app_sys.c 
+  - BLE_SerialCom_Central/System/Config/LowPower/user_low_power_config.h            Header for user_low_power_config.c
   - BLE_SerialCom_Central/System/Interfaces/hw.h                                    This file contains the interface of STM32 HW drivers. 
   - BLE_SerialCom_Central/System/Interfaces/hw_if.h                                 Hardware Interface 
   - BLE_SerialCom_Central/System/Interfaces/stm32_lpm_if.h                          Header for stm32_lpm_if.c module (device specific LP management) 
@@ -41,7 +42,6 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_SerialCom_Central/System/Modules/adc_ctrl.h                                 Header for ADC client manager module 
   - BLE_SerialCom_Central/System/Modules/ble_timer.h                                This header defines the timer functions used by the BLE stack 
   - BLE_SerialCom_Central/System/Modules/dbg_trace.h                                Header for dbg_trace.c 
-  - BLE_SerialCom_Central/System/Modules/general_config.h                           This file contains definitions that can be changed to configure some modules of the STM32 firmware application.
   - BLE_SerialCom_Central/System/Modules/otp.h                                      Header file for One Time Programmable (OTP) area 
   - BLE_SerialCom_Central/System/Modules/scm.h                                      Header for scm.c module 
   - BLE_SerialCom_Central/System/Modules/stm_list.h                                 Header file for linked list library. 
@@ -56,9 +56,11 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_SerialCom_Central/System/Modules/MemoryManager/advanced_memory_manager.h    Header for advance_memory_manager.c module 
   - BLE_SerialCom_Central/System/Modules/MemoryManager/stm32_mm.h                   Header for stm32_mm.c module 
   - BLE_SerialCom_Central/System/Modules/Nvm/nvm.h                                  This file contains the interface of the NVM manager. 
+  - BLE_SerialCom_Central/System/Modules/RFControl/rf_antenna_switch.h              RF related module to handle dedictated GPIOs for antenna switch
   - BLE_SerialCom_Central/System/Modules/RTDebug/debug_signals.h                    Real Time Debug module System and Link Layer signal definition 
   - BLE_SerialCom_Central/System/Modules/RTDebug/local_debug_tables.h               Real Time Debug module System and Link Layer signal 
   - BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug.h                          Real Time Debug module API declaration 
+  - BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug_dtb.h                      Real Time Debug module API declaration for DTB usage
   - BLE_SerialCom_Central/Core/Src/app_entry.c                                      Entry point of the application 
   - BLE_SerialCom_Central/Core/Src/main.c                                           Main program body 
   - BLE_SerialCom_Central/Core/Src/stm32wbaxx_hal_msp.c                             This file provides code for the MSP Initialization and de-Initialization codes.
@@ -73,6 +75,7 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_SerialCom_Central/STM32_WPAN/Target/ll_sys_if.c                             Source file for initiating the system sequencer 
   - BLE_SerialCom_Central/STM32_WPAN/Target/power_table.c                           This file contains supported power tables 
   - BLE_SerialCom_Central/System/Config/Debug_GPIO/app_debug.c                      Real Time Debug module application side APIs 
+  - BLE_SerialCom_Central/System/Config/LowPower/user_low_power_config.c            Low power related user configuration
   - BLE_SerialCom_Central/System/Interfaces/hw_aes.c                                This file contains the AES driver for STM32WBA 
   - BLE_SerialCom_Central/System/Interfaces/hw_otp.c                                This file contains the OTP driver. 
   - BLE_SerialCom_Central/System/Interfaces/hw_pka.c                                This file contains the PKA driver for STM32WBA 
@@ -97,8 +100,9 @@ sure the RF timing is not broken
   - BLE_SerialCom_Central/System/Modules/MemoryManager/advanced_memory_manager.c    Memory Manager 
   - BLE_SerialCom_Central/System/Modules/MemoryManager/stm32_mm.c                   Memory Manager
   - BLE_SerialCom_Central/System/Modules/Nvm/nvm_emul.c                             This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose.
+  - BLE_SerialCom_Central/System/Modules/RFControl/rf_antenna_switch.c              RF related module to handle dedictated GPIOs for antenna switch
   - BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug.c                          Real Time Debug module API definition 
-
+  - BLE_SerialCom_Central/System/Modules/RTDebug/RTDebug_dtb.c                      Real Time Debug module API definition for DTB usage
 
 
 ### __Hardware and Software environment__
@@ -110,6 +114,7 @@ sure the RF timing is not broken
 ### __How to use it?__
 
 In order to make the program work, you must do the following:
+
  - Open IAR toolchain 
  - Rebuild all files and flash the board with the executable file.
  
@@ -126,6 +131,7 @@ Open a VT100 terminal on Central and Peripheral side (ST Link Com Port, @115200 
 This application has to be used in front of BLE_p2pPeripheral_COC.
 
 At reset application initialization is done.
+
  - The peripheral device starts advertising.
  - Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_BLE_COC). 
  - After BLE connection:
@@ -137,14 +143,18 @@ At reset application initialization is done.
 - When Append nothing is configured, enter data using keyboard, data are sent when buffer of 20 bytes is full.
 
 On server side when connected:
+
 - B2 sends slave security request
 
 On server side when idle:
+
 - B2 clear database
 
 On client side when connected:
+
 - B2 sends pairing request
 - B3 changes connection interval update
 
 On client side when idle:
+
 - B2 clear database

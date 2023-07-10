@@ -39,6 +39,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/BLE_p2pRouter.ioc</locationURI>
 		</link>
 		<link>
+			<name>Doc/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
+		</link>
+		<link>
 			<name>Utilities/stm32_adv_trace.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/trace/adv_trace/stm32_adv_trace.c</locationURI>
@@ -234,11 +239,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/ll_sys_hclk_client.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_hclk_client.c</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/STM32_WPAN/ll_sys_intf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
@@ -409,6 +409,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Config/Debug_GPIO/app_debug.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Config/LowPower/user_low_power_config.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/user_low_power_config.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Modules/Flash/flash_driver.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/Flash/flash_driver.c</locationURI>
@@ -444,9 +449,19 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/Nvm/nvm_emul.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/RFControl/rf_antenna_switch.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RFControl/rf_antenna_switch.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RTDebug/RTDebug.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/RTDebug/RTDebug_dtb.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RTDebug/RTDebug_dtb.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/baes/baes_cmac.c</name>

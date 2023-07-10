@@ -577,6 +577,7 @@ void dump_eat_token(struct q_useful_buf_c *token)
   printf("\r\n");
 
 }
+
 /**
   * @brief  request eat short cicuit, check result and
   * display response result buffer.
@@ -606,7 +607,7 @@ static void tfm_eat_test_circuit_sig(uint32_t encode_options, struct test_result
   }
   else
   {
-    printf("failed status %ld\r\n", status);
+    printf("failed status %d\r\n", (int)status);
     ret->val = TEST_FAILED;
   }
 

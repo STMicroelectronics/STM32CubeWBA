@@ -1,7 +1,7 @@
   @verbatim
   ******************************************************************************
   *
-  *         Portions COPYRIGHT 2016-2020 STMicroelectronics, All Rights Reserved
+  *         Portions COPYRIGHT 2016-2023 STMicroelectronics, All Rights Reserved
   *         Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
   *
   * @file    st_readme.txt 
@@ -15,6 +15,14 @@
   *
   ******************************************************************************
   @endverbatim
+
+### 2-June-2023 ###
+========================
+    + several enhancements (including security updates)
+
+### 2-February-2023 ###
+========================
+    + remove compilation warnings for GCC compiler
 
 ### 30-January-2023 ###
 ========================

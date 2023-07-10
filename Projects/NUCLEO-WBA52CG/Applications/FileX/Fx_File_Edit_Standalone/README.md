@@ -1,5 +1,5 @@
 
-## <b>Fx_File_Edit_Standalone application description</b>
+## <b>Fx_File_Edit_Standalone Application Description</b>
 
 This application provides an example of FileX stack usage on STM32WBA52CG-Nucleo board, running in standalone mode (without ThreadX).
 

@@ -44,11 +44,9 @@ typedef enum
   HTS_MNBS,
   HTS_INT,
   HTS_MEI,
-
   /* USER CODE BEGIN Service2_CharOpcode_t */
 
   /* USER CODE END Service2_CharOpcode_t */
-
   HTS_CHAROPCODE_LAST
 } HTS_CharOpcode_t;
 
@@ -63,11 +61,9 @@ typedef enum
   HTS_MEI_WRITE_EVT,
   HTS_MEI_INDICATE_ENABLED_EVT,
   HTS_MEI_INDICATE_DISABLED_EVT,
-
   /* USER CODE BEGIN Service2_OpcodeEvt_t */
 
   /* USER CODE END Service2_OpcodeEvt_t */
-
   HTS_BOOT_REQUEST_EVT
 } HTS_OpcodeEvt_t;
 
@@ -79,7 +75,6 @@ typedef struct
   /* USER CODE BEGIN Service2_Data_t */
 
   /* USER CODE END Service2_Data_t */
-
 } HTS_Data_t;
 
 typedef struct
@@ -87,12 +82,11 @@ typedef struct
   HTS_OpcodeEvt_t       EvtOpcode;
   HTS_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service2_NotificationEvt_t */
   uint16_t  RangeInterval;
   /* USER CODE END Service2_NotificationEvt_t */
-
 } HTS_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

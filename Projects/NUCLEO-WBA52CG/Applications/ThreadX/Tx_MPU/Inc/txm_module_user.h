@@ -57,7 +57,4 @@
 
 /* #define TXM_MODULE_KERNEL_STACK_SIZE    2048 */
 
-/* Module Start Thread Entry Point */
-void    default_module_start(ULONG id);
-
 #endif

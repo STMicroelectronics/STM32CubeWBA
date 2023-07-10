@@ -35,7 +35,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
  typedef struct{
     uint8_t             Device_Led_Selection;
@@ -119,44 +118,18 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
 
     case P2P_SERVER_LED_C_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN Service1Char1_WRITE_NO_RESP_EVT */
-      if (p_Notification->DataTransfered.p_Payload[0] == 0x00)
-      { 
-        /* ALL Deviceselected - may be necessary as LB Routeur informs all connection */
-        if(p_Notification->DataTransfered.p_Payload[1] == 0x01)
-        {
-          BSP_LED_On(LED_BLUE);
-          APP_DBG_MSG("-- P2P APPLICATION SERVER  : LED1 ON\n"); 
-          APP_DBG_MSG(" \n\r");
-          P2P_SERVER_APP_Context.LedControl.Led1=0x01; /* LED1 ON */
-        }
-        if(p_Notification->DataTransfered.p_Payload[1] == 0x00)
-        {
-          BSP_LED_Off(LED_BLUE);
-          APP_DBG_MSG("-- P2P APPLICATION SERVER  : LED1 OFF\n"); 
-          APP_DBG_MSG(" \n\r");
-          P2P_SERVER_APP_Context.LedControl.Led1=0x00; /* LED1 OFF */
-        }
+      if(p_Notification->DataTransfered.p_Payload[1] == 0x01)
+      {
+        BSP_LED_On(LED_BLUE);
+        APP_DBG_MSG("-- P2P APPLICATION SERVER : LED1 ON\n"); 
+        P2P_SERVER_APP_Context.LedControl.Led1 = 0x01; /* LED1 ON */
       }
-#if(P2P_SERVER1 != 0)  
-      if (p_Notification->DataTransfered.p_Payload[0] == 0x01)
-      { 
-        /* end device 1 selected - may be necessary as LB Routeur informs all connection */
-        if(p_Notification->DataTransfered.p_Payload[1] == 0x01)
-        {
-          BSP_LED_On(LED_BLUE);
-          APP_DBG_MSG("-- P2P APPLICATION SERVER 1 : LED1 ON\n"); 
-          APP_DBG_MSG(" \n\r");
-          P2P_SERVER_APP_Context.LedControl.Led1=0x01; /* LED1 ON */
-        }
-        if(p_Notification->DataTransfered.p_Payload[1] == 0x00)
-        {
-          BSP_LED_Off(LED_BLUE);
-          APP_DBG_MSG("-- P2P APPLICATION SERVER 1 : LED1 OFF\n"); 
-          APP_DBG_MSG(" \n\r");
-          P2P_SERVER_APP_Context.LedControl.Led1=0x00; /* LED1 OFF */
-        }
+      if(p_Notification->DataTransfered.p_Payload[1] == 0x00)
+      {
+        BSP_LED_Off(LED_BLUE);
+        APP_DBG_MSG("-- P2P APPLICATION SERVER : LED1 OFF\n"); 
+        P2P_SERVER_APP_Context.LedControl.Led1 = 0x00; /* LED1 OFF */
       }
-#endif
       /* USER CODE END Service1Char1_WRITE_NO_RESP_EVT */
       break;
 
@@ -198,7 +171,7 @@ void P2P_SERVER_APP_EvtRx(P2P_SERVER_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case P2P_SERVER_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
@@ -236,22 +209,22 @@ void P2P_SERVER_APP_Init(void)
   /**
    * Initialize LedButton Service
    */
+  P2P_SERVER_APP_Context.Switch_c_Notification_Status= Switch_c_NOTIFICATION_OFF;
   P2P_SERVER_APP_LED_BUTTON_context_Init();
   /* USER CODE END Service1_APP_Init */
   return;
 }
 
 /* USER CODE BEGIN FD */
-void P2P_SERVER_APP_LED_BUTTON_context_Init(void){
-  
+void P2P_SERVER_APP_LED_BUTTON_context_Init(void)
+{  
   BSP_LED_Off(LED_BLUE);
-  
-#if(P2P_SERVER1 != 0)
   P2P_SERVER_APP_Context.LedControl.Device_Led_Selection=0x01; /* Device1 */
   P2P_SERVER_APP_Context.LedControl.Led1=0x00; /* led OFF */
   P2P_SERVER_APP_Context.ButtonControl.Device_Button_Selection=0x01;/* Device1 */
   P2P_SERVER_APP_Context.ButtonControl.ButtonStatus=0x00;
-#endif
+
+  return;
 }
 /* USER CODE END FD */
 
@@ -269,6 +242,7 @@ __USED void P2P_SERVER_Switch_c_SendNotification(void) /* Property Notification 
   p2p_server_notification_data.Length = 0;
 
   /* USER CODE BEGIN Service1Char2_NS_1*/
+
   if(P2P_SERVER_APP_Context.ButtonControl.ButtonStatus == 0x00)
   {
     P2P_SERVER_APP_Context.ButtonControl.ButtonStatus = 0x01;

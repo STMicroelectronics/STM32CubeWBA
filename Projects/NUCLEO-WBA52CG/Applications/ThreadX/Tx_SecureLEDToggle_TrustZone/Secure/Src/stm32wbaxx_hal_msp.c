@@ -1,10 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    Secure/Src/stm32wbaxx_hal_msp.c
-  * @author  MCD Application Team
-  * @brief   This file provides code for the MSP Initialization
-  *          and de-Initialization codes.
+  * @file         stm32wbaxx_hal_msp.c
+  * @brief        This file provides code for the MSP Initialization
+  *               and de-Initialization codes.
   ******************************************************************************
   * @attention
   *
@@ -21,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

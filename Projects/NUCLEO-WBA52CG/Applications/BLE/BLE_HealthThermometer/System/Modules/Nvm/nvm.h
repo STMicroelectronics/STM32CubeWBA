@@ -48,6 +48,8 @@ enum
   NVM_ALL      =  3
 };
 
+#define CFG_NVM_ALIGN (1)
+
 #if CFG_NVM_ALIGN != 0
 extern void NVM_Init( uint64_t* buffer,
                       uint16_t size,

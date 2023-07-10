@@ -37,7 +37,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 typedef enum
 {
@@ -74,7 +73,8 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+/* Define list of reboot reason */
+#define REBOOT_ON_FW_APP          (0x00)
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -84,6 +84,18 @@ typedef struct
 
 /* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+/* Compute start address where the User Configuration shall be located */
+#define USER_CFG_SLOT_START_SECTOR_INDEX      (FLASH_PAGE_NB - CFG_NVM_STATIC_NB_SECTORS - CFG_USER_CFG_NB_SECTORS)
+
+/* Compute size in Page of Download and Active slots */
+#define DOWNLOAD_ACTIVE_NB_SECTORS            (FLASH_PAGE_NB - CFG_NVM_STATIC_NB_SECTORS - CFG_USER_CFG_NB_SECTORS)
+
+/* Compute size in Page of Download or active slot */
+#define APP_SLOT_PAGE_SIZE                    ((DOWNLOAD_ACTIVE_NB_SECTORS - CFG_ACTIVE_SLOT_START_SECTOR_INDEX) / 2)
+
+/* Compute start address where the NEW application shall be downloaded */
+#define DOWNLOAD_SLOT_START_SECTOR_INDEX      (APP_SLOT_PAGE_SIZE + CFG_ACTIVE_SLOT_START_SECTOR_INDEX)
 
 /* USER CODE END PM */
 
@@ -155,17 +167,16 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
         {
           case Fw_App:
             {
-              APP_DBG("OTA_CONF_EVT: Reboot on new application\n");
-
+              APP_DBG_MSG("OTA_CONF_EVT: Reboot on new application\n");
               /**
                * Reboot on FW Application
                */
-              CFG_OTA_REBOOT_VAL_MSG = CFG_REBOOT_ON_FW_APP;
+              CFG_OTA_REBOOT_VAL_MSG_ADDR = REBOOT_ON_FW_APP;
               
               /**
                * Give the download sector
                */
-              CFG_OTA_START_SECTOR_IDX_VAL_MSG = (OTA_APP_Context.base_address - FLASH_BASE) >> 13;
+              CFG_OTA_START_SECTOR_IDX_VAL_MSG_ADDR = (OTA_APP_Context.base_address - FLASH_BASE) >> 13;
      
               NVIC_SystemReset(); /* it waits until reset */
             }
@@ -210,7 +221,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               
               OTA_APP_Context.write_value_index = 0;
               OTA_APP_Context.Conf_Indication_Status = OTA_APP_Ready_Pending;
-              first_valid_address = CFG_USER_CFG_SLOT_START_SECTOR_INDEX * FLASH_PAGE_SIZE + FLASH_BASE;
+              first_valid_address = USER_CFG_SLOT_START_SECTOR_INDEX * FLASH_PAGE_SIZE + FLASH_BASE;
               if(((OTA_APP_Context.base_address & 0xF) == 0) &&
                  (OTA_APP_Context.sectors <= CFG_USER_CFG_NB_SECTORS) &&
                  (OTA_APP_Context.base_address >= first_valid_address) &&
@@ -228,7 +239,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   /* Flash manager erase */
                   if(OTA_APP_Context.sectors == 0)
                     OTA_APP_Context.sectors = CFG_USER_CFG_NB_SECTORS;
-                  error = FM_Erase((uint32_t)CFG_USER_CFG_SLOT_START_SECTOR_INDEX, 
+                  error = FM_Erase((uint32_t)USER_CFG_SLOT_START_SECTOR_INDEX, 
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
 
@@ -245,7 +256,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
                       error = FM_ERROR;
-                      APP_DBG("OTA_USER_CONF_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
+                      APP_DBG_MSG("OTA_USER_CONF_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
                     }
                   }
                   else if(error == FM_BUSY)
@@ -258,7 +269,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   }
                   else
                   {
-                    APP_DBG("OTA_USER_CONF_UPLOAD: FM_ERROR\n");
+                    APP_DBG_MSG("OTA_USER_CONF_UPLOAD: FM_ERROR\n");
                   }
                 } /* while(error != FM_OK) */
 
@@ -269,8 +280,8 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               }
               else
               {
-                APP_DBG("OTA_USER_CONF_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
-                APP_DBG("OTA_USER_CONF_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
+                APP_DBG_MSG("OTA_USER_CONF_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
+                APP_DBG_MSG("OTA_USER_CONF_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
                 a_OTA_UpdateCharData[0] = OTA_NOT_READY_TO_RECEIVE_FILE;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
                 msg_conf.Length = 1;
@@ -296,16 +307,16 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               }
               else
               {
-                OTA_APP_Context.sectors = CFG_DOWNLOAD_ACTIVE_NB_SECTORS;
+                OTA_APP_Context.sectors = DOWNLOAD_ACTIVE_NB_SECTORS;
               }
               
               OTA_APP_Context.write_value_index = 0;
               OTA_APP_Context.Conf_Indication_Status = OTA_APP_Ready_Pending;
-              first_valid_address = ((CFG_ACTIVE_SLOT_START_SECTOR_INDEX + CFG_APP_SLOT_PAGE_SIZE) * FLASH_PAGE_SIZE) + FLASH_BASE;
+              first_valid_address = ((CFG_ACTIVE_SLOT_START_SECTOR_INDEX + APP_SLOT_PAGE_SIZE) * FLASH_PAGE_SIZE) + FLASH_BASE;
               if(((OTA_APP_Context.base_address & 0xF) == 0) &&
-                 (OTA_APP_Context.sectors <= CFG_DOWNLOAD_ACTIVE_NB_SECTORS) &&
+                 (OTA_APP_Context.sectors <= DOWNLOAD_ACTIVE_NB_SECTORS) &&
                  (OTA_APP_Context.base_address >= first_valid_address) &&
-                 ((OTA_APP_Context.base_address + ((OTA_APP_Context.sectors) * FLASH_PAGE_SIZE)) <= (first_valid_address + (CFG_APP_SLOT_PAGE_SIZE * FLASH_PAGE_SIZE))))
+                 ((OTA_APP_Context.base_address + ((OTA_APP_Context.sectors) * FLASH_PAGE_SIZE)) <= (first_valid_address + (APP_SLOT_PAGE_SIZE * FLASH_PAGE_SIZE))))
               { /* Download address is 128 bits aligned */
                 /* Size of file to download fit in download slot */
                 /* Download address is in the download area */
@@ -318,7 +329,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 {  
                   /* Flash manager write */
                   if(OTA_APP_Context.sectors == 0)
-                    OTA_APP_Context.sectors = CFG_DOWNLOAD_ACTIVE_NB_SECTORS;
+                    OTA_APP_Context.sectors = DOWNLOAD_ACTIVE_NB_SECTORS;
                   error = FM_Erase((uint32_t)((OTA_APP_Context.base_address - FLASH_BASE) >> 13), 
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
@@ -336,7 +347,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
                       error = FM_ERROR;
-                      APP_DBG("OTA_APPLICATION_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
+                      APP_DBG_MSG("OTA_APPLICATION_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
                     }
                   }
                   else if(error == FM_BUSY)
@@ -349,7 +360,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   }
                   else
                   {
-                    APP_DBG("OTA_APPLICATION_UPLOAD: FM_ERROR\n");
+                    APP_DBG_MSG("OTA_APPLICATION_UPLOAD: FM_ERROR\n");
                   }
                 } /* while(error != FM_OK) */
                 
@@ -361,8 +372,8 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               else
               {
                 msg_conf.Length = 1;
-                APP_DBG("OTA_APPLICATION_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
-                APP_DBG("OTA_APPLICATION_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
+                APP_DBG_MSG("OTA_APPLICATION_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
+                APP_DBG_MSG("OTA_APPLICATION_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
                 a_OTA_UpdateCharData[0] = OTA_NOT_READY_TO_RECEIVE_FILE;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
                 OTA_UpdateValue(OTA_CONF, &msg_conf);
@@ -385,7 +396,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
           case OTA_CANCEL_UPLOAD:
             {
-              APP_DBG("OTA_CANCEL_UPLOAD\n");
+              APP_DBG_MSG("OTA_CANCEL_UPLOAD\n");
             }
             break;
 
@@ -398,13 +409,13 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
     case OTA_CONF_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service2Char2_INDICATE_ENABLED_EVT */
-      APP_DBG("OTA_CONF_INDICATE_ENABLED_EVT\n");
+      APP_DBG_MSG("OTA_CONF_INDICATE_ENABLED_EVT\n");
       /* USER CODE END Service2Char2_INDICATE_ENABLED_EVT */
       break;
 
     case OTA_CONF_INDICATE_DISABLED_EVT:
       /* USER CODE BEGIN Service2Char2_INDICATE_DISABLED_EVT */
-      APP_DBG("OTA_CONF_INDICATE_DISABLED_EVT\n");
+      APP_DBG_MSG("OTA_CONF_INDICATE_DISABLED_EVT\n");
       /* USER CODE END Service2Char2_INDICATE_DISABLED_EVT */
       break;
 
@@ -450,7 +461,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
             if (FM_WriteStatus != FM_OPERATION_COMPLETE)
             {
               error = FM_ERROR;
-              APP_DBG("OTA_RAW_DATA_ID: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
+              APP_DBG_MSG("OTA_RAW_DATA_ID: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
             }
           }
           else if(error == FM_BUSY)
@@ -463,7 +474,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           }
           else
           {
-            APP_DBG("OTA_RAW_DATA_ID: FM_ERROR\n");
+            APP_DBG_MSG("OTA_RAW_DATA_ID: FM_ERROR\n");
           }
         } /* while(error != FM_OK) */
 
@@ -495,7 +506,7 @@ void OTA_APP_EvtRx(OTA_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service2_APP_EvtRx_Service2_EvtOpcode */
 
-    /* USER CODE END Service2_Notification_Service2_EvtOpcode */
+    /* USER CODE END Service2_APP_EvtRx_Service2_EvtOpcode */
     case OTA_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service2_APP_CONN_HANDLE_EVT */
 
@@ -528,7 +539,7 @@ void OTA_APP_Init(void)
   OTA_Init();
 
   /* USER CODE BEGIN Service2_APP_Init */
-  DeleteSlot( CFG_DOWNLOAD_SLOT_START_SECTOR_INDEX ); /* Erase download slot */
+  DeleteSlot(DOWNLOAD_SLOT_START_SECTOR_INDEX); /* Erase download slot */
   FM_WriteStatus = FM_OPERATION_AVAILABLE;
   size_left = 0;
   address_offset = 0;
@@ -557,10 +568,10 @@ static void DeleteSlot( uint8_t page_idx )
    * The limit can be read from the SFSA option byte which provides the first secured sector address.
    */
 
-  uint32_t last_page_idx = page_idx + CFG_APP_SLOT_PAGE_SIZE - 1;
+  uint32_t last_page_idx = page_idx + APP_SLOT_PAGE_SIZE - 1;
   FLASH_EraseInitTypeDef p_erase_init;
   uint32_t page_error;
-  uint32_t NbrOfPageToBeErased = (uint32_t)CFG_APP_SLOT_PAGE_SIZE;
+  uint32_t NbrOfPageToBeErased = (uint32_t)APP_SLOT_PAGE_SIZE;
 
   if(page_idx < CFG_ACTIVE_SLOT_START_SECTOR_INDEX)
   {
@@ -568,7 +579,7 @@ static void DeleteSlot( uint8_t page_idx )
      * Something has been wrong as there is no case we should delete the BLE_BootMngr application
      * Reboot on the active firmware application
      */
-    CFG_OTA_REBOOT_VAL_MSG = CFG_REBOOT_ON_FW_APP;
+    CFG_OTA_REBOOT_VAL_MSG_ADDR = REBOOT_ON_FW_APP;
     NVIC_SystemReset(); /* it waits until reset */
   }
 

@@ -56,8 +56,8 @@ __IO uint32_t operationComplete = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_RNG_Init(void);
-static void MX_PKA_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_PKA_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -106,8 +106,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_RNG_Init();
-  MX_PKA_Init();
   MX_ICACHE_Init();
+  MX_PKA_Init();
   /* USER CODE BEGIN 2 */
   /* Set input parameters */
   in.primeOrderSize =  prime256v1_Order_len;

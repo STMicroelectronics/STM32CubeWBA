@@ -35,7 +35,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
  typedef struct{
     uint8_t             Device_Led_Selection;
@@ -72,7 +71,7 @@ typedef struct
 /* USER CODE BEGIN PD */
 
 #define SEND_NOTIF_TASK_STACK_SIZE    (256*7)
-#define SEND_NOTIF_TASK_PRIO          (9)
+#define SEND_NOTIF_TASK_PRIO          (15)
 #define SEND_NOTIF_TASK_PREEM_TRES    (0)
 
 /* USER CODE END PD */
@@ -181,7 +180,7 @@ void P2P_SERVER_APP_EvtRx(P2P_SERVER_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case P2P_SERVER_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
@@ -314,6 +313,7 @@ void P2P_SERVER_Switch_c_SendNotification_Entry(unsigned long thread_input)
   {
     tx_semaphore_get(&SEND_NOTIF_Thread_Sem, TX_WAIT_FOREVER);
     P2P_SERVER_Switch_c_SendNotification();
+    tx_thread_relinquish();
   }
 }
 /* USER CODE END FD_LOCAL_FUNCTIONS*/

@@ -66,6 +66,7 @@ typedef struct
 /* USER CODE BEGIN EV */
 /* SEND_NOTIF_TASK related resources */
 extern TX_SEMAPHORE SEND_NOTIF_Thread_Sem;
+
 /* USER CODE END EV */
 
 /* Exported macros -----------------------------------------------------------*/

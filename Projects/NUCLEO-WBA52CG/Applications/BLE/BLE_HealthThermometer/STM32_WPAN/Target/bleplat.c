@@ -140,6 +140,7 @@ int BLEPLAT_PkaReadDhKey( uint32_t* dh_key )
 void BPKACB_Complete( void )
 {
   BLEPLATCB_PkaComplete( );
+  HostStack_Process( );
 }
 
 /*****************************************************************************/

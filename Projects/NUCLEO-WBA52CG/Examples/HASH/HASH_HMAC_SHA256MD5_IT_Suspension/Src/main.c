@@ -172,8 +172,8 @@ __ALIGN_BEGIN static uint8_t aExpectMD5Digest[MD5_DIGEST_LENGTH] __ALIGN_END =
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_HASH_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 static void HigherPriorityBlock_Processing(void);
 /* USER CODE END PFP */
@@ -211,8 +211,8 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_HASH_Init();
   MX_ICACHE_Init();
+  MX_HASH_Init();
   /* USER CODE BEGIN 2 */
 
   /***************************************************/

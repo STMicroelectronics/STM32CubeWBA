@@ -75,8 +75,8 @@ uint32_t uwExpectedCRCValue2 = 0x9357;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_CRC_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 
@@ -125,8 +125,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_CRC_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* Configure LD1 and LD3 */

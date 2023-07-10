@@ -36,7 +36,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -134,7 +133,7 @@ void P2PR_Notification(P2PR_NotificationEvt_t *p_Notification)
         P2PR_APP_Context.P2PR_writeVal[0] = p_Notification->DataTransfered.p_Payload[0];
         P2PR_APP_Context.P2PR_writeVal[1] = p_Notification->DataTransfered.p_Payload[1];
         P2PR_APP_Context.P2PR_writeValLen = p_Notification->DataTransfered.Length;
-        UTIL_SEQ_SetTask( 1u << CFG_TASK_FORWARD_WRITE_ID, CFG_SCH_PRIO_0);
+        UTIL_SEQ_SetTask( 1u << CFG_TASK_FORWARD_WRITE_ID, CFG_SEQ_PRIO_0);
         
         P2PR_APP_Context.a_P2PR_device_char_write_level[dev_idx] = p_Notification->DataTransfered.p_Payload[1];
         P2PR_notifDevInfo(dev_idx);
@@ -144,7 +143,7 @@ void P2PR_Notification(P2PR_NotificationEvt_t *p_Notification)
         P2PR_APP_Context.P2PR_writeVal[0] = p_Notification->DataTransfered.p_Payload[0];
         P2PR_APP_Context.P2PR_writeVal[1] = p_Notification->DataTransfered.p_Payload[1];
         P2PR_APP_Context.P2PR_writeValLen = p_Notification->DataTransfered.Length;
-        UTIL_SEQ_SetTask( 1u << CFG_TASK_FORWARD_WRITE_ID, CFG_SCH_PRIO_0);
+        UTIL_SEQ_SetTask( 1u << CFG_TASK_FORWARD_WRITE_ID, CFG_SEQ_PRIO_0);
             
         for ( loop = 0 ; loop < (P2P_DEVICE_COUNT_MAX * 2) ; loop++)
         {
@@ -175,7 +174,7 @@ void P2PR_Notification(P2PR_NotificationEvt_t *p_Notification)
       P2PR_APP_Context.Devinfo_Notification_Status = Devinfo_NOTIFICATION_ON;
 
       notifDevInfoTable_index = 0;
-      UTIL_SEQ_SetTask( 1u << CFG_TASK_DEV_TABLE_NOTIF_ID, CFG_SCH_PRIO_0);
+      UTIL_SEQ_SetTask( 1u << CFG_TASK_DEV_TABLE_NOTIF_ID, CFG_SEQ_PRIO_0);
       /* USER CODE END Service1Char3_NOTIFY_ENABLED_EVT */
       break;
 
@@ -207,7 +206,7 @@ void P2PR_APP_EvtRx(P2PR_APP_ConnHandleNotEvt_t *p_Notification)
   {
     /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case P2PR_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
@@ -443,34 +442,7 @@ uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report)
                 break;
               }
             }
-       
-#if 0 /* filter some devices based on BD address */
-            uint8_t p2pServer1_DB[6] = {0x01,0x7B,0x2A,0xE1,0x80,0x00};
-            uint8_t p2pServer2_DB[6] = {0x0C,0x7D,0x2A,0xE1,0x80,0x00};
-            uint8_t p2pServer3_DB[6] = {0xF5,0x7B,0x2A,0xE1,0x80,0x00};
-            int32_t p2pServer1_cmp;
-            int32_t p2pServer2_cmp;
-            int32_t p2pServer3_cmp;
-            
-            p2pServer1_cmp = memcmp(&p2pServer1_DB[0],
-                                    &p_adv_report->Advertising_Report[0].Address[0],
-                                    BD_ADDR_SIZE);
-            p2pServer2_cmp = memcmp(&p2pServer2_DB[0],
-                                    &p_adv_report->Advertising_Report[0].Address[0],
-                                    BD_ADDR_SIZE);
-            p2pServer3_cmp = memcmp(&p2pServer3_DB[0],
-                                    &p_adv_report->Advertising_Report[0].Address[0],
-                                    BD_ADDR_SIZE);
 
-            if ( (p2pServer1_cmp == 0) ||  (p2pServer2_cmp == 0) || (p2pServer3_cmp == 0) )
-            {
-              
-            }
-            else
-            {
-              dev_idx = UINT8_MAX;
-            }
-#endif
             if(dev_idx < P2P_DEVICE_COUNT_MAX)
             {
               bd_addr[0] = p_adv_report->Advertising_Report[0].Address[0];
@@ -616,7 +588,7 @@ static void P2PR_Connect_Request(void)
                                          GAP_PUBLIC_ADDR, 
                                          &P2PR_APP_Context.a_P2PR_device_bd_addr[device_index][0],
                                          GAP_PUBLIC_ADDR,
-                                         CONN_INT_MS(50u), CONN_INT_MS(100u),
+                                         CONN_INT_MS(200u), CONN_INT_MS(300u),
                                          0u,
                                          CONN_SUP_TIMEOUT_MS(5000u),
                                          CONN_CE_LENGTH_MS(10u), CONN_CE_LENGTH_MS(10u));      
@@ -707,7 +679,7 @@ static void P2PR_notifDevInfoTable(void)
     {
       P2PR_notifDevInfo(notifDevInfoTable_index);
     }
-    UTIL_SEQ_SetTask( 1u << CFG_TASK_DEV_TABLE_NOTIF_ID, CFG_SCH_PRIO_0);
+    UTIL_SEQ_SetTask( 1u << CFG_TASK_DEV_TABLE_NOTIF_ID, CFG_SEQ_PRIO_0);
   }
 
   return;

@@ -115,21 +115,21 @@ if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
-command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrpa_start -m  RE_BL2_WRP_START -d $page_size -s 0 -p 0 "$hardening
+command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrp_start -m  RE_BL2_WRP_START -d $page_size -s 0 -p 0 "$hardening
 $command  >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
-command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrpa_end -m  RE_BL2_WRP_END -d $page_size -s 0 -p 0 "$hardening
+command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrp_end -m  RE_BL2_WRP_END -d $page_size -s 0 -p 0 "$hardening
 $command  >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
-command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b sec1_end -m  RE_BL2_SEC_END -d $page_size -s 0 -p 0 "$hardening
+command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b sec1_end -m  RE_BL2_SEC1_END -d $page_size -s 0 -p 0 "$hardening
 $command  >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
@@ -192,14 +192,14 @@ if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
-command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrpb_start -m  RE_LOADER_WRP_START -d $page_size -s 0 -p 0 "$hardening
+command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrp_bank2_start -m  RE_LOADER_WRP_START -d $page_size -s 0 -p 0 "$hardening
 $command  >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
-command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrpb_end -m  RE_LOADER_WRP_END -d $page_size -s 0 -p 0 "$hardening
+command=$cmd" "$imgtool" flash --layout "$preprocess_bl2_file" -b wrp_bank2_end -m  RE_LOADER_WRP_END -d $page_size -s 0 -p 0 "$hardening
 $command  >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then

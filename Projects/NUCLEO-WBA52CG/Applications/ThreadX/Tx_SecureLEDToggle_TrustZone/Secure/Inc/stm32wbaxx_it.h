@@ -1,9 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    Secure/Inc/stm32wbaxx_it.h
-  * @author  MCD Application Team
-  * @brief   This file contains the headers of the secure interrupt handlers.
+  * @file    stm32wbaxx_it.h
+  * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   * @attention
   *

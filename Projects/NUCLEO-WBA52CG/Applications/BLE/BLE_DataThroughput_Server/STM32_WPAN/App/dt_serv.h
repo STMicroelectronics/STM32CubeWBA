@@ -33,7 +33,7 @@ extern "C" {
 
 /* Exported defines ----------------------------------------------------------*/
 /* USER CODE BEGIN ED */
-
+#define DATA_NOTIFICATION_MAX_PACKET_SIZE (244U)
 /* USER CODE END ED */
 
 /* Exported types ------------------------------------------------------------*/
@@ -42,11 +42,9 @@ typedef enum
   DT_SERV_TX_CHAR,
   DT_SERV_RX_CHAR,
   DT_SERV_THROUGH_CHAR,
-
   /* USER CODE BEGIN Service1_CharOpcode_t */
 
   /* USER CODE END Service1_CharOpcode_t */
-
   DT_SERV_CHAROPCODE_LAST
 } DT_SERV_CharOpcode_t;
 
@@ -58,11 +56,9 @@ typedef enum
   DT_SERV_RX_CHAR_WRITE_NO_RESP_EVT,
   DT_SERV_THROUGH_CHAR_NOTIFY_ENABLED_EVT,
   DT_SERV_THROUGH_CHAR_NOTIFY_DISABLED_EVT,
-
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
 
   /* USER CODE END Service1_OpcodeEvt_t */
-
   DT_SERV_BOOT_REQUEST_EVT
 } DT_SERV_OpcodeEvt_t;
 
@@ -72,14 +68,9 @@ typedef struct
   uint8_t Length;
 
   /* USER CODE BEGIN Service1_Data_t */
-//  uint32_t pPayload_n_1;
-//  uint32_t pPayload_n;
-//  uint32_t Length32;
   uint8_t pPayload_n_1;
   uint8_t pPayload_n;
-  uint8_t Length32;
   /* USER CODE END Service1_Data_t */
-
 } DT_SERV_Data_t;
 
 typedef struct
@@ -87,12 +78,11 @@ typedef struct
   DT_SERV_OpcodeEvt_t       EvtOpcode;
   DT_SERV_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service1_NotificationEvt_t */
 
   /* USER CODE END Service1_NotificationEvt_t */
-
 } DT_SERV_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

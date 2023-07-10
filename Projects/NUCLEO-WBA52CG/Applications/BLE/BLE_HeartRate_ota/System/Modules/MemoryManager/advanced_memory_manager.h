@@ -130,7 +130,7 @@ typedef struct AMM_InitParameters
   /* Number of Virtual Memory to create */
   uint32_t VirtualMemoryNumber;
   /* List of the Virtual Memory configurations */
-  AMM_VirtualMemoryConfig_t a_VirtualMemoryConfigList[];
+  AMM_VirtualMemoryConfig_t * p_VirtualMemoryConfigList;
 }AMM_InitParameters_t;
 
 /**

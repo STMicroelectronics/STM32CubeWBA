@@ -65,6 +65,7 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
+extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -250,48 +251,6 @@ void RCC_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI Line6 interrupt.
-  */
-void EXTI6_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI6_IRQn 0 */
-
-  /* USER CODE END EXTI6_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
-  /* USER CODE BEGIN EXTI6_IRQn 1 */
-  BSP_PB_IRQHandler(B2);
-  /* USER CODE END EXTI6_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI Line7 interrupt.
-  */
-void EXTI7_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI7_IRQn 0 */
-
-  /* USER CODE END EXTI7_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
-  /* USER CODE BEGIN EXTI7_IRQn 1 */
-  BSP_PB_IRQHandler(B3);
-  /* USER CODE END EXTI7_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI13_IRQn 0 */
-
-  /* USER CODE END EXTI13_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-  /* USER CODE BEGIN EXTI13_IRQn 1 */
-  BSP_PB_IRQHandler(B1);
-  /* USER CODE END EXTI13_IRQn 1 */
-}
-
-/**
   * @brief This function handles GPDMA1 Channel 0 global interrupt.
   */
 void GPDMA1_Channel0_IRQHandler(void)
@@ -334,6 +293,20 @@ void USART1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles RNG global interrupt.
+  */
+void RNG_IRQHandler(void)
+{
+  /* USER CODE BEGIN RNG_IRQn 0 */
+
+  /* USER CODE END RNG_IRQn 0 */
+  HAL_RNG_IRQHandler(&hrng);
+  /* USER CODE BEGIN RNG_IRQn 1 */
+
+  /* USER CODE END RNG_IRQn 1 */
+}
+
+/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -342,8 +315,6 @@ void RADIO_IRQHandler(void)
 
   /* USER CODE END RADIO_IRQn 0 */
 
-  ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_RADIO_ISR, LL_SYS_RADIO_HCLK_ON);
-
   if(NULL != radio_callback)
   {
     radio_callback();
@@ -351,24 +322,10 @@ void RADIO_IRQHandler(void)
 
   LL_RCC_RADIO_DisableSleepTimerClock();
   __ISB();
-  ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_RADIO_ISR, LL_SYS_RADIO_HCLK_OFF);
+
   /* USER CODE BEGIN RADIO_IRQn 1 */
 
   /* USER CODE END RADIO_IRQn 1 */
-}
-
-/**
-  * @brief This function handles HSEM non-secure global interrupt.
-  */
-void HSEM_IRQHandler(void)
-{
-  /* USER CODE BEGIN HSEM_IRQn 0 */
-
-  /* USER CODE END HSEM_IRQn 0 */
-  HAL_HSEM_IRQHandler();
-  /* USER CODE BEGIN HSEM_IRQn 1 */
-
-  /* USER CODE END HSEM_IRQn 1 */
 }
 
 /**
@@ -402,5 +359,27 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles EXTI Line6 interrupt.
+  */
+void EXTI6_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B2);
+}
 
+/**
+  * @brief This function handles EXTI Line7 interrupt.
+  */
+void EXTI7_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B3);
+}
+
+/**
+  * @brief This function handles EXTI Line13 interrupt.
+  */
+void EXTI13_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B1);
+}
 /* USER CODE END 1 */

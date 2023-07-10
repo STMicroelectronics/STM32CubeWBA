@@ -42,11 +42,9 @@ typedef enum
   OTA_BASE_ADR,
   OTA_CONF,
   OTA_RAW_DATA,
-
   /* USER CODE BEGIN Service2_CharOpcode_t */
 
   /* USER CODE END Service2_CharOpcode_t */
-
   OTA_CHAROPCODE_LAST
 } OTA_CharOpcode_t;
 
@@ -56,12 +54,10 @@ typedef enum
   OTA_CONF_INDICATE_ENABLED_EVT,
   OTA_CONF_INDICATE_DISABLED_EVT,
   OTA_RAW_DATA_WRITE_NO_RESP_EVT,
-
   /* USER CODE BEGIN Service2_OpcodeEvt_t */
   OTA_CONF_EVT,
   OTA_READY_EVT,
   /* USER CODE END Service2_OpcodeEvt_t */
-
   OTA_BOOT_REQUEST_EVT
 } OTA_OpcodeEvt_t;
 
@@ -73,7 +69,6 @@ typedef struct
   /* USER CODE BEGIN Service2_Data_t */
 
   /* USER CODE END Service2_Data_t */
-
 } OTA_Data_t;
 
 typedef struct
@@ -81,12 +76,11 @@ typedef struct
   OTA_OpcodeEvt_t       EvtOpcode;
   OTA_Data_t             DataTransfered;
   uint16_t                ConnectionHandle;
+  uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-
   /* USER CODE BEGIN Service2_NotificationEvt_t */
 
   /* USER CODE END Service2_NotificationEvt_t */
-
 } OTA_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

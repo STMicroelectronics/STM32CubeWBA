@@ -32,6 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,6 +48,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
@@ -80,6 +82,9 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+/* Configure the peripherals common clocks */
+  PeriphCommonClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -88,17 +93,6 @@ int main(void)
   MX_GPIO_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-
-  /* Disable GPIO clocks which are not needed
-     for wakeing up from Stop mode */
-  __HAL_RCC_GPIOA_CLK_DISABLE();
-  __HAL_RCC_GPIOB_CLK_DISABLE();
-  __HAL_RCC_GPIOH_CLK_DISABLE();
-
-  /* It is necessary to disable DBG_STOP to
-      prevent SysTick from waking up the CPU
-      from Stop mode */
-  HAL_DBGMCU_DisableDBGStopMode();
 
   /* USER CODE END 2 */
 
@@ -170,6 +164,24 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SYSTICK;
+  PeriphClkInit.SystickClockSelection = RCC_SYSTICKCLKSOURCE_HCLK_DIV8;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
   * @brief ICACHE Initialization Function
   * @param None
   * @retval None
@@ -219,7 +231,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD2_Pin|LD3_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, LED2_Pin|LED3_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : PB12 PB10 PB9 PB7
                            PB6 PB5 PB4 PB3
@@ -233,8 +245,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin LD3_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin|LD3_Pin;
+  /*Configure GPIO pins : LED2_Pin LED3_Pin */
+  GPIO_InitStruct.Pin = LED2_Pin|LED3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -258,11 +270,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
+  /*Configure GPIO pin : BUTTON_USER_Pin */
+  GPIO_InitStruct.Pin = BUTTON_USER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(BUTTON_USER_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PH3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
@@ -311,18 +323,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  __disable_irq();
-  /* Reinitialize LD3 in case it was de-initialized */
-  GPIO_InitStruct.Pin = LD3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
   while (1)
   {
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
     HAL_Delay(1000);
   }
   /* USER CODE END Error_Handler_Debug */

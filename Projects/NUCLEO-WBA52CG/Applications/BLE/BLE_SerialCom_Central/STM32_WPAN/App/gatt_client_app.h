@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -103,12 +103,7 @@ tBleStatus GATT_CLIENT_APP_Set_Conn_Handle(uint8_t index, uint16_t connHdle);
 uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
 void GATT_CLIENT_APP_Discover_services(uint8_t index);
 /* USER CODE BEGIN EFP */
-void GATT_CLIENT_APP_Init( void );
-void COC_APP_SW1_Button_Action(void);
-void COC_APP_SW3_Button_Action(void);
-void COC_App_KeyButton1Action( void );
-void COC_App_KeyButton2Action( void );
-void COC_App_KeyButton3Action( void );
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

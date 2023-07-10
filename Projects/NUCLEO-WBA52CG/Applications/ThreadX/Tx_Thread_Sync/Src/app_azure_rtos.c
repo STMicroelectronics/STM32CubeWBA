@@ -5,7 +5,7 @@
   * @author  MCD Application Team
   * @brief   app_azure_rtos application implementation file
   ******************************************************************************
-    * @attention
+  * @attention
   *
   * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
@@ -59,7 +59,7 @@ static TX_BYTE_POOL tx_app_byte_pool;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+ void Error_Handler(void);
 /* USER CODE END PFP */
 
   /**

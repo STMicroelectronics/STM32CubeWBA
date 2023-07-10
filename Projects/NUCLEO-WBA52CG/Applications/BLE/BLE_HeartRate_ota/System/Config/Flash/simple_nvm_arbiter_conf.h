@@ -51,7 +51,7 @@ extern "C" {
  * @brief Polynomial value for CRC16
  *
  */
-#define SNVMA_POLY_CRC16                0x0000u
+#define SNVMA_POLY_CRC16                0x1DB7u
 
 /* Check that NVM number does not exceed limitations */
 #if SNVMA_NVM_NUMBER > SNVMA_MAX_NUMBER_NVM

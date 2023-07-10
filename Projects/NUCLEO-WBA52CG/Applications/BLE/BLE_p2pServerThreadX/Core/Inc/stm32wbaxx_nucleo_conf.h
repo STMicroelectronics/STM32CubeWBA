@@ -40,7 +40,6 @@ extern "C" {
 #define BSP_B1_IT_PRIORITY 0x0EUL  /* lowest priority level assigned to Threadx scheduler */
 #define BSP_B2_IT_PRIORITY 0x0EUL  /* lowest priority level assigned to Threadx scheduler */
 #define BSP_B3_IT_PRIORITY 0x0EUL  /* lowest priority level assigned to Threadx scheduler */
-  
 
 #ifdef __cplusplus
 }

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -59,8 +59,7 @@ void SysTick_Handler(void);
 void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-void GPDMA1_Channel0_IRQHandler(void);
-void GPDMA1_Channel1_IRQHandler(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

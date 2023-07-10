@@ -54,8 +54,8 @@ __IO uint32_t SecureExti_IT = 0;
 /* Private function prototypes -----------------------------------------------*/
 static void NonSecure_Init(void);
 static void MX_GPIO_Init(void);
-static void MX_GTZC_S_Init(void);
 static void MX_ICACHE_Init(void);
+static void MX_GTZC_S_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */

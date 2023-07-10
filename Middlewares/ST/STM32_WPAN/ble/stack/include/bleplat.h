@@ -59,8 +59,6 @@ enum
 extern void BLEPLAT_Init( void );
 
 /* Non Volatile Memory (NVM) interface:
- *
- * This interface is only called from BLE stack Tick/Commands context
  */
 
 extern int BLEPLAT_NvmAdd( uint8_t type,
@@ -82,8 +80,6 @@ extern int BLEPLAT_NvmCompare( uint16_t offset,
 extern void BLEPLAT_NvmDiscard( uint8_t mode );
 
 /* Public Key Algorithms (PKA) interface:
- *
- * This interface is only called from BLE stack Tick/Commands context
  */
 
 extern int BLEPLAT_PkaStartP256Key( const uint32_t* local_private_key );
@@ -98,8 +94,6 @@ extern int BLEPLAT_PkaReadDhKey( uint32_t* dh_key );
 extern void BLEPLATCB_PkaComplete( void );
 
 /* Advanced Encryption Standard (AES) interface:
- *
- * This interface is only called from BLE stack Tick/Commands context
  */
 
 extern void BLEPLAT_AesEcbEncrypt( const uint8_t* key,
@@ -113,15 +107,11 @@ extern void BLEPLAT_AesCmacCompute( const uint8_t* input,
                                     uint8_t* output_tag );
 
 /* Random Number Generation (RNG) interface:
- *
- * This interface is called from both BLE stack contexts: ISR and Tick/Commands
  */
 
 extern void BLEPLAT_RngGet( uint8_t n, uint32_t* val );
 
 /* Timer interface:
- *
- * This interface is only called from BLE stack Tick/Commands context
  */
 
 extern uint8_t BLEPLAT_TimerStart( uint8_t layer,

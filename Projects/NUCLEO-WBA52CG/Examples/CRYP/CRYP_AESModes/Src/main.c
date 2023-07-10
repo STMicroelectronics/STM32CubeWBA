@@ -9,7 +9,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -36,7 +36,6 @@
 /* USER CODE BEGIN PD */
 /* Private define ------------------------------------------------------------*/
 
-
 #define AES_TEXT_SIZE     16
 
 #define ECB               1
@@ -54,88 +53,6 @@ CRYP_HandleTypeDef hcryp;
 uint32_t pKeyAES[4] = {0x2B7E1516,0x28AED2A6,0xABF71588,0x09CF4F3C};
 
 /* USER CODE BEGIN PV */
-#if (USE_VCP_CONNECTION == 1)
-/**
-  * @brief Defines related to Timeout to uart transmission
-  */
-#define UART_TIMEOUT_VALUE  1000 /* 1 Second */
-
-/* UART handler declaration */
-UART_HandleTypeDef UartHandle;
-
-/**
-  * @brief  Retargets the C library printf function to the USARTx.
-  * @param  ch: character to send
-  * @param  f: pointer to file (not used)
-  * @retval The character transmitted
-  */
-#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
-/* With GCC, small printf (option LD Linker->Libraries->Small printf
-   set to 'Yes') calls __io_putchar() */
-int __io_putchar(int ch)
-#else
-int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-{
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the UART and Loop until the end of transmission */
-  HAL_UART_Transmit(&UartHandle, (uint8_t *)&ch, 1, UART_TIMEOUT_VALUE);
-
-  return ch;
-}
-
-void BSP_COM_Init(UART_HandleTypeDef* huart)
-{
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  /* Peripheral clock enable */
-  __HAL_RCC_USART1_CLK_ENABLE();
-  
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  /**USART1 GPIO Configuration    
-  PB6     ------> USART1_TX
-  PB7     ------> USART1_RX 
-  */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /* Configure the UART peripheral                                        */
-  /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-  /* UART configured as follows:
-      - Word Length = 8 Bits
-      - Stop Bit = One Stop bit
-      - Parity = None
-      - BaudRate = 115200 baud
-      - Hardware flow control disabled (RTS and CTS signals) */
-  UartHandle.Instance                    = USART1;
-  UartHandle.Init.BaudRate               = 115200;
-  UartHandle.Init.WordLength             = UART_WORDLENGTH_8B;
-  UartHandle.Init.StopBits               = UART_STOPBITS_1;
-  UartHandle.Init.Parity                 = UART_PARITY_NONE;
-  UartHandle.Init.HwFlowCtl              = UART_HWCONTROL_NONE;
-  UartHandle.Init.Mode                   = UART_MODE_TX_RX;
-  UartHandle.Init.HwFlowCtl              = UART_HWCONTROL_NONE;
-  UartHandle.Init.OverSampling           = UART_OVERSAMPLING_16;
-  UartHandle.Init.OneBitSampling         = UART_ONE_BIT_SAMPLE_DISABLE;
-  UartHandle.Init.ClockPrescaler         = UART_PRESCALER_DIV1;
-  UartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  UartHandle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  
-  if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  
-  if(HAL_UART_Init(&UartHandle) != HAL_OK)
-  {
-    Error_Handler();
-  }  
-}
-#endif
 
 /* Key size 256 bits */
  uint32_t aAES256key[8] = {0x603DEB10, 0x15CA71BE, 0x2B73AEF0, 0x857D7781,
@@ -220,8 +137,8 @@ uint32_t aDecryptedtext[AES_TEXT_SIZE];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_AES_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -256,6 +173,10 @@ int main(void)
   initialise_monitor_handles(); 
 #endif
 
+#if (USE_VCP_CONNECTION == 1)
+  COM_InitTypeDef COM_Init;
+#endif
+
   /* STM32WBAxx HAL library initialization:
        - Systick timer is configured by default as source of time base, but user
              can eventually implement his proper time base source (a general purpose
@@ -285,31 +206,39 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_AES_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
   /* Configure LEDs */
   BSP_LED_Init(LD1);
   BSP_LED_Init(LD3);
 #if (USE_VCP_CONNECTION == 1)
-	/* Configure the virtual com port */
-  BSP_COM_Init(&UartHandle);
+  /* Configure COM port */
+  COM_Init.BaudRate   = 115200;
+  COM_Init.WordLength = COM_WORDLENGTH_8B;
+  COM_Init.StopBits   = COM_STOPBITS_1;
+  COM_Init.Parity     = COM_PARITY_NONE;
+  COM_Init.HwFlowCtl  = COM_HWCONTROL_NONE;
+  if (BSP_COM_Init(COM1, &COM_Init) != BSP_ERROR_NONE)
+  {
+    Error_Handler();
+  }
+  if (BSP_COM_SelectLogPort(COM1) != BSP_ERROR_NONE)
+  {
+    Error_Handler();
+  }
 #endif
 
   /*##- Configure the CRYP peripheral ######################################*/
   /* Set the common CRYP parameters */
   hcryp.Instance = AES;
- 
-
 
   /* Display Plain Data*/
+
   Display_PlainData_ECB(AES_TEXT_SIZE);
-    
+
   /* Display Cypher Data*/
   Display_CypherData(AES_TEXT_SIZE);
-
-
-
 
     /******************************************************************************/
     /*                             AES mode ECB                                   */
@@ -338,7 +267,6 @@ int main(void)
       Error_Handler();
     }
 
-
     /* Start encrypting aPlaintextECB, the cypher data is available in aEncryptedtext */
     if (HAL_CRYP_Encrypt(&hcryp, aPlaintextECB, AES_TEXT_SIZE, aEncryptedtext, TIMEOUT_VALUE) == HAL_OK)
     {
@@ -350,23 +278,22 @@ int main(void)
       /* Processing Error */
       Error_Handler();
     }
-    
+
     /* Compare the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextECB128, AES_TEXT_SIZE);
-  
 
     /*****************  AES 256   ****************/
     hcryp.Init.DataType      = CRYP_NO_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Encrypt_IT(&hcryp, aPlaintextECB, AES_TEXT_SIZE, aEncryptedtext)!= HAL_OK)
     {
       Error_Handler();
@@ -374,18 +301,20 @@ int main(void)
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
   
-  
+
     /* Display encrypted Data */
     Display_EncryptedData(ECB, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextECB256, AES_TEXT_SIZE);
-    
-    
-
 
     /*=====================================================
         Decryption ECB mode
     ======================================================*/
+    if (HAL_CRYP_DeInit(&hcryp) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
     /*****************  AES 128   ****************/
     /* Initialize the CRYP peripheral */
     hcryp.Init.DataType      = CRYP_NO_SWAP;
@@ -411,36 +340,32 @@ int main(void)
       Error_Handler();
     }
     /* Check the encrypted text with the expected one *************************/ 
-  data_cmp(aDecryptedtext, aPlaintextECB, AES_TEXT_SIZE);
-
+    data_cmp(aDecryptedtext, aPlaintextECB, AES_TEXT_SIZE);
 
     /*****************  AES 256   ****************/
     hcryp.Init.DataType      = CRYP_NO_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Decrypt_IT(&hcryp, aEncryptedtextECB256, AES_TEXT_SIZE, aDecryptedtext)!= HAL_OK)
     {
       Error_Handler();
     }
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
-  
+
+
     /* Display decrypted Data */
     Display_DecryptedData(ECB, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aDecryptedtext, aPlaintextECB, AES_TEXT_SIZE);
-    
-    
-
 
     /******************************************************************************/
     /*                             AES mode CBC                                   */
@@ -448,9 +373,15 @@ int main(void)
 
     /* Display Plain Data*/
     Display_PlainData_CBC(AES_TEXT_SIZE);
+
     /*=====================================================
         Encryption CBC mode
     ======================================================*/
+    if (HAL_CRYP_DeInit(&hcryp) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
     /*****************  AES 128   ****************/
     /* Initialize the CRYP peripheral */
     hcryp.Init.DataType      = CRYP_BYTE_SWAP;
@@ -464,7 +395,6 @@ int main(void)
       /* Initialization Error */
       Error_Handler();
     }
-
 
     /* Start encrypting aPlaintextECB, the cypher data is available in aEncryptedtext */
     if (HAL_CRYP_Encrypt(&hcryp, aPlaintextCBC, AES_TEXT_SIZE, aEncryptedtext, TIMEOUT_VALUE) == HAL_OK)
@@ -480,34 +410,29 @@ int main(void)
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextCBC128, AES_TEXT_SIZE);
 
-
     /*****************  AES 256   ****************/ 
     hcryp.Init.DataType      = CRYP_BYTE_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Encrypt_IT(&hcryp, aPlaintextCBC, AES_TEXT_SIZE, aEncryptedtext)!= HAL_OK)
     {
       Error_Handler();
     }
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
-  
+
     /* Display encrypted Data */
     Display_EncryptedData(CBC, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextCBC256, AES_TEXT_SIZE);
-    
-    
-
 
     /*=====================================================
         Decryption CBC mode
@@ -516,6 +441,7 @@ int main(void)
     {
       Error_Handler();
     }
+
     /*****************  AES 128   ****************/
     /* Initialize the CRYP peripheral */
     hcryp.Init.DataType      = CRYP_BYTE_SWAP;
@@ -544,34 +470,30 @@ int main(void)
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aDecryptedtext, aPlaintextCBC, AES_TEXT_SIZE);
 
-
     /*****************  AES 256   ****************/ 
     hcryp.Init.DataType      = CRYP_BYTE_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Decrypt_IT(&hcryp, aEncryptedtextCBC256, AES_TEXT_SIZE, aDecryptedtext)!= HAL_OK)
     {
       Error_Handler();
     }
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
-  
+
+
     /* Display decrypted Data */
     Display_DecryptedData(CBC, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aDecryptedtext, aPlaintextCBC, AES_TEXT_SIZE);
-    
-    
-
 
     /******************************************************************************/
     /*                             AES mode CTR                                   */
@@ -587,6 +509,7 @@ int main(void)
     {
       Error_Handler();
     }
+
     /*****************  AES 128   ****************/
     /* Initialize the CRYP peripheral */
     hcryp.Init.DataType      = CRYP_BIT_SWAP;
@@ -601,7 +524,6 @@ int main(void)
       Error_Handler();
     }
 
-
     /* Start encrypting aPlaintextCTR, the cypher data is available in aEncryptedtext */
     if (HAL_CRYP_Encrypt(&hcryp, aPlaintextCTR, AES_TEXT_SIZE, aEncryptedtext, TIMEOUT_VALUE) == HAL_OK)
     {
@@ -613,37 +535,33 @@ int main(void)
       /* Processing Error */
       Error_Handler();
     }
-    
+
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextCTR128, AES_TEXT_SIZE);
-
 
     /*****************  AES 256   ****************/ 
     hcryp.Init.DataType      = CRYP_BIT_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Encrypt_IT(&hcryp, aPlaintextCTR, AES_TEXT_SIZE, aEncryptedtext)!= HAL_OK)
     {
       Error_Handler();
     }
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
-  
+
     /* Display encrypted Data */
     Display_EncryptedData(CTR, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aEncryptedtext, aEncryptedtextCTR256, AES_TEXT_SIZE);
-    
-    
 
     /*=====================================================
         Decryption CTR mode
@@ -652,9 +570,9 @@ int main(void)
     {
       Error_Handler();
     }
+
     /*****************  AES 128   ****************/
     /* Initialize the CRYP peripheral */
-    hcryp.Init.KeySize = CRYP_KEYSIZE_128B;
     hcryp.Init.DataType      = CRYP_BIT_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_128B;
     hcryp.Init.Algorithm = CRYP_AES_CTR;
@@ -667,7 +585,6 @@ int main(void)
       Error_Handler();
     }
 
-
     /* Start decrypting aCyphertext, the decrypted data is available in aDecryptedtext */
     if (HAL_CRYP_Decrypt(&hcryp, aEncryptedtextCTR128, AES_TEXT_SIZE, aDecryptedtext, TIMEOUT_VALUE) == HAL_OK)
     {
@@ -678,46 +595,41 @@ int main(void)
     {
       /* Processing Error */
       Error_Handler();
-
     }
 
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aDecryptedtext, aPlaintextCTR, AES_TEXT_SIZE);
-  
 
     /*****************  AES 256   ****************/
     hcryp.Init.DataType      = CRYP_BIT_SWAP;
     hcryp.Init.KeySize       = CRYP_KEYSIZE_256B;  
     hcryp.Init.pKey          = aAES256key;
-  
+
     /* Set the CRYP parameters */
     if (HAL_CRYP_Init(&hcryp) != HAL_OK)
     {
       /* Initialization Error */
       Error_Handler();
     } 
-    
+
     if (HAL_CRYP_Decrypt_IT(&hcryp, aEncryptedtextCTR256, AES_TEXT_SIZE, aDecryptedtext)!= HAL_OK)
     {
       Error_Handler();
     }
     /* Wait for processing to be done */
     while (HAL_CRYP_GetState(&hcryp) != HAL_CRYP_STATE_READY);
-  
-  
+
     /* Display decrypted Data */
     Display_DecryptedData(CTR, 256, AES_TEXT_SIZE);
     /* Check the encrypted text with the expected one *************************/ 
     data_cmp(aDecryptedtext, aPlaintextCTR, AES_TEXT_SIZE);
-    
-    
 
 
-
+  HAL_Delay(100);
   printf("===================================================\n ");
   printf("\n\r ECB, CBC and CTR encryptions/decryptions done.\n ");
   printf("No issue detected.\n ");
-  
+
   BSP_LED_On(LD1);
   /* USER CODE END 2 */
 
@@ -864,7 +776,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -885,6 +796,7 @@ static void Display_PlainData_ECB(uint32_t datalength)
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aPlaintextECB;
 
+  HAL_Delay(100);
   printf("\n\r =============================================================\n\r");
   printf(" ================= Crypt Using HW Crypto  ====================\n\r");
   printf(" =============================================================\n\r");
@@ -916,6 +828,7 @@ static void Display_PlainData_CBC(uint32_t datalength)
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aPlaintextCBC;
 
+  HAL_Delay(100);
   printf("\n\r =============================================================\n\r");
   printf(" ================= Crypt Using HW Crypto  ====================\n\r");
   printf(" =============================================================\n\r");
@@ -947,6 +860,7 @@ static void Display_PlainData_CTR(uint32_t datalength)
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aPlaintextCTR;
 
+  HAL_Delay(100);
   printf("\n\r =============================================================\n\r");
   printf(" ================= Crypt Using HW Crypto  ====================\n\r");
   printf(" =============================================================\n\r");
@@ -967,7 +881,6 @@ static void Display_PlainData_CTR(uint32_t datalength)
   }
 }
 
-
 /**
   * @brief  Display Cypher data
   * @param  datalength: length of the data to display
@@ -979,6 +892,7 @@ static void Display_CypherData(uint32_t datalength)
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aEncryptedtextECB128;
 
+  HAL_Delay(100);
   printf("\n\r =============================================================\n\r");
   printf(" ------------------------------------------------\n\r");
   printf(" Cypher Data (Input data for AES 128 decryption):\n\r");
@@ -1010,6 +924,8 @@ static void Display_EncryptedData(uint8_t mode, uint16_t keysize, uint32_t datal
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aEncryptedtext;
 
+  HAL_Delay(100);
+  
   printf("\n\r =======================================\n\r");
   printf(" Encrypted Data with AES %d  Mode  ", keysize);
 
@@ -1054,6 +970,7 @@ static void Display_DecryptedData(uint8_t mode, uint16_t keysize, uint32_t datal
   uint32_t count = 0;
   uint8_t * ptr = (uint8_t *)aDecryptedtext;
 
+  HAL_Delay(100);
   printf("\n\r =======================================\n\r");
   printf(" Decrypted Data with AES %d  Mode  ", keysize);
 
@@ -1094,7 +1011,7 @@ static void Display_DecryptedData(uint8_t mode, uint16_t keysize, uint32_t datal
 void data_cmp(uint32_t *EncryptedText, uint32_t *RefText, uint8_t Size)
 {
   /*  Before starting a new process, you need to check the current state of the peripheral;
-      if it's busy you need to wait for the end of current transfer before starting a new one.
+      if it is busy you need to wait for the end of current transfer before starting a new one.
       For simplicity reasons, this example is just waiting till the end of the
       process, but application may perform other tasks while transfer operation
       is ongoing. */
@@ -1112,7 +1029,7 @@ void data_cmp(uint32_t *EncryptedText, uint32_t *RefText, uint8_t Size)
     /* Right encryption */
   }
 }
-  
+
 
 
 /* USER CODE END 4 */
@@ -1126,7 +1043,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   printf("\n\r Error Detected...\n ");
-  
+
   /* Turn LD3 on */
   BSP_LED_On(LD3);
 

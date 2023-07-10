@@ -33,6 +33,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_Beacon/System/Config/Debug_GPIO/debug_config.h                              Real Time Debug module general configuration file 
   - BLE_Beacon/System/Config/Flash/simple_nvm_arbiter_conf.h                        Configuration header for simple_nvm_arbiter.c module 
   - BLE_Beacon/System/Config/LowPower/app_sys.h                                     Header for app_sys.c 
+  - BLE_Beacon/System/Config/LowPower/user_low_power_config.h                       Header for user_low_power_config.c
   - BLE_Beacon/System/Interfaces/hw.h                                               This file contains the interface of STM32 HW drivers
   - BLE_Beacon/System/Interfaces/hw_if.h                                            Hardware Interface 
   - BLE_Beacon/System/Interfaces/stm32_lpm_if.h                                     Header for stm32_lpm_if.c module (device specific LP management) 
@@ -41,7 +42,6 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_Beacon/System/Modules/adc_ctrl.h                                            Header for ADC client manager module 
   - BLE_Beacon/System/Modules/ble_timer.h                                           This header defines the timer functions used by the BLE stack 
   - BLE_Beacon/System/Modules/dbg_trace.h                                           Header for dbg_trace.c 
-  - BLE_Beacon/System/Modules/general_config.h                                      This file contains definitions that can be changed to configure some modules of the STM32 firmware application
   - BLE_Beacon/System/Modules/otp.h                                                 Header file for One Time Programmable (OTP) area 
   - BLE_Beacon/System/Modules/scm.h                                                 Header for scm.c module 
   - BLE_Beacon/System/Modules/stm_list.h                                            Header file for linked list library
@@ -56,9 +56,11 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_Beacon/System/Modules/MemoryManager/advanced_memory_manager.h               Header for advance_memory_manager.c module 
   - BLE_Beacon/System/Modules/MemoryManager/stm32_mm.h                              Header for stm32_mm.c module 
   - BLE_Beacon/System/Modules/Nvm/nvm.h                                             This file contains the interface of the NVM manager
+  - BLE_Beacon/System/Modules/RFControl/rf_antenna_switch.h                         RF related module to handle dedictated GPIOs for antenna switch
   - BLE_Beacon/System/Modules/RTDebug/debug_signals.h                               Real Time Debug module System and Link Layer signal definition 
   - BLE_Beacon/System/Modules/RTDebug/local_debug_tables.h                          Real Time Debug module System and Link Layer signal 
   - BLE_Beacon/System/Modules/RTDebug/RTDebug.h                                     Real Time Debug module API declaration 
+  - BLE_Beacon/System/Modules/RTDebug/RTDebug_dtb.h                                 Real Time Debug module API declaration for DTB usage
   - BLE_Beacon/Core/Src/app_entry.c                                                 Entry point of the application 
   - BLE_Beacon/Core/Src/main.c                                                      Main program body 
   - BLE_Beacon/Core/Src/stm32wbaxx_hal_msp.c                                        This file provides code for the MSP Initialization and de-Initialization codes.
@@ -76,6 +78,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_Beacon/STM32_WPAN/Target/ll_sys_if.c                                        Source file for initiating the system sequencer 
   - BLE_Beacon/STM32_WPAN/Target/power_table.c                                      This file contains supported power tables 
   - BLE_Beacon/System/Config/Debug_GPIO/app_debug.c                                 Real Time Debug module application side APIs 
+  - BLE_Beacon/System/Config/LowPower/user_low_power_config.c                       Low power related user configuration
   - BLE_Beacon/System/Interfaces/hw_aes.c                                           This file contains the AES driver for STM32WBA 
   - BLE_Beacon/System/Interfaces/hw_otp.c                                           This file contains the OTP driver
   - BLE_Beacon/System/Interfaces/hw_pka.c                                           This file contains the PKA driver for STM32WBA 
@@ -99,7 +102,9 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_Beacon/System/Modules/MemoryManager/advanced_memory_manager.c               Memory Manager 
   - BLE_Beacon/System/Modules/MemoryManager/stm32_mm.c                              Memory Manager 
   - BLE_Beacon/System/Modules/Nvm/nvm_emul.c                                        This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose
+  - BLE_Beacon/System/Modules/RFControl/rf_antenna_switch.c                         RF related module to handle dedictated GPIOs for antenna switch
   - BLE_Beacon/System/Modules/RTDebug/RTDebug.c                                     Real Time Debug module API definition 
+  - BLE_Beacon/System/Modules/RTDebug/RTDebug_dtb.c                                 Real Time Debug module API definition for DTB usage
 
 ### __Hardware and Software environment__
 

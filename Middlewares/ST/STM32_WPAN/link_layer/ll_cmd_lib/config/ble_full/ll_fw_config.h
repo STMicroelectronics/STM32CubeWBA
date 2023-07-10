@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW02PatchV2/firmware/public_inc/ll_fw_config.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.21a-SOW07PatchV4/firmware/shrd_utils/inc/ll_fw_config.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_fw_config.h
@@ -30,11 +30,15 @@
 #define SUPPORT_LE_POWER_CLASS_1					0 /* Enable\Disable Low power class 1 feature. Enable:1 - Disable:0 */
 #define SUPPORT_AOA_AOD								1 /* Enable\Disable AOA_AOD feature. Enable:1 - Disable:0 */
 #define SUPPORT_PERIODIC_SYNC_TRANSFER				1 /* Enable\Disable PAST feature. Enable:1 - Disable:0 */
-#define SUPPORT_SLEEP_CLOCK_ACCURCY_UPDATES         0 /* Enable\Disable Sleep Clock Accuracy Updates Feature. Enable:1 - Disable:0 */
+#define SUPPORT_SLEEP_CLOCK_ACCURCY_UPDATES         1 /* Enable\Disable Sleep Clock Accuracy Updates Feature. Enable:1 - Disable:0 */
 #define SUPPORT_CONNECTED_ISOCHRONOUS               1 /* Enable\Disable Connected Isochronous Channel Feature. Enable:1 - Disable:0 */
 #define SUPPORT_BRD_ISOCHRONOUS               		1 /* Enable\Disable Broadcast Isochronous Channel Feature. Enable:1 - Disable:0 */
 #define SUPPORT_SYNC_ISOCHRONOUS               		1 /* Enable\Disable Broadcast Isochronous Synchronizer Channel Feature. Enable:1 - Disable:0 */
 #define SUPPORT_LE_POWER_CONTROL					1 /* Enable\Disable LE Power Control Feature. Enable:1 - Disable:0 */
+
+/* 5.3 features */
+#define SUPPORT_CHANNEL_CLASSIFICATION    0
+#define SUPPORT_LE_ENHANCED_CONN_UPDATE    0
 
 /* Capabilities configurations */
 #define MAX_NUM_CNCRT_STAT_MCHNS					8 /* Set maximum number of states the controller can support */

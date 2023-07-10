@@ -54,9 +54,6 @@ void UsageFault_Handler(void);
 void DebugMon_Handler(void);
 void RTC_IRQHandler(void);
 void RCC_IRQHandler(void);
-void EXTI6_IRQHandler(void);
-void EXTI7_IRQHandler(void);
-void EXTI13_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel1_IRQHandler(void);
 void TIM2_IRQHandler(void);
@@ -65,7 +62,9 @@ void RNG_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-
+void EXTI6_IRQHandler(void);
+void EXTI7_IRQHandler(void);
+void EXTI13_IRQHandler(void);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

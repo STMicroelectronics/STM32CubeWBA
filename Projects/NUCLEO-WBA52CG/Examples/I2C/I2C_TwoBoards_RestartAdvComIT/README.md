@@ -21,13 +21,14 @@ The USER push-button is used to initiate a communication between Master device t
 User can initiate a new communication after each previous transfer completed.
 
 The I2C communication is then initiated.
-The project is split in two parts the Master Board and the Slave Board
+The project is split in two parts the Master Board and the Slave Board :
 
- - Master Board
+ - Master Board :
    The HAL_I2C_Master_Sequential_Transmit_IT() and the HAL_I2C_Master_Sequential_Receive_IT() functions 
    allow respectively the transmission and the reception of a predefined data buffer
    in Master mode.
- - Slave Board
+
+ - Slave Board :
    The HAL_I2C_EnableListen_IT(), HAL_I2C_Slave_Sequential_Receive_IT() and the HAL_I2C_Slave_Sequential_Transmit_IT() functions 
    allow respectively the "Listen" the I2C bus for address match code event, reception and the transmission of a predefined data buffer
    in Slave mode.
@@ -50,7 +51,7 @@ This "Listen" action is initiated by calling HAL_I2C_EnableListen_IT().
 
 Command code type is decomposed in two categories :
 
-1. Action Command code :
+1- Action Command code :
 
     a. Type of command which need an internal action from Slave Device without sending any specific answer to Master.
     b. I2C sequence is composed like that :
@@ -92,7 +93,7 @@ Both side :
 These LEDs status are keeped at same value during 1 Second and then clear, this will allow to monitor a next transfer status.
  
 Also only on Master board side, Terminal I/O can be used to watch the Action Command Code sent by Master and associated Slave action with IDE in debug mode.
-Depending of IDE, to watch content of Terminal I/O note that
+Depending of IDE, to watch content of Terminal I/O note that :
 
  - When resorting to EWARM IAR IDE:
    Command Code is displayed on debugger as follows: View --> Terminal I/O
@@ -103,19 +104,36 @@ Depending of IDE, to watch content of Terminal I/O note that
 
  - When resorting to STM32CubeIDE:
    Command Code is displayed on debugger as follows: Window--> Show View--> Console.
+
    In Debug configuration :
 
    - Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
    - Window\Startup,add the command "monitor arm semihosting enable"
 
-Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com.
+Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com:
+
+ - When resorting to EWARM IAR IDE:
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration
+
+ - When resorting to MDK-ARM KEIL IDE:
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
+   - remove the "__DBG_ITM" from MDK-ARM Settings --> C/C++ (AC6) --> Preprocessor Symbols --> Define
+   - uncheck "Trace Enable" from MDK-ARM Settings --> Debug --> Settings --> Trace
+   - exclude "Retarget.c" from MDK-ARM Project
+
+ - When resorting to STM32CubeIDE (Debug and Release) :
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
+   - uncheck "exclude resource from build" for "syscall.c" file
+   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Propreties --> C/C++ Build --> Settings
+   --> Tool Settings --> MCU GCC linker --> Miscellaneous
+
 
 In order to select use of Virtual Com port feature of STLINK for connection between NUCLEO-WBA52CG and PC,
 User has to set USE_VCP_CONNECTION define to 1 in main.h file.
 If so, please ensure that USART communication between the target MCU and ST-LINK MCU is properly enabled 
 on HW board in order to support Virtual Com Port (Default HW SB configuration allows use of VCP)
 
-2. Request Command code :
+2- Request Command code :
 
     a. Type of command which need a specific data answer from Slave Device.
     b. I2C sequence is composed like that :
@@ -151,6 +169,7 @@ Thanks to HAL_I2C_ListenCpltCallback(), Slave is informed of the end of Communic
 and "Listen" mode is also terminated.
 
 NUCLEO-WBA52CG board's LEDs can be used to monitor the transfer status in both side:
+
 Slave board side :
 
  - LD1 is turned ON when the reception process is completed.
@@ -178,13 +197,29 @@ Also only on Master board side, Terminal I/O can be used to watch the Request Co
  
  - When resorting to STM32CubeIDE:
    Command Code is displayed on debugger as follows: Window--> Show View--> Console.
+
    In Debug configuration :
 
    - Window\Debugger, select the Debug probe : ST-LINK(OpenOCD)
    - Window\Startup,add the command "monitor arm semihosting enable"
 
+Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com:
 
-Other proposal to retrieve display of Command Code for all IDE is to use the Virtual Com.
+ - When resorting to EWARM IAR IDE:
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration
+
+ - When resorting to MDK-ARM KEIL IDE:
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
+   - remove the "__DBG_ITM" from MDK-ARM Settings --> C/C++ (AC6) --> Preprocessor Symbols --> Define
+   - uncheck "Trace Enable" from MDK-ARM Settings --> Debug --> Settings --> Trace
+   - exclude "Retarget.c" from MDK-ARM Project
+
+ - When resorting to STM32CubeIDE (Debug and Release) :
+   Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
+   - uncheck "exclude resource from build" for "syscall.c" file
+   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Propreties --> C/C++ Build --> Settings
+   --> Tool Settings --> MCU GCC linker --> Miscellaneous
+
 
 In order to select use of Virtual Com port feature of STLINK for connection between NUCLEO-WBA52CG and PC,
 User has to set USE_VCP_CONNECTION define to 1 in main.h file.
@@ -224,6 +259,8 @@ Connectivity, I2C, Communication, Transmission, Reception, SCL, SDA, Interrupt, 
   - This example has been tested with NUCLEO-WBA52CG board and can be
     easily tailored to any other supported device and development board.    
 
+  - To be able to display data on MDK-ARM debugger please make sure to close the SB12.
+  
   - NUCLEO-WBA52CG Set-up
 
     - Connect I2C_SCL line of Master board (PB2, Arduino D15 CN6 pin 10, Morpho CN4 pin 3) to I2C_SCL line of Slave Board (PB2, Arduino D15 CN6 pin 10, Morpho CN4 pin 3).

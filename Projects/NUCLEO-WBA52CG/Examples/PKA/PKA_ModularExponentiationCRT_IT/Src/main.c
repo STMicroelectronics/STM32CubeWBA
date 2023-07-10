@@ -56,9 +56,9 @@ __IO uint32_t operationComplete = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ICACHE_Init(void);
 static void MX_RNG_Init(void);
 static void MX_PKA_Init(void);
+static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -105,9 +105,9 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RNG_Init();
   MX_PKA_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
   /* Set input parameters */
   in.size    = rsa_priv_2048_privateExponent_len;
@@ -179,17 +179,15 @@ void SystemClock_Config(void)
 
   /** Initializes the CPU, AHB and APB busses clocks
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL1.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL1.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL1.PLLM = 4;
   RCC_OscInitStruct.PLL1.PLLN = 25;
   RCC_OscInitStruct.PLL1.PLLP = 2;
-  RCC_OscInitStruct.PLL1.PLLQ = 8;
+  RCC_OscInitStruct.PLL1.PLLQ = 4;
   RCC_OscInitStruct.PLL1.PLLR = 2;
   RCC_OscInitStruct.PLL1.PLLFractional = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
