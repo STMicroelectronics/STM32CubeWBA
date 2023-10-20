@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/evnt_schdlr_gnrc_if.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/evnt_schdlr_gnrc_if.h#1 $*/
 /**
  ********************************************************************************
  * @file    evnt_schdlr_gnrc_if.h
@@ -177,4 +177,4 @@ uint8_t evnt_schdlr_confrm_grant(void * evnt_hndl);
  * @}
  */
 
-/*****END OF FILE****/
+

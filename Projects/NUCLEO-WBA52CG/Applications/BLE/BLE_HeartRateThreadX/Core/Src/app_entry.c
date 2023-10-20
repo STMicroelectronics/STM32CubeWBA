@@ -338,7 +338,7 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
   APP_BLE_Init();
-  ll_sys_config_params();
+
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 

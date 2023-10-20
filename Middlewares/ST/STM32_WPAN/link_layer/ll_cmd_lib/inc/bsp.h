@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/bsp.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/bsp.h#1 $*/
 
 /**
  ********************************************************************************
@@ -99,6 +99,7 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_SCHDLR_HNDL_MISSED_EVNT                              ,
 	DBG_IO_SCHDLR_UNRGSTR_EVNT                                  ,
 	DBG_IO_SCHDLR_EXEC_EVNT_TRACE                               ,
+	DBG_IO_SCHDLR_EXEC_EVNT_PROFILE								,
 	DBG_IO_SCHDLR_EXEC_EVNT_ERROR                               ,
 	DBG_IO_SCHDLR_EXEC_EVNT_WINDOW_WIDENING                     ,
 	DBG_IO_LLHWC_CMN_CLR_ISR                                    ,
@@ -242,6 +243,9 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_RAL_SM_DONE_EVNT_CBK                                 ,
 	DBG_IO_ED_TMR_HNDL                                          ,
 	DBG_IO_OS_TMR_EVNT_CBK                                      ,
+	DBG_IO_PROFILE_MARKER_PHY_WAKEUP_TIME                       ,
+	DBG_IO_PROFILE_END_DRIFT_TIME                               ,
+	DBG_IO_PROC_RADIO_RCV										,
 
 	Debug_GPIO_num
 

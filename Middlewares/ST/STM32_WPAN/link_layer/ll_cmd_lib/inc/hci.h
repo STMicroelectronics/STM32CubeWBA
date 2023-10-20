@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/hci.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/hci.h#1 $*/
 /**
  ********************************************************************************
  * @file    hci.h
@@ -203,6 +203,6 @@ void hci_ll_set_custom_event_mask(uint8_t cstm_evnt_mask);
 
 #endif /* INCLUDE_HCI_H */
 
-/*****END OF FILE****/
+
 
 

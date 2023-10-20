@@ -532,7 +532,6 @@ Bugfix
    * Fix rsa_prepare_blinding() to retry when the blinding value is not
      invertible (mod N), instead of returning MBEDTLS_ERR_RSA_RNG_FAILED. This
      addresses a regression but is rare in practice (approx. 1 in 2/sqrt(N)).
-     Found by Synopsys Coverity, fix contributed by Peter Kolbus (Garmin).
      Fixes #3647.
    * Use socklen_t on Android and other POSIX-compliant system
    * Fix the build when the macro _GNU_SOURCE is defined to a non-empty value.

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/os_wrapper.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/os_wrapper.h#1 $*/
 /**
  ********************************************************************************
  * @file    os_wrapper.h
@@ -483,5 +483,5 @@ uint8_t os_wrapper_is_rtos_used(void);
 
 #endif /* INCLUDE_CONN_MNGR_H_ */
 
-/*****END OF FILE****/
+
 

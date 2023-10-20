@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/ll_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/ll_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_intf_cmds.h
@@ -1604,7 +1604,15 @@ typedef uint8_t (*hst_cbk)(ble_buff_hdr_t *ptr_evnt_hdr);
 typedef void (*hst_cbk_queue_full)(ble_buff_hdr_t *ptr_evnt_hdr);
 #endif /* SUPPORT_HCI_EVENT_ONLY */
 
+#if (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))
+/* missed cig events callback function type definition */
+typedef void (*hst_cig_missed_evnt_cbk)(uint8_t cig_id, uint8_t missed_intrvs, uint32_t nxt_anchor_pnt);
+#endif /* (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) */
 
+#if (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS)
+/* missed big events callback function type definition */
+typedef void (*hst_big_missed_evnt_cbk)(uint8_t big_hndl, uint8_t missed_intrvs, uint32_t nxt_anchor_pnt);
+#endif /* (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) */
 
 /*##### Device Setup HCI Commands' Group #####*/
 /** @ingroup  device_setup
@@ -4101,6 +4109,22 @@ ble_stat_t ll_intf_le_tx_test_packet_number(uint32_t* packet_number);
  */
 ble_stat_t ll_intf_read_raw_rssi(int32_t* rssi);
 
+/*===============  Set Tx Free Carrier Command ===============*/
+/**
+ * @brief  Set Tx free carrier mode .
+ * This function is used ot disable or enable Transmit Free carrier on a given channel
+ * @note this API should only be called if there is no events registered ( for example , Advertising , Connection, etc..)
+ *
+ * @param  enable     : [in] input argument to control TX free carrier mode
+ * 						True --> start transmission of free carrier on specific channel
+ * 						False --> Stop transmission of free carrier if it is already started
+ *
+ * @param  channel_idx     : [in] RF channel index of the used channel
+ *
+ * @retval ble_stat_t : Command status to be sent to the Host.
+ */
+ble_stat_t ll_intf_set_tx_free_carrier(uint8_t enable, uint8_t channel_idx);
+
 #if(END_OF_RADIO_ACTIVITY_REPORTING)
 /**
  * @brief This function sets the bitmask associated to END_OF_RADIO_ACTIVITY_EVENT.
@@ -4266,5 +4290,57 @@ ble_stat_t ll_intf_clear_event(uint16_t conn_Handle);
 void ll_intf_set_custom_event_mask(uint8_t cstm_evnt_mask);
 
 #endif /* SUPPORT_HCI_EVENT_ONLY */
+
+#if (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))
+/**
+ * @brief  register a callback function to be called on missed cig events,
+ * 			the cbk reports the current cig id, number of accumulated missed
+ * 			events and the anchor point of the next scheduled cig event
+ *
+ * @param  cbk : [in] pointer to the callback function to be registered 
+ *
+ * @retval None
+ */
+void ll_intf_rgstr_missed_cig_evnts_cbk(hst_cig_missed_evnt_cbk cbk);
+
+#endif /* (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION)) */
+
+#if (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS)
+/**
+ * @brief  register a callback function to be called on missed big events,
+* 			the cbk reports the current big handle, number of accumulated missed
+ * 			events and the anchor point of the next scheduled big event
+ *
+ * @param  cbk : [in] pointer to the callback function to be registered 
+ *
+ * @retval None
+ */
+void ll_intf_rgstr_missed_big_evnts_cbk(hst_big_missed_evnt_cbk cbk);
+
+#endif /* (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) */
+
+#if (SUPPORT_AOA_AOD)
+
+/**
+ * @brief	Set the number of antennas to be used by the controller, number of 
+ * 			antennas is used as an upper limit for antenna_id set by the host
+ * 
+ * @param	num_of_antennas: [in] number of antennas
+ * 
+ * @retval status  : [out] 0:SUCCESS, 0xXX:ERROR_CODE.
+ */
+ble_stat_t ll_intf_set_num_of_antennas(uint8_t num_of_antennas);
+
+/**
+ * @brief 	Get the number of antennas configured to the controller
+ * 
+ * @param	ptr_num_of_antennas: [out] pointer to a variable hold
+ *  			number of antennas retrived
+ * 
+ * @retval status  : [out] 0:SUCCESS, 0xXX:ERROR_CODE.
+ */
+ble_stat_t ll_intf_get_num_of_antennas(uint8_t *ptr_num_of_antennas);
+
+#endif /* SUPPORT_AOA_AOD */
 
 #endif /* INCLUDE_LL_INTF_H */

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/common_types.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/common_types.h#1 $*/
 /**
  ********************************************************************************
  * @file    common_types.h
@@ -190,7 +190,8 @@ typedef enum phy_cnt_mod_rate_e {
  */
 typedef struct time_st {
 	uint32_t time_stamp_base;
-	uint32_t time_stamp_fine;
+	uint16_t time_stamp_fine;
+	uint8_t  overflow_flag;
 } ble_time_t, *ble_time_p;
 typedef enum dpslp_state {
 	DEEP_SLEEP_ENABLE  = 0x01,
@@ -391,7 +392,7 @@ typedef enum {
 #ifndef EXTERNAL_CUSTOM_CMDS
 #define EXTERNAL_CUSTOM_CMDS						0	/* Indicates that an external custom HCI commands module exists */
 #endif /* EXTERNAL_CUSTOM_CMDS */
-#define SUPPORT_ZIGBEE_PHY_CERTIFICATION   1  /* 0 disable , 1 enable .. used to enable support of hci command required to implement zigbee phy Test cases*/
+#define SUPPORT_ZIGBEE_PHY_CERTIFICATION   0  /* 0 disable , 1 enable .. used to enable support of hci command required to implement zigbee phy Test cases*/
 
 
 #if (!USE_HCI_TRANSPORT) && (SUPPORT_BLE)						  /* SUPPORT_HCI_EVENT_ONLY cannot be supported with default HCI_transport */

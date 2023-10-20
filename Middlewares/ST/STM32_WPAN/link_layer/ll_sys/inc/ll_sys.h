@@ -78,6 +78,7 @@ void HostStack_Process(void);
 void ll_sys_bg_process(void);
 void ll_sys_bg_process_init(void);
 void ll_sys_schedule_bg_process(void);
+void ll_sys_schedule_bg_process_isr(void);
 void ll_sys_config_params(void);
 
 /* Link Layer system interface critical sections module functions  ************************************************/

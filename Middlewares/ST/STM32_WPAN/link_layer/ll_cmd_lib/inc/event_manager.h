@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/event_manager.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/event_manager.h#1 $*/
 /**
  ********************************************************************************
  * @file    event_manager.h
@@ -322,4 +322,4 @@ uint8_t emngr_process_conditional_event( uint8_t id, uint8_t only_one_event,
 
 #endif /* INCLUDE_EVENT_MANAGER_H_ */
 
-/*****END OF FILE****/
+

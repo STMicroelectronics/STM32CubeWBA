@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/mem_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/mem_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    mem_intf.h
@@ -66,4 +66,4 @@ int8_t ble_memcmp(
  */
 #endif /* MEM_INTF_H */
 
-/*****END OF FILE****/
+

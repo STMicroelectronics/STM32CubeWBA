@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW04PatchV2/firmware/public_inc/ll_error.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/ll_error.h#1 $*/
 /**
  ********************************************************************************
  * @file    error.h
@@ -130,6 +130,7 @@
 #endif /* #error */
 
 
+
 /* Exported macros ------------------------------------------------------------*/
 
 /* Exported types -------------------------------------------------------------*/
@@ -138,4 +139,4 @@
 
 #endif /* ERROR_H_ */
 
-/*****END OF FILE****/
+
