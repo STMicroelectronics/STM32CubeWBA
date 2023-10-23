@@ -1,0 +1,8 @@
+[submodule "Drivers/CMSIS/Device/ST/STM32WBAxx"]
+	path = Drivers/CMSIS/Device/ST/STM32WBAxx
+	url = https://github.com/STMicroelectronics/cmsis_device_wba.git
+	branch = main
+[submodule "Drivers/STM32WBAxx_HAL_Driver"]
+	path = Drivers/STM32WBAxx_HAL_Driver
+	url = https://github.com/STMicroelectronics/stm32wbaxx_hal_driver.git
+	branch = main
