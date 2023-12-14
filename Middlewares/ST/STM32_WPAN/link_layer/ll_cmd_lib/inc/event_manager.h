@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/event_manager.h#1 $*/
-/**
- ********************************************************************************
- * @file    event_manager.h
- * @brief   This file contains all the functions prototypes for the event_manager.c.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/event_manager.h#1 $*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef INCLUDE_EVENT_MANAGER_H_

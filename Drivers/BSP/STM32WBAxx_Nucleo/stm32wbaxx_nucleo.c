@@ -21,6 +21,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_nucleo.h"
 
+#if defined(__ICCARM__)
+#include <LowLevelIOInterface.h>
+#endif /* __ICCARM__ */
+
 /** @addtogroup BSP
   * @{
   */
@@ -98,7 +102,24 @@ static uint32_t           IsComMspCbValid[COMn] = {0U};
 #endif
 #if (USE_COM_LOG == 1)
 static COM_TypeDef        COM_ActiveLogPort = COM1;
-#endif
+
+/**
+  * @brief  Redirect console output to COM
+  */
+#if defined(__ICCARM__)
+/* New definition from EWARM V9, compatible with EWARM8 */
+int iar_fputc(int ch);
+#define PUTCHAR_PROTOTYPE int iar_fputc(int ch)
+
+#elif defined (__CC_ARM) || defined(__ARMCC_VERSION)
+/* ARM Compiler 5/6 */
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+
+#elif defined(__GNUC__)
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#endif /* __ICCARM__ */
+
+#endif /* USE_COM_LOG */
 #endif /* (USE_BSP_COM_FEATURE == 1) */
 /**
   * @}
@@ -521,25 +542,29 @@ int32_t BSP_COM_SelectLogPort(COM_TypeDef COM)
   return BSP_ERROR_NONE;
 }
 
-#if defined(__ARMCC_VERSION) || defined(__ICCARM__)
-size_t __write(int Handle, const unsigned char *Buf, size_t Bufsize)
+#if defined(__ICCARM__)
+size_t __write(int file, unsigned char const *ptr, size_t len)
 {
-  int i;
+  size_t idx;
+  unsigned char const *pdata = ptr;
 
-  for(i=0; i<Bufsize; i++)
+  for (idx = 0; idx < len; idx++)
   {
-    (void)HAL_UART_Transmit(&hcom_uart[COM_ActiveLogPort], (uint8_t *)&Buf[i], 1, COM_POLL_TIMEOUT);
+    iar_fputc((int)*pdata);
+    pdata++;
   }
-
-  return Bufsize;
+  return len;
 }
-#elif __GNUC__
-int __io_putchar(int ch)
+#endif /* __ICCARM__ */
+
+/**
+  * @brief  Redirect console output to COM
+  */
+PUTCHAR_PROTOTYPE
 {
-  (void) HAL_UART_Transmit(&hcom_uart[COM_ActiveLogPort], (uint8_t *) &ch, 1, COM_POLL_TIMEOUT);
+  (void)HAL_UART_Transmit(&hcom_uart[COM_ActiveLogPort], (uint8_t *) &ch, 1, COM_POLL_TIMEOUT);
   return ch;
 }
-#endif
 #endif /* (USE_COM_LOG == 1) */
 
 #if (USE_HAL_UART_REGISTER_CALLBACKS == 1)

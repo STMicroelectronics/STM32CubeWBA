@@ -91,7 +91,7 @@ typedef struct
 #endif
 
 #if UTIL_SEQ_CONF_TASK_NBR > 32
-#error "UTIL_SEQ_CONF_PRIO_NBR must be less of equal then 32"
+#error "UTIL_SEQ_CONF_TASK_NBR must be less than or equal to 32"
 #endif
 
 /**

@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/hci.h#1 $*/
-/**
- ********************************************************************************
- * @file    hci.h
- * @brief   This file contains all the functions prototypes for the hci.h.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/hci.h#1 $*/
 
 /** @defgroup  hci_intf HCI Layer
  *  @ingroup BLE_STACK_API
@@ -202,7 +196,6 @@ void hci_ll_set_custom_event_mask(uint8_t cstm_evnt_mask);
 #endif /* SUPPORT_HCI_EVENT_ONLY */
 
 #endif /* INCLUDE_HCI_H */
-
 
 
 

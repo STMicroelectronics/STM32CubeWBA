@@ -1,10 +1,3 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.21a-SOW07PatchV1/firmware/shrd_utils/inc/ll_fw_config.h#1 $*/
-/**
- ********************************************************************************
- * @file    ll_fw_config.h
- * @brief   This file contains the major configurations to the BLE controller.
- ******************************************************************************
- */
 #ifndef INCLUDE_LL_FW_CONFIG_H
 #define INCLUDE_LL_FW_CONFIG_H
 
@@ -42,6 +35,8 @@
 #define NUM_OF_CTSM_EMNGR_HNDLS						1 /* Number of custom handles in event manager to be used for app specific needs */
 #define SUPPORT_AUGMENTED_BLE_MODE					1 /* Enable\Disable Augmented BLE Support. Enable:1 - Disable:0 */
 #define SUPPORT_PTA									0 /* Enable\Disable PTA Feature. Enable:1 - Disable:0 */
+
+#define LL_BASIC  1
 
 /*************************** MAC Configuration *************************************/
 /*Configurations of MAC will apply only when MAC is enabled*/

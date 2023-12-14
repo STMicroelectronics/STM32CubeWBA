@@ -76,8 +76,8 @@ void ll_sys_thread_init(void)
 }
 
 /**
-  * @brief  Initialize the Link Layer ressources for startup.
-  *         This includes: - Deep Sleep feature ressources
+  * @brief  Initialize the Link Layer resources for startup.
+  *         This includes: - Deep Sleep feature resources
   *                        - Link Layer background task
   * @param  None
   * @retval None

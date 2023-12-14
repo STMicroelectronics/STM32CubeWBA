@@ -124,7 +124,7 @@ Other proposal to retrieve display of Command Code for all IDE is to use the Vir
  - When resorting to STM32CubeIDE (Debug and Release) :
    Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
    - uncheck "exclude resource from build" for "syscall.c" file
-   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Propreties --> C/C++ Build --> Settings
+   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Properties --> C/C++ Build --> Settings
    --> Tool Settings --> MCU GCC linker --> Miscellaneous
 
 
@@ -217,7 +217,7 @@ Other proposal to retrieve display of Command Code for all IDE is to use the Vir
  - When resorting to STM32CubeIDE (Debug and Release) :
    Command Code is displayed on PC (as HyperTerminal or TeraTerm) with proper configuration :
    - uncheck "exclude resource from build" for "syscall.c" file
-   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Propreties --> C/C++ Build --> Settings
+   - remove "-specs=rdimon.specs -lc -lrdimon" from from cubeIDE Properties --> C/C++ Build --> Settings
    --> Tool Settings --> MCU GCC linker --> Miscellaneous
 
 

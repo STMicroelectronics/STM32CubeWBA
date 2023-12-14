@@ -1,0 +1,8 @@
+[ProjectFiles]
+HeaderPath=
+[Others]
+Define=
+HALModule=
+[Groups]
+Doc=../README.md;
+Drivers/STM32WBAxx_HAL_Driver=../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_rtc.c;

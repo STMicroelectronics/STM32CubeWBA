@@ -202,21 +202,6 @@ tBleStatus aci_hal_tone_stop( void );
 tBleStatus aci_hal_set_radio_activity_mask( uint16_t Radio_Activity_Mask );
 
 /**
- * @brief ACI_HAL_GET_ANCHOR_PERIOD
- * This command returns information about the Anchor Period to help application
- * in selecting slot timings when operating in multi-link scenarios.
- * 
- * @param[out] Anchor_Period Current anchor period.
- *        T = N * 0.625 ms.
- * @param[out] Max_Free_Slot Maximum available time that can be allocated for a
- *        new slot.
- *        T = N * 0.625 ms.
- * @return Value indicating success or error code.
- */
-tBleStatus aci_hal_get_anchor_period( uint32_t* Anchor_Period,
-                                      uint32_t* Max_Free_Slot );
-
-/**
  * @brief ACI_HAL_SET_EVENT_MASK
  * This command is used to enable/disable the generation of HAL events. If the
  * bit in the Event_Mask is set to a one, then the event associated with that

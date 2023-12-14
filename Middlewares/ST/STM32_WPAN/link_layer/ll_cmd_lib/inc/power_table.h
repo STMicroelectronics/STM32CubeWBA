@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/power_table.h#1 $*/
-/**
- ******************************************************************************
- * @file    power_table.h
- * @brief   This file contains APIs prototypes related to configuring the used power table and the external power amplifier (EPA) parameters
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/power_table.h#1 $*/
 
 
 #ifndef POWER_TABLE_H_

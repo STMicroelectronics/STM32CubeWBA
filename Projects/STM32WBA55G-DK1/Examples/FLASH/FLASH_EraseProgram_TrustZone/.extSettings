@@ -1,0 +1,8 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1
+[Others]
+Define=
+HALModule=ADC
+[Groups]
+Doc=../README.md;
+Drivers/BSP/STM32WBA55G-DK1=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c

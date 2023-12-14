@@ -1,0 +1,9 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1;..\..\..\..\..\..\Drivers\BSP\Components\Common;..\..\..\..\..\..\Drivers\BSP\Components\ssd1315;../Core/Src/lcd;../../../../../../Utilities/LCD;
+[Others]
+
+[Groups]
+Doc=../README.md;
+Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_bus.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_lcd.c;
+Drivers/Components=../../../../../../Drivers/BSP/Components/ssd1315/ssd1315.c;../../../../../../Drivers/BSP/Components/ssd1315/ssd1315_reg.c;
+Utilities=../../../../../../Utilities/LCD/stm32_lcd.c

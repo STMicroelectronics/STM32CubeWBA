@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 /* Definition of Setup_Iso_Data_Path_Params */
-typedef struct hci_le_setup_iso_data_path_params
+typedef __PACKED_STRUCT  hci_le_setup_iso_data_path_params
 {
   uint8_t Big_Handle;
   uint16_t Connection_Handle;
@@ -100,7 +100,9 @@ void BLE_IsochronousGroupEvent( uint16_t opcode,
                                 uint8_t cig_id,
                                 uint16_t iso_interval,
                                 uint8_t num_connection_handles,
-                                uint16_t* connection_handle );
+                                uint16_t* connection_handle,
+                                uint8_t* transport_latency_C_to_P,
+                                uint8_t* transport_latency_P_to_C );
 
 /* Audio codec functions exported by the BLE stack
  */

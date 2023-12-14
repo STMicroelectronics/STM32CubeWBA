@@ -124,7 +124,6 @@ Infinite_Loop:
 ******************************************************************************/
  	.section	.isr_vector,"a",%progbits
 	.type	g_pfnVectors, %object
-	.size	g_pfnVectors, .-g_pfnVectors
 
 
 g_pfnVectors:
@@ -214,6 +213,8 @@ g_pfnVectors:
 	.word	WKUP_IRQHandler
 	.word	HSEM_IRQHandler
 	.word	HSEM_S_IRQHandler
+
+	.size	g_pfnVectors, .-g_pfnVectors
 
 
 /*******************************************************************************

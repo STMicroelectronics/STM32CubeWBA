@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/ll_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/ll_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_intf_cmds.h
@@ -3307,6 +3307,19 @@ void ll_intf_le_set_phy_clbr_params(uint32_t phy_clbr_evnt_period, uint32_t phy_
  * @retval Status
  */
 ble_stat_t ll_intf_enable_audio_sync_signal(uint16_t conn_hndle);
+#if (SUPPORT_SYNC_ISOCHRONOUS)
+/**
+ * @brief Force RTL to re-rx the first sub-event in the stream which is already enabled
+ * @param conn_hndle		:	Connection handle for stream for which hw audio sync signal should be enabled
+ * @param force_state		:	Switch control of force resync
+ * 								(1: means that the force mechanism is enabled, and the HW Audio signal
+ * 								    is generated at the first sub-event of the stream that is already HW Audio signal is enabled
+ * 								 0: means that the force mechanism is disabled, and the HW Audio signal
+ * 								 	is generated at the last
+ * @retval Status
+ */
+ble_stat_t ll_intf_force_audio_sync_signal_resync(uint16_t conn_hndle, uint8_t force_state);
+#endif /*SUPPORT_SYNC_ISOCHRONOUS*/
 #endif /*SUPPORT_HW_AUDIO_SYNC_SIGNAL*/
 #endif /*#if ((SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) || \
 	 (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))) */
@@ -4020,16 +4033,6 @@ ble_stat_t ll_intf_pta_ble_set_coex_priority(
 /** @}
 */
 #endif /* SUPPORT_PTA */
-#ifdef PHY_40nm_2_50_a
-/**
- * @brief this function is used to Enable /Disable LL PHY continuous Modulation Mode
- * @param enable_flag : input flag to control the continuous modulation mode ,
- * 						TRUE ---> Enable ,  FALSE --->Disable
- * @param phy_rate    : rate to start continuous modulation on
- * @retval status. operation status
- */
-ble_stat_t ll_intf_set_cnt_modulation_mode(uint8_t enable_flag, phy_cnt_mod_rate_t phy_rate);
-#endif /*PHY_40nm_2_50_a*/
 
 /** @ingroup vendor_cfg Vendor Specific Commands
  *  @{
@@ -4290,7 +4293,9 @@ ble_stat_t ll_intf_clear_event(uint16_t conn_Handle);
 void ll_intf_set_custom_event_mask(uint8_t cstm_evnt_mask);
 
 #endif /* SUPPORT_HCI_EVENT_ONLY */
-
+/** @ingroup  iso_cfg
+ *  @{
+ */
 #if (SUPPORT_CONNECTED_ISOCHRONOUS && (SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))
 /**
  * @brief  register a callback function to be called on missed cig events,
@@ -4318,7 +4323,11 @@ void ll_intf_rgstr_missed_cig_evnts_cbk(hst_cig_missed_evnt_cbk cbk);
 void ll_intf_rgstr_missed_big_evnts_cbk(hst_big_missed_evnt_cbk cbk);
 
 #endif /* (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS) */
-
+/**@}
+*/
+/** @ingroup  vendor_cfg Vendor Specific Commands
+*  @{
+*/
 #if (SUPPORT_AOA_AOD)
 
 /**
@@ -4342,5 +4351,29 @@ ble_stat_t ll_intf_set_num_of_antennas(uint8_t num_of_antennas);
 ble_stat_t ll_intf_get_num_of_antennas(uint8_t *ptr_num_of_antennas);
 
 #endif /* SUPPORT_AOA_AOD */
+
+/**
+ * @brief 	Set number of packets to be transmitted on DTM mode.
+ *
+ * @param	pckt_count: [in] number of packets to be transmitter
+ *
+ * @note   for non-zero values of pckt_count, DTM start on TX mode will trigger sending packets with the specified 
+ * 		number (pckt_count), if the value of pckt_count is Zero, DTM start on TX mode will trigger sending
+ *  		indefinite number of packets untill subsequent DTM stop is called or HCI reset is sent.
+ *
+ * @retval status  : [out] 0:SUCCESS, 0xXX:ERROR_CODE.
+ */
+ble_stat_t ll_intf_set_dtm_with_spcfc_pckt_count(uint16_t pckt_count);
+
+/**
+ * @brief  used to update the event timing.
+ *
+ * @param  p_evnt_timing[in]: pointer to structure containing the new Event timing requested from the Upper layer.
+ *
+ * @retval None
+ */
+void ll_intf_config_schdling_time(Evnt_timing_t * p_evnt_timing);
+/**@}
+*/
 
 #endif /* INCLUDE_LL_INTF_H */

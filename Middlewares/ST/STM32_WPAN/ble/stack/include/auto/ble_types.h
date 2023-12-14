@@ -569,6 +569,19 @@ typedef __PACKED_STRUCT
   uint8_t RSSI;
 } Direct_Advertising_Report_t;
 
+/* Definition of IQ_Sample_t */
+typedef __PACKED_STRUCT
+{
+  uint8_t I_Sample;
+  uint8_t Q_Sample;
+} IQ_Sample_t;
+
+/* Definition of Connection_Handle_t */
+typedef __PACKED_STRUCT
+{
+  uint16_t Connection_Handle;
+} Connection_Handle_t;
+
 /* Definition of Attribute_Group_Handle_Pair_t */
 typedef __PACKED_STRUCT
 {
@@ -750,10 +763,10 @@ typedef __PACKED_STRUCT
 {
   uint8_t Status;
   uint8_t HCI_Version;
-  uint16_t HCI_Revision;
-  uint8_t LMP_PAL_Version;
-  uint16_t Manufacturer_Name;
-  uint16_t LMP_PAL_Subversion;
+  uint16_t HCI_Subversion;
+  uint8_t LMP_Version;
+  uint16_t Company_Identifier;
+  uint16_t LMP_Subversion;
 } hci_read_local_version_information_rp0;
 
 typedef __PACKED_STRUCT
@@ -2273,6 +2286,25 @@ typedef __PACKED_STRUCT
 
 typedef __PACKED_STRUCT
 {
+  uint8_t Advertising_Handle;
+  uint16_t Periodic_Adv_Interval_Min;
+  uint16_t Periodic_Adv_Interval_Max;
+  uint16_t Periodic_Adv_Properties;
+  uint8_t Num_Subevents;
+  uint8_t Subevent_Interval;
+  uint8_t Response_Slot_Delay;
+  uint8_t Response_Slot_Spacing;
+  uint8_t Num_Response_Slots;
+} hci_le_set_periodic_advertising_parameters_v2_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+  uint8_t Advertising_Handle;
+} hci_le_set_periodic_advertising_parameters_v2_rp0;
+
+typedef __PACKED_STRUCT
+{
   uint8_t Status;
   uint16_t Build_Number;
 } aci_hal_get_fw_build_number_rp0;
@@ -2343,13 +2375,6 @@ typedef __PACKED_STRUCT
 {
   uint8_t Status;
 } aci_hal_set_radio_activity_mask_rp0;
-
-typedef __PACKED_STRUCT
-{
-  uint8_t Status;
-  uint32_t Anchor_Period;
-  uint32_t Max_Free_Slot;
-} aci_hal_get_anchor_period_rp0;
 
 typedef __PACKED_STRUCT
 {
@@ -3061,6 +3086,85 @@ typedef __PACKED_STRUCT
 {
   uint8_t Status;
 } aci_gap_adv_set_random_address_rp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Advertising_Handle;
+  uint16_t Periodic_Adv_Interval_Min;
+  uint16_t Periodic_Adv_Interval_Max;
+  uint16_t Periodic_Adv_Properties;
+  uint8_t Num_Subevents;
+  uint8_t Subevent_Interval;
+  uint8_t Response_Slot_Delay;
+  uint8_t Response_Slot_Spacing;
+  uint8_t Num_Response_Slots;
+} aci_gap_adv_set_periodic_parameters_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+} aci_gap_adv_set_periodic_parameters_rp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Advertising_Handle;
+  uint8_t Operation;
+  uint8_t Advertising_Data_Length;
+  uint8_t Advertising_Data[BLE_CMD_MAX_PARAM_LEN - 3];
+} aci_gap_adv_set_periodic_data_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+} aci_gap_adv_set_periodic_data_rp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Enable;
+  uint8_t Advertising_Handle;
+} aci_gap_adv_set_periodic_enable_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+} aci_gap_adv_set_periodic_enable_rp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Scan_Mode;
+  uint8_t Procedure;
+  uint8_t Own_Address_Type;
+  uint8_t Filter_Duplicates;
+  uint16_t Duration;
+  uint16_t Period;
+  uint8_t Scanning_Filter_Policy;
+  uint8_t Scanning_PHYs;
+  Scan_Param_Phy_t Scan_Param_Phy[2];
+} aci_gap_ext_start_scan_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+} aci_gap_ext_start_scan_rp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Initiating_Mode;
+  uint8_t Procedure;
+  uint8_t Own_Address_Type;
+  uint8_t Peer_Address_Type;
+  uint8_t Peer_Address[6];
+  uint8_t Advertising_Handle;
+  uint8_t Subevent;
+  uint8_t Initiator_Filter_Policy;
+  uint8_t Initiating_PHYs;
+  Init_Param_Phy_t Init_Param_Phy[3];
+} aci_gap_ext_create_connection_cp0;
+
+typedef __PACKED_STRUCT
+{
+  uint8_t Status;
+} aci_gap_ext_create_connection_rp0;
 
 typedef __PACKED_STRUCT
 {
@@ -4033,7 +4137,7 @@ typedef __PACKED_STRUCT
   uint8_t Packet_Status;
   uint16_t Periodic_Event_Counter;
   uint8_t Sample_Count;
-  uint16_t IQ_Sample[((BLE_EVT_MAX_PARAM_LEN - 1) - 12)/sizeof(uint16_t)];
+  IQ_Sample_t IQ_Sample[((BLE_EVT_MAX_PARAM_LEN - 1) - 12)/sizeof(IQ_Sample_t)];
 } hci_le_connectionless_iq_report_event_rp0;
 
 typedef __PACKED_STRUCT
@@ -4048,7 +4152,7 @@ typedef __PACKED_STRUCT
   uint8_t Packet_Status;
   uint16_t Connection_Event_Counter;
   uint8_t Sample_Count;
-  uint16_t IQ_Sample[((BLE_EVT_MAX_PARAM_LEN - 1) - 13)/sizeof(uint16_t)];
+  IQ_Sample_t IQ_Sample[((BLE_EVT_MAX_PARAM_LEN - 1) - 13)/sizeof(IQ_Sample_t)];
 } hci_le_connection_iq_report_event_rp0;
 
 typedef __PACKED_STRUCT
@@ -4113,7 +4217,7 @@ typedef __PACKED_STRUCT
   uint16_t Max_PDU;
   uint16_t ISO_Interval;
   uint8_t Num_BIS;
-  uint16_t Connection_Handle[((BLE_EVT_MAX_PARAM_LEN - 1) - 18)/sizeof(uint16_t)];
+  Connection_Handle_t Connection_Handle[((BLE_EVT_MAX_PARAM_LEN - 1) - 18)/sizeof(Connection_Handle_t)];
 } hci_le_create_big_complete_event_rp0;
 
 typedef __PACKED_STRUCT
@@ -4134,7 +4238,7 @@ typedef __PACKED_STRUCT
   uint16_t Max_PDU;
   uint16_t ISO_Interval;
   uint8_t Num_BIS;
-  uint16_t Connection_Handle[((BLE_EVT_MAX_PARAM_LEN - 1) - 14)/sizeof(uint16_t)];
+  Connection_Handle_t Connection_Handle[((BLE_EVT_MAX_PARAM_LEN - 1) - 14)/sizeof(Connection_Handle_t)];
 } hci_le_big_sync_established_event_rp0;
 
 typedef __PACKED_STRUCT

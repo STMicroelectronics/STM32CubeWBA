@@ -202,7 +202,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>startup_stm32wba52xx.s</PathWithFileName>
+      <PathWithFileName>../startup_stm32wba52xx.s</PathWithFileName>
       <FilenameWithoutPath>startup_stm32wba52xx.s</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

@@ -161,6 +161,11 @@ void ll_sys_bg_process(void)
   }
 }
 
+void ll_sys_schldr_timing_update_not(Evnt_timing_t * p_evnt_timing)
+{
+  LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(p_evnt_timing);
+}
+
 __WEAK void HostStack_Process(void)
 {
 	

@@ -70,6 +70,7 @@ void ll_sys_setup_radio_sw_low_intr(void (*intr_cb)());
 void ll_sys_radio_sw_low_intr_trigger(uint8_t priority);
 void ll_sys_radio_evt_not(uint8_t start);
 void ll_sys_request_temperature(void);
+void ll_sys_schldr_timing_update_not(Evnt_timing_t * p_evnt_timing);
 
 extern int ll_intf_is_ptr_in_ble_mem(void* inp_ptr);
 void HostStack_Process(void);

@@ -16,8 +16,8 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAx_DFP.0.0.1</PackID>
-          <PackURL>http://www.keil.com/pack</PackURL>
+          <PackID>Keil.STM32WBAxx_DFP.1.3.0</PackID>
+          <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IROM(0x0C000000-0xC07FFFF) IROM2(0x0C07E000-0xC07FFFF) IRAM(0x30000000-0x3000FFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -2819,7 +2819,7 @@
             <File>
               <FileName>startup_stm32wba52xx.s</FileName>
               <FileType>2</FileType>
-              <FilePath>startup_stm32wba52xx.s</FilePath>
+              <FilePath>..\startup_stm32wba52xx.s</FilePath>
             </File>
           </Files>
         </Group>

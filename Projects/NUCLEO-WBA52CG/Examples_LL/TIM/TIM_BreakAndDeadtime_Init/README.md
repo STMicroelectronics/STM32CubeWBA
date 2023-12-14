@@ -30,7 +30,7 @@ the different complementary signals, and the Lock level 1 is selected.
   - The OCxN output signal is the opposite of the reference signal except for the rising
     edge, which is delayed relative to the reference falling edge
 
-**Note** that calculated duty cycles apply to the reference signal (OCxREF) from
+Note that calculated duty cycles apply to the reference signal (OCxREF) from
 which outputs OCx and OCxN are generated. As dead time insertion is enabled the
 duty cycle measured on OCx will be slightly lower.
 

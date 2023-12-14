@@ -1,11 +1,5 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/bsp.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/bsp.h#1 $*/
 
-/**
- ********************************************************************************
- * @file    bsp.h
- * @brief   board support package interface wrapper file.
- ******************************************************************************
- */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef LL_BSP_H_
@@ -73,6 +67,12 @@ typedef struct _ble_ll_bus {
 	void (*write)(uint8_t *buffer);
 } ble_ll_bus;
 
+/* Structure holding the Event timing */
+typedef struct Evnt_timing_s{
+	uint32_t drift_time; /* The total drift time between the software timer value and the start execution of the function evnt_schdlr_timer_callback */
+	uint32_t exec_time;  /* The time to get the event ready for air transmission */
+	uint32_t schdling_time; /* The total time to server the completed event and start new cycle of it, the time from longest time of the state machine done isr to till the debug dio DBG_IO_PROFILE_END_DRIFT_TIME is raised */
+}Evnt_timing_t;
 /**
  * @brief enum holding all debugging gpio
  *
@@ -246,8 +246,20 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_PROFILE_MARKER_PHY_WAKEUP_TIME                       ,
 	DBG_IO_PROFILE_END_DRIFT_TIME                               ,
 	DBG_IO_PROC_RADIO_RCV										,
-
-	Debug_GPIO_num
+	DBG_IO_EVNT_TIME_UPDT										,
+	Debug_GPIO_num												,
+	DBG_IO_MAC_RECEIVE_DONE										,
+	DBG_IO_MAC_TX_DONE											,
+	DBG_IO_RADIO_APPLY_CSMA										,
+	DBG_IO_RADIO_TRANSMIT										,
+	DBG_IO_PROC_RADIO_TX										,
+	DBG_IO_RAL_TX_DONE											,
+	DBG_IO_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT					,
+	DBG_IO_RAL_TX_DONE_RST_BACKOFF_COUNT						,
+	DBG_IO_RAL_CONTINUE_RX										,
+	DBG_IO_RAL_PERFORM_CCA										,
+	DBG_IO_RAL_ENABLE_TRANSMITTER								,
+	DBG_IO_LLHWC_GET_CH_IDX_ALGO_2
 
 }Debug_GPIO_t;
 
@@ -520,6 +532,14 @@ void bsp_debug_gpio_toggle(Debug_GPIO_t gpio);
  */
 void bsp_set_phy_clbr_state(PhyClbrState state);
 /**
+ * @brief a function to notify the upper layer to switch the clock.
+ *
+ * @param evnt_timing[in]: Evnt_timing_t pointer to structure contains drift time , execution time and scheduling time
+ *
+ * @retval None.
+ */
+void bsp_evnt_schldr_timing_update_not(Evnt_timing_t * p_evnt_timing);
+/**
  * @}
  */
 
@@ -532,7 +552,6 @@ int logUart(void* devHandle, char* logStr);
 
 void bsp_assert_log(uint8_t condition, uint8_t severity, const char *ptr_func_name,  const int line);
 void bsp_assert(uint8_t condition, uint8_t severity);
-
 
 
 

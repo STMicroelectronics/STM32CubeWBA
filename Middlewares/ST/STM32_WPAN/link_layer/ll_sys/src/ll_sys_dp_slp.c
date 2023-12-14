@@ -33,7 +33,7 @@ os_timer_id radio_dp_slp_tmr_id = NULL;
 ll_sys_dp_slp_state_t linklayer_dp_slp_state = LL_SYS_DP_SLP_DISABLED;
 
 /**
-  * @brief  Initialize ressources to handle deep sleep entry/exit
+  * @brief  Initialize resources to handle deep sleep entry/exit
   * @param  None
   * @retval LL_SYS status
   */

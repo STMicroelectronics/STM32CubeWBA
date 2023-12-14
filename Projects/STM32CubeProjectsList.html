@@ -71,7 +71,6 @@
       <div>Reference materials available on <a href="http://www.st.com/stm32cubefw" target="_blank">www.st.com/stm32cubefw</a></div>
       <ul>
         <li><a href="https://www.st.com/resource/en/user_manual/DM00947128.pdf" target="_blank">UM3131</a>: Getting started with STM32CubeWBA for STM32WBAxx Series.</li>
-        <li><a href="https://www.st.com/resource/en/application_note/an5928-how-to-build-a-short-range-wireless-application-with-stm32wba-mcus-stmicroelectronics.pdf" target="_blank">AN5928</a>: How to build a short range wireless application with STM32WBA MCUs.</li>
         <li><a href="https://www.st.com/resource/en/user_manual/DM00951513.pdf" target="_blank">UM3140</a>: Description of STM32WBAxx HAL and LL drivers.</li>
         <li><a href="https://www.st.com/resource/en/application_note/DM00948092.pdf" target="_blank">AN5929</a>: STM32Cube MCU Package examples for STM32WBA series.</li>
       </ul>
@@ -82,6 +81,8 @@
 				<td><b>Module Name</b></td>
 				<td><b>Project Name</b></td>
 				<td class="descriptionColumn"><b>Description</b></td>
+				<td>STM32WBA55G-DK1</td>
+				<td>NUCLEO-WBA55CG</td>
 				<td>NUCLEO-WBA52CG</td>
 			</tr>
       <tr align=center>
@@ -89,21 +90,27 @@
         <td align=left rowspan=2><p id="-">-</p></td>
         <td align=left><p id="TrustZoneDisabled">TrustZoneDisabled</p></td>
         <td align=left>
-- This project provides a reference template based on the STM32Cube HAL API that can be used
+This project provides a reference template based on the STM32Cube HAL API that can be used
 to build any firmware application when security is not enabled (TZEN=0).
 </td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="TrustZoneEnabled">TrustZoneEnabled</p></td>
         <td align=left>
-- This project provides a reference template based on the STM32Cube HAL API that can be used
+This project provides a reference template based on the STM32Cube HAL API that can be used
 to build any firmware application when TrustZone security is activated (Option bit TZEN=1).
 </td>
         <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of templates: 2</b></td>
+        <td colspan="3"><b>Total number of templates: 6</b></td>
+        <td>2</td>
+        <td>2</td>
         <td>2</td>
       </tr>
       <tr align=center>
@@ -111,17 +118,21 @@ to build any firmware application when TrustZone security is activated (Option b
         <td align=left rowspan=1><p id="-">-</p></td>
         <td align=left><p id="TrustZoneDisabled">TrustZoneDisabled</p></td>
         <td align=left>
-- This project provides a reference template based on the STM32Cube LL API that can be used
+This project provides a reference template based on the STM32Cube LL API that can be used
 to build any firmware application.
 </td>
         <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>X</font></td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of templates_ll: 1</b></td>
+        <td colspan="3"><b>Total number of templates_ll: 3</b></td>
+        <td>1</td>
+        <td>1</td>
         <td>1</td>
       </tr>
       <tr align=center>
-        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=113><p id="Examples">Examples</p></td>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=122><p id="Examples">Examples</p></td>
         <td align=left rowspan=5><p id="ADC">ADC</p></td>
         <td align=left><p id="ADC_AnalogWatchdog">ADC_AnalogWatchdog</p></td>
         <td align=left>
@@ -129,6 +140,8 @@ How to use an ADC peripheral with an ADC analog watchdog to monitor a channel
 and detect when the corresponding conversion data is outside the window
 thresholds.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -137,6 +150,8 @@ thresholds.
 How to use an ADC peripheral to convert several channels. ADC conversions are 
 performed successively in a scan sequence.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -144,6 +159,8 @@ performed successively in a scan sequence.
         <td align=left>
 How to use an ADC peripheral with oversampling.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -152,6 +169,8 @@ How to use an ADC peripheral with oversampling.
 How to use ADC to convert a single channel at each SW start,
 conversion performed using programming model: interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -161,23 +180,51 @@ How to use an ADC peripheral to perform a single ADC conversion on a channel
 at each trigger event from a timer. Converted data is transferred by DMA 
 into a table in RAM memory.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="BSP">BSP</p></td>
         <td align=left><p id="BSP_Example">BSP_Example</p></td>
         <td align=left>
-This example describes how to use the bsp API. 
+How to use the different BSP drivers of the board.
 </td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=5><p id="CORTEX">CORTEX</p></td>
+        <td align=left rowspan=2><p id="COMP">COMP</p></td>
+        <td align=left><p id="COMP_CompareGpioVsVrefInt_IT">COMP_CompareGpioVsVrefInt_IT</p></td>
+        <td align=left>
+How to use a comparator peripheral to compare a voltage level applied on
+a GPIO pin to the the internal voltage reference (VrefInt), in interrupt mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="COMP_CompareGpioVsVrefInt_Window_IT">COMP_CompareGpioVsVrefInt_Window_IT</p></td>
+        <td align=left>
+How to use a pair of comparator peripherals to compare a voltage level applied
+on a GPIO pin to two thresholds: the internal voltage reference (VrefInt)
+and a fraction of the internal voltage reference (VrefInt/2), in interrupt mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=6><p id="CORTEX">CORTEX</p></td>
         <td align=left><p id="CORTEXM_InterruptSwitch_TrustZone">CORTEXM_InterruptSwitch_TrustZone</p></td>
         <td align=left>
 How to first use an interrupt in secure application and later assign it to the
 non-secure application when TrustZone security is activated (Option bit TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -187,6 +234,8 @@ Presentation of the MPU features. This example configures MPU attributes of diff
 MPU regions then configures a memory area as privileged read-only, and attempts to
 perform read and write operations in different modes.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -196,6 +245,8 @@ How to modify the Thread mode privilege access and stack. Thread mode is entered
 on reset or when returning from an exception.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="CORTEXM_ProcessStack">CORTEXM_ProcessStack</p></td>
@@ -203,6 +254,8 @@ on reset or when returning from an exception.
 How to modify the Thread mode stack. Thread mode is entered on reset, and can be
 entered as a result of an exception return.  
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -210,7 +263,18 @@ entered as a result of an exception return.
         <td align=left>
 How to use the default SysTick configuration with a 1 ms timebase to toggle LEDs.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="CORTEXM_SysTick_LSE">CORTEXM_SysTick_LSE</p></td>
+        <td align=left>
+How to use the LSE as SysTick clock source with a 1 ms timebase to toggle LEDs.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=4><p id="CRC">CRC</p></td>
@@ -222,6 +286,8 @@ of 8-bit data (bytes). The user-defined generating polynomial is manually set
 to 0x65, that is, X^7 + X^6 + X^5 + X^2 + 1, as used in the Train Communication
 Network, IEC 60870-5[17].
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -233,6 +299,8 @@ buffer of 32-bit data (words). Input and output data reversal features are
 enabled. The user-defined generating polynomial is manually set to 0x1021,
 that is, X^16 + X^12 + X^5 + 1 which is the CRC-CCITT generating polynomial.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -242,6 +310,8 @@ How to configure the CRC using the HAL API. The CRC (cyclic
 redundancy check) calculation unit computes the CRC code of a given buffer of
 32-bit data words, using a fixed generator polynomial (0x4C11DB7).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -251,6 +321,8 @@ How to configure the CRC using the HAL API. The CRC (cyclic
 redundancy check) calculation unit computes the 8-bit CRC code for a given
 buffer of 32-bit data words, based on a user-defined generating polynomial.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -260,6 +332,8 @@ buffer of 32-bit data words, based on a user-defined generating polynomial.
 How to use the CRYP peripheral to encrypt and decrypt data using AES in chaining
 modes (ECB, CBC, CTR).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -268,6 +342,8 @@ modes (ECB, CBC, CTR).
 How to use the AES peripheral to encrypt and decrypt data using AES 128
 Algorithm with ECB chaining mode in DMA mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -277,6 +353,8 @@ How to use the CRYP AES peripheral to suspend then resume the AES GCM and GMAC
 CMAC processing of a message in order to carry out the encryption, decryption 
 or authentication tag computation of a higher-priority message(CMAC). 
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -285,6 +363,8 @@ or authentication tag computation of a higher-priority message(CMAC).
 How to use the Secure AES co-processor (SAES) peripheral to share application keys
 with AES peripheral.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -293,16 +373,31 @@ with AES peripheral.
 How to use the Secure AES co-processor (SAES) peripheral to wrap application keys
 using hardware secret key DHUK then use it to encrypt in polling mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=2><p id="DMA">DMA</p></td>
+        <td align=left rowspan=3><p id="DMA">DMA</p></td>
         <td align=left><p id="DMA_FLASHToRAM">DMA_FLASHToRAM</p></td>
         <td align=left>
 How to use a DMA to transfer a word data buffer from Flash memory to embedded
 SRAM through the HAL API.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="DMA_LinkedList">DMA_LinkedList</p></td>
+        <td align=left>
+How to use the DMA to perform a list of transfers. The transfer list is organized as linked-list,
+each time the current transfer ends the DMA automatically reload the next transfer parameters,
+and starts it (without CPU intervention).
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="DMA_MemToMem_TrustZone">DMA_MemToMem_TrustZone</p></td>
@@ -310,6 +405,8 @@ SRAM through the HAL API.
 How to use HAL DMA to perform memory to memory data transfers over secure and non-secure
 DMA channels when TrustZone security is activated (Option bit TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -319,6 +416,8 @@ DMA channels when TrustZone security is activated (Option bit TZEN=1).
 How to configure and use the FLASH HAL API to managed block-based security of internal
 Flash memory between secure and non-secure applications when TrustZone security is activated (Option bit TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -330,6 +429,8 @@ At the beginning of the main program the HAL_Init() function is called to reset
 all the peripherals, initialize the Flash interface and the systick.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="FLASH_EraseProgram_TrustZone">FLASH_EraseProgram_TrustZone</p></td>
@@ -338,6 +439,8 @@ How to configure and use the FLASH HAL API to erase and program the internal
 Flash memory when TrustZone security is activated (Option bit TZEN=1).
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="FLASH_WriteProtection">FLASH_WriteProtection</p></td>
@@ -345,6 +448,8 @@ Flash memory when TrustZone security is activated (Option bit TZEN=1).
 How to configure and use the FLASH HAL API to enable and disable the write
 protection of the internal Flash memory.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -353,6 +458,8 @@ protection of the internal Flash memory.
         <td align=left>
 How to configure external interrupt lines.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -361,6 +468,8 @@ How to configure external interrupt lines.
 How to configure and use GPIOs through the HAL API.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="GPIO_IOToggle_TrustZone">GPIO_IOToggle_TrustZone</p></td>
@@ -368,6 +477,8 @@ How to configure and use GPIOs through the HAL API.
 How to use HAL GPIO to toggle secure and unsecure IOs when TrustZone security
 is activated (Option bit TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -378,6 +489,8 @@ How to use HAL GTZC MPCBB to build any example with SecureFault detection when T
 security is activated (Option bit TZEN=1).
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=3><p id="HAL">HAL</p></td>
@@ -386,6 +499,8 @@ security is activated (Option bit TZEN=1).
 How to customize HAL using a general-purpose timer as main source of time base, 
 instead of Systick.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -394,6 +509,8 @@ instead of Systick.
 How to customize HAL using RTC wakeup as main source of time base, 
 instead of Systick.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -402,6 +519,8 @@ instead of Systick.
 How to customize HAL using a general-purpose timer as main source of time base 
 instead of Systick.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -410,13 +529,17 @@ instead of Systick.
         <td align=left>
 How to use the HASH peripheral to hash data with HMAC SHA-1 and HMAC MD5 algorithms.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="HASH_HMAC_SHA256MD5_IT_Suspension">HASH_HMAC_SHA256MD5_IT_Suspension</p></td>
         <td align=left>  
 How to suspend the HMAC digest computation when data are fed in interrupt mode.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -425,6 +548,8 @@ How to suspend the HMAC digest computation when data are fed in interrupt mode.
 This example provides a short description of how to use the HASH peripheral to 
 hash data using SHA-1 and MD5 Algorithms.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -433,13 +558,17 @@ hash data using SHA-1 and MD5 Algorithms.
 This example provides a short description of how to use the HASH peripheral to 
 hash data using SHA-1 and MD5 Algorithms.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="HASH_SHA1SHA224_IT_Suspension">HASH_SHA1SHA224_IT_Suspension</p></td>
         <td align=left>
 How to suspend the HASH peripheral when data are fed in interrupt mode.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -448,6 +577,8 @@ How to suspend the HASH peripheral when data are fed in interrupt mode.
 How to use a secure HASH SHA-1 computation service based on secure DMA channel
 when TrustZone security is activated (Option bit TZEN=1).  
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -455,6 +586,8 @@ when TrustZone security is activated (Option bit TZEN=1).
         <td align=left>
 How to use the HASH peripheral to hash data with SHA224 and SHA256 algorithms.  
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -463,6 +596,8 @@ How to use the HASH peripheral to hash data with SHA224 and SHA256 algorithms.
         <td align=left>
 How to use a HW semaphore to synchronize 2 process.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -470,6 +605,8 @@ How to use a HW semaphore to synchronize 2 process.
         <td align=left>
 How to enable, take then release semaphore using 2 different Process.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -479,6 +616,8 @@ How to enable, take then release semaphore using 2 different Process.
 How to handle several I2C data buffer transmission/reception between
 a master and a slave device, using an interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -487,6 +626,8 @@ a master and a slave device, using an interrupt.
 How to handle I2C data buffer transmission/reception between two boards,
 via DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -495,6 +636,8 @@ via DMA.
 How to handle I2C data buffer transmission/reception between two boards,
 via DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -503,6 +646,8 @@ via DMA.
 How to handle I2C data buffer transmission/reception between two boards,
 via DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -511,6 +656,8 @@ via DMA.
 How to handle I2C data buffer transmission/reception between two boards, 
 using an interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -519,6 +666,8 @@ using an interrupt.
 How to handle I2C data buffer transmission/reception between two boards, 
 in polling mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -527,6 +676,8 @@ in polling mode.
 How to perform multiple I2C data buffer transmission/reception between two boards, 
 in interrupt mode and with restart condition.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -535,6 +686,8 @@ in interrupt mode and with restart condition.
 How to handle single I2C data buffer transmission/reception between two boards, 
 in interrupt mode and with restart condition.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -543,6 +696,8 @@ in interrupt mode and with restart condition.
 How to handle I2C data buffer transmission/reception between two boards, 
 using an interrupt when the device is in Stop mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -552,7 +707,9 @@ using an interrupt when the device is in Stop mode.
 How to handle the IWDG reload counter and simulate a software fault that generates
 an MCU IWDG reset after a preset laps of time.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="IWDG_WindowMode">IWDG_WindowMode</p></td>
@@ -560,6 +717,8 @@ an MCU IWDG reset after a preset laps of time.
 How to periodically update the IWDG reload counter and simulate a software fault that generates
 an MCU IWDG reset after a preset laps of time.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -569,6 +728,8 @@ an MCU IWDG reset after a preset laps of time.
 How to configure and use, through the LPTIM HAL API, the LPTIM peripheral 
 to count pulses.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -577,6 +738,8 @@ to count pulses.
 How to implement, through the HAL LPTIM API, a timeout with the LPTIMER peripheral, to wake up 
 the system from a low-power mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -586,6 +749,8 @@ the system from a low-power mode.
 How to use the PKA peripheral to execute ECC scalar multiplication. This 
 allows generating a public key from a private key.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -594,6 +759,8 @@ allows generating a public key from a private key.
 How to use the PKA peripheral to execute ECC scalar multiplication. This 
 allows generating a public key from a private key in interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -602,6 +769,8 @@ allows generating a public key from a private key in interrupt mode.
 How to compute a signed message regarding the Elliptic curve digital signature algorithm
 (ECDSA).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -610,6 +779,8 @@ How to compute a signed message regarding the Elliptic curve digital signature a
 How to compute a signed message regarding the Elliptic curve digital signature algorithm
 (ECDSA) in interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -618,6 +789,8 @@ How to compute a signed message regarding the Elliptic curve digital signature a
 How to determine if a given signature is valid regarding the Elliptic curve digital signature algorithm
 (ECDSA).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -626,6 +799,8 @@ How to determine if a given signature is valid regarding the Elliptic curve digi
 How to determine if a given signature is valid regarding the Elliptic curve digital signature algorithm
 (ECDSA) in interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -634,6 +809,8 @@ How to determine if a given signature is valid regarding the Elliptic curve digi
 How to use the PKA peripheral to execute modular exponentiation. This 
 allows ciphering/deciphering a text.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -641,6 +818,8 @@ allows ciphering/deciphering a text.
         <td align=left>
 How to compute the Chinese Remainder Theorem (CRT) optimization.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -648,6 +827,8 @@ How to compute the Chinese Remainder Theorem (CRT) optimization.
         <td align=left>
 How to compute the Chinese Remainder Theorem (CRT) optimization in interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -656,6 +837,8 @@ How to compute the Chinese Remainder Theorem (CRT) optimization in interrupt mod
 How to use the PKA peripheral to execute modular exponentiation. This 
 allows ciphering/deciphering a text in interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -664,6 +847,8 @@ allows ciphering/deciphering a text in interrupt mode.
 How to use the PKA peripheral to determine if a point is on a curve. This 
 allows validating an external public key.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -672,14 +857,27 @@ allows validating an external public key.
 How to use the PKA peripheral to determine if a point is on a curve. This 
 allows validating an external public key.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=4><p id="PWR">PWR</p></td>
+        <td align=left rowspan=6><p id="PWR">PWR</p></td>
+        <td align=left><p id="PWR_RUN_SMPS">PWR_RUN_SMPS</p></td>
+        <td align=left>
+How to use the SMPS PWR regulator.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="PWR_SLEEP">PWR_SLEEP</p></td>
         <td align=left>
 How to enter the Sleep mode and wake up from this mode by using an interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -688,6 +886,8 @@ How to enter the Sleep mode and wake up from this mode by using an interrupt.
 How to enter the Standby mode and wake up from this mode by using an external
 reset or the WKUP pin.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -696,7 +896,9 @@ reset or the WKUP pin.
 How to enter the Standby mode and wake-up from this mode by using an external 
 reset or the RTC wakeup timer.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="PWR_STOP1">PWR_STOP1</p></td>
@@ -704,7 +906,18 @@ reset or the RTC wakeup timer.
 This example shows how to enter Stop 1 mode and wake up from this mode using 
 an interrupt.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_STOP1_RTC">PWR_STOP1_RTC</p></td>
+        <td align=left>
+How to enter the STOP 1 mode and wake-up from this mode by using the RTC wakeup timer.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=2><p id="RAMCFG">RAMCFG</p></td>
@@ -712,6 +925,8 @@ an interrupt.
         <td align=left>
 How to configure and use the RAMCFG HAL API to enable parity error detection and generate parity error interruption.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -720,6 +935,8 @@ How to configure and use the RAMCFG HAL API to enable parity error detection and
 How to configure and use the RAMCFG HAL API to configure RAMCFG SRAM write
 protection page.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -729,6 +946,8 @@ protection page.
 Configuration of the system clock (SYSCLK) and modification of the clock settings in Run mode, using the RCC HAL API.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="RCC_ClockConfig_TrustZone">RCC_ClockConfig_TrustZone</p></td>
@@ -736,6 +955,8 @@ Configuration of the system clock (SYSCLK) and modification of the clock setting
 How to configure he system clock (SYSCLK) in Run mode from the secure application
 upon request from the non-secure application, using the RCC HAL API when TrustZone security is activated (Option bit TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -743,6 +964,8 @@ upon request from the non-secure application, using the RCC HAL API when TrustZo
         <td align=left>
 Enabling/disabling of the low-speed external(LSE) RC oscillator (about 32 KHz) at run time, using the RCC HAL API.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -750,6 +973,8 @@ Enabling/disabling of the low-speed external(LSE) RC oscillator (about 32 KHz) a
         <td align=left>
 How to enable/disable the low-speed internal (LSI) RC oscillator (about 32 KHz) at run time, using the RCC HAL API.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -758,21 +983,37 @@ How to enable/disable the low-speed internal (LSI) RC oscillator (about 32 KHz) 
         <td align=left>  
 Configuration of the RNG using the HAL API. This example uses the RNG to generate 32-bit long random numbers.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="RNG_MultiRNG_IT">RNG_MultiRNG_IT</p></td>
         <td align=left>
+
 Configuration of the RNG using the HAL API. This example uses RNG interrupts to generate 32-bit long random numbers.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=6><p id="RTC">RTC</p></td>
+        <td align=left rowspan=8><p id="RTC">RTC</p></td>
+        <td align=left><p id="RTC_ActiveTamper">RTC_ActiveTamper</p></td>
+        <td align=left>
+Configuration of the active tamper detection with backup registers erase.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="RTC_Alarm">RTC_Alarm</p></td>
         <td align=left>
 Configuration and generation of an RTC alarm using the RTC HAL API.
 </td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -780,6 +1021,8 @@ Configuration and generation of an RTC alarm using the RTC HAL API.
         <td align=left>
 Configuration of the calendar using the RTC HAL API.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -787,13 +1030,26 @@ Configuration of the calendar using the RTC HAL API.
         <td align=left>
 Use of the LSI clock source autocalibration to get a precise RTC clock. 
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="RTC_LowPower_STANDBY_WUT">RTC_LowPower_STANDBY_WUT</p></td>
+        <td align=left>
+How to periodically enter and wake up from STANDBY mode thanks to the RTC Wake-Up Timer (WUT).
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="RTC_Tamper">RTC_Tamper</p></td>
         <td align=left>
 Configuration of the tamper detection with backup registers erase.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -802,6 +1058,8 @@ Configuration of the tamper detection with backup registers erase.
 Configuration of the RTC HAL API to demonstrate the timestamp feature.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="RTC_TrustZone">RTC_TrustZone</p></td>
@@ -809,7 +1067,20 @@ Configuration of the RTC HAL API to demonstrate the timestamp feature.
 How to configure the TrustZone-aware RTC peripheral when TrustZone security is activated (Option bit TZEN=1): some features
 of the RTC can be secure while the others are non-secure.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="SAI">SAI</p></td>
+        <td align=left><p id="SAI_AudioPlay">SAI_AudioPlay</p></td>
+        <td align=left>
+This example shows how to use the SAI HAL API to play an audio file using the DMA
+circular mode and how to handle the buffer update.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=8><p id="SPI">SPI</p></td>
@@ -817,6 +1088,8 @@ of the RTC can be secure while the others are non-secure.
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -824,6 +1097,8 @@ Data buffer transmission/reception between two boards via SPI using DMA.
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -831,6 +1106,8 @@ Data buffer transmission/reception between two boards via SPI using DMA.
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -838,6 +1115,8 @@ Data buffer transmission/reception between two boards via SPI using DMA.
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using DMA.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -845,6 +1124,8 @@ Data buffer transmission/reception between two boards via SPI using DMA.
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -852,6 +1133,8 @@ Data buffer transmission/reception between two boards via SPI using Interrupt mo
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Interrupt mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -859,6 +1142,8 @@ Data buffer transmission/reception between two boards via SPI using Interrupt mo
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Polling mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -866,29 +1151,37 @@ Data buffer transmission/reception between two boards via SPI using Polling mode
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Polling mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=11><p id="TIM">TIM</p></td>
         <td align=left><p id="TIM_DMA">TIM_DMA</p></td>
         <td align=left>  
-Use of the DMA with TIMER Update request 
+Use of the GPDMA with TIMER Update request 
 to transfer data from memory to TIMER Capture Compare Register 3 (TIMx_CCR3).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="TIM_DMABurst">TIM_DMABurst</p></td>
         <td align=left>
 How to update the TIMER channel 1 period and duty cycle using the TIMER GPDMA burst feature.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="TIM_ExtTriggerSynchro">TIM_ExtTriggerSynchro</p></td>
         <td align=left>
  This example shows how to synchronize TIM peripherals in cascade mode with an external trigger.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -896,6 +1189,8 @@ How to update the TIMER channel 1 period and duty cycle using the TIMER GPDMA bu
         <td align=left>
 How to use the TIM peripheral to measure an external signal frequency.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -905,6 +1200,8 @@ Configuration of the TIM peripheral in Output Compare Active mode
 (when the counter matches the capture/compare register, the corresponding output 
 pin is set to its active state).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -913,6 +1210,8 @@ pin is set to its active state).
 Configuration of the TIM peripheral in Output Compare Inactive mode 
 with the corresponding Interrupt requests for each channel.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -921,6 +1220,8 @@ with the corresponding Interrupt requests for each channel.
 Configuration of the TIM peripheral to generate four different 
 signals at four different frequencies.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -929,6 +1230,8 @@ signals at four different frequencies.
 This example shows how to use the TIMER peripheral to generate a single pulse when
 a rising edge of an external signal is received on the TIMER Input pin.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -937,6 +1240,8 @@ a rising edge of an external signal is received on the TIMER Input pin.
 How to use the TIM peripheral to measure the frequency and 
 duty cycle of an external signal.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -945,6 +1250,8 @@ duty cycle of an external signal.
 This example shows how to configure the TIM peripheral in PWM (Pulse Width Modulation) 
 mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -953,6 +1260,8 @@ mode.
 This example shows how to configure the TIM peripheral to generate a time base of 
 one second with the corresponding Interrupt request.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -962,6 +1271,8 @@ one second with the corresponding Interrupt request.
 UART transmission (transmit/receive) in DMA mode
 between a board and an HyperTerminal PC application.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -970,6 +1281,8 @@ between a board and an HyperTerminal PC application.
 UART transmission (transmit/receive) in Interrupt mode between a board and
 an HyperTerminal PC application.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -977,6 +1290,8 @@ an HyperTerminal PC application.
         <td align=left>
 Re-routing of the C library printf function to the UART.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -985,7 +1300,9 @@ Re-routing of the C library printf function to the UART.
 UART transmission (transmit/receive) in DMA mode 
 between two boards.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="UART_TwoBoards_ComIT">UART_TwoBoards_ComIT</p></td>
@@ -993,7 +1310,9 @@ between two boards.
 UART transmission (transmit/receive) in Interrupt mode 
 between two boards.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="UART_TwoBoards_ComPolling">UART_TwoBoards_ComPolling</p></td>
@@ -1001,7 +1320,9 @@ between two boards.
 UART transmission (transmit/receive) in Polling mode 
 between two boards.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="USART">USART</p></td>
@@ -1010,6 +1331,8 @@ between two boards.
 This example describes an USART-SPI communication (transmit/receive) between two
 boards where the USART is configured as a slave.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1019,14 +1342,18 @@ boards where the USART is configured as a slave.
 Configuration of the HAL API to periodically update the WWDG counter and simulate a software fault that
 generates an MCU WWDG reset when a predefined time period has elapsed.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of examples: 112</b></td>
+        <td colspan="3"><b>Total number of examples: 230</b></td>
+        <td>16</td>
+        <td>102</td>
         <td>112</td>
       </tr>
       <tr align=center>
-        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=66><p id="Examples_LL">Examples_LL</p></td>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=69><p id="Examples_LL">Examples_LL</p></td>
         <td align=left rowspan=9><p id="ADC">ADC</p></td>
         <td align=left><p id="ADC_AnalogWatchdog_Init">ADC_AnalogWatchdog_Init</p></td>
         <td align=left>
@@ -1034,6 +1361,8 @@ How to use an ADC peripheral with an ADC analog watchdog to monitor a channel
 and detect when the corresponding conversion data is outside the window
 thresholds.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1042,6 +1371,8 @@ thresholds.
 How to use an ADC peripheral to convert a single channel continuously,
 from a software start.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1050,13 +1381,17 @@ from a software start.
 Use ADC to convert a single channel with ADC low power features
 auto wait and auto power-off.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="ADC_Oversampling_Init">ADC_Oversampling_Init</p></td>
         <td align=left>
 How to use an ADC peripheral with oversampling.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1066,7 +1401,9 @@ How to use an ADC peripheral to perform a single ADC conversion on a channel
 at each software start. Converted data is transferred by DMA
 into a table in RAM memory.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="ADC_SingleConversion_TriggerSW_IT_Init">ADC_SingleConversion_TriggerSW_IT_Init</p></td>
@@ -1074,6 +1411,8 @@ into a table in RAM memory.
 How to use ADC to convert a single channel at each SW start,
 conversion performed using programming model: interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1082,6 +1421,8 @@ conversion performed using programming model: interrupt.
 How to use ADC to convert a single channel at each SW start,
 conversion performed using programming model: polling.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1091,7 +1432,9 @@ How to use an ADC peripheral to perform a single ADC conversion on a channel
 at each trigger event from a timer. Converted data is transferred by DMA
 into a table in RAM memory.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="ADC_TemperatureSensor_Init">ADC_TemperatureSensor_Init</p></td>
@@ -1099,7 +1442,31 @@ into a table in RAM memory.
 How to use an ADC peripheral to perform a single ADC conversion on the 
 internal temperature sensor and calculate the temperature in degrees Celsius. 
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="COMP">COMP</p></td>
+        <td align=left><p id="COMP_CompareGpioVsVrefInt_IT_Init">COMP_CompareGpioVsVrefInt_IT_Init</p></td>
+        <td align=left>
+How to use a comparator peripheral to compare a voltage level applied on
+a GPIO pin to the the internal voltage reference (VrefInt), in interrupt mode.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="COMP_CompareGpioVsVrefInt_OutputGpio_Init">COMP_CompareGpioVsVrefInt_OutputGpio_Init</p></td>
+        <td align=left>
+How to use a comparator peripheral to compare a voltage level applied on
+a GPIO pin to the the internal voltage reference (VrefInt)
+with comparator output connected to a GPIO pin.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="CORTEX">CORTEX</p></td>
@@ -1109,6 +1476,8 @@ Presentation of the MPU features. This example configures MPU attributes of diff
 MPU regions then configures a memory area as privileged read-only, and attempts to
 perform read and write operations in different modes.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1118,6 +1487,8 @@ perform read and write operations in different modes.
 How to configure the CRC calculation unit to compute a CRC code for a given data
 buffer, based on a fixed generator polynomial (default value 0x4C11DB7).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1126,6 +1497,8 @@ buffer, based on a fixed generator polynomial (default value 0x4C11DB7).
 How to configure and use the CRC calculation unit to compute an 8-bit CRC code
 for a given data buffer, based on a user-defined generating polynomial.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1136,6 +1509,8 @@ How to use a DMA channel to transfer a word data buffer
 from Flash memory to embedded SRAM. The peripheral initialization uses LL
 initialization functions to demonstrate LL init usage.
 </td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1149,6 +1524,8 @@ STM32WBAxx LL API. Peripheral initialization is done using LL
 initialization function to demonstrate LL init usage.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="GPIO">GPIO</p></td>
@@ -1159,6 +1536,8 @@ every 250 ms. This example is based on the STM32WBAxx LL API. The peripheral
 is initialized with LL initialization function to demonstrate LL init usage.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=2><p id="HSEM">HSEM</p></td>
@@ -1167,6 +1546,8 @@ is initialized with LL initialization function to demonstrate LL init usage.
 How to use the low-layer HSEM API to initialize, lock, and unlock hardware 
 semaphore in the context of two processes accessing the same resource.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1175,6 +1556,8 @@ semaphore in the context of two processes accessing the same resource.
 How to use the low-layer HSEM API to initialize, lock, and unlock hardware 
 semaphore in the context of two processes accessing the same resource.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1185,7 +1568,9 @@ How to exchange data between an I2C master device in DMA mode and an I2C slave
 device in interrupt mode. The peripheral is initialized with LL unitary service
 functions to optimize for performance and size.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="I2C_OneBoard_Communication_DMAAndIT_Init">I2C_OneBoard_Communication_DMAAndIT_Init</p></td>
@@ -1194,6 +1579,8 @@ How to transmit data bytes from an I2C master device using DMA mode
 to an I2C slave device using interrupt mode. The peripheral is initialized with
 LL unitary service functions to optimize for performance and size.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1203,6 +1590,8 @@ How to handle the reception of one data byte from an I2C slave device
 by an I2C master device. Both devices operate in interrupt mode. The peripheral is initialized
 with LL initialization function to demonstrate LL init usage.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1212,6 +1601,8 @@ How to transmit data bytes from an I2C master device using polling mode
 to an I2C slave device using interrupt mode. The peripheral is initialized
 with LL unitary service functions to optimize for performance and size.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1222,6 +1613,8 @@ by an I2C master device. Both devices operate in interrupt mode. The peripheral
 is initialized with LL unitary service functions to optimize for performance
 and size.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1231,6 +1624,8 @@ How to transmit data bytes from an I2C master device using DMA mode
 to an I2C slave device using DMA mode. The peripheral is initialized
 with LL unitary service functions to optimize for performance and size.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1240,6 +1635,8 @@ How to transmit data bytes from an I2C master device using polling mode
 to an I2C slave device using interrupt mode. The peripheral is initialized
 with LL unitary service functions to optimize for performance and size.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1250,17 +1647,8 @@ Stop0 mode by an I2C master device, both using interrupt mode. The
 peripheral is initialized with LL unitary service functions to optimize for
 performance and size.
 </td>
-        <td><font size="5" color=red>New</font></td>
-      </tr>
-      <tr align=center>
-        <td align=left rowspan=1><p id="LPTIM">LPTIM</p></td>
-        <td align=left><p id="LPTIM_PulseCounter_Init">LPTIM_PulseCounter_Init</p></td>
-        <td align=left>
-How to use the LPTIM peripheral in counter mode to generate a PWM output signal 
-and update its duty cycle. This example is based on the STM32WBAxx
-LPTIM LL API. The peripheral is initialized with LL initialization 
-function to demonstrate LL init usage.
-</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1269,6 +1657,8 @@ function to demonstrate LL init usage.
         <td align=left>
 How to use the low-layer PKA API to generate an ECDSA signature.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1276,22 +1666,28 @@ How to use the low-layer PKA API to generate an ECDSA signature.
         <td align=left>
 How to use the low-layer PKA API to execute RSA modular exponentiation.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=3><p id="PWR">PWR</p></td>
+        <td align=left rowspan=5><p id="PWR">PWR</p></td>
         <td align=left><p id="PWR_EnterStandbyMode">PWR_EnterStandbyMode</p></td>
         <td align=left>
 How to enter the Standby mode and wake up from this mode by using an external
 reset or a wakeup pin.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="PWR_EnterStopMode">PWR_EnterStopMode</p></td>
         <td align=left>
 How to enter the Stop 0 mode.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1300,7 +1696,27 @@ How to enter the Stop 0 mode.
 How to increase/decrease frequency and VCORE and how to enter/exit the
 Low-power run mode.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_SMPS_16MHZ_HSI">PWR_SMPS_16MHZ_HSI</p></td>
+        <td align=left>
+How to use the SMPS PWR regulator with system clock at 16MHz with HSI.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="PWR_SMPS_64MHZ_HSI_PLL">PWR_SMPS_64MHZ_HSI_PLL</p></td>
+        <td align=left>
+How to use the SMPS PWR regulator with system clock at 64MHz with HSI and PLL.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=3><p id="RCC">RCC</p></td>
@@ -1308,6 +1724,8 @@ Low-power run mode.
         <td align=left>
 Configuration of MCO pin (PA8) to output the system clock.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1315,6 +1733,8 @@ Configuration of MCO pin (PA8) to output the system clock.
         <td align=left>
 Use of the RCC LL API to start the HSE and use it as system clock.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1323,6 +1743,8 @@ Use of the RCC LL API to start the HSE and use it as system clock.
 Modification of the PLL parameters in run time.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=2><p id="RNG">RNG</p></td>
@@ -1330,6 +1752,8 @@ Modification of the PLL parameters in run time.
         <td align=left>
 Configuration of the RNG to generate 32-bit long random numbers.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1337,6 +1761,8 @@ Configuration of the RNG to generate 32-bit long random numbers.
         <td align=left>
 Configuration of the RNG to generate 32-bit long random numbers using interrupts.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1347,6 +1773,8 @@ Configuration of the RTC LL API to configure and generate an alarm using the RTC
 initialization uses the LL initialization function.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="RTC_Calendar_Init">RTC_Calendar_Init</p></td>
@@ -1354,6 +1782,8 @@ initialization uses the LL initialization function.
 Configuration of the LL API to set the RTC calendar. The peripheral initialization uses LL unitary service 
 functions for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1361,6 +1791,8 @@ functions for optimization purposes (performance and size).
         <td align=left>
 How to periodically enter and wake up from STANDBY mode thanks to the RTC Wakeup Timer (WUT).
 </td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1370,6 +1802,8 @@ Configuration of the Tamper using the RTC LL API. The peripheral initialization
 uses LL unitary service functions for optimization purposes (performance and size).
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="RTC_TimeStamp_Init">RTC_TimeStamp_Init</p></td>
@@ -1377,6 +1811,8 @@ uses LL unitary service functions for optimization purposes (performance and siz
 Configuration of the Timestamp using the RTC LL API. The peripheral initialization
 uses LL unitary service functions for optimization purposes (performance and size).
 </td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1388,7 +1824,9 @@ bytes from an SPI Master device to an SPI Slave device in DMA mode. This example
 is based on the STM32WBAxx SPI LL API. The peripheral initialization uses the 
 LL initialization function to demonstrate LL init usage.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_OneBoard_HalfDuplex_IT_Init">SPI_OneBoard_HalfDuplex_IT_Init</p></td>
@@ -1398,6 +1836,8 @@ from an SPI Master device to an SPI Slave device in Interrupt mode. This example
 is based on the STM32WBAxx SPI LL API. The peripheral initialization uses
 LL unitary service functions for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1407,7 +1847,9 @@ Data buffer transmission and receptionvia SPI using DMA mode. This example is
 based on the STM32WBAxx SPI LL API. The peripheral initialization uses
 LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_TwoBoards_FullDuplex_DMA_Slave_Init">SPI_TwoBoards_FullDuplex_DMA_Slave_Init</p></td>
@@ -1416,7 +1858,9 @@ Data buffer transmission and receptionvia SPI using DMA mode. This example is
 based on the STM32WBAxx SPI LL API. The peripheral initialization uses
 LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_TwoBoards_FullDuplex_IT_Master_Init">SPI_TwoBoards_FullDuplex_IT_Master_Init</p></td>
@@ -1425,7 +1869,9 @@ Data buffer transmission and receptionvia SPI using Interrupt mode. This
 example is based on the STM32WBAxx SPI LL API. The peripheral
 initialization uses LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_TwoBoards_FullDuplex_IT_Slave_Init">SPI_TwoBoards_FullDuplex_IT_Slave_Init</p></td>
@@ -1434,7 +1880,9 @@ Data buffer transmission and receptionvia SPI using Interrupt mode. This
 example is based on the STM32WBAxx SPI LL API. The peripheral
 initialization uses LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=5><p id="TIM">TIM</p></td>
@@ -1446,6 +1894,8 @@ insert a defined deadtime value,
 use the break feature,
 and lock the break and dead-time configuration.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1457,6 +1907,8 @@ another timer instance. This example is based on the STM32WBAxx TIM
 LL API. The peripheral initialization uses LL unitary service functions
 for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1467,6 +1919,8 @@ waveform in different output compare modes. This example is based on the
 STM32WBAxx TIM LL API. The peripheral initialization uses 
 LL unitary service functions for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1477,6 +1931,8 @@ PWM output signal and update the PWM duty cycle. This example is based on the
 STM32WBAxx TIM LL API. The peripheral initialization uses 
 LL initialization function to demonstrate LL Init.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1486,6 +1942,8 @@ Configuration of the TIM peripheral to generate a timebase. This
 example is based on the STM32WBAxx TIM LL API. The peripheral initialization 
 uses LL unitary service functions for optimization purposes (performance and size). 
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1496,6 +1954,8 @@ This example shows how to configure GPIO and USART peripheral for continuously r
 from HyperTerminal (PC) in Asynchronous mode using Interrupt mode. Peripheral initialization is
 done using LL unitary services functions for optimization purpose (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1505,6 +1965,8 @@ This example shows how to configure GPIO and USART peripheral for continuously r
 from HyperTerminal (PC) in Asynchronous mode using Interrupt mode. Peripheral initialization is
 done using LL unitary services functions for optimization purpose (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1514,6 +1976,8 @@ This example shows how to configure GPIO and USART peripheral for receiving char
 from HyperTerminal (PC) in Asynchronous mode using Interrupt mode. Peripheral initialization is done
 using LL initialization function to demonstrate LL init usage.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1523,6 +1987,8 @@ This example shows how to configure GPIO and USART peripheral for receiving char
 from HyperTerminal (PC) in Asynchronous mode using Interrupt mode. Peripheral initialization is done
 using LL initialization function to demonstrate LL init usage.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1534,7 +2000,9 @@ DMA mode. This example is based on STM32WBAxx USART LL API. Peripheral
 initialization is done using LL unitary services functions for optimization
 purpose (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="USART_Communication_Tx_IT_Init">USART_Communication_Tx_IT_Init</p></td>
@@ -1544,6 +2012,8 @@ asynchronously to HyperTerminal (PC) in Interrupt mode. This example is based on
 STM32WBAxx USART LL API. Peripheral initialization is done using LL unitary services
 functions for optimization purpose (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1554,6 +2024,8 @@ asynchronously to HyperTerminal (PC) in Interrupt mode. This example is based on
 STM32WBAxx USART LL API. Peripheral initialization is done using LL unitary services
 functions for optimization purpose (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1566,6 +2038,8 @@ with a Timeout error code. This example is based on STM32WBAxx USART LL API. Per
 initialization is done using LL unitary services functions for optimization purpose
 (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1578,6 +2052,8 @@ with a Timeout error code. This example is based on STM32WBAxx USART LL API. Per
 initialization is done using LL unitary services functions for optimization purpose
 (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1589,6 +2065,8 @@ with the Hardware Flow Control feature enabled. This example is based on STM32WB
 USART LL API. The peripheral initialization 
 uses LL unitary service functions for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1598,7 +2076,9 @@ Configuration of GPIO, USART, DMA and SPI peripherals to transmit
 bytes between a USART and an SPI (in slave mode) in DMA mode. This example is based on the STM32WBAxx USART LL API. The peripheral 
 initialization uses LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="USART_SyncCommunication_FullDuplex_IT_Init">USART_SyncCommunication_FullDuplex_IT_Init</p></td>
@@ -1608,7 +2088,9 @@ bytes between a USART and an SPI (in slave mode) in Interrupt mode. This example
 (the SPI uses the DMA to receive/transmit characters sent from/received by the USART). The peripheral 
 initialization uses LL unitary service functions for optimization purposes (performance and size).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="WWDG">WWDG</p></td>
@@ -1618,11 +2100,15 @@ Configuration of the WWDG to periodically update the counter and
 generate an MCU WWDG reset when a user button is pressed. The peripheral initialization
 uses the LL unitary service functions for optimization purposes (performance and size).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of examples_ll: 65</b></td>
-        <td>65</td>
+        <td colspan="3"><b>Total number of examples_ll: 140</b></td>
+        <td>8</td>
+        <td>68</td>
+        <td>64</td>
       </tr>
       <tr align=center>
         <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=13><p id="Examples_MIX">Examples_MIX</p></td>
@@ -1632,6 +2118,8 @@ uses the LL unitary service functions for optimization purposes (performance and
 How to use ADC to convert a single channel at each SW start,
 conversion performed using programming model: interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1640,6 +2128,8 @@ conversion performed using programming model: interrupt.
         <td align=left>
 How to use the CRC peripheral through the STM32WBAxx CRC HAL and LL API.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1650,6 +2140,8 @@ How to use a DMA to transfer a word data buffer from Flash memory to embedded
 SRAM through the STM32WBAxx DMA HAL and LL API. The LL API is used for 
 performance improvement.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1661,16 +2153,20 @@ one master and two slaves with different address sizes (7-bit or 10-bit). This e
 uses the STM32WBAxx I2C HAL and LL API (LL API usage for performance improvement)
 and an interrupt.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="PWR">PWR</p></td>
         <td align=left><p id="PWR_STOP1">PWR_STOP1</p></td>
         <td align=left>
-How to enter the STOP 1 mode and wake up from this mode by using external 
+ How to enter the STOP 1 mode and wake up from this mode by using external 
 reset or wakeup interrupt (all the RCC function calls use RCC LL API 
 for minimizing footprint and maximizing performance).
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1679,14 +2175,18 @@ for minimizing footprint and maximizing performance).
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Polling mode.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_FullDuplex_ComPolling_Slave">SPI_FullDuplex_ComPolling_Slave</p></td>
         <td align=left>
 Data buffer transmission/reception between two boards via SPI using Polling mode.
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_HalfDuplex_ComPollingIT_Master">SPI_HalfDuplex_ComPollingIT_Master</p></td>
@@ -1694,7 +2194,9 @@ Data buffer transmission/reception between two boards via SPI using Polling mode
 Data buffer transmission/reception between 
 two boards via SPI using Polling (LL driver) and Interrupt modes (HAL driver).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left><p id="SPI_HalfDuplex_ComPollingIT_Slave">SPI_HalfDuplex_ComPollingIT_Slave</p></td>
@@ -1702,7 +2204,9 @@ two boards via SPI using Polling (LL driver) and Interrupt modes (HAL driver).
 Data buffer transmission/reception between 
 two boards via SPI using Polling (LL driver) and Interrupt modes (HAL driver).
 </td>
-        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="TIM">TIM</p></td>
@@ -1711,6 +2215,8 @@ two boards via SPI using Polling (LL driver) and Interrupt modes (HAL driver).
 Use of the TIM peripheral to measure an external signal frequency and
 duty cycle.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1722,6 +2228,8 @@ between a board and an HyperTerminal PC application in Interrupt mode. This exam
 describes how to use the USART peripheral through the STM32WBAxx UART HAL
 and LL API, the LL API being used for performance improvement.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1732,20 +2240,26 @@ between a board and an HyperTerminal PC application both in Polling and Interrup
 modes. This example describes how to use the USART peripheral through
 the STM32WBAxx UART HAL and LL API, the LL API being used for performance improvement.
 </td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of examples_mix: 12</b></td>
+        <td colspan="3"><b>Total number of examples_mix: 24</b></td>
+        <td>0</td>
+        <td>12</td>
         <td>12</td>
       </tr>
       <tr align=center>
-        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=37><p id="Applications">Applications</p></td>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=89><p id="Applications">Applications</p></td>
         <td align=left rowspan=3><p id="-">-</p></td>
         <td align=left><p id="OpenBootloader">OpenBootloader</p></td>
         <td align=left>
 This application exploits OpenBootloader Middleware to demonstrate how to develop an IAP application
 and how use it.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -1755,6 +2269,8 @@ The SBSFU provides a Root of Trust solution including Secure Boot and Secure Fir
 executing the application and provides an example of secure service (GPIO toggle) that is isolated from the non-secure application
 but can be used by the non-secure application at run-time.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -1765,43 +2281,91 @@ Firmware Update functionalities that is used before executing the application
 and provides TFM secure services that are isolated from the non-secure
 application but can be used by the non-secure application at run-time.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=18><p id="BLE">BLE</p></td>
+        <td align=left rowspan=25><p id="BLE">BLE</p></td>
         <td align=left><p id="BLE_ApplicationInstallManager">BLE_ApplicationInstallManager</p></td>
         <td align=left>
 The BLE_ApplicationInstallManager application, associated to a BLE application embedding OTA service, manages the firmware update over the air of a BLE application. 
 </td>
-        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_PBP_Sink">BLE_Audio_PBP_Sink</p></td>
+        <td align=left>
+How to use the Public Broadcast profile in Sink role as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_PBP_Source">BLE_Audio_PBP_Source</p></td>
+        <td align=left>
+How to use the Public Broadcast profile in Source role as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_Beacon">BLE_Beacon</p></td>
         <td align=left>
 How to advertise 4 types of beacon ( tlm, uuid, url, iBeacon ).
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_BeaconHCI">BLE_BeaconHCI</p></td>
+        <td align=left>
+How to advertise 5 types of beacon ( Eddystone uid, Eddystone url, Eddystone uid+tlm, Eddystone url+tlm, iBeacon ) using HCI.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_DataThroughput_Client">BLE_DataThroughput_Client</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE component (as GATT server or GATT client).
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_DataThroughput_Server">BLE_DataThroughput_Server</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE component (as GATT server or GATT client).
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_HID_Mouse">BLE_HID_Mouse</p></td>
+        <td align=left>
+How to use the Human Interface Device over GATT profile for a mouse as specified by the BLE SIG.
+</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_HealthThermometer">BLE_HealthThermometer</p></td>
         <td align=left>
 How to use the Health Thermometer profile as specified by the BLE SIG.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_HeartRate">BLE_HeartRate</p></td>
@@ -1809,90 +2373,143 @@ How to use the Health Thermometer profile as specified by the BLE SIG.
 How to use the Heart Rate profile as specified by the BLE SIG.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_HeartRateThreadX">BLE_HeartRateThreadX</p></td>
         <td align=left>
 How to use the Heart Rate profile as specified by the BLE SIG with ThreadX OS.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_HeartRate_ota">BLE_HeartRate_ota</p></td>
         <td align=left>
 How to use the Heart Rate and OTA profile as specified by the BLE SIG.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Power_Central">BLE_Power_Central</p></td>
+        <td align=left>
+How to measure Central power consumption using BLE.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Power_Peripheral">BLE_Power_Peripheral</p></td>
+        <td align=left>
+How to measure Peripheral power consumption using BLE.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_SerialCom_Central">BLE_SerialCom_Central</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE component. 
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_SerialCom_Peripheral">BLE_SerialCom_Peripheral</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE component. 
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_TransparentMode">BLE_TransparentMode</p></td>
         <td align=left>
 How to communicate with the STM32CubeMonitor-RF Tool using the transparent mode.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pClient">BLE_p2pClient</p></td>
         <td align=left>
 Demonstrate STM32WBA acting as BLE central and GATT client.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pClient_Ext">BLE_p2pClient_Ext</p></td>
         <td align=left>
 Demontrates a BLE scanner with connections from an extended and a legacy advertising.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pRouter">BLE_p2pRouter</p></td>
         <td align=left>
 Demonstrate STM32WBA acting at the same time as both: BLE central and peripheral, GATT server and client.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pServer">BLE_p2pServer</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE (as GATT server).
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pServerThreadX">BLE_p2pServerThreadX</p></td>
         <td align=left>
 How to demonstrate Point-to-Point communication using BLE (as GATT server).
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pServer_Ext">BLE_p2pServer_Ext</p></td>
         <td align=left>
 Demonstrate STM32WBA using BLE stack full version to use several extended advertising sets.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_p2pServer_TZ">BLE_p2pServer_TZ</p></td>
+        <td align=left>
+This example is similar to BLE_p2pServer with the TrustZone being activated and the Blue LED being connected to the Secure side of the MCU.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left><p id="BLE_p2pServer_ota">BLE_p2pServer_ota</p></td>
         <td align=left>
 Demonstrate STM32WBA acting as BLE peripheral and GATT server.
 </td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=1><p id="FileX">FileX</p></td>
@@ -1900,6 +2517,8 @@ Demonstrate STM32WBA acting as BLE peripheral and GATT server.
         <td align=left>
 This application provides an example of FileX stack usage on STM32WBA52CG-Nucleo board, running in standalone mode (without ThreadX).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1908,7 +2527,65 @@ This application provides an example of FileX stack usage on STM32WBA52CG-Nucleo
         <td align=left>
 This example is based on the tiny lpm utility. It shows how the sequencer handles the task waiting for an event.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=5><p id="Mac_802_15_4">Mac_802_15_4</p></td>
+        <td align=left><p id="Mac_802_15_4_Coordinator">Mac_802_15_4_Coordinator</p></td>
+        <td align=left>
+How to use MAC 802.15.4 Association and Data exchange.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Mac_802_15_4_FFD">Mac_802_15_4_FFD</p></td>
+        <td align=left>
+How to use MAC 802.15.4 Association and Data exchange.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Mac_802_15_4_LPM_Periodic_Transmit">Mac_802_15_4_LPM_Periodic_Transmit</p></td>
+        <td align=left>
+How to use MAC 802.15.4 data transmission with STOP1/Standby low power mode enabled.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Mac_802_15_4_Node">Mac_802_15_4_Node</p></td>
+        <td align=left>
+How to use MAC 802.15.4 Association and Data exchange.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Mac_802_15_4_RFD">Mac_802_15_4_RFD</p></td>
+        <td align=left>
+How to use MAC 802.15.4 Association and Data exchange.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="Phy_802_15_4">Phy_802_15_4</p></td>
+        <td align=left><p id="Phy_Cli">Phy_Cli</p></td>
+        <td align=left> 
+A dedicated application allows the control and the test of the 802_15_4 radio via a command line interface or STM32CubeMonitorRF.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=5><p id="Sequencer">Sequencer</p></td>
@@ -1916,6 +2593,8 @@ This example is based on the tiny lpm utility. It shows how the sequencer handle
         <td align=left>
 This example is based on the sequencer utilities. It shows how to use a sequencer task to toggle a GPIO.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1923,6 +2602,8 @@ This example is based on the sequencer utilities. It shows how to use a sequence
         <td align=left>
 This example is based on the sequencer utilities.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1930,6 +2611,8 @@ This example is based on the sequencer utilities.
         <td align=left>
 This example is based on the sequencer utilities. It shows how the sequencer handles the task pause/resume mechanism.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1937,6 +2620,8 @@ This example is based on the sequencer utilities. It shows how the sequencer han
         <td align=left>
 This example is based on the sequencer utility. It shows how the sequencer manages task priority.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1944,7 +2629,46 @@ This example is based on the sequencer utility. It shows how the sequencer manag
         <td align=left>
 This example is based on the sequencer utility. It shows how the sequencer handles the task waiting for an event.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=4><p id="Thread">Thread</p></td>
+        <td align=left><p id="Thread_Cli_Cmd">Thread_Cli_Cmd</p></td>
+        <td align=left>
+How to control the Thread stack via Cli commands.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Thread_Coap_Generic">Thread_Coap_Generic</p></td>
+        <td align=left>
+How to build Thread application based on Coap messages.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Thread_Coap_Generic_ThreadX">Thread_Coap_Generic_ThreadX</p></td>
+        <td align=left>
+How to build Thread application based on Coap messages.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Thread_Skeleton">Thread_Skeleton</p></td>
+        <td align=left>
+This application is generated by STM32CubeMX including all the libriaries required to start coding Thread application.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr align=center>
         <td align=left rowspan=8><p id="ThreadX">ThreadX</p></td>
@@ -1952,6 +2676,8 @@ This example is based on the sequencer utility. It shows how the sequencer handl
         <td align=left>
 This application provides an example of CMSIS RTOS adaptation layer for Azure RTOS ThreadX, it shows how to develop an application using the CMSIS RTOS 2 APIs.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -1959,6 +2685,8 @@ This application provides an example of CMSIS RTOS adaptation layer for Azure RT
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the FreeRTOS adaptation layer for ThreadX.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -1966,6 +2694,8 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td align=left>
 This application demonstrates how to configure ThreadX to operate in low power mode. The system spends most of its time in Stop mode, and only wakes up when an external interrupt is triggered. User button B1 is the interrupt source.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1973,6 +2703,8 @@ This application demonstrates how to configure ThreadX to operate in low power m
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX Module feature.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
@@ -1980,6 +2712,8 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX when the TrustZone feature is enabled (TZEN=1).
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1987,6 +2721,8 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX thread management APIs.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -1994,6 +2730,8 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX message queue APIs.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
@@ -2001,15 +2739,338 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td align=left>
 This application provides an example of Azure RTOS ThreadX stack usage, it shows how to develop an application using the ThreadX synchronization APIs.
 </td>
+        <td>-</td>
+        <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
-      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of applications: 36</b></td>
-        <td>36</td>
+      <tr align=center>
+        <td align=left rowspan=35><p id="Zigbee">Zigbee</p></td>
+        <td align=left><p id="Zigbee_APS_Coord">Zigbee_APS_Coord</p></td>
+        <td align=left>
+How to use the APS layer in an application acting as a Zigbee Coordinator within a centralized network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_APS_Router">Zigbee_APS_Router</p></td>
+        <td align=left>
+How to use the APS layer in an application acting as a Zigbee Router within a centralized network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Basic_Client_Coord">Zigbee_Basic_Client_Coord</p></td>
+        <td align=left>
+How to use the Basic Attributes of an OnOff cluster on a device acting as a Client within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Basic_Server_Router">Zigbee_Basic_Server_Router</p></td>
+        <td align=left>
+How to use the Basic Attributes of an OnOff cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Diagnostic_Client_Coord">Zigbee_Diagnostic_Client_Coord</p></td>
+        <td align=left>
+How to use the Diagnostic Attributes of an OnOff cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Diagnostic_Server_Router">Zigbee_Diagnostic_Server_Router</p></td>
+        <td align=left>
+
+How to use the Diagnostic Attributes of an OnOff cluster on a device acting as a Client within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_DoorLock_Client_Router">Zigbee_DoorLock_Client_Router</p></td>
+        <td align=left>
+How to use the DoorLock cluster  on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_DoorLock_Server_Coord">Zigbee_DoorLock_Server_Coord</p></td>
+        <td align=left>
+How to use the DoorLock cluster  on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_FindBind_Coord">Zigbee_FindBind_Coord</p></td>
+        <td align=left>
+How to use the Finding and Binding  feature on a device acting as a Server with Coordinator role within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_FindBind_IAS_Router">Zigbee_FindBind_IAS_Router</p></td>
+        <td align=left>
+How to use the Finding and Binding  feature on a device using IAS cluster and acting as a Client with Router role within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_FindBind_OnOff_Router">Zigbee_FindBind_OnOff_Router</p></td>
+        <td align=left>
+How to use the Finding and Binding  feature on a device acting as a Client with Router role within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Messaging_Client_Coord">Zigbee_Messaging_Client_Coord</p></td>
+        <td align=left>
+How to use the Messaging cluster on a device acting as a Coordinator within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Messaging_Server_Router">Zigbee_Messaging_Server_Router</p></td>
+        <td align=left>
+How to use the Messaging cluster on a device acting as a Router within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_MeterId_Client_Coord">Zigbee_MeterId_Client_Coord</p></td>
+        <td align=left>
+How to use the Meter Identification cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_MeterId_Server_Router">Zigbee_MeterId_Server_Router</p></td>
+        <td align=left>
+How to use the Meter Identification cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OccupSensing_Client_Coord">Zigbee_OccupSensing_Client_Coord</p></td>
+        <td align=left>
+How to use the Occupancy Sensing on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OccupSensing_Server_Router">Zigbee_OccupSensing_Server_Router</p></td>
+        <td align=left>
+How to use the Occupancy Sensing on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOffSwCfg_Client_Coord">Zigbee_OnOffSwCfg_Client_Coord</p></td>
+        <td align=left>
+How to use the OnOff Switch Config cluster on a device acting as a Client within a Centralized Zigbee network. 
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOffSwCfg_Server_Router">Zigbee_OnOffSwCfg_Server_Router</p></td>
+        <td align=left>
+How to use the OnOff Switch Config cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Client_Distrib">Zigbee_OnOff_Client_Distrib</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Client within a distributed Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Client_Router">Zigbee_OnOff_Client_Router</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Client_Router_ThreadX">Zigbee_OnOff_Client_Router_ThreadX</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Client_SED">Zigbee_OnOff_Client_SED</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a ED Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Server_Coord">Zigbee_OnOff_Server_Coord</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Server_Coord_ThreadX">Zigbee_OnOff_Server_Coord_ThreadX</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Server_Distrib">Zigbee_OnOff_Server_Distrib</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Client within a distributed Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_PowerConfig_Client_Coord">Zigbee_PowerConfig_Client_Coord</p></td>
+        <td align=left>
+How to use the Power Config cluster on a device acting as a Coordinator within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_PowerConfig_Server_SED">Zigbee_PowerConfig_Server_SED</p></td>
+        <td align=left>
+How to use the Power Config cluster on a device acting as a SED within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_PressMeas_Client_Coord">Zigbee_PressMeas_Client_Coord</p></td>
+        <td align=left>
+How to use the Pressure Measure cluster on a device acting as a Client within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_PressMeas_Server_Router">Zigbee_PressMeas_Server_Router</p></td>
+        <td align=left>
+How to use the Pressure Measure cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Skeleton">Zigbee_Skeleton</p></td>
+        <td align=left>
+This application is generated by STM32CubeMX including all the libriaries required to start coding Zigbee application.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_TempMeas_Client_Coord">Zigbee_TempMeas_Client_Coord</p></td>
+        <td align=left>
+How to use the Temperature Measurement cluster on a device acting as a Client within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_TempMeas_Server_Router">Zigbee_TempMeas_Server_Router</p></td>
+        <td align=left>
+How to use the Temperature Measurement cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Thermostat_Client_Coord">Zigbee_Thermostat_Client_Coord</p></td>
+        <td align=left>
+How to use the Thermostat cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_Thermostat_Server_Router">Zigbee_Thermostat_Server_Router</p></td>
+        <td align=left>
+How to use the Thermostat cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-      	<td colspan="4"><b>Total number of projects: 228</b></td>
-      	<td>228</td>
+        <td colspan="3"><b>Total number of applications: 91</b></td>
+        <td>6</td>
+        <td>67</td>
+        <td>18</td>
+      </tr>
+      <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
+      	<td colspan="4"><b>Total number of projects: 494</b></td>
+      	<td>33</td>
+      	<td>252</td>
+      	<td>209</td>
       </tr>
     </table>
   </body>

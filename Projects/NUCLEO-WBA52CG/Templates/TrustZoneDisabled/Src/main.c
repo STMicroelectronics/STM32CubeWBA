@@ -50,7 +50,7 @@ int main(void)
              timer for example or other time source), keeping in mind that Time base
              duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and
              handled in milliseconds basis.
-       - Set NVIC Group Priority to 3
+       - Set NVIC Group Priority to 4
        - Low Level Initialization
      */
   HAL_Init();

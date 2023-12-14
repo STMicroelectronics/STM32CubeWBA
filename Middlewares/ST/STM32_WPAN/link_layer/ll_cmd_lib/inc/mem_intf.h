@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/mem_intf.h#1 $*/
-/**
- ********************************************************************************
- * @file    mem_intf.h
- * @brief   This file contains all the functions prototypes for the mem_intf.c.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/mem_intf.h#1 $*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef MEM_INTF_H

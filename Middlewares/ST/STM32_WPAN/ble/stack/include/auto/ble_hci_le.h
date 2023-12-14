@@ -389,34 +389,26 @@ tBleStatus hci_configure_data_path( uint8_t Data_Path_Direction,
 /**
  * @brief HCI_READ_LOCAL_VERSION_INFORMATION
  * This command reads the values for the version information for the local
- * Controller. The HCI Version information defines the version information of
- * the HCI layer. The LMP/PAL Version information defines the version of the
- * LMP or PAL. The Manufacturer_Name information indicates the manufacturer of
- * the local device. The HCI Revision and LMP/PAL Subversion are implementation
- * dependent.
+ * Controller.
  * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.4.1].
  * 
- * @param[out] HCI_Version See Bluetooth Assigned Numbers
- *        (https://www.bluetooth.org/en-us/specification/assigned-numbers)
- * @param[out] HCI_Revision Revision of the Current HCI in the BR/EDR
- *        Controller.
- * @param[out] LMP_PAL_Version Version of the Current LMP or PAL in the
- *        Controller.
- *        See Bluetooth Assigned Numbers (https://www.bluetooth.org/en-
- *        us/specification/assigned-numbers)
- * @param[out] Manufacturer_Name Manufacturer Name of the BR/EDR Controller.
- *        See Bluetooth Assigned Numbers (https://www.bluetooth.org/en-
- *        us/specification/assigned-numbers)
- * @param[out] LMP_PAL_Subversion Subversion of the Current LMP or PAL in the
- *        Controller. This value is
- *        implementation dependent.
+ * @param[out] HCI_Version Version of the HCI Specification supported by the
+ *        Controller. See Bluetooth Assigned Numbers.
+ * @param[out] HCI_Subversion Revision of the HCI implementation in the
+ *        Controller. This value is vendor-specific.
+ * @param[out] LMP_Version Version of the Current LMP supported by the
+ *        Controller. See Bluetooth Assigned Numbers.
+ * @param[out] Company_Identifier Company identifier for the manufacturer of
+ *        the Controller. See Bluetooth Assigned Numbers.
+ * @param[out] LMP_Subversion Subversion of the Current LMP in the Controller.
+ *        This value is vendor-specific.
  * @return Value indicating success or error code.
  */
 tBleStatus hci_read_local_version_information( uint8_t* HCI_Version,
-                                               uint16_t* HCI_Revision,
-                                               uint8_t* LMP_PAL_Version,
-                                               uint16_t* Manufacturer_Name,
-                                               uint16_t* LMP_PAL_Subversion );
+                                               uint16_t* HCI_Subversion,
+                                               uint8_t* LMP_Version,
+                                               uint16_t* Company_Identifier,
+                                               uint16_t* LMP_Subversion );
 
 /**
  * @brief HCI_READ_LOCAL_SUPPORTED_COMMANDS
@@ -585,29 +577,56 @@ tBleStatus hci_read_rssi( uint16_t Connection_Handle,
  * regardless of how the LE_Event_Mask is set.
  * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.8.1].
  * 
- * @param LE_Event_Mask LE event mask. Default: 0x000000000003185F.
+ * @param LE_Event_Mask LE event mask. Default: 0x000000C7FFF7F85F. Note that
+ *        the BLE stack ignores the bits which represent events it does not
+ *        support (according to its variant).
  *        Flags:
  *        - 0x0000000000000000: No LE events specified
- *        - 0x0000000000000001: LE Connection Complete Event
- *        - 0x0000000000000002: LE Advertising Report Event
- *        - 0x0000000000000004: LE Connection Update Complete Event
- *        - 0x0000000000000008: LE Read Remote Used Features Complete Event
- *        - 0x0000000000000010: LE Long Term Key Request Event
- *        - 0x0000000000000020: LE Remote Connection Parameter Request Event
- *        - 0x0000000000000040: LE Data Length Change Event
- *        - 0x0000000000000080: LE Read Local P-256 Public Key Complete Event
- *        - 0x0000000000000100: LE Generate DHKey Complete Event
- *        - 0x0000000000000200: LE Enhanced Connection Complete Event
- *        - 0x0000000000000400: LE Direct Advertising Report Event
- *        - 0x0000000000000800: LE PHY Update Complete Event
- *        - 0x0000000000001000: LE Extended Advertising Report Event
- *        - 0x0000000000002000: LE Periodic Advertising Sync Established Event
- *        - 0x0000000000004000: LE Periodic Advertising Report Event
- *        - 0x0000000000008000: LE Periodic Advertising Sync Lost Event
- *        - 0x0000000000010000: LE Extended Scan Timeout Event
- *        - 0x0000000000020000: LE Extended Advertising Set Terminated Event
- *        - 0x0000000000040000: LE Scan Request Received Event
- *        - 0x0000000000080000: LE Channel Selection Algorithm Event
+ *        - 0x0000000000000001: LE Connection Complete event
+ *        - 0x0000000000000002: LE Advertising Report event
+ *        - 0x0000000000000004: LE Connection Update Complete event
+ *        - 0x0000000000000008: LE Read Remote Features Complete event
+ *        - 0x0000000000000010: LE Long Term Key Request event
+ *        - 0x0000000000000020: LE Remote Connection Parameter Request event
+ *        - 0x0000000000000040: LE Data Length Change event
+ *        - 0x0000000000000080: LE Read Local P-256 Public Key Complete event
+ *        - 0x0000000000000100: LE Generate DHKey Complete event
+ *        - 0x0000000000000200: LE Enhanced Connection Complete event
+ *        - 0x0000000000000400: LE Directed Advertising Report event
+ *        - 0x0000000000000800: LE PHY Update Complete event
+ *        - 0x0000000000001000: LE Extended Advertising Report event
+ *        - 0x0000000000002000: LE Periodic Advertising Sync Established event
+ *        - 0x0000000000004000: LE Periodic Advertising Report event
+ *        - 0x0000000000008000: LE Periodic Advertising Sync Lost event
+ *        - 0x0000000000010000: LE Scan Timeout event
+ *        - 0x0000000000020000: LE Advertising Set Terminated event
+ *        - 0x0000000000040000: LE Scan Request Received event
+ *        - 0x0000000000080000: LE Channel Selection Algorithm event
+ *        - 0x0000000000100000: LE Connectionless IQ Report event
+ *        - 0x0000000000200000: LE Connection IQ Report event
+ *        - 0x0000000000400000: LE CTE Request Failed event
+ *        - 0x0000000000800000: LE Periodic Advertising Sync Transfer Received
+ *          event
+ *        - 0x0000000001000000: LE CIS Established event
+ *        - 0x0000000002000000: LE CIS Request event
+ *        - 0x0000000004000000: LE Create BIG Complete event
+ *        - 0x0000000008000000: LE Terminate BIG Complete event
+ *        - 0x0000000010000000: LE BIG Sync Established event
+ *        - 0x0000000020000000: LE BIG Sync Lost event
+ *        - 0x0000000040000000: LE Request Peer SCA Complete event
+ *        - 0x0000000080000000: LE Path Loss Threshold event
+ *        - 0x0000000100000000: LE Transmit Power Reporting event
+ *        - 0x0000000200000000: LE BIGInfo Advertising Report event
+ *        - 0x0000000400000000: LE Subrate Change event
+ *        - 0x0000000800000000: LE Periodic Advertising Sync Established event
+ *          [v2]
+ *        - 0x0000001000000000: LE Periodic Advertising Report event [v2]
+ *        - 0x0000002000000000: LE Periodic Advertising Sync Transfer Received
+ *          event [v2]
+ *        - 0x0000004000000000: LE Periodic Advertising Subevent Data Request
+ *          event
+ *        - 0x0000008000000000: LE Periodic Advertising Response Report event
+ *        - 0x0000010000000000: LE Enhanced Connection Complete event [v2]
  * @return Value indicating success or error code.
  */
 tBleStatus hci_le_set_event_mask( const uint8_t* LE_Event_Mask );
@@ -1919,7 +1938,15 @@ tBleStatus hci_le_set_default_phy( uint8_t ALL_PHYS,
  * @param RX_PHYS Host preferences for RX PHY (no LE coded support on STM32WB)
  *        Values:
  *        - 0x00 ... 0x03
- * @param PHY_options Not supported
+ * @param PHY_options Bit field used to specify options for PHYs (not used on
+ *        STM32WB)
+ *        Values:
+ *        - 0x0000: the Host has no preferred coding when transmitting on the
+ *          LE Coded PHY
+ *        - 0x0001: the Host prefers that S=2 coding be used when transmitting
+ *          on the LE Coded PHY
+ *        - 0x0002: the Host prefers that S=8 coding be used when transmitting
+ *          on the LE Coded PHY
  * @return Value indicating success or error code.
  */
 tBleStatus hci_le_set_phy( uint16_t Connection_Handle,
@@ -1944,7 +1971,9 @@ tBleStatus hci_le_set_phy( uint16_t Connection_Handle,
  *        - 0x01: Transmitter set to use the LE 1M PHY
  *        - 0x02: Transmitter set to use the LE 2M PHY
  *        - 0x03: Transmitter set to use the LE Coded PHY with S=8 data coding
+ *          (not supported on STM32WB)
  *        - 0x04: Transmitter set to use the LE Coded PHY with S=2 data coding
+ *          (not supported on STM32WB)
  * @param Modulation_Index Modulation index capability of the transmitter
  *        Values:
  *        - 0x00: Assume transmitter will have a standard modulation index
@@ -1988,7 +2017,9 @@ tBleStatus hci_le_receiver_test_v2( uint8_t RX_Frequency,
  *        - 0x01: Transmitter set to use the LE 1M PHY
  *        - 0x02: Transmitter set to use the LE 2M PHY
  *        - 0x03: Transmitter set to use the LE Coded PHY with S=8 data coding
+ *          (not supported on STM32WB)
  *        - 0x04: Transmitter set to use the LE Coded PHY with S=2 data coding
+ *          (not supported on STM32WB)
  * @return Value indicating success or error code.
  */
 tBleStatus hci_le_transmitter_test_v2( uint8_t TX_Frequency,
@@ -2068,6 +2099,7 @@ tBleStatus hci_le_set_advertising_set_random_address( uint8_t Advertising_Handle
  *          Filter Accept List.
  * @param Adv_TX_Power Advertising TX power. Units: dBm.
  *        Values:
+ *        - 127: Host has no preference
  *        - -127 ... 20
  * @param Primary_Adv_PHY Primary advertising PHY.
  *        Values:
@@ -2690,7 +2722,9 @@ tBleStatus hci_le_set_privacy_mode( uint8_t Peer_Identity_Address_Type,
  *        - 0x01: Transmitter set to use the LE 1M PHY
  *        - 0x02: Transmitter set to use the LE 2M PHY
  *        - 0x03: Transmitter set to use the LE Coded PHY with S=8 data coding
+ *          (not supported on STM32WB)
  *        - 0x04: Transmitter set to use the LE Coded PHY with S=2 data coding
+ *          (not supported on STM32WB)
  * @param Modulation_Index Modulation index capability of the transmitter
  *        Values:
  *        - 0x00: Assume transmitter will have a standard modulation index
@@ -2754,7 +2788,9 @@ tBleStatus hci_le_receiver_test_v3( uint8_t RX_Frequency,
  *        - 0x01: Transmitter set to use the LE 1M PHY
  *        - 0x02: Transmitter set to use the LE 2M PHY
  *        - 0x03: Transmitter set to use the LE Coded PHY with S=8 data coding
+ *          (not supported on STM32WB)
  *        - 0x04: Transmitter set to use the LE Coded PHY with S=2 data coding
+ *          (not supported on STM32WB)
  * @param CTE_Length Constant Tone Extension length in 8 us units.
  *        Values:
  *        - 0x02 ... 0x14
@@ -3970,7 +4006,9 @@ tBleStatus hci_le_set_transmit_power_reporting_enable( uint16_t Connection_Handl
  *        - 0x01: Transmitter set to use the LE 1M PHY
  *        - 0x02: Transmitter set to use the LE 2M PHY
  *        - 0x03: Transmitter set to use the LE Coded PHY with S=8 data coding
+ *          (not supported on STM32WB)
  *        - 0x04: Transmitter set to use the LE Coded PHY with S=2 data coding
+ *          (not supported on STM32WB)
  * @param CTE_Length Constant Tone Extension length in 8 us units.
  *        Values:
  *        - 0x02 ... 0x14
@@ -4000,6 +4038,61 @@ tBleStatus hci_le_transmitter_test_v4( uint8_t TX_Frequency,
                                        uint8_t Switching_Pattern_Length,
                                        const uint8_t* Antenna_IDs,
                                        uint8_t TX_Power_Level );
+
+/**
+ * @brief HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2
+ * This command is used by the Host to set the parameters for periodic
+ * advertising.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.8.61].
+ * 
+ * @param Advertising_Handle Used to identify an advertising set.
+ *        Values:
+ *        - 0x00 ... 0xEF
+ * @param Periodic_Adv_Interval_Min Minimum advertising interval.
+ *        Time = N * 1.25 ms.
+ *        Values:
+ *        - 0x0006 (7.50 ms)  ... 0xFFFF (81918.75 ms)
+ * @param Periodic_Adv_Interval_Max Maximum advertising interval.
+ *        Time = N * 1.25 ms.
+ *        Values:
+ *        - 0x0006 (7.50 ms)  ... 0xFFFF (81918.75 ms)
+ * @param Periodic_Adv_Properties Specifies the fields included in the
+ *        advertising packet.
+ *        Flags:
+ *        - 0x0040: Include TxPower in the advertising PDU
+ * @param Num_Subevents Number of subevents.
+ *        Values:
+ *        - 0x00 ... 0x80
+ * @param Subevent_Interval Interval between subevents.
+ *        Time = N * 1.25 ms.
+ *        Values:
+ *        - 0x06 (7.50 ms)  ... 0xFF (318.75 ms)
+ * @param Response_Slot_Delay Time between the advertising packet in a subevent
+ *        and the first response slot.
+ *        Time = N * 1.25 ms.
+ *        Values:
+ *        - 0x00 (0.00 ms) : No response slots
+ *        - 0x01 (1.25 ms)  ... 0xFE (317.50 ms)
+ * @param Response_Slot_Spacing Time between response slots.
+ *        Time = N * 0.125 ms.
+ *        Values:
+ *        - 0x00 (0.000 ms) : No response slots
+ *        - 0x02 (0.250 ms)  ... 0xFF (31.875 ms)
+ * @param Num_Response_Slots Number of subevent response slots.
+ *        Values:
+ *        - 0x00: No response slots
+ *        - 0x01 ... 0xFF
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_set_periodic_advertising_parameters_v2( uint8_t Advertising_Handle,
+                                                          uint16_t Periodic_Adv_Interval_Min,
+                                                          uint16_t Periodic_Adv_Interval_Max,
+                                                          uint16_t Periodic_Adv_Properties,
+                                                          uint8_t Num_Subevents,
+                                                          uint8_t Subevent_Interval,
+                                                          uint8_t Response_Slot_Delay,
+                                                          uint8_t Response_Slot_Spacing,
+                                                          uint8_t Num_Response_Slots );
 
 /**
  * @brief HCI_TX_ACL_DATA

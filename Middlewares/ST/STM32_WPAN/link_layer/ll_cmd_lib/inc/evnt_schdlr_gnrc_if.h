@@ -1,11 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/evnt_schdlr_gnrc_if.h#1 $*/
-/**
- ********************************************************************************
- * @file    evnt_schdlr_gnrc_if.h
- * @brief   This file contains all the functions prototypes for the evnt_schdlr.c
- * that are used by other layers to interface with the scheduler.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/evnt_schdlr_gnrc_if.h#1 $*/
 
  /**
  *  @ingroup gnrc_schdlr_intf

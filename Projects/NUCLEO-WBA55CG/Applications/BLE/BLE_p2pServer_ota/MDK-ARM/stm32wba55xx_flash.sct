@@ -1,0 +1,35 @@
+; *************************************************************
+; *** Scatter-Loading Description File                      ***
+; *************************************************************
+LR_IROM_FLASH1 0x08006000 0x3b0 {       ; load region size_region
+  ER_IROM_FLASH1_LOW 0x08006000 0x3b0 { ; load address = execution address
+    *.o(RESET, +First)
+    *.o (TAG_OTA_START)
+  }
+
+  RW_IRAM1 0x20000000 0x10000 {
+    .ANY (+RW +ZI)
+  }
+}
+
+LR_IROM_FLASH2 0x080063b0 0x79C50{
+  ER_IROM_FLASH1_HIGH 0x080063b0  0x79C50 {  ; load address = execution address	
+  *(InRoot$$Sections)
+  .ANY (+RO)  
+  .ANY (+XO)
+  *.o (TAG_OTA_END, +Last)	
+  }
+ }
+;LR_IROM_DWN 0x08080000 0x7A000 {    ; load region size_region
+;  LR_IROM_DWN 0x08080000 0x7A000 {  ; load address = execution address
+;  }
+;}
+;LR_IROM_NVM 0x0807FA000 0x4000 {    ; load region size_region
+;  ER_IROM_NVM 0x0807FA000 0x4000 {  ; load address = execution address
+;  }
+;}
+;LR_IROM_DATA 0x080FE000 0x2000 {    ; load region size_region
+;  LR_IROM_DATA 0x080FE000 0x2000 {  ; load address = execution address
+;  }
+;}
+

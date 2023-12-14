@@ -28,8 +28,14 @@
 <a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
 </center>
 <h1 id="purpose">Purpose</h1>
-<p>Wireless Personal Area Network Middleware supporting Bluetooth Low Energy 5.3.</p>
-<p>The following features are supported for BLE 5.3:</p>
+<p>Wireless Personal Area Network Middleware supporting:</p>
+<ul>
+<li><p>Bluetooth Low Energy 5.4</p></li>
+<li><p>Zigbee stack Revision 23 (R23), Zigbee Clusters ZCL 8.0</p></li>
+<li><p>OpenThread: compliant Thread 1.1, 1.2 and 1.3  </p></li>
+<li><p>Mac 802.15.4: compliant Zigbee IEEE 802.15.4 MAC Test Plan V 2.0</p></li>
+</ul>
+<p>The following features are supported for <strong>BLE</strong> 5.4:</p>
 <ul>
 <li>Advertising</li>
 <li>Scanning</li>
@@ -48,10 +54,15 @@
 <li>Periodic Sync Transfer</li>
 <li>GATT Caching</li>
 <li>LE L2CAP Connection Oriented channel</li>
+<li>Enhanced ATT</li>
+<li>Isochronous Broadcaster / Synchronizer</li>
+<li>Connected Isochronous</li>
+<li>AoA/AoD</li>
+<li>LE Power Control</li>
 </ul>
 <p>The maximum number of connections is limited to 20.</p>
 <p>The list of BLE commands is documented in the following file: <a href="ble/stack/doc/STM32WBA_BLE_Wireless_Interface.html">STM32WBA_BLE_Wireless_Interface.html</a></p>
-<p>The BLE Stack user manual is available at following location : <a href="ble/stack/doc/STM32WBA_BLE_Stack_User_Manual.html">STM32WBA_BLE_Stack_User_Manual.html</a></p>
+<p>The BLE Stack user manual is available at following location: <a href="ble/stack/doc/STM32WBA_BLE_Stack_User_Manual.html">STM32WBA_BLE_Stack_User_Manual.html</a></p>
 <p>Different Bluetooth® Low Energy Host Stack variants are available in the STM32WBA package, depending on project requirements. Depending on the variant, the associated Link Layer library must be included in the project:</p>
 <ul>
 <li><em>stm32wba_ble_stack_full.a</em>: <strong>full host stack</strong> + <strong>ST LL controller</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
@@ -59,24 +70,175 @@
 <li><em>stm32wba_ble_stack_llo.a</em>: <strong>ST LL controller only</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
 <li><em>stm32wba_ble_stack_llobasic.a</em>: <strong>ST LL controller (basic features)</strong> only, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
 </ul>
+<p>The <strong>BLE audio</strong> feature introduces the following libraries:</p>
+<ul>
+<li><em>ble_audio.a</em>: Generic Audio Framework.</li>
+<li><em>LC3.lib</em>: LC3 codec.</li>
+<li><em>codec_mngr.a</em>: codec integration and data path management.</li>
+<li>These libraries require the full feature BLE host stack and full feature link layer. (stm32wba_ble_stack_full.a).</li>
+</ul>
+<p>The following <strong>OpenThread</strong> libraries are provided:</p>
+<ul>
+<li><em>stm32wba_ot_ftd_lib.a</em> (Full Thread Device)<br />
+</li>
+<li><em>stm32wba_ot_mtd_lib.a</em> (Minimal Thread Device)</li>
+</ul>
+<p><strong>Zigbee</strong>:</p>
+<ul>
+<li>Stack:
+<ul>
+<li><em>ZigbeeProFFD.a</em> (Full Functional Device)</li>
+<li><em>ZigbeeProRFD.a</em> (Reduced Functional Device)</li>
+</ul></li>
+<li>Clusters:
+<ul>
+<li><em>ZigbeeClusters.a</em>: Zigbee clusters library (ZCL 8.0 compliant). On demand, those clusters may be provided in source code</li>
+<li>List of generic clusters:
+<ul>
+<li>Alarm</li>
+<li>Ballast Configuration</li>
+<li>Basic</li>
+<li>Color Control</li>
+<li>Commissioning</li>
+<li>Dehumidification Control</li>
+<li>Device Temperature Configuration</li>
+<li>Diagnostics</li>
+<li>Door Lock</li>
+<li>Electrical Measurement</li>
+<li>Fan Control</li>
+<li>Groups</li>
+<li>Identify</li>
+<li>Illuminance Level Sensing</li>
+<li>Illuminance Measurement</li>
+<li>Level</li>
+<li>Meter Identification</li>
+<li>Nearest Gateway</li>
+<li>Occupancy Sensing</li>
+<li>OnOff</li>
+<li>OnOff Switch Configuration</li>
+<li>Over-The-Air (OTA) Upgrade</li>
+<li>Poll Control</li>
+<li>Power Configuration</li>
+<li>Power Profile</li>
+<li>Pressure Measurement</li>
+<li>Pump Configuration and Control</li>
+<li>RSSI Location</li>
+<li>Scenes</li>
+<li>Temperature Measurement</li>
+<li>Thermostat</li>
+<li>Thermostat User Interface</li>
+<li>Time</li>
+<li>Voice Over Zigbee</li>
+<li>Water Content Measurement</li>
+<li>Window Covering</li>
+</ul></li>
+<li>List of Security Clusters:
+<ul>
+<li>Intruder Alarm Systems Ancillary Control Equipment (IAS_ACE)</li>
+<li>Security IAS Warning Device (IAS_WD)</li>
+<li>Security IAS Zone</li>
+</ul></li>
+<li>List of Smart Energy clusters:
+<ul>
+<li>Calendar</li>
+<li>Device Management</li>
+<li>Demand Response and Load Control</li>
+<li>Energy Management</li>
+<li>Events</li>
+<li>Messaging</li>
+<li>Metering</li>
+<li>Prepayment</li>
+<li>Price</li>
+<li>Tunneling</li>
+</ul></li>
+</ul></li>
+</ul>
 </div>
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section3" checked aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.1.1 / 31-August-2023</label>
+<input type="checkbox" id="collapse-section3" checked aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 30-Oct-2023</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
-<li>ID 151333/159515 : Sleep timer overflow (each 36h) fixed.</li>
+<li>New features supported:
+<ul>
+<li>Enhanced ATT</li>
+<li>Isochronous Broadcaster / Synchronizer</li>
+<li>Connected Isochronous</li>
+<li>AoA/AoD</li>
+<li>LE Power Control</li>
+</ul></li>
+<li>Audio:
+<ul>
+<li>Initial release of the Generic Audio Framework with support CAP Initiator, Commander and Acceptor roles (ble_audio.a V1.0) (inc. CAP, BAP,CCP,MCP,VCP,MICP,CSIP).</li>
+<li>Initial release faster LC3.lib (V1.3) compiled by ARMCLANG V6.14.1</li>
+<li>Initial release of codec_manager V1.0 adapted for LC3 V1.3</li>
+</ul></li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>Initial release supporting:
+<ul>
+<li>Zigbee stack compliant with latest Zigbee R23 revision.</li>
+<li>Zigbee Clusters library (ZCL 8.0 compliant). On demand, those clusters may be provided in source code.</li>
+</ul></li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>Initial release supporting GRL Tests pre-certified on OT 1.1 / 1.2 / 1.3</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>Initial release supporting Zigbee IEEE 802.15.4 MAC Test Plan V 2.0 - ZigBee IEEE 802.15.4 Test Specification 14-0332-01 (pre-certified)</li>
 </ul></li>
 <li>Known limitations:
 <ul>
-<li>ID 144495 : Radio Calibration is not supported on standby mode.</li>
-<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
-<li>ID 145802 : Pairing request fails with error SMP timeout when connection interval set to max value: 4s.</li>
-<li>ID 150914 : Wrong CONNECT_IND packet not correctly handled.</li>
+<li>BLE:
+<ul>
+<li>ID 143245: ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.<br />
+</li>
+<li>ID 164684: Issue in SMP Pairing if Central received SMP Pairing Public Key and Pairing Confirm packets in the same Connection Event.</li>
+<li>ID 162754: HardFault happens when sending ISO Data from BIS Broadcaster with PTO &gt; 0 and Encryption enabled.</li>
+<li>ID 160222: Maximum ATT MTU limited to 362 bytes.</li>
+<li>ID 162754: Scheduling issue while having an ongoing CIS may lead to non-handling of LLCP in time causing a Disconnection with “Instant passed”.</li>
+<li>ID 165155: ACL Data packet not cleared correctly if disconnection occurred and ACL Data couldn’t be sent.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).</li>
+<li>ID 135240 : Long synchronization time in Broadcast due to scheduling conflict between extended advertising and BIG event.<br />
+</li>
+</ul></li>
+<li>Common 802.15.4 (MAC / Thread / Zigbee):
+<ul>
+<li>ID 148196 15.4 Solution can’t run at 16 MHz - VOS switching issue.</li>
+<li>ID 129206 - Radio IT shouldn’t be preempted more than 50µs or radio could miss incoming frame.</li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>ID 162977 In overloaded network OT stack fall in busy state.<br />
+</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ID 164841: Zigbee stack not R23 pre-certified (several failing tests).</li>
+<li>ID 164810: Some Data Cnf is not generated from MAC to NWK layer.</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 164074: SyncLoss Indication not supported.</li>
+<li>ID 162221: If device receives several beacons with same Panid beacon Notifications are not provided to upper layer (low reproducible rate).</li>
+</ul></li>
+<li>PHY 802.15.4:
+<ul>
+<li>ID 160933: API for continuous wave not yet supported.</li>
+<li>ID 160930: API for continuous modulation not yet supported.</li>
+<li>ID 164276: Hardfault may occur while in RX mode when numerous packets are received (occurrence vary).</li>
+<li>ID 164295: timeout parameter of rx_start command may lead to radio undefined state when receiving numerous packets (occur within minutes when receiving packets every 50ms).</li>
+</ul></li>
 </ul></li>
 </ul>
 </div>
@@ -88,23 +250,23 @@
 <ul>
 <li>BLE:
 <ul>
-<li>Maximum number of simultaneous connections supported by the device is now 20 : requires library LinkLayer_BLE_Basic_20_links_lib.a</li>
+<li>Maximum number of simultaneous connections supported by the device is now 20: requires library LinkLayer_BLE_Basic_20_links_lib.a</li>
 <li>New RF-PHY settings which allow to pass FCC regulatory requirements (specifically FCC Band edge measurement) have been integrated</li>
-<li>Add ble_legacy.h include : file which ensures the compatibility with previous BLE Stack naming.</li>
+<li>Add ble_legacy.h include: file which ensures the compatibility with previous BLE Stack naming.</li>
 <li>Update BLE types and names in include files.</li>
-<li>ID 143688 : Radio Deep Sleep mode can be used with white lists, resolving lists or periodic advertiser lists.</li>
-<li>ID 143240 : Calibration improvement :calibration is done channel by channel from radio interrupt. Calibration is not delaying Link Layer scheduling activities. </li>
-<li>ID 146629 : Fix issue of events conflict with multi links.</li>
-<li>ID 144736 : Scan response Data handled correctly when it is set after the advertising enabling.</li>
-<li>ID 149353 : Channel Map update wrong behavior fixed.</li>
+<li>ID 143688: Radio Deep Sleep mode can be used with white lists, resolving lists or periodic advertiser lists.</li>
+<li>ID 143240: Calibration improvement:calibration is done channel by channel from radio interrupt. Calibration is not delaying Link Layer scheduling activities. </li>
+<li>ID 146629: Fix issue of events conflict with multi links.</li>
+<li>ID 144736: Scan response Data handled correctly when it is set after the advertising enabling.</li>
+<li>ID 149353: Channel Map update wrong behavior fixed.</li>
 </ul></li>
 <li>Known limitations:
 <ul>
-<li>ID 144495 : Radio Calibration is not supported on standby mode.</li>
-<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
-<li>ID 145802 : Pairing request fails with error SMP timeout when connection interval set to max value: 4s.</li>
-<li>ID 150795/151333 : Sleep timer overflow (each 36h) stops RF activities ongoing.</li>
-<li>ID 150914 : Wrong CONNECT_IND packet not correctly handled.</li>
+<li>ID 144495: Radio Calibration is not supported on standby mode.</li>
+<li>ID 143245: ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 145802: Pairing request fails with error SMP timeout when connection interval set to max value: 4s.</li>
+<li>ID 150795/151333: Sleep timer overflow (each 36h) stops RF activities ongoing.</li>
+<li>ID 150914: Wrong CONNECT_IND packet not correctly handled.</li>
 </ul></li>
 </ul>
 </div>
@@ -117,12 +279,12 @@
 <ul>
 <li>Known limitations:
 <ul>
-<li>ID 143688 : Radio Deep Sleep mode shall not be used if we want to use white lists, resolving lists or periodic advertiser lists.</li>
-<li>ID 144507 : The BleStack_Process function should also be called when a BLE stack callback function is called by the platform software(PKA, timer).</li>
-<li>ID 143393 : [THREADX] RNG and PKA tasks priorities must be higher than BLE Host stack task.</li>
-<li>ID 143395 : [THREADX] No Uart traces supported while in low power modes.</li>
-<li>ID 144495 : Radio Calibration is not supported on standby mode.</li>
-<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 143688: Radio Deep Sleep mode shall not be used if we want to use white lists, resolving lists or periodic advertiser lists.</li>
+<li>ID 144507: The BleStack_Process function should also be called when a BLE stack callback function is called by the platform software(PKA, timer).</li>
+<li>ID 143393: [THREADX] RNG and PKA tasks priorities must be higher than BLE Host stack task.</li>
+<li>ID 143395: [THREADX] No Uart traces supported while in low power modes.</li>
+<li>ID 144495: Radio Calibration is not supported on standby mode.</li>
+<li>ID 143245: ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
 </ul></li>
 </ul>
 </div>

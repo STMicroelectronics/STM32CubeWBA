@@ -257,7 +257,9 @@ tBleStatus aci_gatt_add_char_desc( uint16_t Service_Handle,
  * must retry again till the function returns BLE_STATUS_SUCCESS or any other
  * error code.
  * Note that the characteristic is updated only if the command returns
- * BLE_STATUS_SUCCESS.
+ * BLE_STATUS_SUCCESS or BLE_STATUS_SEC_PERMISSION_ERROR (0x65). The security
+ * permission error means that at least one client has not been notified due to
+ * security requirements not met.
  * 
  * @param Service_Handle Handle of service to which the characteristic belongs
  * @param Char_Handle Handle of the characteristic declaration

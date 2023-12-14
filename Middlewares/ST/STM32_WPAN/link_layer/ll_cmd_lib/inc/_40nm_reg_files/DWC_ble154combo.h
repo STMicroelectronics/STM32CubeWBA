@@ -1,11 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/_40nm_reg_files/DWC_ble154combo.h#1 $*/
-/**
- ********************************************************************************
- * @brief
- *
- *
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/_40nm_reg_files/DWC_ble154combo.h#1 $*/
 // Abstract: Configuration definition header file for DWC_ble154combo
 #define Z_DATA_SYNC_STAGES 2
 #define USE_SLPTMR_CAL 1

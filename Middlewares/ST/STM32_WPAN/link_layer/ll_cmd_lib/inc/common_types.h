@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/common_types.h#1 $*/
-/**
- ********************************************************************************
- * @file    common_types.h
- * @brief   This file contains common includes for BLE FW LL.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/common_types.h#1 $*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 
@@ -167,23 +161,6 @@ typedef enum {
 	RECOMMEND_1M_2M_CODED 	= 0x07,
 #endif /* ((SUPPORT_CONNECTED_ISOCHRONOUS && SUPPORT_MASTER_CONNECTION) || SUPPORT_BRD_ISOCHRONOUS) */
 } tx_rx_phy_e;
-
-
-#ifdef PHY_40nm_2_50_a
-/**
- * @brief Enumeration to represent different rates for continuous modulation mode
- */
-typedef enum phy_cnt_mod_rate_e {
-	PHY_CNT_MOD_1M_RATE,		/* Continuous modulation mode with 1M PHY*/
-	PHY_CNT_MOD_2M_RATE,		/* Continuous modulation mode with 2M PHY*/
-	PHY_CNT_MOD_CODED_RATE,		/* Continuous modulation mode with Coded PHY*/
-	PHY_CNT_MOD_256K_RATE,		/* Continuous modulation mode with Zigbee PHY*/
-#if SUPPORT_A_MAC
-	PHY_CNT_MOD_125K_RATE,		/* Continuous modulation mode with zigbee 125K PHY*/
-#endif /*SUPPORT_A_MAC*/
-	PHY_CNT_MOD_UNSUPPORTED
-} phy_cnt_mod_rate_t;
-#endif /*PHY_40nm_2_50_a*/
 
 /**
  * @brief time stamp structure.
@@ -403,5 +380,5 @@ typedef enum {
 
 #endif/* (!USE_HCI_TRANSPORT) && (SUPPORT_BLE) */
 
-#define SUPPORT_HW_AUDIO_SYNC_SIGNAL        0
+#define SUPPORT_HW_AUDIO_SYNC_SIGNAL       1
 #endif /*COMMON_TYPES_H_*/

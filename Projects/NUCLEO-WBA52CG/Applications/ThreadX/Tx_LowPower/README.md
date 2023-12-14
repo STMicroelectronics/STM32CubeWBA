@@ -34,7 +34,6 @@ When exiting from LowPower mode the application :
 
 ####  <b>Expected success behavior</b>
 
-  - LED_RED is on when system is in LowPower mode.
   - LED_GREEN toggles every 500ms for 5 seconds each time user press the user button.
 
 #### <b>Error behaviors</b>

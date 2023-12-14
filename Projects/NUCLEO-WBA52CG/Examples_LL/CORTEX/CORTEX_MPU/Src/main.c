@@ -332,7 +332,7 @@ void Configure_MPU(void)
   */
 void MPU_AccessPermConfig(void)
 {
-  /* Configure region for PrivilegedReadOnlyArray as REGION N°3, 32byte and R
+  /* Configure region for PrivilegedReadOnlyArray as REGION Number 3, 32byte and R
      only in privileged mode */
   /* Disable MPU */
   LL_MPU_Disable();

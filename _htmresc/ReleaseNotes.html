@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.1.0 / 06-June-2023</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.2.0 / 02-November-2023</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -14,34 +14,36 @@
 </p>
 
 <p>
-<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA52xx devices</b>
+<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA52xx and STM32WBA55xx devices</b>
 </p>
 <p>
 <b>Connectivity</b>
 </p>
-
 <p>
-- Maximum number of simultaneous connections supported by the device is now 20
+- Bluetooth Low Energy 5.4 with new features: Enhanced ATT, Isochronous Broadcaster / Synchronizer, Connected Isochronous, AOA/AOD, LE Power Control
 </p>
 <p>
-- PHY Calibration improvements: Temperature based calibration now supporting standby mode / Periodic calibration stability improved
+- Bluetooth Low Energy Audio: Generic Audio Framework Stack (CAP, BAP, VCP, MICP, MCP, CCP, CSIP), Use Case Profile : PBP, LC3 Codec
 </p>
 <p>
-- Fix for EMC FCC certification to support 10dBm level
+- Zigbee stack Revision 23 (R23) / Zigbee Clusters ZCL 8.0
+</p>
+<p>
+- OpenThread: compliant Thread 1.1, 1.2 and 1.3
+</p>
+<p>
+- Mac 802.15.4: compliant Zigbee IEEE 802.15.4 MAC Test Plan V2
 </p>
 <b>Drivers</b>
 </p>
 <p>
-- Support CMSIS version v5.9.0
-</p>
-<p>
-- CMSIS Device Drivers supporting STM32WBA52xx devices
+- CMSIS Device Drivers supporting STM32WBA52xx and STM32WBA55xx devices
 </p>
 <p>
 - HAL/LL Drivers available for all peripherals
 </p>
 <p>
-- BSP Drivers supporting NUCLEO-WBA52CG board
+- BSP Drivers supporting NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards
 </p>
 
 <p>
@@ -60,19 +62,19 @@
 <b>Projects</b>
 </p>
 <p>
-- Update Applications to demonstrate Bluetooth Low Energy capabilities with STM32WBA52x
+- Add Applications to demonstrate Bluetooth Low Energy capabilities with STM32WBA55x
 </p>
 <p>
-- Update Examples HAL/LL/MIX demonstrating IP peripherals to include latest corrections
+- Add new Applications demonstrating Zigbee, Thread and MAC 802.15.4 capabilities
 </p>
 <p>
-- Add new Examples HAL/LL for ADC, HASH, I2C, IWDG, PKA, PWR, SPI, TIM and UART IP peripherals
+- Add new Applications demonstrating BLE Audio
 </p>
 <p>
-- Update of Applications AzureRTOS supporting AzureRTOS 6.2.0
+- Add LL/HAL Examples demonstrating the same peripherals as NUCLEO-WBA52CG and add new COMP, PWR, RCC LL/HAL Examples on NUCLEO-WBA55CG
 </p>
 <p>
-- Update of Applications SBSFU/TFM
+- Add LL/HAL Examples demonstrating main system and SAI peripherals on STM32WBA55G-DK1
 </p></div>
 </body>
 </html>

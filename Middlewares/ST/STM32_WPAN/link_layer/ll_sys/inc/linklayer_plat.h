@@ -19,6 +19,7 @@
 #ifndef LINKLAYER_PLAT_H
 #define LINKLAYER_PLAT_H
 
+#include "bsp.h"
 #include <stdint.h>
 
 /**
@@ -50,7 +51,7 @@ extern void LINKLAYER_PLAT_Assert(uint8_t condition);
 extern void LINKLAYER_PLAT_AclkCtrl(uint8_t enable);
 
 /**
-  * @brief  Active wait on bus clock readyness.
+  * @brief  Active wait on bus clock readiness.
   * @param  None
   * @retval None
   */
@@ -171,5 +172,12 @@ extern void LINKLAYER_PLAT_EnableOSContextSwitch(void);
   * @retval None
   */
 extern void LINKLAYER_PLAT_DisableOSContextSwitch(void);
+
+/**
+ * @brief Notify the upper layer that new Link Layer timings have been applied.
+ * @param evnt_timing[in]: Evnt_timing_t pointer to structure contains drift time , execution time and scheduling time
+ * @retval None.
+ */
+extern void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing);
 
 #endif /* LINKLAYER_PLAT_H */

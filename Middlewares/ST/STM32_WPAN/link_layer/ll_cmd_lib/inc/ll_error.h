@@ -1,10 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV4/firmware/public_inc/ll_error.h#1 $*/
-/**
- ********************************************************************************
- * @file    error.h
- * @brief   This file contains error defines across BLE FW LL.
- ******************************************************************************
- */
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/ll_error.h#1 $*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 
@@ -128,7 +122,6 @@
 #if ((SUPPORT_CHANNEL_CLASSIFICATION) && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION))
 #error Channel Classification feature shall be enabled only when the master role or slave role is enabled 
 #endif /* #error */
-
 
 
 /* Exported macros ------------------------------------------------------------*/
