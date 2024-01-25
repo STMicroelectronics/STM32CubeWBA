@@ -66,8 +66,12 @@ git clone --recursive  --depth 1 --branch vX.Y.Z https://github.com/STMicroelect
 > * If GitHub "Download ZIP" option is used instead of the `git clone` command, then the different submodules have to be collected and added **manually**.
 
 ## Boards available
+
   * STM32WBA
     * [NUCLEO-WBA52CG](https://www.st.com/en/evaluation-tools/nucleo-wba52cg.html)
+    * NUCLEO-WBA55CG *(page not available yet)*
+    * STM32WBA55G-DK1 *(page not available yet)*
+
 
 ## Troubleshooting
 
