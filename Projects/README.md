@@ -4,4 +4,4 @@ In this repository, some middleware libraries **along with** the projects (demos
 
 ## List of unavailable projects
 
-All projects are available as none uses any unavailable middleware libraries.
+* `./Projects/STM32WBA55G-DK1/Examples/BSP`
