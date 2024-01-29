@@ -6,3 +6,11 @@
 	path = Drivers/STM32WBAxx_HAL_Driver
 	url = https://github.com/STMicroelectronics/stm32wbaxx_hal_driver.git
 	branch = main
+[submodule "Drivers/BSP/STM32WBAxx_Nucleo"]
+	path = Drivers/BSP/STM32WBAxx_Nucleo
+	url = https://github.com/STMicroelectronics/stm32wbaxx-nucleo-bsp
+	branch = main
+[submodule "Drivers/BSP/STM32WBA55G-DK1"]
+	path = Drivers/BSP/STM32WBA55G-DK1
+	url = https://github.com/STMicroelectronics/stm32wba55g-dk1-bsp
+	branch = main
