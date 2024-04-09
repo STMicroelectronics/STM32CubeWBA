@@ -285,16 +285,12 @@ NcpBase::NcpBase(Instance *aInstance)
 #if OPENTHREAD_CONFIG_MLE_STEERING_DATA_SET_OOB_ENABLE
     memset(&mSteeringDataAddress, 0, sizeof(mSteeringDataAddress));
 #endif
+#if OPENTHREAD_CONFIG_MLE_PARENT_RESPONSE_CALLBACK_API_ENABLE
     otThreadRegisterParentResponseCallback(mInstance, &NcpBase::HandleParentResponseInfo, static_cast<void *>(this));
+#endif
 #endif // OPENTHREAD_FTD
 #if OPENTHREAD_CONFIG_SRP_CLIENT_ENABLE
     otSrpClientSetCallback(mInstance, HandleSrpClientCallback, this);
-#endif
-#if OPENTHREAD_CONFIG_LEGACY_ENABLE
-    mLegacyNodeDidJoin = false;
-    mLegacyHandlers    = nullptr;
-    memset(mLegacyUlaPrefix, 0, sizeof(mLegacyUlaPrefix));
-    memset(&mLegacyLastJoinedNode, 0, sizeof(mLegacyLastJoinedNode));
 #endif
 #endif // OPENTHREAD_MTD || OPENTHREAD_FTD
     mChangedPropsSet.AddLastStatus(SPINEL_STATUS_RESET_UNKNOWN);
@@ -677,7 +673,7 @@ exit:
 
 #if OPENTHREAD_CONFIG_NCP_ENABLE_PEEK_POKE
 
-void NcpBase::RegisterPeekPokeDelagates(otNcpDelegateAllowPeekPoke aAllowPeekDelegate,
+void NcpBase::RegisterPeekPokeDelegates(otNcpDelegateAllowPeekPoke aAllowPeekDelegate,
                                         otNcpDelegateAllowPeekPoke aAllowPokeDelegate)
 {
     mAllowPeekDelegate = aAllowPeekDelegate;
@@ -1873,9 +1869,7 @@ template <> otError NcpBase::HandlePropertyGet<SPINEL_PROP_CAPS>(void)
     SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_JAM_DETECT));
 #endif
 
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
     SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_CHILD_SUPERVISION));
-#endif
 
 #if OPENTHREAD_CONFIG_CHANNEL_MONITOR_ENABLE
     SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_CHANNEL_MONITOR));
@@ -1916,10 +1910,6 @@ template <> otError NcpBase::HandlePropertyGet<SPINEL_PROP_CAPS>(void)
 #endif
 
     SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_ROLE_SLEEPY));
-
-#if OPENTHREAD_CONFIG_LEGACY_ENABLE
-    SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_NEST_LEGACY_INTERFACE));
-#endif
 
 #if OPENTHREAD_FTD && OPENTHREAD_CONFIG_COMMISSIONER_ENABLE
     SuccessOrExit(error = mEncoder.WriteUintPacked(SPINEL_CAP_THREAD_COMMISSIONER));
@@ -2048,7 +2038,6 @@ template <> otError NcpBase::HandlePropertySet<SPINEL_PROP_MCU_POWER_STATE>(void
         if (otThreadGetDeviceRole(mInstance) != OT_DEVICE_ROLE_DISABLED)
         {
             IgnoreError(otThreadSetEnabled(mInstance, false));
-            StopLegacy();
         }
 
         if (otIp6IsEnabled(mInstance))
@@ -2613,14 +2602,13 @@ template <> otError NcpBase::HandlePropertySet<SPINEL_PROP_PHY_CALIBRATED_POWER>
 // ----------------------------------------------------------------------------
 
 #if OPENTHREAD_CONFIG_NCP_ENABLE_PEEK_POKE
-void otNcpRegisterPeekPokeDelagates(otNcpDelegateAllowPeekPoke aAllowPeekDelegate,
-                                    otNcpDelegateAllowPeekPoke aAllowPokeDelegate)
+void otNcpRegisterPeekPoke(otNcpDelegateAllowPeekPoke aAllowPeekDelegate, otNcpDelegateAllowPeekPoke aAllowPokeDelegate)
 {
     ot::Ncp::NcpBase *ncp = ot::Ncp::NcpBase::GetNcpInstance();
 
     if (ncp != nullptr)
     {
-        ncp->RegisterPeekPokeDelagates(aAllowPeekDelegate, aAllowPokeDelegate);
+        ncp->RegisterPeekPokeDelegates(aAllowPeekDelegate, aAllowPokeDelegate);
     }
 }
 #endif // OPENTHREAD_CONFIG_NCP_ENABLE_PEEK_POKE

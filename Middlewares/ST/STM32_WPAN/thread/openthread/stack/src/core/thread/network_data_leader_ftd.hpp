@@ -41,6 +41,7 @@
 #include <stdint.h>
 
 #include "common/non_copyable.hpp"
+#include "common/numeric_limits.hpp"
 #include "common/timer.hpp"
 #include "net/ip6_address.hpp"
 #include "thread/mle_router.hpp"
@@ -50,6 +51,8 @@
 namespace ot {
 
 namespace NetworkData {
+
+class Notifier;
 
 /**
  * @addtogroup core-netdata-leader
@@ -62,16 +65,17 @@ namespace NetworkData {
  */
 
 /**
- * This class implements the Thread Network Data maintained by the Leader.
+ * Implements the Thread Network Data maintained by the Leader.
  *
  */
 class Leader : public LeaderBase, private NonCopyable
 {
     friend class Tmf::Agent;
+    friend class Notifier;
 
 public:
     /**
-     * This enumeration defines the match mode constants to compare two RLOC16 values.
+     * Defines the match mode constants to compare two RLOC16 values.
      *
      */
     enum MatchMode : uint8_t
@@ -81,7 +85,7 @@ public:
     };
 
     /**
-     * This constructor initializes the object.
+     * Initializes the object.
      *
      * @param[in]  aInstance     A reference to the OpenThread instance.
      *
@@ -89,13 +93,13 @@ public:
     explicit Leader(Instance &aInstance);
 
     /**
-     * This method reset the Thread Network Data.
+     * Reset the Thread Network Data.
      *
      */
     void Reset(void);
 
     /**
-     * This method starts the Leader services.
+     * Starts the Leader services.
      *
      * The start mode indicates whether device is starting normally as leader or restoring its role as leader after
      * reset. In the latter case, we do not accept any new registrations (`HandleServerData()`) and wait for
@@ -108,37 +112,37 @@ public:
     void Start(Mle::LeaderStartMode aStartMode);
 
     /**
-     * This method increments the Thread Network Data version.
+     * Increments the Thread Network Data version.
      *
      */
     void IncrementVersion(void);
 
     /**
-     * This method increments both the Thread Network Data version and stable version.
+     * Increments both the Thread Network Data version and stable version.
      *
      */
     void IncrementVersionAndStableVersion(void);
 
     /**
-     * This method returns CONTEXT_ID_RESUSE_DELAY value.
+     * Returns CONTEXT_ID_RESUSE_DELAY value.
      *
-     * @returns The CONTEXT_ID_REUSE_DELAY value.
+     * @returns The CONTEXT_ID_REUSE_DELAY value (in seconds).
      *
      */
-    uint32_t GetContextIdReuseDelay(void) const { return mContextIdReuseDelay; }
+    uint32_t GetContextIdReuseDelay(void) const { return mContextIds.GetReuseDelay(); }
 
     /**
-     * This method sets CONTEXT_ID_RESUSE_DELAY value.
+     * Sets CONTEXT_ID_RESUSE_DELAY value.
      *
      * @warning This method should only be used for testing.
      *
-     * @param[in]  aDelay  The CONTEXT_ID_REUSE_DELAY value.
+     * @param[in]  aDelay  The CONTEXT_ID_REUSE_DELAY value (in seconds).
      *
      */
-    void SetContextIdReuseDelay(uint32_t aDelay) { mContextIdReuseDelay = aDelay; }
+    void SetContextIdReuseDelay(uint32_t aDelay) { mContextIds.SetReuseDelay(aDelay); }
 
     /**
-     * This method removes Network Data entries matching with a given RLOC16.
+     * Removes Network Data entries matching with a given RLOC16.
      *
      * @param[in]  aRloc16    A RLOC16 value.
      * @param[in]  aMatchMode A match mode (@sa MatchMode).
@@ -147,7 +151,7 @@ public:
     void RemoveBorderRouter(uint16_t aRloc16, MatchMode aMatchMode);
 
     /**
-     * This method synchronizes internal 6LoWPAN Context ID Set with recently obtained Thread Network Data.
+     * Synchronizes internal 6LoWPAN Context ID Set with recently obtained Thread Network Data.
      *
      * Note that this method should be called only by the Leader once after reset.
      *
@@ -155,7 +159,7 @@ public:
     void HandleNetworkDataRestoredAfterReset(void);
 
     /**
-     * This method scans network data for given Service ID and returns pointer to the respective TLV, if present.
+     * Scans network data for given Service ID and returns pointer to the respective TLV, if present.
      *
      * @param aServiceId Service ID to look for.
      * @return Pointer to the Service TLV for given Service ID, or nullptr if not present.
@@ -165,7 +169,7 @@ public:
 
 #if OPENTHREAD_FTD && OPENTHREAD_CONFIG_BORDER_ROUTING_ENABLE
     /**
-     * This method indicates whether a given Prefix can act as a valid OMR prefix and exists in the network data.
+     * Indicates whether a given Prefix can act as a valid OMR prefix and exists in the network data.
      *
      * @param[in]  aPrefix   The OMR prefix to check.
      *
@@ -177,6 +181,8 @@ public:
 #endif
 
 private:
+    static constexpr uint32_t kMaxNetDataSyncWait = 60 * 1000; // Maximum time to wait for netdata sync in msec.
+
     class ChangedFlags
     {
     public:
@@ -206,6 +212,57 @@ private:
         kTlvUpdated, // TLV stable flag is updated based on its sub TLVs.
     };
 
+    class ContextIds : public InstanceLocator
+    {
+    public:
+        // This class tracks Context IDs. A Context ID can be in one
+        // of the 3 states: It is unallocated, or it is allocated
+        // and in-use, or it scheduled to be removed (after reuse delay
+        // interval is passed).
+
+        static constexpr uint8_t kInvalidId = NumericLimits<uint8_t>::kMax;
+
+        explicit ContextIds(Instance &aInstance);
+
+        void     Clear(void);
+        Error    GetUnallocatedId(uint8_t &aId);
+        void     MarkAsInUse(uint8_t aId) { mRemoveTimes[aId - kMinId].SetValue(kInUse); }
+        void     ScheduleToRemove(uint8_t aId);
+        uint32_t GetReuseDelay(void) const { return mReuseDelay; }
+        void     SetReuseDelay(uint32_t aDelay) { mReuseDelay = aDelay; }
+        void     HandleTimer(void);
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+        void MarkAsClone(void) { mIsClone = true; }
+#endif
+
+    private:
+        static constexpr uint32_t kReuseDelay = 5 * 60; // 5 minutes (in seconds).
+
+        static constexpr uint8_t kMinId = 1;
+        static constexpr uint8_t kMaxId = 15;
+
+        // The `mRemoveTimes[id]` is used to track the state of a
+        // Context ID and its remove time. Two specific values
+        // `kUnallocated` and `kInUse` are used to indicate ID is in
+        // unallocated or in-use states. Other values indicate we
+        // are in remove state waiting to remove it at `mRemoveTime`.
+
+        static constexpr uint32_t kUnallocated = 0;
+        static constexpr uint32_t kInUse       = 1;
+
+        bool      IsUnallocated(uint8_t aId) const { return mRemoveTimes[aId - kMinId].GetValue() == kUnallocated; }
+        bool      IsInUse(uint8_t aId) const { return mRemoveTimes[aId - kMinId].GetValue() == kInUse; }
+        TimeMilli GetRemoveTime(uint8_t aId) const { return mRemoveTimes[aId - kMinId]; }
+        void      SetRemoveTime(uint8_t aId, TimeMilli aTime);
+        void      MarkAsUnallocated(uint8_t aId) { mRemoveTimes[aId - kMinId].SetValue(kUnallocated); }
+
+        TimeMilli mRemoveTimes[kMaxId - kMinId + 1];
+        uint32_t  mReuseDelay;
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+        bool mIsClone;
+#endif
+    };
+
     template <Uri kUri> void HandleTmf(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
 
     void HandleTimer(void);
@@ -219,11 +276,6 @@ private:
     Error AddServer(const ServerTlv &aServer, ServiceTlv &aDstService, ChangedFlags &aChangedFlags);
 
     Error AllocateServiceId(uint8_t &aServiceId) const;
-
-    Error AllocateContextId(uint8_t &aContextId);
-    void  FreeContextId(uint8_t aContextId);
-    void  StartContextReuseTimer(uint8_t aContextId);
-    void  StopContextReuseTimer(uint8_t aContextId);
 
     void RemoveContext(uint8_t aContextId);
     void RemoveContext(PrefixTlv &aPrefix, uint8_t aContextId);
@@ -283,18 +335,18 @@ private:
     void IncrementVersions(bool aIncludeStable);
     void IncrementVersions(const ChangedFlags &aFlags);
 
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+    void CheckForNetDataGettingFull(const NetworkData &aNetworkData, uint16_t aOldRloc16);
+    void MarkAsClone(void);
+#endif
+
     using UpdateTimer = TimerMilliIn<Leader, &Leader::HandleTimer>;
 
-    static constexpr uint8_t  kMinContextId        = 1;            // Minimum Context ID (0 is used for Mesh Local)
-    static constexpr uint8_t  kNumContextIds       = 15;           // Maximum Context ID
-    static constexpr uint32_t kContextIdReuseDelay = 48 * 60 * 60; // in seconds
-    static constexpr uint32_t kStateUpdatePeriod   = 60 * 1000;    // State update period in milliseconds
-    static constexpr uint32_t kMaxNetDataSyncWait  = 60 * 1000;    // Maximum time to wait for netdata sync.
-
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+    bool mIsClone;
+#endif
     bool        mWaitingForNetDataSync;
-    uint16_t    mContextUsed;
-    TimeMilli   mContextLastUsed[kNumContextIds];
-    uint32_t    mContextIdReuseDelay;
+    ContextIds  mContextIds;
     UpdateTimer mTimer;
 };
 

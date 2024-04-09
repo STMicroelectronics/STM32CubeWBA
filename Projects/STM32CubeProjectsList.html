@@ -90,7 +90,7 @@
         <td align=left rowspan=2><p id="-">-</p></td>
         <td align=left><p id="TrustZoneDisabled">TrustZoneDisabled</p></td>
         <td align=left>
-This project provides a reference template based on the STM32Cube HAL API that can be used
+- This project provides a reference template based on the STM32Cube HAL API that can be used
 to build any firmware application when security is not enabled (TZEN=0).
 </td>
         <td><font size="5" color=green>X</font></td>
@@ -100,7 +100,7 @@ to build any firmware application when security is not enabled (TZEN=0).
       <tr align=center>
         <td align=left><p id="TrustZoneEnabled">TrustZoneEnabled</p></td>
         <td align=left>
-This project provides a reference template based on the STM32Cube HAL API that can be used
+- This project provides a reference template based on the STM32Cube HAL API that can be used
 to build any firmware application when TrustZone security is activated (Option bit TZEN=1).
 </td>
         <td><font size="5" color=green>X</font></td>
@@ -118,7 +118,7 @@ to build any firmware application when TrustZone security is activated (Option b
         <td align=left rowspan=1><p id="-">-</p></td>
         <td align=left><p id="TrustZoneDisabled">TrustZoneDisabled</p></td>
         <td align=left>
-This project provides a reference template based on the STM32Cube LL API that can be used
+- This project provides a reference template based on the STM32Cube LL API that can be used
 to build any firmware application.
 </td>
         <td><font size="5" color=green>X</font></td>
@@ -2251,7 +2251,7 @@ the STM32WBAxx UART HAL and LL API, the LL API being used for performance improv
         <td>12</td>
       </tr>
       <tr align=center>
-        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=89><p id="Applications">Applications</p></td>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=95><p id="Applications">Applications</p></td>
         <td align=left rowspan=3><p id="-">-</p></td>
         <td align=left><p id="OpenBootloader">OpenBootloader</p></td>
         <td align=left>
@@ -2286,7 +2286,7 @@ application but can be used by the non-secure application at run-time.
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=25><p id="BLE">BLE</p></td>
+        <td align=left rowspan=27><p id="BLE">BLE</p></td>
         <td align=left><p id="BLE_ApplicationInstallManager">BLE_ApplicationInstallManager</p></td>
         <td align=left>
 The BLE_ApplicationInstallManager application, associated to a BLE application embedding OTA service, manages the firmware update over the air of a BLE application. 
@@ -2310,6 +2310,24 @@ How to use the Public Broadcast profile in Sink role as specified by the Bluetoo
 How to use the Public Broadcast profile in Source role as specified by the Bluetooth SIG.
 </td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_TMAP_Unicast_Client">BLE_Audio_TMAP_Unicast_Client</p></td>
+        <td align=left>
+How to use the Telephony and Media Profile profile in Unicast Client role (Call Gateway and/or Unicast Media Sender) as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_TMAP_Unicast_Server">BLE_Audio_TMAP_Unicast_Server</p></td>
+        <td align=left>
+How to use the Telephony and Media Profile profile in Unicast Server role (Call Terminal and/or Unicast Media Receiver) as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=red>New</font></td>
         <td>-</td>
         <td>-</td>
       </tr>
@@ -2400,7 +2418,7 @@ How to use the Heart Rate and OTA profile as specified by the BLE SIG.
 How to measure Central power consumption using BLE.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2409,7 +2427,7 @@ How to measure Central power consumption using BLE.
 How to measure Peripheral power consumption using BLE.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2509,6 +2527,35 @@ Demonstrate STM32WBA acting as BLE peripheral and GATT server.
 </td>
         <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=2><p id="BLE_Thread">BLE_Thread</p></td>
+        <td align=left><p id="BLE_HeartRate_Thread">BLE_HeartRate_Thread</p></td>
+        <td align=left>
+How to use the Concurrency mode BLE/Thread with BLE Heart Rate profile and COAP messages transmission over Thread.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_HeartRate_Thread_SED">BLE_HeartRate_Thread_SED</p></td>
+        <td align=left>
+How to use the Concurrency mode BLE/Thread with BLE Heart Rate profile and COAP messages transmission over Thread for a Sleepy End Device.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left rowspan=1><p id="BLE_Zigbee">BLE_Zigbee</p></td>
+        <td align=left><p id="BLE_HeartRate_Zigbee">BLE_HeartRate_Zigbee</p></td>
+        <td align=left>
+How to use the Concurrency mode BLE/Zigbee with BLE Heart Rate profile and Zigbee OnOff Toggle transmission.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2634,13 +2681,13 @@ This example is based on the sequencer utility. It shows how the sequencer handl
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=4><p id="Thread">Thread</p></td>
+        <td align=left rowspan=5><p id="Thread">Thread</p></td>
         <td align=left><p id="Thread_Cli_Cmd">Thread_Cli_Cmd</p></td>
         <td align=left>
 How to control the Thread stack via Cli commands.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2656,6 +2703,15 @@ How to build Thread application based on Coap messages.
         <td align=left><p id="Thread_Coap_Generic_ThreadX">Thread_Coap_Generic_ThreadX</p></td>
         <td align=left>
 How to build Thread application based on Coap messages.
+</td>
+        <td>-</td>
+        <td><font size="5" color=green>X</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Thread_SED_Coap_Multicast">Thread_SED_Coap_Multicast</p></td>
+        <td align=left>
+How to build Thread sleepy end device application based on Coap messages.
 </td>
         <td>-</td>
         <td><font size="5" color=green>X</font></td>
@@ -2796,7 +2852,7 @@ How to use the Diagnostic Attributes of an OnOff cluster on a device acting as a
 How to use the Diagnostic Attributes of an OnOff cluster on a device acting as a Client within a Centralized Zigbee network.  
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -3061,15 +3117,15 @@ How to use the Thermostat cluster on a device acting as a Server within a Centra
         <td>-</td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of applications: 91</b></td>
-        <td>6</td>
-        <td>67</td>
+        <td colspan="3"><b>Total number of applications: 97</b></td>
+        <td>8</td>
+        <td>71</td>
         <td>18</td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-      	<td colspan="4"><b>Total number of projects: 494</b></td>
-      	<td>33</td>
-      	<td>252</td>
+      	<td colspan="4"><b>Total number of projects: 500</b></td>
+      	<td>35</td>
+      	<td>256</td>
       	<td>209</td>
       </tr>
     </table>

@@ -36,10 +36,10 @@ For this application it is requested to have:
            |             |                                                                    |             |                                       
            | PowerConfig |                                                                    | PowerConfig |
            |   Client    |                                                                    |   Server    |  - PowerConfig Server during Init 
-           |             |                                                                    |             |    launch a 30 s Periodic Timer
+           |             | Blue LED toggling (at report rx - 60 seconds)                      |             |    launch a 30 s Periodic Timer
            |             |                                                                    |             |  
            |             |                                                                    |             |  - Every 30 s
-           |             |                                                                    |             |    * Read the battery (if exist)
+           |             |                                                                    |             |    * Read the battery (if exist - it does not)
            |             |                                                                    |             |      or simulate it with RNG.
            |             |                                                                    |             |    * <= ZbZclAttrIntegerWrite(ZCL_POWER_CONFIG_ATTR_BATTERY_PCT) 
            |             |  After a Router was connected :                                    |             |
@@ -48,9 +48,9 @@ For this application it is requested to have:
            |             | <----------------------------------------------------------------- |             |
            |             |                                                                    |             |
            |             | <-------------- Report (every 60 seconds) -------------------------|             |
-           |             |                                                                    |             | <= PushB SW1 : Start/Restart 30 s Periodic Timer.		          
+           |             |                                                                    |             | 	          
            |             |                                                                    |             | 		 
-           |             |                                                                    |             | <= PushB SW2 : Stop 30 s Periodic Timer.			 
+           |             |                                                                    |             | 		 
            |             |                                                                    |             | 	 
            |             |                                                                    |             |			 
            +-------------+                                                                    +-------------+
@@ -70,8 +70,7 @@ For this application it is requested to have:
 	Do the same for the other boards if applicable.    
 &rarr; At this stage, the Zigbee network is automatically created, and traces on coordinator indicate that new device is added.       
 if you want to have the Led Blue on on SED side when attached to the network, you can modify the **CFG_FULL_LOW_POWER** to the value **2**.  	 
-	4. On Client side, every 60 s, the battery voltage is reported from the Server. 
-	To stop battery voltage evolution on Server, push SW2 push button, and to restart it push SW1.
+	4. On Client side, every 60 s, the battery voltage is reported from the Server and the Blue led is toggling. 
 			
 **Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
 
@@ -105,3 +104,6 @@ Stop Bit       = 1 bit</br>
 Parity         = none</br>
 Flow control   = none</br>
 Terminal   "Go to the Line" : &lt;LF&gt;  
+
+### __Note__
+By default, this application runs with Zigbee PRO stack R23. Switching to R22 is not working for this application.

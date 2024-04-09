@@ -30,11 +30,15 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/STM32_WPAN/Target/bpka.h                              This file contains the interface of the BLE PKA module. 
   - BLE_DataThroughput_Client/STM32_WPAN/Target/host_stack_if.h                     This file contains the interface for the stack tasks 
   - BLE_DataThroughput_Client/STM32_WPAN/Target/ll_sys_if.h                         Header file for ll_sys_if.c  
+  - BLE_DataThroughput_Client/System/Config/ADC_Ctrl/adc_ctrl_conf.h                Configuration Header for ADC controller module 
+  - BLE_DataThroughput_Client/System/Config/CRC_Ctrl/crc_ctrl_conf.h                Configuration Header for CRC controller module 
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/app_debug.h                  Real Time Debug module application APIs and signal table 
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/app_debug_signal_def.h       Real Time Debug module application signal definition 
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/debug_config.h               Real Time Debug module general configuration file 
   - BLE_DataThroughput_Client/System/Config/Flash/simple_nvm_arbiter_conf.h         Configuration header for simple_nvm_arbiter.c module 
+  - BLE_DataThroughput_Client/System/Config/Log/log_module.h                        Configuration Header for log module 
   - BLE_DataThroughput_Client/System/Config/LowPower/app_sys.h                      Header for app_sys.c 
+  - BLE_DataThroughput_Client/System/Config/LowPower/peripheral_init.h              Header for peripheral init module 
   - BLE_DataThroughput_Client/System/Config/LowPower/user_low_power_config.h        Header for user_low_power_config.c
   - BLE_DataThroughput_Client/System/Interfaces/hw.h                                This file contains the interface of STM32 HW drivers. 
   - BLE_DataThroughput_Client/System/Interfaces/hw_if.h                             Hardware Interface 
@@ -43,10 +47,12 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Interfaces/usart_if.h                          Header file for stm32_adv_trace interface file 
   - BLE_DataThroughput_Client/System/Modules/adc_ctrl.h                             Header for ADC client manager module 
   - BLE_DataThroughput_Client/System/Modules/ble_timer.h                            This header defines the timer functions used by the BLE stack 
+  - BLE_DataThroughput_Client/System/Modules/crc_ctrl.h                             Header for CRC client manager module 
   - BLE_DataThroughput_Client/System/Modules/dbg_trace.h                            Header for dbg_trace.c 
   - BLE_DataThroughput_Client/System/Modules/otp.h                                  Header file for One Time Programmable (OTP) area 
   - BLE_DataThroughput_Client/System/Modules/scm.h                                  Header for scm.c module 
   - BLE_DataThroughput_Client/System/Modules/stm_list.h                             Header file for linked list library. 
+  - BLE_DataThroughput_Client/System/Modules/temp_measurement.h                     Header file for temperature measurement module
   - BLE_DataThroughput_Client/System/Modules/utilities_common.h                     Common file to utilities 
   - BLE_DataThroughput_Client/System/Modules/baes/baes.h                            This file contains the interface of the basic AES software module. 
   - BLE_DataThroughput_Client/System/Modules/baes/baes_global.h                     This file contains the internal definitions of the AES software module.
@@ -63,6 +69,7 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Modules/RTDebug/local_debug_tables.h           Real Time Debug module System and Link Layer signal 
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug.h                      Real Time Debug module API declaration 
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug_dtb.h                  Real Time Debug module API declaration for DTB usage
+  - BLE_DataThroughput_Client/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.h         Header file for the serial commands interpreter module
   - BLE_DataThroughput_Client/Core/Src/app_entry.c                                  Entry point of the application 
   - BLE_DataThroughput_Client/Core/Src/main.c                                       Main program body 
   - BLE_DataThroughput_Client/Core/Src/stm32wbaxx_hal_msp.c                         This file provides code for the MSP Initialization and de-Initialization codes.
@@ -76,8 +83,12 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/STM32_WPAN/Target/linklayer_plat.c                    Source file for the linklayer plateform adaptation layer 
   - BLE_DataThroughput_Client/STM32_WPAN/Target/ll_sys_if.c                         Source file for initiating the system sequencer 
   - BLE_DataThroughput_Client/STM32_WPAN/Target/power_table.c                       This file contains supported power tables 
+  - BLE_DataThroughput_Client/System/Config/ADC_Ctrl/adc_ctrl_conf.c                Source for ADC client controller module configuration file 
+  - BLE_DataThroughput_Client/System/Config/CRC_Ctrl/crc_ctrl_conf.c                Source for CRC client controller module configuration file 
   - BLE_DataThroughput_Client/System/Config/Debug_GPIO/app_debug.c                  Real Time Debug module application side APIs 
+  - BLE_DataThroughput_Client/System/Config/Log/log_module.c                        Source file of the log module 
   - BLE_DataThroughput_Client/System/Config/LowPower/user_low_power_config.c        Low power related user configuration
+  - BLE_DataThroughput_Client/System/Config/LowPower/peripheral_init.c              Source for peripheral init module 
   - BLE_DataThroughput_Client/System/Interfaces/hw_aes.c                            This file contains the AES driver for STM32WBA 
   - BLE_DataThroughput_Client/System/Interfaces/hw_otp.c                            This file contains the OTP driver. 
   - BLE_DataThroughput_Client/System/Interfaces/hw_pka.c                            This file contains the PKA driver for STM32WBA 
@@ -89,9 +100,11 @@ to stm32wbaxx_nucleo_conf.h .
   - BLE_DataThroughput_Client/System/Modules/adc_ctrl.c                             Header for ADC client manager module 
   - BLE_DataThroughput_Client/System/Modules/app_sys.c                              Application system for STM32WPAN Middleware. 
   - BLE_DataThroughput_Client/System/Modules/ble_timer.c                            This module implements the timer core functions 
+  - BLE_DataThroughput_Client/System/Modules/crc_ctrl.c                             Source for CRC client controller module 
   - BLE_DataThroughput_Client/System/Modules/otp.c                                  Source file for One Time Programmable (OTP) area 
   - BLE_DataThroughput_Client/System/Modules/scm.c                                  Functions for the System Clock Manager. 
   - BLE_DataThroughput_Client/System/Modules/stm_list.c                             TCircular Linked List Implementation. 
+  - BLE_DataThroughput_Client/System/Modules/temp_measurement.c                     Temperature measurement module
   - BLE_DataThroughput_Client/System/Modules/baes/baes_cmac.c                       This file contains the AES CMAC implementation. 
   - BLE_DataThroughput_Client/System/Modules/baes/baes_ecb.c                        This file contains the AES ECB functions implementation. 
   - BLE_DataThroughput_Client/System/Modules/Flash/flash_driver.c                   The Flash Driver module is the interface layer between Flash management modules and HAL Flash drivers
@@ -105,6 +118,7 @@ sure the RF timing is not broken
   - BLE_DataThroughput_Client/System/Modules/RFControl/rf_antenna_switch.c          RF related module to handle dedictated GPIOs for antenna switch
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug.c                      Real Time Debug module API definition 
   - BLE_DataThroughput_Client/System/Modules/RTDebug/RTDebug_dtb.c                  Real Time Debug module API definition for DTB usage
+  - BLE_DataThroughput_Client/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c         Source file for the serial commands interpreter module 
 
 ### __Hardware and Software environment__
 

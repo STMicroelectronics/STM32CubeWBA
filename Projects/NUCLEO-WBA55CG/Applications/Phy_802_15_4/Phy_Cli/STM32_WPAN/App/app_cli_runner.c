@@ -96,7 +96,6 @@ enum {
 
 /* External variables --------------------------------------------------------*/
 extern uint8_t phy_transmitPacket[];
-extern uint8_t receive_after_transmit;
 extern UART_HandleTypeDef huart1;
 
 /* Public variables ----------------------------------------------------------*/
@@ -216,7 +215,6 @@ static void uartRxCpltCallback(UART_HandleTypeDef *huart)
      (uartRxBuffer_length != 0) )
   {
     uartRxBuffer[uartRxBuffer_length] = 0; /* Add a \0 for possible use (e.g. strlen) */
-    //PHY_VALID_DBG("[PHY] Process command %s\r\n", uartRxBuffer);
     /* Add echo */
     UTIL_SEQ_SetTask( 1U << CFG_TASK_PHY_CLI_PROCESS, CFG_SCH_PHY_CLI_PROCESS);
   }
@@ -243,10 +241,8 @@ static void APP_PHY_CLI_Uart_Init(void)
    *       by UART transmission.
    */
   cli_uart = &huart1;
-  MX_USART1_UART_Init();
 
   uartRxBuffer_length = 0U;
-  HAL_UART_MspInit(cli_uart);
 
   /* register callbacks */
   cli_uart->TxCpltCallback = uartTxCpltCallback;
@@ -262,9 +258,6 @@ static void APP_PHY_CLI_Uart_Init(void)
  */
 void APP_PHY_CLI_Init()
 {
-  /* Configure UART in Receiver mode */
-  receive_after_transmit = 1U;
-
   APP_PHY_CLI_Uart_Init();
   app_cli_ex_init();
   
@@ -433,11 +426,25 @@ static void app_cli_uartTransmit(uint8_t *pData, uint16_t size )
   HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(cli_uart, pData, size);
 
   if (result != HAL_OK) {
-    /* Check whether the UART should return in Receiver mode */
-    if(receive_after_transmit) {
+    /* UART should return in Receiver mode */
       HAL_UART_Receive_IT(&huart1, &verifRx, 1);
-    }
   }
+}
+
+#define RX_BUFFER_MAX_SIZE_STR RX_BUFFER_MAX_SIZE << 2
+static char payload_str[RX_BUFFER_MAX_SIZE_STR];
+static char payload_str_buffer[10];
+
+static void app_cli_print_payload(const app_cli_single_RX_t *frame)
+{
+  sprintf(payload_str, "\r\n[");
+  for (uint16_t i = 0U; i< frame->payload_len; i++)
+  {
+	  sprintf(payload_str_buffer,"0x%02X,", (unsigned int)frame->payload[i]);
+	  strcat(payload_str, payload_str_buffer);
+  }
+  strcat(payload_str, "]");
+  app_cli_print(payload_str);
 }
 
 //####################################
@@ -468,7 +475,6 @@ void app_cli_print_rx_results(const uint16_t packets_received, const uint16_t pa
   app_cli_print("PHY pdu(s)\r\n");
   //Keep SFD for legacy
   app_cli_print("nb SFD received:[%d]\r\n", packets_received);
-  //app_cli_print("AGC attenuation:[N/A]\r\n");
   app_cli_print("\r\nMAC Frame(s)\r\n");
   app_cli_print("nb packet:[%d]\r\n", packets_received);
   app_cli_print("nb rejected packet:[%d]\r\n", packets_rejected);
@@ -478,7 +484,9 @@ void app_cli_print_rx_results(const uint16_t packets_received, const uint16_t pa
   if (p_last_received_frame != NULL)
   {
     app_cli_print("Last good Frame received:");
+    app_cli_print_payload(p_last_received_frame);
     app_cli_print("\r\n");
+    
     app_cli_print("Length:[%d]\r\n", p_last_received_frame->payload_len);
 
     app_cli_print("\r\nIn last good Frame received:\r\n");
@@ -551,7 +559,9 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
 
   /* Check param number */
   commandNb = app_phy_cli_cmdLookup(cliCmdArray[0]);
-  if ( (commandNb == 255) || ((argIndex-1) < cmdList[commandNb]->nArgsMin) || ((argIndex-1) > cmdList[commandNb]->nArgsMax) ) {
+  if ( (commandNb >= (sizeof(cmdList)/sizeof(cmdList[0]) )) ||
+        ((argIndex-1) < cmdList[commandNb]->nArgsMin) ||
+         ((argIndex-1) > cmdList[commandNb]->nArgsMax) ) {
     app_cli_print("Unknown command or incorrect number of param received: %s\r\n", cliCmdArray[0] );
     app_cli_printPrompt();
     return;

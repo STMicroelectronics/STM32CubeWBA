@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -249,7 +249,7 @@ UTIL_TIMER_Status_t TIMER_IF_StartTimer(uint32_t timeout)
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     /* Initialization Error */
-    while(1);
+    Error_Handler();
   }
 
   /* USER CODE BEGIN TIMER_IF_StartTimer_2 */

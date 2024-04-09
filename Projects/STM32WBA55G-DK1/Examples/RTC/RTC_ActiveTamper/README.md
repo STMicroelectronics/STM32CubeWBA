@@ -45,7 +45,8 @@ This example performs the following:
 
 System, RTC, Tamper, Reset, LSE, Backup, Active
 
-@par Directory contents
+### <b>Directory contents</b>
+
   - RTC/RTC_ActiveTamper/Inc/stm32wba55g_discovery_conf.h     BSP configuration file
   - RTC/RTC_ActiveTamper/Inc/stm32wbaxx_hal_conf.h    HAL configuration file
   - RTC/RTC_ActiveTamper/Inc/stm32wbaxx_it.h          Interrupt handlers header file

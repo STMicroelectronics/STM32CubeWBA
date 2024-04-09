@@ -112,6 +112,7 @@ uint8_t a_DT_SERV_UpdateCharData[247];
 /* USER CODE BEGIN PV */
 DTS_App_Context_t DTS_Context;
 uint32_t DataReceived;
+static uint8_t debug = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -247,7 +248,7 @@ void DT_SERV_APP_Init(void)
   */
   UTIL_TIMER_Create(&(DT_SERV_APP_Context.TimerDataThroughputWrite_Id),
                     0,
-                    (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
+                    UTIL_TIMER_ONESHOT,
                     &DataThroughput_proc, 
                     0);
   
@@ -280,6 +281,24 @@ void DT_SERV_APP_Init(void)
 /* USER CODE BEGIN FD */
 void DTS_Button1TriggerReceived( void )
 {
+  if  (APPE_ButtonIsLongPressed(B1))
+  {
+    LOG_INFO_APP("  Long Press B1 \n");
+    if (debug == 0)
+    {
+      debug = 1;
+      LOG_INFO_APP("VERBOSE_DEBUG mode\n");
+      Log_Module_Set_Verbose_Level(LOG_VERBOSE_DEBUG);
+    }
+    else
+    {
+      debug = 0;
+      LOG_INFO_APP("VERBOSE_INFO mode \n");
+      Log_Module_Set_Verbose_Level(LOG_VERBOSE_INFO);
+    } 
+  }
+  else
+  {
   if (DTS_Context.connectionstatus != APP_BLE_CONNECTED_SERVER)
   {
 
@@ -297,6 +316,7 @@ void DTS_Button1TriggerReceived( void )
       DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_ON;
       UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
     }
+  }
   }
   BleStackCB_Process();
   return;

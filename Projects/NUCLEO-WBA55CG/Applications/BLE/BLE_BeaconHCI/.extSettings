@@ -1,7 +1,0 @@
-[ProjectFiles]
-
-[Others]
-
-[Groups]
-Doc=../README.md;
-Application/User/STM32_WPAN/App=../STM32_WPAN/App/eddystone_tlm_service.c;../STM32_WPAN/App/eddystone_uid_service.c;../STM32_WPAN/App/eddystone_url_service.c;../STM32_WPAN/App/ibeacon_service.c;

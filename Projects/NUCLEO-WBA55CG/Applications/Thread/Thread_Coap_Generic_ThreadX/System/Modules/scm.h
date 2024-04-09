@@ -24,6 +24,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
+#if (CFG_SCM_SUPPORTED == 1)
 #include "stm32wbaxx_hal.h"
 #include "stm32wbaxx_ll_pwr.h"
 #include "stm32wbaxx_ll_rcc.h"
@@ -52,6 +54,7 @@ typedef enum {
 typedef enum {
   SCM_USER_APP,
   SCM_USER_LL_FW,
+  SCM_USER_LL_HW_RCO_CLBR,
   TOTAL_CLIENT_NUM, /* To be at the end of the enum */
 } scm_user_id_t;
 
@@ -209,5 +212,13 @@ extern void SCM_HSI_CLK_ON(void);
   * @retval None
   */
 extern void SCM_HSI_CLK_OFF(void);
+
+#else /* CFG_SCM_SUPPORTED */
+
+/* Unused empty functions */
+void scm_hserdy_isr(void);
+void scm_pllrdy_isr(void);
+
+#endif /* CFG_SCM_SUPPORTED */
 
 #endif /* SCM_H */

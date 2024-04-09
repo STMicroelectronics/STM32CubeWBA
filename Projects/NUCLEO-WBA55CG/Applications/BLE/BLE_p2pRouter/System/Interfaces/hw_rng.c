@@ -26,12 +26,15 @@
 __weak void RNG_KERNEL_CLK_ON(void)
 {
   LL_RCC_HSI_Enable();
-  while(LL_RCC_HSI_IsReady() == 0);
+  while(LL_RCC_HSI_IsReady() == 0)
+  {
+    LL_RCC_HSI_Enable();
+  }
 }
 
 __weak void RNG_KERNEL_CLK_OFF(void)
 {
-  LL_RCC_HSI_Disable();
+
 }
 
 /*****************************************************************************/

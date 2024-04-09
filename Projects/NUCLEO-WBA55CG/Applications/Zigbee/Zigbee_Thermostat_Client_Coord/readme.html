@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>readme</title>
+  <title>Readme</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -17,6 +17,8 @@
   <![endif]-->
 </head>
 <body>
+<div class="row">
+<div class="col-sm-12 col-lg-8">
 <h2 id="zigbee_thermostat_client_coord-application-description"><strong>Zigbee_Thermostat_Client_Coord Application Description</strong></h2>
 <p>How to use the Thermostat cluster on a device acting as a Server within a Centralized Zigbee network.</p>
 <p>The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the Thermostat cluster. Once the Zigbee mesh network is created, the Server sends regularly the Temperature to Client. The user can manipulate a Menu through push buttons SW1, SW2 and SW3.</p>
@@ -194,5 +196,11 @@ N.B. : during the display of Menu, others reports are not displayed (Temperature
 <li><p>The UART must be configured as follows:<br />
 <br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1 bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the Line” : &lt;LF&gt;</p></li>
 </ul>
+</div>
+</div>
+<h3 id="traces"><strong>Note</strong></h3>
+<p>By default, this application runs with Zigbee PRO stack R23.<br />
+If you want to run this application using Zigbee PRO stack R22, you should replace ZigBeeProR23_FFD.a by ZigBeeProR22_FFD.a and ZigBeeProR23_RFD.a by ZigBeeProR22_RFD.a and ZigBeeClusters.a by ZigBeeClustersR22.a in the build environment.<br />
+Also, set in the project setup compilation flag CONFIG_ZB_REV=22.</p>
 </body>
 </html>

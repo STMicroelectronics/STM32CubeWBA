@@ -48,7 +48,7 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-#include "data_transfer.h"
+#include "app_thread_data_transfer.h"
 #include "udp.h"
 
 /* USER CODE END Includes */
@@ -65,9 +65,9 @@
 #define C_CCA_THRESHOLD         -70
 
 /* USER CODE BEGIN PD */
-#define C_RESSOURCE             "light"
-#define COAP_PAYLOAD_LENGTH     2
-#define WAIT_TIMEOUT            (5000)    /**< 5s */
+#define C_RESSOURCE                   "light"
+#define COAP_PAYLOAD_LENGTH           (2U)
+#define WAIT_TIMEOUT                  (5000U)    /**< 5s */
 
 /* USER CODE END PD */
 
@@ -110,8 +110,6 @@ static void APP_THREAD_CoapDataRespHandler( void                * aContext,
                                             otError             result);
 
 static void APP_THREAD_InitPayloadWrite(void);
-static void APP_THREAD_SendCoapMsgWithNoConf(void);
-static void APP_THREAD_SendCoapMsgWithConf(void);
 static bool APP_THREAD_CheckMsgValidity(void);
 
 /* USER CODE END PFP */
@@ -191,9 +189,6 @@ void Thread_Init(void)
 #endif
 
   /* USER CODE BEGIN INIT TASKS */
-  /* Task associated with push button SWx */
-  UTIL_SEQ_RegTask( 1<<(uint32_t)CFG_TASK_BUTTON_SW1, UTIL_SEQ_RFU, APP_THREAD_SendCoapMsgWithNoConf);
-  UTIL_SEQ_RegTask( 1<<(uint32_t)CFG_TASK_BUTTON_SW2, UTIL_SEQ_RFU, APP_THREAD_SendCoapMsgWithConf);
 
   /* USER CODE END INIT TASKS */
 
@@ -345,6 +340,16 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   LOG_ERROR_APP("**** FATAL ERROR = %s (Err = %d)", pMess, ErrCode);
   /* In this case, the LEDs on the Board will start blinking. */
 
+  /* HAL_Delay() requires TIM2 interrupts to work 
+     During ThreadX initialization, all interrupts are disabled
+     As this function may be called during this phase, 
+     interrupts need to be re-enabled to make LEDs blinking    
+  */
+  if (__get_PRIMASK())
+  {
+    __enable_irq();
+  }
+  
   while(1U == 1U)
   {
     BSP_LED_Toggle(LD1);
@@ -741,7 +746,7 @@ static void APP_THREAD_InitPayloadWrite(void)
  * @param  None
  * @retval None
  */
-static void APP_THREAD_SendCoapMsgWithNoConf(void)
+void APPE_Button1Action(void)
 {
   LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
   
@@ -756,7 +761,7 @@ static void APP_THREAD_SendCoapMsgWithNoConf(void)
  * @param  None
  * @retval None
  */
-static void APP_THREAD_SendCoapMsgWithConf(void)
+void APPE_Button2Action(void)
 {
   LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
   

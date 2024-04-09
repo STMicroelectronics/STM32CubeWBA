@@ -29,6 +29,8 @@
 #include "adc_ctrl.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
+#include "stm32_lpm.h"
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -396,7 +398,9 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
+#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_ACTIVE);
+#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -408,7 +412,43 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
+#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration start.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStartClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ); 
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration end.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStopClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ); 
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -448,5 +488,4 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
  */
 void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
-  
 }

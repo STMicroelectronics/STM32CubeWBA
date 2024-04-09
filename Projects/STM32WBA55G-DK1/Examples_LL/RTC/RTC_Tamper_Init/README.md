@@ -19,12 +19,12 @@ The associated firmware performs the following:
    data were correctly written. If yes, LD3 toggles with a fast period,
    otherwise LD3 toggles with a period of 1s.
 
-3. Applying a low level on the tamper 4 (pin PC13 (pin5 CN10))
+3. Applying a high level on the tamper 4 (pin PC13 (pin5 CN10))
    the RTC backup data registers are reset and the Tamper interrupt is generated.
    The corresponding ISR then checks whether the RTC Backup data registers are cleared.
    If yes LD3 turns on, otherwise LD3 toggles with a period of 1s.
 
-**Note :** On this board, the tamper 4 pin is connected to User push-button (connection to pin PC.13 (pin5 CN10)).
+**Note :** On this board, the tamper 4 pin is connected to pin PC13 (pin5 CN10).
 
 ### <b>Keywords</b>
 
@@ -33,10 +33,10 @@ System, RTC, Tamper, Reset, LSE, LSI
 ### <b>Directory contents</b>
 
   - RTC/RTC_Tamper_Init/Inc/stm32wbaxx_it.h     Interrupt handlers header file
-  - RTC/RTC_Tamper_Init/Inc/main.h             Header for main.c module
-  - RTC/RTC_Tamper_Init/Inc/stm32_assert.h     Template file to include assert_failed function
+  - RTC/RTC_Tamper_Init/Inc/main.h              Header for main.c module
+  - RTC/RTC_Tamper_Init/Inc/stm32_assert.h      Template file to include assert_failed function
   - RTC/RTC_Tamper_Init/Src/stm32wbaxx_it.c     Interrupt handlers
-  - RTC/RTC_Tamper_Init/Src/main.c             Main program
+  - RTC/RTC_Tamper_Init/Src/main.c              Main program
   - RTC/RTC_Tamper_Init/Src/system_stm32wbaxx.c STM32WBAxx system source file
 
 

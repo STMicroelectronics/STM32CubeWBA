@@ -1,4 +1,41 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/mac_host_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/mac_host_intf.h#1 $*/
+/**
+ ********************************************************************************
+ * @file    mac_host_intf.h
+ * @brief   The file include description for the MAC services interface and call backs ,
+ * 			MAC layer provide software implementation for 802.15.4 standard primitives
+ *
+ ******************************************************************************
+ * @copy
+ * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
+ * associated documentation ( hereinafter the "Software") is an unsupported
+ * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
+ * writing between Synopsys and you. The Software IS NOT an item of Licensed
+ * Software or a Licensed Product under any End User Software License Agreement
+ * or Agreement for Licensed Products with Synopsys or any supplement thereto.
+ * Synopsys is a registered trademark of Synopsys, Inc. Other names included in
+ * the SOFTWARE may be the trademarks of their respective owners.
+ *
+ * Synopsys MIT License:
+ * Copyright (c) 2020-Present Synopsys, Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * the Software), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM,
+ * OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * */
 
 #ifndef INCLUDE_MAC_HOST_INTF_H_
 #define INCLUDE_MAC_HOST_INTF_H_
@@ -31,7 +68,7 @@
 
 /* Size in octets of extended address used in security processing */
 #define EXT_ADDRESS_LENGTH						8
-/* The maximum number of octets that can be transmitted in the MAC Payload field (MAX_PHY_PACKET_SIZE � MIN_PDU_OVERHEAD)*/
+/* The maximum number of octets that can be transmitted in the MAC Payload field (MAX_PHY_PACKET_SIZE  MIN_PDU_OVERHEAD)*/
 #define MAX_MAC_SAFE_PAYLOAD_SIZE       118
 #define	MAX_HDR_IE_SIZE				3
 /* EB payload IE length = 19 + 2 = 21 octets
@@ -159,6 +196,7 @@ typedef enum {
 	EBR_PRCNT_FLTR_ID = 0x88,
 	EBR_AUTO_RSPND_ID = 0x89,
 	MAX_FULL_CSMA_FRAME_RETRY_ID = 0x8A,
+	IMPLICIT_BROADCAST_ID = 0x8B,
 	MIB_JOINING_IEEE_LIST_ID = 0xA0,
 	MIB_JOINING_POLICY_ID = 0xA1,
 	MIB_EXPIRY_INTRVL_ID = 0xA2,
@@ -1253,7 +1291,7 @@ void mlme_rst_req(uint32_t mac_hndl, uint8_t set_def_pib);
  *
  * @retval void
  */
-void mac_destroy();
+void mac_destroy(void);
 
 /**
  *

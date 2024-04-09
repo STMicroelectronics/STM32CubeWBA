@@ -84,9 +84,6 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/
@@ -162,6 +159,7 @@ typedef enum
   CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
   CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
   CFG_TASK_MAC_LAYER,
+  CFG_TASK_AMM_BCKGND,            /* AMM background task */
   /* USER CODE BEGIN CFG_Task_Id_t */
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
@@ -281,6 +279,23 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
+
+/******************************************************************************
+ * MEMORY MANAGER
+ ******************************************************************************/
+
+#define CFG_MM_POOL_SIZE                                  (64000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (1U)
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10000U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (2U)
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (2000U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+
+/* USER CODE BEGIN MEMORY_MANAGER_Configuration */
+
+/* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
 

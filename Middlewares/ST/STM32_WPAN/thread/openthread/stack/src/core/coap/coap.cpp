@@ -115,6 +115,13 @@ exit:
     return message;
 }
 
+Message *CoapBase::NewMessage(void) { return NewMessage(Message::Settings::GetDefault()); }
+
+Message *CoapBase::NewPriorityMessage(void)
+{
+    return NewMessage(Message::Settings(Message::kWithLinkSecurity, Message::kPriorityNet));
+}
+
 Message *CoapBase::NewPriorityConfirmablePostMessage(Uri aUri)
 {
     return InitMessage(NewPriorityMessage(), kTypeConfirmable, aUri);
@@ -351,6 +358,11 @@ exit:
     return error;
 }
 
+Error CoapBase::SendMessage(Message &aMessage, const Ip6::MessageInfo &aMessageInfo, const TxParameters &aTxParameters)
+{
+    return SendMessage(aMessage, aMessageInfo, aTxParameters, nullptr, nullptr);
+}
+
 Error CoapBase::SendMessage(Message                &aMessage,
                             const Ip6::MessageInfo &aMessageInfo,
                             ResponseHandler         aHandler,
@@ -361,6 +373,11 @@ Error CoapBase::SendMessage(Message                &aMessage,
 #else
     return SendMessage(aMessage, aMessageInfo, TxParameters::GetDefault(), aHandler, aContext);
 #endif
+}
+
+Error CoapBase::SendMessage(Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
+{
+    return SendMessage(aMessage, aMessageInfo, nullptr, nullptr);
 }
 
 Error CoapBase::SendReset(Message &aRequest, const Ip6::MessageInfo &aMessageInfo)
@@ -376,6 +393,11 @@ Error CoapBase::SendAck(const Message &aRequest, const Ip6::MessageInfo &aMessag
 Error CoapBase::SendEmptyAck(const Message &aRequest, const Ip6::MessageInfo &aMessageInfo, Code aCode)
 {
     return (aRequest.IsConfirmable() ? SendHeaderResponse(aCode, aRequest, aMessageInfo) : kErrorInvalidArgs);
+}
+
+Error CoapBase::SendEmptyAck(const Message &aRequest, const Ip6::MessageInfo &aMessageInfo)
+{
+    return SendEmptyAck(aRequest, aMessageInfo, kCodeChanged);
 }
 
 Error CoapBase::SendNotFound(const Message &aRequest, const Ip6::MessageInfo &aMessageInfo)
@@ -490,10 +512,7 @@ void CoapBase::HandleRetransmissionTimer(void)
             }
         }
 
-        if (nextTime > metadata.mNextTimerShot)
-        {
-            nextTime = metadata.mNextTimerShot;
-        }
+        nextTime = Min(nextTime, metadata.mNextTimerShot);
     }
 
     if (nextTime < now.GetDistantFuture())
@@ -862,6 +881,8 @@ Error CoapBase::ProcessBlock2Request(Message                 &aMessage,
     response->Init(kTypeAck, kCodeContent);
     response->SetMessageId(aMessage.GetMessageId());
 
+    SuccessOrExit(error = response->SetTokenFromMessage(aMessage));
+
     VerifyOrExit((bufLen = otCoapBlockSizeFromExponent(aMessage.GetBlockWiseBlockSize())) <= kMaxBlockLength,
                  error = kErrorNoBufs);
     SuccessOrExit(error = aResource.HandleBlockTransmit(buf,
@@ -1060,8 +1081,8 @@ void CoapBase::ProcessReceivedResponse(Message &aMessage, const Ip6::MessageInfo
     bool responseObserve = false;
 #endif
 #if OPENTHREAD_CONFIG_COAP_BLOCKWISE_TRANSFER_ENABLE
-    uint8_t  blockOptionType    = 0;
-    uint32_t totalTransfereSize = 0;
+    uint8_t  blockOptionType   = 0;
+    uint32_t totalTransferSize = 0;
 #endif
 
     request = FindRelatedRequest(aMessage, aMessageInfo, metadata);
@@ -1160,7 +1181,7 @@ void CoapBase::ProcessReceivedResponse(Message &aMessage, const Ip6::MessageInfo
 
                         case kOptionSize2:
                             // ToDo: wait for method to read uint option values
-                            totalTransfereSize = 0;
+                            totalTransferSize = 0;
                             break;
 
                         default:
@@ -1191,8 +1212,8 @@ void CoapBase::ProcessReceivedResponse(Message &aMessage, const Ip6::MessageInfo
                 case 2: // Block2 option
                     if (aMessage.GetCode() < kCodeBadRequest && metadata.mBlockwiseReceiveHook != nullptr)
                     {
-                        error = SendNextBlock2Request(*request, aMessage, aMessageInfo, metadata, totalTransfereSize,
-                                                      false);
+                        error =
+                            SendNextBlock2Request(*request, aMessage, aMessageInfo, metadata, totalTransferSize, false);
                     }
 
                     if (aMessage.GetCode() >= kCodeBadRequest || metadata.mBlockwiseReceiveHook == nullptr ||
@@ -1205,7 +1226,7 @@ void CoapBase::ProcessReceivedResponse(Message &aMessage, const Ip6::MessageInfo
                     if (aMessage.GetCode() < kCodeBadRequest && metadata.mBlockwiseReceiveHook != nullptr)
                     {
                         error =
-                            SendNextBlock2Request(*request, aMessage, aMessageInfo, metadata, totalTransfereSize, true);
+                            SendNextBlock2Request(*request, aMessage, aMessageInfo, metadata, totalTransferSize, true);
                     }
 
                     FinalizeCoapTransaction(*request, metadata, &aMessage, &aMessageInfo, error);
@@ -1274,9 +1295,9 @@ void CoapBase::ProcessReceivedRequest(Message &aMessage, const Ip6::MessageInfo 
     Error    error          = kErrorNone;
 #if OPENTHREAD_CONFIG_COAP_BLOCKWISE_TRANSFER_ENABLE
     Option::Iterator iterator;
-    char            *curUriPath         = uriPath;
-    uint8_t          blockOptionType    = 0;
-    uint32_t         totalTransfereSize = 0;
+    char            *curUriPath        = uriPath;
+    uint8_t          blockOptionType   = 0;
+    uint32_t         totalTransferSize = 0;
 #endif
 
     if (mInterceptor.IsSet())
@@ -1329,7 +1350,7 @@ void CoapBase::ProcessReceivedRequest(Message &aMessage, const Ip6::MessageInfo 
 
         case kOptionSize1:
             // ToDo: wait for method to read uint option values
-            totalTransfereSize = 0;
+            totalTransferSize = 0;
             break;
 
         default:
@@ -1355,7 +1376,7 @@ void CoapBase::ProcessReceivedRequest(Message &aMessage, const Ip6::MessageInfo 
             case 1:
                 if (resource.mReceiveHook != nullptr)
                 {
-                    switch (ProcessBlock1Request(aMessage, aMessageInfo, resource, totalTransfereSize))
+                    switch (ProcessBlock1Request(aMessage, aMessageInfo, resource, totalTransferSize))
                     {
                     case kErrorNone:
                         resource.HandleRequest(aMessage, aMessageInfo);
@@ -1584,10 +1605,7 @@ void ResponsesQueue::HandleTimer(void)
             continue;
         }
 
-        if (metadata.mDequeueTime < nextDequeueTime)
-        {
-            nextDequeueTime = metadata.mDequeueTime;
-        }
+        nextDequeueTime = Min(nextDequeueTime, metadata.mDequeueTime);
     }
 
     if (nextDequeueTime < now.GetDistantFuture())
@@ -1625,7 +1643,7 @@ bool TxParameters::IsValid(void) const
     if ((mAckRandomFactorDenominator > 0) && (mAckRandomFactorNumerator >= mAckRandomFactorDenominator) &&
         (mAckTimeout >= OT_COAP_MIN_ACK_TIMEOUT) && (mMaxRetransmit <= OT_COAP_MAX_RETRANSMIT))
     {
-        // Calulate exchange lifetime step by step and verify no overflow.
+        // Calculate exchange lifetime step by step and verify no overflow.
         uint32_t tmp = Multiply(mAckTimeout, (1U << (mMaxRetransmit + 1)) - 1);
 
         tmp = Multiply(tmp, mAckRandomFactorNumerator);

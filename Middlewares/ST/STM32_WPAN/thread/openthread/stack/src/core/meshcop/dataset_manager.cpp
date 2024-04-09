@@ -116,7 +116,7 @@ Error DatasetManager::Save(const Dataset &aDataset)
 {
     Error error = kErrorNone;
     int   compare;
-    bool  isNetworkkeyUpdated = false;
+    bool  isNetworkKeyUpdated = false;
 
     if (aDataset.GetTimestamp(GetType(), mTimestamp) == kErrorNone)
     {
@@ -124,13 +124,13 @@ Error DatasetManager::Save(const Dataset &aDataset)
 
         if (IsActiveDataset())
         {
-            SuccessOrExit(error = aDataset.ApplyConfiguration(GetInstance(), &isNetworkkeyUpdated));
+            SuccessOrExit(error = aDataset.ApplyConfiguration(GetInstance(), &isNetworkKeyUpdated));
         }
     }
 
     compare = Timestamp::Compare(mTimestampValid ? &mTimestamp : nullptr, mLocal.GetTimestamp());
 
-    if (isNetworkkeyUpdated || compare > 0)
+    if (isNetworkKeyUpdated || compare > 0)
     {
         SuccessOrExit(error = mLocal.Save(aDataset));
 
@@ -632,6 +632,8 @@ ActiveDatasetManager::ActiveDatasetManager(Instance &aInstance)
 }
 
 bool ActiveDatasetManager::IsPartiallyComplete(void) const { return mLocal.IsSaved() && !mTimestampValid; }
+
+bool ActiveDatasetManager::IsComplete(void) const { return mLocal.IsSaved() && mTimestampValid; }
 
 bool ActiveDatasetManager::IsCommissioned(void) const
 {

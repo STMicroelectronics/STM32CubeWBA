@@ -23,13 +23,12 @@
 #include "app_conf.h"
 #include "timer_if.h"
 #include "stm32_lpm.h"
-#include "stm32_seq.h"
 #include "ll_intf.h"
 #include "ll_sys.h"
 
 void APP_SYS_BLE_EnterDeepSleep(void)
 {
-  ble_stat_t cmd_status = GENERAL_FAILURE;
+  ble_stat_t cmd_status;
   uint32_t radio_remaining_time = 0;
 
   if (ll_sys_dp_slp_get_state() == LL_SYS_DP_SLP_DISABLED)

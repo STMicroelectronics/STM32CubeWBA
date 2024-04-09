@@ -49,6 +49,12 @@
 #endif /* CODEC_LC3_NUM_DECODER_CHANNEL */
 
 /**
+  * Expected core clock when executing LC3 codec for each audio frequency: check dependencies with audio peripheral
+  *                   kHz:   8,   N/A,  16,  N/A,  24,    32,     44.1,    48,   N/A----------
+  */
+#define LC3_EXE_CLOCK_MHZ {98.304, 0, 98.304, 0, 98.304, 98.304, 90.3168, 98.304, 0, 0, 0, 0, 0};
+
+/**
   * @brief  Values used for timer driver
   */
 #define CLOCK_PRESCALER         98               /* (98.304MHz / 98) provides approximately 1us timer */
@@ -57,7 +63,7 @@
 #define AS_CAPTURE_PRESCALER    0
 #define AS_AUTORELOAD           0x000FFFFF      /* maximum value */
 #define AS_COMPARE_MAX          1000000         /* 1s */
-#define AS_ACCEPTABLE_WINDOWS   100u            /* windows in ticks around the interrupt for notifying the codec */
+#define AS_ACCEPTABLE_WINDOWS   100u            /* windows in ticks around the interrupt for generating the event to the codec */
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -72,14 +78,16 @@ typedef struct
 
 #define CRITICAL_END( )         __set_PRIMASK( primask_ ); M_END
 
-#define IS_RCC_AS_CLOCKED       (READ_BIT(RCC->PLL1CFGR, RCC_PLL1CFGR_PLL1PEN) != 0)
+#define IS_RCC_AS_CLOCKED       ((READ_BIT(RCC->CR, RCC_CR_PLL1ON) != 0) && \
+                                 (READ_BIT(RCC->PLL1CFGR, RCC_PLL1CFGR_PLL1PEN) != 0))
+
 #define IS_RCC_AS_RUNING        (IS_RCC_AS_CLOCKED && (READ_BIT(RCC->ASCR, RCC_ASCR_CEN_Msk) != 0))
 
 #define WAIT_RCC_AS_EDGE( )     uint32_t tmp = RCC->ASCNTR; \
-                                while (tmp == RCC->ASCNTR);
+                                while (tmp == RCC->ASCNTR)
 
-#define WAIT_3_CYCLES( )        __NOP();\
-                                __NOP();\
+#define WAIT_3_CYCLES( )        __NOP(); \
+                                __NOP(); \
                                 __NOP()
 
 /* Private variables ---------------------------------------------------------*/
@@ -89,6 +97,8 @@ uint8_t IsTimerAutoreloading = 0;
 static uint8_t Codec_irq_mask_req = 0x00;
 
 static AUDIO_Timer_t Audio_Timer_List[MAX_TIMER_NB] = {0};
+
+static const float Codec_Exe_clock_Mhz[SAMPLE_FREQ_NUMBER] = LC3_EXE_CLOCK_MHZ;
 
 /* Private functions prototype------------------------------------------------*/
 static void TIMAudio_Init(void);
@@ -185,7 +195,9 @@ void CODEC_TraceEvnt(CODEC_TraceEvnt_t evnt)
       break;
     case TRIGGER_EVT:
       break;
-    case FIFO_OVERLAP_EVT:
+    case FIFO_UNDERRUN_EVT:
+      break;
+    case FIFO_OVERRUN_EVT:
       break;
     case SYNC_EVT:
       break;
@@ -204,7 +216,14 @@ void CODEC_TraceEvnt(CODEC_TraceEvnt_t evnt)
  */
 void CODEC_DBG_Log(char *format,...)
 {
+  char msg[255];
+  va_list args;
 
+  va_start(args, format );
+  vsnprintf(msg, 255-1, format, args);
+  va_end(args);
+
+  Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_APP, msg);
 }
 
 /******************************************************************************/
@@ -247,6 +266,17 @@ uint16_t CODEC_CLK_GetTimerPrescaler( void )
 {
   uint16_t timer_prescaler = CLOCK_PRESCALER;
   return timer_prescaler;
+}
+
+/**
+  * @brief Function called by the codec manager for getting the core clock for a given audio frequency
+  * @note  Used for either CPU load estimation as well as timer timebase correction
+  * @param freq_index : index of the frequency related to the list defined in the assigned numbers
+  * @retval Core clock in MHz
+  */
+float CODEC_CLK_GetCoreClock( uint8_t freq_index )
+{
+  return Codec_Exe_clock_Mhz[freq_index];
 }
 
 /**
@@ -303,7 +333,7 @@ int32_t CODEC_CLK_RequestTimerEvent( uint8_t ID, uint32_t trigger_ts )
   for (int32_t i=0 ; i < MAX_TIMER_NB ; i++)
   {
     /* check if it exist another timer that must run before */
-    if ((Audio_Timer_List[i].is_active == 1) && ((Audio_Timer_List[ID].timestamp - trigger_ts) > 0x80000000)){
+    if ((Audio_Timer_List[i].is_active == 1) && ((Audio_Timer_List[i].timestamp - trigger_ts) > 0x80000000)){
       is_closest = 0;
     }
   }
@@ -360,9 +390,9 @@ static void TIMAudio_Init(void)
     SET_BIT(RCC->ASCR, RCC_ASCR_CEN);
 
     IsTimerAutoreloading = 1;
-    APP_DBG_MSG("RCC AS is now properly initialized\n");
+    LOG_INFO_APP("RCC AS is now properly initialized\n");
   }else{
-    APP_DBG_MSG("Warning, RCC AS cannot be initialized since it is not clocked\n");
+    LOG_INFO_APP("Warning, RCC AS cannot be initialized since it is not clocked\n");
   }
 
   AudioTimerCnt = 0;
@@ -494,7 +524,7 @@ LC3_Status lc3_encoder_process(void *handle, void *input, uint32_t decimation, u
   return LC3_UNKNOWN_ERROR;
 }
 
-LC3_Status lc3_encoder_channel_init(void* hSession, void* handle , uint32_t bitrate, LC3_SampleDeepth s_bits)
+LC3_Status lc3_encoder_channel_init(void* hSession, void* handle , uint32_t bitrate, LC3_SampleDepth s_bits)
 {
   /* should not be reached */
   return LC3_UNKNOWN_ERROR;
@@ -508,7 +538,7 @@ LC3_Status lc3_decoder_process(void *handle, uint8_t *bytes, void *output, uint3
   return LC3_UNKNOWN_ERROR;
 }
 
-LC3_Status lc3_decoder_channel_init(void *hSession, void *handle, uint32_t bitrate, LC3_SampleDeepth s_bits)
+LC3_Status lc3_decoder_channel_init(void *hSession, void *handle, uint32_t bitrate, LC3_SampleDepth s_bits)
 {
   /* should not be reached */
   return LC3_UNKNOWN_ERROR;

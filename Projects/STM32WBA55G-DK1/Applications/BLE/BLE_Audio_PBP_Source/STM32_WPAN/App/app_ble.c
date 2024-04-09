@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -37,9 +37,11 @@
 /* USER CODE BEGIN Includes */
 #include "pbp_app.h"
 #include "stm32wba55g_discovery.h"
+
+#if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba55g_discovery_lcd.h"
 #include "stm32_lcd.h"
-#include "pbp_app.h"
+#endif /* CFG_LCD_SUPPORTED */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -145,17 +147,11 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 static tListNode BleAsynchEventQueue;
 
-static const uint8_t a_MBdAddr[BD_ADDR_SIZE] =
+static uint8_t a_BdAddr[BD_ADDR_SIZE];
+static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
-  (uint8_t)((CFG_BD_ADDRESS & 0x0000000000FF)),
-  (uint8_t)((CFG_BD_ADDRESS & 0x00000000FF00) >> 8),
-  (uint8_t)((CFG_BD_ADDRESS & 0x000000FF0000) >> 16),
-  (uint8_t)((CFG_BD_ADDRESS & 0x0000FF000000) >> 24),
-  (uint8_t)((CFG_BD_ADDRESS & 0x00FF00000000) >> 32),
-  (uint8_t)((CFG_BD_ADDRESS & 0xFF0000000000) >> 40)
+  0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
-static uint8_t a_BdAddrUdn[BD_ADDR_SIZE];
 
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
@@ -164,7 +160,7 @@ static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ER;
 static BleApplicationContext_t bleAppContext;
 
-static const char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' }; /* Gap Device Name */
+static char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' }; /* Gap Device Name */
 
 uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
 
@@ -176,7 +172,7 @@ static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
 
 /* USER CODE BEGIN PV */
-extern PBPAPP_Context_t PBPAPP_Context;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -192,7 +188,7 @@ static void BLE_ResumeFlowProcessCallback(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
 static void BLE_NvmCallback (SNVMA_Callback_Status_t);
-static uint8_t  HOST_BLE_Init(void);
+static uint8_t HOST_BLE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -246,8 +242,8 @@ void APP_BLE_Init(void)
 
   }
   /* USER CODE BEGIN APP_BLE_Init_2 */
-    PBPAPP_InitSource();
-    PBPAPP_StartSource();
+  PBPAPP_InitSource();
+  PBPAPP_StartSource();
   /* USER CODE END APP_BLE_Init_2 */
 
   return;
@@ -336,6 +332,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         default:
         {
           /* USER CODE BEGIN SUBEVENT_DEFAULT */
+
           /* USER CODE END SUBEVENT_DEFAULT */
           break;
         }
@@ -383,6 +380,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         default:
         {
           /* USER CODE BEGIN ECODE_DEFAULT*/
+
           /* USER CODE END ECODE_DEFAULT*/
           break;
         }
@@ -411,8 +409,6 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 }
 
 /* USER CODE BEGIN FD*/
-uint8_t src_id = 0;
-
 
 /* USER CODE END FD*/
 
@@ -421,9 +417,9 @@ uint8_t src_id = 0;
  * LOCAL FUNCTIONS
  *
  *************************************************************/
-uint8_t HOST_BLE_Init(void)
+static uint8_t HOST_BLE_Init(void)
 {
-  tBleStatus return_status = BLE_STATUS_FAILED;
+  tBleStatus return_status;
 
   pInitParams.numAttrRecord           = CFG_BLE_NUM_GATT_ATTRIBUTES;
   pInitParams.numAttrServ             = CFG_BLE_NUM_GATT_SERVICES;
@@ -454,10 +450,10 @@ uint8_t HOST_BLE_Init(void)
 static void Ble_Hci_Gap_Gatt_Init(void)
 {
   uint8_t role;
-  uint16_t gap_service_handle, gap_dev_name_char_handle, gap_appearance_char_handle;
+  uint16_t gap_service_handle = 0U, gap_dev_name_char_handle = 0U, gap_appearance_char_handle = 0U;
   const uint8_t *p_bd_addr;
   uint16_t a_appearance[1] = {CFG_GAP_APPEARANCE};
-  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus ret;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init*/
   uint8_t a_hci_commandParams[8] = {0xFFu,0xF7u,0x06u,0xBFu,0x03u,0x00u,0x00u,0x00u};
@@ -474,6 +470,11 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   /* Write the BD Address */
   p_bd_addr = BleGetBdAddress();
+
+  /* USER CODE BEGIN BD_Address_Mngt */
+
+  /* USER CODE END BD_Address_Mngt */
+
   ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
                                   CONFIG_DATA_PUBADDR_LEN,
                                   (uint8_t*) p_bd_addr);
@@ -536,7 +537,6 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   /* USER CODE BEGIN Role_Mngt*/
   role |= (GAP_PERIPHERAL_ROLE);
-
   /* USER CODE END Role_Mngt */
 
   if (role > 0)
@@ -664,7 +664,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 static void Ble_UserEvtRx( void)
 {
   SVCCTL_UserEvtFlowStatus_t svctl_return_status;
-  BleEvtPacket_t *phcievt;
+  BleEvtPacket_t *phcievt = NULL;
 
   LST_remove_head ( &BleAsynchEventQueue, (tListNode **)&phcievt );
 
@@ -697,12 +697,32 @@ static const uint8_t* BleGetBdAddress(void)
   uint32_t company_id;
   uint32_t device_id;
 
-  udn = LL_FLASH_GetUDN();
+  uint8_t a_BDAddrNull[BD_ADDR_SIZE];
+  memset(&a_BDAddrNull[0], 0x00, sizeof(a_BDAddrNull));
 
-  if (udn != 0xFFFFFFFF)
+  a_BdAddr[0] = (uint8_t)(CFG_BD_ADDRESS & 0x0000000000FF);
+  a_BdAddr[1] = (uint8_t)((CFG_BD_ADDRESS & 0x00000000FF00) >> 8);
+  a_BdAddr[2] = (uint8_t)((CFG_BD_ADDRESS & 0x000000FF0000) >> 16);
+  a_BdAddr[3] = (uint8_t)((CFG_BD_ADDRESS & 0x0000FF000000) >> 24);
+  a_BdAddr[4] = (uint8_t)((CFG_BD_ADDRESS & 0x00FF00000000) >> 32);
+  a_BdAddr[5] = (uint8_t)((CFG_BD_ADDRESS & 0xFF0000000000) >> 40);
+
+  if(memcmp(&a_BdAddr[0], &a_BDAddrNull[0], BD_ADDR_SIZE) != 0)
   {
-    company_id = LL_FLASH_GetSTCompanyID();
-    device_id = LL_FLASH_GetDeviceID();
+    p_bd_addr = (const uint8_t *)a_BdAddr;
+  }
+  else
+  {
+    udn = LL_FLASH_GetUDN();
+
+    /* USER CODE BEGIN BleGetBdAddress_1 */
+
+    /* USER CODE END BleGetBdAddress_1 */
+
+    if (udn != 0xFFFFFFFF)
+    {
+      company_id = LL_FLASH_GetSTCompanyID();
+      device_id = LL_FLASH_GetDeviceID();
 
     /**
      * Public Address with the ST company ID
@@ -712,25 +732,30 @@ static const uint8_t* BleGetBdAddress(void)
      * Note: In order to use the Public Address in a final product, a dedicated
      * 24bits company ID (OUI) shall be bought.
      */
-    a_BdAddrUdn[0] = (uint8_t)(udn & 0x000000FF);
-    a_BdAddrUdn[1] = (uint8_t)((udn & 0x0000FF00) >> 8);
-    a_BdAddrUdn[2] = (uint8_t)device_id;
-    a_BdAddrUdn[3] = (uint8_t)(company_id & 0x000000FF);
-    a_BdAddrUdn[4] = (uint8_t)((company_id & 0x0000FF00) >> 8);
-    a_BdAddrUdn[5] = (uint8_t)((company_id & 0x00FF0000) >> 16);
-
-    p_bd_addr = (const uint8_t *)a_BdAddrUdn;
-  }
-  else
-  {
-    OTP_Read(0, &p_otp_addr);
-    if (p_otp_addr)
-    {
-      p_bd_addr = (uint8_t*)(p_otp_addr->bd_address);
+      a_BdAddr[0] = (uint8_t)(udn & 0x000000FF);
+      a_BdAddr[1] = (uint8_t)((udn & 0x0000FF00) >> 8);
+      a_BdAddr[2] = (uint8_t)device_id;
+      a_BdAddr[3] = (uint8_t)(company_id & 0x000000FF);
+      a_BdAddr[4] = (uint8_t)((company_id & 0x0000FF00) >> 8);
+      a_BdAddr[5] = (uint8_t)((company_id & 0x00FF0000) >> 16);
+      p_bd_addr = (const uint8_t *)a_BdAddr;
     }
     else
     {
-      p_bd_addr = a_MBdAddr;
+      if (OTP_Read(0, &p_otp_addr) == HAL_OK)
+      {
+        a_BdAddr[0] = p_otp_addr->bd_address[0];
+        a_BdAddr[1] = p_otp_addr->bd_address[1];
+        a_BdAddr[2] = p_otp_addr->bd_address[2];
+        a_BdAddr[3] = p_otp_addr->bd_address[3];
+        a_BdAddr[4] = p_otp_addr->bd_address[4];
+        a_BdAddr[5] = p_otp_addr->bd_address[5];
+        p_bd_addr = (const uint8_t *)a_BdAddr;
+      }
+      else
+      {
+        p_bd_addr = (const uint8_t *)a_BdAddrDefault;
+      }
     }
   }
 
@@ -786,7 +811,7 @@ tBleStatus BLECB_Indication( const uint8_t* data,
                           uint16_t ext_length )
 {
   uint8_t status = BLE_STATUS_FAILED;
-  BleEvtPacket_t *phcievt;
+  BleEvtPacket_t *phcievt = NULL;
   uint16_t total_length = (length+ext_length);
 
   UNUSED(ext_data);

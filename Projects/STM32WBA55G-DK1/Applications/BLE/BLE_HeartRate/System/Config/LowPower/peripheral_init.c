@@ -22,10 +22,10 @@
 #include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
-
+#include "crc_ctrl.h"
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wba55g_discovery.h"
+
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
@@ -50,6 +50,11 @@ void MX_StandbyExit_PeripharalInit(void)
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
+  /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+  /* Re-Initialize Tick with new clock source */
+  HAL_InitTick(TICK_INT_PRIORITY);
+
   memset(&hcrc, 0, sizeof(hcrc));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
@@ -59,22 +64,23 @@ void MX_StandbyExit_PeripharalInit(void)
   MX_RNG_Init();
   MX_CRC_Init();
   MX_ICACHE_Init();
+  CRCCTRL_Init();
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  BSP_JOY_Init(JOY1, JOY_MODE_IT, JOY_ALL);
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

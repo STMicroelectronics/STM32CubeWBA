@@ -96,6 +96,22 @@ bool Prefix::ContainsPrefix(const NetworkPrefix &aSubPrefix) const
            (MatchLength(GetBytes(), aSubPrefix.m8, NetworkPrefix::kSize) >= NetworkPrefix::kLength);
 }
 
+void Prefix::Tidy(void)
+{
+    uint8_t byteLength      = GetBytesSize();
+    uint8_t lastByteBitMask = ~(static_cast<uint8_t>(1 << (byteLength * 8 - mLength)) - 1);
+
+    if (byteLength != 0)
+    {
+        mPrefix.mFields.m8[byteLength - 1] &= lastByteBitMask;
+    }
+
+    for (uint16_t i = byteLength; i < GetArrayLength(mPrefix.mFields.m8); i++)
+    {
+        mPrefix.mFields.m8[i] = 0;
+    }
+}
+
 bool Prefix::operator==(const Prefix &aOther) const
 {
     return (mLength == aOther.mLength) && (MatchLength(GetBytes(), aOther.GetBytes(), GetBytesSize()) >= GetLength());
@@ -157,6 +173,31 @@ bool Prefix::IsValidNat64PrefixLength(uint8_t aLength)
            (aLength == 96);
 }
 
+Error Prefix::FromString(const char *aString)
+{
+    constexpr char kSlashChar = '/';
+    constexpr char kNullChar  = '\0';
+
+    Error       error = kErrorParse;
+    const char *cur;
+
+    VerifyOrExit(aString != nullptr);
+
+    cur = StringFind(aString, kSlashChar);
+    VerifyOrExit(cur != nullptr);
+
+    SuccessOrExit(AsCoreType(&mPrefix).ParseFrom(aString, kSlashChar));
+
+    cur++;
+    SuccessOrExit(StringParseUint8(cur, mLength, kMaxLength));
+    VerifyOrExit(*cur == kNullChar);
+
+    error = kErrorNone;
+
+exit:
+    return error;
+}
+
 Prefix::InfoString Prefix::ToString(void) const
 {
     InfoString string;
@@ -176,8 +217,10 @@ void Prefix::ToString(char *aBuffer, uint16_t aSize) const
 void Prefix::ToString(StringWriter &aWriter) const
 {
     uint8_t sizeInUint16 = (GetBytesSize() + sizeof(uint16_t) - 1) / sizeof(uint16_t);
+    Prefix  tidyPrefix   = *this;
 
-    AsCoreType(&mPrefix).AppendHexWords(aWriter, sizeInUint16);
+    tidyPrefix.Tidy();
+    AsCoreType(&tidyPrefix.mPrefix).AppendHexWords(aWriter, sizeInUint16);
 
     if (GetBytesSize() < Address::kSize - 1)
     {
@@ -212,7 +255,7 @@ bool InterfaceIdentifier::IsReservedSubnetAnycast(void) const
             mFields.m8[7] >= 0x80);
 }
 
-void InterfaceIdentifier::GenerateRandom(void) { SuccessOrAssert(Random::Crypto::FillBuffer(mFields.m8, kSize)); }
+void InterfaceIdentifier::GenerateRandom(void) { SuccessOrAssert(Random::Crypto::Fill(*this)); }
 
 void InterfaceIdentifier::SetBytes(const uint8_t *aBuffer) { memcpy(mFields.m8, aBuffer, kSize); }
 
@@ -492,10 +535,16 @@ void Address::SynthesizeFromIp4Address(const Prefix &aPrefix, const Ip4::Address
 
 Error Address::FromString(const char *aString)
 {
+    constexpr char kNullChar = '\0';
+
+    return ParseFrom(aString, kNullChar);
+}
+
+Error Address::ParseFrom(const char *aString, char aTerminatorChar)
+{
     constexpr uint8_t kInvalidIndex = 0xff;
     constexpr char    kColonChar    = ':';
     constexpr char    kDotChar      = '.';
-    constexpr char    kNullChar     = '\0';
 
     Error   error      = kErrorParse;
     uint8_t index      = 0;
@@ -513,7 +562,7 @@ Error Address::FromString(const char *aString)
         colonIndex = index;
     }
 
-    while (*aString != kNullChar)
+    while (*aString != aTerminatorChar)
     {
         const char *start = aString;
         uint32_t    value = 0;
@@ -560,7 +609,7 @@ Error Address::FromString(const char *aString)
             break;
         }
 
-        VerifyOrExit((*aString == kColonChar) || (*aString == kNullChar));
+        VerifyOrExit((*aString == kColonChar) || (*aString == aTerminatorChar));
 
         VerifyOrExit(index < endIndex);
         mFields.m16[index++] = HostSwap16(static_cast<uint16_t>(value));
@@ -594,7 +643,7 @@ Error Address::FromString(const char *aString)
     {
         Ip4::Address ip4Addr;
 
-        SuccessOrExit(error = ip4Addr.FromString(aString));
+        SuccessOrExit(error = ip4Addr.FromString(aString, aTerminatorChar));
         memcpy(GetArrayEnd(mFields.m8) - Ip4::Address::kSize, ip4Addr.GetBytes(), Ip4::Address::kSize);
     }
 

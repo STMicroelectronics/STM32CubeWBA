@@ -29,7 +29,7 @@
 
 /* Define to the platform name. */
 /* The platform-specific string to insert into the OpenThread version string  */
-#define OPENTHREAD_CONFIG_PLATFORM_INFO "STM32WBA V1.2.0 Thread_MTD"
+#define OPENTHREAD_CONFIG_PLATFORM_INFO "STM32WBA V1.3.0 Thread_MTD"
 
 /* Name of package */
 #define PACKAGE "openthread"
@@ -50,7 +50,7 @@
 #define PACKAGE_URL "http://github.com/openthread/openthread"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "SHA-1: 32ac6ddfad2bc196e216c42249c73420542daac0"
+#define PACKAGE_VERSION "SHA-1: 8bc25042ba5cde20605eec2a329c0dff575303f4"
 
 /* Version number of package */
 #define VERSION "MTD"

@@ -79,6 +79,7 @@ void PeriphCommonClock_Config(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -139,6 +140,10 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
+
   /** Configure the main internal regulator output voltage
   */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE2) != HAL_OK)
@@ -183,6 +188,15 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -222,7 +236,7 @@ void MX_CRC_Init(void)
   hcrc.Instance = CRC;
   hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
   hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
-  hcrc.Init.GeneratingPolynomial = 7;
+  hcrc.Init.GeneratingPolynomial = 7607;
   hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
   hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
   hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
@@ -378,7 +392,7 @@ void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
-  memset(&hrng, 0, sizeof(hrng));
+
   /* USER CODE END RNG_Init 0 */
 
   /* USER CODE BEGIN RNG_Init 1 */

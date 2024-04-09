@@ -146,9 +146,8 @@ otMessage *otIp6NewMessageFromBuffer(otInstance              *aInstance,
                                      uint16_t                 aDataLength,
                                      const otMessageSettings *aSettings)
 {
-    return (aSettings != nullptr)
-               ? AsCoreType(aInstance).Get<Ip6::Ip6>().NewMessage(aData, aDataLength, AsCoreType(aSettings))
-               : AsCoreType(aInstance).Get<Ip6::Ip6>().NewMessage(aData, aDataLength);
+    return AsCoreType(aInstance).Get<Ip6::Ip6>().NewMessageFromData(aData, aDataLength,
+                                                                    Message::Settings::From(aSettings));
 }
 
 otError otIp6AddUnsecurePort(otInstance *aInstance, uint16_t aPort)
@@ -186,6 +185,11 @@ bool otIp6ArePrefixesEqual(const otIp6Prefix *aFirst, const otIp6Prefix *aSecond
 otError otIp6AddressFromString(const char *aString, otIp6Address *aAddress)
 {
     return AsCoreType(aAddress).FromString(aString);
+}
+
+otError otIp6PrefixFromString(const char *aString, otIp6Prefix *aPrefix)
+{
+    return AsCoreType(aPrefix).FromString(aString);
 }
 
 void otIp6AddressToString(const otIp6Address *aAddress, char *aBuffer, uint16_t aSize)

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project>
+<?xml version="1.0" ?><project>
     <fileVersion>3</fileVersion>
     <configuration>
         <name>Thread_Coap_Generic_ThreadX</name>
@@ -16,23 +15,23 @@
                 <debug>1</debug>
                 <option>
                     <name>BrowseInfoPath</name>
-                    <state>Thread_Coap_Generic_ThreadX\BrowseInfo</state>
+                    <state>Coap_Generic\BI</state>
                 </option>
                 <option>
                     <name>BuildFilesPath</name>
-                    <state>Thread_Coap_Generic_ThreadX\</state>
+                    <state>Coap_Generic\</state>
                 </option>
                 <option>
                     <name>ExePath</name>
-                    <state>Thread_Coap_Generic/Exe</state>
+                    <state>Coap_Generic/Exe</state>
                 </option>
                 <option>
                     <name>ObjPath</name>
-                    <state>Thread_Coap_Generic/Obj</state>
+                    <state>Coap_Generic/Obj</state>
                 </option>
                 <option>
                     <name>ListPath</name>
-                    <state>Thread_Coap_Generic/List</state>
+                    <state>Coap_Generic/List</state>
                 </option>
                 <option>
                     <name>GEndianMode</name>
@@ -176,11 +175,11 @@
                 </option>
                 <option>
                     <name>GenLocaleTags</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>GenLocaleDisplayOnly</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>DSPExtension</name>
@@ -214,19 +213,16 @@
                 <debug>1</debug>
                 <option>
                     <name>CCDefines</name>
+                    <state>STM32WBA55xx</state>
+                    <state>USE_HAL_DRIVER</state>
                     <state>USE_FULL_LL_DRIVER</state>
-                    <state>USE_FULL_ASSERT</state>
-                    <state>PHY_2_10_a</state>
-                    <state>PHY_40nm_2_30_a_A1</state>
+                    <state>MAC</state>
                     <state>OPENTHREAD_FTD</state>
                     <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
                     <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
-                    <state>MAC</state>
-                    <state>STM32</state>
-                    <state>STM32WBA</state>
-                    <state>STM32WBA55xx</state>
-                    <state>STM32WBA55CGUx</state>
-                    <state>USE_HAL_DRIVER</state>
+                    <state>APPLICATION_USE_THREADX</state>
+                    <state>APPLICATION_USE_OPENTHREAD</state>
+                    <state>APPLICATION_USE_OTCLI</state>
                     <state>TX_INCLUDE_USER_DEFINE_FILE</state>
                     <state>TX_SINGLE_MODE_NON_SECURE</state>
                 </option>
@@ -268,19 +264,19 @@
                 </option>
                 <option>
                     <name>CCDiagSuppress</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCDiagRemark</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCDiagWarning</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCDiagError</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCObjPrefix</name>
@@ -309,7 +305,7 @@
                 </option>
                 <option>
                     <name>IExtraOptions</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCLangConformance</name>
@@ -345,7 +341,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CCIncludePath2</name>
@@ -364,29 +360,30 @@
                     <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/sequencer</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/threadx/common/inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/threadx/ports/cortex_m33/iar/inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/threadx/utility/low_power</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
+                    
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
+                    
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/sys</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\utility\low_power</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\inc</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\inc</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -407,7 +404,7 @@
                 <option>
                     <name>CCOptStrategy</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
@@ -464,7 +461,7 @@
                 <option>
                     <name>CCOptStrategySlave</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCGuardCalls</name>
@@ -538,15 +535,15 @@
                 </option>
                 <option>
                     <name>AWarnOne</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>AWarnRange1</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>AWarnRange2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>ADebug</name>
@@ -651,7 +648,7 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state>$PROJ_DIR$\..\Core\Inc</state>
+                    <state/>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -659,7 +656,7 @@
                 </option>
                 <option>
                     <name>AExtraOptionsV2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>AsmNoLiteralPool</name>
@@ -667,7 +664,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state></state>
+                    <state/>
                 </option>
             </data>
         </settings>
@@ -705,8 +702,8 @@
             <name>CUSTOM</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <extensions></extensions>
-                <cmdline></cmdline>
+                <extensions/>
+                <cmdline/>
                 <hasPrio>0</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
@@ -715,8 +712,8 @@
             <name>BUILDACTION</name>
             <archiveVersion>1</archiveVersion>
             <data>
-                <prebuild></prebuild>
-                <postbuild></postbuild>
+                <prebuild/>
+                <postbuild/>
             </data>
         </settings>
         <settings>
@@ -736,7 +733,7 @@
                 </option>
                 <option>
                     <name>IlinkOutputFile</name>
-                    <state>$CONFIG_NAME$.out</state>
+                    <state>Thread_Coap_Generic.out</state>
                 </option>
                 <option>
                     <name>IlinkDebugInfoEnable</name>
@@ -744,31 +741,31 @@
                 </option>
                 <option>
                     <name>IlinkKeepSymbols</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkDefines</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkConfigDefines</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkMapFile</name>
@@ -804,7 +801,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkEnableRemarks</name>
@@ -812,19 +809,19 @@
                 </option>
                 <option>
                     <name>IlinkSuppressDiags</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkTreatAsRem</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkTreatAsWarn</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkTreatAsErr</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkWarningsAreErrors</name>
@@ -836,7 +833,7 @@
                 </option>
                 <option>
                     <name>IlinkExtraOptions</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkLowLevelInterfaceSlave</name>
@@ -848,7 +845,7 @@
                 </option>
                 <option>
                     <name>IlinkAdditionalLibs</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkOverrideProgramEntryLabel</name>
@@ -983,11 +980,11 @@
                 </option>
                 <option>
                     <name>IlinkStackControlFile</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkStackCallGraphFile</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>CrcAlgorithm</name>
@@ -1009,7 +1006,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile_AltDefault</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkEncInput</name>
@@ -1033,7 +1030,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state>Thread_Coap_Generic_ThreadX_import_lib.o</state>
+                    <state>Thread_Coap_Generic_import_lib.o</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1041,19 +1038,19 @@
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign2</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IlinkLogCrtRoutineSelection</name>
@@ -1081,7 +1078,7 @@
                 </option>
                 <option>
                     <name>IlinkWrapperFile</name>
-                    <state></state>
+                    <state/>
                 </option>
             </data>
         </settings>
@@ -1094,7 +1091,7 @@
                 <debug>1</debug>
                 <option>
                     <name>IarchiveInputs</name>
-                    <state></state>
+                    <state/>
                 </option>
                 <option>
                     <name>IarchiveOverride</name>
@@ -1109,7 +1106,7 @@
         <settings>
             <name>Coder</name>
             <archiveVersion>0</archiveVersion>
-            <data />
+            <data/>
         </settings>
     </configuration>
     <group>
@@ -1233,9 +1230,6 @@
                     </group>
                     <group>
                         <name>MemoryManager</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\MemoryManager\memory_manager.c</name>
-                        </file>
                         <file>
                             <name>$PROJ_DIR$\..\System\Modules\MemoryManager\stm32_mm.c</name>
                         </file>
@@ -1397,237 +1391,6 @@
     <group>
         <name>Middlewares</name>
         <group>
-            <name>AzureRTOS</name>
-            <group>
-                <name>threadx</name>
-                <group>
-                    <name>common</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_allocate.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_cleanup.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_search.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_high_level.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_kernel_enter.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_kernel_setup.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_cleanup.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_delete.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_get.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_prioritize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_priority_change.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_ceiling_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_cleanup.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_get.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_initialize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_prioritize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_initialize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_shell_entry.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_preempt_check.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_resume.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_suspend.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_time_slice.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_timeout.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_expiration_process.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_initialize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_system_activate.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_system_deactivate.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_thread_entry.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_byte_allocate.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_byte_pool_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_get.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_ceiling_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_create.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_get.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_put.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_thread_create.c</name>
-                    </file>
-                </group>
-                <group>
-                    <name>debug_traces</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_buffer_full_notify.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_disable.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_enable.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_event_filter.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_event_unfilter.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_initialize.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_interrupt_control.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_isr_enter_insert.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_isr_exit_insert.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_object_register.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_object_unregister.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_user_event_insert.c</name>
-                    </file>
-                </group>
-                <group>
-                    <name>ports</name>
-                    <group>
-                        <name>cortex_m33</name>
-                        <group>
-                            <name>iar</name>
-                            <group>
-                                <name>src</name>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_iar.c</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_restore.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_save.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_control.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_disable.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_restore.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_schedule.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_stack_build.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_system_return.s</name>
-                                </file>
-                                <file>
-                                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_timer_interrupt.s</name>
-                                </file>
-                            </group>
-                        </group>
-                    </group>
-                </group>
-                <group>
-                    <name>utility</name>
-                    <group>
-                        <name>low_power</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\utility\low_power\tx_low_power.c</name>
-                        </file>
-                    </group>
-                </group>
-            </group>
-        </group>
-        <group>
             <name>STM32_WPAN</name>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\alarm.c</name>
@@ -1675,6 +1438,237 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart.c</name>
             </file>
         </group>
+        <group>
+            <name>ThreadX</name>
+            <group>
+                <name>common</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_allocate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_cleanup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_byte_pool_search.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_high_level.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_kernel_enter.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_initialize_kernel_setup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_cleanup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_delete.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_get.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_prioritize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_priority_change.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_mutex_put.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_cleanup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_get.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_initialize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_prioritize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_semaphore_put.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_initialize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_relinquish.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_shell_entry.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_sleep.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_preempt_check.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_resume.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_system_suspend.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_time_slice.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_thread_timeout.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_expiration_process.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_initialize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_system_activate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_system_deactivate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_timer_thread_entry.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_byte_allocate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_byte_pool_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_get.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_mutex_put.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_get.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_semaphore_put.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_thread_create.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\txe_thread_relinquish.c</name>
+                </file>
+            </group>
+            <group>
+                <name>debug_trace</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_buffer_full_notify.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_disable.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_enable.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_event_filter.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_event_unfilter.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_initialize.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_interrupt_control.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_isr_enter_insert.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_isr_exit_insert.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_object_register.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_object_unregister.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\src\tx_trace_user_event_insert.c</name>
+                </file>
+            </group>
+            <group>
+                <name>ports</name>
+                <group>
+                    <name>cortex_m33</name>
+                    <group>
+                        <name>iar</name>
+                        <group>
+                            <name>src</name>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_iar.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_restore.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_save.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_control.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_disable.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_restore.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_schedule.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_stack_build.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_system_return.s</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_timer_interrupt.s</name>
+                            </file>
+                        </group>
+                    </group>
+                </group>
+            </group>
+            <group>
+                <name>utility</name>
+                <group>
+                    <name>low_power</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\utility\low_power\tx_low_power.c</name>
+                    </file>
+                </group>
+            </group>
+        </group>
     </group>
     <group>
         <name>Utilities</name>
@@ -1686,6 +1680,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_mem.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\sequencer\stm32_seq.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc\stm32_systime.c</name>

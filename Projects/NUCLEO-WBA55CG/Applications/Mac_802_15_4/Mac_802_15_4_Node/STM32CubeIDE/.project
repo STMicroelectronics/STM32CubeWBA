@@ -354,6 +354,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/scm.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/temp_measurement.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/temp_measurement.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>

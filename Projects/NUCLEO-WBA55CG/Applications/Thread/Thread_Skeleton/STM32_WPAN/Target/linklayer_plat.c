@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,6 +26,9 @@
 #include "app_conf.h"
 #include "scm.h"
 
+#if (CFG_LPM_LEVEL != 0)
+#include "stm32_lpm.h"
+#endif /* (CFG_LPM_LEVEL != 0) */
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -404,6 +407,44 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
 #if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration start.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStartClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration end.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStopClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
 #endif /* CFG_SCM_SUPPORTED */
 }
 

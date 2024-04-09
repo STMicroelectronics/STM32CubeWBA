@@ -24,6 +24,7 @@
 #include "main.h"
 #include "app_zigbee.h"
 #include "app_entry.h"
+#include "advanced_memory_manager.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "app_sys.h"
 #include "stm32_lpm.h"
@@ -63,9 +64,6 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-/* Heap size for System (used by Low-Layers) */
-#define C_SYS_MEMORY_HEAP_SIZE_BYTES          60000U
-
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
@@ -86,8 +84,6 @@ typedef struct
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t        SYS_MEMORY_HEAP[C_SYS_MEMORY_HEAP_SIZE_BYTES];
-
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
@@ -96,6 +92,30 @@ static bool system_startup_done = FALSE;
 /* Log configuration */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/* AMM configuration */
+static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
+{
+  /* Virtual Memory #1 */
+  {
+    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT,
+    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE
+  },
+  /* Virtual Memory #2 */
+  {
+    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP,
+    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE
+  },
+};
+
+static AMM_InitParameters_t ammInitConfig =
+{
+  .p_PoolAddr = AMM_Pool,
+  .PoolSize = CFG_AMM_POOL_SIZE,
+  .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
+  .p_VirtualMemoryConfigList = vmConfig
+};
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -115,6 +135,34 @@ static void Config_HSE(void);
 static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+
+/**
+ * @brief Wrapper for init function of the MM for the AMM
+ *
+ * @param p_PoolAddr: Address of the pool to use - Not use -
+ * @param PoolSize: Size of the pool - Not use -
+ *
+ * @return None
+ */
+static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+
+/**
+ * @brief Wrapper for allocate function of the MM for the AMM
+ *
+ * @param BufferSize
+ *
+ * @return Allocated buffer
+ */
+static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
+
+/**
+ * @brief Wrapper for free function of the MM for the AMM
+ *
+ * @param p_BufferAddr
+ *
+ * @return None
+ */
+static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -143,7 +191,7 @@ void MX_APPE_Config(void)
 }
 
 /**
- *
+ * @brief   LinkLayer & MAC Initialisation.
  */
 void MX_APPE_LinkLayerInit(void)
 {
@@ -166,6 +214,12 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Configure the system Power Mode */
   SystemPower_Config();
+
+  /* Initialize the Advance Memory Manager */
+  AMM_Init(&ammInitConfig);
+
+  /* Register the AMM background task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)  
@@ -275,9 +329,6 @@ static void Config_HSE(void)
  */
 static void System_Init( void )
 {
-  /* Initialize System Heap used by Zigbee Stack */
-  UTIL_MM_Init( SYS_MEMORY_HEAP, C_SYS_MEMORY_HEAP_SIZE_BYTES );
-
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
@@ -324,19 +375,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
@@ -359,6 +406,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -369,6 +420,21 @@ static void RNG_Init(void)
   HW_RNG_Start();
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
+}
+
+static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+{
+  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
+}
+
+static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+{
+  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
+}
+
+static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
+{
+  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -415,7 +481,7 @@ static void Button_Init( void )
   /* Button timers initialisation (one for each button) */
   for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
   { 
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, (UTIL_TIMER_Mode_t)hw_ts_Repeated, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
+    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
   }
 }
 
@@ -442,21 +508,21 @@ static void Button_TriggerActions( void * arg )
 
   /* Stop Timer */
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
-  
+
   switch ( p_buttonDesc->button )
   {
     case B1:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-    
+
     case B2:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW2, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-    
+
     case B3:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW3, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-        
+
     default:
         break;
   }
@@ -548,28 +614,47 @@ void HWCB_RNG_Process( void )
   UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
+{
+  /* Fulfill the function handle */
+  p_BasicMemoryManagerFunctions->Init = AMM_WrapperInit;
+  p_BasicMemoryManagerFunctions->Allocate = AMM_WrapperAllocate;
+  p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
+}
+
+void AMM_ProcessRequest (void)
+{
+  /* Ask for AMM background task scheduling */
+  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SEQ_PRIO_0);
+}
+
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
@@ -593,6 +678,14 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/**
+ * @brief Function Assert AEABI in case of not described on 'libc' libraries.
+ */
+__WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
+{
+  Error_Handler();
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if ( CFG_BUTTON_SUPPORTED == 1 ) 

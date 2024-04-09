@@ -59,12 +59,12 @@ ZigbeeAppInfo_t    	              stZigbeeAppInfo;
 /* Defines for Basic Cluster Server */
 #define APP_ZIGBEE_MFR_NAME                         "STMicroelectronics"
 #define APP_ZIGBEE_CHIP_NAME                        "STM32WBA"
-#define APP_ZIGBEE_CHIP_VERSION                     0x10        // Cut 1.0
+#define APP_ZIGBEE_CHIP_VERSION                     0x20        // Cut 2.0
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
-#define APP_ZIGBEE_APP_DATE_CODE                    "20230601"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.0-A1"
-#define APP_ZIGBEE_APP_VERSION                      0x10        // Application Version v1.0
+#define APP_ZIGBEE_APP_DATE_CODE                    "20240112"
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.3"
+#define APP_ZIGBEE_APP_VERSION                      0x13        // Application Version v1.3
 #define APP_ZIGBEE_STACK_VERSION                    0x10        // Stack Version v1.0
 
 /* USER CODE BEGIN PD */
@@ -334,7 +334,7 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
  */
 static void APP_ZIGBEE_ConfigMeshNetwork(void)
 {
-  bool      bReturn = true;
+  bool      bReturn;
   uint32_t  lBroadcastTimeOut = 3;
 
   stZigbeeAppInfo.bInitAfterJoin = false;
@@ -531,18 +531,41 @@ bool APP_ZIGBEE_SetTxPower( uint8_t cTxPower )
  */
 void APP_ZIGBEE_PrintGenericInfo( void )
 {
+  bool      bDisplayString = true;
   uint16_t  iIndex;
+  uint8_t   szLinkKey[ZB_SEC_KEYSIZE];
   char      szKeyValue[( ZB_SEC_KEYSIZE * 3u ) + 1u];
 
-  LOG_INFO_APP( "Link Key: %.16s", sec_key_ha );
+  /* Display Application Version. */
+  LOG_INFO_APP( "Application Version : %d.%d", ( APP_ZIGBEE_APP_VERSION >> 4u ), ( APP_ZIGBEE_APP_VERSION & 0x0F ) );
 
+  /* Display Zigbee Stack Info */
+#if ( CONFIG_ZB_ZCL_SE == 1 )
+  LOG_INFO_APP( "Zigbee Stack version : R%02d 'Smart Energy'", CONFIG_ZB_REV );
+#else // ( CONFIG_ZB_ZCL_SE == 1 )
+  LOG_INFO_APP( "Zigbee Stack version : R%02d", CONFIG_ZB_REV );
+#endif // ( CONFIG_ZB_ZCL_SE == 1 )
+  LOG_INFO_APP( "Zigbee Extended Address : 0x%016" PRIX64, ZbExtendedAddress( stZigbeeAppInfo.pstZigbee ) );
+
+  /* Obtains Link Key */
+  memcpy( szLinkKey, sec_key_distrib_uncert, ZB_SEC_KEYSIZE );
+
+  /* Decode Link Key to display in Hexa. */
   for ( iIndex= 0; iIndex < ZB_SEC_KEYSIZE; iIndex++ )
   {
-    sprintf( &szKeyValue[iIndex * 3u], "%02x ", sec_key_ha[iIndex] );
+    snprintf( &szKeyValue[iIndex * 3u], ( sizeof(szKeyValue) - ( iIndex * 3u ) ), "%02x ", szLinkKey[iIndex] );
+    if ( ( szLinkKey[iIndex] < ' ' ) || ( szLinkKey[iIndex] > '~' ) )
+    {
+      bDisplayString = false;
+    }
   }
 
-  LOG_INFO_APP( "Link Key value: %s", szKeyValue );
-  LOG_INFO_APP( "Zigbee Extended Address : 0x%016" PRIX64, ZbExtendedAddress( stZigbeeAppInfo.pstZigbee ) );
+  /* Display Link Key Info : String (if possible) and Hexa. */
+  if ( bDisplayString != false )
+  {
+    LOG_INFO_APP( "Link Key : %.16s", szLinkKey );
+  }
+  LOG_INFO_APP( "Link Key value : %s", szKeyValue );
 }
 
 /**
@@ -591,6 +614,8 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
 {
   LOG_ERROR_APP( "**** Fatal error = %s (Err = 0x%02X) ****", pMess, ErrCode );
 
+  // Intentional INFINITE_LOOP
+  // coverity[no_escape]
   while (1U == 1U)
   {
     /* USER CODE BEGIN APP_ZIGBEE_TraceError */

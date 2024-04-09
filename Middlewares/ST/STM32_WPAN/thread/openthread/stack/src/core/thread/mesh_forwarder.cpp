@@ -80,7 +80,7 @@ void ThreadLinkInfo::SetFrom(const Mac::RxFrame &aFrame)
         uint8_t keyIdMode;
 
         // MAC Frame Security was already validated at the MAC
-        // layer. As a result, 'GetKeyIdMode()' will never return
+        // layer. As a result, `GetKeyIdMode()` will never return
         // failure here.
         IgnoreError(aFrame.GetKeyIdMode(keyIdMode));
 
@@ -90,7 +90,6 @@ void ThreadLinkInfo::SetFrom(const Mac::RxFrame &aFrame)
     {
         mLinkSecurity = false;
     }
-
     mChannel = aFrame.GetChannel();
     mRss     = aFrame.GetRssi();
     mLqi     = aFrame.GetLqi();
@@ -678,16 +677,12 @@ void MeshForwarder::SetRxOnWhenIdle(bool aRxOnWhenIdle)
     if (aRxOnWhenIdle)
     {
         mDataPollSender.StopPolling();
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
-        Get<Utils::SupervisionListener>().Stop();
-#endif
+        Get<SupervisionListener>().Stop();
     }
     else
     {
         mDataPollSender.StartPolling();
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
-        Get<Utils::SupervisionListener>().Start();
-#endif
+        Get<SupervisionListener>().Start();
     }
 }
 
@@ -752,7 +747,7 @@ Mac::TxFrame *MeshForwarder::HandleFrameRequest(Mac::TxFrames &aTxFrames)
             VerifyOrExit(frame != nullptr);
         }
 #if OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
-        if (Get<Mac::Mac>().IsCslEnabled() && mSendMessage->IsSubTypeMle())
+        else if (Get<Mac::Mac>().IsCslEnabled() && mSendMessage->IsSubTypeMle())
         {
             mSendMessage->SetLinkSecurityEnabled(true);
         }
@@ -890,6 +885,7 @@ start:
     {
     case Message::kSubTypeMleAnnounce:
         aFrame.SetChannel(aMessage.GetChannel());
+        aFrame.SetRxChannelAfterTxDone(Get<Mac::Mac>().GetPanChannel());
         panIds.mDestination = Mac::kPanIdBroadcast;
         break;
 
@@ -1286,7 +1282,11 @@ exit:
 
 void MeshForwarder::RemoveMessageIfNoPendingTx(Message &aMessage)
 {
+#if OPENTHREAD_FTD
     VerifyOrExit(!aMessage.IsDirectTransmission() && !aMessage.IsChildPending());
+#else
+    VerifyOrExit(!aMessage.IsDirectTransmission());
+#endif
 
     if (mSendMessage == &aMessage)
     {
@@ -1316,9 +1316,7 @@ void MeshForwarder::HandleReceivedFrame(Mac::RxFrame &aFrame)
 
     frameData.Init(aFrame.GetPayload(), aFrame.GetPayloadLength());
 
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
-    Get<Utils::SupervisionListener>().UpdateOnReceive(macAddrs.mSource, linkInfo.IsLinkSecurityEnabled());
-#endif
+    Get<SupervisionListener>().UpdateOnReceive(macAddrs.mSource, linkInfo.IsLinkSecurityEnabled());
 
     switch (aFrame.GetType())
     {
@@ -1516,15 +1514,15 @@ void MeshForwarder::ClearReassemblyList(void)
 
 void MeshForwarder::HandleTimeTick(void)
 {
-    bool contineRxingTicks = false;
+    bool continueRxingTicks = false;
 
 #if OPENTHREAD_FTD
-    contineRxingTicks = mFragmentPriorityList.UpdateOnTimeTick();
+    continueRxingTicks = mFragmentPriorityList.UpdateOnTimeTick();
 #endif
 
-    contineRxingTicks = UpdateReassemblyList() || contineRxingTicks;
+    continueRxingTicks = UpdateReassemblyList() || continueRxingTicks;
 
-    if (!contineRxingTicks)
+    if (!continueRxingTicks)
     {
         Get<TimeTicker>().UnregisterReceiver(TimeTicker::kMeshForwarder);
     }
@@ -1646,9 +1644,13 @@ Error MeshForwarder::GetFramePriority(const FrameData      &aFrameData,
     {
         uint16_t destPort = headers.GetUdpHeader().GetDestinationPort();
 
-        if ((destPort == Mle::kUdpPort) || (destPort == Tmf::kUdpPort))
+        if (destPort == Mle::kUdpPort)
         {
             aPriority = Message::kPriorityNet;
+        }
+        else if (Get<Tmf::Agent>().IsTmfMessage(headers.GetSourceAddress(), headers.GetDestinationAddress(), destPort))
+        {
+            aPriority = Tmf::Agent::DscpToPriority(headers.GetIp6Header().GetDscp());
         }
     }
 
@@ -1689,7 +1691,10 @@ bool MeshForwarder::CalcIePresent(const Message *aMessage)
     iePresent |= (aMessage != nullptr && aMessage->IsTimeSync());
 #endif
 #if OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE
-    iePresent |= Get<Mac::Mac>().IsCslEnabled();
+    if (!(aMessage != nullptr && aMessage->GetSubType() == Message::kSubTypeMleDiscoverRequest))
+    {
+        iePresent |= Get<Mac::Mac>().IsCslEnabled();
+    }
 #endif
 #endif
 
@@ -1715,12 +1720,8 @@ void MeshForwarder::AppendHeaderIe(const Message *aMessage, Mac::TxFrame &aFrame
     if (Get<Mac::Mac>().IsCslEnabled())
     {
         IgnoreError(aFrame.AppendHeaderIeAt<Mac::CslIe>(index));
-        aFrame.mInfo.mTxInfo.mCslPresent = true;
-        iePresent                        = true;
-    }
-    else
-    {
-        aFrame.mInfo.mTxInfo.mCslPresent = false;
+        aFrame.SetCslIePresent(true);
+        iePresent = true;
     }
 #endif
 

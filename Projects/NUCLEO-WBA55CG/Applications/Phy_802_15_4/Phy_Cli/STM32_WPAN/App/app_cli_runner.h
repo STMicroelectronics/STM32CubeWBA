@@ -88,7 +88,7 @@ typedef struct {
 /* Exported constants --------------------------------------------------------*/
 #define CLI_PROMPT              "802.15.4 valid cli >"
 #define CLI_NAME                "(STM32WBA5xx) PHY CLI\r\n"
-#define CLI_APP_VERSION         "v1.1.0"
+#define CLI_APP_VERSION         "v1.3.0"
 
 #if defined(STM32WBA52xx)
 #define CLI_FW_TARGET           "WBA52"

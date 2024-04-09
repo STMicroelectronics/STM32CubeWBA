@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -341,7 +341,8 @@ void RNG_KERNEL_CLK_ON(void);
 
 /* RNG_KERNEL_CLK_OFF
  *
- * Disable RNG kernel clock.
+ * Called when RNG kernel clock may be disabled.
+ * Weak function to be implemented by user.
  */
 void RNG_KERNEL_CLK_OFF(void);
 

@@ -333,10 +333,10 @@ static void MX_TAMP_RTC_Init(void)
   /** Enable the RTC Tamper 4
   */
   sTamper.Tamper = RTC_TAMPER_4;
-  sTamper.Trigger = RTC_TAMPERTRIGGER_RISINGEDGE;
+  sTamper.Trigger = RTC_TAMPERTRIGGER_LOWLEVEL;
   sTamper.NoErase = RTC_TAMPER_ERASE_BACKUP_ENABLE;
-  sTamper.Filter = RTC_TAMPERFILTER_DISABLE;
-  sTamper.SamplingFrequency = RTC_TAMPERSAMPLINGFREQ_RTCCLK_DIV32768;
+  sTamper.Filter = RTC_TAMPERFILTER_8SAMPLE;
+  sTamper.SamplingFrequency = RTC_TAMPERSAMPLINGFREQ_RTCCLK_DIV256;
   sTamper.PrechargeDuration = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
   sTamper.TamperPullUp = RTC_TAMPER_PULLUP_ENABLE;
   if (HAL_RTCEx_SetTamper_IT(&hrtc, &sTamper) != HAL_OK)

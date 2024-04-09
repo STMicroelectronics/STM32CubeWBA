@@ -359,16 +359,16 @@
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mbed-crypto\include</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mbed-crypto\include\psa</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mbed-crypto\library</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\platform\include</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\platform\ext\common</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\platform\ext\driver</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\include</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\ext\mcuboot</state>
-          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\ext\mcuboot\include</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\include</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\platform\include</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\platform\ext\common</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\platform\ext\driver</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\ext\mcuboot\include</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\boot\bootutil\include</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\boot\bootutil\src</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\ext\tinycrypt\lib\include</state>
+          <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1226,29 +1226,26 @@
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\boot\bootutil\src\boot_record.c</name>
       </file>
-    </group>
-    <group>
-      <name>trustedfirmware</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\ext\mcuboot\bl2_main.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\ext\mcuboot\bl2_main.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\Src\flash_map.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\Src\flash_map.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\ext\mcuboot\flash_map_extended.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\ext\mcuboot\flash_map_extended.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\ext\mcuboot\flash_map_legacy.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\ext\mcuboot\flash_map_legacy.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\Src\security_cnt.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\Src\security_cnt.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\platform\ext\common\uart_stdout.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\platform\ext\common\uart_stdout.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\trustedfirmware\bl2\src\shared_data.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot\bl2\src\shared_data.c</name>
       </file>
     </group>
     <group>

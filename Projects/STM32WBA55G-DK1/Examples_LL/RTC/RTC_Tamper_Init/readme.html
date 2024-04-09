@@ -21,8 +21,8 @@
 </head>
 <body>
 <div class="row">
-<div class="col-sm-12 col-lg-8">
-<p>﻿## <b>RTC_Tamper_Init Example Description</b></p>
+<section id="rtc_tamper_init-example-description" class="col-sm-12 col-lg-8">
+<h2><b>RTC_Tamper_Init Example Description</b></h2>
 <p>Configuration of the Tamper using the RTC LL API. The peripheral initialization uses LL unitary service functions for optimization purposes (performance and size).</p>
 <p>In this example, after start-up, SYSCLK is configured to the max frequency using the PLL with HSE as clock source.</p>
 <p>The RTC peripheral configuration is ensured by the Configure_RTC() function (configure of the needed RTC resources according to the used hardware CLOCK, PWR, RTC clock source and BackUp). You may update this function to change RTC configuration.</p>
@@ -30,9 +30,9 @@
 <ol type="1">
 <li><p>It configures the Tamper pin to be rising edge, and enables the Tamper interrupt.</p></li>
 <li><p>It writes the data to all RTC Backup data registers, then check whether the data were correctly written. If yes, LD3 toggles with a fast period, otherwise LD3 toggles with a period of 1s.</p></li>
-<li><p>Applying a low level on the tamper 4 (pin PC13 (pin5 CN10)) the RTC backup data registers are reset and the Tamper interrupt is generated. The corresponding ISR then checks whether the RTC Backup data registers are cleared. If yes LD3 turns on, otherwise LD3 toggles with a period of 1s.</p></li>
+<li><p>Applying a high level on the tamper 4 (pin PC13 (pin5 CN10)) the RTC backup data registers are reset and the Tamper interrupt is generated. The corresponding ISR then checks whether the RTC Backup data registers are cleared. If yes LD3 turns on, otherwise LD3 toggles with a period of 1s.</p></li>
 </ol>
-<p><strong>Note :</strong> On this board, the tamper 4 pin is connected to User push-button (connection to pin PC.13 (pin5 CN10)).</p>
+<p><strong>Note :</strong> On this board, the tamper 4 pin is connected to pin PC13 (pin5 CN10).</p>
 <h3 id="keywords"><b>Keywords</b></h3>
 <p>System, RTC, Tamper, Reset, LSE, LSI</p>
 <h3 id="directory-contents"><b>Directory contents</b></h3>

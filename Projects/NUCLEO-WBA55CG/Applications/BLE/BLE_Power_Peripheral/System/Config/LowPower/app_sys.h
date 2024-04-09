@@ -26,7 +26,7 @@
  * high ceil for radio exit deep sleep -> 300us
  * high ceil for radio entry deep ceil -> 50us
  */
-#define RADIO_DEEPSLEEP_WAKEUP_TIME_US (450)
+#define RADIO_DEEPSLEEP_WAKEUP_TIME_US (1500)
 
 /* USER CODE BEGIN EC */
 

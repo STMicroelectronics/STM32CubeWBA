@@ -59,7 +59,7 @@ MAC_Status_t APP_MAC_mlmeAssociateCnfCb( const  ST_MAC_associateCnf_t * pAssocia
 MAC_Status_t APP_MAC_mlmeAssociateIndCb( const  ST_MAC_associateInd_t * pAssociateInd )
 {
     /* Store ASSOCIATION IND */
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
 
   ST_MAC_associateRes_t AssociateRes;
 

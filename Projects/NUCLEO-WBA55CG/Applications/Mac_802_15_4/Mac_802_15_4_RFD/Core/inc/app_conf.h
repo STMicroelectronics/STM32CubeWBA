@@ -1,18 +1,18 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    app_conf.h
-  * @author  MCD Application Team
-  * @brief   Application configuration file for STM32WPAN Middleware.
+ ******************************************************************************
+  * File Name          : app_conf.h
+  * Description        : Application configuration file for STM32WPAN Middleware.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -24,45 +24,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
-#include "stm32_adv_trace.h"
-#include "stm32wbaxx_nucleo.h"
-#include "stm32_adv_trace.h"
+#include "utilities_conf.h"
 #include "log_module.h"
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
+#include "stm32wbaxx_nucleo.h"
 
 /******************************************************************************
  * Application Config
  ******************************************************************************/
-/******************************************************************************
- * Transport Layer
- ******************************************************************************/
-/**
- * Queue length of BLE Event
- * This parameter defines the number of asynchronous events that can be stored in the HCI layer before
- * being reported to the application. When a command is sent to the BLE core coprocessor, the HCI layer
- * is waiting for the event with the Num_HCI_Command_Packets set to 1. The receive queue shall be large
- * enough to store all asynchronous events received in between.
- * When CFG_TLBLE_MOST_EVENT_PAYLOAD_SIZE is set to 27, this allow to store three 255 bytes long asynchronous events
- * between the HCI command and its event.
- * This parameter depends on the value given to CFG_TLBLE_MOST_EVENT_PAYLOAD_SIZE. When the queue size is to small,
- * the system may hang if the queue is full with asynchronous events and the HCI layer is still waiting
- * for a CC/CS event, In that case, the notification TL_BLE_HCI_ToNot() is called to indicate
- * to the application a HCI command did not receive its command event within 30s (Default HCI Timeout).
- */
-#define CFG_TL_EVT_QUEUE_LENGTH 5
-/**
- * This parameter should be set to fit most events received by the HCI layer. It defines the buffer size of each element
- * allocated in the queue of received events and can be used to optimize the amount of RAM allocated by the Memory Manager.
- * It should not exceed 255 which is the maximum HCI packet payload size (a greater value is a lost of memory as it will
- * never be used)
- * With the current wireless firmware implementation, this parameter shall be kept to 255
- */
-#define CFG_TL_MOST_EVENT_PAYLOAD_SIZE 255   /**< Set to 255 with the memory manager and the mailbox */
 
-#define TL_EVENT_FRAME_SIZE ( TL_EVT_HDR_SIZE + CFG_TL_MOST_EVENT_PAYLOAD_SIZE )
 /******************************************************************************
  * UART interfaces
  ******************************************************************************/
@@ -98,35 +67,18 @@ extern UART_HandleTypeDef    hlpuart1;
 /******************************************************************************
  * Low Power
  *
- *  When CFG_FULL_LOW_POWER is set to 1, the system is configured in full
- *  low power mode. It means that all what can have an impact on the consumptions
- *  are powered down.(For instance LED, Access to Debugger, Etc.)
+ *  When CFG_LPM_LEVEL is set to:
+ *   - 0 : Low Power Mode is not activated, RUN mode will be used.
+ *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition, force to disable modules to reach lowest power figures.
  *
- *  When CFG_FULL_LOW_POWER is set to 0, the low power mode is not activated
+ * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 1 : Standby is used as low power mode.
+ *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
-#define CFG_FULL_LOW_POWER       (0)
-
-#define CFG_LPM_SUPPORTED        (0)
+#define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
-
-/**
- * Low Power configuration
- */
-#if (CFG_FULL_LOW_POWER == 1)
-  #undef CFG_LPM_SUPPORTED
-  #define CFG_LPM_SUPPORTED      (1)
-
-  #undef  CFG_DBG_SUPPORTED
-  #define CFG_DBG_SUPPORTED      (0)
-
-  #undef  CFG_LOG_SUPPORTED
-  #define CFG_LOG_SUPPORTED      (0)
-
-#else /* CFG_FULL_LOW_POWER */
-  #undef CFG_LPM_SUPPORTED
-  #define CFG_LPM_SUPPORTED      (0)
-#endif /* CFG_FULL_LOW_POWER */
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -148,6 +100,10 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
+/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
+#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
+
+
 /******************************************************************************
  * RTC
  ******************************************************************************/
@@ -162,32 +118,26 @@ typedef enum
 /*****************************************************************************
  * Logs
  *
- * Enable (CFG_LOG_SUPPORTED != 0) or disable the logs (CFG_LOG_SUPPORTED = 0)
- * in the application.
- *
- * APP_DBG_MSG is the macro ensuring retrocompatibility with old applications.
- * It uses the log module.
- * Applications must now call LOG_INFO_APP for logs.
+ * Applications must call LOG_INFO_APP for logs.
  * By default, CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE is set to 0.
  * As a result, there is no time stamp insertion inside the logs.
  *
  * For advanced log use cases, see the log_module.h file.
  * This file is customizable, you can create new verbose levels and log regions.
  *****************************************************************************/
+/**
+ * Enable or disable LOG over UART in the application.
+ * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ */
+#define CFG_LOG_SUPPORTED           (1U)
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
 
-/**
- * Enable or disable logs in the application
- * Enabling low power automatically disables the log module
- */
-#ifndef CFG_LOG_SUPPORTED
-  #define CFG_LOG_SUPPORTED         (1U)
-#endif /* CFG_LOG_SUPPORTED */
-
+/* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
 #define APP_DBG_MSG                 LOG_INFO_APP
 
@@ -198,15 +148,12 @@ typedef enum
 /******************************************************************************
  * Configure Log level for Application
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
+#define APPLI_CONFIG_LOG_LEVEL      (LOG_LEVEL_INFO)
 
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
 
-/* USER CODE BEGIN Traces */
-
-/* USER CODE END Traces */
 
 /**
  * User button Interrupt Handlers
@@ -223,9 +170,6 @@ typedef enum
 /* USER CODE BEGIN Defines */
 
 /* USER CODE END Defines */
-
-/* USER CODE END Defines */
-
 /******************************************************************************
  * Sequencer
  ******************************************************************************/
@@ -238,19 +182,13 @@ typedef enum
 {
   CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
   CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
-  CFG_TASK_HCI_ASYNCH_EVT_ID,
   CFG_TASK_LINK_LAYER_TEMP_MEAS,
-  CFG_TASK_BPKA,
   CFG_TASK_MAC_LAYER,
   CFG_TASK_RFD,
-  CFG_TASK_AMM_BCKGND,
-  CFG_TASK_FLASH_MANAGER_BCKGND,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  TASK_BUTTON_1,
-  TASK_BUTTON_2,
-  TASK_BUTTON_3,
-  CFG_TASK_ADV_CANCEL_ID,
-  CFG_TASK_SEND_NOTIF_ID,
+  CFG_TASK_BUTTON_1,
+  CFG_TASK_BUTTON_2,
+  CFG_TASK_BUTTON_3,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -264,10 +202,9 @@ typedef enum
 /* USER CODE BEGIN DEFINE_TASK */
 
 /* USER CODE END DEFINE_TASK */
-
 /**
  * This is the list of priority required by the application
- * Each Id shall be in the range 0..31
+ * Shall be in the range 0..31
  */
 typedef enum
 {
@@ -279,9 +216,21 @@ typedef enum
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;
 
-  /**
-   * This is a bit mapping over 32bits listing all events id supported in the application
-   */
+/* Sequencer priorities by default  */
+#define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
+#define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
+#define TASK_MAC_LAYER_PRIO                 CFG_SEQ_PRIO_0
+#define TASK_MAC_APP_PRIO					CFG_SEQ_PRIO_1
+/* USER CODE BEGIN TASK_Priority_Define */
+
+/* USER CODE END TASK_Priority_Define */
+
+/* Used by Sequencer */
+#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
+
+/**
+ * This is a bit mapping over 32bits listing all events id supported in the application
+ */
 typedef enum
 {
   /* USER CODE BEGIN CFG_IdleEvt_Id_t */
@@ -300,6 +249,7 @@ typedef enum
   CFG_EVT_GET_PWR_INFO_TABLE_CNF, /* GET PWR INFO TABLE CNF */
   CFG_EVT_SET_PWR_INFO_TABLE_CNF, /* SET PWR INFO TABLE CNF */
   /* USER CODE END CFG_IdleEvt_Id_t */
+  CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_IdleEvt_Id_t;
 
 /* USER CODE BEGIN DEFINE_EVENT */
@@ -319,73 +269,45 @@ typedef enum
 #define EVENT_GET_PWR_INFO_TABLE_CNF    (1U << CFG_EVT_GET_PWR_INFO_TABLE_CNF)
 #define EVENT_SET_PWR_INFO_TABLE_CNF    (1U << CFG_EVT_SET_PWR_INFO_TABLE_CNF)
 
-#define LL_IN_HIGH_PRIO 0x01
-
-#if ( LL_IN_HIGH_PRIO == 0x01)
-#define TASK_LINK_LAYER_PRIO  CFG_SEQ_PRIO_0
-#define TASK_MAC_LAYER_PRIO   CFG_SEQ_PRIO_1
-#define TASK_MAC_APP_PRIO     CFG_SEQ_PRIO_1
-#define TASK_BPKA_PRIO        CFG_SEQ_PRIO_1
-#define TASK_RNG_PRIO         CFG_SEQ_PRIO_1
-#else
-#define TASK_LINK_LAYER_PRIO  CFG_SEQ_PRIO_0
-#define TASK_MAC_LAYER_PRIO   CFG_SEQ_PRIO_0
-#define TASK_MAC_APP_PRIO     CFG_SEQ_PRIO_0
-#define TASK_BPKA_PRIO        CFG_SEQ_PRIO_0
-#define TASK_RNG_PRIO         CFG_SEQ_PRIO_0
-#endif
-
 /* USER CODE END DEFINE_EVENT */
 
-/* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
 
 /******************************************************************************
- * NVM configuration
+ * Debugger
+ *
+ *  When CFG_DEBUGGER_LEVEL is set to:
+ *   - 0 : No Debugger available, SWD/JTAG pins are disabled.
+ *   - 1 : Debugger available in RUN mode only.
+ *   - 2 : Debugger available in low power mode.
+ *
  ******************************************************************************/
-
-#define CFG_SNVMA_START_SECTOR_ID     (FLASH_PAGE_NB - 2u)
-
-#define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
-
-/* USER CODE BEGIN NVM_Configuration */
-
-/* USER CODE END NVM_Configuration */
+#define CFG_DEBUGGER_LEVEL           (1)
 
 /******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
-
-/******************************************************************************
- * RT GPIO debug module configuration
+ * RealTime GPIO debug module configuration
  ******************************************************************************/
 
 #define CFG_RT_DEBUG_GPIO_MODULE         (0)
 #define CFG_RT_DEBUG_DTB                 (0)
 
 /******************************************************************************
+ * System Clock Manager module configuration
+ ******************************************************************************/
+
+#define CFG_SCM_SUPPORTED            (1)
+
+
+/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Link Layer uses radio low interrupt (0 --> NO ; 1 --> YES) */
+/* Do not modify - must be 1 */
 #define USE_RADIO_LOW_ISR                   (1)
 
-/* Link Layer event scheduling (0 --> NO, next event schediling is done at background ; 1 --> YES) */
+/* Do not modify - must be 1 */
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
-
-#if (DEFAULT_PHY_CALIBRATION_PERIOD == 0)
-#undef USE_TEMPERATURE_BASED_RADIO_CALIBRATION
 #define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
-#endif
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
@@ -396,7 +318,17 @@ typedef enum
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 #endif /* USE_RADIO_LOW_ISR */
 
+/* Link Layer supported number of antennas */
+#define RADIO_NUM_OF_ANTENNAS               (4)
+
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
+
+
+/* RF TX power table ID selection:
+ *   0 -> RF TX output level from -20 dBm to +10 dBm
+ *   1 -> RF TX output level from -20 dBm to +3 dBm
+ */
+#define CFG_RF_TX_POWER_TABLE_ID            (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -413,52 +345,53 @@ typedef enum
 
 /* USER CODE END HW_RNG_Configuration */
 
-/******************************************************************************
- * MEMORY MANAGER
- ******************************************************************************/
-
-#define CFG_MM_POOL_SIZE                          (4000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (400U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
-
-/* USER CODE BEGIN MEMORY_MANAGER_Configuration */
-
-/* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
- * When CFG_DBG_SUPPORTED is set, the debugger is activated
  */
 
 #define CFG_LED_SUPPORTED                       (1)
 #define CFG_BUTTON_SUPPORTED                    (1)
-#define CFG_DBG_SUPPORTED                       (1)
 
 /**
- * If CFG_FULL_LOW_POWER is requested, make sure LED and debugger are disabled
+ * Overwrite some configuration imposed by Low Power level selected.
  */
-#if (CFG_FULL_LOW_POWER == 1)
-  #undef  CFG_LED_SUPPORTED
-  #define CFG_LED_SUPPORTED      (0)
-  #undef  CFG_DBG_SUPPORTED
-  #define CFG_DBG_SUPPORTED      (0)
-#endif /* CFG_FULL_LOW_POWER */
+#if (CFG_LPM_LEVEL > 1)
+  #if CFG_LED_SUPPORTED
+    #undef  CFG_LED_SUPPORTED
+    #define CFG_LED_SUPPORTED      (0)
+  #endif /* CFG_LED_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
 
-/* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
- */
-#define CFG_RF_TX_POWER_TABLE_ID            0
 
 /* USER CODE END Defines */
+
+/**
+ * Overwrite some configuration imposed by Low Power level selected.
+ */
+#if (CFG_LPM_LEVEL > 1)
+  #if CFG_LOG_SUPPORTED
+    #undef  CFG_LOG_SUPPORTED
+    #define CFG_LOG_SUPPORTED       (0)
+  #endif /* CFG_LOG_SUPPORTED */
+  #if CFG_DEBUGGER_LEVEL
+    #undef  CFG_DEBUGGER_LEVEL
+    #define CFG_DEBUGGER_LEVEL      (0)
+  #endif /* CFG_DEBUGGER_LEVEL */
+#endif /* CFG_LPM_LEVEL */
+
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  #if CFG_LOG_SUPPORTED
+    #undef  CFG_LOG_SUPPORTED
+    #define CFG_LOG_SUPPORTED       (0)
+  #endif /* CFG_LOG_SUPPORTED */
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+
+/* USER CODE BEGIN Defines_2 */
+
+/* USER CODE END Defines_2 */
 
 #endif /*APP_CONF_H */

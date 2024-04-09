@@ -39,13 +39,14 @@ extern "C" {
 /* #############################################################################
    #       Defines and MACRO used to allocate GATT Services, GATT Attributes   #
    #       and storage area for Attribute values for Common Audio Profile      #
-   #       in Acceptor role                                                      #
+   #       in Acceptor role and/or Commander role                              #
    ############################################################################# */
 
 /*
- * CAP_ACC_NUM_GATT_SERVICES: number of GATT services required for Common Audio Profile in Acceptor role registration.
+ * CAP_ACC_COM_NUM_GATT_SERVICES: number of GATT services required for Common Audio Profile in Acceptor role and/or
+ * Commander role registration.
  */
-#define CAP_ACC_NUM_GATT_SERVICES                               (1u)
+#define CAP_ACC_COM_NUM_GATT_SERVICES                           (1u)
 
 /* #############################################################################
    #       Defines and MACRO used to allocate memory resource of               #
@@ -58,11 +59,12 @@ extern "C" {
 #define CAP_MEM_PER_ASE_SIZE_BYTES                              (3u)
 
 /*
- * CAP_MEM_PER_CIG_SIZE_BYTES: memory size used per CIG
+ * CAP_MEM_PER_CIG_SIZE_BYTES: memory size used per CIG in CAP Initiator
  */
 #define CAP_MEM_PER_CIG_SIZE_BYTES                              (8u)
+
 /*
- * CAP_MEM_PER_CIS_SIZE_BYTES: memory size used per CIS
+ * CAP_MEM_PER_CIS_SIZE_BYTES: memory size used per CIS in CAP Initiator
  */
 #define CAP_MEM_PER_CIS_SIZE_BYTES                              (8u)
 
@@ -79,83 +81,129 @@ extern "C" {
 #define CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES                    (60u)
 
 /*
- * CAP_ACCEPTOR_INST_MEM_PER_CONN_SIZE_BYTES: memory size used per CAP Acceptor Context Instance Allocation
+ * CAP_VCP_MEM_PER_AIC_INSTANCES: memory size used per an AIC Instance for VCP in CAP Commander
  */
-#define CAP_ACCEPTOR_INST_MEM_PER_CONN_SIZE_BYTES               (28u)
+#define CAP_VCP_MEM_PER_AIC_INSTANCES                           (8u)
 
 /*
- * CAP_MEM_PER_REMOTE_ACCEPTOR_SIZE_BYTES: memory size used per remote CAP Acceptor when local device supports
- *                                         CAP initiator or CAP Commander with Capture and Rendering Control
+ * CAP_VCP_MEM_PER_VOC_INSTANCES: memory size used per an VOC Instance for VCP in CAP Commander
  */
-#define CAP_MEM_PER_REMOTE_ACCEPTOR_SIZE_BYTES                  (60u)
+#define CAP_VCP_MEM_PER_VOC_INSTANCES                           (8u)
 
 /*
- * CAP_INITIATOR_MEM_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the
- * CAP Initiator Context whose size depends on the number of supported CIGes and CISes per CIG, the number of supported
- * Sink and Source Codec Configurations and the number of supported Sink and Source Audio Stream Endpoints in case of BAP
- * Unicast Client role is enabled.
- *
- * @param max_num_cig: Maximum number of CIGes
- *
- * @param max_num_cis_per_cig: Maximum number of CISes per CIG
- *
- * @param num_links: Maximum number of Links with remote CAP acceptors
- *
- * @param max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection with remote CAP Acceptor
- *
- * @param max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connection with remote CAP Acceptor
- *
+ * CAP_MICP_MEM_PER_VOC_INSTANCES: memory size used per an AIC Instance for MICP in CAP Commander
  */
-#define CAP_INITIATOR_MEM_TOTAL_BUFFER_SIZE(max_num_cig,max_num_cis_per_cig, \
-                                            num_links,max_num_snk_ase_per_link, \
-                                            max_num_src_ase_per_link) \
-        (CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES \
-        + ((CAP_MEM_PER_CIG_SIZE_BYTES + (CAP_MEM_PER_CIS_SIZE_BYTES * max_num_cis_per_cig))*max_num_cig) \
-        + num_links * (CAP_INITIATOR_MEM_UNICAST_CTXT_PER_CONN_SIZE_BYTES + DIVC(((max_num_snk_ase_per_link + max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u))
+#define CAP_MICP_MEM_PER_AIC_INSTANCES                          (8u)
 
 /*
- * CAP_ACCEPTOR_MEM_TOTAL_BUFFER_SIZE:
- * @param num_ble_links : Maximum number of simultaneous connections that the device
- *                        will support in CAP Acceptor role.
- * @param ccp_feature_support : 1 if Call Control Profile feature is supported
+ * CAP_MEM_PER_CONNECTION_SIZE_BYTES: memory size used per connection by CAP
+ */
+#define CAP_MEM_PER_CONNECTION_SIZE_BYTES                       (104u)
+
+
+/* CAP_MEM_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the
+ * CAP Context whose size depends on the CAP role and related features.
+ *
+ * @param cap_role: CAP Role (see CAP_Role_t)
+ *
+ * @param num_ble_links: Maximum number of ble Links with remote CAP devices.
+ *
+ * @param ucl_max_num_cig: Maximum number of CIGes supported by the local Unicast Client
+ *
+ * @param ucl_max_num_cis_per_cig: Maximum number of CISes per CIG supported by the local Unicast Client
+ *
+ * @param ucl_max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection
+ *                                      with remote CAP Acceptor
+ *
+ * @param ucl_max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connection
+ *                                      with remote CAP Acceptor
+ *
+ * @param ccp_clt_feature_support : 1 if Call Control Profile feature is supported by local CAP Acceptor/Commander
  *
  * @param max_num_bearer_instances: Maximum number of Telephony Bearer Instances (without take in account
  *                                  the mandatory Generic Telephony Bearer) per connection supported
- *                                  by CAP Acceptor in CCP Client role
+ *                                  by CAP Acceptor/Commander in CCP Client role
  *
- * @param mcp_feature_support : 1 if Media Control Profile feature is supported
+ * @param mcp_clt_feature_support : 1 if Media Control Profile feature is supported by local CAP Acceptor/Commander
  *
  * @param max_num_media_player_instances: Maximum number of Media Player Instances (without take in account
  *                                        the mandatory Generic Media Player) per connection supported
  *                                        by CAP Acceptor in MCP Client role
  *
- * @param max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection with remote CAP Initiator
+ * @param usr_max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection
+ *                                      with remote CAP Initiator
  *
- * @param max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connectionw with remote CAP Initiator
+ * @param usr_max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connection
+ *                                      with remote CAP Initiator
+ *
+ * @param vcp_ctlr_feature_support : 1 if Volume Control Profile feature is supported by local CAP Commander
+ *
+ * @param max_num_vcp_aic_instances: Maximum number of Audio Input Control Instances in VCP per connection supported
+ *                                   by CAP Commander in MCP Controller role
+ *
+ * @param max_num_vcp_voc_instances: Maximum number of Volume Offset Control Instances in VCP per connection supported
+ *                                   by CAP Commander in VCP Controller role
+ *
+ * @param micp_ctlr_feature_support : 1 if Microphone Control Profile feature is supported by local CAP Commander
+ *
+ * @param max_num_vcp_aic_instances: Maximum number of Audio Input Control Instances in MICP per connection supported
+ *                                   by CAP Commander in MICP Controller role
+ *
  */
-#define CAP_ACCEPTOR_MEM_TOTAL_BUFFER_SIZE(num_ble_links,ccp_feature_support,max_num_bearer_instances,\
-                                           mcp_feature_support,max_num_media_player_instances, \
-                                           max_num_snk_ase_per_link,max_num_src_ase_per_link) \
-        (num_ble_links *\
-        ( CAP_ACCEPTOR_INST_MEM_PER_CONN_SIZE_BYTES \
-        + ((ccp_feature_support == 1u ) ?  (DIVC((2u *(max_num_bearer_instances + 1u)),4u) * 4u) : (0)) \
-        + ((mcp_feature_support == 1u ) ?  (DIVC((2u *(max_num_media_player_instances + 1u)),4u) * 4u) : (0)) \
-        + (DIVC(((max_num_snk_ase_per_link+max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)))
-
+#define CAP_MEM_TOTAL_BUFFER_SIZE(cap_role,num_ble_links, \
+                                  ucl_max_num_cig,ucl_max_num_cis_per_cig, \
+                                  ucl_max_num_snk_ase_per_link, \
+                                  ucl_max_num_src_ase_per_link, \
+                                  ccp_clt_feature_support,max_num_bearer_instances,\
+                                  mcp_clt_feature_support,max_num_media_player_instances, \
+                                  usr_max_num_snk_ase_per_link,usr_max_num_src_ase_per_link, \
+                                  vcp_ctlr_feature_support,max_num_vcp_aic_instances,max_num_vcp_voc_instances, \
+                                  micp_ctlr_feature_support,max_num_micp_aic_instances) \
+        ((CAP_MEM_PER_CONNECTION_SIZE_BYTES * num_ble_links) \
+        + (((cap_role & CAP_ROLE_INITIATOR) == CAP_ROLE_INITIATOR) ?  \
+          (CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES \
+          + ((CAP_MEM_PER_CIG_SIZE_BYTES + (CAP_MEM_PER_CIS_SIZE_BYTES * ucl_max_num_cis_per_cig))*ucl_max_num_cig) \
+          + num_ble_links * (CAP_INITIATOR_MEM_UNICAST_CTXT_PER_CONN_SIZE_BYTES + DIVC(((ucl_max_num_snk_ase_per_link + ucl_max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
+        + (((cap_role & CAP_ROLE_ACCEPTOR) == CAP_ROLE_ACCEPTOR) ?  \
+          (num_ble_links * (DIVC(((usr_max_num_snk_ase_per_link+usr_max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
+        + (((cap_role & (CAP_ROLE_ACCEPTOR)) != 0x00) ?  \
+          (num_ble_links * \
+          (((ccp_clt_feature_support == 1u ) ?  (DIVC((2u *(max_num_bearer_instances + 1u)),4u) * 4u) : (0)) \
+          + ((mcp_clt_feature_support == 1u ) ?  (DIVC((2u *(max_num_media_player_instances + 1u)),4u) * 4u) : (0)))) : (0)) \
+        + (((cap_role & CAP_ROLE_COMMANDER) != 0x00) ?  \
+          (num_ble_links * \
+          (((vcp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_VCP_MEM_PER_AIC_INSTANCES * max_num_vcp_aic_instances),4u) * 4u) : (0)) \
+          + ((vcp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_VCP_MEM_PER_VOC_INSTANCES * max_num_vcp_voc_instances),4u) * 4u) : (0)) \
+          + ((micp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_MICP_MEM_PER_AIC_INSTANCES * max_num_micp_aic_instances),4u) * 4u) : (0)))) : (0)) \
+        )
 
 /* Types ---------------------------------------------------------------------*/
 
 /* Types of roles of the Common Audio Profile */
 typedef uint8_t CAP_Role_t;
-#define CAP_ROLE_ACCEPTOR       (0x01)
-#define CAP_ROLE_INITIATOR      (0x02)
-#define CAP_ROLE_COMMANDER      (0x04)
+#define CAP_ROLE_ACCEPTOR               (0x01)
+#define CAP_ROLE_INITIATOR              (0x02)
+#define CAP_ROLE_COMMANDER              (0x04)
 
+/* Mask of Link about Audio Profile in Generic Audio Framework*/
+typedef uint8_t GAF_Profiles_Link_t;
+#define CSIP_LINK                       (0x01) /* Coordinated Set Identification Profile Link */
+#define BAP_UNICAST_LINK                (0x02) /* BAP Unicast Link */
+#define BAP_BA_LINK                     (0x04) /* BAP Broadcast Assistant link */
+#define VCP_LINK                        (0x08) /* Volume Control Profile Link */
+#define MICP_LINK                       (0x10) /* Microphone Control Profile Link */
+#define CCP_LINK                        (0x20) /* Call Control Profile Link */
+#define MCP_LINK                        (0x40) /* Media Control Profile Link */
 
 /*Type used to specify the type of Set of Acceptors*/
 typedef uint8_t CAP_Set_Acceptors_t;
-#define CAP_SET_TYPE_AD_HOC     (0x00u)  /* Ad-hoc Set of Acceptors */
-#define CAP_SET_TYPE_CSIP       (0x01u)  /* CSIP Coordinated Set of Acceptors */
+#define CAP_SET_TYPE_AD_HOC             (0x00u)  /* Ad-hoc Set of Acceptors */
+#define CAP_SET_TYPE_CSIP               (0x01u)  /* CSIP Coordinated Set of Acceptors */
+
+/* Type used to specify the type of operation to use in the Broadcast Audio Reception Start Procedure */
+typedef uint8_t CAP_BA_Operation_t;
+#define CAP_BA_ADD_SOURCE_OPERATION    (0x00u)
+#define CAP_BA_MODIFY_SOURCE_OPERATION (0x01u)
 
 typedef enum
 {
@@ -199,6 +247,12 @@ typedef enum
                                                  * remote CAP Acceptor has been updated.
                                                  * The pInfo field indicates the new Supported Audio Contexts value.
                                                  * For this, the pInfo should be cast in BAP_Audio_Contexts_t type.
+                                                 */
+  CAP_READ_REM_SNK_PAC_RECORDS_COMPLETE_EVT,    /* This event is notified when the process started by calling the
+                                                 * CAP_ReadRemoteSnkPACRecords() API is complete.
+                                                 */
+  CAP_READ_REM_SRC_PAC_RECORDS_COMPLETE_EVT,    /* This event is notified when the process started by calling the
+                                                 * CAP_ReadRemoteSrcPACRecords() API is complete.
                                                  */
 
 /* #############################################################################
@@ -352,6 +406,12 @@ typedef enum
                                                  * The pInfo field indicates the content of the broadcast receive state
                                                  * characteristic through the BAP_BA_Broadcast_Source_State_t type
                                                  */
+  CAP_BA_AUDIO_RECEPTION_STARTED_EVT,           /* This event is notified by Commander with Broadcast Assistant role
+                                                 * to report that the Audio Reception Start Procedure is complete
+                                                 */
+  CAP_BA_AUDIO_RECEPTION_STOPPED_EVT,           /* This event is notified by Commander with Broadcast Assistant role
+                                                 * to report that the Audio Reception Stop Procedure is complete
+                                                 */
   CAP_BA_REM_REMOVED_SOURCE_EVT,                /* This event is notified by Commander with Broadcast Assistant role
                                                  * to report that a remote Scan Delegator has removed a source
                                                  */
@@ -391,6 +451,13 @@ typedef enum
 /* #############################################################################
    #                            Sub-Profiles Events                            #
    ############################################################################# */
+
+  CAP_CCP_LINKUP_EVT,                           /* Event notified during CAP linkup procedure if CAP Commander or
+                                                 * CAP Acceptor supports Call Control Client role and discovers
+                                                 * that the remote device supports CCP Server role.
+                                                 * The Generic Telephony Bearer and potential Telephony Bearer Instances
+                                                 * discovery is complete.
+                                                 */
   CAP_CCP_INST_ACTIVATED_EVT,                   /* This event is notified when a Telephone Bearer Instance of the
                                                  * Call Control Profile is activated and associated to an Audio Stream.
                                                  * This event is only notified for CAP Acceptor or CAP Commander role.
@@ -407,6 +474,12 @@ typedef enum
                                                  * A subevent is associated of type CCP_NotCode_t.
                                                  * The pInfo field indicates information associated to the CCP subevent
                                                  * Instance through the CCP_Notification_Evt_t type.
+                                                 */
+  CAP_MCP_LINKUP_EVT,                           /* Event notified during CAP linkup procedure if CAP Commander or
+                                                 * CAP Acceptor supports Media Control Client role and discovers
+                                                 * that the remote device supports Media Server role.
+                                                 * The Generic Media Player and potential Media Player Instances
+                                                 * discovery is complete.
                                                  */
   CAP_MCP_INST_ACTIVATED_EVT,                   /* This event is notified when a Media Player Instance of the
                                                  * Media Control Profile is activated and associated to an Audio Stream.
@@ -449,6 +522,11 @@ typedef enum
                                                  * This event is notified once the procedure to change the Mute State
                                                  * on all the Acceptors of the Coordinated Set is done.
                                                  */
+  CAP_SET_VOLUME_OFFSET_PROCEDURE_COMPLETE_EVT, /* Event notified once the CAP Set Volume Offset procedure launched thanks to
+                                                 * the CAP_VolumeController_StartSetVolumeOffsetProcedure() API is complete.
+                                                 * This event is notified once the procedure to change the volume offset
+                                                 * on all the Acceptors of the Coordinated Set is done.
+                                                 */
   CAP_VCP_META_EVT,                             /* This event is notified for Volume Control Profile.
                                                  * A subevent is associated of type VCP_NotCode_t.
                                                  * The pInfo field indicates information associated to the VCP subevent
@@ -460,13 +538,14 @@ typedef enum
                                                  * The pInfo field indicates information about the remote Microphone
                                                  * Device through the MICP_Info_t type
                                                  */
-  CAP_SET_MICROPHONE_MUTE_COMPLETE_EVT,         /* Event notified once the CAP Set Mute procedure launched thanks to
-                                                 * the CAP_MicrophoneController_SetMuteProcedure() API is complete.
+  CAP_SET_MICROPHONE_MUTE_PROCEDURE_COMPLETE_EVT,/* Event notified once the CAP Set Mute procedure launched thanks to
+                                                 * the CAP_MicrophoneController_StartSetMuteProcedure() API is complete.
                                                  * This event is notified once the procedure to change the mute value
                                                  * on all the Acceptors of the Coordinated Set is done.
                                                  */
-  CAP_SET_MICROPHONE_GAIN_SETTING_COMPLETE_EVT, /* Event notified once the CAP Set Gain Setting procedure launched thanks to
-                                                 * the CAP_MicrophoneController_SetGainSetting() API is complete.
+  CAP_SET_MICROPHONE_GAIN_SETTING_PROCEDURE_COMPLETE_EVT,
+                                                /* Event notified once the CAP Set Gain Setting procedure launched thanks to
+                                                 * the CAP_MicrophoneController_StartSetGainSettingProcedure() API is complete.
                                                  * This event is notified once the procedure to change the gain setting
                                                  * on all the Acceptors of the Coordinated Set is done.
                                                  */
@@ -523,10 +602,12 @@ typedef struct
 
 typedef struct
 {
-  uint8_t SetIdentityResolvingKeyType;
-  uint8_t* pSetIdentityResolvingKey;
-  uint8_t CoordinatedSetSize;
-  uint8_t SetMemberRank;
+  uint16_t      StartAttHandle;                 /* ATT Start Handle of CSIS in the remote CSIP Set Member */
+  uint16_t      EndAttHandle;                   /* ATT End Handle of CSIS in the remote CSIP Set Member */
+  uint8_t       SetIdentityResolvingKeyType;
+  uint8_t       *pSetIdentityResolvingKey;
+  uint8_t       CoordinatedSetSize;           /*if value is 0, it means that related information of the field is not usable*/
+  uint8_t       SetMemberRank;                /*if value is 0, it means that related information of the field is not usable*/
 } CSIP_SetMember_Info_t;
 
 typedef struct
@@ -576,10 +657,12 @@ typedef struct
 /*Structure used in parameter of the CAP_Unicast_AudioStart() API*/
 typedef struct
 {
-  uint16_t                              ConnHandle;     /* Connection Handle of the remote CAP Acceptor */
-  Audio_Role_t                          AudioRole;      /* Mask of Audio Role of the Initiator */
-  CAP_Unicast_Audio_Stream_Params_t      StreamSnk;     /* Sink Stream Configuration (from Initiator to Acceptor) */
-  CAP_Unicast_Audio_Stream_Params_t      StreamSrc;     /* Source Stream Configuration (from Acceptor to Initiator) */
+  uint16_t                              ConnHandle;    /* Connection Handle of the remote CAP Acceptor */
+  Audio_Role_t                          StreamRole;    /* Mask of Audio Role to configure on the remote Acceptor */
+  CAP_Unicast_Audio_Stream_Params_t     StreamSnk;     /* Sink Stream Configuration (from Initiator to Acceptor)
+                                                          Used only if StreamRole countains AUDIO_ROLE_SINK */
+  CAP_Unicast_Audio_Stream_Params_t     StreamSrc;     /* Source Stream Configuration (from Acceptor to Initiator)
+                                                          Used only if StreamRole countains AUDIO_ROLE_SOURCE */
 } CAP_Unicast_AudioStart_Stream_Params_t;
 
 /*Structure used in parameter of the CAP_Unicast_AudioUpdate() API*/
@@ -595,20 +678,104 @@ typedef struct
 /* Structure used in parameter of the CAP_Broadcast_AudioStart() API */
 typedef struct
 {
-  BAP_BASE_Group_t *pBaseGroup; /* A pointer to a BASE group for the Broadcast Source */
-  uint8_t BigHandle; /* The Handle of the BIG to create */
-  uint8_t Rtn; /* The Number of retransmission of the BIG to create */
-  Target_Phy_t Phy; /* The PHY of the BIG to create */
-  BAP_Packing_t Packing; /* The Packing of the BIG */
-  uint16_t MaxTransportLatency; /* The Maximum Transport Latency of the BIG to create */
-  uint8_t Encryption; /* 0x00 to disable encryption, 0x01 to enable it */
-  uint32_t *pBroadcastCode; /* The broadcast Code of the Broadcast Source to create */
-  uint8_t AdvHandle; /* The Advertising Handle of the Extended Advertising and Periodic Advertising */
-  BAP_Extended_Advertising_Params_t *pExtendedAdvParams; /* A pointer to the Extended Advertising Parameters structure */
-  BAP_Periodic_Advertising_Params_t *pPeriodicAdvParams; /* A pointer to the Periodic Advertising Parameters structure */
-  uint8_t *pAdditionalAdvData; /* A pointer to a data array to add to advertising data */
-  uint8_t AdditionalAdvDataLen; /* The length of the data array to add */
+  BAP_BASE_Group_t                      *pBaseGroup; /* A pointer to a BASE group for the Broadcast Source */
+  uint8_t                               BigHandle; /* The Handle of the BIG to create */
+  uint8_t                               Rtn; /* The Number of retransmission of the BIG to create */
+  Target_Phy_t                          Phy; /* The PHY of the BIG to create */
+  BAP_Packing_t                         Packing; /* The Packing of the BIG */
+  uint16_t                              MaxTransportLatency; /* The Maximum Transport Latency of the BIG to create */
+  uint8_t                               Encryption; /* 0x00 to disable encryption, 0x01 to enable it */
+  uint32_t                              *pBroadcastCode; /* The broadcast Code of the Broadcast Source to create */
+  uint8_t                               AdvHandle; /* The Advertising Handle of the Extended Advertising and Periodic Advertising */
+  uint32_t                              BroadcastId; /* The Broadcast ID of the Broadcast Source. Needs to be generated
+                                                        randomly at each new BIG establishement */
+  BAP_Extended_Advertising_Params_t     *pExtendedAdvParams; /* A pointer to the Extended Advertising Parameters structure */
+  BAP_Periodic_Advertising_Params_t     *pPeriodicAdvParams; /* A pointer to the Periodic Advertising Parameters structure */
+  uint8_t                               *pAdditionalAdvData; /* A pointer to a data array to add to advertising data */
+  uint8_t                               AdditionalAdvDataLen; /* The length of the data array to add */
 } CAP_Broadcast_AudioStart_Params_t;
+
+/* Structure used as parameter for the CAP_Broadcast_AudioReceptionStart API */
+typedef struct
+{
+  uint16_t ConnHandle;                           /* Connection Handle of the remote CAP Acceptor */
+
+  CAP_BA_Operation_t Operation;                  /* 0x00 for Add Source operation
+                                                    0x01 for Modify Source operation
+                                                  */
+
+  uint8_t SourceID;                              /* ID of the source to modify if Operation is 0x01 */
+
+  uint8_t  AdvAddressType;                       /* Advertiser_Address_Type for the Broadcast Source
+                                                  * 0x00 = Public Device Address or Public Identity Address
+                                                  * 0x01 = Random Device Address or Random (static) Identity Address
+                                                  */
+
+  uint8_t  aAdvAddress[6u];                       /* Advertiser_Address for the Broadcast Source */
+
+  uint8_t  AdvSid;                               /* Advertising_SID subfield of the ADI field of the AUX_ADV_IND PDU or
+                                                  * the LL_PERIODIC_SYNC_IND containing the SyncInfo that points to the
+                                                  * PA transmitted by the Broadcast Source.
+                                                  * Range: 0x00-0x0F
+                                                  */
+
+  uint8_t  aBroadcastId[3u];                      /* Broadcast_ID of the Broadcast Source */
+
+  uint8_t  PaSync;                               /* 0x00: Do not synchronize to PA
+                                                  * 0x01: Synchronize to PA – PAST available
+                                                  * 0x02: Synchronize to PA – PAST not available
+                                                  */
+
+  uint16_t  SyncHandle;                          /* Handle of the PA synchronization if the CAP Commander is
+                                                  * synchronized. Needed to perform PAST
+                                                  * 0xFFFF: CAP Commander not synchronized
+                                                  */
+
+  uint16_t PaInterval;                           /* PA Sync Interval parameter value
+                                                  * 0xFFFF: PA_Interval unknown
+                                                  */
+
+  uint8_t Encryption;                            /* 0x00 if source is not encrypted
+                                                  * 0x01 if source is encrypted
+                                                  */
+
+  uint32_t *pBroadcastCode;                      /* Pointer to the broadcast code to set if the source is encrypted */
+
+  uint8_t  NumSubgroups;                         /* Number of subgroups */
+
+  BAP_BA_Broadcast_Source_Subgroup_t *pSubgroup; /* A pointer to an array of subgroups contained in the source */
+} CAP_Broadcast_AudioReceptionStart_Params_t;
+
+/* Structure used as parameter for the CAP_Broadcast_AudioReceptionStop API */
+typedef struct
+{
+  uint16_t ConnHandle;                           /* Connection Handle of the remote CAP Acceptor */
+
+  uint8_t SourceID;                              /* ID of the source to modify if Operation is 0x01 */
+
+  uint8_t  AdvAddressType;                       /* Advertiser_Address_Type for the Broadcast Source
+                                                  * 0x00 = Public Device Address or Public Identity Address
+                                                  * 0x01 = Random Device Address or Random (static) Identity Address
+                                                  */
+
+  uint8_t  aAdvAddress[6u];                      /* Advertiser_Address for the Broadcast Source */
+
+  uint8_t  aBroadcastId[3u];                     /* Broadcast_ID of the Broadcast Source */
+
+  uint16_t PaInterval;                           /* PA Sync Interval parameter value
+                                                  * 0xFFFF: PA_Interval unknown
+                                                  */
+
+  uint8_t  NumSubgroups;                         /* Number of subgroups */
+
+  BAP_BA_Broadcast_Source_Subgroup_t *pSubgroup; /* A pointer to an array of subgroups contained in the source
+                                                  * bis_sync field should be set to zero
+                                                  */
+
+  uint8_t  Release;                              /* 0x00: Do not remove source from remote acceptor(s)
+                                                    0x01: Remove source from remote acceptor(s)
+                                                  */
+} CAP_Broadcast_AudioReceptionStop_Params_t;
 
 /* Structure used in parameter when CAP_CCP_INST_ACTIVATED_EVT event is notified*/
 typedef struct
@@ -633,15 +800,28 @@ typedef struct
                                                                  */
 } CAP_MCP_InstInfo_Evt_t;
 
+/*Structure used in parameters of the CAP_VolumeController_StartSetVolumeOffsetProcedure() API*/
+typedef struct
+{
+  uint16_t      ConnHandle;     /* Connection Handle */
+  uint8_t       VOCInst;        /* Volume Offset Control Instance */
+  int16_t       VolOffset;      /* Volume Offset in range [-255;255]*/
+} CAP_VCP_VolumeOffsetParms_t;
+
+/*Structure used in parameters of the CAP_MicrophoneController_StartSetGainSettingProcedure() API*/
+typedef struct
+{
+  uint16_t      ConnHandle;     /* Connection Handle */
+  uint8_t       AICInst;        /* AIC Instance of the Audio Input */
+  int8_t        GainSetting;    /* Gain Setting value */
+} CAP_MICP_GainSettingParms_t;
+
+
 /* Common Audio Profile Configuration used in CAP_Init() parameter */
 typedef struct
 {
   CAP_Role_t            Role;                   /* CAP roles supported by local device*/
   uint8_t               MaxNumLinks;            /* Maximum number of BLE Links */
-
-  /*CAP Acceptor*/
-  uint8_t               MaxNumAcceptorInstances;/* Maximum number of CAP Acceptor Instances*/
-
   uint8_t               *pStartRamAddr;         /* Start address of the RAM buffer allocated for memory resource of
                                                  * Common Audio Profile
                                                  * It must be a 32bit aligned RAM area.

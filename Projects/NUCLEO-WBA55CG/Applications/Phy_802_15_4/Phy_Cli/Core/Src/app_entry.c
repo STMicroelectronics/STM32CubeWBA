@@ -24,21 +24,24 @@
 #include "main.h"
 #include "app_entry.h"
 #include "stm32_seq.h"
-#if (CFG_LPM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
+#include "serial_cmd_interpreter.h"
+#endif /* CFG_LOG_SUPPORTED */
 #include "app_phy_cli.h"
 #include "ll_sys_if.h"
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
 #include "ll_sys.h"
-#include "simple_nvm_arbiter.h"
 #include "app_debug.h"
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
-
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
@@ -60,7 +63,6 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_THRESHOLD_MS   (500u)
@@ -74,11 +76,20 @@ typedef struct
 
 /* USER CODE END PM */
 
-/* Private variables ---------------------------------------------------------*/
+/* Private constants ---------------------------------------------------------*/
+/* USER CODE BEGIN PC */
 
-#if ( CFG_LPM_SUPPORTED == 1)
+/* USER CODE END PC */
+
+/* Private variables ---------------------------------------------------------*/
+#if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+#if (CFG_LOG_SUPPORTED != 0)
+/* Log configuration */
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -112,15 +123,22 @@ static void Button_TriggerActions(void *arg);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
+/**
+ * @brief   System Initialisation.
+ */
 void MX_APPE_Config(void)
 {
   /* Configure HSE Tuning */
   Config_HSE();
 }
 
+/**
+ * @brief   System Initialisation.
+ */
 uint32_t MX_APPE_Init(void *p_param)
 {
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
@@ -133,24 +151,24 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-/* USER CODE BEGIN APPE_Init_1 */
+  /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)
   Led_Init();
 #endif
 #if (CFG_BUTTON_SUPPORTED == 1)
   Button_Init();
 #endif
-/* USER CODE END APPE_Init_1 */
+
+  /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
+  LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+
   RNG_Init();
 
   APP_PHY_CLI_Init();
-#if ( CFG_LPM_SUPPORTED == 1)
-  system_startup_done = TRUE;
-#endif /* CFG_LPM_SUPPORTED */
 
-/* USER CODE BEGIN APPE_Init_2 */
+  /* USER CODE BEGIN APPE_Init_2 */
 
-/* USER CODE END APPE_Init_2 */
+  /* USER CODE END APPE_Init_2 */
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
   return WPAN_SUCCESS;
 }
@@ -215,6 +233,10 @@ __WEAK void APPE_Button3Action(void)
  *
  *************************************************************/
 
+/**
+ * @brief Configure HSE by read this Tuning from OTP
+ *
+ */
 static void Config_HSE(void)
 {
   OTP_Data_s* otp_ptr = NULL;
@@ -231,25 +253,34 @@ static void Config_HSE(void)
   }
 }
 
+/**
+ *
+ */
 static void System_Init( void )
 {
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
   UTIL_TIMER_Init();
+
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
-#if (CFG_DEBUG_APP_TRACE != 0)
-  /*Initialize the terminal using the USART2 */
-  UTIL_ADV_TRACE_Init();
-  UTIL_ADV_TRACE_SetVerboseLevel(VLEVEL_L); /* functional traces*/
-  UTIL_ADV_TRACE_SetRegion(~0x0);
-#endif
+#if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the logs ( using the USART ) */
+  Log_Module_Init( Log_Module_Config );
+
+  /* Initialize the Command Interpreter */
+  Serial_CMD_Interpreter_Init();
+#endif  /* (CFG_LOG_SUPPORTED != 0) */
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   adc_ctrl_init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+#if ( CFG_LPM_LEVEL != 0)
+  system_startup_done = TRUE;
+#endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
 }
@@ -264,10 +295,33 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
+#if (CFG_SCM_SUPPORTED == 1)
+  /* Initialize System Clock Manager */
   scm_init();
+#endif /* CFG_SCM_SUPPORTED */
 
-#if (CFG_LPM_SUPPORTED == 1)
- /* Initialize low power manager */
+#if (CFG_DEBUGGER_LEVEL == 0)
+  /* Pins used by SerialWire Debug are now analog input */
+  //GPIO_InitTypeDef DbgIOsInit = {0};
+  //DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  //DbgIOsInit.Pull = GPIO_NOPULL;
+  //DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  //HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+
+  //DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  //DbgIOsInit.Pull = GPIO_NOPULL;
+  //DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  //HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+#endif /* CFG_DEBUGGER_LEVEL */
+
+  /* Configure Vcore supply */
+  if ( HAL_PWREx_ConfigSupply( 0U ) != HAL_OK ) //CFG_CORE_SUPPLY
+  {
+    Error_Handler();
+  }
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
@@ -275,10 +329,11 @@ static void SystemPower_Config(void)
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
-#else
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* CFG_LPM_STDBY_SUPPORTED */
-#endif /* CFG_LPM_SUPPORTED */
+
+#else /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_LEVEL != 0)  */
 }
 
 /**
@@ -289,8 +344,6 @@ static void RNG_Init(void)
   HW_RNG_Start();
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
-
-  return;
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -330,7 +383,7 @@ static void Button_Init( void )
   {
     UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId,
                        0,
-                       (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
+                       UTIL_TIMER_ONESHOT,
                        &Button_TriggerActions,
                        &buttonDesc[buttonIndex] );
   }
@@ -344,7 +397,7 @@ static void Button_TriggerActions(void *arg)
 
   p_buttonDesc->longPressed = BSP_PB_GetState(p_buttonDesc->button);
 
-  APP_DBG_MSG("Button %d pressed\n", (p_buttonDesc->button + 1));
+  LOG_INFO_APP("Button %d pressed\n", (p_buttonDesc->button + 1));
   switch (p_buttonDesc->button)
   {
     case B1:
@@ -364,6 +417,7 @@ static void Button_TriggerActions(void *arg)
 }
 
 #endif
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
 /*************************************************************
@@ -384,51 +438,70 @@ void MX_APPE_Process(void)
 
 void UTIL_SEQ_Idle( void )
 {
-#if ( CFG_LPM_SUPPORTED == 1)
+#if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
   return;
 }
 
 void UTIL_SEQ_PreIdle( void )
 {
-#if ( CFG_LPM_SUPPORTED == 1)
+  /* USER CODE BEGIN UTIL_SEQ_PreIdle_1 */
+
+  /* USER CODE END UTIL_SEQ_PreIdle_1 */
+#if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
-  if(system_startup_done && UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
 
   LL_RCC_ClearResetFlags();
 
+#if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
   while (LL_RCC_HSE_IsReady() == 0);
 
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO<<4);
+  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* STM32WBAXX_SI_CUT1_0 */
+#endif /* CFG_LPM_LEVEL */
+  /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
+
+  /* USER CODE END UTIL_SEQ_PreIdle_2 */
   return;
 }
 
 void UTIL_SEQ_PostIdle( void )
 {
-#if ( CFG_LPM_SUPPORTED == 1)
+  /* USER CODE BEGIN UTIL_SEQ_PostIdle_1 */
+
+  /* USER CODE END UTIL_SEQ_PostIdle_1 */
+#if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   ll_sys_dp_slp_exit();
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
+  /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
+
+  /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }
 
+/**
+ * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ */
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_SEQ_PRIO_0);
+  //UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
 }
 
-#if (CFG_DEBUG_APP_TRACE != 0)
+/**
+ *
+ */
 void RNG_KERNEL_CLK_OFF(void)
 {
   /* RNG module may not switch off HSI clock when traces are used */
@@ -438,7 +511,39 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF */
 }
 
-#endif
+void SCM_HSI_CLK_OFF(void)
+{
+  /* SCM module may not switch off HSI clock when traces are used */
+
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+
+  /* USER CODE END SCM_HSI_CLK_OFF */
+}
+
+#if (CFG_LOG_SUPPORTED != 0)
+void UTIL_ADV_TRACE_PreSendHook(void)
+{
+#if (CFG_LPM_LEVEL != 0)
+  /* Disable Stop mode before sending a LOG message over UART */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
+
+  /* USER CODE END UTIL_ADV_TRACE_PreSendHook */
+}
+
+void UTIL_ADV_TRACE_PostSendHook(void)
+{
+#if (CFG_LPM_LEVEL != 0)
+  /* Enable Stop mode after LOG message over UART sent */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
+
+  /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
+}
+
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if (CFG_BUTTON_SUPPORTED == 1)

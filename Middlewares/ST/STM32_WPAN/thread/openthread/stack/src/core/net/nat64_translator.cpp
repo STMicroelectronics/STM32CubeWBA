@@ -36,6 +36,8 @@
 
 #if OPENTHREAD_CONFIG_NAT64_TRANSLATOR_ENABLE
 
+#include <openthread/platform/toolchain.h>
+
 #include "common/code_utils.hpp"
 #include "common/locator_getters.hpp"
 #include "common/log.hpp"
@@ -70,7 +72,7 @@ Translator::Translator(Instance &aInstance)
     , mState(State::kStateDisabled)
     , mMappingExpirerTimer(aInstance)
 {
-    Random::NonCrypto::FillBuffer(reinterpret_cast<uint8_t *>(&mNextMappingId), sizeof(mNextMappingId));
+    Random::NonCrypto::Fill(mNextMappingId);
 
     mNat64Prefix.Clear();
     mIp4Cidr.Clear();
@@ -414,7 +416,7 @@ Error Translator::TranslateIcmp4(Message &aMessage)
     {
     case Ip4::Icmp::Header::Type::kTypeEchoReply:
     {
-        // The only difference between ICMPv6 echo and ICMP4 echo is the message type field, so we can reinteprete it as
+        // The only difference between ICMPv6 echo and ICMP4 echo is the message type field, so we can reinterpret it as
         // ICMP6 header and set the message type.
         SuccessOrExit(err = aMessage.Read(0, icmp6Header));
         icmp6Header.SetType(Ip6::Icmp::Header::Type::kTypeEchoReply);
@@ -444,7 +446,7 @@ Error Translator::TranslateIcmp6(Message &aMessage)
     {
     case Ip6::Icmp::Header::Type::kTypeEchoRequest:
     {
-        // The only difference between ICMPv6 echo and ICMP4 echo is the message type field, so we can reinteprete it as
+        // The only difference between ICMPv6 echo and ICMP4 echo is the message type field, so we can reinterpret it as
         // ICMP6 header and set the message type.
         SuccessOrExit(err = aMessage.Read(0, icmp4Header));
         icmp4Header.SetType(Ip4::Icmp::Header::Type::kTypeEchoRequest);
@@ -507,7 +509,8 @@ Error Translator::SetIp4Cidr(const Ip4::Cidr &aCidr)
             numberOfHosts);
     mIp4Cidr = aCidr;
 
-    UpdateState();
+    // Always notify the platform when the CIDR is changed.
+    UpdateState(true /* aAlwaysNotify */);
 
 exit:
     return err;
@@ -631,7 +634,7 @@ void Translator::ProtocolCounters::Count4To6Packet(uint8_t aProtocol, uint64_t a
     mTotal.m4To6Bytes += aPacketSize;
 }
 
-void Translator::UpdateState(void)
+void Translator::UpdateState(bool aAlwaysNotify)
 {
     State newState;
 
@@ -651,7 +654,14 @@ void Translator::UpdateState(void)
         newState = kStateDisabled;
     }
 
-    SuccessOrExit(Get<Notifier>().Update(mState, newState, kEventNat64TranslatorStateChanged));
+    if (aAlwaysNotify)
+    {
+        Get<Notifier>().Signal(kEventNat64TranslatorStateChanged);
+    }
+    else
+    {
+        SuccessOrExit(Get<Notifier>().Update(mState, newState, kEventNat64TranslatorStateChanged));
+    }
     LogInfo("NAT64 translator is now %s", StateToString(mState));
 
 exit:

@@ -364,16 +364,17 @@ uint32_t UTIL_TIMER_GetFirstRemainingTime(void)
 
 void UTIL_TIMER_IRQ_Handler( void )
 {
-  UTIL_TIMER_Object_t* cur;
+  UTIL_TIMER_Object_t *cur, *exec = NULL;
   uint32_t old, now, DeltaContext;
+  void ( *FunctionCallback )( void *) = NULL;
+  void *argument = NULL;
 
   UTIL_TIMER_ENTER_CRITICAL_SECTION();
 
   old  =  UTIL_TimerDriver.GetTimerContext( );
   now  =  UTIL_TimerDriver.SetTimerContext( );
-
   DeltaContext = now  - old; /*intentional wrap around */
-  
+
   /* update timeStamp based upon new Time Reference*/
   /* because delta context should never exceed 2^32*/
   if ( TimerListHead != NULL )
@@ -387,31 +388,42 @@ void UTIL_TIMER_IRQ_Handler( void )
       else
       {
         cur->Timestamp = 0;
+
+        /* get the first expired timer and save it context callback */
+        if (FunctionCallback == NULL)
+        {
+            /* remove the current from the chain list as it is the first expired */
+            TimerListHead = TimerListHead->Next;
+            cur->IsPending = 0;
+            cur->IsRunning = 0;
+            /* save for execution when chain list is fully update */
+            if(( cur->Mode == UTIL_TIMER_PERIODIC) && (cur->IsReloadStopped == 0U))
+            {
+              exec = cur;
+            }
+            argument = cur->argument;
+            FunctionCallback = cur->Callback;
+        }
       }
       cur = cur->Next;
     } while(cur != NULL);
+
+	if (exec != NULL) (void)UTIL_TIMER_Start(exec);
+
+    /* start the next TimerListHead if it exists and it is not pending*/
+    if(( TimerListHead != NULL ) && (TimerListHead->IsPending == 0U))
+    {
+      TimerSetTimeout( TimerListHead );
+    }
   }
 
-  /* Execute expired timer and update the list */
-  while ((TimerListHead != NULL) && ((TimerListHead->Timestamp == 0U) || (TimerListHead->Timestamp < UTIL_TimerDriver.GetTimerElapsedTime(  ))))
-  {
-      cur = TimerListHead;
-      TimerListHead = TimerListHead->Next;
-      cur->IsPending = 0;
-      cur->IsRunning = 0;
-      cur->Callback(cur->argument);
-      if(( cur->Mode == UTIL_TIMER_PERIODIC) && (cur->IsReloadStopped == 0U))
-      {
-        (void)UTIL_TIMER_Start(cur);
-      }
-  }
-
-  /* start the next TimerListHead if it exists and it is not pending*/
-  if(( TimerListHead != NULL ) && (TimerListHead->IsPending == 0U))
-  {
-    TimerSetTimeout( TimerListHead );
-  }
   UTIL_TIMER_EXIT_CRITICAL_SECTION();
+
+  // Call user call back
+  if (FunctionCallback != NULL)
+  {
+    FunctionCallback(argument);
+  }
 }
 
 UTIL_TIMER_Time_t UTIL_TIMER_GetCurrentTime(void)

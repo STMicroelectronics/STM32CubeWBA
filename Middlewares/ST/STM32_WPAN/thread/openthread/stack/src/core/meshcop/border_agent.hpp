@@ -59,8 +59,10 @@ class BorderAgent : public InstanceLocator, private NonCopyable
     friend class Tmf::SecureAgent;
 
 public:
+    typedef otBorderAgentId Id; ///< Border Agent ID.
+
     /**
-     * This enumeration defines the Border Agent state.
+     * Defines the Border Agent state.
      *
      */
     enum State : uint8_t
@@ -71,15 +73,47 @@ public:
     };
 
     /**
-     * This constructor initializes the `BorderAgent` object.
+     * Initializes the `BorderAgent` object.
      *
      * @param[in]  aInstance     A reference to the OpenThread instance.
      *
      */
     explicit BorderAgent(Instance &aInstance);
 
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
     /**
-     * This method gets the UDP port of this service.
+     * Gets the randomly generated Border Agent ID.
+     *
+     * The ID is saved in persistent storage and survives reboots. The typical use case of the ID is to
+     * be published in the MeshCoP mDNS service as the `id` TXT value for the client to identify this
+     * Border Router/Agent device.
+     *
+     * @param[out] aId  Reference to return the Border Agent ID.
+     *
+     * @retval kErrorNone  If successfully retrieved the Border Agent ID.
+     * @retval ...         If failed to retrieve the Border Agent ID.
+     *
+     */
+    Error GetId(Id &aId);
+
+    /**
+     * Sets the Border Agent ID.
+     *
+     * The Border Agent ID will be saved in persistent storage and survive reboots. It's required
+     * to set the ID only once after factory reset. If the ID has never been set by calling this
+     * method, a random ID will be generated and returned when `GetId()` is called.
+     *
+     * @param[out] aId  specifies the Border Agent ID.
+     *
+     * @retval kErrorNone  If successfully set the Border Agent ID.
+     * @retval ...         If failed to set the Border Agent ID.
+     *
+     */
+    Error SetId(const Id &aId);
+#endif
+
+    /**
+     * Gets the UDP port of this service.
      *
      * @returns  UDP port number.
      *
@@ -87,19 +121,19 @@ public:
     uint16_t GetUdpPort(void) const;
 
     /**
-     * This method starts the Border Agent service.
+     * Starts the Border Agent service.
      *
      */
     void Start(void);
 
     /**
-     * This method stops the Border Agent service.
+     * Stops the Border Agent service.
      *
      */
     void Stop(void);
 
     /**
-     * This method gets the state of the Border Agent service.
+     * Gets the state of the Border Agent service.
      *
      * @returns The state of the Border Agent service.
      *
@@ -107,13 +141,13 @@ public:
     State GetState(void) const { return mState; }
 
     /**
-     * This method applies the Mesh Local Prefix.
+     * Applies the Mesh Local Prefix.
      *
      */
     void ApplyMeshLocalPrefix(void);
 
     /**
-     * This method returns the UDP Proxy port to which the commissioner is currently
+     * Returns the UDP Proxy port to which the commissioner is currently
      * bound.
      *
      * @returns  The current UDP Proxy port or 0 if no Proxy Transmit has been received yet.
@@ -178,6 +212,10 @@ private:
     TimeoutTimer mTimer;
     State        mState;
     uint16_t     mUdpProxyPort;
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
+    Id   mId;
+    bool mIdInitialized;
+#endif
 };
 
 DeclareTmfHandler(BorderAgent, kUriRelayRx);
@@ -195,6 +233,7 @@ DeclareTmfHandler(BorderAgent, kUriProxyTx);
 } // namespace MeshCoP
 
 DefineMapEnum(otBorderAgentState, MeshCoP::BorderAgent::State);
+DefineCoreType(otBorderAgentId, MeshCoP::BorderAgent::Id);
 
 } // namespace ot
 

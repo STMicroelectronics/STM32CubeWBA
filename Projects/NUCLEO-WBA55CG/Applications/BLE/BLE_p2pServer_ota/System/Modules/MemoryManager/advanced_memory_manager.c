@@ -477,6 +477,7 @@ AMM_Function_Error_t AMM_Free (uint32_t * const p_BufferAddr)
   AMM_Function_Error_t error = AMM_ERROR_NOK;
 
   uint8_t virtualId = 0x00;
+  int32_t occupiedOverRequired = 0x00;
   uint32_t allocatedSize = 0x00;
 
   uint32_t * p_TmpAllocAddr = NULL;
@@ -511,6 +512,9 @@ AMM_Function_Error_t AMM_Free (uint32_t * const p_BufferAddr)
     virtualId = (*p_TmpAllocAddr & VIRTUAL_MEMORY_HEADER_ID_MASK) >> VIRTUAL_MEMORY_HEADER_ID_POS;
     allocatedSize = (*p_TmpAllocAddr & VIRTUAL_MEMORY_HEADER_BUFFER_SIZE_MASK) >> VIRTUAL_MEMORY_HEADER_BUFFER_SIZE_POS;
 
+    /* Add header size to allocated size */
+    allocatedSize = allocatedSize + VIRTUAL_MEMORY_HEADER_SIZE;
+
     /* Free the allocated memory */
     AmmBmmFunctionsHandler.Free(p_TmpAllocAddr);
 
@@ -518,7 +522,7 @@ AMM_Function_Error_t AMM_Free (uint32_t * const p_BufferAddr)
     if (virtualId == AMM_NO_VIRTUAL_ID)
     {
       /* Update the occupation size */
-      AmmOccupiedSharedPoolSize = AmmOccupiedSharedPoolSize - allocatedSize - VIRTUAL_MEMORY_HEADER_SIZE;
+      AmmOccupiedSharedPoolSize = AmmOccupiedSharedPoolSize - allocatedSize;
 
       error = AMM_ERROR_OK;
     }
@@ -533,19 +537,28 @@ AMM_Function_Error_t AMM_Free (uint32_t * const p_BufferAddr)
         /* Check if it is the right ID */
         if (virtualId == p_AmmVirtualMemoryList[memIdx].Id)
         {
-          /* Check if reserved memory is overlapped */
-          if (p_AmmVirtualMemoryList[memIdx].RequiredSize < p_AmmVirtualMemoryList[memIdx].OccupiedSize)
+          occupiedOverRequired = (p_AmmVirtualMemoryList[memIdx].OccupiedSize - p_AmmVirtualMemoryList[memIdx].RequiredSize);
+
+          /* Check whether the occupied size has overlaped the required or not */
+          if (occupiedOverRequired > 0x00)
           {
-            /* Update the occupation size */
-            AmmOccupiedSharedPoolSize = AmmOccupiedSharedPoolSize
-                                        - (p_AmmVirtualMemoryList[memIdx].OccupiedSize
-                                        - p_AmmVirtualMemoryList[memIdx].RequiredSize);
+            /* Check if reserved memory is overlapped */
+            if (allocatedSize > occupiedOverRequired)
+            {
+              /* Update the occupation size */
+              AmmOccupiedSharedPoolSize = AmmOccupiedSharedPoolSize
+                                          - (p_AmmVirtualMemoryList[memIdx].OccupiedSize
+                                          - p_AmmVirtualMemoryList[memIdx].RequiredSize);
+            }
+            else
+            {
+              AmmOccupiedSharedPoolSize = AmmOccupiedSharedPoolSize - allocatedSize;
+            }
           }
 
           /* Update the occupation size */
           p_AmmVirtualMemoryList[memIdx].OccupiedSize = p_AmmVirtualMemoryList[memIdx].OccupiedSize
-                                                        - allocatedSize
-                                                        - VIRTUAL_MEMORY_HEADER_SIZE;
+                                                        - allocatedSize;
 
           error = AMM_ERROR_OK;
         }

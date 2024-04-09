@@ -19,6 +19,16 @@
 /* USER CODE END Header */
 
 #include "rf_antenna_switch.h"
+#include "ll_intf.h"
+#include "app_conf.h"
+
+#if (SUPPORT_AOA_AOD == 1)
+static const st_gpio_antsw_t rt_antenna_switch_gpio_table[] =
+{
+  RF_ANTSW0,
+  RF_ANTSW1,
+  RF_ANTSW2
+};
 
 static void RF_CONTROL_AntennaSwitch_Enable(void);
 static void RF_CONTROL_AntennaSwitch_Disable(void);
@@ -51,8 +61,17 @@ static void RF_CONTROL_AntennaSwitch_Disable(void)
 
 void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
 {
+  ble_stat_t status = GENERAL_FAILURE;
+
   if(state == RF_ANTSW_ENABLE)
   {
+    status = ll_intf_set_num_of_antennas(RADIO_NUM_OF_ANTENNAS);
+    if(status != SUCCESS)
+    {
+      /* Specified number of antennas is not supported */
+      assert_param(0);
+      return;
+    }
     RF_CONTROL_AntennaSwitch_Enable();
   }
   else
@@ -60,3 +79,11 @@ void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
     RF_CONTROL_AntennaSwitch_Disable();
   }
 }
+
+#else /* SUPPORT_AOA_AOD */
+void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
+{
+  /* AoA-AoD feature is not supported with this Link Layer configuration */
+  assert_param(0);
+}
+#endif /* SUPPORT_AOA_AOD */

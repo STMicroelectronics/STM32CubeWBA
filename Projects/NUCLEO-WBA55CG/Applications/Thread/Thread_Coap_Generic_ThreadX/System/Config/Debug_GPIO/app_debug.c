@@ -26,35 +26,35 @@
 
 void APP_DEBUG_SIGNAL_SET(app_debug_signal_t signal)
 {
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
   GENERIC_DEBUG_GPIO_SET(signal, app_debug_table);
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 }
 void APP_DEBUG_SIGNAL_RESET(app_debug_signal_t signal)
 {
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
   GENERIC_DEBUG_GPIO_RESET(signal, app_debug_table);
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 }
 
 void APP_DEBUG_SIGNAL_TOGGLE(app_debug_signal_t signal)
 {
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
   GENERIC_DEBUG_GPIO_TOGGLE(signal, app_debug_table);
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 }
 
 /*******************************/
 /** Debug GPIO Initialization **/
 /*******************************/
 
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
 static uint32_t GPIO_PORT_TO_PWR_NUM(GPIO_TypeDef* gpio_port);
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 
 void RT_DEBUG_GPIO_Init(void)
 {
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   uint32_t pwr_gpio_port = 0;
   uint32_t general_table_size = sizeof(general_debug_table)/sizeof(general_debug_table[0]);
@@ -74,16 +74,16 @@ void RT_DEBUG_GPIO_Init(void)
       HAL_PWREx_EnableStandbyIORetention(pwr_gpio_port, general_debug_table[cpt].GPIO_pin);
     }
   }
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 
-#if(RT_DEBUG_DTB == 1)
+#if(CFG_RT_DEBUG_DTB == 1)
   /* DTB initialization and configuration */
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
-#endif /* RT_DEBUG_DTB */
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_DTB */
 }
 
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
 static uint32_t GPIO_PORT_TO_PWR_NUM(GPIO_TypeDef* gpio_port)
 {
   uint32_t pwr_gpio_port = 0;
@@ -93,4 +93,4 @@ static uint32_t GPIO_PORT_TO_PWR_NUM(GPIO_TypeDef* gpio_port)
   else if(gpio_port == GPIOH){pwr_gpio_port = PWR_GPIO_H;}
   return pwr_gpio_port;
 }
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */

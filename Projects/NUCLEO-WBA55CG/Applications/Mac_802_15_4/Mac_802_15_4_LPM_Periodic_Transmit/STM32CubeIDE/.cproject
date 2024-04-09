@@ -36,7 +36,7 @@
 							</tool>
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1029429435" name="MCU GCC Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.debuglevel.1881088042" name="Debug level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.debuglevel" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.debuglevel.value.g3" valueType="enumerated"/>
-								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level.1657067590" name="Optimization level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level.value.os" valueType="enumerated"/>
+								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level.1657067590" name="Optimization level" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.optimization.level.value.ofast" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.definedsymbols.104992075" name="Define symbols (-D)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.definedsymbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
 									<listOptionValue builtIn="false" value="PHY_2_10_a"/>
@@ -59,6 +59,7 @@
 									<listOptionValue builtIn="false" value="../../System/Config/Debug_GPIO"/>
 									<listOptionValue builtIn="false" value="../../System/Config/LowPower"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
+									<listOptionValue builtIn="false" value="../../System/Config/ADC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App/inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
@@ -95,8 +96,8 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/lib"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.1260244322" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":wba_mac_lib_CubeIDE.a"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":LinkLayer15_4_CubeIDE.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":LinkLayer15_4.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":wba_mac_lib.a"/>
 								</option>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.uselinkergroup.1392584778" name="Place libraries in a linker group (-Wl,--start-group $(LIBS) -Wl,--end-group)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.uselinkergroup" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input.593872315" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input">
@@ -176,6 +177,7 @@
 									<listOptionValue builtIn="false" value="../../System/Modules/RTDebug"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Debug_GPIO"/>
 									<listOptionValue builtIn="false" value="../../System/Config/LowPower"/>
+									<listOptionValue builtIn="false" value="../../System/Config/ADC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc"/>
@@ -216,8 +218,8 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/lib"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.1578558497" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":wba_mac_lib_CubeIDE.a"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":LinkLayer15_4_CubeIDE.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":wba_mac_lib.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":LinkLayer15_4.a"/>
 								</option>
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.uselinkergroup.809135847" name="Place libraries in a linker group (-Wl,--start-group $(LIBS) -Wl,--end-group)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.uselinkergroup" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input.1567458900" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.input">

@@ -109,17 +109,19 @@ enable mode.
 
 MAC PIB is then configured as follow :
 
-  - PanID 						 : 0xBEEF, can be define in app_conf.h
+  - PanID 						 : 0xBEEF, can be define in app_conf.h, if define MAC_802_15_4_RANDOM_PAN_ID enable, the PANID is random
   - Coordinator Extended Address : depending to the device but begin by 00:80:E1
   - Coordinator Short Address    : 0x2000, can be define in app_conf.h
   - Poll Short Address           : 0x2001 - 0x2010
   - Channel                      : take the lest noisy channel, can be define in app_conf.h
+  - Beacon Payload               : 0x42,0x5A,0x48, can be define in app_conf.h
 
 Once MAC PIB is initialized, Coordinator is started on least noisy channel with ED scan as an association capable coordinator.
 At this stage the Coordinator is waiting for an association request. Blue LED (ID 1) is switch on once 
 the coordinator is started.
 
 On Node side, the MAC layer is initialized on startup. In this state, blue LED (ID 1) is switch on.
+The Node device can recognize the coordinator device with the beacon payload define in app_conf.h on both devices.
 
 Node issues an association request to the Coodinator to retrieve its short address. 
 On in coming association request Coordinator's green LED (ID 2) blinks.

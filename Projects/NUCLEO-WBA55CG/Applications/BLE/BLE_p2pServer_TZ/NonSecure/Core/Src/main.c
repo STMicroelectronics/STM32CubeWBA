@@ -76,6 +76,7 @@ static void MX_GPDMA1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -98,13 +99,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_CRC_Init();
-  MX_ICACHE_Init();
   MX_RTC_Init();
-  MX_USART1_UART_Init();
-  MX_ADC4_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
+  MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -125,6 +123,25 @@ int main(void)
 }
 
 /**
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST;
+  PeriphClkInit.RadioSlpTimClockSelection = RCC_RADIOSTCLKSOURCE_LSE;
+
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
   * @brief ADC4 Initialization Function
   * @param None
   * @retval None
@@ -139,7 +156,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  memset(&hadc4, 0, sizeof(hadc4));
+  
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -325,7 +342,7 @@ void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
-  memset(&hrng, 0, sizeof(hrng));
+
   /* USER CODE END RNG_Init 0 */
 
   /* USER CODE BEGIN RNG_Init 1 */
@@ -474,13 +491,13 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB7 PB6 */
   GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*RT DEBUG GPIO_Init */

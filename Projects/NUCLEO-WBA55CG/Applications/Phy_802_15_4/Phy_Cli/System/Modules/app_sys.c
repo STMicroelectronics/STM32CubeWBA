@@ -17,15 +17,15 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
 
 #include "app_sys.h"
 #include "app_conf.h"
 #include "timer_if.h"
 #include "stm32_lpm.h"
-#include "stm32_seq.h"
+#include "ll_intf.h"
 #include "ll_sys.h"
 
 void APP_SYS_BLE_EnterDeepSleep(void)
 {
- /* Not used */
 }

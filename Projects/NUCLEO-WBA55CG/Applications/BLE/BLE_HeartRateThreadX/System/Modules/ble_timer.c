@@ -42,7 +42,7 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* BLE_TIMER_TASK related defines */
-#define BLE_TIMER_TASK_STACK_SIZE    (256*7)
+#define BLE_TIMER_TASK_STACK_SIZE    (256)
 #define BLE_TIMER_TASK_PRIO          (15)
 #define BLE_TIMER_TASK_PREEM_TRES    (0)
 
@@ -57,7 +57,7 @@ TX_SEMAPHORE BLE_TIMER_Thread_Sem;
 /* Private functions prototype------------------------------------------------*/
 void BLE_TIMER_Background(void);
 static void BLE_TIMER_Callback(void* arg);
-static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint8_t id);
+static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id);
 static void BLE_TIMER_Background_Entry(unsigned long thread_input);
 
 void BLE_TIMER_Init(void)
@@ -88,7 +88,7 @@ void BLE_TIMER_Init(void)
   UTIL_TIMER_Init();
 }
 
-uint8_t BLE_TIMER_Start(uint8_t id, uint32_t timeout)
+uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 {
   /* If the timer's id already exists, stop it */
   BLE_TIMER_Stop(id);
@@ -124,7 +124,7 @@ uint8_t BLE_TIMER_Start(uint8_t id, uint32_t timeout)
   return BLE_STATUS_SUCCESS;
 }
 
-void BLE_TIMER_Stop(uint8_t id){
+void BLE_TIMER_Stop(uint16_t id){
   /* Search for the id in the timers list */
   BLE_TIMER_t* timer = BLE_TIMER_GetFromList(&BLE_TIMER_List, id);
 
@@ -140,7 +140,7 @@ void BLE_TIMER_Stop(uint8_t id){
 
 void BLE_TIMER_Background(void)
 {
-  BLEPLATCB_TimerExpiry( (uint8_t)BLE_TIMER_timer->id);
+  BLEPLATCB_TimerExpiry( (uint16_t)BLE_TIMER_timer->id);
   HostStack_Process( );
 
   /* Delete the BLE_TIMER_timer from the list */
@@ -168,7 +168,7 @@ static void BLE_TIMER_Callback(void* arg)
   tx_semaphore_put(&BLE_TIMER_Thread_Sem);
 }
 
-static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint8_t id)
+static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id)
 {
   BLE_TIMER_t* currentNode = (BLE_TIMER_t*)listHead->next;
   while((tListNode *)currentNode != listHead)

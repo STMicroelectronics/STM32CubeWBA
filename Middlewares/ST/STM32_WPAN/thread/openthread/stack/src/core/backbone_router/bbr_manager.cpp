@@ -86,7 +86,7 @@ void Manager::HandleNotifierEvents(Events aEvents)
 
     if (aEvents.Contains(kEventThreadBackboneRouterStateChanged))
     {
-        if (Get<Local>().GetState() == OT_BACKBONE_ROUTER_STATE_DISABLED)
+        if (!Get<Local>().IsEnabled())
         {
 #if OPENTHREAD_CONFIG_BACKBONE_ROUTER_MULTICAST_ROUTING_ENABLE
             mMulticastListenersTable.Clear();
@@ -134,7 +134,7 @@ void Manager::HandleTimer(void)
 #if OPENTHREAD_CONFIG_BACKBONE_ROUTER_MULTICAST_ROUTING_ENABLE
 template <> void Manager::HandleTmf<kUriMlr>(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
 {
-    VerifyOrExit(Get<Local>().GetState() != OT_BACKBONE_ROUTER_STATE_DISABLED);
+    VerifyOrExit(Get<Local>().IsEnabled());
     HandleMulticastListenerRegistration(aMessage, aMessageInfo);
 
 exit:
@@ -146,7 +146,7 @@ void Manager::HandleMulticastListenerRegistration(const Coap::Message &aMessage,
     Error                      error     = kErrorNone;
     bool                       isPrimary = Get<Local>().IsPrimary();
     ThreadStatusTlv::MlrStatus status    = ThreadStatusTlv::kMlrSuccess;
-    BackboneRouterConfig       config;
+    Config                     config;
 
     uint16_t     addressesOffset, addressesLength;
     Ip6::Address address;
@@ -209,7 +209,7 @@ void Manager::HandleMulticastListenerRegistration(const Coap::Message &aMessage,
         {
             uint32_t origTimeout = timeout;
 
-            timeout = Min(timeout, Mle::kMlrTimeoutMax);
+            timeout = Min(timeout, kMaxMlrTimeout);
 
             if (timeout != origTimeout)
             {
@@ -341,7 +341,7 @@ void Manager::SendBackboneMulticastListenerRegistration(const Ip6::Address *aAdd
     messageInfo.SetPeerAddr(Get<Local>().GetAllNetworkBackboneRoutersAddress());
     messageInfo.SetPeerPort(BackboneRouter::kBackboneUdpPort); // TODO: Provide API for configuring Backbone COAP port.
 
-    messageInfo.SetHopLimit(Mle::kDefaultBackboneHoplimit);
+    messageInfo.SetHopLimit(kDefaultHoplimit);
     messageInfo.SetIsHostInterface(true);
 
     SuccessOrExit(error = backboneTmf.SendMessage(*message, messageInfo));
@@ -357,7 +357,7 @@ exit:
 template <>
 void Manager::HandleTmf<kUriDuaRegistrationRequest>(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
 {
-    VerifyOrExit(Get<Local>().GetState() != OT_BACKBONE_ROUTER_STATE_DISABLED);
+    VerifyOrExit(Get<Local>().IsEnabled());
     HandleDuaRegistration(aMessage, aMessageInfo);
 
 exit:
@@ -535,7 +535,7 @@ Error Manager::SendBackboneQuery(const Ip6::Address &aDua, uint16_t aRloc16)
     messageInfo.SetPeerAddr(Get<Local>().GetAllDomainBackboneRoutersAddress());
     messageInfo.SetPeerPort(BackboneRouter::kBackboneUdpPort);
 
-    messageInfo.SetHopLimit(Mle::kDefaultBackboneHoplimit);
+    messageInfo.SetHopLimit(kDefaultHoplimit);
     messageInfo.SetIsHostInterface(true);
 
     error = mBackboneTmfAgent.SendMessage(*message, messageInfo);
@@ -672,7 +672,7 @@ Error Manager::SendBackboneAnswer(const Ip6::Address             &aDstAddr,
     messageInfo.SetPeerAddr(aDstAddr);
     messageInfo.SetPeerPort(BackboneRouter::kBackboneUdpPort);
 
-    messageInfo.SetHopLimit(Mle::kDefaultBackboneHoplimit);
+    messageInfo.SetHopLimit(kDefaultHoplimit);
     messageInfo.SetIsHostInterface(true);
 
     error = mBackboneTmfAgent.SendMessage(*message, messageInfo);

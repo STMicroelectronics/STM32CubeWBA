@@ -1,9 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    main.c
-  * @author  MCD Application Team
-  * @brief   Main application code
+  * @file           : main.c
+  * @brief          : Main program body
   ******************************************************************************
   * @attention
   *
@@ -77,11 +76,9 @@ static void MX_LPTIM1_Init(void);
 /* USER CODE END 0 */
 
 /**
-  * @brief  Main program
-  * @param  None
-  * @retval None
+  * @brief  The application entry point.
+  * @retval int
   */
-
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -114,8 +111,6 @@ int main(void)
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_ADC4_Init();
-  MX_CRC_Init();
   MX_RNG_Init();
   MX_ICACHE_Init();
   MX_LPUART1_UART_Init();  //CLI Uart
@@ -228,38 +223,6 @@ void MX_LPUART1_UART_Init(void)
 }
 
 /**
-  * @brief ICACHE Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_ICACHE_Init(void)
-{
-
-  /* USER CODE BEGIN ICACHE_Init 0 */
-
-  /* USER CODE END ICACHE_Init 0 */
-
-  /* USER CODE BEGIN ICACHE_Init 1 */
-  /* No retention for ICACHE in stop mode */
-  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
-  /* USER CODE END ICACHE_Init 1 */
-
-  /** Enable instruction cache in 1-way (direct mapped cache)
-  */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ICACHE_Init 2 */
-
-  /* USER CODE END ICACHE_Init 2 */
-
-}
-/**
   * @brief System Clock Configuration
   * @retval None
   */
@@ -270,7 +233,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE2) != HAL_OK)
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -285,6 +248,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
                               |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -307,20 +271,10 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
-  
-#if ENABLE_SMPS
-  if (HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY)!= HAL_OK){
-    Error_Handler();
-  }
-#else
-  if (HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY)!= HAL_OK){
-    Error_Handler();
-  }
-#endif
 }
 
 /**
@@ -463,6 +417,39 @@ void MX_GPDMA1_Init(void)
   /* USER CODE BEGIN GPDMA1_Init 2 */
 
   /* USER CODE END GPDMA1_Init 2 */
+
+}
+
+/**
+  * @brief ICACHE Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_ICACHE_Init(void)
+{
+
+  /* USER CODE BEGIN ICACHE_Init 0 */
+
+  /* USER CODE END ICACHE_Init 0 */
+
+  /* USER CODE BEGIN ICACHE_Init 1 */
+  /* No retention for ICACHE in stop mode */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
+  /* USER CODE END ICACHE_Init 1 */
+
+  /** Enable instruction cache in 1-way (direct mapped cache)
+  */
+  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_ICACHE_Enable() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ICACHE_Init 2 */
+
+  /* USER CODE END ICACHE_Init 2 */
 
 }
 
@@ -662,18 +649,7 @@ void MX_GPIO_Init(void)
   RT_DEBUG_GPIO_Init();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-#if (CFG_DBG_SUPPORTED == 0)
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_13;
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
-#endif
 /* USER CODE END MX_GPIO_Init_2 */
 }
 

@@ -34,6 +34,7 @@ extern ST_MAC_associateCnf_t g_MAC_associateCnf;
 extern uint8_t g_channel;
 extern ST_MAC_beaconNotifyInd_t  g_BeaconNotifyInd;
 extern uint8_t deviceAssociated;
+extern uint8_t beacon_coord_received;
 
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
@@ -55,18 +56,19 @@ static uint8_t checkMsgXorSignature(const char * pMessage, uint8_t message_len, 
 /*! callbacks to be called by the MAC layer */
 MAC_Status_t APP_MAC_mlmeAssociateCnfCb( const  ST_MAC_associateCnf_t * pAssociateCnf )
 {
-  if (pAssociateCnf->status == 0x00) {
-     /* If success */
+  UTIL_SEQ_SetEvt(EVENT_ASSOCIATE_CNF);
+  if (pAssociateCnf->status == 0x00) { // If success
     APP_DBG("Node MAC APP - Association CNF Received, Short address is 0x%02x%02x on channel %d\n\r",
             pAssociateCnf->a_assoc_short_address[1],pAssociateCnf->a_assoc_short_address[0],g_channel);
     
-    deviceAssociated = 1; //this device is associated now
-    UTIL_SEQ_SetEvt(EVENT_ASSOCIATE_CNF);
+    deviceAssociated = 1; // This device is associated now
+    
     BSP_LED_On(LD2);
+  } else {
+    APP_DBG("Node MAC APP - Association CNF Received with bad status: 0x%02x\n\r", pAssociateCnf->status);
   }
 
-  memset(&g_MAC_associateCnf, 0x00, sizeof(ST_MAC_associateCnf_t));
-  memcpy(&g_MAC_associateCnf, pAssociateCnf, sizeof(ST_MAC_associateCnf_t));
+  memcpy(&g_MAC_associateCnf, pAssociateCnf, sizeof(ST_MAC_associateCnf_t)); // Copy table
 
   /* return */
   return MAC_SUCCESS;
@@ -84,14 +86,20 @@ MAC_Status_t APP_MAC_mlmeAssociateIndCb( const  ST_MAC_associateInd_t * pAssocia
 MAC_Status_t APP_MAC_mlmeBeaconNotifyIndCb( const  ST_MAC_beaconNotifyInd_t * pBeaconNotifyInd )
 {
   uint16_t BeaconPanId = 0x0000; 
-  
+  uint8_t Beacon_payload[BEACON_PAYLOAD_SIZE];
+
   BeaconPanId = ((pBeaconNotifyInd->PAN_descriptor.a_coord_PAN_id[1])<<8) + pBeaconNotifyInd->PAN_descriptor.a_coord_PAN_id[0];
-  if (BeaconPanId == DEMO_PANID) { //filter with the PANID
-    APP_DBG("Node MAC - Receive BeaconNotify.Ind with the correct PANID 0x%04x on channel %d\r\n", BeaconPanId, pBeaconNotifyInd->PAN_descriptor.logical_channel);
-    memcpy(&g_BeaconNotifyInd, pBeaconNotifyInd, sizeof(ST_MAC_beaconNotifyInd_t)); //copy variable in global
-  }else{
-    APP_DBG("Node MAC - Receive BeaconNotify.Ind with the incorrect PANID 0x%04x\r\n", BeaconPanId);
+  if (pBeaconNotifyInd->sdu_length == BEACON_PAYLOAD_SIZE) { // First filter with the size
+    memcpy(&Beacon_payload, pBeaconNotifyInd->sduPtr, pBeaconNotifyInd->sdu_length); // Getting the beacon payload
+    if (strncmp(BEACON_PAYLOAD, (char const *) &Beacon_payload, BEACON_PAYLOAD_SIZE) == 0) { // Second filter with the payload
+      APP_DBG("Node MAC - Receive BeaconNotify.Ind with the correct payload, PANID: 0x%04x, channel: %d\r\n", BeaconPanId, pBeaconNotifyInd->PAN_descriptor.logical_channel);
+      memcpy(&g_BeaconNotifyInd, pBeaconNotifyInd, sizeof(ST_MAC_beaconNotifyInd_t)); // Copy table
+      beacon_coord_received  = 0x01;
+      return MAC_SUCCESS;
+    }
   }
+  APP_DBG("Node MAC - Receive BeaconNotify.Ind with the incorrect payload, PANID: 0x%04x, channel: %d\r\n", BeaconPanId, pBeaconNotifyInd->PAN_descriptor.logical_channel);
+  
   /* return */
   return MAC_SUCCESS;
 
@@ -110,7 +118,7 @@ MAC_Status_t APP_MAC_mlmeDisassociateCnfCb( const  ST_MAC_disassociateCnf_t * pD
 {
   UTIL_SEQ_SetEvt(EVENT_DISASSOCIATE_CNF);
   APP_DBG("Node MAC APP - Disassociate CNF Received\r\n");
-  deviceAssociated = 0; //this device is disassociated now
+  deviceAssociated = 0; // This device is disassociated now
   /* return */
   return MAC_SUCCESS;
 
@@ -119,7 +127,7 @@ MAC_Status_t APP_MAC_mlmeDisassociateCnfCb( const  ST_MAC_disassociateCnf_t * pD
 
 MAC_Status_t APP_MAC_mlmeDisassociateIndCb( const  ST_MAC_disassociateInd_t * pDisassociateInd )
 {
-  APP_DBG("Node MAC APP - Disassociate indication RECEIVED by 0x%02x%02x\r\n", pDisassociateInd->a_device_address[1],pDisassociateInd->a_device_address[0]);
+  APP_DBG("Node MAC APP - Disassociate.Ind RECEIVED by 0x%02x%02x\r\n", pDisassociateInd->a_device_address[1],pDisassociateInd->a_device_address[0]);
   /* return */
   return MAC_SUCCESS;
 

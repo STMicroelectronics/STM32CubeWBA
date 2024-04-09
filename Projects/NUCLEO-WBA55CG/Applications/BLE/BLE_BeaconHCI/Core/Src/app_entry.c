@@ -47,6 +47,7 @@
 #include "app_debug.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
+#include "temp_measurement.h"
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* Private includes -----------------------------------------------------------*/
@@ -57,23 +58,11 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
-#if (CFG_BUTTON_SUPPORTED == 1)
-typedef struct
-{
-  Button_TypeDef      button;
-  UTIL_TIMER_Object_t longTimerId;
-  uint8_t             longPressed;
-} ButtonDesc_t;
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#if (CFG_BUTTON_SUPPORTED == 1)
-#define BUTTON_LONG_PRESS_THRESHOLD_MS   (500u)
-#define BUTTON_NB_MAX                    (B3 + 1u)
-#endif
 
 /* USER CODE END PD */
 
@@ -97,6 +86,7 @@ static bool system_startup_done = FALSE;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+/* AMM configuration */
 static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
@@ -121,10 +111,6 @@ static AMM_InitParameters_t ammInitConfig =
 };
 
 /* USER CODE BEGIN PV */
-#if (CFG_BUTTON_SUPPORTED == 1)
-/* Button management */
-static ButtonDesc_t buttonDesc[BUTTON_NB_MAX];
-#endif
 
 /* USER CODE END PV */
 
@@ -168,13 +154,7 @@ static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
 static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* USER CODE BEGIN PFP */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init(void);
-#endif
-#if (CFG_BUTTON_SUPPORTED == 1)
-static void Button_Init(void);
-static void Button_TriggerActions(void *arg);
-#endif
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -208,6 +188,11 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  /* Initialize the Temperature measurement */
+  TEMPMEAS_Init ();
+#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
+
   /* Initialize the Advance Memory Manager */
   AMM_Init (&ammInitConfig);
 
@@ -220,12 +205,6 @@ uint32_t MX_APPE_Init(void *p_param)
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, UTIL_SEQ_RFU, FM_BackgroundProcess);
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
-#endif
-#if (CFG_BUTTON_SUPPORTED == 1)
-  Button_Init();
-#endif
 
   /* USER CODE END APPE_Init_1 */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
@@ -242,6 +221,7 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
 
   APP_BLE_Init();
+
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
@@ -304,7 +284,7 @@ static void System_Init( void )
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  adc_ctrl_init();
+  ADCCTRL_Init ();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 #if ( CFG_LPM_LEVEL != 0)
@@ -335,19 +315,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -363,6 +339,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -498,28 +478,33 @@ void FM_ProcessRequest (void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SEQ_PRIO_0);
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)

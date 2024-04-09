@@ -40,6 +40,7 @@
 #include "common/as_core_type.hpp"
 #include "common/debug.hpp"
 #include "common/locator_getters.hpp"
+#include "common/uptime.hpp"
 #include "thread/version.hpp"
 
 using namespace ot;
@@ -436,12 +437,14 @@ const otMleCounters *otThreadGetMleCounters(otInstance *aInstance)
 
 void otThreadResetMleCounters(otInstance *aInstance) { AsCoreType(aInstance).Get<Mle::MleRouter>().ResetCounters(); }
 
+#if OPENTHREAD_CONFIG_MLE_PARENT_RESPONSE_CALLBACK_API_ENABLE
 void otThreadRegisterParentResponseCallback(otInstance                    *aInstance,
                                             otThreadParentResponseCallback aCallback,
                                             void                          *aContext)
 {
     AsCoreType(aInstance).Get<Mle::MleRouter>().RegisterParentResponseStatsCallback(aCallback, aContext);
 }
+#endif
 
 #if OPENTHREAD_CONFIG_TMF_ANYCAST_LOCATOR_ENABLE
 otError otThreadLocateAnycastDestination(otInstance                    *aInstance,
@@ -464,3 +467,12 @@ otError otThreadDetachGracefully(otInstance *aInstance, otDetachGracefullyCallba
 }
 
 #endif // OPENTHREAD_FTD || OPENTHREAD_MTD
+
+#if OPENTHREAD_CONFIG_UPTIME_ENABLE
+void otConvertDurationInSecondsToString(uint32_t aDuration, char *aBuffer, uint16_t aSize)
+{
+    StringWriter writer(aBuffer, aSize);
+
+    Uptime::UptimeToString(Uptime::SecToMsec(aDuration), writer, /* aIncludeMsec */ false);
+}
+#endif

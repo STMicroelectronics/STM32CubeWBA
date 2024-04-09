@@ -420,7 +420,7 @@
  * Please see section "Spinel definition compatibility guideline" for more details.
  *
  */
-#define SPINEL_RCP_API_VERSION 8
+#define SPINEL_RCP_API_VERSION 9
 
 /**
  * @def SPINEL_MIN_HOST_SUPPORTED_RCP_API_VERSION
@@ -1319,8 +1319,8 @@ enum
     SPINEL_CAP_THREAD__END            = 1152,
 
     SPINEL_CAP_NEST__BEGIN           = 15296,
-    SPINEL_CAP_NEST_LEGACY_INTERFACE = (SPINEL_CAP_NEST__BEGIN + 0),
-    SPINEL_CAP_NEST_LEGACY_NET_WAKE  = (SPINEL_CAP_NEST__BEGIN + 1),
+    SPINEL_CAP_NEST_LEGACY_INTERFACE = (SPINEL_CAP_NEST__BEGIN + 0), ///< deprecated
+    SPINEL_CAP_NEST_LEGACY_NET_WAKE  = (SPINEL_CAP_NEST__BEGIN + 1), ///< deprecated
     SPINEL_CAP_NEST_TRANSMIT_HOOK    = (SPINEL_CAP_NEST__BEGIN + 2),
     SPINEL_CAP_NEST__END             = 15360,
 
@@ -1625,14 +1625,14 @@ enum
      *
      * For GPIOs configured as inputs:
      *
-     * *   `CMD_PROP_VAUE_GET`: The value of the associated bit describes the
+     * *   `CMD_PROP_VALUE_GET`: The value of the associated bit describes the
      *     logic level read from the pin.
      * *   `CMD_PROP_VALUE_SET`: The value of the associated bit is ignored
      *     for these pins.
      *
      * For GPIOs configured as outputs:
      *
-     * *   `CMD_PROP_VAUE_GET`: The value of the associated bit is
+     * *   `CMD_PROP_VALUE_GET`: The value of the associated bit is
      *     implementation specific.
      * *   `CMD_PROP_VALUE_SET`: The value of the associated bit determines
      *     the new logic level of the output. If this pin is configured as an
@@ -1641,7 +1641,7 @@ enum
      *
      * For GPIOs which are not specified in `PROP_GPIO_CONFIG`:
      *
-     * *   `CMD_PROP_VAUE_GET`: The value of the associated bit is
+     * *   `CMD_PROP_VALUE_GET`: The value of the associated bit is
      *     implementation specific.
      * *   `CMD_PROP_VALUE_SET`: The value of the associated bit MUST be
      *     ignored by the NCP.
@@ -1991,7 +1991,7 @@ enum
      * Channel energy result will be reported by emissions
      * of `PROP_MAC_ENERGY_SCAN_RESULT` (per channel).
      *
-     * Set to `SCAN_STATE_DISOVER` to start a Thread MLE discovery
+     * Set to `SCAN_STATE_DISCOVER` to start a Thread MLE discovery
      * scan operation. Discovery scan result will be emitted from
      * `PROP_MAC_SCAN_BEACON`.
      *
@@ -2472,7 +2472,7 @@ enum
      *  `6`: Route Prefix
      *  `C`: Prefix length in bits
      *  `b`: Stable flag
-     *  `C`: Route flags (SPINEL_ROUTE_FLAG_* and SPINEL_ROUTE_PREFERNCE_* definitions)
+     *  `C`: Route flags (SPINEL_ROUTE_FLAG_* and SPINEL_ROUTE_PREFERENCE_* definitions)
      *  `b`: "Is defined locally" flag. Set if this route info was locally
      *       defined as part of local network data. Assumed to be true for set,
      *       insert and replace. Clear if the route is part of partition's network
@@ -2984,7 +2984,7 @@ enum
     /** Format: `A(t(iD))` - Write only
      *
      * The formatting of this property follows the same rules as in SPINEL_PROP_THREAD_MGMT_SET_ACTIVE_DATASET. This
-     * property further allows the sender to not include a value associated with properties in formating of `t(iD)`,
+     * property further allows the sender to not include a value associated with properties in formatting of `t(iD)`,
      * i.e., it should accept either a `t(iD)` or a `t(i)` encoding (in both cases indicating that the associated
      * Dataset property should be requested as part of MGMT_GET command).
      *
@@ -3266,7 +3266,7 @@ enum
      * Write to this property initiates update of Multicast Listeners Table on the primary BBR.
      * If the write succeeded, the result of network operation will be notified later by the
      * SPINEL_PROP_THREAD_MLR_RESPONSE property. If the write fails, no MLR.req is issued and
-     * notifiaction through the SPINEL_PROP_THREAD_MLR_RESPONSE property will not occur.
+     * notification through the SPINEL_PROP_THREAD_MLR_RESPONSE property will not occur.
      *
      */
     SPINEL_PROP_THREAD_MLR_REQUEST = SPINEL_PROP_THREAD_EXT__BEGIN + 52,
@@ -3319,7 +3319,7 @@ enum
      *
      * The valid values are specified by SPINEL_THREAD_BACKBONE_ROUTER_STATE_<state> enumeration.
      * Backbone functionality will be disabled if SPINEL_THREAD_BACKBONE_ROUTER_STATE_DISABLED
-     * is writted to this property, enabled otherwise.
+     * is written to this property, enabled otherwise.
      *
      */
     SPINEL_PROP_THREAD_BACKBONE_ROUTER_LOCAL_STATE = SPINEL_PROP_THREAD_EXT__BEGIN + 56,
@@ -3511,19 +3511,27 @@ enum
      * over the radio. This allows the caller to use the radio directly.
      *
      * The frame meta data for the `CMD_PROP_VALUE_SET` contains the following
-     * optional fields.  Default values are used for all unspecified fields.
+     * fields.  Default values are used for all unspecified fields.
      *
-     *  `C` : Channel (for frame tx)
+     *  `C` : Channel (for frame tx) - MUST be included.
      *  `C` : Maximum number of backoffs attempts before declaring CCA failure
      *        (use Thread stack default if not specified)
      *  `C` : Maximum number of retries allowed after a transmission failure
      *        (use Thread stack default if not specified)
      *  `b` : Set to true to enable CSMA-CA for this packet, false otherwise.
      *        (default true).
-     *  `b` : Set to true to indicate it is a retransmission packet, false otherwise.
-     *        (default false).
-     *  `b` : Set to true to indicate that SubMac should skip AES processing, false otherwise.
-     *        (default false).
+     *  `b` : Set to true to indicate if header is updated - related to
+     *        `mIsHeaderUpdated` in `otRadioFrame` (default false).
+     *  `b` : Set to true to indicate it is a retransmission - related to
+     *        `mIsARetx` in `otRadioFrame` (default false).
+     *  `b` : Set to true to indicate security was processed on tx frame
+     *        `mIsSecurityProcessed` in `otRadioFrame` (default false).
+     *  `L` : TX delay interval used for CSL - related to `mTxDelay` in
+     *        `otRadioFrame` (default zero).
+     *  `L` : TX delay based time used for CSL - related to `mTxDelayBaseTime`
+     *        in `otRadioFrame` (default zero).
+     *  `C` : RX channel after TX done (default assumed to be same as
+     *        channel in metadata)
      *
      */
     SPINEL_PROP_STREAM_RAW = SPINEL_PROP_STREAM__BEGIN + 1,
@@ -4839,12 +4847,20 @@ enum
 
     SPINEL_PROP_NEST_STREAM_MFG = SPINEL_PROP_NEST__BEGIN + 0,
 
-    /// The legacy network ULA prefix (8 bytes)
-    /** Format: 'D' */
+    /// The legacy network ULA prefix (8 bytes).
+    /** Format: 'D'
+     *
+     * This property is deprecated.
+     *
+     */
     SPINEL_PROP_NEST_LEGACY_ULA_PREFIX = SPINEL_PROP_NEST__BEGIN + 1,
 
     /// The EUI64 of last node joined using legacy protocol (if none, all zero EUI64 is returned).
-    /** Format: 'E' */
+    /** Format: 'E'
+     *
+     * This property is deprecated.
+     *
+     */
     SPINEL_PROP_NEST_LEGACY_LAST_NODE_JOINED = SPINEL_PROP_NEST__BEGIN + 2,
 
     SPINEL_PROP_NEST__END = 0x3C00,
@@ -5015,9 +5031,9 @@ SPINEL_API_EXTERN spinel_ssize_t spinel_datatype_unpack(const uint8_t *data_in,
                                                         const char    *pack_format,
                                                         ...);
 /**
- * This function parses spinel data similar to sscanf().
+ * Parses spinel data similar to sscanf().
  *
- * This function actually calls spinel_datatype_vunpack_in_place() to parse data.
+ * Actually calls spinel_datatype_vunpack_in_place() to parse data.
  *
  * @param[in]   data_in     A pointer to the data to parse.
  * @param[in]   data_len    The length of @p data_in in bytes.
@@ -5047,7 +5063,7 @@ SPINEL_API_EXTERN spinel_ssize_t spinel_datatype_vunpack(const uint8_t *data_in,
                                                          const char    *pack_format,
                                                          va_list        args);
 /**
- * This function parses spinel data similar to vsscanf().
+ * Parses spinel data similar to vsscanf().
  *
  * @param[in]   data_in     A pointer to the data to parse.
  * @param[in]   data_len    The length of @p data_in in bytes.

@@ -78,7 +78,7 @@ extern "C" {
  * Cryptographic settings
  */
 #define MCUBOOT_USE_MBED_TLS
-
+#include "stm32wbaxx_hal.h"
 /*
  * Logging
  */

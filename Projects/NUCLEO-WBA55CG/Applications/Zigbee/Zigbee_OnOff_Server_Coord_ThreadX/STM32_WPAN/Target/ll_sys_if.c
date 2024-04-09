@@ -58,10 +58,6 @@ static TX_THREAD        LinkLayerThread;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
-/* Link Layer Task related resources */
-TX_MUTEX                LinkLayerMutex;
-
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -82,7 +78,7 @@ TX_MUTEX                LinkLayerMutex;
 
 /**
  * @brief  Link Layer Task for ThreadX
- * @param  None
+ * @param  ULONG thread_input
  * @retval None
  */
 static void ll_sys_bg_process_task( ULONG thread_input )
@@ -93,6 +89,7 @@ static void ll_sys_bg_process_task( ULONG thread_input )
   {
     tx_semaphore_get( &LinkLayerSemaphore, TX_WAIT_FOREVER );
     ll_sys_bg_process();
+    tx_thread_relinquish();
   }
 }
 
@@ -111,14 +108,6 @@ void ll_sys_bg_process_init(void)
   if ( ThreadXStatus != TX_SUCCESS )
   {
     LOG_ERROR_APP( "ERROR THREADX : LINK LAYER SEMAPHORE CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
-  }
-
-  /* Register LinkLayer Mutex */
-  ThreadXStatus = tx_mutex_create( &LinkLayerMutex, "LinkLayerMutex", 0 );
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR FREERTOS : LINK LAYER MUTEX CREATION FAILED." );
     Error_Handler();
   }
 

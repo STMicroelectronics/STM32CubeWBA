@@ -39,9 +39,7 @@
 #if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE
 #include <openthread/channel_manager.h>
 #endif
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
 #include <openthread/child_supervision.h>
-#endif
 #include <openthread/dataset.h>
 #include <openthread/dataset_ftd.h>
 #include <openthread/diag.h>
@@ -87,6 +85,7 @@ exit:
 // MARK: Property/Status Changed
 // ----------------------------------------------------------------------------
 
+#if OPENTHREAD_CONFIG_MLE_PARENT_RESPONSE_CALLBACK_API_ENABLE
 void NcpBase::HandleParentResponseInfo(otThreadParentResponseInfo *aInfo, void *aContext)
 {
     VerifyOrExit(aInfo && aContext);
@@ -118,6 +117,7 @@ void NcpBase::HandleParentResponseInfo(const otThreadParentResponseInfo &aInfo)
 exit:
     return;
 }
+#endif
 
 void NcpBase::HandleNeighborTableChanged(otNeighborTableEvent aEvent, const otNeighborTableEntryInfo *aEntry)
 {
@@ -1210,7 +1210,7 @@ template <> otError NcpBase::HandlePropertyGet<SPINEL_PROP_THREAD_ADDRESS_CACHE_
         if (entry.mState != OT_CACHE_ENTRY_STATE_CACHED)
         {
             SuccessOrExit(error = mEncoder.WriteBool(entry.mCanEvict));
-            SuccessOrExit(error = mEncoder.WriteUint16(entry.mTimeout));
+            SuccessOrExit(error = mEncoder.WriteUint16(entry.mRampDown ? 0 : entry.mTimeout));
             SuccessOrExit(error = mEncoder.WriteUint16(entry.mRetryDelay));
         }
 
@@ -1222,8 +1222,6 @@ template <> otError NcpBase::HandlePropertyGet<SPINEL_PROP_THREAD_ADDRESS_CACHE_
 exit:
     return error;
 }
-
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
 
 template <> otError NcpBase::HandlePropertyGet<SPINEL_PROP_CHILD_SUPERVISION_INTERVAL>(void)
 {
@@ -1241,8 +1239,6 @@ template <> otError NcpBase::HandlePropertySet<SPINEL_PROP_CHILD_SUPERVISION_INT
 exit:
     return error;
 }
-
-#endif // OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
 
 #if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE
 

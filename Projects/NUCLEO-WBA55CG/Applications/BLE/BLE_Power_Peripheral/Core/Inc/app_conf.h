@@ -51,9 +51,10 @@
 #define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
 
 /**
- * Define Advertising parameters
+ * Definition of public BD Address,
+ * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0x0000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -75,8 +76,8 @@
 
 #define ADV_INTERVAL_MIN                  (0x0080)
 #define ADV_INTERVAL_MAX                  (0x0080)
-#define ADV_LP_INTERVAL_MIN               (0x0800)
-#define ADV_LP_INTERVAL_MAX               (0x0800)
+#define ADV_LP_INTERVAL_MIN               (0x0640)
+#define ADV_LP_INTERVAL_MAX               (0x0FA0)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
 
@@ -102,11 +103,7 @@
 /**
  * Define Secure Connections Support
  */
-#define CFG_SECURE_NOT_SUPPORTED              (0x00)
-#define CFG_SECURE_OPTIONAL                   (0x01)
-#define CFG_SECURE_MANDATORY                  (0x02)
-
-#define CFG_SC_SUPPORT                        CFG_SECURE_OPTIONAL
+#define CFG_SC_SUPPORT                   (SC_PAIRING_OPTIONAL)
 
 /**
  * Define Keypress Notification Support
@@ -141,6 +138,7 @@
  * BLE stack options, bitmap to active or not some features at BleStack_Init() function call.
  */
 #define CFG_BLE_OPTIONS             (0 | \
+                                     0 | \
                                      0 | \
                                      0 | \
                                      0 | \
@@ -200,21 +198,28 @@
 /**
  * Number of allocated memory blocks used to transmit and receive data packets
  */
-#define CFG_BLE_MBLOCK_COUNT (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
+#define CFG_BLE_MBLOCK_COUNT          (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
                                        CFG_BLE_ATT_MTU_MAX, CFG_BLE_NUM_LINK) \
-                                   + CFG_BLE_MBLOCK_COUNT_MARGIN)
+                                       + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
  * Appearance of device set into BLE GAP
  */
-#define CFG_GAP_APPEARANCE          (GAP_APPEARANCE_UNKNOWN)
+#define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
 
 /**
  * Connection Oriented Channel parameters
  */
-#define CFG_BLE_COC_NBR_MAX                         (64)
-#define CFG_BLE_COC_MPS_MAX                         (248)
-#define CFG_BLE_COC_INITIATOR_NBR_MAX               (32)
+#define CFG_BLE_COC_NBR_MAX           (64)
+#define CFG_BLE_COC_MPS_MAX           (248)
+#define CFG_BLE_COC_INITIATOR_NBR_MAX (32)
+
+/**
+ * PHY preferences
+ */
+#define CFG_PHY_PREF                  (0)
+#define CFG_PHY_PREF_TX               (HCI_TX_PHYS_LE_2M_PREF)
+#define CFG_PHY_PREF_RX               (HCI_RX_PHYS_LE_2M_PREF)
 
 /* USER CODE BEGIN BLE_Stack */
 
@@ -257,9 +262,6 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_SMPS_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/
@@ -284,6 +286,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
@@ -464,6 +467,12 @@ typedef enum
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
+/* RF TX power table ID selection:
+ *   0 -> RF TX output level from -20 dBm to +10 dBm
+ *   1 -> RF TX output level from -20 dBm to +3 dBm
+ */
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
+
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */
@@ -483,15 +492,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                          (4000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (400U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_MM_POOL_SIZE                                  (4000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
+#define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -514,6 +522,13 @@ typedef enum
     #define CFG_DEBUGGER_LEVEL      (0)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
+
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  #if CFG_LOG_SUPPORTED
+    #undef  CFG_LOG_SUPPORTED
+    #define CFG_LOG_SUPPORTED       (0)
+  #endif /* CFG_LOG_SUPPORTED */
+#endif /* CFG_LPM_STDBY_SUPPORTED */
 
 /* USER CODE BEGIN Defines_2 */
 #undef  CFG_LPM_STDBY_SUPPORTED                                              

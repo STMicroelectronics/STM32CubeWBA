@@ -259,16 +259,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/lib/LinkLayer_RawMac_lib_CubeIDE.a</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_RawMac_lib_CubeIDE.a</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/lib/wba_mac_lib_CubeIDE.a</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/mac_802_15_4/lib/wba_mac_lib_CubeIDE.a</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/App/app_cli_runner.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_cli_runner.c</locationURI>
@@ -354,9 +344,19 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/scm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/LowPower/peripheral_init.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/peripheral_init.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/LowPower/user_low_power_config.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/user_low_power_config.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/RTDebug/RTDebug.c</name>

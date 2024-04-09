@@ -20,11 +20,12 @@
 
 #include "app_common.h"
 #include "main.h"
+#include "ll_intf.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "stm32_seq.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
+#include "temp_measurement.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Private defines -----------------------------------------------------------*/
@@ -44,13 +45,11 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -62,7 +61,6 @@ extern void llhwc_cmn_set_temperature_sensor_state(void);
 extern uint8_t ll_tx_pwr_if_select_tx_power_mode(uint8_t tx_power_table_id);
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
-static void request_temperature_measurement(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* USER CODE BEGIN PFP */
@@ -85,7 +83,7 @@ static void request_temperature_measurement(void);
 void ll_sys_bg_process_init(void)
 {
   /* Tasks creation */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
 }
 
 /**
@@ -128,7 +126,7 @@ void ll_sys_config_params(void)
   /* Link layer IP uses temperature based calibration instead of periodic one */
   llhwc_cmn_set_temperature_sensor_state();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-  
+
   /* Link Layer power table */
   ll_tx_pwr_if_select_tx_power_mode(CFG_RF_TX_POWER_TABLE_ID);
 }
@@ -142,7 +140,7 @@ void ll_sys_config_params(void)
 void ll_sys_bg_temperature_measurement_init(void)
 {
   /* Tasks creation */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, UTIL_SEQ_RFU, request_temperature_measurement);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, UTIL_SEQ_RFU, TEMPMEAS_RequestTemperatureMeasurement);
 }
 
 /**
@@ -155,35 +153,4 @@ void ll_sys_bg_temperature_measurement(void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, CFG_SEQ_PRIO_0);
 }
 
-/**
-  * @brief  Request temperature measurement
-  * @param  None
-  * @retval None
-  */
-void request_temperature_measurement(void)
-{
-  int16_t temperature_value = 0;
-
-  /* Enter limited critical section : disable all the interrupts with priority higher than RCC one
-   * Concerns link layer interrupts (high and SW low) or any other high priority user system interrupt
-   */
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO<<4);
-
-  /* Request ADC IP activation */
-  adc_ctrl_req(SYS_ADC_LL_EVT, ADC_ON);
-
-  /* Get temperature from ADC dedicated channel */
-  temperature_value = adc_ctrl_request_temperature();
-
-  /* Request ADC IP deactivation */
-  adc_ctrl_req(SYS_ADC_LL_EVT, ADC_OFF);
-
-  /* Give the temperature information to the link layer */
-  llhwc_cmn_set_temperature_value(temperature_value);
-
-  /* Exit limited critical section */
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
-}
-
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-

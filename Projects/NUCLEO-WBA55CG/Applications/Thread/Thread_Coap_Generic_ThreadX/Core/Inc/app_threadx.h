@@ -63,20 +63,14 @@
 /* Exported functions prototypes ---------------------------------------------*/
 UINT App_ThreadX_Init(VOID *memory_ptr);
 void MX_ThreadX_Init(void);
-void ThreadXLowPowerUserEnter( void) ;
-void ThreadXLowPowerUserExit( void) ;
+void ThreadXLowPowerUserEnter(void);
+void ThreadXLowPowerUserExit(void);
 
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
 
 /* USER CODE BEGIN 1 */
-/* Declaration of all ThreadX global resources used by the application */
-/* pointer to ThreadX byte pool allocated in app_azure_rtos.c  */
-extern TX_BYTE_POOL *pBytePool;
-
-/* Generic ThreadX stack pointer */
-extern CHAR * pStack;
 
 /* USER CODE END 1 */
 

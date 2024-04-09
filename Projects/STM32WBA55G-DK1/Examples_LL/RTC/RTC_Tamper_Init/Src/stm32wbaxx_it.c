@@ -228,7 +228,7 @@ void TAMP_IRQHandler(void)
 
   /* USER CODE BEGIN TAMP_IRQn 1 */
   /* Clear the EXTI's Flag for RTC Tamper */
-  LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_1);
+  LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_13);
 
   /* USER CODE END TAMP_IRQn 1 */
 }

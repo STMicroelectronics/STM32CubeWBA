@@ -371,8 +371,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../System/Modules/MemoryManager/memory_manager.c</PathWithFileName>
-      <FilenameWithoutPath>memory_manager.c</FilenameWithoutPath>
+      <PathWithFileName>../System/Modules/MemoryManager/advanced_memory_manager.c</PathWithFileName>
+      <FilenameWithoutPath>advanced_memory_manager.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

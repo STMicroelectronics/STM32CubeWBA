@@ -77,6 +77,7 @@ static void MX_GPDMA1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -137,6 +138,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -250,6 +255,8 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+  /* No retention for ICACHE in stop mode */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
 
   /* USER CODE END ICACHE_Init 1 */
 
@@ -415,6 +422,8 @@ void MX_RNG_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RNG_Init 2 */
+  /* Disable RNG peripheral and its RCC clock */
+  HW_RNG_Disable( );
 
   /* USER CODE END RNG_Init 2 */
 
@@ -542,20 +551,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(file);
-  UNUSED(line);
-
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  
-  /* SW breakpoint for debugging purpose */
-  __asm("BKPT #0\n") ;
-
-  /* Infinite loop */
-  while (1)
-  {
-  }
+  Error_Handler();
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

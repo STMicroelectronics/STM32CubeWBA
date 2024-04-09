@@ -153,14 +153,7 @@ typedef uint8_t MCP_Role_t;
 #define MCP_ROLE_SERVER			        (0x01)
 #define MCP_ROLE_CLIENT			        (0x02)
 
-/* Types of Media Control Profile Linkup Mode */
-typedef uint8_t MCP_LinkupMode_t;
-#define MCP_LINKUP_MODE_COMPLETE                (0x00u) /* Link Up procedure shall be a complete one
-                                                         * with remote service and characteristic discovery
-                                                         */
-#define MCP_LINKUP_MODE_RESTORE                 (0x01u) /* Link Up information is restored from previous
-                                                         * complete Link Up from persistent memory.
-                                                         */
+
 /* Media Control Optional features*/
 typedef uint16_t MCP_OptionFeatures_t;
 #define MCP_FEATURE_PLAYBACK_SPEED              (0x0001)        /* Playback Speed feature is supported.*/
@@ -393,6 +386,22 @@ typedef uint8_t MCP_MediaControlOpcode_t;
                                                                  * in the sequence of groups.
                                                                  */
 
+/*Media Control Response Code Type*/
+typedef uint8_t MCP_MediaControlRespCode_t;
+#define MCP_MEDIA_CTRL_RSP_SUCCESS                      (0x01)  /* Action requested by the opcode write
+                                                                 * was completed successfully.
+                                                                 */
+#define MCP_MEDIA_CTRL_RSP_NOT_SUPPORTED                (0x02)  /* An invalid or unsupported operation was sent
+                                                                 */
+#define MCP_MEDIA_CTRL_RSP_MEDIA_PLAYER_INACTIVE        (0x03)  /* The Media Player State value is Inactive when the
+                                                                 * operation request is received or the result
+                                                                 * of the requested action of the operation results
+                                                                 * in the Media Player State being set to Inactive.
+                                                                 */
+#define MCP_MEDIA_CTRL_RSP_CMD_CANNOT_BE_COMPLETED      (0x04)  /* The requested action of any Media Control Operation
+                                                                 * cannot be completed successfully because of
+                                                                 * a condition within the player.
+                                                                 */
 
 /* Types the Media Control Events */
 typedef enum
@@ -438,6 +447,17 @@ typedef enum
                                          * accepted.
                                          * The pInfo field indicates the requested operation and its associated value
                                          * through the MCP_SRV_MediaCtrlReq_Evt_t type.
+                                         */
+  MCP_CLT_GMP_INFO_EVT,                 /* This event is notified by MCP Client during the link up process for the
+                                         * Generic Media Player.
+                                         * The pInfo field indicates information through
+                                         * the MCP_CLT_MediaPlayerInfo_Evt_t type.
+                                         */
+  MCP_CLT_MPI_INFO_EVT,                 /* This event is notified by MCP Client during the link up process for a
+                                         * Media Player Instance.
+                                         * Note this event is notified for each Media Player Instance
+                                         * The pInfo field indicates information through
+                                         * the MCP_CLT_MediaPlayerInfo_Evt_t type.
                                          */
   MCP_CLT_OPERATION_COMPLETE_EVT,       /* This event is notified when a MCP Client Operation is complete.
                                          * A new MCP Client operation could be started
@@ -656,6 +676,25 @@ typedef struct
   MCP_MediaState_t MediaState;
 }MCP_MediaState_Evt_t;
 
+/* Structure used in parameter when MCP_CLT_GMP_INFO_EVT and MCP_CLT_MPI_INFO_EVT events are notified*/
+typedef struct
+{
+  MCP_OptionFeatures_t                  OptionFeaturesMask;     /* Mask of Optional Media Control features
+                                                                 * supported on the remote Media Control Server
+                                                                 */
+  MCP_NotificationUpdateFeatures_t      NotifUpdateMask;        /* Mask of Notification update features
+                                                                 * supported on the remote Media Control Server.
+                                                                 * If not activated by the MCP Client, the update
+                                                                 * notification is disabled by default.
+                                                                 */
+  uint16_t                              StartAttHandle;         /* ATT Start Handle of the Media Control Player
+                                                                 * in the remote MCP Server
+                                                                 */
+  uint16_t                              EndAttHandle;           /* ATT End Handle of the Media Control Player
+                                                                 * in the remote MCP Server
+                                                                 */
+} MCP_CLT_MediaPlayerInfo_Evt_t;
+
 /* Type associated to MCP_CLT_OPERATION_TRANSMITTED_EVT event*/
 typedef struct
 {
@@ -666,7 +705,7 @@ typedef struct
 typedef struct
 {
   MCP_MediaControlOpcode_t      CtrlOp;
-  uint8_t                       ResultCode;
+  MCP_MediaControlRespCode_t    ResultCode;
 }MCP_CLT_MediaCtrlRsp_Evt_t;
 
 /* Structure used in parameter when MCP_CLT_MEDIA_PLAYER_NAME_EVT event is notified*/

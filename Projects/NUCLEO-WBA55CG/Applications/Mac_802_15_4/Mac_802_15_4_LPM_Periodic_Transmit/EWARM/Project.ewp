@@ -221,7 +221,6 @@
                     <state>PHY_2_10_a</state>
                     <state>PHY_40nm_2_30_a_A1</state>
                     <state>LOGGER_ENABLE=0</state>
-                    <state>LOGUARTENABLED</state>
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
                     <state>OS_BAREMETAL</state>
@@ -372,6 +371,8 @@
                     <state>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
                     <state>$PROJ_DIR$\..\System\Startup</state>
+                    <state>$PROJ_DIR$\..\System\Config\ADC_Ctrl</state>
+                    <state>$PROJ_DIR$\..\System\Config\CRC_Ctrl</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1156,6 +1157,12 @@
                 <group>
                     <name>Config</name>
                     <group>
+                        <name>ADC_Ctrl</name>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Config\ADC_Ctrl\adc_ctrl_conf.c</name>
+                        </file>
+                    </group>
+                    <group>
                         <name>Debug_GPIO</name>
                         <file>
                             <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
@@ -1253,6 +1260,9 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\System\Modules\temp_measurement.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\System\Interfaces\usart_if.c</name>

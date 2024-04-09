@@ -43,7 +43,7 @@
 
 #if !defined(OPENTHREAD_BUILD_DATETIME)
 #ifdef __ANDROID__
-#ifdef OPENTHREAD_ENABLE_ANDROID_NDK
+#ifdef OPENTHREAD_CONFIG_ANDROID_NDK_ENABLE
 #include <sys/system_properties.h>
 #else
 #include <cutils/properties.h>
@@ -69,6 +69,8 @@ otInstance *otInstanceInit(void *aInstanceBuffer, size_t *aInstanceBufferSize)
 #else
 otInstance *otInstanceInitSingle(void) { return &Instance::InitSingle(); }
 #endif // #if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+uint32_t otInstanceGetId(otInstance *aInstance) { return AsCoreType(aInstance).GetId(); }
 
 bool otInstanceIsInitialized(otInstance *aInstance)
 {
@@ -135,7 +137,7 @@ const char *otGetVersionString(void)
 
 #if !defined(OPENTHREAD_BUILD_DATETIME) && defined(__ANDROID__)
 
-#ifdef OPENTHREAD_ENABLE_ANDROID_NDK
+#ifdef OPENTHREAD_CONFIG_ANDROID_NDK_ENABLE
     static char sVersion[100 + PROP_VALUE_MAX];
     char        dateTime[PROP_VALUE_MAX];
 

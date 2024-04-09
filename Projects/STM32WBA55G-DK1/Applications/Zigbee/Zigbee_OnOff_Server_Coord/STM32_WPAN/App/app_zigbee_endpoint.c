@@ -190,6 +190,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -315,7 +317,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   {
     LOG_INFO_APP( "[ONOFF] Red Led 'OFF'" );
     UTIL_LCD_ClearStringLine( 1 );
-    UTIL_LCD_DisplayStringAtLine( 1, "Light 'OFF'" );
+    UTIL_LCD_DisplayStringAtLine( 1, (uint8_t *)"Light 'OFF'" );
     BSP_LCD_Refresh( LCD1 );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
   }
@@ -343,7 +345,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
   {
     LOG_INFO_APP( "[ONOFF] Red Led 'ON'" );
     UTIL_LCD_ClearStringLine( 1 );
-    UTIL_LCD_DisplayStringAtLine( 1, "Light 'ON'" );
+    UTIL_LCD_DisplayStringAtLine( 1, (uint8_t *)"Light 'ON'" );
     BSP_LCD_Refresh( LCD1 );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
   }
@@ -396,7 +398,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClu
 static void APP_ZIGBEE_OnOffClientStart(void)
 {
   UTIL_LCD_Clear( LCD_COLOR_BLACK );
-  UTIL_LCD_DisplayStringAtLine( 0, "ON-OFF Srv:" );
+  UTIL_LCD_DisplayStringAtLine( 0, (uint8_t *)"ON-OFF Srv:" );
   BSP_LCD_Refresh( LCD1 );
 }
 

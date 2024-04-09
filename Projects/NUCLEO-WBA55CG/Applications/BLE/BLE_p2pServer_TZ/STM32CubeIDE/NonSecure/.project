@@ -213,6 +213,16 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_uart.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</locationURI>
@@ -248,237 +258,257 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/Core/app_entry.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/app_entry.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/Core/main.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/main.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/Core/stm32wbaxx_hal_msp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/Core/stm32wbaxx_it.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/stm32wbaxx_it.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/Core/app_entry.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/app_entry.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/NonSecure/Core/main.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/main.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/NonSecure/Core/stm32wbaxx_hal_msp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/NonSecure/Core/stm32wbaxx_it.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Core/Src/stm32wbaxx_it.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/App/app_ble.c</name>
+			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/App/app_ble.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/App/p2p_server.c</name>
+			<name>Application/User/STM32_WPAN/App/p2p_server.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/App/p2p_server.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/App/p2p_server_app.c</name>
+			<name>Application/User/STM32_WPAN/App/p2p_server_app.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/App/p2p_server_app.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/bleplat.c</name>
+			<name>Application/User/STM32_WPAN/Target/bleplat.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/bleplat.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/bpka.c</name>
+			<name>Application/User/STM32_WPAN/Target/bpka.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/bpka.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/host_stack_if.c</name>
+			<name>Application/User/STM32_WPAN/Target/host_stack_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/host_stack_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/linklayer_plat.c</name>
+			<name>Application/User/STM32_WPAN/Target/linklayer_plat.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/linklayer_plat.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/ll_sys_if.c</name>
+			<name>Application/User/STM32_WPAN/Target/ll_sys_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/ll_sys_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/STM32_WPAN/Target/power_table.c</name>
+			<name>Application/User/STM32_WPAN/Target/power_table.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/Target/power_table.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/hw_aes.c</name>
+			<name>Application/User/System/Interfaces/hw_aes.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/hw_aes.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/hw_otp.c</name>
+			<name>Application/User/System/Interfaces/hw_otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/hw_otp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/hw_pka.c</name>
+			<name>Application/User/System/Interfaces/hw_pka.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/hw_pka.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/hw_rng.c</name>
+			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/hw_rng.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/pka_p256.c</name>
+			<name>Application/User/System/Interfaces/pka_p256.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/pka_p256.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/stm32_lpm_if.c</name>
+			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/stm32_lpm_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/timer_if.c</name>
+			<name>Application/User/System/Interfaces/timer_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/timer_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Interfaces/usart_if.c</name>
+			<name>Application/User/System/Interfaces/usart_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Interfaces/usart_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/adc_ctrl.c</name>
+			<name>Application/User/System/Modules/adc_ctrl.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/adc_ctrl.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/app_sys.c</name>
+			<name>Application/User/System/Modules/app_sys.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/app_sys.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/ble_timer.c</name>
+			<name>Application/User/System/Modules/ble_timer.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/ble_timer.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/otp.c</name>
+			<name>Application/User/System/Modules/crc_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/crc_ctrl.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/otp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/scm.c</name>
+			<name>Application/User/System/Modules/scm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/scm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/stm_list.c</name>
+			<name>Application/User/System/Modules/stm_list.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Modules/temp_measurement.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/temp_measurement.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Config/Debug_GPIO/app_debug.c</name>
+			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/ADC_Ctrl/adc_ctrl_conf.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/CRC_Ctrl/crc_ctrl_conf.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/Debug_GPIO/app_debug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/Debug_GPIO/app_debug.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Config/Flash/simple_nvm_arbiter_conf.c</name>
+			<name>Application/User/System/Config/Flash/simple_nvm_arbiter_conf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/Flash/simple_nvm_arbiter_conf.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Config/Log/log_module.c</name>
+			<name>Application/User/System/Config/Log/log_module.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/Log/log_module.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Config/LowPower/peripheral_init.c</name>
+			<name>Application/User/System/Config/LowPower/peripheral_init.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/LowPower/peripheral_init.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Config/LowPower/user_low_power_config.c</name>
+			<name>Application/User/System/Config/LowPower/user_low_power_config.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Config/LowPower/user_low_power_config.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/Flash/flash_driver.c</name>
+			<name>Application/User/System/Modules/Flash/flash_driver.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/Flash/flash_driver.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/Flash/flash_manager.c</name>
+			<name>Application/User/System/Modules/Flash/flash_manager.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/Flash/flash_manager.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/Flash/rf_timing_synchro.c</name>
+			<name>Application/User/System/Modules/Flash/rf_timing_synchro.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/Flash/rf_timing_synchro.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/Flash/simple_nvm_arbiter.c</name>
+			<name>Application/User/System/Modules/Flash/simple_nvm_arbiter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/Flash/simple_nvm_arbiter.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/MemoryManager/advanced_memory_manager.c</name>
+			<name>Application/User/System/Modules/MemoryManager/advanced_memory_manager.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/MemoryManager/advanced_memory_manager.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/MemoryManager/stm32_mm.c</name>
+			<name>Application/User/System/Modules/MemoryManager/stm32_mm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/MemoryManager/stm32_mm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/Nvm/nvm_emul.c</name>
+			<name>Application/User/System/Modules/Nvm/nvm_emul.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/Nvm/nvm_emul.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/RFControl/rf_antenna_switch.c</name>
+			<name>Application/User/System/Modules/RFControl/rf_antenna_switch.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/RFControl/rf_antenna_switch.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/RTDebug/RTDebug.c</name>
+			<name>Application/User/System/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/RTDebug/RTDebug.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/RTDebug/RTDebug_dtb.c</name>
+			<name>Application/User/System/Modules/RTDebug/RTDebug_dtb.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/RTDebug/RTDebug_dtb.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
+			<name>Application/User/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/baes/baes_cmac.c</name>
+			<name>Application/User/System/Modules/baes/baes_cmac.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/baes/baes_cmac.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/NonSecure/System/Modules/baes/baes_ecb.c</name>
+			<name>Application/User/System/Modules/baes/baes_ecb.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/baes/baes_ecb.c</locationURI>
 		</link>

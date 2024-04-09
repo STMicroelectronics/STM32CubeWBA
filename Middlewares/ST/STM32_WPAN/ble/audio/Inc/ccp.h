@@ -126,7 +126,7 @@ tBleStatus CCP_SERVER_SetCallFriendlyName(uint8_t ContentControlID,
   *                           1 if URI and Friendly Name information are withhold by the server
   * @param  WithHeldByNetwork: 0 if URI and Friendly Name information are provided by the network
   *                            1 if URI and Friendly Name information are withhold by the network
-  * @param  CallIdx[out]: Call Index on which incoming call is setup.
+  * @param[out]  CallIdx: Call Index on which incoming call is setup.
   * @retval status of the operation
   */
 tBleStatus CCP_SERVER_SetupIncomingCall(uint8_t ContentControlID,
@@ -146,7 +146,7 @@ tBleStatus CCP_SERVER_SetupIncomingCall(uint8_t ContentControlID,
   *                           1 if URI and Friendly Name information are withhold by the server
   * @param  WithHeldByNetwork: 0 if URI and Friendly Name information are provided by the network
   *                            1 if URI and Friendly Name information are withhold by the network
-  * @param  CallIdx[out]: Call Index on which outgoing call is setup.
+  * @param[out] CallIdx: Call Index on which outgoing call is setup.
   * @retval status of the operation
   */
 tBleStatus CCP_SERVER_SetupOutgoingCall(uint8_t ContentControlID,
@@ -552,13 +552,24 @@ tBleStatus CCP_CLIENT_IsDiscoveredBearer(uint16_t ConnHandle,uint8_t ContentCont
   * @brief  Get the CCP Option features supported by the specified Bearer on the remote Call Control Server.
   * @param  ConnHandle: ACL connection handle
   * @param  ContentControlID: Content Control Identifier of the Telephony Bearer
-  * @param  FeaturesMask[out] : returned Mask of Bearer features supported on the remote Call Control Server
+  * @param[out]  FeaturesMask : returned Mask of Bearer features supported on the remote Call Control Server
   * @retval if status is BLE_STATUS_SUCCESS, specified connection handle and Content Control ID corresponds to a
   *         discovered Telephony Bearer, else not.
   */
 tBleStatus CCP_CLIENT_GetBearerOptionFeatures(uint16_t ConnHandle,
                                               uint8_t ContentControlID,
                                               CCP_OptionFeatures_t *FeaturesMask);
+
+/**
+  * @brief  Remove the record of the Call Control Profile Client stored in the Non Volatile memory.
+  * @param  PeerIdentityAddressType: Identity address type.
+  *                                  Values:
+  *                                     - 0x00: Public Identity Address
+  *                                     - 0x01: Random (static) Identity Address
+  * @param  PeerIdentityAddress : Public or Random (static) Identity address of the peer device
+  * @retval status of the operation
+  */
+tBleStatus CCP_CLIENT_RemoveRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6]);
 
 #ifdef __cplusplus
 }

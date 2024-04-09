@@ -51,10 +51,6 @@
 #error "OPENTHREAD_CONFIG_MESSAGE_USE_HEAP_ENABLE conflicts with OPENTHREAD_CONFIG_PLATFORM_MESSAGE_MANAGEMENT."
 #endif
 
-#if OPENTHREAD_CONFIG_MESSAGE_USE_HEAP_ENABLE && !OPENTHREAD_CONFIG_DTLS_ENABLE
-#error "OPENTHREAD_CONFIG_MESSAGE_USE_HEAP_ENABLE is strongly discouraged when OPENTHREAD_CONFIG_DTLS_ENABLE is off."
-#endif
-
 namespace ot {
 
 RegisterLogModule("Message");
@@ -64,9 +60,8 @@ RegisterLogModule("Message");
 
 MessagePool::MessagePool(Instance &aInstance)
     : InstanceLocator(aInstance)
-#if !OPENTHREAD_CONFIG_PLATFORM_MESSAGE_MANAGEMENT && !OPENTHREAD_CONFIG_MESSAGE_USE_HEAP_ENABLE
-    , mNumFreeBuffers(kNumBuffers)
-#endif
+    , mNumAllocated(0)
+    , mMaxAllocated(0)
 {
 #if OPENTHREAD_CONFIG_PLATFORM_MESSAGE_MANAGEMENT
     otPlatMessagePoolInit(&GetInstance(), kNumBuffers, sizeof(Buffer));
@@ -99,6 +94,13 @@ exit:
     return message;
 }
 
+Message *MessagePool::Allocate(Message::Type aType) { return Allocate(aType, 0, Message::Settings::GetDefault()); }
+
+Message *MessagePool::Allocate(Message::Type aType, uint16_t aReserveHeader)
+{
+    return Allocate(aType, aReserveHeader, Message::Settings::GetDefault());
+}
+
 void MessagePool::Free(Message *aMessage)
 {
     OT_ASSERT(aMessage->Next() == nullptr && aMessage->Prev() == nullptr);
@@ -123,9 +125,8 @@ Buffer *MessagePool::NewBuffer(Message::Priority aPriority)
         SuccessOrExit(ReclaimBuffers(aPriority));
     }
 
-#if !OPENTHREAD_CONFIG_PLATFORM_MESSAGE_MANAGEMENT && !OPENTHREAD_CONFIG_MESSAGE_USE_HEAP_ENABLE
-    mNumFreeBuffers--;
-#endif
+    mNumAllocated++;
+    mMaxAllocated = Max(mMaxAllocated, mNumAllocated);
 
     buffer->SetNextBuffer(nullptr);
 
@@ -149,8 +150,9 @@ void MessagePool::FreeBuffers(Buffer *aBuffer)
         otPlatMessagePoolFree(&GetInstance(), aBuffer);
 #else
         mBufferPool.Free(*aBuffer);
-        mNumFreeBuffers++;
 #endif
+        mNumAllocated--;
+
         aBuffer = next;
     }
 }
@@ -170,7 +172,7 @@ uint16_t MessagePool::GetFreeBufferCount(void) const
 #elif OPENTHREAD_CONFIG_PLATFORM_MESSAGE_MANAGEMENT
     rval = otPlatMessagePoolNumFreeBuffers(&GetInstance());
 #else
-    rval = mNumFreeBuffers;
+    rval = kNumBuffers - mNumAllocated;
 #endif
 
     return rval;
@@ -766,7 +768,7 @@ Message *Message::Clone(uint16_t aLength) const
     SuccessOrExit(error = messageCopy->AppendBytesFromMessage(*this, 0, aLength));
 
     // Copy selected message information.
-    offset = GetOffset() < aLength ? GetOffset() : aLength;
+    offset = Min(GetOffset(), aLength);
     messageCopy->SetOffset(offset);
 
     messageCopy->SetSubType(GetSubType());
@@ -779,6 +781,7 @@ exit:
     return messageCopy;
 }
 
+#if OPENTHREAD_FTD
 bool Message::GetChildMask(uint16_t aChildIndex) const { return GetMetadata().mChildMask.Get(aChildIndex); }
 
 void Message::ClearChildMask(uint16_t aChildIndex) { GetMetadata().mChildMask.Set(aChildIndex, false); }
@@ -786,6 +789,7 @@ void Message::ClearChildMask(uint16_t aChildIndex) { GetMetadata().mChildMask.Se
 void Message::SetChildMask(uint16_t aChildIndex) { GetMetadata().mChildMask.Set(aChildIndex, true); }
 
 bool Message::IsChildPending(void) const { return GetMetadata().mChildMask.HasAny(); }
+#endif
 
 void Message::SetLinkInfo(const ThreadLinkInfo &aLinkInfo)
 {

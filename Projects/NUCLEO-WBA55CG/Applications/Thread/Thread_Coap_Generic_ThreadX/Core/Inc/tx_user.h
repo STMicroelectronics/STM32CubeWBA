@@ -237,12 +237,12 @@
 #define TX_LOW_POWER_TICKLESS
 
 /* A user defined macro to make the system enter low power mode */
-void App_ThreadX_LowPower_Enter(void);
-#define TX_LOW_POWER_USER_ENTER App_ThreadX_LowPower_Enter()
+void ThreadXLowPowerUserEnter(void);
+#define TX_LOW_POWER_USER_ENTER ThreadXLowPowerUserEnter()
 
 /* A user defined macro to make the system exit low power mode */
-void App_ThreadX_LowPower_Exit(void);
-#define TX_LOW_POWER_USER_EXIT App_ThreadX_LowPower_Exit()
+void ThreadXLowPowerUserExit(void);
+#define TX_LOW_POWER_USER_EXIT ThreadXLowPowerUserExit()
 
 /* User's low-power macro to obtain the amount of time (in ticks) the system has been in low power mode */
 /*#define TX_LOW_POWER_USER_TIMER_ADJUST */

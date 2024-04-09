@@ -677,8 +677,8 @@ tBleStatus MCP_CLIENT_IsDiscoveredMediaPlayer(uint16_t ConnHandle,uint8_t Conten
   *         on the remote Media Control Server.
   * @param  ConnHandle: ACL connection handle
   * @param  ContentControlID: Content Control Identifier of the Media Player
-  * @param  FeaturesMask[out] : returned Mask of Media Player features supported on the remote Media Control Server
-  * @param  NotifUpdateMask[out] : returned Mask of Media Player Notifications features supported on the remote
+  * @param[out] FeaturesMask : returned Mask of Media Player features supported on the remote Media Control Server
+  * @param[out] NotifUpdateMask : returned Mask of Media Player Notifications features supported on the remote
   *                             Media Control Server
   * @retval if status is BLE_STATUS_SUCCESS, specified connection handle and Content Control ID corresponds to a
   *         discovered Media Player, else not.
@@ -687,6 +687,17 @@ tBleStatus MCP_CLIENT_GetMediaPlayerFeatures(uint16_t ConnHandle,
                                             uint8_t ContentControlID,
                                             MCP_OptionFeatures_t *FeaturesMask,
                                             MCP_NotificationUpdateFeatures_t *NotifUpdateMask);
+
+/**
+  * @brief  Remove the record of the Media Control Profile Client stored in the Non Volatile memory.
+  * @param  PeerIdentityAddressType: Identity address type.
+  *                                  Values:
+  *                                     - 0x00: Public Identity Address
+  *                                     - 0x01: Random (static) Identity Address
+  * @param  PeerIdentityAddress : Public or Random (static) Identity address of the peer device
+  * @retval status of the operation
+  */
+tBleStatus MCP_CLIENT_RemoveRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6]);
 
 #ifdef __cplusplus
 }

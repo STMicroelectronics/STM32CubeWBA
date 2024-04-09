@@ -189,9 +189,8 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
-            tBleStatus status = BLE_STATUS_FAILED;
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-            status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
@@ -242,7 +241,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
 void DIS_Init(void)
 {
   Char_UUID_t  uuid;
-  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus ret;
   uint8_t max_attr_record;
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */

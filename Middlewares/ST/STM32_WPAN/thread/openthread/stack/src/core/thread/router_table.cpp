@@ -47,6 +47,7 @@ RegisterLogModule("RouterTable");
 RouterTable::RouterTable(Instance &aInstance)
     : InstanceLocator(aInstance)
     , mRouters(aInstance)
+    , mChangedTask(aInstance)
     , mRouterIdSequenceLastUpdated(0)
     , mRouterIdSequence(Random::NonCrypto::GetUint8())
 #if OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE
@@ -62,6 +63,13 @@ void RouterTable::Clear(void)
     ClearNeighbors();
     mRouterIdMap.Clear();
     mRouters.Clear();
+    SignalTableChanged();
+}
+
+bool RouterTable::IsRouteTlvIdSequenceMoreRecent(const Mle::RouteTlv &aRouteTlv) const
+{
+    return (GetActiveRouterCount() == 0) ||
+           SerialNumber::IsGreater(aRouteTlv.GetRouterIdSequence(), GetRouterIdSequence());
 }
 
 void RouterTable::ClearNeighbors(void)
@@ -71,6 +79,7 @@ void RouterTable::ClearNeighbors(void)
         if (router.IsStateValid())
         {
             Get<NeighborTable>().Signal(NeighborTable::kRouterRemoved, router);
+            SignalTableChanged();
         }
 
         router.SetState(Neighbor::kStateInvalid);
@@ -91,6 +100,7 @@ Router *RouterTable::AddRouter(uint8_t aRouterId)
     router->SetNextHopToInvalid();
 
     mRouterIdMap.SetIndex(aRouterId, mRouters.IndexOf(*router));
+    SignalTableChanged();
 
 exit:
     return router;
@@ -117,6 +127,8 @@ void RouterTable::RemoveRouter(Router &aRouter)
     {
         mRouterIdMap.SetIndex(aRouter.GetRouterId(), mRouters.IndexOf((aRouter)));
     }
+
+    SignalTableChanged();
 }
 
 Router *RouterTable::Allocate(void)
@@ -204,7 +216,7 @@ Error RouterTable::Release(uint8_t aRouterId)
     mRouterIdSequence++;
     mRouterIdSequenceLastUpdated = TimerMilli::GetNow();
 
-    Get<AddressResolver>().Remove(aRouterId);
+    Get<AddressResolver>().RemoveEntriesForRouterId(aRouterId);
     Get<NetworkData::Leader>().RemoveBorderRouter(Mle::Rloc16FromRouterId(aRouterId),
                                                   NetworkData::Leader::kMatchModeRouterId);
     Get<Mle::MleRouter>().ResetAdvertiseInterval();
@@ -221,6 +233,7 @@ void RouterTable::RemoveRouterLink(Router &aRouter)
     {
         aRouter.SetLinkQualityOut(kLinkQuality0);
         aRouter.SetLastHeard(TimerMilli::GetNow());
+        SignalTableChanged();
     }
 
     for (Router &router : mRouters)
@@ -228,6 +241,7 @@ void RouterTable::RemoveRouterLink(Router &aRouter)
         if (router.GetNextHop() == aRouter.GetRouterId())
         {
             router.SetNextHopToInvalid();
+            SignalTableChanged();
 
             if (GetLinkCost(router) >= Mle::kMaxRouteCost)
             {
@@ -241,7 +255,7 @@ void RouterTable::RemoveRouterLink(Router &aRouter)
         Get<Mle::MleRouter>().ResetAdvertiseInterval();
 
         // Clear all EID-to-RLOC entries associated with the router.
-        Get<AddressResolver>().Remove(aRouter.GetRouterId());
+        Get<AddressResolver>().RemoveEntriesForRouterId(aRouter.GetRouterId());
     }
 }
 
@@ -500,7 +514,6 @@ uint16_t RouterTable::GetNextHop(uint16_t aDestRloc16) const
 void RouterTable::UpdateRouterIdSet(uint8_t aRouterIdSequence, const Mle::RouterIdSet &aRouterIdSet)
 {
     bool shouldAdd = false;
-    bool changed   = false;
 
     mRouterIdSequence            = aRouterIdSequence;
     mRouterIdSequenceLastUpdated = TimerMilli::GetNow();
@@ -523,7 +536,6 @@ void RouterTable::UpdateRouterIdSet(uint8_t aRouterIdSequence, const Mle::Router
             router->SetNextHopToInvalid();
             RemoveRouterLink(*router);
             RemoveRouter(*router);
-            changed = true;
         }
         else
         {
@@ -540,23 +552,18 @@ void RouterTable::UpdateRouterIdSet(uint8_t aRouterIdSequence, const Mle::Router
         if (!IsAllocated(routerId) && aRouterIdSet.Contains(routerId))
         {
             AddRouter(routerId);
-            changed = true;
         }
     }
 
     Get<Mle::MleRouter>().ResetAdvertiseInterval();
 
 exit:
-    if (changed)
-    {
-        LogRouteTable();
-    }
+    return;
 }
 
 void RouterTable::UpdateRoutes(const Mle::RouteTlv &aRouteTlv, uint8_t aNeighborId)
 {
     Router          *neighbor;
-    bool             changed = false;
     Mle::RouterIdSet finitePathCostIdSet;
     uint8_t          linkCostToNeighbor;
 
@@ -598,7 +605,7 @@ void RouterTable::UpdateRoutes(const Mle::RouteTlv &aRouteTlv, uint8_t aNeighbor
             if (neighbor->GetLinkQualityOut() != linkQuality)
             {
                 neighbor->SetLinkQualityOut(linkQuality);
-                changed = true;
+                SignalTableChanged();
             }
         }
 
@@ -639,14 +646,14 @@ void RouterTable::UpdateRoutes(const Mle::RouteTlv &aRouteTlv, uint8_t aNeighbor
             {
                 if (router->SetNextHopAndCost(aNeighborId, cost))
                 {
-                    changed = true;
+                    SignalTableChanged();
                 }
             }
             else if (nextHop == neighbor)
             {
                 router->SetNextHopToInvalid();
                 router->SetLastHeard(TimerMilli::GetNow());
-                changed = true;
+                SignalTableChanged();
             }
         }
         else
@@ -657,7 +664,7 @@ void RouterTable::UpdateRoutes(const Mle::RouteTlv &aRouteTlv, uint8_t aNeighbor
             if (newCost < curCost)
             {
                 router->SetNextHopAndCost(aNeighborId, cost);
-                changed = true;
+                SignalTableChanged();
             }
         }
     }
@@ -674,19 +681,12 @@ void RouterTable::UpdateRoutes(const Mle::RouteTlv &aRouteTlv, uint8_t aNeighbor
         }
     }
 
-    if (changed)
-    {
-        LogRouteTable();
-    }
-
 exit:
     return;
 }
 
 void RouterTable::UpdateRoutesOnFed(const Mle::RouteTlv &aRouteTlv, uint8_t aParentId)
 {
-    bool changed = false;
-
     for (uint8_t routerId = 0, index = 0; routerId <= Mle::kMaxRouterId;
          index += aRouteTlv.IsRouterIdSet(routerId) ? 1 : 0, routerId++)
     {
@@ -711,13 +711,8 @@ void RouterTable::UpdateRoutesOnFed(const Mle::RouteTlv &aRouteTlv, uint8_t aPar
 
         if (router->SetNextHopAndCost(nextHopId, cost))
         {
-            changed = true;
+            SignalTableChanged();
         }
-    }
-
-    if (changed)
-    {
-        LogRouteTable();
     }
 }
 
@@ -873,6 +868,19 @@ void RouterTable::RouterIdMap::HandleTimeTick(void)
             mIndexes[routerId]--;
         }
     }
+}
+
+void RouterTable::SignalTableChanged(void) { mChangedTask.Post(); }
+
+void RouterTable::HandleTableChanged(void)
+{
+#if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
+    LogRouteTable();
+#endif
+
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    Get<Utils::HistoryTracker>().RecordRouterTableChange();
+#endif
 }
 
 #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)

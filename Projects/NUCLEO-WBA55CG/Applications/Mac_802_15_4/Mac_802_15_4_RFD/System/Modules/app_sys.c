@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+extern uint32_t llhwc_cmn_is_dp_slp_enabled(void);
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

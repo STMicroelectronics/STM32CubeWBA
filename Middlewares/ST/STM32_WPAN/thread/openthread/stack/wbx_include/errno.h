@@ -20,8 +20,8 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef _ALPHA_ERRNO_H
-#define _ALPHA_ERRNO_H
+#ifndef __ERRNO_H__
+#define __ERRNO_H__
 
 /* [STM ADDED] */
 /* from https://android.googlesource.com/kernel/lk/+/dima/for-travis/include/errno.h */
@@ -150,11 +150,24 @@
 #define EOVERFLOW 139 /* Value too large for defined data type */
 
 #if OPENTHREAD_CONFIG_NCP_HDLC_ENABLE
-/* DECLARATIONS */
-_EXTERN_C
-  __ATTRIBUTES int volatile *__aeabi_errno_addr(void);
 
-  #define errno (* (int *) __aeabi_errno_addr())
-_EXTERN_C_END
+  #ifdef __cplusplus
+  extern "C" {
+  #endif
+
+    #ifdef __ICCARM__ /* IAR */
+      __ATTRIBUTES int volatile *__aeabi_errno_addr(void);
+      #define errno (* (int *) __aeabi_errno_addr())
+    #endif
+
+    #ifdef __CC_ARM /* KEIL */
+      extern __attribute__((__nothrow__)) __attribute__((__const__)) int volatile *__aeabi_errno_addr(void);
+      #define errno (* (int *) __aeabi_errno_addr())
+    #endif
+
+  #ifdef __cplusplus
+  } // closing brace for extern "C"
+  #endif /* __cplusplus */
+
 #endif /* OPENTHREAD_CONFIG_NCP_HDLC_ENABLE */
-#endif /* _ALPHA_ERRNO_H */
+#endif /* __ERRNO_H__ */

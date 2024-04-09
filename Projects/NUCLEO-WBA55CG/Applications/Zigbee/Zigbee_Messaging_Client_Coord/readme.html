@@ -36,18 +36,40 @@
                | Messaging  |                                      | Messaging  |       
                | Server     |                                      | Client     | 
                |            |                                      |            |
+   Short       |            |   Send &quot;Hello&quot; message               |            |
+   PushB SW1=&gt; |            | -----------------------------------&gt; |            |=&gt; immediate display
+               |            |                                      |            | 
                |            |                                      |            |
-   PushB SW1=&gt; |            |   Send &quot;Hello&quot; message               |            |=&gt; immediate display
-               |            | -----------------------------------&gt; |            | 
+   Long        |            |   Send &quot;Hello&quot; message               |            |
+   PushB SW1   |            | -----------------------------------&gt; |            |=&gt; immediate display and ask for confirmation
                |            |                                      |            |
-   PushB SW2=&gt; |            |   Send &quot;Goodbye&quot; message             |            |=&gt; display after 10 seconds
-               |            | -----------------------------------&gt; |            |
+               |            |   Send confirmation for message ID 1 |            |
+               |            | &lt;----------------------------------- |            |&lt;= PushB SW1
+               |            |                                      |            |
+               |            |                                      |            |
+   Short       |            |   Send &quot;Goodbye&quot; message             |            |
+   PushB SW2=&gt; |            | -----------------------------------&gt; |            |=&gt; start wait of 10 seconds
+               |            |                                      |            |
+               |            |                                      |            |=&gt; after 10 seconds, display message
                |            |                                      |            |
    Long        |            |   Send &quot;Goodbye&quot; message             |            |
-   PushB SW2=&gt; |            | -----------------------------------&gt; |            |=&gt; display after 10 seconds and ask for confirmation
+   PushB SW2=&gt; |            | -----------------------------------&gt; |            |=&gt; start wait of 10 seconds 
                |            |                                      |            |
-               |            |   Send confirmation for message ID x |            |
+               |            |                                      |            |=&gt; after 10 seconds, display message
+               |            |                                      |            |=&gt; ask for confirmation
+               |            |                                      |            |
+               |            |  Send confirmation for message ID 2  |            |
                |            | &lt;----------------------------------- |            |&lt;= PushB SW1
+               |            |                                      |            |
+               |            |                                      |            |
+   Short or    |            |                                      |            |
+   Long        |            |                                      |            |
+   PushB SW2=&gt; |            |  Send &quot;Goodbye&quot; message              |            |
+               |            | -----------------------------------&gt; |            |=&gt; start wait of 10 seconds
+               |            |                                      |            |
+               |            |  Send Cancel &quot;Goodbye&quot; message       |            |
+   PushB SW3=&gt; |            | -----------------------------------&gt; |            |=&gt; remove &quot;Goodbye&quot; message
+               |            |                                      |            |
                |            |                                      |            |
                +------------+                                      +------------+
 
@@ -91,5 +113,9 @@ Note that by pressing SW3 on Router within the 10 seconds, you can cancel the me
 <li><p>The UART must be configured as follows:<br />
 <br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1 bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the Line” : &lt;LF&gt;</p></li>
 </ul>
+<h3 id="traces"><strong>Note</strong></h3>
+<p>By default, this application runs with Zigbee PRO stack R23.<br />
+If you want to run this application using Zigbee PRO stack R22, you should replace ZigBeeProR23_FFD.a by ZigBeeProR22_FFD.a and ZigBeeProR23_RFD.a by ZigBeeProR22_RFD.a and ZigBeeClusters.a by ZigBeeClustersR22.a in the build environment.<br />
+Also, set in the project setup compilation flag CONFIG_ZB_REV=22.</p>
 </body>
 </html>

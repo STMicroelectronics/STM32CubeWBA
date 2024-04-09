@@ -387,6 +387,7 @@
           <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/cs42l51</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/BSP/Components/ssd1315</state>
           <state>$PROJ_DIR$/../Core/Src/lcd</state>
+          <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1212,6 +1213,12 @@
               <name>$PROJ_DIR$/../System/Config/LowPower/peripheral_init.c</name>
             </file>
           </group>
+          <group>
+            <name>CRC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
+            </file>
+          </group>
         </group>
         <group>
           <name>Interfaces</name>
@@ -1307,6 +1314,9 @@
           </file>
           <file>
             <name>$PROJ_DIR$\..\System\Modules\ble_timer.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../System/Modules/crc_ctrl.c</name>
           </file>
           <file>
             <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
@@ -1468,6 +1478,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</name>

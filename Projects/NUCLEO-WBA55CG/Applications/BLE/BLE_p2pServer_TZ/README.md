@@ -24,6 +24,8 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, TrustZone
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/bpka.h                                This file contains the interface of the BLE PKA module.
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/host_stack_if.h                       This file contains the interface for the stack tasks
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/ll_sys_if.h                           Header file for initiating system
+ - BLE_p2pServer_TZ/NonSecure/System/Config/ADC_Ctrl/adc_ctrl_conf.h                               Configuration Header for ADC controller module 
+ - BLE_p2pServer_TZ/NonSecure/System/Config/CRC_Ctrl/crc_ctrl_conf.h                               Configuration Header for CRC controller module 
  - BLE_p2pServer_TZ/NonSecure/System/Config/Debug_GPIO/app_debug.h                    Real Time Debug module application APIs and signal table
  - BLE_p2pServer_TZ/NonSecure/System/Config/Debug_GPIO/app_debug_signal_def.h         Real Time Debug module application signal definition
  - BLE_p2pServer_TZ/NonSecure/System/Config/Debug_GPIO/debug_config.h                 Real Time Debug module general configuration file
@@ -39,10 +41,12 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, TrustZone
  - BLE_p2pServer_TZ/NonSecure/System/Interfaces/usart_if.h                            Header file for stm32_adv_trace interface file
  - BLE_p2pServer_TZ/NonSecure/System/Modules/adc_ctrl.h                               Header for ADC client manager module
  - BLE_p2pServer_TZ/NonSecure/System/Modules/ble_timer.h                              This header defines the timer functions used by the BLE stack
+ - BLE_p2pServer_TZ/NonSecure/System/Modules/crc_ctrl.h                                            Header for CRC client manager module 
  - BLE_p2pServer_TZ/NonSecure/System/Modules/dbg_trace.h                              Header for dbg_trace.c
  - BLE_p2pServer_TZ/NonSecure/System/Modules/otp.h                                    Header file for One Time Programmable (OTP) area
  - BLE_p2pServer_TZ/NonSecure/System/Modules/scm.h                                    Header for scm.c module
  - BLE_p2pServer_TZ/NonSecure/System/Modules/stm_list.h                               Header file for linked list library.
+ - BLE_p2pServer_TZ/NonSecure/System/Modules/temp_measurement.h                                    Header file for temperature measurement module
  - BLE_p2pServer_TZ/NonSecure/System/Modules/utilities_common.h                       Common file to utilities
  - BLE_p2pServer_TZ/NonSecure/System/Modules/baes/baes.h                              This file contains the interface of the basic AES software module.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/baes/baes_global.h                       This file contains the internal definitions of the AES software
@@ -84,6 +88,8 @@ to be used in non-secure application when the system implements the TrustZone-M 
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/linklayer_plat.c                      Source file for the linklayer plateform adaptation layer
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/ll_sys_if.c                           Source file for initiating system
  - BLE_p2pServer_TZ/NonSecure/STM32_WPAN/Target/power_table.c                         This file contains supported power tables
+ - BLE_p2pServer_TZ/NonSecure/System/Config/ADC_Ctrl/adc_ctrl_conf.c                               Source for ADC client controller module configuration file 
+ - BLE_p2pServer_TZ/NonSecure/System/Config/CRC_Ctrl/crc_ctrl_conf.c                               Source for CRC client controller module configuration file 
  - BLE_p2pServer_TZ/NonSecure/System/Config/Debug_GPIO/app_debug.c                    Real Time Debug module application side APIs
  - BLE_p2pServer_TZ/NonSecure/System/Config/Flash/simple_nvm_arbiter_conf.c           The Simple NVM arbiter module provides an interface to write and/or
 restore data from SRAM to FLASH with use of NVMs.
@@ -102,9 +108,11 @@ It is dedicated to the P256 elliptic curve.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/adc_ctrl.c                               Header for ADC client manager module
  - BLE_p2pServer_TZ/NonSecure/System/Modules/app_sys.c                                Application system for STM32WPAN Middleware.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/ble_timer.c                              This module implements the timer core functions
+ - BLE_p2pServer_TZ/NonSecure/System/Modules/crc_ctrl.c                                            Source for CRC client controller module 
  - BLE_p2pServer_TZ/NonSecure/System/Modules/otp.c                                    Source file for One Time Programmable (OTP) area
  - BLE_p2pServer_TZ/NonSecure/System/Modules/scm.c                                    Functions for the System Clock Manager.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/stm_list.c                               TCircular Linked List Implementation.
+ - BLE_p2pServer_TZ/NonSecure/System/Modules/temp_measurement.c                                    Temperature measurement module
  - BLE_p2pServer_TZ/NonSecure/System/Modules/baes/baes_cmac.c                         This file contains the AES CMAC implementation.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/baes/baes_ecb.c                          This file contains the AES ECB functions implementation.
  - BLE_p2pServer_TZ/NonSecure/System/Modules/Flash/flash_driver.c                     The Flash Driver module is the interface layer between Flash

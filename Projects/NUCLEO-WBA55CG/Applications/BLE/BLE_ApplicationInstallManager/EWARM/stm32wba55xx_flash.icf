@@ -6,8 +6,8 @@
 define symbol __region_FLASH_start__       = 0x08000000;
 define symbol __region_FLASH_end__         = 0x08005FFF;
 
-define symbol __region_SRAM1_start__       = 0x20000000;
-define symbol __region_SRAM1_end__         = 0x2000FFFF;
+define symbol __region_SRAM1_start__       = 0x20000010;
+define symbol __region_SRAM1_end__         = 0x20002000;
 define symbol __region_SRAM2_start__       = 0x20010000;
 define symbol __region_SRAM2_end__         = 0x2001FFFF;
 
@@ -35,6 +35,6 @@ place at address mem:__intvec_start__ { readonly section .intvec };
 
 place in FLASH_region       { readonly };
 
-place in SRAM1_region       { block HEAP, block CSTACK };
+place in SRAM1_region       { readwrite, block HEAP, block CSTACK };
 place in SRAM2_region       { };
-place in SRAM_region        { readwrite };
+place in SRAM_region        {  };

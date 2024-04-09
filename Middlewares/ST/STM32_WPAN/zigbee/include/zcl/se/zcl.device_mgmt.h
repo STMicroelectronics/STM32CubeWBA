@@ -282,11 +282,20 @@ enum ZbZclDeviceMgmtClientCommandT {
     ZCL_DEVICE_MGMT_CLI_CMD_GET_CIN = 0x05 /**< GetCIN */
 };
 
+/* SE 1.4: Table D-172 Password Type Enumeration */
+enum ZbZclDeviceMgmtPasswordType {
+    ZCL_DEVICE_MGMT_PASSWORD_TYPE_1_SERVICE_MENU = 0x01, /**< Password 1 - Used for access to the Service menu */
+    ZCL_DEVICE_MGMT_PASSWORD_TYPE_2_CONSUMER_MENU = 0x02, /**< Password 2 - Used for access to the Consumer menu */
+    ZCL_DEVICE_MGMT_PASSWORD_TYPE_3 = 0x03, /**< Password 3 - TBD */
+    ZCL_DEVICE_MGMT_PASSWORD_TYPE_4 = 0x04 /**< Password 4 - TBD */
+};
+
+/* SE 1.4: Table D-173 Configuration Control Enumeration */
 enum ZbZclDeviceMgmtEventConfigCtrl {
-    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_LIST = 0x00,
-    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_EVENT_GROUP = 0x01,
-    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_LOG_TYPE = 0x02,
-    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_CONFIG_MATCH = 0x03
+    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_LIST = 0x00, /**< Apply by List */
+    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_EVENT_GROUP = 0x01, /**< Apply by Event Group */
+    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_LOG_TYPE = 0x02, /**< Apply by Log Type */
+    ZCL_DEVICE_MGMT_EVENT_CONFIG_CTRL_APPLY_BY_CONFIG_MATCH = 0x03 /**< Apply by Configuration Match */
 };
 
 struct ZbZclDeviceMgmtReqNewPassT {
@@ -370,10 +379,12 @@ struct ZbZclDeviceMgmtSetEventConfigT {
             uint8_t config_match;
         } apply_by_config_match;
     } event_config_payload;
+    bool to_bomd;
 };
 
 struct ZbZclDeviceMgmtGetEventConfigT {
     uint16_t event_id;
+    bool to_bomd;
 };
 
 #define ZCL_DEVICE_MGMT_CUSTOMER_ID_LEN_MAX         24U
@@ -549,5 +560,24 @@ enum ZclStatusCodeT ZbZclDeviceMgmtClientReportEventConfig(struct ZbZclClusterT 
 
 enum ZclStatusCodeT ZbZclDeviceMgmtClientGetCin(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/*-----------------------------------------------------------------------------
+ * Mirror Client
+ *-----------------------------------------------------------------------------
+ */
+
+/**
+ * Allocates a Device Management Client Mirror cluster. The caller (application) must
+ *  attach any attributes to the cluster you want to mirror.
+ * @param zb Zigbee stack instance
+ * @param endpoint Endpoint on which to create cluster
+ * @param device_mgmt_server Pointer to Device Mgmt Server cluster. This is used by the
+ *  Metering Mirror to send mirrored commands to the BOMD.
+ * @param meter_mirror Pointer to Metering Mirror cluster. This is used to queue
+ *  any commands that need to be forwarded to the BOMD when it wakes up.
+ * @return Cluster pointer, or NULL if there is an error
+ */
+struct ZbZclClusterT * ZbZclDeviceMgmtMirrorAlloc(struct ZigBeeT *zb, uint8_t endpoint,
+    struct ZbZclClusterT *device_mgmt_server, struct ZbZclClusterT *meter_mirror);
 
 #endif

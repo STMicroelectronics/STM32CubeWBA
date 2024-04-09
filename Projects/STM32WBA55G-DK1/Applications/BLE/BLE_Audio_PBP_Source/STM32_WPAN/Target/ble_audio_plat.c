@@ -155,7 +155,7 @@ void BLE_AUDIO_PLAT_TimerStop(void)
 uint32_t BLE_AUDIO_PLAT_TimerGetRemainMs(void)
 {
 
-  uint32_t elapsedTime;
+  uint32_t elapsedTime = 0;
 
   UTIL_TIMER_GetRemainingTime(&AUDIO_TimerObj, &elapsedTime);
 

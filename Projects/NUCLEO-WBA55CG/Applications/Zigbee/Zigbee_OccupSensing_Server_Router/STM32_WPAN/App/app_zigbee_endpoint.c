@@ -188,6 +188,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;

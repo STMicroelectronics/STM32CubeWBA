@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32WBA52xx,USE_HAL_DRIVER,LOCAL_LOADER_CONFIG,BL2</Define>
               <Undefine></Undefine>
-              <IncludePath>../../../../../../../Drivers/CMSIS/Include;../../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../Linker;../../Secure_nsclib;../../NonSecure/Inc;../../../../../../../Middlewares/Third_Party/trustedfirmware/platform/ext/driver</IncludePath>
+              <IncludePath>../../../../../../../Drivers/CMSIS/Include;../../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../Linker;../../Secure_nsclib;../../NonSecure/Inc;../../../../../../../Middlewares/Third_Party/mcuboot/platform/ext/driver</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

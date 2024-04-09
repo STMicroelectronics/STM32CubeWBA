@@ -88,7 +88,7 @@ using ot::Encoding::BigEndian::HostSwap32;
  */
 
 /**
- * This class implements IPv6 header generation and parsing.
+ * Implements IPv6 header generation and parsing.
  *
  */
 OT_TOOL_PACKED_BEGIN
@@ -102,7 +102,7 @@ public:
     static constexpr uint8_t kDestinationFieldOffset   = 24; ///< Offset of Destination Address field in IPv6 header.
 
     /**
-     * This method initializes the Version to 6 and sets Traffic Class and Flow fields to zero.
+     * Initializes the Version to 6 and sets Traffic Class and Flow fields to zero.
      *
      * The other fields in the IPv6 header remain unchanged.
      *
@@ -110,7 +110,7 @@ public:
     void InitVersionTrafficClassFlow(void) { SetVerionTrafficClassFlow(kVersTcFlowInit); }
 
     /**
-     * This method indicates whether or not the header appears to be well-formed.
+     * Indicates whether or not the header appears to be well-formed.
      *
      * @retval TRUE    If the header appears to be well-formed.
      * @retval FALSE   If the header does not appear to be well-formed.
@@ -119,7 +119,7 @@ public:
     bool IsValid(void) const;
 
     /**
-     * This method indicates whether or not the IPv6 Version is set to 6.
+     * Indicates whether or not the IPv6 Version is set to 6.
      *
      * @retval TRUE   If the IPv6 Version is set to 6.
      * @retval FALSE  If the IPv6 Version is not set to 6.
@@ -128,7 +128,7 @@ public:
     bool IsVersion6(void) const { return (mVerTcFlow.m8[0] & kVersionMask) == kVersion6; }
 
     /**
-     * This method gets the combination of Version, Traffic Class, and Flow fields as a 32-bit value.
+     * Gets the combination of Version, Traffic Class, and Flow fields as a 32-bit value.
      *
      * @returns The Version, Traffic Class, and Flow fields as a 32-bit value.
      *
@@ -136,7 +136,7 @@ public:
     uint32_t GetVerionTrafficClassFlow(void) const { return HostSwap32(mVerTcFlow.m32); }
 
     /**
-     * This method sets the combination of Version, Traffic Class, and Flow fields as a 32-bit value.
+     * Sets the combination of Version, Traffic Class, and Flow fields as a 32-bit value.
      *
      * @param[in] aVerTcFlow   The Version, Traffic Class, and Flow fields as a 32-bit value.
      *
@@ -144,7 +144,7 @@ public:
     void SetVerionTrafficClassFlow(uint32_t aVerTcFlow) { mVerTcFlow.m32 = HostSwap32(aVerTcFlow); }
 
     /**
-     * This method gets the Traffic Class field.
+     * Gets the Traffic Class field.
      *
      * @returns The Traffic Class field.
      *
@@ -155,7 +155,7 @@ public:
     }
 
     /**
-     * This method sets the Traffic Class filed.
+     * Sets the Traffic Class filed.
      *
      * @param[in] aTc  The Traffic Class value.
      *
@@ -167,7 +167,7 @@ public:
     }
 
     /**
-     * This method gets the 6-bit Differentiated Services Code Point (DSCP) from Traffic Class field.
+     * Gets the 6-bit Differentiated Services Code Point (DSCP) from Traffic Class field.
      *
      * @returns The DSCP value.
      *
@@ -178,7 +178,7 @@ public:
     }
 
     /**
-     * This method sets 6-bit Differentiated Services Code Point (DSCP) in IPv6 header.
+     * Sets 6-bit Differentiated Services Code Point (DSCP) in IPv6 header.
      *
      * @param[in]  aDscp  The DSCP value.
      *
@@ -190,7 +190,7 @@ public:
     }
 
     /**
-     * This method gets the 2-bit Explicit Congestion Notification (ECN) from Traffic Class field.
+     * Gets the 2-bit Explicit Congestion Notification (ECN) from Traffic Class field.
      *
      * @returns The ECN value.
      *
@@ -198,7 +198,7 @@ public:
     Ecn GetEcn(void) const { return static_cast<Ecn>((mVerTcFlow.m8[1] & kEcnMask) >> kEcnOffset); }
 
     /**
-     * This method sets the 2-bit Explicit Congestion Notification (ECN) in IPv6 header..
+     * Sets the 2-bit Explicit Congestion Notification (ECN) in IPv6 header..
      *
      * @param[in]  aEcn  The ECN value.
      *
@@ -206,7 +206,7 @@ public:
     void SetEcn(Ecn aEcn) { mVerTcFlow.m8[1] = (mVerTcFlow.m8[1] & ~kEcnMask) | ((aEcn << kEcnOffset) & kEcnMask); }
 
     /**
-     * This method gets the 20-bit Flow field.
+     * Gets the 20-bit Flow field.
      *
      * @returns  The Flow value.
      *
@@ -214,7 +214,7 @@ public:
     uint32_t GetFlow(void) const { return HostSwap32(mVerTcFlow.m32) & kFlowMask; }
 
     /**
-     * This method sets the 20-bit Flow field in IPv6 header.
+     * Sets the 20-bit Flow field in IPv6 header.
      *
      * @param[in] aFlow  The Flow value.
      *
@@ -225,7 +225,7 @@ public:
     }
 
     /**
-     * This method returns the IPv6 Payload Length value.
+     * Returns the IPv6 Payload Length value.
      *
      * @returns The IPv6 Payload Length value.
      *
@@ -233,7 +233,7 @@ public:
     uint16_t GetPayloadLength(void) const { return HostSwap16(mPayloadLength); }
 
     /**
-     * This method sets the IPv6 Payload Length value.
+     * Sets the IPv6 Payload Length value.
      *
      * @param[in]  aLength  The IPv6 Payload Length value.
      *
@@ -241,7 +241,7 @@ public:
     void SetPayloadLength(uint16_t aLength) { mPayloadLength = HostSwap16(aLength); }
 
     /**
-     * This method returns the IPv6 Next Header value.
+     * Returns the IPv6 Next Header value.
      *
      * @returns The IPv6 Next Header value.
      *
@@ -249,7 +249,7 @@ public:
     uint8_t GetNextHeader(void) const { return mNextHeader; }
 
     /**
-     * This method sets the IPv6 Next Header value.
+     * Sets the IPv6 Next Header value.
      *
      * @param[in]  aNextHeader  The IPv6 Next Header value.
      *
@@ -257,7 +257,7 @@ public:
     void SetNextHeader(uint8_t aNextHeader) { mNextHeader = aNextHeader; }
 
     /**
-     * This method returns the IPv6 Hop Limit value.
+     * Returns the IPv6 Hop Limit value.
      *
      * @returns The IPv6 Hop Limit value.
      *
@@ -265,7 +265,7 @@ public:
     uint8_t GetHopLimit(void) const { return mHopLimit; }
 
     /**
-     * This method sets the IPv6 Hop Limit value.
+     * Sets the IPv6 Hop Limit value.
      *
      * @param[in]  aHopLimit  The IPv6 Hop Limit value.
      *
@@ -273,7 +273,7 @@ public:
     void SetHopLimit(uint8_t aHopLimit) { mHopLimit = aHopLimit; }
 
     /**
-     * This method returns the IPv6 Source address.
+     * Returns the IPv6 Source address.
      *
      * @returns A reference to the IPv6 Source address.
      *
@@ -281,7 +281,7 @@ public:
     Address &GetSource(void) { return mSource; }
 
     /**
-     * This method returns the IPv6 Source address.
+     * Returns the IPv6 Source address.
      *
      * @returns A reference to the IPv6 Source address.
      *
@@ -289,7 +289,7 @@ public:
     const Address &GetSource(void) const { return mSource; }
 
     /**
-     * This method sets the IPv6 Source address.
+     * Sets the IPv6 Source address.
      *
      * @param[in]  aSource  A reference to the IPv6 Source address.
      *
@@ -297,7 +297,7 @@ public:
     void SetSource(const Address &aSource) { mSource = aSource; }
 
     /**
-     * This method returns the IPv6 Destination address.
+     * Returns the IPv6 Destination address.
      *
      * @returns A reference to the IPv6 Destination address.
      *
@@ -305,7 +305,7 @@ public:
     Address &GetDestination(void) { return mDestination; }
 
     /**
-     * This method returns the IPv6 Destination address.
+     * Returns the IPv6 Destination address.
      *
      * @returns A reference to the IPv6 Destination address.
      *
@@ -313,7 +313,7 @@ public:
     const Address &GetDestination(void) const { return mDestination; }
 
     /**
-     * This method sets the IPv6 Destination address.
+     * Sets the IPv6 Destination address.
      *
      * @param[in]  aDestination  A reference to the IPv6 Destination address.
      *
@@ -321,7 +321,7 @@ public:
     void SetDestination(const Address &aDestination) { mDestination = aDestination; }
 
     /**
-     * This method parses and validates the IPv6 header from a given message.
+     * Parses and validates the IPv6 header from a given message.
      *
      * The header is read from @p aMessage at offset zero.
      *
@@ -370,7 +370,7 @@ private:
 } OT_TOOL_PACKED_END;
 
 /**
- * This class implements IPv6 Extension Header generation and processing.
+ * Implements IPv6 Extension Header generation and processing.
  *
  */
 OT_TOOL_PACKED_BEGIN
@@ -378,7 +378,15 @@ class ExtensionHeader
 {
 public:
     /**
-     * This method returns the IPv6 Next Header value.
+     * This constant defines the size of Length unit in bytes.
+     *
+     * The Length field is in 8-bytes unit. The total size of `ExtensionHeader` MUST be a multiple of 8.
+     *
+     */
+    static constexpr uint16_t kLengthUnitSize = 8;
+
+    /**
+     * Returns the IPv6 Next Header value.
      *
      * @returns The IPv6 Next Header value.
      *
@@ -386,7 +394,7 @@ public:
     uint8_t GetNextHeader(void) const { return mNextHeader; }
 
     /**
-     * This method sets the IPv6 Next Header value.
+     * Sets the IPv6 Next Header value.
      *
      * @param[in]  aNextHeader  The IPv6 Next Header value.
      *
@@ -394,7 +402,7 @@ public:
     void SetNextHeader(uint8_t aNextHeader) { mNextHeader = aNextHeader; }
 
     /**
-     * This method returns the IPv6 Header Extension Length value.
+     * Returns the IPv6 Header Extension Length value.
      *
      * The Length is in 8-byte units and does not include the first 8 bytes.
      *
@@ -404,7 +412,7 @@ public:
     uint8_t GetLength(void) const { return mLength; }
 
     /**
-     * This method sets the IPv6 Header Extension Length value.
+     * Sets the IPv6 Header Extension Length value.
      *
      * The Length is in 8-byte units and does not include the first 8 bytes.
      *
@@ -414,16 +422,14 @@ public:
     void SetLength(uint8_t aLength) { mLength = aLength; }
 
     /**
-     * This method returns the size (number of bytes) of the Extension Header including Next Header and Length fields.
+     * Returns the size (number of bytes) of the Extension Header including Next Header and Length fields.
      *
      * @returns The size (number of bytes) of the Extension Header.
      *
      */
-    uint16_t GetSize(void) const { return kLengthUnitInBytes * (mLength + 1); }
+    uint16_t GetSize(void) const { return kLengthUnitSize * (mLength + 1); }
 
 private:
-    static constexpr uint16_t kLengthUnitInBytes = 8;
-
     // |     m8[0]     |     m8[1]     |     m8[2]     |      m8[3]    |
     // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     // | Next Header   | Header Length | . . .                         |
@@ -434,7 +440,7 @@ private:
 } OT_TOOL_PACKED_END;
 
 /**
- * This class implements IPv6 Hop-by-Hop Options Header generation and parsing.
+ * Implements IPv6 Hop-by-Hop Options Header generation and parsing.
  *
  */
 OT_TOOL_PACKED_BEGIN
@@ -443,29 +449,13 @@ class HopByHopHeader : public ExtensionHeader
 } OT_TOOL_PACKED_END;
 
 /**
- * This class implements IPv6 Options generation and parsing.
+ * Implements IPv6 Options generation and parsing.
  *
  */
 OT_TOOL_PACKED_BEGIN
 class Option
 {
 public:
-    /**
-     * This method returns the IPv6 Option Type value.
-     *
-     * @returns The IPv6 Option Type value.
-     *
-     */
-    uint8_t GetType(void) const { return mType; }
-
-    /**
-     * This method sets the IPv6 Option Type value.
-     *
-     * @param[in]  aType  The IPv6 Option Type value.
-     *
-     */
-    void SetType(uint8_t aType) { mType = aType; }
-
     /**
      * IPv6 Option Type actions for unrecognized IPv6 Options.
      *
@@ -479,7 +469,24 @@ public:
     };
 
     /**
-     * This method returns the IPv6 Option action for unrecognized IPv6 Options.
+     * Returns the IPv6 Option Type value.
+     *
+     * @returns The IPv6 Option Type value.
+     *
+     */
+    uint8_t GetType(void) const { return mType; }
+
+    /**
+     * Indicates whether IPv6 Option is padding (either Pad1 or PadN).
+     *
+     * @retval TRUE   The Option is padding.
+     * @retval FALSE  The Option is not padding.
+     *
+     */
+    bool IsPadding(void) const { return (mType == kTypePad1) || (mType == kTypePadN); }
+
+    /**
+     * Returns the IPv6 Option action for unrecognized IPv6 Options.
      *
      * @returns The IPv6 Option action for unrecognized IPv6 Options.
      *
@@ -487,7 +494,7 @@ public:
     Action GetAction(void) const { return static_cast<Action>(mType & kActionMask); }
 
     /**
-     * This method returns the IPv6 Option Length value.
+     * Returns the IPv6 Option Length value.
      *
      * @returns The IPv6 Option Length value.
      *
@@ -495,20 +502,52 @@ public:
     uint8_t GetLength(void) const { return mLength; }
 
     /**
-     * This method sets the IPv6 Option Length value.
+     * Returns the size (number of bytes) of the IPv6 Option.
+     *
+     * Returns the proper size of the Option independent of its type, particularly if Option is Pad1 (which
+     * does not follow the common Option header structure and has only Type field with no Length field). For other
+     * Option types, the returned size includes the Type and Length fields.
+     *
+     * @returns The size of the Option.
+     *
+     */
+    uint16_t GetSize(void) const;
+
+    /**
+     * Parses and validates the IPv6 Option from a given message.
+     *
+     * The Option is read from @p aOffset in @p aMessage. This method then checks that the entire Option is present
+     * in @p aMessage before the @p aEndOffset.
+     *
+     * @param[in]  aMessage    The IPv6 message.
+     * @param[in]  aOffset     The offset in @p aMessage to read the IPv6 Option.
+     * @param[in]  aEndOffset  The end offset in @p aMessage.
+     *
+     * @retval kErrorNone   Successfully parsed the IPv6 option from @p aMessage.
+     * @retval kErrorParse  Malformed IPv6 Option or Option is not contained within @p aMessage by @p aEndOffset.
+     *
+     */
+    Error ParseFrom(const Message &aMessage, uint16_t aOffset, uint16_t aEndOffset);
+
+protected:
+    static constexpr uint8_t kTypePad1 = 0x00; ///< Pad1 Option Type.
+    static constexpr uint8_t kTypePadN = 0x01; ///< PanN Option Type.
+
+    /**
+     * Sets the IPv6 Option Type value.
+     *
+     * @param[in]  aType  The IPv6 Option Type value.
+     *
+     */
+    void SetType(uint8_t aType) { mType = aType; }
+
+    /**
+     * Sets the IPv6 Option Length value.
      *
      * @param[in]  aLength  The IPv6 Option Length value.
      *
      */
     void SetLength(uint8_t aLength) { mLength = aLength; }
-
-    /**
-     * This method returns the size (number of bytes) of the IPv6 Option including the Type and Length fields.
-     *
-     * @returns The size of the Option.
-     *
-     */
-    uint16_t GetSize(void) const { return static_cast<uint16_t>(mLength) + sizeof(Option); }
 
 private:
     static constexpr uint8_t kActionMask = 0xc0;
@@ -518,51 +557,49 @@ private:
 } OT_TOOL_PACKED_END;
 
 /**
- * This class implements IPv6 PadN Option generation and parsing.
+ * Implements IPv6 Pad Options (Pad1 or PadN) generation.
  *
  */
 OT_TOOL_PACKED_BEGIN
-class PadNOption : public Option
+class PadOption : public Option, private Clearable<PadOption>
 {
-public:
-    static constexpr uint8_t kType      = 0x01; ///< PadN type
-    static constexpr uint8_t kData      = 0x00; ///< PadN specific data
-    static constexpr uint8_t kMaxLength = 0x05; ///< Maximum length of PadN option data
+    friend class Clearable<PadOption>;
 
+public:
     /**
-     * This method initializes the PadN header.
+     * Initializes the Pad Option for a given total Pad size.
      *
-     * @param[in]  aPadLength  The length of needed padding. Allowed value from range 2-7.
+     * The @p aPadSize MUST be from range 1-7. Otherwise the behavior of this method is undefined.
+     *
+     * @param[in]  aPadSize  The total number of needed padding bytes.
      *
      */
-    void Init(uint8_t aPadLength);
+    void InitForPadSize(uint8_t aPadSize);
+
+    /**
+     * Initializes the Pad Option for padding an IPv6 Extension header with a given current size.
+     *
+     * The Extension Header Length is in 8-bytes unit, so the total size should be a multiple of 8. This method
+     * determines the Pad Option size needed for appending to Extension Header based on it current size @p aHeaderSize
+     * so to make it a multiple of 8. This method returns `kErrorAlready` when the @p aHeaderSize is already
+     * a multiple of 8 (i.e., no padding is needed).
+     *
+     * @param[in] aHeaderSize  The current IPv6 Extension header size (in bytes).
+     *
+     * @retval kErrorNone     The Pad Option is successfully initialized.
+     * @retval kErrorAlready  The @p aHeaderSize is already a multiple of 8 and no padding is needed.
+     *
+     */
+    Error InitToPadHeaderWithSize(uint16_t aHeaderSize);
 
 private:
-    uint8_t mPad[kMaxLength];
+    static constexpr uint8_t kMaxLength = 5;
+
+    uint8_t mPads[kMaxLength];
 } OT_TOOL_PACKED_END;
 
 /**
- * This class implements IPv6 Pad1 Option generation and parsing. Pad1 does not follow default option header structure.
- *
- */
-OT_TOOL_PACKED_BEGIN
-class Pad1Option
-{
-public:
-    static constexpr uint8_t kType = 0x00;
-
-    /**
-     * This method initializes the Pad1 header.
-     *
-     */
-    void Init(void) { mType = kType; }
-
-private:
-    uint8_t mType;
-} OT_TOOL_PACKED_END;
-
-/**
- * This class implements IPv6 Fragment Header generation and parsing.
+ * Implements IPv6 Fragment Header generation and parsing.
  *
  */
 OT_TOOL_PACKED_BEGIN
@@ -570,7 +607,7 @@ class FragmentHeader
 {
 public:
     /**
-     * This method initializes the IPv6 Fragment header.
+     * Initializes the IPv6 Fragment header.
      *
      */
     void Init(void)
@@ -581,7 +618,7 @@ public:
     }
 
     /**
-     * This method returns the IPv6 Next Header value.
+     * Returns the IPv6 Next Header value.
      *
      * @returns The IPv6 Next Header value.
      *
@@ -589,7 +626,7 @@ public:
     uint8_t GetNextHeader(void) const { return mNextHeader; }
 
     /**
-     * This method sets the IPv6 Next Header value.
+     * Sets the IPv6 Next Header value.
      *
      * @param[in]  aNextHeader  The IPv6 Next Header value.
      *
@@ -597,7 +634,7 @@ public:
     void SetNextHeader(uint8_t aNextHeader) { mNextHeader = aNextHeader; }
 
     /**
-     * This method returns the Fragment Offset value.
+     * Returns the Fragment Offset value.
      *
      * @returns The Fragment Offset value.
      *
@@ -605,7 +642,7 @@ public:
     uint16_t GetOffset(void) const { return (HostSwap16(mOffsetMore) & kOffsetMask) >> kOffsetOffset; }
 
     /**
-     * This method sets the Fragment Offset value.
+     * Sets the Fragment Offset value.
      *
      * @param[in]  aOffset  The Fragment Offset value.
      */
@@ -617,7 +654,7 @@ public:
     }
 
     /**
-     * This method returns the M flag value.
+     * Returns the M flag value.
      *
      * @returns The M flag value.
      *
@@ -625,19 +662,19 @@ public:
     bool IsMoreFlagSet(void) const { return HostSwap16(mOffsetMore) & kMoreFlag; }
 
     /**
-     * This method clears the M flag value.
+     * Clears the M flag value.
      *
      */
     void ClearMoreFlag(void) { mOffsetMore = HostSwap16(HostSwap16(mOffsetMore) & ~kMoreFlag); }
 
     /**
-     * This method sets the M flag value.
+     * Sets the M flag value.
      *
      */
     void SetMoreFlag(void) { mOffsetMore = HostSwap16(HostSwap16(mOffsetMore) | kMoreFlag); }
 
     /**
-     * This method returns the frame identification.
+     * Returns the frame identification.
      *
      * @returns The frame identification.
      *
@@ -645,14 +682,14 @@ public:
     uint32_t GetIdentification(void) const { return mIdentification; }
 
     /**
-     * This method sets the frame identification.
+     * Sets the frame identification.
      *
      * @param[in]  aIdentification  The fragment identification value.
      */
     void SetIdentification(uint32_t aIdentification) { mIdentification = aIdentification; }
 
     /**
-     * This method returns the next valid payload length for a fragment.
+     * Returns the next valid payload length for a fragment.
      *
      * @param[in]  aLength  The payload length to be validated for a fragment.
      *
@@ -662,7 +699,7 @@ public:
     static inline uint16_t MakeDivisibleByEight(uint16_t aLength) { return aLength & 0xfff8; }
 
     /**
-     * This method converts the fragment offset of 8-octet units into bytes.
+     * Converts the fragment offset of 8-octet units into bytes.
      *
      * @param[in]  aOffset  The fragment offset in 8-octet units.
      *
@@ -672,7 +709,7 @@ public:
     static inline uint16_t FragmentOffsetToBytes(uint16_t aOffset) { return static_cast<uint16_t>(aOffset << 3); }
 
     /**
-     * This method converts a fragment offset in bytes into a fragment offset in 8-octet units.
+     * Converts a fragment offset in bytes into a fragment offset in 8-octet units.
      *
      * @param[in]  aOffset  The fragment offset in bytes.
      *

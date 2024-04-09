@@ -154,8 +154,8 @@ static inline uint16_t logLevelPrint(char *aLogString, uint16_t aMaxSize,
  */
 static inline uint16_t logTimestamp(char *aLogString, uint16_t aMaxSize)
 {
-    return (uint16_t)(snprintf(aLogString, aMaxSize, "%s[%010ld]", RTT_COLOR_CODE_DEFAULT,
-                    otPlatAlarmMilliGetNow()));
+    return (uint16_t)(snprintf(aLogString, aMaxSize, "%s[%010lu]", RTT_COLOR_CODE_DEFAULT,
+                    (unsigned long)otPlatAlarmMilliGetNow()));
 }
 #endif //LOG_TIMESTAMP_ENABLE
 
@@ -201,7 +201,7 @@ void otPlatLog(otLogLevel aLogLevel, otLogRegion aLogRegion, const char * aForma
 
     printf("%s\r\n", logString);
 #else /* (USE_PRINTF == 1U) */
-    Log_Module_PrintWithArg( otLevelToVerboseTable[aLogLevel], LOG_REGION_THREAD, aFormat, paramList );
+    Log_Module_PrintWithArg( otLevelToVerboseTable[aLogLevel], (Log_Region_t)LOG_REGION_THREAD, aFormat, paramList );
 #endif /* (USE_PRINTF == 1U) */
   }
 #else /* (USE_PRINTF == 1U) || (CFG_LOG_SUPPORTED != 0) */
@@ -224,7 +224,7 @@ void otPlatLog(otLogLevel aLogLevel, otLogRegion aLogRegion, const char * aForma
 void otlogTimestamp(uint8_t * pData, uint16_t * piSize)
 {
   uint16_t ByeWritten = 0;
-  ByeWritten = snprintf((char*)pData, LOG_PARSE_BUFFER_SIZE, "[%010ld] ",
-                    otPlatAlarmMilliGetNow());
+  ByeWritten = snprintf((char*)pData, LOG_PARSE_BUFFER_SIZE, "[%010lu] ",
+                    (unsigned long)otPlatAlarmMilliGetNow());
   *piSize = ByeWritten;
 }

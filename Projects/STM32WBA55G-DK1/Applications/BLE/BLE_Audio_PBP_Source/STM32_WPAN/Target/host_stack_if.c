@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,7 +27,7 @@
 
 /* External function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN EFP */
-#include "app_ble.h"
+
 /* USER CODE END EFP */
 
 /**

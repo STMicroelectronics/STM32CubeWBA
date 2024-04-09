@@ -30,6 +30,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
+#include "tx_api.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -47,6 +48,8 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
+extern TX_BYTE_POOL *pBytePool; /* ThreadX byte pool pointer for whole WPAN middleware */
+extern CHAR * pStack; /* Generic ThreadX stack pointer */
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -59,9 +62,14 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
-void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */
+#if ( CFG_BUTTON_SUPPORTED == 1 ) 
+uint8_t   APPE_ButtonIsLongPressed    ( uint16_t btnIdx );
+void      APPE_Button1Action          ( void );
+void      APPE_Button2Action          ( void );
+void      APPE_Button3Action          ( void );
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END EFP */
 

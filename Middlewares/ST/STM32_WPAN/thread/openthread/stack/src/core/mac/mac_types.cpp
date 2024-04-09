@@ -57,7 +57,7 @@ PanId GenerateRandomPanId(void)
 #if !OPENTHREAD_RADIO
 void ExtAddress::GenerateRandom(void)
 {
-    IgnoreError(Random::Crypto::FillBuffer(m8, sizeof(ExtAddress)));
+    IgnoreError(Random::Crypto::Fill(*this));
     SetGroup(false);
     SetLocal(true);
 }
@@ -229,17 +229,11 @@ uint32_t LinkFrameCounters::GetMaximum(void) const
     uint32_t counter = 0;
 
 #if OPENTHREAD_CONFIG_RADIO_LINK_IEEE_802_15_4_ENABLE
-    if (counter < m154Counter)
-    {
-        counter = m154Counter;
-    }
+    counter = Max(counter, m154Counter);
 #endif
 
 #if OPENTHREAD_CONFIG_RADIO_LINK_TREL_ENABLE
-    if (counter < mTrelCounter)
-    {
-        counter = mTrelCounter;
-    }
+    counter = Max(counter, mTrelCounter);
 #endif
 
     return counter;
@@ -299,7 +293,7 @@ void KeyMaterial::SetFrom(const Key &aKey, bool aIsExportable)
 #endif
 }
 
-void KeyMaterial::ExtractKey(Key &aKey)
+void KeyMaterial::ExtractKey(Key &aKey) const
 {
 #if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
     aKey.Clear();

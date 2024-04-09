@@ -64,30 +64,57 @@ tBleStatus CAP_Init(const CAP_Config_t *pCAP_Config,
   * @param AdvPacketLength: size of the buffer pointed by pAdvPacket.
   * @retval length of the built ADV Packet
   */
-tBleStatus CAP_BuildAdvPacket(CAP_Announcement_t Announcement,
-                              uint8_t const *pMetadata,
-                              uint16_t MetadataLength,
-                              uint8_t *pAdvPacket,
-                              uint8_t AdvPacketLength);
+uint8_t CAP_BuildAdvPacket(CAP_Announcement_t Announcement,
+                           uint8_t const *pMetadata,
+                           uint8_t MetadataLength,
+                           uint8_t *pAdvPacket,
+                           uint8_t AdvPacketLength);
 
 /**
-  * @brief Perform Linkup operation on CAP, CSIP, BAP, VCP, MICP according to supported role.
-  * @note If the local device supports CSIP Set Coordinator role and the specified remote device is a CSIP Set Member,
-  *       the CAP_CSI_LINKUP_EVT evnt will be notified during the CAP linkup procedure and a procedure is internally
-  *       started to discover all the other CSIP Set Members of the Coordinated Set associated to the remote device. The
-  *       CAP_CSI_LINKUP_EVT event will be notified for each discovered CSIP Set Member and a CAP procedure is
-  *       automatically performed for each discovered CSIP Set Member.
-  * @note The CAP_UNICAST_LINKUP_EVT, CAP_BA_LINKUP_EVT and CAP_VOLUME_CTRL_LINKUP_EVT could be notified during the CAP
-  *       linkup procedure depending on the role supported by the local device and the remote device (and the potential
-  *       CSIP Set Member if the remote device is a part of a CSIP Coordinated Set).
+  * @brief Perform Linkup operation on CAP, CSIP, BAP, VCP, MICP,CCP or MCP according to requested profile
+  *        of the Generic Audio Framework to link.
   * @note The CAP_LINKUP_COMPLETE_EVT event is notified once the procedure is complete.
   * @param  ConnHandle: Connection handle of the remote device
+  * @param  LinkMask: Mask of profiles, composing the Generic Audio Framework, to link
+  * @param  CompleteLinkMode: If 1, a Complete Link process (service discovery and configuration) is performed even if
+  *        the profiles information was already present in NVM, otherwise profiles are restored from NVM if it present.
+  *        Values:
+  *        - 0x00: NO
+  *        - 0x01: YES
   * @retval status of the operation
   */
-tBleStatus CAP_Linkup(uint16_t ConnHandle);
+tBleStatus CAP_Linkup(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t CompleteLinkMode);
+
+/**
+  * @brief Indicate the profiles in ATT Client role of the Generic Audio Framework present in the Persistent Memory
+  * @param Peer_Address_Type: Peer Address type
+  * @param Peer_Address: Peer Address
+  * @retval mask of present profiles of the Generic Audio Framework
+  */
+GAF_Profiles_Link_t CAP_DB_GetPresentGAFProfiles(uint8_t Peer_Address_Type,const uint8_t Peer_Address[6]);
+
+/**
+  * @brief Indicate the linked profiles of the Generic Audio Framework issued from a CAP linkup procedure
+  * @note This function could not be used to get linked profiles in ATT Server role
+  * @param ConnHandle: Connection handle
+  * @retval mask of linked profiles of the Generic Audio Framework
+  */
+GAF_Profiles_Link_t CAP_GetCurrentLinkedProfiles(uint16_t ConnHandle);
+
+/**
+  * @brief Unlink the linked profiles of the Generic Audio Framework issued from a previous CAP linkup procedure
+  * @param ConnHandle: Connection handle
+  * @param LinkMask: Mask of profiles, composing the Generic Audio Framework, to link
+  * @param NVMSave: Specify if profiles information should be stored in NVM
+  *                 0x00: NO
+  *                 0x01: YES
+  * @retval status of the operation
+  */
+tBleStatus CAP_Unlink(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t NVMSave);
 
 /**
   * @brief  Set supported audio context for reception and transmission
+  * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
   *                      (0x0000 : device not available to receive audio for any Context Type)
   * @param  SrcContexts: bitmap of Audio Data Contexts values available for transmission.
@@ -98,6 +125,7 @@ tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Conte
 
 /**
   * @brief  Set available audio context for reception and transmission.
+  * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @note   This function is applicable only for Unicast Server role and Broadcast Sink role
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
   *                      (0x0000 : device not available to receive audio for any Context Type)
@@ -109,6 +137,7 @@ tBleStatus CAP_SetAvailableAudioContexts(Audio_Context_t SnkContexts,Audio_Conte
 
 /**
   * @brief  Set the supported Sink Audio Locations.
+  * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SnkAudioLocations: bitmap of supported Sink Audio Location values
   * @retval status of the operation
   */
@@ -116,15 +145,32 @@ tBleStatus CAP_SetSnkAudioLocations(Audio_Location_t SnkAudioLocations);
 
 /**
   * @brief  Set the supported Source Audio Locations.
+  * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SrcAudioLocations: bitmap of supported Src Audio Location values
   * @retval status of the operation
   */
 tBleStatus CAP_SetSrcAudioLocations(Audio_Location_t SrcAudioLocations);
 
 /**
+  * @brief  Set the Source Audio Locations of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
+  * @param  ConnHandle: connection handle
+  * @param  AudioLocations: bitmap of Audio Location values
+  * @retval status of the operation
+  */
+tBleStatus CAP_SetRemoteSrcAudioLocations(uint16_t ConnHandle,Audio_Location_t AudioLocations);
+
+/**
+  * @brief  Set the Sink Audio Locations of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
+  * @param  ConnHandle: connection handle
+  * @param  AudioLocations: bitmap of Audio Location values
+  * @retval status of the operation
+  */
+tBleStatus CAP_SetRemoteSnkAudioLocations(uint16_t ConnHandle,Audio_Location_t AudioLocations);
+
+/**
   * @brief  Register Published Audio Capabilities Record for Audio Sink role
   * @param  pRecord: pointer on Audio PAC Record
-  * @param  pHandle[out]: handle of the registered Audio PAC Record (valid if status is BLE_STATUS_SUCCESS)
+  * @param[out]  pHandle: handle of the registered Audio PAC Record (valid if status is BLE_STATUS_SUCCESS)
   * @retval status of the operation
   */
 tBleStatus CAP_RegisterSnkPACRecord(BAP_AudioPACRecord_t *pRecord,uint16_t *pHandle);
@@ -132,7 +178,7 @@ tBleStatus CAP_RegisterSnkPACRecord(BAP_AudioPACRecord_t *pRecord,uint16_t *pHan
 /**
   * @brief  Register Published Audio Capabilities Record for Audio Source role
   * @param  pRecord: pointer on Audio PAC Record
-  * @param  pHandle[out]: handle of the registered Audio PAC Record (valid if status is BLE_STATUS_SUCCESS)
+  * @param[out]  pHandle: handle of the registered Audio PAC Record (valid if status is BLE_STATUS_SUCCESS)
   * @retval status of the operation
   */
 tBleStatus CAP_RegisterSrcPACRecord(BAP_AudioPACRecord_t *pRecord,uint16_t *pHandle);
@@ -144,6 +190,24 @@ tBleStatus CAP_RegisterSrcPACRecord(BAP_AudioPACRecord_t *pRecord,uint16_t *pHan
   * @retval status of the operation
   */
 tBleStatus CAP_UpdatePACRecord(uint16_t Handle,BAP_AudioPACRecord_t *pRecord);
+
+/**
+  * @brief  Read the PAC Sink Records of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
+  * @note   Once operation is complete, the CAP_READ_REM_SNK_PAC_RECORDS_COMPLETE_EVT event is notified to upper layer.
+  *         When a record is read, the value is notified to upper layer over the CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT event.
+  * @param  ConnHandle: connection handle
+  * @retval status of the operation
+  */
+tBleStatus CAP_ReadRemoteSnkPACRecords(uint16_t ConnHandle);
+
+/**
+  * @brief  Read the PAC Source Records of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
+  * @note   Once operation is complete, the CAP_READ_REM_SRC_PAC_RECORDS_COMPLETE_EVT event is notified to upper layer.
+  *         When a record is read, the value is notified to upper layer over the CAP_REM_ACC_SRC_PAC_RECORD_INFO_EVT event.
+  * @param  ConnHandle: connection handle
+  * @retval status of the operation
+  */
+tBleStatus CAP_ReadRemoteSrcPACRecords(uint16_t ConnHandle);
 
 /**
   * @brief  Enable the specified Audio Codec in Controller for encoding decoding audio data.
@@ -160,28 +224,31 @@ tBleStatus CAP_EnableAudioCodecController(BAP_AudioCodecController_t *pAudioCode
 /**
   * @brief Register Sink/Source AUdio Channels for Unicast Server
   * @param  NumSinkASEs: number of Sink Audio Stream Endpoints to register
-  *         NumSourceASEs: number of Sink Audio Stream Endpoints to register
+  * @param  NumSourceASEs: number of Sink Audio Stream Endpoints to register
   * @retval status of the operation
   */
 tBleStatus CAP_RegisterAudioChannels(uint16_t NumSinkASEs,uint16_t NumSourceASEs);
 
 /**
-  * @brief  Remove the record of the Common Control Profile and the other profiles contained in the Generic Audio
-  *         Framework (BAP, MCP,CCP,VCP,MICS,CSIP) stored in the Non Volatile memory.
+  * @brief  Remove the record of the services in Basic Audio Profile stored in the Non Volatile memory.
   * @param  PeerIdentityAddressType: Identity address type.
   *                                  Values:
   *                                     - 0x00: Public Identity Address
   *                                     - 0x01: Random (static) Identity Address
   * @param  PeerIdentityAddress : Public or Random (static) Identity address of the peer device
+  * @param  BAP_Role : BAP role services records to remove
+  * @retval status of the operation
   */
-void CAP_RemoveRecord( uint8_t PeerIdentityAddressType,const uint8_t* PeerIdentityAddress);
+tBleStatus CAP_RemoveBAPServicesRecord(uint8_t PeerIdentityAddressType,
+                                       const uint8_t* PeerIdentityAddress,
+                                       BAP_Role_t BAP_Role);
 
 /**
   * @brief Check if a remote audio capability matches with a list of codec specific configuration
   * @param  NumConf: Number of items in the codec specific configuration list
-  *         pLocalSpecificConf: A list of codec Specific Configuration
-  *         pRemoteAudioCap: A Remote Audio Capability
-  *         pIsCompatible: a pointer to a variable containing the output result of the function
+  * @param  pLocalSpecificConf: A list of codec Specific Configuration
+  * @param  pRemoteAudioCap: A Remote Audio Capability
+  * @param  pIsCompatible: a pointer to a variable containing the output result of the function
   * @retval BLE_STATUS_SUCCESS if the process was successful, BLE_STATUS_ERROR if an error was found in the remote audio
   *         capability
   */
@@ -202,7 +269,7 @@ tBleStatus CAP_CheckCodecSpecificCapabilitiesCompatibility(uint8_t NumConf,
   * @retval status of the operation
   */
 tBleStatus CAP_Unicast_AudioStart(CAP_Set_Acceptors_t SetType,
-                                  uint8_t numAcceptors,
+                                  uint8_t NumAcceptors,
                                   CAP_Unicast_AudioStart_Stream_Params_t *pStartStreamParams);
 
 /**
@@ -217,7 +284,7 @@ tBleStatus CAP_Unicast_AudioStart(CAP_Set_Acceptors_t SetType,
   * @param pUpdateStreamParams: Table of Update Streams Parameters for each CAP Acceptors
   * @retval status of the operation
   */
-tBleStatus CAP_Unicast_AudioUpdate(uint8_t numAcceptors,
+tBleStatus CAP_Unicast_AudioUpdate(uint8_t NumAcceptors,
                                    CAP_Unicast_AudioUpdate_Stream_Params_t *pUpdateStreamParams);
 
 /**
@@ -501,12 +568,16 @@ tBleStatus CAP_Broadcast_RejectModifyBroadcastSource(void);
   * @param AdvertisingAddressType: Address type of the advertiser
   * @param pAdvertiserAddress: a pointer to the address of the advertiser
   * @param BroadcastID: The broadcast ID of the source
+  * @param Encryption: The encryption type of the source
+  * @param pBroadcastCode: The broadcast code of the source, if known
   * @retval status of the operation
   */
 tBleStatus CAP_Broadcast_AddSourceToBASS(uint8_t AdvertisingSID,
                                          uint8_t AdvertisingAddressType,
                                          const uint8_t *pAdvertiserAddress,
-                                         uint32_t BroadcastID);
+                                         uint32_t BroadcastID,
+                                         BAP_Broadcast_Source_Encryption_t Encryption,
+                                         uint32_t *pBroadcastCode);
 
 /* #############################################################################
    #                          BROADCAST ASSISTANT APIs                         #
@@ -531,51 +602,28 @@ tBleStatus CAP_BroadcastAssistant_StartAdvReportParsing(uint16_t ConnHandle);
 tBleStatus CAP_BroadcastAssistant_StopAdvReportParsing(uint16_t ConnHandle);
 
 /**
-  * @brief Add a Broadcast Source to the remote Scan Delegator
-  * @param ConnHandle: The handle of the connection to the remote Scan Delegator
-  * @param pBroadcastSource: A pointer to a BAP_BA_Broadcast_Source_Add_t structure containing details
-  *                          about the source to add
+  * @brief Perform the Audio Reception Start Procedure to request remote acceptor(s) to synchronize to a Broadcast Source
+  * @param SetType: Set Type (Ad-Hoc or Coordinated Set)
+  * @param NumAcceptors: Number of CAP Acceptors
+  * @param pAudioReceptionStart: Table of CAP_Broadcast_AudioReceptionStart_Params_t structures containing
+                                 details about the Broadcast Source for each CAP Acceptors
   * @retval status of the operation
   */
-tBleStatus CAP_BroadcastAssistant_AddBroadcastSource(uint16_t ConnHandle,
-                                                     BAP_BA_Broadcast_Source_Add_t *pBroadcastSource);
+tBleStatus CAP_Broadcast_AudioReceptionStart(CAP_Set_Acceptors_t SetType,
+                                             uint8_t NumAcceptors,
+                                             CAP_Broadcast_AudioReceptionStart_Params_t *pAudioReceptionStart);
 
 /**
-  * @brief Modify a Broadcast Source on the remote Scan Delegator
-  * @param ConnHandle: The handle of the connection to the remote Scan Delegator
-  * @param pBroadcastSource: A pointer to a BAP_BA_Broadcast_Source_t structure containing details about the
-  *                          source to modify
+  * @brief Perform the Audio Reception Stop Procedure to request remote acceptor(s) to desynchronize from a Broadcast Source
+  * @param SetType: Set Type (Ad-Hoc or Coordinated Set)
+  * @param NumAcceptors: Number of CAP Acceptors
+  * @param pAudioReceptionStop: Table of CAP_Broadcast_AudioReceptionStop_Params_t structures containing
+                                 details about the Broadcast Source for each CAP Acceptors
   * @retval status of the operation
   */
-tBleStatus CAP_BroadcastAssistant_ModifyBroadcastSource(uint16_t ConnHandle,
-                                                        BAP_BA_Broadcast_Source_Modify_t *pBroadcastSource);
-
-/**
-  * @brief Removes a Broadcast Source from a remote Scan Delegator
-  * @param ConnHandle: The handle of the connection to the remote Scan Delegator
-  * @param SourceId: The ID of the source to remove
-  * @retval status of the operation
-  */
-tBleStatus CAP_BroadcastAssistant_RemoveBroadcastSource(uint16_t ConnHandle,
-                                                        uint8_t SourceId);
-
-/**
-  * @brief Send the broadcast code of a broadcast source to a remote Scan Delegator
-  * @param ConnHandle: The handle of the connection to the remote Scan Delegator
-  * @param SourceId: The ID of the Broadcast Source missing a Broadcast Code
-  * @param pBroadcastCode: The 16 bytes broadcast code of the broadcast Source
-  * @retval status of the operation
-  */
-tBleStatus CAP_BroadcastAssistant_SetBroadcastCode(uint16_t ConnHandle, uint8_t SourceId, uint32_t *pBroadcastCode);
-
-/**
-  * @brief Perform a Scan Offload operation to transfer a Periodic Advertising Sync to a Scan Delegator
-  * @param ConnHandle: The handle of the connection to the remote Scan Delegator
-  * @param PAHandle: The handle of the periodic advertising train to transfer (synchandle or advhandle if local)
-  * @param SourceId: The ID of the source to remove
-  * @retval status of the operation
-  */
-tBleStatus CAP_BroadcastAssistant_ScanOffload(uint16_t ConnHandle, uint16_t PAHandle, uint8_t SourceId);
+tBleStatus CAP_Broadcast_AudioReceptionStop(CAP_Set_Acceptors_t SetType,
+                                             uint8_t NumAcceptors,
+                                             CAP_Broadcast_AudioReceptionStop_Params_t *pAudioReceptionStop);
 
 /**
   * @brief Synchronize with a Periodic Advertising train to discover BASE info about a broadcast source
@@ -666,7 +714,6 @@ tBleStatus CAP_RegisterCoordinatedSetMember(uint8_t Instance_ID);
   */
 tBleStatus CAP_VolumeController_StartSetVolumeProcedure(uint16_t ConnHandle,uint8_t AbsVolume);
 
-
 /**
   * @brief  Start the procedure to change the (Volume) mute state on the Acceptors of the Coordinated Set acting
   *         in the VCP Volume Renderer role.
@@ -683,6 +730,21 @@ tBleStatus CAP_VolumeController_StartSetVolumeProcedure(uint16_t ConnHandle,uint
   */
 tBleStatus CAP_VolumeController_StartSetVolumeMuteStateProcedure(uint16_t ConnHandle,uint8_t MuteState);
 
+/**
+  * @brief  Start procedure to set the Volume Offset relative to the volume level set by the Change Volume procedure
+  *         on the Acceptors of the Coordinated Set acting in the VCP Renderer role.
+  * @note   A Commander acting in the VCP Volume Controller role uses this procedure changes the Volume Offset
+  *         on the Acceptors of the Coordinated Set acting in the VCP Renderer role.
+  * @note   This CAP procedure is based on VCP_CONTROLLER_SetVolumeOffset() calls procedure for all the
+  *         Acceptors of the Coordinated Set
+  * @note   The VCP_CONTROLLER_VOLUME_OFFSET_STATE_EVT event will be notified for each Acceptor of the Coordinated Set
+  *         for which the Volume Offset value changed.
+  * @note   The CAP_SET_VOLUME_OFFSET_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
+  * @param  pVolumeOffsetParms: Table of Volume Offset and VOC Instance of the CAP Acceptors
+  * @param  NumAcceptors:Number of CAP Acceptors composing the Coordinated Set and so the table of pVolumeOffsetParms
+  */
+tBleStatus CAP_VolumeController_StartSetVolumeOffsetProcedure(CAP_VCP_VolumeOffsetParms_t *pVolumeOffsetParms,
+                                                              uint8_t NumAcceptors);
 
 /**
   * @brief  Start the procedure to change the Microphone mute value on the Acceptors of the Coordinated Set acting
@@ -693,7 +755,7 @@ tBleStatus CAP_VolumeController_StartSetVolumeMuteStateProcedure(uint16_t ConnHa
   *         Acceptors of the Coordinated Set
   * @note   The MICP_CONTROLLER_UPDATED_MUTE_EVT event will be notified for each Acceptor of the Coordinated Set
   *         for which the mute state has changed.
-  * @note   The CAP_SET_MUTE_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
+  * @note   The CAP_SET_MICROPHONE_MUTE_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
   * @param  ConnHandle: ACL connection handle
   * @param  Mute: Mute value (0x00 = Unmuted, 0x01 = Muted)
   * @retval status of the operation
@@ -709,13 +771,12 @@ tBleStatus CAP_MicrophoneController_StartSetMuteProcedure(uint16_t ConnHandle, M
   *         Acceptors of the Coordinated Set
   * @note   The MICP_DEVICE_UPDATED_AUDIO_INPUT_STATE_EVT event will be notified for each Acceptor of the Coordinated Set
   *         for which the Gain Setting changed.
-  * @note   The CAP_SET_MICROPHONE_GAIN_SETTING_COMPLETE_EVT event will be notified once the procedure is complete.
-  * @param  ConnHandle: ACL connection handle
-  * @param  AICInst: ID of the AIC Instance
-  * @param  GainSetting: Gain Setting value
-  * @retval status of the operation
+  * @note   The CAP_SET_MICROPHONE_GAIN_SETTING_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
+  * @param  pGainSettingParms: Table of Microphone Gain Settings and AIC Instance of the CAP Acceptors
+  * @param  NumAcceptors:Number of CAP Acceptors composing the Coordinated Set and so the table of pGainSettingParms
   */
-tBleStatus CAP_MicrophoneController_StartSetGainSetting(uint16_t ConnHandle, uint8_t AICInst, int8_t GainSetting);
+tBleStatus CAP_MicrophoneController_StartSetGainSettingProcedure(CAP_MICP_GainSettingParms_t *pGainSettingParms,
+                                                                 uint8_t NumAcceptors);
 
 /**
   * @brief  Start Procedure to discover Set Members of the Coordinated Set in with specified device is member
@@ -727,6 +788,13 @@ tBleStatus CAP_MicrophoneController_StartSetGainSetting(uint16_t ConnHandle, uin
   * @retval status of the procedure
   */
 tBleStatus CAP_StartCoordinatedSetMemberDiscoveryProcedure(uint16_t ConnHandle);
+
+/**
+  * @brief  Stop Procedure to discover Set Members of the Coordinated Set in with specified device is member
+  * @param  ConnHandle: Connection handle of a member of the Coordinated Set
+  * @retval status of the procedure
+  */
+tBleStatus CAP_StopCoordinatedSetMemberDiscoveryProcedure(uint16_t ConnHandle);
 
 /**
   * @brief  Notify CAP Event

@@ -70,8 +70,8 @@ typedef struct ZigbeeAppInfoT
 /* USER CODE END ET */
 
 /* Exported constants ------------------------------------------------------- */
-extern const uint8_t                      sec_key_ha[ZB_SEC_KEYSIZE];
 extern const uint8_t                      sec_key_distrib_uncert[ZB_SEC_KEYSIZE];
+extern const uint8_t                      sec_key_ha[ZB_SEC_KEYSIZE];
 
 /* USER CODE BEGIN EC */
 

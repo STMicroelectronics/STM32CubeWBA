@@ -38,7 +38,7 @@
 LC3_Status lc3_decoder_channel_init(void *hSession,
                                     void *handle,
                                     uint32_t bitrate,
-                                    LC3_SampleDeepth s_bits);
+                                    LC3_SampleDepth s_bits);
 
 /**
   * @brief  Update an decoder channel bitrate

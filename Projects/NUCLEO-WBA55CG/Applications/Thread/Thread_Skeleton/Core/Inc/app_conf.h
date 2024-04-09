@@ -84,9 +84,6 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/

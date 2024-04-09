@@ -175,7 +175,10 @@ static int ecp_drbg_seed( ecp_drbg_context *ctx,
     int ret;
     unsigned char secret_bytes[MBEDTLS_ECP_MAX_BYTES];
     /* The list starts with strong hashes */
-    const mbedtls_md_type_t md_type = mbedtls_md_list()[0];
+    
+    /*const mbedtls_md_type_t md_type = mbedtls_md_list()[0];*/
+    /* STM Warning fix */
+    const mbedtls_md_type_t md_type = (mbedtls_md_type_t) mbedtls_md_list()[0];
     const mbedtls_md_info_t *md_info = mbedtls_md_info_from_type( md_type );
 
     if( secret_len > MBEDTLS_ECP_MAX_BYTES )

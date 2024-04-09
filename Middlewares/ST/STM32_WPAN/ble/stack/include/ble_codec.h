@@ -6,7 +6,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2023 STMicroelectronics.
+ * Copyright (c) 2018-2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -106,7 +106,7 @@ void BLE_IsochronousGroupEvent( uint16_t opcode,
 
 /* Audio codec functions exported by the BLE stack
  */
-void BLE_SendIsoDataToLinkLayer( uint16_t iso_connection_handle,
+uint8_t BLE_SendIsoDataToLinkLayer( uint16_t iso_connection_handle,
                                  uint8_t pb_flag,
                                  uint8_t ts_flag,
                                  uint32_t timestamp,
@@ -115,6 +115,7 @@ void BLE_SendIsoDataToLinkLayer( uint16_t iso_connection_handle,
                                  uint8_t* iso_data );
 
 
+void BLE_ResendIsoDataOutToCodec( uint16_t iso_connection_handle );
 
 void BLE_CalibrationCallback(uint32_t TimeStamp);
 

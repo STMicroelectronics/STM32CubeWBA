@@ -34,10 +34,11 @@
 /* Private define ------------------------------------------------------------*/
 #define DEMO_CHANNEL             11
 #define DATA "HELLO COORDINATOR\0"
+#define FRAME_MAX_SIZE           127
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static uint8_t rfBuffer[256];
+static uint8_t rfBuffer[128];
 static uint16_t     g_panId             = 0x1AAA;
 static uint16_t     g_coordShortAddr    = 0x1122;
 static uint8_t      g_dataHandle        = 0x02;
@@ -120,7 +121,8 @@ void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
   macCallback->mlmeSetPwrInfoTableCnfCb = APP_MAC_mlmeSetPwrInfoTableCnfCb;
 }
 
-void APP_MAC_Init(void) {
+void APP_MAC_Init(void)
+{
   /* Disable Low power */
   UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
@@ -128,9 +130,6 @@ void APP_MAC_Init(void) {
   /* Register tasks */
   UTIL_SEQ_RegTask(TASK_RFD, UTIL_SEQ_RFU, APP_RFD_MAC_802_15_4_SetupTask); // Setup task
 
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_1, UTIL_SEQ_RFU, APPE_Button1Action); // Button 1
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_2, UTIL_SEQ_RFU, APPE_Button2Action); // Button 2
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_3, UTIL_SEQ_RFU, APPE_Button3Action); // Button 3
   
   /* Configuration MAC 802_15_4 */
   app_mac_regMacCallback(&macCallback);
@@ -143,7 +142,7 @@ void APP_MAC_Init(void) {
 void APP_RFD_MAC_802_15_4_SetupTask(void)
 {
 
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_resetReq_t    ResetReq;
   ST_MAC_setReq_t      SetReq;
   ST_MAC_associateReq_t AssociateReq;
@@ -228,9 +227,15 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
 
 void APP_RFD_MAC_802_15_4_SendData(const char * data)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
-  BSP_LED_On(LD3);
+  MAC_Status_t MacStatus;
   ST_MAC_dataReq_t DataReq;
+  
+  /* If the payload frame is greater than 127 bytes, we don't send the frame */
+  if (strlen(data) > FRAME_MAX_SIZE) {
+      return;
+  }
+  
+  BSP_LED_On(LD3);
   APP_DBG("RFD MAC APP - Send Data to Coordinator\r\n");
   DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c;
   DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c;
@@ -252,7 +257,7 @@ void APP_RFD_MAC_802_15_4_SendData(const char * data)
     return;
   }
   
-  UTIL_SEQ_WaitEvt( EVENT_DATA_CNF );
+  UTIL_SEQ_WaitEvt(EVENT_DATA_CNF);
   BSP_LED_Off(LD3);
   APP_DBG("RFD MAC APP - DATA CNF Received\r\n");
 }

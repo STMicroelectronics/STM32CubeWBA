@@ -103,11 +103,36 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
+  uint16_t freq_value = 0;
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
    */
   ll_intf_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  switch(linklayer_slp_clk_src)
+  {
+    case LL_RCC_RADIOSLEEPSOURCE_LSE:
+      linklayer_slp_clk_src = RTC_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_LSI:
+      linklayer_slp_clk_src = RCO_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_HSE_DIV1000:
+      linklayer_slp_clk_src = CRYSTAL_OSCILLATOR_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_NONE:
+      /* No Link Layer sleep clock source selected */
+      assert_param(0);
+      break;
+  }
+  ll_intf_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 
   /* Link Layer power table */
   ll_intf_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);

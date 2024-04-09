@@ -1,40 +1,29 @@
-/*
- *  Copyright (c) 2018, The OpenThread Authors.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *  1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *  2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *  3. Neither the name of the copyright holder nor the
- *     names of its contributors may be used to endorse or promote products
- *     derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
-
+/* USER CODE BEGIN Header */
 /**
- * @file
- *   This file implements the OpenThread platform abstraction for UART communication.
- *
- */
+  ******************************************************************************
+  * @file    uart.c
+  * @author  MCD Application Team
+  * @brief   This file implements the OpenThread platform abstraction for CLI
+  *          UART communication.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+
 #include "main.h"
 #include "platform_wba.h"
 #include "stdio.h"
 
+#ifndef OPENTHREAD_RCP /* RCP cannot be used with CLI at same time */
 #if (OT_CLI_USE == 1)
 
 /**
@@ -93,11 +82,6 @@ cli_payload_t cli_cmd_buffer[CLI_BUFFER_NB];
 bool otUART_TX_Schdl = FALSE;
 bool otUART_RX_Schdl = FALSE;
 
-#ifdef OPENTHREAD_RCP
-uint8_t rcp_rsp_buf[80] = {0};
-bool hdlc_frame_ongoing = FALSE;
-#endif /* OPENTHREAD_RCP */
-
 /*
  * UART used for commands input/output
  * The selection among those available is done in this order:
@@ -140,18 +124,7 @@ otError otPlatUartDisable(void)
 
 otError otPlatUartSend(const uint8_t *aBuf, uint16_t aBufLength)
 {
-#ifdef OPENTHREAD_RCP
-  if (aBufLength > 0)
-  {
-    memcpy(&rcp_rsp_buf[0], aBuf, aBufLength);
-    APP_DBG("[RCP] Sending command size %d: %s\r\n", aBufLength, aBuf);
-    HAL_UART_Transmit_DMA(oTCLIuart, &rcp_rsp_buf[0], aBufLength);
-  }
-
-  return OT_ERROR_NONE;
-#else
   return OT_ERROR_NOT_IMPLEMENTED;
-#endif /* OPENTHREAD_RCP */
 }
 
 otError otPlatUartFlush(void)
@@ -171,12 +144,27 @@ void arcUartProcess(void)
 
 static void processTransmit(void)
 {
+  HAL_StatusTypeDef HalError;
+
+  /* Check size, processTransmit can be scheduled where as CLI output already
+  printed in previous schedule */
+  if (cli_cmd_buffer[uart_buf_idx].size == 0)
+  {
+    return;
+  }
   /* Take current buffer index, send it to the UART */
   ot_buf_idx = uart_buf_idx++;
   uart_buf_idx %= CLI_BUFFER_NB;
 
-  HAL_UART_Transmit_DMA(oTCLIuart, (uint8_t*)&cli_cmd_buffer[ot_buf_idx].cli_buffer[0],
+  /* Wait for uart to be ready */
+  while(oTCLIuart->gState != HAL_UART_STATE_READY);
+
+  HalError = HAL_UART_Transmit_DMA(oTCLIuart, (uint8_t*)&cli_cmd_buffer[ot_buf_idx].cli_buffer[0],
                        cli_cmd_buffer[ot_buf_idx].size); 
+  if (HalError != HAL_UART_ERROR_NONE)
+  {
+    APP_DBG("CLI UART ERROR 0x%x, buff idx : %d, buff size : %d \r\n",HalError, ot_buf_idx, cli_cmd_buffer[ot_buf_idx].size);
+  }
 
   cli_cmd_buffer[ot_buf_idx].size = 0; /* Reset buffer */
 }
@@ -194,7 +182,7 @@ static void processReceive(void)
   return;
 }
 
-#if defined(CLI_ECHO) && !defined(OPENTHREAD_RCP)
+#if defined(CLI_ECHO)
 static void processEcho(uint8_t *cmd, uint8_t cmd_size)
 {
   /* Fill the buffer with CLI output */
@@ -221,7 +209,6 @@ static void otUart_TxCpltCallback(UART_HandleTypeDef *huart)
 
 static void otUart_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-#ifndef OPENTHREAD_RCP
   UNUSED(huart);
   HAL_UART_Receive_IT(oTCLIuart, &otUartRX, 1);
   g_buffer[buffer_index] = otUartRX;
@@ -241,37 +228,6 @@ static void otUart_RxCpltCallback(UART_HandleTypeDef *huart)
       APP_THREAD_ScheduleUART();
     }
   }
-#else // OPENTHREAD_RCP
-  UNUSED(huart);
-  bool hdlc_fanion;
-  HAL_UART_Receive_IT(oTCLIuart, &otUartRX, 1);
-
-  hdlc_fanion = (otUartRX == 0x7E) ? TRUE : FALSE;
-
-  if (hdlc_frame_ongoing == TRUE)
-  {
-    g_buffer[buffer_index] = otUartRX;
-    buffer_index++;
-    /* End of trame, forward */
-    if (hdlc_fanion)
-    {
-      hdlc_frame_ongoing = FALSE;
-      APP_DBG("[RCP] Receiving command size %d: %s\r\n", buffer_index, g_buffer);
-      otPlatUartReceived(g_buffer, buffer_index);
-      memset(g_buffer, 0x0, buffer_index);
-      buffer_index = 0;
-    }
-  }
-  else
-  {
-    if (hdlc_fanion)
-    {
-      hdlc_frame_ongoing = TRUE;
-      g_buffer[0] = otUartRX;
-      buffer_index = 1;
-    }
-  }
-#endif /* OPENTHREAD_RCP */
 }
 
 int CliUartOutput(void *aContext, const char *aFormat, va_list aArguments)
@@ -284,18 +240,19 @@ int CliUartOutput(void *aContext, const char *aFormat, va_list aArguments)
 
   ret = (uint16_t)vsnprintf(&cli_cmd_buffer[uart_buf_idx].cli_buffer[size],
                             BUFFER_SIZE, aFormat, aArguments);
-  cli_cmd_buffer[uart_buf_idx].size += ret;
 
-  /* Schedule the task if not */
-  APP_THREAD_ScheduleUART();
-  otUART_TX_Schdl = TRUE;
+  /* Do not print "> ", allign with WB for CubeMonitorRF */
+  if ((strncmp(&cli_cmd_buffer[uart_buf_idx].cli_buffer[size], "> ", 2) != 0)&&(ret != 0))
+  {
+    cli_cmd_buffer[uart_buf_idx].size += ret;
+
+    /* Schedule the task if not */
+    APP_THREAD_ScheduleUART();
+    otUART_TX_Schdl = TRUE;
+  }
 
   return ret;
 }
 
-#else /* OT_CLI_USE == 0, CLI is not used */
-
-otError otPlatUartEnable(void) {
-  return OT_ERROR_NONE;
-}
 #endif /* OT_CLI_USE */
+#endif /* OPENTHREAD_RCP */

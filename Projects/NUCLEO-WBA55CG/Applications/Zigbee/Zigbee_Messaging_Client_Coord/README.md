@@ -24,22 +24,45 @@ For this application it is requested to have at least:
                | Messaging  |                                      | Messaging  |       
                | Server     |                                      | Client     | 
                |            |                                      |            |
-               |            |                                      |            |
-   PushB SW1=> |            |   Send "Hello" message               |            |=> immediate display
-               |            | -----------------------------------> |            | 
-               |            |                                      |            |
-   PushB SW2=> |            |   Send "Goodbye" message             |            |=> display after 10 seconds
-			   |            | -----------------------------------> |            |
+   Short       |            |   Send "Hello" message               |            |
+   PushB SW1=> |            | -----------------------------------> |            |=> immediate display
+               |            |                                      |            | 
+			   |            |                                      |            |
+   Long        |            |   Send "Hello" message               |            |
+   PushB SW1   |            | -----------------------------------> |            |=> immediate display and ask for confirmation
+			   |            |                                      |            |
+			   |            |   Send confirmation for message ID 1 |            |
+			   |            | <----------------------------------- |            |<= PushB SW1
+			   |            |                                      |            |
+			   |            |                                      |            |
+   Short       |            |   Send "Goodbye" message             |            |
+   PushB SW2=> |            | -----------------------------------> |            |=> start wait of 10 seconds
+			   |            |                                      |            |
+			   |            |                                      |            |=> after 10 seconds, display message
 			   |            |                                      |            |
    Long 	   |            |   Send "Goodbye" message             |            |
-   PushB SW2=> |            | -----------------------------------> |            |=> display after 10 seconds and ask for confirmation
+   PushB SW2=> |            | -----------------------------------> |            |=> start wait of 10 seconds 
 			   |            |                                      |            |
-			   |            |   Send confirmation for message ID x |            |
+			   |            |                                      |            |=> after 10 seconds, display message
+			   |            |                                      |            |=> ask for confirmation
+			   |            |                                      |            |
+			   |            |  Send confirmation for message ID 2  |            |
 			   |            | <----------------------------------- |            |<= PushB SW1
+			   |            |                                      |            |
+			   |            |                                      |            |
+   Short or    |            |                                      |            |
+   Long 	   |            |                                      |            |
+   PushB SW2=> |            |  Send "Goodbye" message              |            |
+			   |            | -----------------------------------> |            |=> start wait of 10 seconds
+			   |            |                                      |            |
+			   |            |  Send Cancel "Goodbye" message       |            |
+   PushB SW3=> |            | -----------------------------------> |            |=> remove "Goodbye" message
+			   |            |                                      |            |
 			   |            |                                      |            |
                +------------+                                      +------------+
 
 </pre> 
+  
 
 ### __Application Setup__
 
@@ -95,3 +118,10 @@ Stop Bit       = 1 bit</br>
 Parity         = none</br>
 Flow control   = none</br>
 Terminal   "Go to the Line" : &lt;LF&gt;  
+
+### __Note__
+By default, this application runs with Zigbee PRO stack R23.
+
+If you want to run this application using Zigbee PRO stack R22, you should replace ZigBeeProR23_FFD.a by ZigBeeProR22_FFD.a and ZigBeeProR23_RFD.a by ZigBeeProR22_RFD.a and ZigBeeClusters.a by ZigBeeClustersR22.a in the build environment.
+
+Also, set in the project setup compilation flag CONFIG_ZB_REV=22. 

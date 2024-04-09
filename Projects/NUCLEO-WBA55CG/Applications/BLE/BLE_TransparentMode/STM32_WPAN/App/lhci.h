@@ -65,57 +65,33 @@ extern "C" {
 #define LHCI_OCF_C1_DEVICE_INF          ( LHCI_OCF_BASE + 2 )
 #define LHCI_OPCODE_C1_DEVICE_INF       (( LHCI_OGF << 10) + LHCI_OCF_C1_DEVICE_INF)
 
-  typedef __PACKED_STRUCT
-  {
-    uint32_t    Version;
-    uint32_t    MemorySize;
-    uint32_t    InfoStack;
-    uint32_t    Reserved;
-  }LHCI_WirelessFwInfoTable_t;
-
-  typedef __PACKED_STRUCT
-  {
-    uint32_t    Version;
-  } MB_SafeBootInfoTable_t;
-
-  typedef __PACKED_STRUCT
-  {
-    uint32_t    Version;
-    uint32_t    MemorySize;
-    uint32_t    FusInfo;
-  } MB_FusInfoTable_t;
-
-  typedef __PACKED_STRUCT
-  {
-    uint32_t    Version;
-    uint32_t    MemorySize;
-    uint32_t    InfoStack;
-    uint32_t    Reserved;
-  } MB_WirelessFwInfoTable_t;
-
   typedef struct
   {
-    MB_SafeBootInfoTable_t      SafeBootInfoTable;
-    MB_FusInfoTable_t           FusInfoTable;
-    MB_WirelessFwInfoTable_t    WirelessFwInfoTable;
-  } MB_DeviceInfoTable_t;
+    uint32_t      ReservedField1;
+    uint32_t      ReservedField2;
+    uint32_t      ReservedField3;
+    uint32_t      ReservedField4;
+    uint32_t      ReservedField5;
+    uint32_t      ReservedField6;
+    uint32_t      ReservedField7;
+    uint32_t      ReservedField8;
+  } LHCI_ReservedFields_t;
 
   typedef __PACKED_STRUCT
   {
-    uint8_t                   	status;
-    uint16_t					rev_id;			/* from DBGMCU_ICODE */
-    uint16_t					dev_code_id;	/* from DBGMCU_ICODE */
-    uint8_t                   	package_type;	/* from package data register */
-    uint8_t                   	device_type_id; /* from FLASH UID64 */
-    uint32_t                   	st_company_id;  /* from FLASH UID64 */
-    uint32_t                   	uid64;  		/* from FLASH UID64 */
-    uint32_t                   	uid96_0;      	/* from Unique device ID register */
-    uint32_t                   	uid96_1;      	/* from Unique device ID register */
-    uint32_t                   	uid96_2;      	/* from Unique device ID register */
-    MB_SafeBootInfoTable_t    	SafeBootInf;
-    MB_FusInfoTable_t         	FusInf;
-    LHCI_WirelessFwInfoTable_t  	WirelessFwInf;
-    uint32_t                  	AppFwInf;
+    uint8_t                     status;
+    uint16_t                    rev_id;         /* from DBGMCU_ICODE */
+    uint16_t                    dev_code_id;    /* from DBGMCU_ICODE */
+    uint8_t                     package_type;   /* from package data register */
+    uint8_t                     device_type_id; /* from FLASH UID64 */
+    uint32_t                    st_company_id;  /* from FLASH UID64 */
+    uint32_t                    uid64;          /* from FLASH UID64 */
+    uint32_t                    uid96_0;        /* from Unique device ID register */
+    uint32_t                    uid96_1;        /* from Unique device ID register */
+    uint32_t                    uid96_2;        /* from Unique device ID register */
+    LHCI_ReservedFields_t       ReservedField;
+    uint32_t                    AppFwInf;       /* from Firmware */
+
   } LHCI_C1_Device_Information_ccrp_t;
 
 #define LHCI_OCF_C1_RF_CONTROL_ANTENNA_SWITCH          ( LHCI_OCF_BASE + 3 )

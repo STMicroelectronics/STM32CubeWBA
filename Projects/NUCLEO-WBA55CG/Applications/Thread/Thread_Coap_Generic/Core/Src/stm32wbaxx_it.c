@@ -241,12 +241,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -390,6 +394,18 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief This function handles WKUP global interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* Verif WakeUp Source */
+  
+  /* Clear all WakeUp flags*/
+  LL_PWR_ClearFlag_WU( );
+}
+
 /**
   * @brief This function handles EXTI Line6 interrupt.
   */

@@ -43,6 +43,15 @@
 namespace ot {
 namespace Cli {
 
+NetworkData::NetworkData(otInstance *aInstance, OutputImplementer &aOutputImplementer)
+    : Output(aInstance, aOutputImplementer)
+{
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+    mFullCallbackWasCalled = false;
+    otBorderRouterSetNetDataFullCallback(aInstance, HandleNetdataFull, this);
+#endif
+}
+
 void NetworkData::PrefixFlagsToString(const otBorderRouterConfig &aConfig, FlagsString &aString)
 {
     char *flagsPtr = &aString[0];
@@ -157,6 +166,66 @@ void NetworkData::OutputService(const otServiceConfig &aConfig)
     }
 
     OutputLine(" %04x", aConfig.mServerConfig.mRloc16);
+}
+
+/**
+ * @cli netdata length
+ * @code
+ * netdata length
+ * 23
+ * Done
+ * @endcode
+ * @par api_copy
+ * #otNetDataGetLength
+ */
+template <> otError NetworkData::Process<Cmd("length")>(Arg aArgs[])
+{
+    otError error = OT_ERROR_NONE;
+
+    VerifyOrExit(aArgs[0].IsEmpty(), error = OT_ERROR_INVALID_ARGS);
+    OutputLine("%u", otNetDataGetLength(GetInstancePtr()));
+
+exit:
+    return error;
+}
+
+template <> otError NetworkData::Process<Cmd("maxlength")>(Arg aArgs[])
+{
+    otError error = OT_ERROR_NONE;
+
+    /**
+     * @cli netdata maxlength
+     * @code
+     * netdata maxlength
+     * 40
+     * Done
+     * @endcode
+     * @par api_copy
+     * #otNetDataGetMaxLength
+     */
+    if (aArgs[0].IsEmpty())
+    {
+        OutputLine("%u", otNetDataGetMaxLength(GetInstancePtr()));
+    }
+    /**
+     * @cli netdata maxlength reset
+     * @code
+     * netdata maxlength reset
+     * Done
+     * @endcode
+     * @par api_copy
+     * #otNetDataResetMaxLength
+     */
+    else if (aArgs[0] == "reset")
+    {
+        otNetDataResetMaxLength(GetInstancePtr());
+    }
+    else
+    {
+        error = OT_ERROR_INVALID_ARGS;
+    }
+
+    return error;
 }
 
 #if OPENTHREAD_CONFIG_NETDATA_PUBLISHER_ENABLE
@@ -292,6 +361,29 @@ template <> otError NetworkData::Process<Cmd("publish")>(Arg aArgs[])
 
         SuccessOrExit(error = Interpreter::ParseRoute(aArgs + 1, config));
         error = otNetDataPublishExternalRoute(GetInstancePtr(), &config);
+        ExitNow();
+    }
+
+    /**
+     * @cli netdata publish replace
+     * @code
+     * netdata publish replace ::/0 fd00:1234:5678::/64 s high
+     * Done
+     * @endcode
+     * @cparam netdata publish replace @ca{oldprefix} @ca{prefix} [@ca{sn}] [@ca{high}|@ca{med}|@ca{low}]
+     * OT CLI uses mapped arguments to configure #otExternalRouteConfig values. @moreinfo{the @overview}.
+     * @par
+     * Replaces a previously published external route entry. @moreinfo{@netdata}.
+     * @sa otNetDataReplacePublishedExternalRoute
+     */
+    if (aArgs[0] == "replace")
+    {
+        otIp6Prefix           prefix;
+        otExternalRouteConfig config;
+
+        SuccessOrExit(error = aArgs[1].ParseAsIp6Prefix(prefix));
+        SuccessOrExit(error = Interpreter::ParseRoute(aArgs + 2, config));
+        error = otNetDataReplacePublishedExternalRoute(GetInstancePtr(), &prefix, &config);
         ExitNow();
     }
 #endif // OPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE
@@ -546,6 +638,25 @@ void NetworkData::OutputServices(bool aLocal)
     }
 }
 
+void NetworkData::OutputLowpanContexts(bool aLocal)
+{
+    otNetworkDataIterator iterator = OT_NETWORK_DATA_ITERATOR_INIT;
+    otLowpanContextInfo   info;
+
+    VerifyOrExit(!aLocal);
+
+    OutputLine("Contexts:");
+
+    while (otNetDataGetNextLowpanContextInfo(GetInstancePtr(), &iterator, &info) == OT_ERROR_NONE)
+    {
+        OutputIp6Prefix(info.mPrefix);
+        OutputLine(" %u %c", info.mContextId, info.mCompressFlag ? 'c' : '-');
+    }
+
+exit:
+    return;
+}
+
 otError NetworkData::OutputBinary(bool aLocal)
 {
     otError error;
@@ -583,6 +694,8 @@ exit:
  * Services:
  * 44970 5d c000 s 4000
  * 44970 01 9a04b000000e10 s 4000
+ * Contexts:
+ * fd00:dead:beef:cafe::/64 1 c
  * Done
  * @endcode
  * @code
@@ -595,7 +708,43 @@ exit:
  * @par
  * `netdata show` from OT CLI gets full Network Data received from the Leader. This command uses several
  * API functions to combine prefixes, routes, and services, including #otNetDataGetNextOnMeshPrefix,
- * #otNetDataGetNextRoute, and #otNetDataGetNextService.
+ * #otNetDataGetNextRoute, #otNetDataGetNextService and #otNetDataGetNextLowpanContextInfo.
+ * @par
+ * On-mesh prefixes are listed under `Prefixes` header:
+ * * The on-mesh prefix
+ * * Flags
+ *   * p: Preferred flag
+ *   * a: Stateless IPv6 Address Autoconfiguration flag
+ *   * d: DHCPv6 IPv6 Address Configuration flag
+ *   * c: DHCPv6 Other Configuration flag
+ *   * r: Default Route flag
+ *   * o: On Mesh flag
+ *   * s: Stable flag
+ *   * n: Nd Dns flag
+ *   * D: Domain Prefix flag (only available for Thread 1.2).
+ * * Preference `high`, `med`, or `low`
+ * * RLOC16 of device which added the on-mesh prefix
+ * @par
+ * External Routes are listed under `Routes` header:
+ * * The route prefix
+ * * Flags
+ *   * s: Stable flag
+ *   * n: NAT64 flag
+ * * Preference `high`, `med`, or `low`
+ * * RLOC16 of device which added the route prefix
+ * @par
+ * Service entries are listed under `Services` header:
+ * * Enterprise number
+ * * Service data (as hex bytes)
+ * * Server data (as hex bytes)
+ * * Flags
+ *   * s: Stable flag
+ * * RLOC16 of devices which added the service entry
+ * @par
+ * 6LoWPAN Context IDs are listed under `Contexts` header:
+ * * The prefix
+ * * Context ID
+ * * Compress flag (`c` if marked or `-` otherwise).
  * @par
  * @moreinfo{@netdata}.
  * @csa{br omrprefix}
@@ -654,12 +803,65 @@ template <> otError NetworkData::Process<Cmd("show")>(Arg aArgs[])
         OutputPrefixes(local);
         OutputRoutes(local);
         OutputServices(local);
+        OutputLowpanContexts(local);
         error = OT_ERROR_NONE;
     }
 
 exit:
     return error;
 }
+
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+template <> otError NetworkData::Process<Cmd("full")>(Arg aArgs[])
+{
+    otError error = OT_ERROR_NONE;
+
+    /**
+     * @cli netdata full
+     * @code
+     * netdata full
+     * no
+     * Done
+     * @endcode
+     * @par
+     * Print "yes" or "no" indicating whether or not the "net data full" callback has been invoked since start of
+     * Thread operation or since the last time `netdata full reset` was used to reset the flag.
+     * This command requires `OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL`.
+     * The "net data full" callback is invoked whenever:
+     * - The device is acting as a leader and receives a Network Data registration from a Border Router (BR) that it
+     *   cannot add to Network Data (running out of space).
+     * - The device is acting as a BR and new entries cannot be added to its local Network Data.
+     * - The device is acting as a BR and tries to register its local Network Data entries with the leader, but
+     *   determines that its local entries will not fit.
+     * @sa otBorderRouterSetNetDataFullCallback
+     */
+    if (aArgs[0].IsEmpty())
+    {
+        OutputLine(mFullCallbackWasCalled ? "yes" : "no");
+    }
+    /**
+     * @cli netdata full reset
+     * @code
+     * netdata full reset
+     * Done
+     * @endcode
+     * @par
+     * Reset the flag tracking whether "net data full" callback was invoked.
+     */
+    else if (aArgs[0] == "reset")
+    {
+        VerifyOrExit(aArgs[1].IsEmpty(), error = OT_ERROR_INVALID_ARGS);
+        mFullCallbackWasCalled = false;
+    }
+    else
+    {
+        error = OT_ERROR_INVALID_ARGS;
+    }
+
+exit:
+    return error;
+}
+#endif // OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
 
 otError NetworkData::Process(Arg aArgs[])
 {
@@ -669,6 +871,11 @@ otError NetworkData::Process(Arg aArgs[])
     }
 
     static constexpr Command kCommands[] = {
+#if OPENTHREAD_CONFIG_BORDER_ROUTER_SIGNAL_NETWORK_DATA_FULL
+        CmdEntry("full"),
+#endif
+        CmdEntry("length"),
+        CmdEntry("maxlength"),
 #if OPENTHREAD_CONFIG_NETDATA_PUBLISHER_ENABLE
         CmdEntry("publish"),
 #endif
@@ -693,7 +900,8 @@ otError NetworkData::Process(Arg aArgs[])
      * @cli netdata help
      * @code
      * netdata help
-     * help
+     * length
+     * maxlength
      * publish
      * register
      * show

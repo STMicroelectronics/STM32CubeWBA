@@ -6,8 +6,8 @@
 ** @author      : Application team
 **
 ** @brief       : Linker script for STM32WBA55CGUx Device from STM32WBA series
-**                      1024Kbytes FLASH
-**                      128Kbytes RAM
+**                      1024 KBytes FLASH
+**                      128 KBytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -44,7 +44,7 @@ _Min_Stack_Size = 0x1000; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM      (rw)     : ORIGIN = 0x20000010,   LENGTH = (64K - 0x10)
+  RAM      (rw)     : ORIGIN = 0x20002000,   LENGTH = (64K - 0x2000)
   RAM2     (rw)     : ORIGIN = 0x20010000,   LENGTH = 64K
 
   NVM      (r)      : ORIGIN = 0x080FC000,   LENGTH = 16K
@@ -161,6 +161,7 @@ SECTIONS
     KEEP(*(TAG_OTA_END))
     . = ALIGN(4);
   } >FLASH
+
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 

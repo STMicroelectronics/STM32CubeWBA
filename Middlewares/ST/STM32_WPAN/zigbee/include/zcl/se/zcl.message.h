@@ -324,6 +324,16 @@ enum ZclStatusCodeT ZbZclMsgClientGetMsgCancelReq(struct ZbZclClusterT *cluster,
     const struct ZbApsAddrT *dst, uint32_t earliestTime,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
 
+/**
+ * Parses a ZCL_MESSAGE_SVR_CMD_DISPLAY_MESSAGE paylaod into a 'struct ZbZclMsgMessageT'.
+ * @param msg Structure to parse message into
+ * @param payload ZCL payload of ZCL_MESSAGE_SVR_CMD_DISPLAY_MESSAGE packet
+ * @param len Length of payload
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclMessageClientParseDisplayMsg(struct ZbZclMsgMessageT *msg,
+    uint8_t *payload, unsigned int len);
+
 /*-----------------------------------------------------------------------------
  * Messaging Mirror Client
  *-----------------------------------------------------------------------------

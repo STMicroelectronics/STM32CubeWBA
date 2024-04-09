@@ -169,11 +169,20 @@ int32_t CS42L51_Init(CS42L51_Object_t *pObj, const CS42L51_Init_t *pInit)
   /* ALCB and PGAB Control : ALCB soft ramp disable on, ALCB zero cross disable on, PGA B Gain +8dB */
   ret += cs42l51_write_reg(&pObj->Ctx, CS42L51_ALCB_PGAB_CTRL, &tmp, 1);
 
-  /* ADCA Attenuator : 0dB */
-  tmp = 0x00U;
+  if ((pInit->InputDevice & CS42L51_IN_LINE1) == CS42L51_IN_LINE1)
+  {
+    /* ADCA/ADCB Attenuator : -10dB */
+    tmp = 0xF6U;
+  }
+  else
+  {
+    /* ADCA/ADCB Attenuator : 0dB */
+    tmp = 0x00U;
+  }
+  /* ADCA Attenuator */
   ret += cs42l51_write_reg(&pObj->Ctx, CS42L51_ADCA_ATTENUATOR, &tmp, 1);
 
-  /* ADCB Attenuator : 0dB */
+  /* ADCB Attenuator */
   ret += cs42l51_write_reg(&pObj->Ctx, CS42L51_ADCB_ATTENUATOR, &tmp, 1);
 
   /* ADCA mixer volume control : ADCA mixer channel mute on, ADCA mixer volume 0dB */

@@ -22,7 +22,22 @@
 
 #include "app_conf.h"
 
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+
+/***********************************/
+/** Debug configuration selection **/
+/***********************************/
+/* Debug configuration for System purpose */
+#define USE_RT_DEBUG_CONFIGURATION_SYSTEM                     (0)
+
+/* Debug configuration for BLE purpose */
+#define USE_RT_DEBUG_CONFIGURATION_BLE                        (0)
+
+/* Debug configuration for MAC purpose */
+#define USE_RT_DEBUG_CONFIGURATION_MAC                        (0)
+
+/* Debug configuration for COEX purpose */
+#define USE_RT_DEBUG_CONFIGURATION_COEX                       (0)
 
 /*********************************/
 /** GPIO debug signal selection **/
@@ -30,24 +45,24 @@
 
 /* System clock manager - System clock config */
 #define USE_RT_DEBUG_SCM_SYSTEM_CLOCK_CONFIG                  (0)
-#define GPIO_DEBUG_SCM_SYSTEM_CLOCK_CONFIG                    {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCM_SYSTEM_CLOCK_CONFIG                    {GPIOA, GPIO_PIN_12}
 
 /* System clock manager - Setup */
 #define USE_RT_DEBUG_SCM_SETUP                                (0)
-#define GPIO_DEBUG_SCM_SETUP                                  {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCM_SETUP                                  {GPIOA, GPIO_PIN_5}
 
 /* System clock manager - HSE RDY interrupt handling */
 #define USE_RT_DEBUG_SCM_HSERDY_ISR                           (0)
-#define GPIO_DEBUG_SCM_HSERDY_ISR                             {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCM_HSERDY_ISR                             {GPIOA, GPIO_PIN_15}
 
 #define USE_RT_DEBUG_ADC_ACTIVATION                           (0)
-#define GPIO_DEBUG_ADC_ACTIVATION                             {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_ADC_ACTIVATION                             {GPIOB, GPIO_PIN_4}
 
 #define USE_RT_DEBUG_ADC_DEACTIVATION                         (0)
 #define GPIO_DEBUG_ADC_DEACTIVATION                           {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_ADC_TEMPERATURE_ACQUISITION              (0)
-#define GPIO_DEBUG_ADC_TEMPERATURE_ACQUISITION                {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_ADC_TEMPERATURE_ACQUISITION                {GPIOB, GPIO_PIN_8}
 
 #define USE_RT_DEBUG_RNG_ENABLE                               (0)
 #define GPIO_DEBUG_RNG_ENABLE                                 {GPIOA, GPIO_PIN_0}
@@ -56,7 +71,7 @@
 #define GPIO_DEBUG_RNG_DISABLE                                {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_RNG_GEN_RAND_NUM                         (0)
-#define GPIO_DEBUG_RNG_GEN_RAND_NUM                           {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RNG_GEN_RAND_NUM                           {GPIOB, GPIO_PIN_12}
 
 #define USE_RT_DEBUG_LOW_POWER_STOP_MODE_ENTER                (0)
 #define GPIO_DEBUG_LOW_POWER_STOP_MODE_ENTER                  {GPIOA, GPIO_PIN_0}
@@ -65,7 +80,7 @@
 #define GPIO_DEBUG_LOW_POWER_STOP_MODE_EXIT                   {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_LOW_POWER_STOP_MODE_ACTIVE               (0)
-#define GPIO_DEBUG_LOW_POWER_STOP_MODE_ACTIVE                 {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_LOW_POWER_STOP_MODE_ACTIVE                 {GPIOB, GPIO_PIN_3}
 
 #define USE_RT_DEBUG_LOW_POWER_STANDBY_MODE_ENTER             (0)
 #define GPIO_DEBUG_LOW_POWER_STANDBY_MODE_ENTER               {GPIOA, GPIO_PIN_0}
@@ -74,7 +89,7 @@
 #define GPIO_DEBUG_LOW_POWER_STANDBY_MODE_EXIT                {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_LOW_POWER_STANDBY_MODE_ACTIVE            (0)
-#define GPIO_DEBUG_LOW_POWER_STANDBY_MODE_ACTIVE              {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_LOW_POWER_STANDBY_MODE_ACTIVE              {GPIOB, GPIO_PIN_15}
 
 #define USE_RT_DEBUG_HCI_READ_DONE                            (0)
 #define GPIO_DEBUG_HCI_READ_DONE                              {GPIOA, GPIO_PIN_0}
@@ -98,7 +113,7 @@
 #define GPIO_DEBUG_SCHDLR_EVNT_SKIPPED                        {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_SCHDLR_HNDL_NXT_TRACE                    (0)
-#define GPIO_DEBUG_SCHDLR_HNDL_NXT_TRACE                      {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCHDLR_HNDL_NXT_TRACE                      {GPIOA, GPIO_PIN_12}
 
 #define USE_RT_DEBUG_ACTIVE_SCHDLR_NEAR_DETEDTED              (0)
 #define GPIO_DEBUG_ACTIVE_SCHDLR_NEAR_DETEDTED                {GPIOA, GPIO_PIN_0}
@@ -113,19 +128,22 @@
 #define GPIO_DEBUG_ACTIVE_SCHDLR_NEAR_TRACE                   {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_SCHDLR_EVNT_RGSTR                        (0)
-#define GPIO_DEBUG_SCHDLR_EVNT_RGSTR                          {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCHDLR_EVNT_RGSTR                          {GPIOB, GPIO_PIN_8}
 
 #define USE_RT_DEBUG_SCHDLR_ADD_CONFLICT_Q                    (0)
 #define GPIO_DEBUG_SCHDLR_ADD_CONFLICT_Q                      {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_SCHDLR_HNDL_MISSED_EVNT                  (0)
-#define GPIO_DEBUG_SCHDLR_HNDL_MISSED_EVNT                    {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCHDLR_HNDL_MISSED_EVNT                    {GPIOA, GPIO_PIN_5}
 
 #define USE_RT_DEBUG_SCHDLR_UNRGSTR_EVNT                      (0)
 #define GPIO_DEBUG_SCHDLR_UNRGSTR_EVNT                        {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE                   (0)
-#define GPIO_DEBUG_SCHDLR_EXEC_EVNT_TRACE                     {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_SCHDLR_EXEC_EVNT_TRACE                     {GPIOA, GPIO_PIN_15}
+
+#define USE_RT_DEBUG_SCHDLR_EXEC_EVNT_PROFILE                 (0)
+#define GPIO_DEBUG_SCHDLR_EXEC_EVNT_PROFILE                   {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_SCHDLR_EXEC_EVNT_ERROR                   (0)
 #define GPIO_DEBUG_SCHDLR_EXEC_EVNT_ERROR                     {GPIOA, GPIO_PIN_0}
@@ -137,10 +155,10 @@
 #define GPIO_DEBUG_LLHWC_CMN_CLR_ISR                          {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_LLWCC_CMN_HG_ISR                         (0)
-#define GPIO_DEBUG_LLWCC_CMN_HG_ISR                           {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_LLWCC_CMN_HG_ISR                           {GPIOA, GPIO_PIN_15}
 
 #define USE_RT_DEBUG_LLHWC_CMN_LW_ISR                         (0)
-#define GPIO_DEBUG_LLHWC_CMN_LW_ISR                           {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_LLHWC_CMN_LW_ISR                           {GPIOA, GPIO_PIN_12}
 
 #define USE_RT_DEBUG_LLHWC_CMN_CLR_TIMER_ERROR                (0)
 #define GPIO_DEBUG_LLHWC_CMN_CLR_TIMER_ERROR                  {GPIOA, GPIO_PIN_0}
@@ -211,6 +229,12 @@
 #define USE_RT_DEBUG_PHY_INIT_CLBR_TRACE                      (0)
 #define GPIO_DEBUG_PHY_INIT_CLBR_TRACE                        {GPIOA, GPIO_PIN_0}
 
+#define USE_RT_DEBUG_PHY_RUNTIME_CLBR_TRACE                   (0)
+#define GPIO_DEBUG_PHY_RUNTIME_CLBR_TRACE                     {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_PHY_CLBR_ISR                             (0)
+#define GPIO_DEBUG_PHY_CLBR_ISR                               {GPIOB, GPIO_PIN_3}
+
 #define USE_RT_DEBUG_PHY_INIT_CLBR_SINGLE_CH                  (0)
 #define GPIO_DEBUG_PHY_INIT_CLBR_SINGLE_CH                    {GPIOA, GPIO_PIN_0}
 
@@ -218,7 +242,7 @@
 #define GPIO_DEBUG_PHY_CLBR_STRTD                             {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_PHY_CLBR_EXEC                            (0)
-#define GPIO_DEBUG_PHY_CLBR_EXEC                              {GPIOA, GPIO_PIN_9}
+#define GPIO_DEBUG_PHY_CLBR_EXEC                              {GPIOB, GPIO_PIN_4}
 
 #define USE_RT_DEBUG_RCO_STRT_STOP_RUNTIME_CLBR_ACTV          (0)
 #define GPIO_DEBUG_RCO_STRT_STOP_RUNTIME_CLBR_ACTV            {GPIOA, GPIO_PIN_0}
@@ -239,19 +263,19 @@
 #define GPIO_DEBUG_RCO_ISR_COMPENDATE                         {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_RAL_STRT_TX                              (0)
-#define GPIO_DEBUG_RAL_STRT_TX                                {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RAL_STRT_TX                                {GPIOA, GPIO_PIN_5}
 
 #define USE_RT_DEBUG_RAL_ISR_TIMER_ERROR                      (0)
 #define GPIO_DEBUG_RAL_ISR_TIMER_ERROR                        {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_RAL_ISR_TRACE                            (0)
-#define GPIO_DEBUG_RAL_ISR_TRACE                              {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RAL_ISR_TRACE                              {GPIOB, GPIO_PIN_3}
 
 #define USE_RT_DEBUG_RAL_STOP_OPRTN                           (0)
-#define GPIO_DEBUG_RAL_STOP_OPRTN                             {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RAL_STOP_OPRTN                             {GPIOB, GPIO_PIN_8}
 
 #define USE_RT_DEBUG_RAL_STRT_RX                              (0)
-#define GPIO_DEBUG_RAL_STRT_RX                                {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RAL_STRT_RX                                {GPIOB, GPIO_PIN_12}
 
 #define USE_RT_DEBUG_RAL_DONE_CLBK_TX                         (0)
 #define GPIO_DEBUG_RAL_DONE_CLBK_TX                           {GPIOA, GPIO_PIN_0}
@@ -284,19 +308,19 @@
 #define GPIO_DEBUG_LLHWC_PTA_SET_PARAMS                       {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_COEX_STRT_ON_IDLE                        (0)
-#define GPIO_DEBUG_COEX_STRT_ON_IDLE                          {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_COEX_STRT_ON_IDLE                          {GPIOB, GPIO_PIN_15}
 
 #define USE_RT_DEBUG_COEX_ASK_FOR_AIR                         (0)
-#define GPIO_DEBUG_COEX_ASK_FOR_AIR                           {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_COEX_ASK_FOR_AIR                           {GPIOB, GPIO_PIN_3}
 
 #define USE_RT_DEBUG_COEX_TIMER_EVNT_CLBK                     (0)
 #define GPIO_DEBUG_COEX_TIMER_EVNT_CLBK                       {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_COEX_STRT_ONE_SHOT                       (0)
-#define GPIO_DEBUG_COEX_STRT_ONE_SHOT                         {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_COEX_STRT_ONE_SHOT                         {GPIOA, GPIO_PIN_5}
 
 #define USE_RT_DEBUG_COEX_FORCE_STOP_RX                       (0)
-#define GPIO_DEBUG_COEX_FORCE_STOP_RX                         {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_COEX_FORCE_STOP_RX                         {GPIOB, GPIO_PIN_12}
 
 #define USE_RT_DEBUG_LLHWC_ADV_DONE                           (0)
 #define GPIO_DEBUG_LLHWC_ADV_DONE                             {GPIOA, GPIO_PIN_0}
@@ -515,7 +539,7 @@
 #define GPIO_DEBUG_RADIO_CSMA_TMR                             {GPIOA, GPIO_PIN_0}
 
 #define USE_RT_DEBUG_RAL_SM_DONE_EVNT_CBK                     (0)
-#define GPIO_DEBUG_RAL_SM_DONE_EVNT_CBK                       {GPIOA, GPIO_PIN_0}
+#define GPIO_DEBUG_RAL_SM_DONE_EVNT_CBK                       {GPIOB, GPIO_PIN_4}
 
 #define USE_RT_DEBUG_ED_TMR_HNDL                              (0)
 #define GPIO_DEBUG_ED_TMR_HNDL                                {GPIOA, GPIO_PIN_0}
@@ -523,13 +547,220 @@
 #define USE_RT_DEBUG_OS_TMR_EVNT_CBK                          (0)
 #define GPIO_DEBUG_OS_TMR_EVNT_CBK                            {GPIOA, GPIO_PIN_0}
 
+#define USE_RT_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME           (0)
+#define GPIO_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME             {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_PROFILE_END_DRIFT_TIME                   (0)
+#define GPIO_DEBUG_PROFILE_END_DRIFT_TIME                     {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_PROC_RADIO_RCV                           (0)
+#define GPIO_DEBUG_PROC_RADIO_RCV                             {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_EVNT_TIME_UPDT                           (0)
+#define GPIO_DEBUG_EVNT_TIME_UPDT                             {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_MAC_RECEIVE_DONE                         (0)
+#define GPIO_DEBUG_MAC_RECEIVE_DONE                           {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_MAC_TX_DONE                              (0)
+#define GPIO_DEBUG_MAC_TX_DONE                                {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RADIO_APPLY_CSMA                         (0)
+#define GPIO_DEBUG_RADIO_APPLY_CSMA                           {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RADIO_TRANSMIT                           (0)
+#define GPIO_DEBUG_RADIO_TRANSMIT                             {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_PROC_RADIO_TX                            (0)
+#define GPIO_DEBUG_PROC_RADIO_TX                              {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_TX_DONE                              (0)
+#define GPIO_DEBUG_RAL_TX_DONE                                {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT      (0)
+#define GPIO_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT        {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT            (0)
+#define GPIO_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT              {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_CONTINUE_RX                          (0)
+#define GPIO_DEBUG_RAL_CONTINUE_RX                            {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_PERFORM_CCA                          (0)
+#define GPIO_DEBUG_RAL_PERFORM_CCA                            {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_RAL_ENABLE_TRANSMITTER                   (0)
+#define GPIO_DEBUG_RAL_ENABLE_TRANSMITTER                     {GPIOA, GPIO_PIN_0}
+
+#define USE_RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2                  (0)
+#define GPIO_DEBUG_LLHWC_GET_CH_IDX_ALGO_2                    {GPIOA, GPIO_PIN_0}
+
 /* Application signal selection and GPIO assignment.
    CAN BE MODIFIED BY USER */
 
 #define USE_RT_DEBUG_APP_APPE_INIT                            (1)
 #define GPIO_DEBUG_APP_APPE_INIT                              {GPIOA, GPIO_PIN_0}
 
-#endif /* RT_DEBUG_GPIO_MODULE */
+/********************************/
+/** Debug configuration setup **/
+/*******************************/
+
+/*
+ *
+ * Debug configuration for System purpose
+ *
+ */
+#if (USE_RT_DEBUG_CONFIGURATION_SYSTEM == 1U)
+/* SCM_SETUP activation */
+#undef USE_RT_DEBUG_SCM_SETUP
+#define USE_RT_DEBUG_SCM_SETUP                                (1U)
+
+/* SCM_SYSTEM_CLOCK_CONFIG activation */
+#undef USE_RT_DEBUG_SCM_SYSTEM_CLOCK_CONFIG
+#define USE_RT_DEBUG_SCM_SYSTEM_CLOCK_CONFIG                  (1U)
+
+/* SCM_HSERDY_ISR activation */
+#undef USE_RT_DEBUG_SCM_HSERDY_ISR
+#define USE_RT_DEBUG_SCM_HSERDY_ISR                           (1U)
+
+/* LOW_POWER_STOP_MODE_ACTIVE activation */
+#undef USE_RT_DEBUG_LOW_POWER_STOP_MODE_ACTIVE
+#define USE_RT_DEBUG_LOW_POWER_STOP_MODE_ACTIVE               (1U)
+
+/* ADC_ACTIVATION activation */
+#undef USE_RT_DEBUG_ADC_ACTIVATION
+#define USE_RT_DEBUG_ADC_ACTIVATION                           (1U)
+
+/* ADC_TEMPERATURE_ACQUISITION activation */
+#undef USE_RT_DEBUG_ADC_TEMPERATURE_ACQUISITION
+#define USE_RT_DEBUG_ADC_TEMPERATURE_ACQUISITION              (1U)
+
+/* RNG_GEN_RAND_NUM activation */
+#undef USE_RT_DEBUG_RNG_GEN_RAND_NUM
+#define USE_RT_DEBUG_RNG_GEN_RAND_NUM                         (1U)
+
+/* LOW_POWER_STANDBY_MODE_ACTIVE activation */
+#undef USE_RT_DEBUG_LOW_POWER_STANDBY_MODE_ACTIVE
+#define USE_RT_DEBUG_LOW_POWER_STANDBY_MODE_ACTIVE            (1U)
+
+/*
+ *
+ * Debug configuration for BLE purpose
+ *
+ */
+#elif (USE_RT_DEBUG_CONFIGURATION_BLE == 1U)
+
+/* LLHWC_CMN_LW_ISR activation */
+#undef USE_RT_DEBUG_LLHWC_CMN_LW_ISR
+#define USE_RT_DEBUG_LLHWC_CMN_LW_ISR                         (1U)
+
+/* LLHWC_CMN_HG_ISR activation */
+#undef USE_RT_DEBUG_LLWCC_CMN_HG_ISR
+#define USE_RT_DEBUG_LLWCC_CMN_HG_ISR                         (1U)
+
+/* PHY_CLBR_EXEC activation */
+#undef USE_RT_DEBUG_PHY_CLBR_EXEC
+#define USE_RT_DEBUG_PHY_CLBR_EXEC                            (1U)
+
+/* SCHDLR_EVNT_RGSTR activation */
+#undef USE_RT_DEBUG_SCHDLR_EVNT_RGSTR
+#define USE_RT_DEBUG_SCHDLR_EVNT_RGSTR                        (1U)
+
+/* SCHDLR_HNDL_MISSED_EVNT activation */
+#undef USE_RT_DEBUG_SCHDLR_HNDL_MISSED_EVNT
+#define USE_RT_DEBUG_SCHDLR_HNDL_MISSED_EVNT                  (1U)
+
+/* SCHDLR_HNDL_NXT_TRACE activation */
+#undef USE_RT_DEBUG_SCHDLR_HNDL_NXT_TRACE
+#define USE_RT_DEBUG_SCHDLR_HNDL_NXT_TRACE                    (1U)
+
+/* SCHDLR_EXEC_EVNT_TRACE activation */
+#undef USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE
+#define USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE                   (1U)
+
+/* PHY_CLBR_ISR activation */
+#undef USE_RT_DEBUG_PHY_CLBR_ISR
+#define USE_RT_DEBUG_PHY_CLBR_ISR                             (1U)
+
+/*
+ *
+ * Debug configuration for MAC purpose
+ *
+ */
+#elif (USE_RT_DEBUG_CONFIGURATION_MAC == 1U)
+
+/* LLHWC_CMN_LW_ISR activation */
+#undef USE_RT_DEBUG_LLHWC_CMN_LW_ISR
+#define USE_RT_DEBUG_LLHWC_CMN_LW_ISR                         (1U)
+
+/* LLHWC_CMN_HG_ISR activation */
+#undef USE_RT_DEBUG_LLWCC_CMN_HG_ISR
+#define USE_RT_DEBUG_LLWCC_CMN_HG_ISR                         (1U)
+
+/* RAL_ISR_TRACE activation */
+#undef USE_RT_DEBUG_RAL_ISR_TRACE
+#define USE_RT_DEBUG_RAL_ISR_TRACE                            (1U)
+
+/* RAL_SM_DONE_EVNT_CBK activation */
+#undef USE_RT_DEBUG_RAL_SM_DONE_EVNT_CBK
+#define USE_RT_DEBUG_RAL_SM_DONE_EVNT_CBK                     (1U)
+
+/* RAL_STOP_OPRTN activation */
+#undef USE_RT_DEBUG_RAL_STOP_OPRTN
+#define USE_RT_DEBUG_RAL_STOP_OPRTN                           (1U)
+
+/* RAL_STRT_RX activation */
+#undef USE_RT_DEBUG_RAL_STRT_RX
+#define USE_RT_DEBUG_RAL_STRT_RX                              (1U)
+
+/* RAL_STRT_TX activation */
+#undef USE_RT_DEBUG_RAL_STRT_TX
+#define USE_RT_DEBUG_RAL_STRT_TX                              (1U)
+
+/*
+ *
+ * Debug configuration for COEX purpose
+ *
+ */
+#elif (USE_RT_DEBUG_CONFIGURATION_COEX == 1U)
+
+/* COEX_ASK_FOR_AIR activation */
+#undef USE_RT_DEBUG_COEX_ASK_FOR_AIR
+#define USE_RT_DEBUG_COEX_ASK_FOR_AIR                         (1U)
+
+/* COEX_FORCE_STOP_RX activation */
+#undef USE_RT_DEBUG_COEX_FORCE_STOP_RX
+#define USE_RT_DEBUG_COEX_FORCE_STOP_RX                       (1U)
+
+/* COEX_STRT_ON_IDLE activation */
+#undef USE_RT_DEBUG_COEX_STRT_ON_IDLE
+#define USE_RT_DEBUG_COEX_STRT_ON_IDLE                        (1U)
+
+/* COEX_STRT_ONE_SHOT activation */
+#undef USE_RT_DEBUG_COEX_STRT_ONE_SHOT
+#define USE_RT_DEBUG_COEX_STRT_ONE_SHOT                       (1U)
+
+/* SCHDLR_HNDL_NXT_TRACE activation */
+#undef USE_RT_DEBUG_SCHDLR_HNDL_NXT_TRACE
+#define USE_RT_DEBUG_SCHDLR_HNDL_NXT_TRACE                    (1U)
+
+/* SCHDLR_EXEC_EVNT_TRACE activation */
+#undef USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE
+#define USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE                   (1U)
+
+/* RAL_SM_DONE_EVNT_CBK activation */
+#undef USE_RT_DEBUG_RAL_SM_DONE_EVNT_CBK
+#define USE_RT_DEBUG_RAL_SM_DONE_EVNT_CBK                     (1U)
+
+/* RAL_STOP_OPRTN activation */
+#undef USE_RT_DEBUG_RAL_STOP_OPRTN
+#define USE_RT_DEBUG_RAL_STOP_OPRTN                           (1U)
+
+#else
+/* Nothing to do */
+#endif /* (USE_RT_DEBUG_CONFIGURATION_COEX == 1U) */
+
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 
 /******************************************************************/
 /** Association table between general debug signal and used gpio **/
@@ -537,7 +768,7 @@
 
 #include "debug_signals.h"
 
-#if(RT_DEBUG_GPIO_MODULE == 1)
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
 
 #include "stm32wbaxx_hal.h"
 
@@ -675,6 +906,10 @@ static const st_gpio_debug_t general_debug_table[] = {
   [RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE] = GPIO_DEBUG_SCHDLR_EXEC_EVNT_TRACE,
 #endif /* USE_RT_DEBUG_SCHDLR_EXEC_EVNT_TRACE */
 
+#if (USE_RT_DEBUG_SCHDLR_EXEC_EVNT_PROFILE == 1)
+  [RT_DEBUG_SCHDLR_EXEC_EVNT_PROFILE] = GPIO_DEBUG_SCHDLR_EXEC_EVNT_PROFILE,
+#endif /* USE_RT_DEBUG_SCHDLR_EXEC_EVNT_PROFILE */
+
 #if (USE_RT_DEBUG_SCHDLR_EXEC_EVNT_ERROR == 1)
   [RT_DEBUG_SCHDLR_EXEC_EVNT_ERROR] = GPIO_DEBUG_SCHDLR_EXEC_EVNT_ERROR,
 #endif /* USE_RT_DEBUG_SCHDLR_EXEC_EVNT_ERROR */
@@ -786,6 +1021,14 @@ static const st_gpio_debug_t general_debug_table[] = {
 #if (USE_RT_DEBUG_PHY_INIT_CLBR_TRACE == 1)
   [RT_DEBUG_PHY_INIT_CLBR_TRACE] = GPIO_DEBUG_PHY_INIT_CLBR_TRACE,
 #endif /* USE_RT_DEBUG_PHY_INIT_CLBR_TRACE */
+
+#if (USE_RT_DEBUG_PHY_RUNTIME_CLBR_TRACE == 1)
+  [RT_DEBUG_PHY_RUNTIME_CLBR_TRACE] = GPIO_DEBUG_PHY_RUNTIME_CLBR_TRACE,
+#endif /* USE_RT_DEBUG_PHY_RUNTIME_CLBR_TRACE */
+
+#if (USE_RT_DEBUG_PHY_CLBR_ISR == 1)
+  [RT_DEBUG_PHY_CLBR_ISR] = GPIO_DEBUG_PHY_CLBR_ISR,
+#endif /* USE_RT_DEBUG_PHY_CLBR_ISR */
 
 #if (USE_RT_DEBUG_PHY_INIT_CLBR_SINGLE_CH == 1)
   [RT_DEBUG_PHY_INIT_CLBR_SINGLE_CH] = GPIO_DEBUG_PHY_INIT_CLBR_SINGLE_CH,
@@ -1203,6 +1446,70 @@ static const st_gpio_debug_t general_debug_table[] = {
   [RT_DEBUG_OS_TMR_EVNT_CBK] = GPIO_DEBUG_OS_TMR_EVNT_CBK,
 #endif /* USE_RT_DEBUG_OS_TMR_EVNT_CBK */
 
+#if (USE_RT_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME == 1)
+  [RT_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME] = GPIO_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME,
+#endif /* USE_RT_DEBUG_PROFILE_MARKER_PHY_WAKEUP_TIME */
+
+#if (USE_RT_DEBUG_PROFILE_END_DRIFT_TIME == 1)
+  [RT_DEBUG_PROFILE_END_DRIFT_TIME] = GPIO_DEBUG_PROFILE_END_DRIFT_TIME,
+#endif /* USE_RT_DEBUG_PROFILE_END_DRIFT_TIME */
+
+#if (USE_RT_DEBUG_PROC_RADIO_RCV == 1)
+  [RT_DEBUG_PROC_RADIO_RCV] = GPIO_DEBUG_PROC_RADIO_RCV,
+#endif /* USE_RT_DEBUG_PROC_RADIO_RCV */
+
+#if (USE_RT_DEBUG_EVNT_TIME_UPDT == 1)
+  [RT_DEBUG_EVNT_TIME_UPDT] = GPIO_DEBUG_EVNT_TIME_UPDT,
+#endif /* USE_RT_DEBUG_EVNT_TIME_UPDT */
+
+#if (USE_RT_DEBUG_MAC_RECEIVE_DONE == 1)
+  [RT_DEBUG_MAC_RECEIVE_DONE] = GPIO_DEBUG_MAC_RECEIVE_DONE,
+#endif /* USE_RT_DEBUG_MAC_RECEIVE_DONE */
+
+#if (USE_RT_DEBUG_MAC_TX_DONE == 1)
+  [RT_DEBUG_MAC_TX_DONE] = GPIO_DEBUG_MAC_TX_DONE,
+#endif /* USE_RT_DEBUG_MAC_TX_DONE */
+
+#if (USE_RT_DEBUG_RADIO_APPLY_CSMA == 1)
+  [RT_DEBUG_RADIO_APPLY_CSMA] = GPIO_DEBUG_RADIO_APPLY_CSMA,
+#endif /* USE_RT_DEBUG_RADIO_APPLY_CSMA */
+
+#if (USE_RT_DEBUG_RADIO_TRANSMIT == 1)
+  [RT_DEBUG_RADIO_TRANSMIT] = GPIO_DEBUG_RADIO_TRANSMIT,
+#endif /* USE_RT_DEBUG_RADIO_TRANSMIT */
+
+#if (USE_RT_DEBUG_PROC_RADIO_TX == 1)
+  [RT_DEBUG_PROC_RADIO_TX] = GPIO_DEBUG_PROC_RADIO_TX,
+#endif /* USE_RT_DEBUG_PROC_RADIO_TX */
+
+#if (USE_RT_DEBUG_RAL_TX_DONE == 1)
+  [RT_DEBUG_RAL_TX_DONE] = GPIO_DEBUG_RAL_TX_DONE,
+#endif /* USE_RT_DEBUG_RAL_TX_DONE */
+
+#if (USE_RT_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT == 1)
+  [RT_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT] = GPIO_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT,
+#endif /* USE_RT_DEBUG_RAL_TX_DONE_INCREMENT_BACKOFF_COUNT */
+
+#if (USE_RT_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT == 1)
+  [RT_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT] = GPIO_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT,
+#endif /* USE_RT_DEBUG_RAL_TX_DONE_RST_BACKOFF_COUNT */
+
+#if (USE_RT_DEBUG_RAL_CONTINUE_RX == 1)
+  [RT_DEBUG_RAL_CONTINUE_RX] = GPIO_DEBUG_RAL_CONTINUE_RX,
+#endif /* USE_RT_DEBUG_RAL_CONTINUE_RX */
+
+#if (USE_RT_DEBUG_RAL_PERFORM_CCA == 1)
+  [RT_DEBUG_RAL_PERFORM_CCA] = GPIO_DEBUG_RAL_PERFORM_CCA,
+#endif /* USE_RT_DEBUG_RAL_PERFORM_CCA */
+
+#if (USE_RT_DEBUG_RAL_ENABLE_TRANSMITTER == 1)
+  [RT_DEBUG_RAL_ENABLE_TRANSMITTER] = GPIO_DEBUG_RAL_ENABLE_TRANSMITTER,
+#endif /* USE_RT_DEBUG_RAL_ENABLE_TRANSMITTER */
+
+#if (USE_RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2 == 1)
+  [RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2] = GPIO_DEBUG_LLHWC_GET_CH_IDX_ALGO_2,
+#endif /* USE_RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2 */
+
 /************************************************/
 /** Application signals in general debug table **/
 /************************************************/
@@ -1212,6 +1519,6 @@ static const st_gpio_debug_t general_debug_table[] = {
 #endif /* USE_RT_DEBUG_OS_TMR_EVNT_CBK */
 };
 
-#endif /* RT_DEBUG_GPIO_MODULE */
+#endif /* CFG_RT_DEBUG_GPIO_MODULE */
 
 #endif /* DEBUG_CONFIG_H */

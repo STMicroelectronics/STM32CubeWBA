@@ -58,9 +58,7 @@ const Log_Module_t LOG_MODULE_DEFAULT_CONFIGURATION =
 };
 const Log_Verbose_Level_t LOG_VERBOSE_DEFAULT = LOG_VERBOSE_ERROR;
 const Log_Region_t LOG_REGION_MASK_DEFAULT = LOG_REGION_ALL_REGIONS;
-
-/* Default Color Table for Region Color */
-const Log_Color_t LOG_REGION_COLOR_DEFAULT_CONFIGURATION[] =
+const Log_Color_t LOG_COLOR_DEFAULT_CONFIGURATION[] =
 {
   LOG_COLOR_CODE_DEFAULT,   // For Region BLE
   LOG_COLOR_CODE_DEFAULT,   // For Region System
@@ -72,15 +70,6 @@ const Log_Color_t LOG_REGION_COLOR_DEFAULT_CONFIGURATION[] =
   LOG_COLOR_CODE_DEFAULT,   // For Region RTOS
 };
 
-/* Default Color Table for Error Color */
-const Log_Color_t LOG_VERBOSE_COLOR_DEFAULT_CONFIGURATION[] =
-{
-  LOG_COLOR_CODE_DEFAULT,   // For Verbose Info
-  LOG_COLOR_CODE_RED,       // For Verbose Error
-  LOG_COLOR_CODE_MAGENTA,   // For Verbose Warning
-  LOG_COLOR_CODE_YELLOW,    // For Verbose DEBUG
-};
-
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -90,6 +79,7 @@ uint32_t              lLogCurrentRegionMask;
 Log_Verbose_Level_t   eLogCurrentVerboseLevel;
 Log_Color_t           eLogCurrentColorList[32];
 CallBack_TimeStamp    * pLogTimeStampFunc;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -113,37 +103,37 @@ static uint32_t Get_Region_Mask(Log_Region_t region);
  *
  * @return Length of the new Log.
  */
-static uint16_t RegionToColor( char * szBuffer, Log_Region_t eRegion )
+static uint16_t RegionToColor( char * szBuffer, uint16_t iSizeMax, Log_Region_t eRegion )
 {
   uint16_t            iLength = 0;
-  uint16_t            iColor;
-  static uint16_t     iPreviousColor = LOG_COLOR_NONE;
+  Log_Color_t         eColor;
+  static Log_Color_t  ePreviousColor = LOG_COLOR_NONE;
 
   if ( eRegion != LOG_MODULE_ALL_REGION_MASK )
   {
-    iColor = eLogCurrentColorList[eRegion] + LOG_COLOR_ADD_LIGHT;
+    eColor = eLogCurrentColorList[eRegion];
   }
   else
   {
-    iColor = LOG_COLOR_CODE_DEFAULT;
+    eColor = LOG_COLOR_CODE_DEFAULT;
   }
 
   /* Insert Color code only if previous is not the same */
-  if ( iColor != iPreviousColor )
+  if ( eColor != ePreviousColor )
   {
-    if ( iColor == LOG_COLOR_CODE_DEFAULT )
-      { sprintf( szBuffer, "\x1b[0m" ); }
+    if ( eColor == LOG_COLOR_CODE_DEFAULT )
+      { snprintf( szBuffer, iSizeMax, "\x1b[0m" ); }
     else
-      { sprintf( szBuffer, "\x1b[0;%02dm", iColor ); }
+      { snprintf( szBuffer, iSizeMax, "\x1b[0;%02dm", eColor ); }
 
-    iPreviousColor = iColor;
+    ePreviousColor = eColor;
     iLength = strlen( szBuffer );
   }
 
   return( iLength );
 }
 
-#endif /* LOG_INSERT_COLOR_INSIDE_THE_TRACE != 0  */
+#endif /* LOG_INSERT_COLOR_INSIDE_THE_TRACE  */
 
 /**
  *
@@ -151,7 +141,7 @@ static uint16_t RegionToColor( char * szBuffer, Log_Region_t eRegion )
 void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eRegion, const char * pText, va_list args )
 {
   uint16_t  iTempSize, iBuffSize = 0u;
-  char      szFullText[UTIL_ADV_TRACE_TMP_BUF_SIZE];
+  char      szFullText[UTIL_ADV_TRACE_TMP_BUF_SIZE + 1u];
 
   /**
    * This user section can be used to insert a guard clauses design pattern
@@ -183,20 +173,21 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 
 #if ( LOG_INSERT_COLOR_INSIDE_THE_TRACE != 0 )
   /* Add Color in function of Region */
-  iTempSize = RegionToColor( &szFullText[iBuffSize], eRegion );
+  iTempSize = RegionToColor( &szFullText[iBuffSize], ( UTIL_ADV_TRACE_TMP_BUF_SIZE - iBuffSize ), eRegion );
   iBuffSize += iTempSize;
 #endif /* LOG_INSERT_COLOR_INSIDE_THE_TRACE */
 
 #if ( LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE != 0 )
   if ( pLogTimeStampFunc != NULL )
   {
+     iTempSize = UTIL_ADV_TRACE_TMP_BUF_SIZE - iBuffSize;
      pLogTimeStampFunc( &szFullText[iBuffSize], &iTempSize );
      iBuffSize += iTempSize;
   }
 #endif /* LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE */
 
   /* Copy the data */
-  iTempSize = (uint16_t)UTIL_ADV_TRACE_VSNPRINTF( &szFullText[iBuffSize], ( UTIL_ADV_TRACE_TMP_BUF_SIZE - iBuffSize ), pText, args );
+  iTempSize = (uint16_t)vsnprintf( &szFullText[iBuffSize], ( UTIL_ADV_TRACE_TMP_BUF_SIZE - iBuffSize ), pText, args );
   iBuffSize += iTempSize;
 
   /* USER CODE BEGIN Log_Module_PrintWithArg_2 */
@@ -205,10 +196,13 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 
 #if ( LOG_INSERT_EOL_INSIDE_THE_TRACE != 0 )
   /* Add End Of Line if needed */
-  if ( ( szFullText[iBuffSize - 1] != ENDOFLINE_CHAR ) && ( szFullText[iBuffSize - 2] != ENDOFLINE_CHAR ) )
+  if ( iBuffSize > 1 ) 
   {
-    szFullText[iBuffSize++] = ENDOFLINE_CHAR;
-    szFullText[iBuffSize] = 0;
+    if ( ( szFullText[iBuffSize - 1] != ENDOFLINE_CHAR ) && ( szFullText[iBuffSize - 2] != ENDOFLINE_CHAR ) )
+    {
+      szFullText[iBuffSize++] = ENDOFLINE_CHAR;
+      szFullText[iBuffSize] = 0;
+    }
   }
 #endif /* LOG_INSERT_EOL_INSIDE_THE_TRACE */
 
@@ -241,7 +235,7 @@ void Log_Module_Init(Log_Module_t log_configuration)
 {
   UTIL_ADV_TRACE_Init();
 
-  memcpy( &eLogCurrentColorList, &LOG_REGION_COLOR_DEFAULT_CONFIGURATION, sizeof(LOG_REGION_COLOR_DEFAULT_CONFIGURATION) );
+  memcpy( &eLogCurrentColorList, &LOG_COLOR_DEFAULT_CONFIGURATION, sizeof(LOG_COLOR_DEFAULT_CONFIGURATION) );
   Log_Module_Set_Verbose_Level(log_configuration.verbose_level);
   Log_Module_Set_Region(log_configuration.region);
   pLogTimeStampFunc = NULL;

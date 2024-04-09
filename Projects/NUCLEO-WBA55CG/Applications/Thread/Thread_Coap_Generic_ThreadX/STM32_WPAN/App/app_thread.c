@@ -25,6 +25,7 @@
 #include "app_common.h"
 #include "app_entry.h"
 #include "app_thread.h"
+#include "dbg_trace.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
 
@@ -47,7 +48,7 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-#include "data_transfer.h"
+#include "app_thread_data_transfer.h"
 #include "udp.h"
 
 /* USER CODE END Includes */
@@ -61,27 +62,18 @@
 #define C_SIZE_CMD_STRING       256U
 #define C_PANID                 0xBA98U
 #define C_CHANNEL_NB            16U
-#define C_CCA_THRESHOLD         -70
+#define C_CCA_THRESHOLD         (-70)
 
-#define TASK_ALARM_STACK_SIZE    RTOS_STACK_SIZE_ENHANCED
-#define TASK_ALARM_PRIORITY      CFG_TASK_PRIO_ALARM
-
-#define TASK_ALARM_US_STACK_SIZE RTOS_STACK_SIZE_NORMAL
-#define TASK_ALARM_US_PRIORITY   CFG_TASK_PRIO_ALARM_US
-
-#define TASK_TASKLETS_STACK_SIZE RTOS_STACK_SIZE_LARGE
-#define TASK_TASKLETS_PRIORITY   CFG_TASK_PRIO_TASKLETS
-
-#if (OT_CLI_USE == 1)
-/* CLI UART Task related defines */
-#define TASK_CLI_UART_STACK_SIZE RTOS_STACK_SIZE_NORMAL
-#define TASK_CLI_UART_PRIORITY   CFG_TASK_PRIO_UART
-#endif /* OT_CLI_USE */
+/* ipv6-addressing defines        */
+/* Key Point: A major difference between FTDs and MTDs are that FTDs subscribe to the ff03::2 multicast address.
+ * MTDs do not. */
+#define MULTICAST_FTD_MED             "ff03::1"
+#define MULTICAST_FTD_BORDER_ROUTER   "ff03::2"
 
 /* USER CODE BEGIN PD */
-#define C_RESSOURCE             "light"
-#define COAP_PAYLOAD_LENGTH     2
-#define WAIT_TIMEOUT            (5000)    /**< 5s */
+#define C_RESSOURCE                   "light"
+#define COAP_PAYLOAD_LENGTH           (2U)
+#define WAIT_TIMEOUT                  (5000U)    /**< 5s */
 
 /* USER CODE END PD */
 
@@ -94,8 +86,6 @@
 static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext);
 static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
-static void APP_THREAD_AlarmsInit(void);
-static void APP_THREAD_TaskletsInit(void);
 
 #if (OT_CLI_USE == 1)
 static void APP_THREAD_CliInit(otInstance *aInstance);
@@ -131,15 +121,15 @@ static bool APP_THREAD_CheckMsgValidity(void);
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
-static otInstance * PtOpenThreadInstance;
+static otInstance   * pOpenThreadInstance;
 
+TX_THREAD           AlarmTask, AlarmUsTask, TaskletsTask;
+TX_SEMAPHORE        AlarmSemaphore, AlarmUsSemaphore, TaskletSemaphore;
 #if (OT_CLI_USE == 1)
-TX_THREAD CliUartTask;
-TX_SEMAPHORE CliUartSemaphore;
-#endif /* OT_CLI_USE */
 
-TX_THREAD AlarmTask, AlarmUsTask, TaskletsTask;
-TX_SEMAPHORE AlarmSemaphore, AlarmUsSemaphore, TaskletSemaphore;
+TX_THREAD           CliUartTask;
+TX_SEMAPHORE        CliUartSemaphore;
+#endif /* OT_CLI_USE */
 
 /* USER CODE BEGIN PV */
 static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler, "MyOwnContext", NULL};
@@ -154,69 +144,6 @@ static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
 
 /* Functions Definition ------------------------------------------------------*/
 
-void APP_THREAD_ScheduleAlarm(void)
-{
-  if (AlarmSemaphore.tx_semaphore_count == 0)
-  {
-    tx_semaphore_put(&AlarmSemaphore);
-  }
-}
-
-void APP_THREAD_ScheduleUsAlarm(void)
-{
-  if (AlarmUsSemaphore.tx_semaphore_count == 0)
-  {
-    tx_semaphore_put(&AlarmUsSemaphore);
-  }
-}
-
-void Thread_Init(void)
-{
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  size_t otInstanceBufferLength = 0;
-  uint8_t *otInstanceBuffer = NULL;
-#endif
-
-  otSysInit(0, NULL);
-  
-  /* semaphore used by otTaskletsSignalPending() that is called by otInstanceInit() */
-  tx_semaphore_create(&TaskletSemaphore, "TaskletSemaphore", 0);
-  
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  // Call to query the buffer size
-  (void)otInstanceInit(NULL, &otInstanceBufferLength);
-
-  // Call to allocate the buffer
-  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
-  assert(otInstanceBuffer);
-  
-  // Initialize OpenThread with the buffer
-  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
-#else
-  PtOpenThreadInstance = otInstanceInitSingle();
-#endif
-
-  assert(PtOpenThreadInstance);
-
-#if (OT_CLI_USE == 1)
-  APP_THREAD_CliInit(PtOpenThreadInstance);
-#endif
-
-  otDispatch_tbl_init(PtOpenThreadInstance);
-
-  /* Register tasks */
-  APP_THREAD_AlarmsInit();
- 
-  APP_THREAD_TaskletsInit();
-  
-  ll_sys_thread_init();
-
-  /* USER CODE BEGIN INIT TASKS */
-
-  /* USER CODE END INIT TASKS */
-
-}
-
 static void APP_THREAD_ProcessAlarm(ULONG lArgument)
 {
   UNUSED(lArgument);
@@ -224,7 +151,7 @@ static void APP_THREAD_ProcessAlarm(ULONG lArgument)
   for(;;)
   {
     tx_semaphore_get(&AlarmSemaphore, TX_WAIT_FOREVER);
-    arcAlarmProcess(PtOpenThreadInstance);
+    arcAlarmProcess(pOpenThreadInstance);
   }
 }
 
@@ -235,13 +162,13 @@ static void APP_THREAD_ProcessUsAlarm(ULONG lArgument)
   for(;;)
   {
     tx_semaphore_get(&AlarmUsSemaphore, TX_WAIT_FOREVER);
-    arcUsAlarmProcess(PtOpenThreadInstance);
+    arcUsAlarmProcess(pOpenThreadInstance);
   }
 }
 
 static void ScheduleTasklets(void)
 {
-  if (otTaskletsArePending(PtOpenThreadInstance) == TRUE)
+  if (otTaskletsArePending(pOpenThreadInstance) == TRUE)
   {
     tx_semaphore_put(&TaskletSemaphore);
   }
@@ -260,12 +187,13 @@ static void APP_THREAD_ProcessOpenThreadTasklets(ULONG lArgument)
   for(;;)
   {
     tx_semaphore_get(&TaskletSemaphore, TX_WAIT_FOREVER);
-    /* wakeUp the system */
+ 
+    /* WakeUp the system */
     //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
     //ll_sys_dp_slp_exit();
 
-    /* process the tasklet */
-    otTaskletsProcess(PtOpenThreadInstance);
+    /* Process the tasklet */
+    otTaskletsProcess(pOpenThreadInstance);
 
     /* Put the IP802_15_4 back to sleep mode */
     //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
@@ -285,45 +213,137 @@ void otTaskletsSignalPending(otInstance *aInstance)
   tx_semaphore_put(&TaskletSemaphore);
 }
 
-#if (CFG_BUTTON_SUPPORTED == 1)
-/**
- * @brief Task associated to the push button 1
- * @retval None
- */
-void APP_THREAD_Button1Action(void)
+void APP_THREAD_ScheduleAlarm(void)
 {
-  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  if (AlarmSemaphore.tx_semaphore_count == 0)
+  {
+    tx_semaphore_put(&AlarmSemaphore);
+  }
+}
+
+void APP_THREAD_ScheduleUsAlarm(void)
+{
+  if (AlarmUsSemaphore.tx_semaphore_count == 0)
+  {
+    tx_semaphore_put(&AlarmUsSemaphore);
+  }
+}
+
+static void APP_THREAD_AlarmsInit(void)
+{
+  UINT ThreadXStatus;
   
-  /* Send a NON-CONFIRMABLE PUT Request */
-  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULICAST_FTD_MED,
-                              NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
-}
+  /* Register semaphores to launch tasks */
+  ThreadXStatus = tx_semaphore_create(&AlarmSemaphore, "AlarmSemaphore", 0);
 
-/**
- * @brief Task associated to the push button 2.
- * @param  None
- * @retval None
- */
-void APP_THREAD_Button2Action(void)
-{
-  LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
+  if (ThreadXStatus == TX_SUCCESS)
+  {
+    ThreadXStatus = tx_semaphore_create(&AlarmUsSemaphore, "AlarmUsSemaphore", 0);
+  }
   
-  /* Send a CONFIRMABLE PUT Request */
-  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULICAST_FTD_MED,
-                             NULL, PayloadWrite, sizeof(PayloadWrite), APP_THREAD_CoapDataRespHandler, NULL);
+  /* Create associated tasks */
+  if (ThreadXStatus == TX_SUCCESS)
+  { 
+    ThreadXStatus = tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_ALARM_STACK_SIZE, TX_NO_WAIT);
+  }
+  if (ThreadXStatus == TX_SUCCESS)
+  {
+    ThreadXStatus = tx_thread_create( &AlarmTask, "AlarmTask", APP_THREAD_ProcessAlarm, 0, pStack,
+                                      TASK_ALARM_STACK_SIZE, CFG_TASK_PRIO_ALARM, CFG_TASK_PREEMP_ALARM,
+                                      TX_NO_TIME_SLICE, TX_AUTO_START );
+  }
+  
+  if (ThreadXStatus == TX_SUCCESS)
+  { 
+    ThreadXStatus = tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_ALARM_US_STACK_SIZE, TX_NO_WAIT);
+  }
+  if (ThreadXStatus == TX_SUCCESS)
+  {
+    ThreadXStatus = tx_thread_create( &AlarmUsTask, "AlarmUsTask", APP_THREAD_ProcessUsAlarm, 0, pStack,
+                                      TASK_ALARM_US_STACK_SIZE, CFG_TASK_PRIO_US_ALARM, CFG_TASK_PREEMP_US_ALARM,
+                                      TX_NO_TIME_SLICE, TX_AUTO_START );
+  }
+  
+  /* Verify if it's OK */
+  if (ThreadXStatus != TX_SUCCESS)
+  { 
+    LOG_ERROR_APP( "ERROR THREADX : ALARMS THREAD CREATION FAILED (%d)", ThreadXStatus );
+    while(1);
+  }
+}
+
+static void APP_THREAD_TaskletsInit(void)
+{
+  UINT ThreadXStatus;
+  
+  /* Semaphore already created */
+
+  /* Create associated task */
+  ThreadXStatus = tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_TASKLETS_STACK_SIZE, TX_NO_WAIT);
+  
+  if (ThreadXStatus == TX_SUCCESS)
+  {
+    ThreadXStatus |= tx_thread_create(&TaskletsTask, "TaskletsTask", APP_THREAD_ProcessOpenThreadTasklets, 0, pStack,
+                                      TASK_TASKLETS_STACK_SIZE, CFG_TASK_PRIO_TASKLETS, CFG_TASK_PREEMP_TASKLETS,
+                                      TX_NO_TIME_SLICE, TX_AUTO_START);
+  }
+ 
+  /* Verify if it's OK */
+  if (ThreadXStatus != TX_SUCCESS)
+  { 
+    LOG_ERROR_APP( "ERROR THREADX : TASKLETS THREAD CREATION FAILED (%d)", ThreadXStatus );
+    while(1);
+  }
 }
 
 /**
- * @brief Task associated to the push button 3.
- * @param  None
- * @retval None
+ *
  */
-void APP_THREAD_Button3Action(void)
+void Thread_Init(void)
 {
-  /* empty */
-}
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  size_t otInstanceBufferLength = 0;
+  uint8_t *otInstanceBuffer = NULL;
+#endif /* OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE */
 
+  otSysInit(0, NULL);
+
+  /* Semaphore used by otTaskletsSignalPending() that is called by otInstanceInit() */
+  tx_semaphore_create(&TaskletSemaphore, "TaskletSemaphore", 0);
+  
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  // Call to query the buffer size
+  (void)otInstanceInit(NULL, &otInstanceBufferLength);
+
+  // Call to allocate the buffer
+  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
+  assert(otInstanceBuffer);
+
+  // Initialize OpenThread with the buffer
+  pOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
+#else /* OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+  pOpenThreadInstance = otInstanceInitSingle();
+#endif /* OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE */
+
+  assert(pOpenThreadInstance);
+
+#if (OT_CLI_USE == 1)
+  APP_THREAD_CliInit(pOpenThreadInstance);
+#endif /* OT_CLI_USE */
+  
+  otDispatch_tbl_init(pOpenThreadInstance);
+
+  /* Register tasks */
+  APP_THREAD_AlarmsInit();
+  APP_THREAD_TaskletsInit();
+
+  ll_sys_thread_init();
+
+
+  /* USER CODE BEGIN Thread_Init */
+
+  /* USER CODE END Thread_Init */
+}
 
 /**
  * @brief Thread initialization.
@@ -335,51 +355,45 @@ static void APP_THREAD_DeviceConfig(void)
   otError error = OT_ERROR_NONE;
   otNetworkKey networkKey = {{0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00}};
 
-//  error = otInstanceErasePersistentInfo(PtOpenThreadInstance);
-//  if (error != OT_ERROR_NONE)
-//  {
-//    APP_THREAD_Error(ERR_THREAD_ERASE_PERSISTENT_INFO,error);
-//  }
-
-  error = otSetStateChangedCallback(PtOpenThreadInstance, APP_THREAD_StateNotif, NULL);
+  error = otSetStateChangedCallback(pOpenThreadInstance, APP_THREAD_StateNotif, NULL);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_STATE_CB,error);
   }
 
-  error = otPlatRadioSetCcaEnergyDetectThreshold(PtOpenThreadInstance, C_CCA_THRESHOLD);
+  error = otPlatRadioSetCcaEnergyDetectThreshold(pOpenThreadInstance, C_CCA_THRESHOLD);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_THRESHOLD,error);
   }
 
-  error = otLinkSetChannel(PtOpenThreadInstance, C_CHANNEL_NB);
+  error = otLinkSetChannel(pOpenThreadInstance, C_CHANNEL_NB);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_CHANNEL,error);
   }
 
-  error = otLinkSetPanId(PtOpenThreadInstance, C_PANID);
+  error = otLinkSetPanId(pOpenThreadInstance, C_PANID);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_PANID,error);
   }
 
-  error = otThreadSetNetworkKey(PtOpenThreadInstance, &networkKey);
+  error = otThreadSetNetworkKey(pOpenThreadInstance, &networkKey);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
   }
 
-  otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
+  otPlatRadioEnableSrcMatch(pOpenThreadInstance, true);
 
-  error = otIp6SetEnabled(PtOpenThreadInstance, true);
+  error = otIp6SetEnabled(pOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_IPV6_ENABLE,error);
   }
 
-  error = otThreadSetEnabled(PtOpenThreadInstance, true);
+  error = otThreadSetEnabled(pOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_START,error);
@@ -387,14 +401,14 @@ static void APP_THREAD_DeviceConfig(void)
 
   /* USER CODE BEGIN DEVICECONFIG */
   /* Start the COAP server */
-  error = otCoapStart(PtOpenThreadInstance, OT_DEFAULT_COAP_PORT);
+  error = otCoapStart(pOpenThreadInstance, OT_DEFAULT_COAP_PORT);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_COAP_START,error);
   }
 
   /* Add COAP resources */
-  otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
+  otCoapAddResource(pOpenThreadInstance, &OT_Ressource);
 
   APP_THREAD_InitPayloadWrite();
 
@@ -544,7 +558,7 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
   if ((NotifFlags & (uint32_t)OT_CHANGED_THREAD_ROLE) == (uint32_t)OT_CHANGED_THREAD_ROLE)
   {
-    switch (otThreadGetDeviceRole(PtOpenThreadInstance))
+    switch (otThreadGetDeviceRole(pOpenThreadInstance))
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
@@ -629,7 +643,7 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
   if (ThreadXStatus == TX_SUCCESS)
   {
     ThreadXStatus |= tx_thread_create(&CliUartTask, "CliUartTask", APP_THREAD_ProcessUart, 0, pStack,
-                                      TASK_CLI_UART_STACK_SIZE, TASK_CLI_UART_PRIORITY, TASK_CLI_UART_PRIORITY,
+                                      TASK_CLI_UART_STACK_SIZE, CFG_TASK_PRIO_CLI_UART, CFG_TASK_PREEMP_CLI_UART,
                                       TX_NO_TIME_SLICE, TX_AUTO_START);
   }
 
@@ -639,75 +653,10 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
     LOG_ERROR_APP( "ERROR THREADX : CLI UART THREAD CREATION FAILED (%d)", ThreadXStatus );
     while(1);
   }
-  
   otPlatUartEnable();
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
-
-static void APP_THREAD_AlarmsInit(void)
-{
-  UINT ThreadXStatus;
-  
-  /* Register semaphores to launch tasks */
-  ThreadXStatus = tx_semaphore_create(&AlarmSemaphore, "AlarmSemaphore", 0);
-
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    ThreadXStatus = tx_semaphore_create(&AlarmUsSemaphore, "AlarmUsSemaphore", 0);
-  }
-  /* Create associated tasks */
-  if (ThreadXStatus == TX_SUCCESS)
-  { 
-    ThreadXStatus |= tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_ALARM_STACK_SIZE, TX_NO_WAIT);
-  }
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    ThreadXStatus |= tx_thread_create(&AlarmTask, "AlarmTask", APP_THREAD_ProcessAlarm, 0, pStack,
-                                      TASK_ALARM_STACK_SIZE, TASK_ALARM_PRIORITY, TASK_ALARM_PRIORITY,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START);
-  }
-  if (ThreadXStatus == TX_SUCCESS)
-  { 
-    ThreadXStatus |= tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_ALARM_US_STACK_SIZE, TX_NO_WAIT);
-  }
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    ThreadXStatus |= tx_thread_create(&AlarmUsTask, "AlarmUsTask", APP_THREAD_ProcessUsAlarm, 0, pStack,
-                                      TASK_ALARM_US_STACK_SIZE, TASK_ALARM_US_PRIORITY, TASK_ALARM_US_PRIORITY,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START);
-  }
-  /* Verify if it's OK */
-  if (ThreadXStatus != TX_SUCCESS)
-  { 
-    LOG_ERROR_APP( "ERROR THREADX : ALARMS THREAD CREATION FAILED (%d)", ThreadXStatus );
-    while(1);
-  }
-}
-
-static void APP_THREAD_TaskletsInit(void)
-{
-  UINT ThreadXStatus;
-  
-  /* Semaphore already created */
-
-  /* Create associated task */
-  ThreadXStatus = tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_TASKLETS_STACK_SIZE, TX_NO_WAIT);
-  
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    ThreadXStatus |= tx_thread_create(&TaskletsTask, "TaskletsTask", APP_THREAD_ProcessOpenThreadTasklets, 0, pStack,
-                                      TASK_TASKLETS_STACK_SIZE, TASK_TASKLETS_PRIORITY, TASK_TASKLETS_PRIORITY,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START);
-  }
- 
-  /* Verify if it's OK */
-  if (ThreadXStatus != TX_SUCCESS)
-  { 
-    LOG_ERROR_APP( "ERROR THREADX : TASKLETS THREAD CREATION FAILED (%d)", ThreadXStatus );
-    while(1);
-  }
-}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 /**
@@ -738,7 +687,7 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
 
   do
   {
-    pOT_Message = otCoapNewMessage(PtOpenThreadInstance, NULL);
+    pOT_Message = otCoapNewMessage(pOpenThreadInstance, NULL);
     if (pOT_Message == NULL)
     {
       APP_THREAD_Error(ERR_THREAD_COAP_NEW_MSG,error);
@@ -788,13 +737,13 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
     if(aCoapType == OT_COAP_TYPE_NON_CONFIRMABLE)
     {
       LOG_INFO_APP("\r\naCoapType == OT_COAP_TYPE_NON_CONFIRMABLE");
-      error = otCoapSendRequest(PtOpenThreadInstance, pOT_Message, &OT_MessageInfo, NULL, NULL);
+      error = otCoapSendRequest(pOpenThreadInstance, pOT_Message, &OT_MessageInfo, NULL, NULL);
     }
     
     if(aCoapType == OT_COAP_TYPE_CONFIRMABLE)
     {
       LOG_INFO_APP("\r\naCoapType == OT_COAP_TYPE_CONFIRMABLE");
-      error = otCoapSendRequest(PtOpenThreadInstance, pOT_Message, &OT_MessageInfo, aHandler, aContext);
+      error = otCoapSendRequest(pOpenThreadInstance, pOT_Message, &OT_MessageInfo, aHandler, aContext);
     }
   }
   while(false);
@@ -854,7 +803,7 @@ static void APP_THREAD_CoapSendDataResponse(otMessage  * pMessage, const otMessa
   {
     LOG_INFO_APP("APP_THREAD_CoapSendDataResponse");
 
-    pOT_MessageResponse = otCoapNewMessage(PtOpenThreadInstance, NULL);
+    pOT_MessageResponse = otCoapNewMessage(pOpenThreadInstance, NULL);
     if (pOT_MessageResponse == NULL)
     {
       LOG_WARNING_APP("WARNING : pOT_MessageResponse = NULL ! -> exit now");
@@ -863,7 +812,7 @@ static void APP_THREAD_CoapSendDataResponse(otMessage  * pMessage, const otMessa
 
     otCoapMessageInitResponse(pOT_MessageResponse, pMessage, OT_COAP_TYPE_ACKNOWLEDGMENT, OT_COAP_CODE_VALID);
 
-    error = otCoapSendResponse(PtOpenThreadInstance, pOT_MessageResponse, pMessageInfo);
+    error = otCoapSendResponse(pOpenThreadInstance, pOT_MessageResponse, pMessageInfo);
     if (error != OT_ERROR_NONE && pOT_MessageResponse != NULL)
     {
       otMessageFree(pOT_MessageResponse);
@@ -916,6 +865,34 @@ static void APP_THREAD_InitPayloadWrite(void)
   }
 }
 
+/**
+ * @brief Task associated to the push button 1.
+ * @param  None
+ * @retval None
+ */
+void APPE_Button1Action(void)
+{
+  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  
+  /* Send a NON-CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+                              NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
+
+}
+
+/**
+ * @brief Task associated to the push button 2.
+ * @param  None
+ * @retval None
+ */
+void APPE_Button2Action(void)
+{
+  LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
+  
+  /* Send a CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+                             NULL, PayloadWrite, sizeof(PayloadWrite), APP_THREAD_CoapDataRespHandler, NULL);
+}
 
 /**
  * @brief  Compare the message received versus the original message.

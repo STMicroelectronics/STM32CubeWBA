@@ -5,7 +5,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2022 STMicroelectronics.
+ * Copyright (c) 2018-2023 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -18,11 +18,11 @@
 #include "app_common.h"
 #include "ble_codec.h"
 #include "ble.h"
+
 #include "codec_mngr.h"
 
 #define BLE_PLAT_NUM_CIS             (2u)
 #define BLE_PLAT_NUM_BIS             (2u)
-
 
 typedef struct _CIS_Conf_t
 {
@@ -81,19 +81,19 @@ uint8_t BLE_ConfigureDataPath( uint8_t data_path_direction,
   param.config_len = vendor_specific_config_length;
   param.sample_depth = vendor_specific_config[0];
   param.decimation = vendor_specific_config[1];
-  APP_DBG_MSG("==>> CODEC Configure Data Path with following parameters:\n");
-  APP_DBG_MSG("  Direction : %d\n",data_path_direction);
-  APP_DBG_MSG("  Data Path ID : 0x%02X\n",data_pathID);
-  APP_DBG_MSG("  Sample Depth : %d\n",param.sample_depth);
-  APP_DBG_MSG("  Decimation : %d\n",param.decimation);
+  LOG_INFO_APP("==>> CODEC Configure Data Path with following parameters:\n");
+  LOG_INFO_APP("  Direction : %d\n",data_path_direction);
+  LOG_INFO_APP("  Data Path ID : 0x%02X\n",data_pathID);
+  LOG_INFO_APP("  Sample Depth : %d\n",param.sample_depth);
+  LOG_INFO_APP("  Decimation : %d\n",param.decimation);
   ret = CODEC_ConfigureDataPath((uint8_t*)&param);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("==>> CODEC_ConfigureDataPath() : Fail, reason: 0x%02X\n", ret);
+    LOG_INFO_APP("==>> CODEC_ConfigureDataPath() : Fail, reason: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("==>> CODEC_ConfigureDataPath() : Success\n");
+    LOG_INFO_APP("==>> CODEC_ConfigureDataPath() : Success\n");
   }
   return ret;
 }
@@ -170,8 +170,8 @@ uint8_t BLE_ReadLocalSupportedControllerDelay(
                                         uint8_t* max_controller_delay )
 {
   int32_t status;
-  uint32_t min_delay;
-  uint32_t max_delay;
+  uint32_t min_delay = 0;
+  uint32_t max_delay = 0;
 
   status = CODEC_ReadLocalSupportedControllerDelay((uint8_t*)codec_ID,
                                                    logical_transport_type,
@@ -208,15 +208,15 @@ uint8_t BLE_SetupIsoDataPath(uint16_t connection_handle,hci_le_setup_iso_data_pa
   param.codec_conf_len = iso_command_params->Codec_Configuration_Length;
   memcpy(&param.codec_conf,iso_command_params->pCodec_Configuration,iso_command_params->Codec_Configuration_Length);
 
-  APP_DBG_MSG("==>> CODEC Setup ISO Data Path for CIS Connection Handle 0x%04X\n",connection_handle);
+  LOG_INFO_APP("==>> CODEC Setup ISO Data Path for CIS Connection Handle 0x%04X\n", connection_handle);
   ret = CODEC_SetupIsoDataPath((uint8_t*)&param);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("==>> CODEC_SetupIsoDataPath() : Fail, reason: 0x%02X\n", ret);
+    LOG_INFO_APP("==>> CODEC_SetupIsoDataPath() : Fail, reason: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("==>> CODEC_SetupIsoDataPath() : Success\n");
+    LOG_INFO_APP("==>> CODEC_SetupIsoDataPath() : Success\n");
   }
   return ret;
 }
@@ -233,17 +233,17 @@ uint8_t BLE_RemoveIsoDataPath( uint16_t connection_handle,
   a_param[1] = (uint8_t) ((connection_handle >> 8 ));
   a_param[2] = data_path_direction;
 
-  APP_DBG_MSG("==>> CODEC Remove ISO Data Path for CIS Connection Handle 0x%04X and path direction mask 0x%02X\n",
+  LOG_INFO_APP("==>> CODEC Remove ISO Data Path for CIS Connection Handle 0x%04X and path direction mask 0x%02X\n",
               connection_handle,
               data_path_direction);
   ret = CODEC_RemoveIsoDataPath((uint8_t*)&a_param);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("==>> CODEC_RemoveIsoDataPath() : Fail, reason: 0x%02X\n", ret);
+    LOG_INFO_APP("==>> CODEC_RemoveIsoDataPath() : Fail, reason: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("==>> CODEC_RemoveIsoDataPath() : Success\n");
+    LOG_INFO_APP("==>> CODEC_RemoveIsoDataPath() : Success\n");
   }
   return ret;
 }
@@ -259,12 +259,13 @@ uint8_t BLE_SendIsoDataOutToCodec(uint16_t iso_connection_handle,
                                   uint32_t* iso_data)
 {
   return CODEC_ReceiveMediaPacket(iso_connection_handle,
-                                  (uint8_t*)iso_data,
-                                  iso_data_load_length,
-                                  PSN,
+                                  pb_flag,
                                   ts_flag,
                                   timestamp,
-                                  packet_status_flag);
+                                  PSN,
+                                  packet_status_flag,
+                                  iso_data_load_length,
+                                  (uint8_t*)iso_data);
 }
 
 /*****************************************************************************/
@@ -298,15 +299,15 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
                               uint8_t cig_id,
                               uint16_t iso_interval,
                               uint8_t num_connection_handles,
-                              uint16_t* connection_handle,
+                              uint16_t* iso_con_handle,
                               uint8_t* transport_latency_C_to_P,
                               uint8_t* transport_latency_P_to_C)
 {
   uint8_t type;
   uint8_t ID;
   CIS_Conf_t *p_cis_conf;
-  APP_DBG_MSG(">>== ISOCHRONOUS_GROUP_EVENT\n");
-  APP_DBG_MSG("     - Opcode:   0x%04X\n",opcode);
+  LOG_INFO_APP(">>== ISOCHRONOUS_GROUP_EVENT\n");
+  LOG_INFO_APP("     - Opcode:   0x%04X\n", opcode);
   if ((opcode == 0x001DU || opcode == 0x001BU) && (status == 0))
   {
     /* HCI_LE_BIG_SYNC_ESTABLISHED_EVENT || HCI_LE_CREATE_BIG_COMPLETE_EVENT */
@@ -315,14 +316,20 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
     for (int32_t i = 0 ; i < num_connection_handles ; i++)
     {
       BIS_Conf[i].BIG_Handle = big_handle;
-      BIS_Conf[i].BIS_Conn_Handle = connection_handle[i];
+      BIS_Conf[i].BIS_Conn_Handle = iso_con_handle[i];
     }
-    APP_DBG_MSG("     - big_handle:   0x%02X\n",big_handle);
-    APP_DBG_MSG("     - iso_interval:   0x%04X\n",iso_interval);
-    APP_DBG_MSG("==>> AUDIO_RegisterGroup()\n");
+    LOG_INFO_APP("     - big_handle:   0x%02X\n", big_handle);
+    LOG_INFO_APP("     - iso_interval:   0x%04X\n", iso_interval);
+    LOG_INFO_APP("==>> AUDIO_RegisterGroup()\n");
     uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
-    AUDIO_RegisterGroup(type, ID,num_connection_handles, connection_handle, iso_interval,
-                        0, transport_latency_c2p, 0);
+    AUDIO_RegisterGroup(type,
+                        ID,
+                        num_connection_handles,
+                        iso_con_handle,
+                        iso_interval,
+                        0,
+                        transport_latency_c2p,
+                        0);
   }
   else if (opcode == 0x001CU )
   {
@@ -336,9 +343,9 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
 
         BIS_Conf[i].BIG_Handle = 0xFFu;
         BIS_Conf[i].BIS_Conn_Handle = 0xFFFFu;
-        APP_DBG_MSG("     - big_handle:   0x%02X\n",big_handle);
-        APP_DBG_MSG("==>> AUDIO_UnregisterGroup()\n");
-        AUDIO_UnregisterGroup(type,big_handle);
+        LOG_INFO_APP("     - big_handle:   0x%02X\n", big_handle);
+        LOG_INFO_APP("==>> AUDIO_UnregisterGroup()\n");
+        AUDIO_UnregisterGroup(type, big_handle);
       }
     }
   }
@@ -353,41 +360,42 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
         BLE_RemoveIsoDataPath(BIS_Conf[i].BIS_Conn_Handle,0x02);
         BIS_Conf[i].BIG_Handle = 0xFFu;
         BIS_Conf[i].BIS_Conn_Handle = 0xFFFFu;
-        APP_DBG_MSG("     - big_handle:   0x%02X\n",big_handle);
-        APP_DBG_MSG("==>> AUDIO_UnregisterGroup()\n");
-        AUDIO_UnregisterGroup(type,big_handle);
+        LOG_INFO_APP("     - big_handle:   0x%02X\n", big_handle);
+        LOG_INFO_APP("==>> AUDIO_UnregisterGroup()\n");
+        AUDIO_UnregisterGroup(type, big_handle);
       }
     }
   }
   else if (opcode == 0x001AU) /*HCI_LE_CIS_REQUEST_EVENT*/
   {
     /* HCI_LE_CIS_REQUEST_EVENT (cig_id and ConnectionHandle)*/
-    if (BLE_GetExistingCISConfSlot(connection_handle[0],&p_cis_conf) == 0u)
+    if ((BLE_GetExistingCISConfSlot(iso_con_handle[0], &p_cis_conf) == 0u) || (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u))
     {
-      p_cis_conf->CIG_ID = cig_id;
-    }
-    else if (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u)
-    {
-      p_cis_conf->CIS_Conn_Handle = connection_handle[0];
+      p_cis_conf->CIS_Conn_Handle = iso_con_handle[0];
       p_cis_conf->CIG_ID = cig_id;
       p_cis_conf->is_peripheral = 1;
     }
-    APP_DBG_MSG("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n",cig_id,connection_handle[0]);
+    else
+    {
+      /* should not be reached */
+    }
+    LOG_INFO_APP("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n", cig_id, iso_con_handle[0]);
   }
   else if (opcode == 0x2062U) /*HCI_LE_Set_CIG_Parameters*/
   {
     /* HCI_LE_Set_CIG_Parameters (cig_id and ConnectionHandle)*/
     for (int32_t i = 0 ; i<num_connection_handles ; i++)
     {
-      APP_DBG_MSG("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n",cig_id,connection_handle[i]);
-      if (BLE_GetExistingCISConfSlot(connection_handle[i],&p_cis_conf) == 0u)
+      APP_DBG_MSG("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n", cig_id, iso_con_handle[i]);
+      if ((BLE_GetExistingCISConfSlot(iso_con_handle[i], &p_cis_conf) == 0u) || (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u))
       {
+        p_cis_conf->CIS_Conn_Handle = iso_con_handle[i];
         p_cis_conf->CIG_ID = cig_id;
+        p_cis_conf->is_peripheral = 0;
       }
-      else if (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u)
+      else
       {
-        p_cis_conf->CIS_Conn_Handle = connection_handle[i];
-        p_cis_conf->CIG_ID = cig_id;
+        /* should not be reached */
       }
     }
   }
@@ -395,30 +403,38 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
   {
     /*HCI_LE_CIS_ESTABLISHED_EVENT  (iso_interval and ConnectionHandle)*/
     type = 0;
-    APP_DBG_MSG("     - cis_conn_handle:   0x%04X    - iso_interval:   %d\n",connection_handle[0],iso_interval);
-    if (BLE_GetExistingCISConfSlot(connection_handle[0],&p_cis_conf) == 0u)
-    {
-      if (status == 0)
+    LOG_INFO_APP("     - cis_conn_handle:   0x%04X    - iso_interval:   %d\n", iso_con_handle[0], iso_interval);
+	if ((status == 0) &&    
+        ((BLE_GetExistingCISConfSlot(iso_con_handle[0], &p_cis_conf) == 0u) || (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u)))
       {
-        APP_DBG_MSG("==>> AUDIO_RegisterGroup()\n");
-        uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
-        uint32_t transport_latency_p2c = transport_latency_P_to_C[0] + (transport_latency_P_to_C[1]<<8) + (transport_latency_P_to_C[2]<<16);
+      /* the CIS can be re-established without a new call to Set_CIG_Parameters */
+      p_cis_conf->CIS_Conn_Handle = iso_con_handle[0];
+        
+      LOG_INFO_APP("==>> AUDIO_RegisterGroup()\n");
+      uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
+      uint32_t transport_latency_p2c = transport_latency_P_to_C[0] + (transport_latency_P_to_C[1]<<8) + (transport_latency_P_to_C[2]<<16);
 
-        AUDIO_RegisterGroup(type, p_cis_conf->CIG_ID, 1, &connection_handle[0], iso_interval,
-                            p_cis_conf->is_peripheral, transport_latency_c2p, transport_latency_p2c);
-      }
+      AUDIO_RegisterGroup(type,
+                          p_cis_conf->CIG_ID,
+                          1,
+                          &iso_con_handle[0],
+                          iso_interval,
+                          p_cis_conf->is_peripheral,
+                          transport_latency_c2p,
+                          transport_latency_p2c);
+
     }
   }
   else if (opcode == 0x0005U)
   {
     /*HCI_DISCONNECTION_COMPLETE_EVENT*/
-    uint8_t cig_id;
-    APP_DBG_MSG("     - cis_conn_handle:   0x%04X\n",connection_handle[0]);
-    if ( BLE_SetFreeCISConfSlot(connection_handle[0], &cig_id) == 0)
+    uint8_t l_cig_id;
+    LOG_INFO_APP("     - cis_conn_handle:   0x%04X\n", iso_con_handle[0]);
+    if (BLE_SetFreeCISConfSlot(iso_con_handle[0], &l_cig_id) == 0)
     {
-      APP_DBG_MSG("==>> AUDIO_UnregisterGroup()\n");
-      AUDIO_UnregisterGroup(0, cig_id);
-   }
+      LOG_INFO_APP("==>> AUDIO_UnregisterGroup()\n");
+      AUDIO_UnregisterGroup(0, l_cig_id);
+    }
   }
 }
 
@@ -469,15 +485,21 @@ static uint8_t BLE_SetFreeCISConfSlot(uint16_t CIS_Conn_Handle, uint8_t *CIG_ID)
     {
       CIS_Conf[i].CIS_Conn_Handle = 0xFFFF;
       cig_id = CIS_Conf[i].CIG_ID;
-      CIS_Conf[i].CIG_ID = 0xFF;
       CIS_Conf[i].is_peripheral = 0;
+      /* don't erase CIG ID because it may be reused */
 
+      int8_t cnt = 0;
       for (int8_t k = 0; k < BLE_PLAT_NUM_CIS ; k++)
       {
-         if (CIS_Conf[k].CIG_ID == cig_id)
+        if ((CIS_Conf[k].CIG_ID == cig_id) && (CIS_Conf[k].CIS_Conn_Handle != 0xFFFF))
         {
-          return 1u; /* CIG still exists */
+          cnt++;
         }
+      }
+
+      if (cnt > 0)
+      {
+        return 1u; /* CIG still in use by another CIS */
       }
     }
   }
@@ -489,5 +511,5 @@ static uint8_t BLE_SetFreeCISConfSlot(uint16_t CIS_Conn_Handle, uint8_t *CIG_ID)
   }
 
   *CIG_ID = cig_id;
-  return 0u; /* the CIG is now killed */
+  return 0u; /* the CIG is now inactive */
 }

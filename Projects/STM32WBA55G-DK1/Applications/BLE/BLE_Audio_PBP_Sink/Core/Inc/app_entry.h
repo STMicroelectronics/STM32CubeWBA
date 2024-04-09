@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -69,7 +69,7 @@ void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */
 void MX_AudioInit(Audio_Role_t role, Sampling_Freq_t sampling_frequency, Frame_Duration_t frame_duration,
-                  uint8_t *pRecBuff, uint8_t *pPlayBuff, AudioDriverConfig driver_config);
+                  uint8_t *pSnkBuff, uint8_t *pSrcBuff, AudioDriverConfig driver_config);
 void MX_AudioDeInit(void);
 void Start_TxAudio(void);
 void Stop_TxAudio(void);

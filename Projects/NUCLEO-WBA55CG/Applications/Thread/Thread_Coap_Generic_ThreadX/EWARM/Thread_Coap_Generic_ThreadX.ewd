@@ -80,7 +80,7 @@
                 </option>
                 <option>
                     <name>OCProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.20.4.46976</state>
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
@@ -88,7 +88,7 @@
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.20.4.46976</state>
                 </option>
                 <option>
                     <name>UseFlashLoader</name>
@@ -1098,7 +1098,7 @@
                 </option>
                 <option>
                     <name>CCSwoClockAuto</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCSwoClockEdit</name>
@@ -1417,7 +1417,7 @@
                 </option>
                 <option>
                     <name>CCXds100ResetList</name>
-                    <version>0</version>
+                    <version>1</version>
                     <state>0</state>
                 </option>
                 <option>
@@ -1515,6 +1515,18 @@
             </plugin>
             <plugin>
                 <file>$TOOLKIT_DIR$\plugins\rtos\ThreadX\ThreadXArmPlugin.ENU.ewplugin</file>
+                <loadFlag>0</loadFlag>
+            </plugin>
+            <plugin>
+                <file>$TOOLKIT_DIR$\plugins\rtos\uCOS-II\uCOS-II-286-KA-CSpy.ewplugin</file>
+                <loadFlag>0</loadFlag>
+            </plugin>
+            <plugin>
+                <file>$TOOLKIT_DIR$\plugins\rtos\uCOS-II\uCOS-II-KA-CSpy.ewplugin</file>
+                <loadFlag>0</loadFlag>
+            </plugin>
+            <plugin>
+                <file>$TOOLKIT_DIR$\plugins\rtos\uCOS-III\uCOS-III-KA-CSpy.ewplugin</file>
                 <loadFlag>0</loadFlag>
             </plugin>
             <plugin>

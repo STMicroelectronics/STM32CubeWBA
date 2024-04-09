@@ -307,14 +307,14 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               }
               else
               {
-                OTA_APP_Context.sectors = DOWNLOAD_ACTIVE_NB_SECTORS;
+                OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
               }
               
               OTA_APP_Context.write_value_index = 0;
               OTA_APP_Context.Conf_Indication_Status = OTA_APP_Ready_Pending;
               first_valid_address = ((CFG_ACTIVE_SLOT_START_SECTOR_INDEX + APP_SLOT_PAGE_SIZE) * FLASH_PAGE_SIZE) + FLASH_BASE;
               if(((OTA_APP_Context.base_address & 0xF) == 0) &&
-                 (OTA_APP_Context.sectors <= DOWNLOAD_ACTIVE_NB_SECTORS) &&
+                 (OTA_APP_Context.sectors <= APP_SLOT_PAGE_SIZE) &&
                  (OTA_APP_Context.base_address >= first_valid_address) &&
                  ((OTA_APP_Context.base_address + ((OTA_APP_Context.sectors) * FLASH_PAGE_SIZE)) <= (first_valid_address + (APP_SLOT_PAGE_SIZE * FLASH_PAGE_SIZE))))
               { /* Download address is 128 bits aligned */
@@ -329,7 +329,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 {  
                   /* Flash manager write */
                   if(OTA_APP_Context.sectors == 0)
-                    OTA_APP_Context.sectors = DOWNLOAD_ACTIVE_NB_SECTORS;
+                    OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
                   error = FM_Erase((uint32_t)((OTA_APP_Context.base_address - FLASH_BASE) >> 13), 
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
@@ -361,6 +361,9 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   else
                   {
                     LOG_INFO_APP("OTA_APPLICATION_UPLOAD: FM_ERROR\n");
+                    LOG_INFO_APP("OTA_APPLICATION_UPLOAD: Try to FM_Erase Number of sectors: %d from sector %d \n",
+                                 (uint32_t)(OTA_APP_Context.sectors),
+                                 (uint32_t)((OTA_APP_Context.base_address) >> 13));
                   }
                 } /* while(error != FM_OK) */
                 

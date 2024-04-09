@@ -57,7 +57,8 @@ typedef enum
   CALIB_CLBK_EVT,
   CORRECTOR_PROCESS_EVT,
   TRIGGER_EVT,
-  FIFO_OVERLAP_EVT,
+  FIFO_UNDERRUN_EVT,
+  FIFO_OVERRUN_EVT,
   SYNC_EVT,
   IRREGULARITY_EVT
 } CODEC_TraceEvnt_t;
@@ -69,14 +70,14 @@ typedef enum
 /******************************************************************************/
 
 /**
-  * @brief Function called by the codec manager for initializing process
+  * @brief Weak function called by the codec manager for initializing process
   * @param none
   * @retval none
   */
 void CODEC_ProcessInit( void );
 
 /**
-  * @brief Function called by the codec manager for requesting CODEC_ManagerProcess to be called
+  * @brief Weak function called by the codec manager for requesting CODEC_ManagerProcess to be called
   * @param none
   * @retval none
   */
@@ -124,6 +125,14 @@ int32_t CODEC_CLK_RequestTimerEvent( uint8_t ID, uint32_t trigger_ts );
 uint16_t CODEC_CLK_GetTimerPrescaler( void );
 
 /**
+  * @brief Function called by the codec manager for getting the core clock for a given audio frequency
+  * @note  Used for either CPU load estimation as well as timer timebase correction
+  * @param freq_index : index of the frequency related to the list defined in the assigned numbers
+  * @retval Core clock in MHz
+  */
+float CODEC_CLK_GetCoreClock( uint8_t freq_index );
+
+/**
   * @brief Function called by the codec manager for getting the PLL N Frac value
   * @param none
   * @retval nfrac register value
@@ -144,7 +153,7 @@ void CODEC_CLK_SetPLLNfrac( uint16_t n_frac );
   * @retval none
   */
 void CODEC_CLK_Provide_ISO_Captured_Timestamp( uint32_t iso_evnt_hw_ts );
-#endif
+#endif /* USE_SW_SYNC_METHOD == 0 */
 
 /******************************************************************************/
 /***************************** tracings events ********************************/

@@ -102,9 +102,9 @@ int main(void)
   MX_GPIO_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-  
-   /* Clear Standby flag  */
-   CLEAR_BIT(DBGMCU->SCR, DBGMCU_SCR_DBG_STANDBY);
+
+  /* Clear Standby flag  */
+  CLEAR_BIT(DBGMCU->SCR, DBGMCU_SCR_DBG_STANDBY);
 
   /* Initialize USER push-button in EXTI mode */
   UserButton_Init(BUTTON_MODE_EXTI);
@@ -265,7 +265,7 @@ void UserButton_Init(uint32_t Button_Mode)
 
   /* Configure GPIO for BUTTON */
   LL_GPIO_SetPinMode(USER_BUTTON_GPIO_PORT, USER_BUTTON_PIN, LL_GPIO_MODE_INPUT);
-  LL_GPIO_SetPinPull(USER_BUTTON_GPIO_PORT, USER_BUTTON_PIN, LL_GPIO_PULL_NO);
+  LL_GPIO_SetPinPull(USER_BUTTON_GPIO_PORT, USER_BUTTON_PIN, LL_GPIO_PULL_UP);
 
   if(Button_Mode == BUTTON_MODE_EXTI)
   {
@@ -340,12 +340,14 @@ void EnterStandbyMode(void)
 
   /* Clear all wake up Flag */
   LL_PWR_ClearFlag_WU();
-  
+
   /* Set wakeup pin polarity */
   LL_PWR_SetWakeUpPinPolarityHigh(LL_PWR_WAKEUP_PIN2);
  /* Set wakeup pin signal selection  */
   LL_PWR_SetWakeUpPinSignal1Selection(LL_PWR_WAKEUP_PIN2) ;
 
+  /* Enable IO retention on wakeup pin */
+  LL_PWR_EnableGPIOStandbyRetention(LL_PWR_GPIO_STATE_RETENTION_ENABLE_PORTC, LL_PWR_GPIO_PIN_13);
 
   /* Enable wakeup pin */
   LL_PWR_EnableWakeUpPin(LL_PWR_WAKEUP_PIN2);

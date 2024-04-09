@@ -24,6 +24,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
+#if (CFG_SCM_SUPPORTED == 1)
 #include "stm32wbaxx_hal.h"
 #include "stm32wbaxx_ll_pwr.h"
 #include "stm32wbaxx_ll_rcc.h"
@@ -45,8 +47,14 @@ typedef enum {
 } scm_ws_lp_t;
 
 typedef enum {
+  HSEPRE_DISABLE = 0,
+  HSEPRE_ENABLE
+} scm_hse_hsepre_t;
+
+typedef enum {
   SCM_USER_APP,
   SCM_USER_LL_FW,
+  SCM_USER_LL_HW_RCO_CLBR,
   TOTAL_CLIENT_NUM, /* To be at the end of the enum */
 } scm_user_id_t;
 
@@ -62,6 +70,7 @@ typedef enum {
 } scm_radio_state_t;
 
 typedef struct {
+  uint8_t are_pll_params_initialized;
   scm_pll_mode_t pll_mode;
   uint32_t PLLM;
   uint32_t PLLN;
@@ -83,7 +92,7 @@ typedef struct{
 /* Exported variables --------------------------------------------------------*/
 
 /* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+/* Exported functions prototypes ---------------------------------------------*/
 
 /**
   * @brief  System Clock Manager init code
@@ -183,5 +192,33 @@ void scm_hserdy_isr(void);
   * @retval None
   */
 void scm_pllrdy_isr(void);
+
+/* Exported functions - To be implemented by the user ------------------------- */
+
+/**
+  * @brief  SCM HSI clock enable
+  * @details A weak version is implemented in the module sources.
+  * @details It can be overridden by user.
+  * @param  None
+  * @retval None
+  */
+extern void SCM_HSI_CLK_ON(void);
+
+/**
+  * @brief  SCM HSI clock disable
+  * @details A weak version is implemented in the module sources.
+  * @details It can be overridden by user.
+  * @param  None
+  * @retval None
+  */
+extern void SCM_HSI_CLK_OFF(void);
+
+#else /* CFG_SCM_SUPPORTED */
+
+/* Unused empty functions */
+void scm_hserdy_isr(void);
+void scm_pllrdy_isr(void);
+
+#endif /* CFG_SCM_SUPPORTED */
 
 #endif /* SCM_H */

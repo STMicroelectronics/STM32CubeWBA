@@ -19,6 +19,8 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
+<div class="row">
+<div class="col-sm-12 col-lg-8">
 <h2 id="ble_audio_pbp_sink-application-description"><strong>BLE_Audio_PBP_Sink Application Description</strong></h2>
 <p>How to use the Public Broadcast profile in Sink role as specified by the Bluetooth SIG.</p>
 <p>PBP Sink application scans and synchronizes audio streams from remote PBP Sources.</p>
@@ -38,13 +40,14 @@
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/ble_conf.h Configuration file for BLE Middleware.</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/ble_dbg_conf.h Debug configuration file for BLE Middleware.</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/pbp_app.h Header for pbp_app.c module</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp.h This file contains definitions used for Media Control Profile</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp_alloc.h This file contains definitions used for Public Broadcast Profile Allocation context</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp_config.h This file contains Public Broadcast Profile Configuration</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp_log.h This file contains definitions and configuration used for Public Broadcast Profile Logging</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp.h This file contains definitions used for Media Control Profile</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp_alloc.h This file contains definitions used for Public Broadcast Profile Allocation context</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp_config.h This file contains Public Broadcast Profile Configuration</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp_log.h This file contains definitions and configuration used for Public Broadcast Profile Logging</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/bpka.h This file contains the interface of the BLE PKA module.</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/host_stack_if.h This file contains the interface for the stack tasks</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/ll_sys_if.h Header file for initiating system</li>
+<li>BLE_Audio_PBP_Sink/System/Config/CRC_Ctrl/crc_ctrl_conf.h Configuration Header for crc_ctrl.c module</li>
 <li>BLE_Audio_PBP_Sink/System/Config/Debug_GPIO/app_debug.h Real Time Debug module application APIs and signal table</li>
 <li>BLE_Audio_PBP_Sink/System/Config/Debug_GPIO/app_debug_signal_def.h Real Time Debug module application signal definition</li>
 <li>BLE_Audio_PBP_Sink/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
@@ -57,8 +60,9 @@
 <li>BLE_Audio_PBP_Sink/System/Interfaces/hw_if.h Hardware Interface</li>
 <li>BLE_Audio_PBP_Sink/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
 <li>BLE_Audio_PBP_Sink/System/Interfaces/timer_if.h configuration of the timer_if.c instances</li>
-<li>BLE_Audio_PBP_Sink/System/Interfaces/usart_if.h : Header file for stm32_adv_trace interface file</li>
+<li>BLE_Audio_PBP_Sink/System/Interfaces/usart_if.h Header file for stm32_adv_trace interface file</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
+<li>BLE_Audio_PBP_Sink/System/Modules/crc_ctrl.h Header for CRC client manager module</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/general_config.h This file contains definitions that can be changed to configure some modules of the STM32 firmware application.</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
@@ -90,20 +94,21 @@
 <li>BLE_Audio_PBP_Sink/Core/Src/system_stm32wbaxx.c CMSIS Cortex-M33 Device Peripheral Access Layer System Source File</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/app_ble.c BLE Application</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/pbp_app.c Public Broadcast Profile Application</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp.c This file contains Public Broadcast Profile feature</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp_alloc.c This file contains Public Broadcast Profile Allocation context</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp.c This file contains Public Broadcast Profile feature</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp_alloc.c This file contains Public Broadcast Profile Allocation context</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/bleplat.c This file implements the platform functions for BLE stack library.</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/ble_audio_if.c This file implements the interface functions for BLE Audio Profiles of the Generic Audio Framework</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/ble_audio_plat.c This file implements the platform functions for BLE Audio Profiles</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/ble_codec.c This file implements the Codec functions for BLE stack library.</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/bpka.c This file implements the BLE PKA module.</li>
-<li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/codec_if.c File for managing the high precision timer needed by the codec This timer needs to run on the same clock domain as the audio interface</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/codec_if.c File for codec manager integration : process and high speed timer. This timer needs to run on the same clock domain as the audio interface</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/host_stack_if.c Source file for the stack tasks</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/linklayer_plat.c Source file for the linklayer plateform adaptation layer</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/ll_sys_if.c Source file for initiating system</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
+<li>BLE_Audio_PBP_Sink/System/Config/CRC_Ctrl/crc_ctrl_conf.c Source for CRC client controller module configuration file</li>
 <li>BLE_Audio_PBP_Sink/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
-<li>BLE_Audio_PBP_Sink/System/Config/Flash/nvm_arbiter_conf.c The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs</li>
+<li>BLE_Audio_PBP_Sink/System/Config/Flash/simple_nvm_arbiter_conf.c The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs.</li>
 <li>BLE_Audio_PBP_Sink/System/Config/Log/log_module.c Source file of the log module.</li>
 <li>BLE_Audio_PBP_Sink/System/Config/LowPower/peripheral_init.c tbd module</li>
 <li>BLE_Audio_PBP_Sink/System/Config/LowPower/user_low_power_config.c Low power related user configuration.</li>
@@ -117,6 +122,7 @@
 <li>BLE_Audio_PBP_Sink/System/Interfaces/usart_if.c Source file for interfacing the stm32_adv_trace to hardware</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/app_sys.c Application system for STM32WPAN Middleware.</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/ble_timer.c This module implements the timer core functions</li>
+<li>BLE_Audio_PBP_Sink/System/Modules/crc_ctrl.c Source for CRC client controller module</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/otp.c Source file for One Time Programmable (OTP) area</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/scm.c Functions for the System Clock Manager.</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/stm_list.c TCircular Linked List Implementation.</li>
@@ -126,8 +132,7 @@
 <li>BLE_Audio_PBP_Sink/System/Modules/Flash/flash_driver.c The Flash Driver module is the interface layer between Flash management modules and HAL Flash drivers</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/Flash/flash_manager.c The Flash Manager module provides an interface to write raw data from SRAM to FLASH</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/Flash/rf_timing_synchro.c The RF Timing Synchronization module provides an interface to synchronize the flash processing versus the RF activity to make sure the RF timing is not broken</li>
-<li>BLE_Audio_PBP_Sink/System/Modules/Flash/rsimple_nvm_arbiter.c The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs.<br />
-</li>
+<li>BLE_Audio_PBP_Sink/System/Modules/Flash/rsimple_nvm_arbiter.c The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs.</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/MemoryManager/stm32_mm.c Memory Manager Utility</li>
 <li>BLE_Audio_PBP_Sink/System/Modules/Nvm/nvm_emul.c This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose</li>
@@ -163,6 +168,8 @@
 <li>Once PBP Sink device is synchronized to PBP Source and Audio Stream is received, Audio is available on Jack Connector.</li>
 <li><p>On the PBP Sink device, you can switch the target PBP Source by changing the Source ID using the Joystick.</p></li>
 </ul>
+</div>
+</div>
 </div>
 </div>
 </body>

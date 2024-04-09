@@ -136,8 +136,9 @@ Instance::Instance(void)
     , mNetworkDataPublisher(*this)
 #endif
     , mNetworkDataServiceManager(*this)
-#if OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
-    , mNetworkDiagnostic(*this)
+    , mNetworkDiagnosticServer(*this)
+#if OPENTHREAD_CONFIG_TMF_NETDIAG_CLIENT_ENABLE
+    , mNetworkDiagnosticClient(*this)
 #endif
 #if OPENTHREAD_CONFIG_BORDER_AGENT_ENABLE
     , mBorderAgent(*this)
@@ -175,13 +176,10 @@ Instance::Instance(void)
 #if OPENTHREAD_CONFIG_SRP_SERVER_ENABLE
     , mSrpServer(*this)
 #endif
-
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
 #if OPENTHREAD_FTD
     , mChildSupervisor(*this)
 #endif
     , mSupervisionListener(*this)
-#endif
     , mAnnounceBegin(*this)
     , mPanIdQuery(*this)
     , mEnergyScan(*this)
@@ -191,8 +189,11 @@ Instance::Instance(void)
 #if OPENTHREAD_CONFIG_TIME_SYNC_ENABLE
     , mTimeSync(*this)
 #endif
-#if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE || OPENTHREAD_CONFIG_MLE_LINK_METRICS_SUBJECT_ENABLE
-    , mLinkMetrics(*this)
+#if OPENTHREAD_CONFIG_MLE_LINK_METRICS_INITIATOR_ENABLE
+    , mInitiator(*this)
+#endif
+#if OPENTHREAD_CONFIG_MLE_LINK_METRICS_SUBJECT_ENABLE
+    , mSubject(*this)
 #endif
 #if OPENTHREAD_CONFIG_COAP_API_ENABLE
     , mApplicationCoap(*this)
@@ -208,6 +209,9 @@ Instance::Instance(void)
 #endif
 #if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE && OPENTHREAD_FTD
     , mChannelManager(*this)
+#endif
+#if OPENTHREAD_CONFIG_MESH_DIAG_ENABLE && OPENTHREAD_FTD
+    , mMeshDiag(*this)
 #endif
 #if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
     , mHistoryTracker(*this)
@@ -241,6 +245,7 @@ Instance::Instance(void)
     , mPowerCalibration(*this)
 #endif
     , mIsInitialized(false)
+    , mId(Random::NonCrypto::GetUint32())
 {
 }
 
@@ -344,6 +349,10 @@ void Instance::Finalize(void)
     IgnoreError(otIp6SetEnabled(this, false));
     IgnoreError(otLinkSetEnabled(this, false));
 
+#if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+    Get<KeyManager>().DestroyTemporaryKeys();
+#endif
+
     Get<Settings>().Deinit();
 #endif
 
@@ -368,6 +377,10 @@ exit:
 void Instance::FactoryReset(void)
 {
     Get<Settings>().Wipe();
+#if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+    Get<KeyManager>().DestroyTemporaryKeys();
+    Get<KeyManager>().DestroyPersistentKeys();
+#endif
     otPlatReset(this);
 }
 
@@ -377,6 +390,10 @@ Error Instance::ErasePersistentInfo(void)
 
     VerifyOrExit(Get<Mle::MleRouter>().IsDisabled(), error = kErrorInvalidState);
     Get<Settings>().Wipe();
+#if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+    Get<KeyManager>().DestroyTemporaryKeys();
+    Get<KeyManager>().DestroyPersistentKeys();
+#endif
 
 exit:
     return error;
@@ -386,8 +403,9 @@ void Instance::GetBufferInfo(BufferInfo &aInfo)
 {
     aInfo.Clear();
 
-    aInfo.mTotalBuffers = Get<MessagePool>().GetTotalBufferCount();
-    aInfo.mFreeBuffers  = Get<MessagePool>().GetFreeBufferCount();
+    aInfo.mTotalBuffers   = Get<MessagePool>().GetTotalBufferCount();
+    aInfo.mFreeBuffers    = Get<MessagePool>().GetFreeBufferCount();
+    aInfo.mMaxUsedBuffers = Get<MessagePool>().GetMaxUsedBufferCount();
 
     Get<MeshForwarder>().GetSendQueue().GetInfo(aInfo.m6loSendQueue);
     Get<MeshForwarder>().GetReassemblyQueue().GetInfo(aInfo.m6loReassemblyQueue);
@@ -412,6 +430,8 @@ void Instance::GetBufferInfo(BufferInfo &aInfo)
     GetApplicationCoap().GetCachedResponses().GetInfo(aInfo.mApplicationCoapQueue);
 #endif
 }
+
+void Instance::ResetBufferInfo(void) { Get<MessagePool>().ResetMaxUsedBufferCount(); }
 
 #endif // OPENTHREAD_MTD || OPENTHREAD_FTD
 

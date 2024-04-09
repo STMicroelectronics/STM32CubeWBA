@@ -23,6 +23,12 @@
 #include "app_conf.h"
 
 #if (SUPPORT_AOA_AOD == 1)
+static const st_gpio_antsw_t rt_antenna_switch_gpio_table[] =
+{
+  RF_ANTSW0,
+  RF_ANTSW1,
+  RF_ANTSW2
+};
 
 static void RF_CONTROL_AntennaSwitch_Enable(void);
 static void RF_CONTROL_AntennaSwitch_Disable(void);

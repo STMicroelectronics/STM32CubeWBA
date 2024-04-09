@@ -79,7 +79,7 @@ uint8_t LTV_GetSupportedMaxCodecFramesPerSDU(uint8_t *codec_specific_capabilitie
 
 /**
  * @brief Return the Configured Sampling Frequency of a given codec specific capabilities array
- * @param codec_specific_capabilities: the codec specific capabilities array to parse
+ * @param codec_specific_configuration: the codec specific configuration array to parse
  * @param len: the length of the array to parse
  * @retval the Configured Sampling Frequency parsed, 0x00 if no Configured Sampling Frequency LTV was found
  */
@@ -87,7 +87,7 @@ Sampling_Freq_t LTV_GetConfiguredSamplingFrequency(uint8_t *codec_specific_confi
 
 /**
  * @brief Return the Configured Frame duration of a given codec specific capabilities array
- * @param codec_specific_capabilities: the codec specific capabilities array to parse
+ * @param codec_specific_configuration: the codec specific configuration array to parse
  * @param len: the length of the array to parse
  * @retval the Configured Frame duration parsed, 0xFF if no Configured Frame duration LTV was found
  */
@@ -95,7 +95,7 @@ Frame_Duration_t LTV_GetConfiguredFrameDuration(uint8_t *codec_specific_configur
 
 /**
  * @brief Return the Configured Audio Channel Allocation of a given codec specific capabilities array
- * @param codec_specific_capabilities: the codec specific capabilities array to parse
+ * @param codec_specific_configuration: the codec specific configuration array to parse
  * @param len: the length of the array to parse
  * @retval the Configured Audio Channel Allocation parsed, 0 if no Configured Frame duration LTV was found
  */
@@ -103,15 +103,15 @@ Audio_Chnl_Allocation_t LTV_GetConfiguredAudioChannelAllocation(uint8_t *codec_s
 
 /**
  * @brief Return the Configured Octets Per Codec Frame of a given codec specific capabilities array
- * @param codec_specific_capabilities: the codec specific capabilities array to parse
+ * @param codec_specific_configuration: the codec specific configuration array to parse
  * @param len: the length of the array to parse
- * @retval the Octets Per Codec Frame parsed, 0 if no Supported Sampling Frequency LTV was found
+ * @retval the Octets Per Codec Frame parsed, 0 if no Octets Per Codec Frame LTV was found
  */
 uint16_t LTV_GetConfiguredOctetsPerCodecFrame(uint8_t *codec_specific_configuration, uint8_t len);
 
 /**
  * @brief Return the Configured Frames Block Per SDU of a given codec specific capabilities array
- * @param codec_specific_capabilities: the codec specific capabilities array to parse
+ * @param codec_specific_configuration: the codec specific configuration array to parse
  * @param len: the length of the array to parse
  * @retval the Frames Block Per SDU parsed, 0 if no Configured Frames Block Per SDU LTV was found
  */

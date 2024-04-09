@@ -70,6 +70,7 @@
                                      0 | \
                                      0 | \
                                      0 | \
+                                     0 | \
                                      0)
 
 /**
@@ -168,9 +169,6 @@
 
 /* USER CODE BEGIN Low_Power 0 */
 
-/* Keep HSI Enabled for USART for Transparent Mode Appli */
-#define CFG_KEEP_HSI_ENABLED     (1)
-
 /* USER CODE END Low_Power 0 */
 
 /**
@@ -190,9 +188,6 @@ typedef enum
 /* USER CODE BEGIN Low_Power 1 */
 
 /* USER CODE END Low_Power 1 */
-
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
 
 /******************************************************************************
  * RTC
@@ -414,15 +409,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                          (4000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (400U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_MM_POOL_SIZE                                  (4000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
+#define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 

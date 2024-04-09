@@ -18,35 +18,15 @@
   */
 /* USER CODE END Header */
 
+/* Includes ------------------------------------------------------------------*/
+#include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
+/* Private includes -----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "stm32wbaxx_nucleo.h"
 
- /**
-  * @brief  Configure the CPU NVIC peripheral at Standby mode exit.
-  * @param  None
-  * @retval None
-  */
-void MX_StandbyExit_NVICPeripharalInit(void)
-{
-    HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(MemoryManagement_IRQn);
-    HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(BusFault_IRQn);
-    HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(UsageFault_IRQn);
-    HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(SVCall_IRQn);
-    HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DebugMonitor_IRQn);
-    HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(PendSV_IRQn);
-    HAL_NVIC_SetPriority(SysTick_IRQn, 14, 0);
-    HAL_NVIC_EnableIRQ(SysTick_IRQn);
-    HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(RCC_IRQn);
-    HAL_NVIC_SetPriority(RADIO_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(RADIO_IRQn);
-}
+/* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
@@ -54,6 +34,13 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern UART_HandleTypeDef hlpuart1;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
+
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
+
+/* Functions Definition ------------------------------------------------------*/
+
 /**
   * @brief  Configure the SoC peripherals at Standby mode exit.
   * @param  None
@@ -64,6 +51,11 @@ void MX_StandbyExit_PeripharalInit(void)
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
+
+  /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+  /* Re-Initialize Tick with new clock source */
+  HAL_InitTick(TICK_INT_PRIORITY);
 
   memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
   memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
@@ -77,7 +69,37 @@ void MX_StandbyExit_PeripharalInit(void)
   MX_LPUART1_UART_Init();
   MX_RNG_Init();
 
+#if (CFG_DEBUGGER_LEVEL == 0)
+  GPIO_InitTypeDef DbgIOsInit = {0};
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+#endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
+#if (CFG_LED_SUPPORTED == 1)  
+  /* Leds Initialization */
+  BSP_LED_Init(LED_BLUE);
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_RED);
+
+  APP_LED_ON( LED_BLUE );
+#endif /* (CFG_LED_SUPPORTED == 1) */
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+  /* Buttons HW Initialization */
+  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
+
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

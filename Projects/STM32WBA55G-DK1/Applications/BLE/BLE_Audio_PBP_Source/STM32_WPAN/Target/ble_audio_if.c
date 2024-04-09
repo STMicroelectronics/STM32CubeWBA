@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -279,6 +279,18 @@ void BAP_BA_HciEventHandler(void *pEvent)
   /*should not be reached*/
   Error_Handler();
 }
+
+/**
+  * @brief This function is used by the CAP Commander in the CAP Profile to handle Broadcast Assistant Events
+  *        received from the BAP Profile.
+  * @param  Event: Address of the buffer holding the Event
+  */
+void CAP_COMMANDER_BAEventHandler(void *pEvent)
+{
+  UNUSED(pEvent);
+  /*should not be reached*/
+  Error_Handler();
+}
 #endif /* (LINK_BAP_BROADCAST_ASSISTANT == 0) */
 
 
@@ -441,6 +453,14 @@ void CSIP_SET_MEMBER_HciEventHandler(void *pEvent)
 #endif /*(LINK_CSIP_SET_MEMBER == 0u)*/
 
 #if (LINK_CSIP_SET_COORDINATOR == 0u)
+/**
+  * @brief This function is used to execute Set Coordinator Task in the CSIP Profile.
+  */
+void CSIP_SET_COORDINATOR_Task(void)
+{
+  /*should not be reached*/
+  Error_Handler();
+}
 
 /** @brief This function is used by the Set Coordinator in the CSIP Profile to handle GATT Events received
   *        from the BLE core device.

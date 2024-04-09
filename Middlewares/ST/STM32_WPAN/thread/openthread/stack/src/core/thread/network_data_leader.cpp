@@ -60,7 +60,7 @@ void LeaderBase::Reset(void)
     mVersion       = Random::NonCrypto::GetUint8();
     mStableVersion = Random::NonCrypto::GetUint8();
     SetLength(0);
-    Get<ot::Notifier>().Signal(kEventThreadNetdataChanged);
+    SignalNetDataChanged();
 }
 
 Error LeaderBase::GetServiceId(uint32_t           aEnterpriseNumber,
@@ -296,6 +296,11 @@ int LeaderBase::CompareRouteEntries(int8_t   aFirstPreference,
     // that the first entry is preferred over the second one.
 
     result = ThreeWayCompare(Get<RouterTable>().GetPathCost(aSecondRloc), Get<RouterTable>().GetPathCost(aFirstRloc));
+    VerifyOrExit(result == 0);
+
+    // If all the same, prefer the BR acting as a router over an
+    // end device.
+    result = ThreeWayCompare(Mle::IsActiveRouter(aFirstRloc), Mle::IsActiveRouter(aSecondRloc));
 #endif
 
 exit:
@@ -412,7 +417,7 @@ Error LeaderBase::SetNetworkData(uint8_t        aVersion,
 
     DumpDebg("SetNetworkData", GetBytes(), GetLength());
 
-    Get<ot::Notifier>().Signal(kEventThreadNetdataChanged);
+    SignalNetDataChanged();
 
 exit:
     return error;
@@ -437,7 +442,7 @@ Error LeaderBase::SetCommissioningData(const uint8_t *aValue, uint8_t aValueLeng
     }
 
     mVersion++;
-    Get<ot::Notifier>().Signal(kEventThreadNetdataChanged);
+    SignalNetDataChanged();
 
 exit:
     return error;
@@ -530,6 +535,12 @@ Error LeaderBase::SteeringDataCheckJoiner(const MeshCoP::JoinerDiscerner &aDisce
     MeshCoP::SteeringData::CalculateHashBitIndexes(aDiscerner, filterIndexes);
 
     return SteeringDataCheck(filterIndexes);
+}
+
+void LeaderBase::SignalNetDataChanged(void)
+{
+    mMaxLength = Max(mMaxLength, GetLength());
+    Get<ot::Notifier>().Signal(kEventThreadNetdataChanged);
 }
 
 } // namespace NetworkData

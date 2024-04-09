@@ -131,14 +131,6 @@ typedef uint8_t Microphone_Mute_t;
 #define MICROPHONE_MUTE_MUTED                            (0x01)  /* Microphone is muted */
 #define MICROPHONE_MUTE_DISABLED                         (0x02)  /* Mute command are disabled and microphone is muted*/
 
-/* Types of Microphone Control Profile Linkup Mode */
-typedef uint8_t MICP_LinkupMode_t;
-#define MICP_LINKUP_MODE_COMPLETE                        (0x00u) /* Link Up procedure shall be a complete one
-                                                                 * with remote service and characteristic discovery
-                                                                 */
-#define MICP_LINKUP_MODE_RESTORE                         (0x01u) /* Link Up information is restored from previous
-                                                                 * complete Link Up from persistent memory.
-                                                                 */
 
 /* Types of Gain Mode for Audio Input Control representing the MICP Renderer’s gain adjustment functionality.*/
 typedef uint8_t MICP_AICModeGain_t;
@@ -152,16 +144,6 @@ typedef uint8_t MICP_AICMute_t;
 #define MICP_AIC_UNMUTE                                  (0x00u)
 #define MICP_AIC_MUTE                                    (0x01u)
 #define MICP_AIC_MUTE_DISABLED                           (0x02u)
-
-/* Types of source of audio for the audio input*/
-typedef uint8_t MICP_AudioInput_t;
-#define MICP_AUDIO_INPUT_UNSPECIFIED                     (0x00u) /* Unspecified Input */
-#define MICP_AUDIO_INPUT_BLUETOOTH                       (0x01u) /* Bluetooth Audio Stream */
-#define MICP_AUDIO_INPUT_MICROPHONE                      (0x02u) /* Microphone */
-#define MICP_AUDIO_INPUT_ANALOG                          (0x00u) /* Analog Interface */
-#define MICP_AUDIO_INPUT_DIGITAL                         (0x00u) /* Digital Interface */
-#define MICP_AUDIO_INPUT_RADIO                           (0x00u) /* AM/FM/XM/etc */
-#define MICP_AUDIO_INPUT_STREAMING                       (0x00u) /* Streaming Audio Source */
 
 /* Status of the audio input*/
 typedef uint8_t MICP_AudioInputStatus_t;
@@ -210,16 +192,6 @@ typedef enum
                                                    * pInfo field indicates the Audio Input Description information
                                                    * through the MICP_AudioDescription_Evt_t type.
                                                    */
-  MICP_CONTROLLER_LINKUP_COMPLETE_EVT,           /* This event is notified by MICP Controller when a link is up with the
-                                                 * remote MICP Server.
-                                                 * The potential Audio Input Control Instances and Microphone Offset Control
-                                                 * Instances discovery is complete.
-                                                 */
-  MICP_CONTROLLER_AIC_INST_INFO_EVT,            /* This event is notified by MICP Controller during the link up process
-                                                 * when an Audio Input Control Instance is completely discovered.
-                                                 * The pInfo field indicates information through
-                                                 * the MICP_AICInstInfo_Evt_t type.
-                                                 */
   MICP_CONTROLLER_OPERATION_COMPLETE_EVT,        /* This event is notified when a MICP Controller Operation is complete.
                                                  * pInfo field indicates the Complete Operation to the remote
                                                  * Microphone Control Device through the MICP_CLT_OpComplete_Evt_t
@@ -281,21 +253,25 @@ typedef enum
                                                  */
 } MICP_NotCode_t;
 
+
 /* Structure of AIC Instance*/
 typedef struct
 {
   uint8_t               ID;
-  MICP_AudioInput_t      AudioInputType;
+  Audio_Input_t         AudioInputType;
+  uint16_t              StartAttHandle;         /* ATT Start Handle of the AIC Instance in the remote MICP Device */
+  uint16_t              EndAttHandle;           /* ATT End Handle of the AIC Instance in the remote MICP Device */
 } MICP_AICInstInfo_t;
 
+/* Structure including information of the MICP*/
 typedef struct
 {
   uint8_t               NumAICInst;     /*Number of discovered AIC Instances*/
   MICP_AICInstInfo_t    *pAICInst;      /*Pointer on discovered AIC Instance table*/
+  uint16_t              StartAttHandle; /* ATT Start Handle of Microphone Input Control Service in the remote MICP Device */
+  uint16_t              EndAttHandle;   /* ATT End Handle of the Microphone Input Control Service in the remote MICP Device */
 } MICP_Info_t;
 
-/* Structure used in parameter when MICP_CONTROLLER_AIC_INST_INFO_EVT event is notified*/
-typedef MICP_AICInstInfo_t MICP_AICInstInfo_Evt_t;
 
 /* Audio Input State Structure  */
 typedef struct
@@ -333,7 +309,7 @@ typedef struct
 /* Type associated to MICP_CONTROLLER_CTRL_OPERATION_TRANSMITTED_EVT event*/
 typedef struct
 {
-  MICP_CtrlOpcode_t      CtrlOp; /* Control Operation opcode */
+  MICP_CtrlOpcode_t     CtrlOp; /* Control Operation opcode */
   uint8_t               Inst;    /* Instance ID if Control Operation is an AICS control operation */
 }MICP_CLT_CtrlOpTransmitted_Evt_t;
 
@@ -382,17 +358,17 @@ typedef struct
 
 typedef struct
 {
-  uint8_t               InstID;                 /* Instance Identifier */
-  uint8_t               Status;                 /* Current state of the audio Input instance :
-                                                 * 0 : Inactive
-                                                 * 1 : Active
-                                                 */
-  MICP_AudioInputState_t State;                  /* Audio Input State of the audio input Instance */
-  MICP_GainSettingProp_t Prop;                   /* Gain Setting Properties of the audio input Instance  */
-  MICP_AudioInput_t      AudioInputType;         /* Audio Input Type of the audio input Instance  */
-  uint8_t               MaxDescriptionLength;   /* Maximum Size of the Audio input Description string */
-  uint8_t               *pDescription;          /* Pointer on Description string of the audio input Instance  */
-  uint8_t               DescriptionLength;      /* Length of the Description string */
+  uint8_t                       InstID;                 /* Instance Identifier */
+  uint8_t                       Status;                 /* Current state of the audio Input instance :
+                                                         * 0 : Inactive
+                                                         * 1 : Active
+                                                         */
+  MICP_AudioInputState_t        State;                  /* Audio Input State of the audio input Instance */
+  MICP_GainSettingProp_t        Prop;                   /* Gain Setting Properties of the audio input Instance  */
+  Audio_Input_t                 AudioInputType;         /* Audio Input Type of the audio input Instance  */
+  uint8_t                       MaxDescriptionLength;   /* Maximum Size of the Audio input Description string */
+  uint8_t                       *pDescription;          /* Pointer on Description string of the audio input Instance  */
+  uint8_t                       DescriptionLength;      /* Length of the Description string */
 }MICP_AIC_InitInst_t;
 
 /* Microphone Control Device Configuration */

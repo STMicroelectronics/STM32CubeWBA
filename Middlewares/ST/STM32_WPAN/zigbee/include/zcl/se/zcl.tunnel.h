@@ -364,8 +364,4 @@ uint32_t ZbZclTunnelStateGetDataLen(struct ZbZclTunnelStateT *state, bool clear_
 struct ZbZclClusterT * ZbZclTunnelMirrorAlloc(struct ZigBeeT *zb, uint8_t endpoint,
     struct ZbZclClusterT *tunnel, struct ZbZclClusterT *meter_mirror);
 
-/* For internal testing only ----------------------------------------------- */
-/* Change the ID of the current tunnel */
-bool zcl_tunnel_client_test_change_id(struct ZbZclClusterT *cluster, uint16_t tunnel_id);
-
 #endif

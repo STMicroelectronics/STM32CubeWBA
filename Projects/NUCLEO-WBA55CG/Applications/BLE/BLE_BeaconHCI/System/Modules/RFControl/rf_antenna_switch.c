@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,12 @@
 #include "app_conf.h"
 
 #if (SUPPORT_AOA_AOD == 1)
+static const st_gpio_antsw_t rt_antenna_switch_gpio_table[] =
+{
+  RF_ANTSW0,
+  RF_ANTSW1,
+  RF_ANTSW2
+};
 
 static void RF_CONTROL_AntennaSwitch_Enable(void);
 static void RF_CONTROL_AntennaSwitch_Disable(void);

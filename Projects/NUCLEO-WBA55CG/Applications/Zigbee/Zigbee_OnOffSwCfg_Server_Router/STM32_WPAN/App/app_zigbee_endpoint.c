@@ -68,11 +68,14 @@
 /* USER CODE BEGIN OnoffConfig defines */
 /* USER CODE END OnoffConfig defines */
 
+
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_SWITCH_ACTION          ZCL_ONOFF_SWCONFIG_TOGGLE_TOGGLE
 
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER2_NAME
 #define APP_ZIGBEE_APPLICATION_OS_NAME    "."
+
+#define APP_ZIGBEE_TOGGLE_PERIOD          (uint32_t)( 1000u ) /* Toggle OnOff every seconds 1s */
 
 /* USER CODE END PD */
 
@@ -94,13 +97,16 @@
 static uint16_t   iDeviceShortAddress;
 
 /* USER CODE BEGIN PV */
+static UTIL_TIMER_Object_t      stTimerToggle;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE BEGIN PFP */
+static void APP_ZIGBEE_ApplicationTaskInit    ( void );
 static void APP_ZIGBEE_OnOffClientStart       ( void );
+static void APP_ZIGBEE_TimerToggleCallback    ( void * arg );
 
 /* USER CODE END PFP */
 
@@ -124,6 +130,8 @@ void APP_ZIGBEE_ApplicationInit(void)
   stZigbeeAppInfo.bNwkStartup = true;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
+  /* Initialization of used Tasks */
+  APP_ZIGBEE_ApplicationTaskInit();
 
   /* USER CODE END APP_ZIGBEE_ApplicationInit */
 
@@ -187,6 +195,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -309,6 +319,17 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
 /**
+ * @brief  Zigbee application Task initialization
+ * @param  None
+ * @retval None
+ */
+static void APP_ZIGBEE_ApplicationTaskInit( void )
+{
+  /* Create timer to toggle the OnOff */
+  UTIL_TIMER_Create( &stTimerToggle, APP_ZIGBEE_TOGGLE_PERIOD, UTIL_TIMER_PERIODIC, APP_ZIGBEE_TimerToggleCallback, NULL );
+}
+
+/**
  * @brief  Start the OnOff Client.
  * @param  None
  * @retval None
@@ -415,5 +436,42 @@ void APPE_Button2Action(void)
   }
 }
 
+
+/**
+ * @brief  Management of the toggle OnOff (via Button SW1) with the Timer
+ * @param  None
+ * @retval None
+ */
+static void APP_ZIGBEE_TimerToggleCallback( void * arg )
+{
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
+}
+
+/**
+ * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
+ * @param  None
+ * @retval None
+ */
+void APPE_Button3Action(void)
+{
+  static  uint8_t   cToggleOn = 0;
+  
+  /* First, verify if Appli has already Join a Network  */ 
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    if ( cToggleOn == 0u )
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Start automatic On/Off." );
+      UTIL_TIMER_Start( &stTimerToggle );
+      cToggleOn = 1;
+    }
+    else
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Stop automatic On/Off." );
+      UTIL_TIMER_Stop( &stTimerToggle ); 
+      cToggleOn = 0;
+    }
+  }
+}
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

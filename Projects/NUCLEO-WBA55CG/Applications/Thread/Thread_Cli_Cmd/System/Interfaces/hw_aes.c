@@ -25,11 +25,10 @@
 
 #define HW_AESX AES
 
-#define HW_AES_CLOCK_ENABLE( ) \
-          LL_AHB2_GRP1_EnableClock( LL_AHB2_GRP1_PERIPH_AES )
+#define HW_AES_CLOCK_ENABLE( )    LL_AHB2_GRP1_EnableClock( LL_AHB2_GRP1_PERIPH_AES )
+#define HW_AES_CLOCK_DISABLE( )   LL_AHB2_GRP1_DisableClock( LL_AHB2_GRP1_PERIPH_AES )
 
-#define HW_AES_CLOCK_DISABLE( ) \
-          LL_AHB2_GRP1_DisableClock( LL_AHB2_GRP1_PERIPH_AES )
+#define HW_AES_CLOCK_IS_ENABLE( ) LL_AHB2_GRP1_IsEnabledClock( LL_AHB2_GRP1_PERIPH_AES )
 
 /*****************************************************************************/
 
@@ -50,7 +49,7 @@ int HW_AES_Enable( void )
 
   /* Test if the driver is not already in use */
 
-  if ( av->run )
+  if ( HW_AES_CLOCK_IS_ENABLE() )
   {
     return FALSE;
   }

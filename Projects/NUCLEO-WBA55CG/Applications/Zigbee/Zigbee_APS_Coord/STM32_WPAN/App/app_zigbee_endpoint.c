@@ -124,14 +124,16 @@ void APP_ZIGBEE_PersistenceStartup(void)
  */
 void APP_ZIGBEE_ConfigEndpoints(void)
 {
-  struct ZbApsmeAddEndpointReqT   stReq;
+  struct ZbApsmeAddEndpointReqT   stRequest;
   struct ZbApsmeAddEndpointConfT  stConfig;
 
   /* Add EndPoint */
-  memset( &stReq, 0, sizeof( stReq ) );
-  stReq.profileId = APP_ZIGBEE_PROFILE_ID;
-  stReq.endpoint = APP_ZIGBEE_ENDPOINT;
-  ZbZclAddEndpoint( stZigbeeAppInfo.pstZigbee, &stReq, &stConfig );
+  memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
+  stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
+  stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
+  ZbZclAddEndpoint( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
   assert( stConfig.status == ZB_STATUS_SUCCESS );
 
   /* Create filter to receive APS message */
@@ -241,7 +243,7 @@ static void APP_ZIGBEE_ApsParseFrame( struct ZbApsdeDataIndT * pstDataInd )
   
   for ( iIndex = 0; iIndex < iMaxIndex; iIndex++ )
   {
-    printf( (char *)&szPayload[iIndex * 4u], "0x%02X", pstDataInd->asdu[iIndex] );
+    snprintf( (char *)&szPayload[iIndex * 4u], sizeof( szPayload ), "0x%02X", pstDataInd->asdu[iIndex] );
   }
   LOG_INFO_APP( "  Payload: %s", szPayload );
   

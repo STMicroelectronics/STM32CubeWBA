@@ -41,17 +41,17 @@ typedef enum {
 } LC3_FrameDuration;
 
 typedef enum {
-    DEEPTH_16 = 16u,
-    DEEPTH_24 = 24u,
-    DEEPTH_32 = 32u,
-} LC3_SampleDeepth;
+    DEPTH_16 = 16u,
+    DEPTH_24 = 24u,
+    DEPTH_32 = 32u,
+} LC3_SampleDepth;
 
 typedef enum {
     LC3_OK                  =  0,
     LC3_FREQ_UNSUPORTED     = -1,
     LC3_FRAME_MS_UNSUPORTED = -2,
     LC3_BITRATE_UNSUPORTED  = -3,
-    LC3_DEEPTH_UNSUPORTED   = -4,
+    LC3_DEPTH_UNSUPORTED    = -4,
     LC3_UNKNOWN_ERROR       = -5,
     LC3_BAD_FRAME_ERROR     = +1
 } LC3_Status;

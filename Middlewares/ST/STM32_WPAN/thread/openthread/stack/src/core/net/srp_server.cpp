@@ -43,6 +43,7 @@
 #include "common/new.hpp"
 #include "common/num_utils.hpp"
 #include "common/random.hpp"
+#include "common/string.hpp"
 #include "net/dns_types.hpp"
 #include "thread/thread_netif.hpp"
 
@@ -442,19 +443,19 @@ void Server::CommitSrpUpdate(Error                    aError,
                              const LeaseConfig       &aLeaseConfig)
 {
     Host    *existingHost;
-    uint32_t hostLease;
-    uint32_t hostKeyLease;
-    uint32_t grantedLease;
-    uint32_t grantedKeyLease;
     uint32_t grantedTtl;
-    bool     shouldFreeHost = true;
+    uint32_t hostLease       = 0;
+    uint32_t hostKeyLease    = 0;
+    uint32_t grantedLease    = 0;
+    uint32_t grantedKeyLease = 0;
+    bool     shouldFreeHost  = true;
 
     SuccessOrExit(aError);
 
     hostLease       = aHost.GetLease();
     hostKeyLease    = aHost.GetKeyLease();
     grantedLease    = aLeaseConfig.GrantLease(hostLease);
-    grantedKeyLease = aLeaseConfig.GrantKeyLease(hostKeyLease);
+    grantedKeyLease = aHost.ShouldUseShortLeaseOption() ? grantedLease : aLeaseConfig.GrantKeyLease(hostKeyLease);
     grantedTtl      = aTtlConfig.GrantTtl(grantedLease, aHost.GetTtl());
 
     aHost.SetLease(grantedLease);
@@ -523,7 +524,7 @@ exit:
     {
         if (aError == kErrorNone && !(grantedLease == hostLease && grantedKeyLease == hostKeyLease))
         {
-            SendResponse(aDnsHeader, grantedLease, grantedKeyLease, *aMessageInfo);
+            SendResponse(aDnsHeader, grantedLease, grantedKeyLease, aHost.ShouldUseShortLeaseOption(), *aMessageInfo);
         }
         else
         {
@@ -824,7 +825,7 @@ Error Server::ProcessHostDescriptionInstruction(Host                  &aHost,
                                                 const Message         &aMessage,
                                                 const MessageMetadata &aMetadata) const
 {
-    Error    error;
+    Error    error  = kErrorNone;
     uint16_t offset = aMetadata.mOffset;
 
     OT_ASSERT(aHost.GetFullName() == nullptr);
@@ -915,12 +916,14 @@ Error Server::ProcessServiceDiscoveryInstructions(Host                  &aHost,
 
     for (uint16_t numRecords = aMetadata.mDnsHeader.GetUpdateRecordCount(); numRecords > 0; numRecords--)
     {
-        char           serviceName[Dns::Name::kMaxNameSize];
-        char           instanceName[Dns::Name::kMaxNameSize];
-        Dns::PtrRecord ptrRecord;
-        const char    *subServiceName;
-        Service       *service;
-        bool           isSubType;
+        char                            serviceName[Dns::Name::kMaxNameSize];
+        char                            instanceLabel[Dns::Name::kMaxLabelSize];
+        char                            instanceServiceName[Dns::Name::kMaxNameSize];
+        String<Dns::Name::kMaxNameSize> instanceName;
+        Dns::PtrRecord                  ptrRecord;
+        const char                     *subServiceName;
+        Service                        *service;
+        bool                            isSubType;
 
         SuccessOrExit(error = Dns::Name::ReadName(aMessage, offset, serviceName, sizeof(serviceName)));
         VerifyOrExit(Dns::Name::IsSubDomainOf(serviceName, GetDomain()), error = kErrorSecurity);
@@ -937,7 +940,9 @@ Error Server::ProcessServiceDiscoveryInstructions(Host                  &aHost,
 
         SuccessOrExit(error);
 
-        SuccessOrExit(error = Dns::Name::ReadName(aMessage, offset, instanceName, sizeof(instanceName)));
+        SuccessOrExit(error = ptrRecord.ReadPtrName(aMessage, offset, instanceLabel, sizeof(instanceLabel),
+                                                    instanceServiceName, sizeof(instanceServiceName)));
+        instanceName.Append("%s.%s", instanceLabel, instanceServiceName);
 
         VerifyOrExit(ptrRecord.GetClass() == Dns::ResourceRecord::kClassNone ||
                          ptrRecord.GetClass() == aMetadata.mDnsZone.GetClass(),
@@ -957,13 +962,14 @@ Error Server::ProcessServiceDiscoveryInstructions(Host                  &aHost,
         }
 
         // Verify that instance name and service name are related.
-        VerifyOrExit(Dns::Name::IsSubDomainOf(instanceName, isSubType ? subServiceName : serviceName),
+        VerifyOrExit(Dns::Name::IsSubDomainOf(instanceName.AsCString(), isSubType ? subServiceName : serviceName),
                      error = kErrorFailed);
 
         // Ensure the same service does not exist already.
-        VerifyOrExit(aHost.FindService(serviceName, instanceName) == nullptr, error = kErrorFailed);
+        VerifyOrExit(aHost.FindService(serviceName, instanceName.AsCString()) == nullptr, error = kErrorFailed);
 
-        service = aHost.AddNewService(serviceName, instanceName, isSubType, aMetadata.mRxTime);
+        service =
+            aHost.AddNewService(serviceName, instanceName.AsCString(), instanceLabel, isSubType, aMetadata.mRxTime);
         VerifyOrExit(service != nullptr, error = kErrorNoBufs);
 
         // This RR is a "Delete an RR from an RRset" update when the CLASS is NONE.
@@ -1116,14 +1122,17 @@ Error Server::ProcessAdditionalSection(Host *aHost, const Message &aMessage, Mes
 
     SuccessOrExit(error = Dns::Name::ReadName(aMessage, offset, name, sizeof(name)));
     SuccessOrExit(error = aMessage.Read(offset, optRecord));
-    SuccessOrExit(error = aMessage.Read(offset + sizeof(optRecord), leaseOption));
-    VerifyOrExit(leaseOption.IsValid(), error = kErrorFailed);
-    VerifyOrExit(optRecord.GetSize() == sizeof(optRecord) + sizeof(leaseOption), error = kErrorParse);
+
+    SuccessOrExit(error = leaseOption.ReadFrom(aMessage, offset + sizeof(optRecord), optRecord.GetLength()));
 
     offset += optRecord.GetSize();
 
     aHost->SetLease(leaseOption.GetLeaseInterval());
     aHost->SetKeyLease(leaseOption.GetKeyLeaseInterval());
+
+    // If the client included the short variant of Lease Option,
+    // server must also use the short variant in its response.
+    aHost->SetUseShortLeaseOption(leaseOption.IsShortVariant());
 
     if (aHost->GetLease() > 0)
     {
@@ -1199,7 +1208,7 @@ Error Server::VerifySignature(const Dns::Ecdsa256KeyRecord &aKeyRecord,
 
     // The uncompressed (canonical) form of the signer name should be used for signature
     // verification. See https://tools.ietf.org/html/rfc2931#section-3.1 for details.
-    signerNameMessage = Get<Ip6::Udp>().NewMessage(0);
+    signerNameMessage = Get<Ip6::Udp>().NewMessage();
     VerifyOrExit(signerNameMessage != nullptr, error = kErrorNoBufs);
     SuccessOrExit(error = Dns::Name::AppendName(aSignerName, *signerNameMessage));
     sha256.Update(*signerNameMessage, signerNameMessage->GetOffset(), signerNameMessage->GetLength());
@@ -1396,7 +1405,7 @@ void Server::SendResponse(const Dns::UpdateHeader    &aHeader,
     Message          *response = nullptr;
     Dns::UpdateHeader header;
 
-    response = GetSocket().NewMessage(0);
+    response = GetSocket().NewMessage();
     VerifyOrExit(response != nullptr, error = kErrorNoBufs);
 
     header.SetMessageId(aHeader.GetMessageId());
@@ -1429,6 +1438,7 @@ exit:
 void Server::SendResponse(const Dns::UpdateHeader &aHeader,
                           uint32_t                 aLease,
                           uint32_t                 aKeyLease,
+                          bool                     mUseShortLeaseOption,
                           const Ip6::MessageInfo  &aMessageInfo)
 {
     Error             error;
@@ -1436,8 +1446,9 @@ void Server::SendResponse(const Dns::UpdateHeader &aHeader,
     Dns::UpdateHeader header;
     Dns::OptRecord    optRecord;
     Dns::LeaseOption  leaseOption;
+    uint16_t          optionSize;
 
-    response = GetSocket().NewMessage(0);
+    response = GetSocket().NewMessage();
     VerifyOrExit(response != nullptr, error = kErrorNoBufs);
 
     header.SetMessageId(aHeader.GetMessageId());
@@ -1453,13 +1464,21 @@ void Server::SendResponse(const Dns::UpdateHeader &aHeader,
     optRecord.Init();
     optRecord.SetUdpPayloadSize(kUdpPayloadSize);
     optRecord.SetDnsSecurityFlag();
-    optRecord.SetLength(sizeof(Dns::LeaseOption));
-    SuccessOrExit(error = response->Append(optRecord));
 
-    leaseOption.Init();
-    leaseOption.SetLeaseInterval(aLease);
-    leaseOption.SetKeyLeaseInterval(aKeyLease);
-    SuccessOrExit(error = response->Append(leaseOption));
+    if (mUseShortLeaseOption)
+    {
+        leaseOption.InitAsShortVariant(aLease);
+    }
+    else
+    {
+        leaseOption.InitAsLongVariant(aLease, aKeyLease);
+    }
+
+    optionSize = static_cast<uint16_t>(leaseOption.GetSize());
+    optRecord.SetLength(optionSize);
+
+    SuccessOrExit(error = response->Append(optRecord));
+    SuccessOrExit(error = response->AppendBytes(&leaseOption, optionSize));
 
     SuccessOrExit(error = GetSocket().SendTo(*response, aMessageInfo));
 
@@ -1841,8 +1860,10 @@ void Server::Service::Log(Action) const {}
 //---------------------------------------------------------------------------------------------------------------------
 // Server::Service::Description
 
-Error Server::Service::Description::Init(const char *aInstanceName, Host &aHost)
+Error Server::Service::Description::Init(const char *aInstanceName, const char *aInstanceLabel, Host &aHost)
 {
+    Error error;
+
     mNext       = nullptr;
     mHost       = &aHost;
     mPriority   = 0;
@@ -1854,7 +1875,11 @@ Error Server::Service::Description::Init(const char *aInstanceName, Host &aHost)
     mUpdateTime = TimerMilli::GetNow().GetDistantPast();
     mTxtData.Free();
 
-    return mInstanceName.Set(aInstanceName);
+    SuccessOrExit(error = mInstanceLabel.Set(aInstanceLabel));
+    error = mInstanceName.Set(aInstanceName);
+
+exit:
+    return error;
 }
 
 bool Server::Service::Description::Matches(const char *aInstanceName) const
@@ -1981,7 +2006,7 @@ Error Server::Host::ProcessTtl(uint32_t aTtl)
 {
     // This method processes the TTL value received in a resource record.
     //
-    // If no TTL value is stored, this method wil set the stored value to @p aTtl and return `kErrorNone`.
+    // If no TTL value is stored, this method will set the stored value to @p aTtl and return `kErrorNone`.
     // If a TTL value is stored and @p aTtl equals the stored value, this method returns `kErrorNone`.
     // Otherwise, this method returns `kErrorRejected`.
 
@@ -2029,6 +2054,7 @@ const Server::Service *Server::Host::FindNextService(const Service *aPrevService
 
 Server::Service *Server::Host::AddNewService(const char *aServiceName,
                                              const char *aInstanceName,
+                                             const char *aInstanceLabel,
                                              bool        aIsSubType,
                                              TimeMilli   aUpdateTime)
 {
@@ -2037,7 +2063,7 @@ Server::Service *Server::Host::AddNewService(const char *aServiceName,
 
     if (desc == nullptr)
     {
-        desc.Reset(Service::Description::AllocateAndInit(aInstanceName, *this));
+        desc.Reset(Service::Description::AllocateAndInit(aInstanceName, aInstanceLabel, *this));
         VerifyOrExit(desc != nullptr);
     }
 
@@ -2048,6 +2074,12 @@ Server::Service *Server::Host::AddNewService(const char *aServiceName,
 
 exit:
     return service;
+}
+
+Server::Service *Server::Host::AddNewService(const Service &aService, TimeMilli aUpdateTime)
+{
+    return AddNewService(aService.GetServiceName(), aService.GetInstanceName(), aService.GetInstanceLabel(),
+                         aService.IsSubType(), aUpdateTime);
 }
 
 void Server::Host::RemoveService(Service *aService, RetainName aRetainName, NotifyMode aNotifyServiceHandler)
@@ -2090,8 +2122,7 @@ Error Server::Host::AddCopyOfServiceAsDeletedIfNotPresent(const Service &aServic
 
     VerifyOrExit(FindService(aService.GetServiceName(), aService.GetInstanceName()) == nullptr);
 
-    newService =
-        AddNewService(aService.GetServiceName(), aService.GetInstanceName(), aService.IsSubType(), aUpdateTime);
+    newService = AddNewService(aService, aUpdateTime);
 
     VerifyOrExit(newService != nullptr, error = kErrorNoBufs);
 
@@ -2136,16 +2167,14 @@ Error Server::Host::MergeServicesAndResourcesFrom(Host &aHost)
 
         if (service.mIsDeleted)
         {
-            // `RemoveService()` does nothing if `exitsingService` is `nullptr`.
+            // `RemoveService()` does nothing if `existingService` is `nullptr`.
             RemoveService(existingService, kRetainName, kDoNotNotifyServiceHandler);
             continue;
         }
 
         // Add/Merge `service` into the existing service or a allocate a new one
 
-        newService = (existingService != nullptr) ? existingService
-                                                  : AddNewService(service.GetServiceName(), service.GetInstanceName(),
-                                                                  service.IsSubType(), service.GetUpdateTime());
+        newService = (existingService != nullptr) ? existingService : AddNewService(service, service.GetUpdateTime());
 
         VerifyOrExit(newService != nullptr, error = kErrorNoBufs);
 

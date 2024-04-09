@@ -1,12 +1,11 @@
 /*****************************************************************************
  * @file    ble_events.h
- * @author  MDG
  * @brief   STM32WBA BLE API (event callbacks)
  *          Auto-generated file: do not edit!
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2023 STMicroelectronics.
+ * Copyright (c) 2018-2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -1536,6 +1535,44 @@ tBleStatus hci_le_biginfo_advertising_report_event( uint16_t Sync_Handle,
                                                     uint8_t Framing,
                                                     uint8_t Encryption );
 
+/**
+ * @brief HCI_LE_SUBRATE_CHANGE_EVENT
+ * This event is used to indicate that a Connection Subrate Update procedure
+ * has completed and some parameters of the specified connection have changed.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.7.65.35].
+ * 
+ * @param Status Status error code.
+ * @param Connection_Handle Connection handle for which the command applies.
+ *        Values:
+ *        - 0x0000 ... 0x0EFF
+ * @param Subrate_Factor New subrate factor applied to the specified underlying
+ *        connection interval Range.
+ *        Values:
+ *        - 0x0001 ... 0x01F4
+ * @param Peripheral_Latency New Peripheral latency for the connection in
+ *        number of subrated connection events.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Continuation_Number Minimum number of underlying connection events to
+ *        remain active after a packet containing a Link Layer PDU with a non-
+ *        zero Length field is sent or received in requests by a Peripheral.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Supervision_Timeout Supervision timeout for the LE Link.
+ *        It shall be a multiple of 10 ms and larger than (1 +
+ *        connPeripheralLatency) * connInterval * 2.
+ *        Time = N * 10 ms.
+ *        Values:
+ *        - 0x000A (100 ms)  ... 0x0C80 (32000 ms)
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_subrate_change_event( uint8_t Status,
+                                        uint16_t Connection_Handle,
+                                        uint16_t Subrate_Factor,
+                                        uint16_t Peripheral_Latency,
+                                        uint16_t Continuation_Number,
+                                        uint16_t Supervision_Timeout );
+
 /* ACI GAP events */
 
 /**
@@ -2199,10 +2236,15 @@ tBleStatus aci_gatt_read_multi_permit_req_event( uint16_t Connection_Handle,
 
 /**
  * @brief ACI_GATT_TX_POOL_AVAILABLE_EVENT
- * Each time BLE stack raises the error code BLE_STATUS_INSUFFICIENT_RESOURCES
- * (0x64), the ACI_GATT_TX_POOL_AVAILABLE_EVENT event is generated as soon as
- * there are at least two buffers available for notifications or write
- * commands.
+ * Each time one of the following GATT commands raises the error code
+ * BLE_STATUS_INSUFFICIENT_RESOURCES, the ACI_GATT_TX_POOL_AVAILABLE_EVENT
+ * event is generated as soon as there is at least one buffer (with a size of
+ * ATT_MTU) available in the TX pool:
+ * - ACI_GATT_UPDATE_CHAR_VALUE,
+ * - ACI_GATT_UPDATE_CHAR_VALUE_EXT,
+ * - ACI_GATT_SEND_MULT_NOTIFICATION,
+ * - ACI_GATT_WRITE_WITHOUT_RESP,
+ * - ACI_GATT_SIGNED_WRITE_WITHOUT_RESP.
  * 
  * @param Connection_Handle Not used.
  * @param Available_Buffers Number of buffers available.
@@ -2675,9 +2717,9 @@ tBleStatus aci_l2cap_coc_rx_data_event( uint8_t Channel_Index,
 /**
  * @brief ACI_L2CAP_COC_TX_POOL_AVAILABLE_EVENT
  * Each time ACI_L2CAP_COC_TX_DATA raises the error code
- * BLE_STATUS_INSUFFICIENT_RESOURCES (0x64), the
- * ACI_L2CAP_COC_TX_POOL_AVAILABLE_EVENT event is generated as soon as there is
- * a free buffer available for sending K-frames.
+ * BLE_STATUS_INSUFFICIENT_RESOURCES, the ACI_L2CAP_COC_TX_POOL_AVAILABLE_EVENT
+ * event is generated as soon as there is a free buffer available for sending
+ * K-frames.
  * 
  * @return Value indicating success or error code.
  */

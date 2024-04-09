@@ -25,18 +25,18 @@
 #include "ll_sys_if.h"
 #include "app_threadx.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
+#include "temp_measurement.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Private defines -----------------------------------------------------------*/
 
 /* LINK_LAYER_TASK related defines */
-#define TASK_LINK_LAYER_STACK_SIZE          (256*7)
+#define TASK_LINK_LAYER_STACK_SIZE          (1024)
 #define CFG_TASK_PRIO_LINK_LAYER            (15)
 #define CFG_TASK_PREEMP_LINK_LAYER          (0)
 
 /* LINK_LAYER_TEMP_MEAS_TASK related defines */
-#define TASK_LINK_LAYER_TEMP_STACK_SIZE     (256*7)
+#define TASK_LINK_LAYER_TEMP_STACK_SIZE     (256)
 #define CFG_TASK_PRIO_LINK_LAYER_TEMP       (15)
 #define CFG_TASK_PREEMP_LINK_LAYER_TEMP     (0)
 
@@ -79,7 +79,6 @@ TX_MUTEX                LinkLayerMutex;
 /* Private functions prototypes-----------------------------------------------*/
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
-static void request_temperature_measurement(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* USER CODE BEGIN PFP */
@@ -96,7 +95,7 @@ static void request_temperature_measurement(void);
 
 /**
  * @brief  Link Layer Task for ThreadX
- * @param  None
+ * @param  ULONG thread_input
  * @retval None
  */
 static void ll_sys_bg_process_task( ULONG thread_input )
@@ -181,11 +180,36 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
+  uint16_t freq_value = 0;
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
    */
   ll_intf_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  switch(linklayer_slp_clk_src)
+  {
+    case LL_RCC_RADIOSLEEPSOURCE_LSE:
+      linklayer_slp_clk_src = RTC_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_LSI:
+      linklayer_slp_clk_src = RCO_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_HSE_DIV1000:
+      linklayer_slp_clk_src = CRYSTAL_OSCILLATOR_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_NONE:
+      /* No Link Layer sleep clock source selected */
+      assert_param(0);
+      break;
+  }
+  ll_intf_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   /* Initialize link layer temperature measurement background task */
@@ -201,11 +225,11 @@ void ll_sys_config_params(void)
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 /**
- * @brief  Link Layer Temperature Measurement  Task for FreeRTOS
+ * @brief  Link Layer Temperature Measurement Task for ThreadX
  * @param  thread_input   Argument passed the first time.
  * @retval None
  */
-static void request_temperature_measurement_task( ULONG thread_input )
+static void TEMPMEAS_RequestTemperatureMeasurement_task( ULONG thread_input )
 {
   UNUSED( thread_input );
 
@@ -213,7 +237,7 @@ static void request_temperature_measurement_task( ULONG thread_input )
   {
     tx_semaphore_get(&LinkLayerMeasSemaphore, TX_WAIT_FOREVER);
     tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    request_temperature_measurement();
+    TEMPMEAS_RequestTemperatureMeasurement();
     tx_mutex_put(&LinkLayerMutex);
     tx_thread_relinquish();
   }
@@ -241,7 +265,7 @@ void ll_sys_bg_temperature_measurement_init(void)
   ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_LINK_LAYER_TEMP_STACK_SIZE, TX_NO_WAIT );
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_thread_create( &LinkLayerMeasThread, "LinkLayerMeasThread", request_temperature_measurement_task, 0, pStack,
+    ThreadXStatus = tx_thread_create( &LinkLayerMeasThread, "LinkLayerMeasThread", TEMPMEAS_RequestTemperatureMeasurement_task, 0, pStack,
                                       TASK_LINK_LAYER_TEMP_STACK_SIZE, CFG_TASK_PRIO_LINK_LAYER_TEMP, CFG_TASK_PREEMP_LINK_LAYER_TEMP,
                                       TX_NO_TIME_SLICE, TX_AUTO_START );
   }
@@ -259,37 +283,17 @@ void ll_sys_bg_temperature_measurement_init(void)
   */
 void ll_sys_bg_temperature_measurement(void)
 {
-  tx_semaphore_put(&LinkLayerMeasSemaphore);
-}
+  static uint8_t initial_temperature_acquisition = 0;
 
-/**
-  * @brief  Request temperature measurement
-  * @param  None
-  * @retval None
-  */
-void request_temperature_measurement(void)
-{
-  int16_t temperature_value = 0;
-
-  /* Enter limited critical section : disable all the interrupts with priority higher than RCC one
-   * Concerns link layer interrupts (high and SW low) or any other high priority user system interrupt
-   */
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO<<4);
-
-  /* Request ADC IP activation */
-  adc_ctrl_req(SYS_ADC_LL_EVT, ADC_ON);
-
-  /* Get temperature from ADC dedicated channel */
-  temperature_value = adc_ctrl_request_temperature();
-
-  /* Request ADC IP deactivation */
-  adc_ctrl_req(SYS_ADC_LL_EVT, ADC_OFF);
-
-  /* Give the temperature information to the link layer */
-  ll_intf_set_temperature_value(temperature_value);
-
-  /* Exit limited critical section */
-  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
+  if(initial_temperature_acquisition == 0)
+  {
+    TEMPMEAS_RequestTemperatureMeasurement();
+    initial_temperature_acquisition = 1;
+  }
+  else
+  {
+    tx_semaphore_put(&LinkLayerMeasSemaphore);
+  }
 }
 
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */

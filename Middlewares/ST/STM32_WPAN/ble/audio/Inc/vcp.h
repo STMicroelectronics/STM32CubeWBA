@@ -84,7 +84,7 @@ tBleStatus VCP_RENDER_UpdateGainSettingProperties(uint8_t InstID,VCP_GainSetting
   * @param  AudioInputType: Audio Input Type value
   * @retval status of the operation
   */
-tBleStatus VCP_RENDER_UpdateAudioInputType(uint8_t InstID,VCP_AudioInput_t AudioInputType);
+tBleStatus VCP_RENDER_UpdateAudioInputType(uint8_t InstID,Audio_Input_t AudioInputType);
 
 /**
   * @brief  Update the statue of the Audio Input Device Instance
@@ -155,7 +155,7 @@ tBleStatus VCP_CONTROLLER_ReadVolumeFlags(uint16_t ConnHandle);
   * @note   This command doesn't affect the Mute setting in the VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_DecreaseVolume(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -168,7 +168,7 @@ tBleStatus VCP_CONTROLLER_DecreaseVolume(uint16_t ConnHandle, uint8_t ChangeCoun
   * @note   This command doesn't affect the Mute setting in the VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_IncreaseVolume(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -180,7 +180,7 @@ tBleStatus VCP_CONTROLLER_IncreaseVolume(uint16_t ConnHandle, uint8_t ChangeCoun
   *         parameter doesn't match with the Change Counter of the remote VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_UnmuteAndDecreaseVolume(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -192,7 +192,7 @@ tBleStatus VCP_CONTROLLER_UnmuteAndDecreaseVolume(uint16_t ConnHandle, uint8_t C
   *         parameter doesn't match with the Change Counter of the remote VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_UnmuteAndIncreaseVolume(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -205,7 +205,7 @@ tBleStatus VCP_CONTROLLER_UnmuteAndIncreaseVolume(uint16_t ConnHandle, uint8_t C
   * @param  ConnHandle: ACL connection handle
   * @param  AbsVolume: Volume Setting
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_SetAbsVolume(uint16_t ConnHandle,uint8_t AbsVolume, uint8_t ChangeCounter);
@@ -217,7 +217,7 @@ tBleStatus VCP_CONTROLLER_SetAbsVolume(uint16_t ConnHandle,uint8_t AbsVolume, ui
   *         parameter doesn't match with the Change Counter of the remote VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_Unmute(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -229,7 +229,7 @@ tBleStatus VCP_CONTROLLER_Unmute(uint16_t ConnHandle, uint8_t ChangeCounter);
   *         parameter doesn't match with the Change Counter of the remote VCP Renderer.
   * @param  ConnHandle: ACL connection handle
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
-  *                        VCP_CONTROLLER_VOLUME_STATE_EVT event.
+  *                        VCP_CONTROLLER_VOLUME_STATE_EVT or VCP_CONTROLLER_UPDATED_VOLUME_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_Mute(uint16_t ConnHandle, uint8_t ChangeCounter);
@@ -239,7 +239,7 @@ tBleStatus VCP_CONTROLLER_Mute(uint16_t ConnHandle, uint8_t ChangeCounter);
   * @note   The VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadAudioInputState(uint16_t ConnHandle,uint8_t Inst);
@@ -249,7 +249,7 @@ tBleStatus VCP_CONTROLLER_ReadAudioInputState(uint16_t ConnHandle,uint8_t Inst);
   * @note   The VCP_CONTROLLER_GAIN_SETTING_PROP_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadGainSettingProperties(uint16_t ConnHandle,uint8_t Inst);
@@ -259,7 +259,7 @@ tBleStatus VCP_CONTROLLER_ReadGainSettingProperties(uint16_t ConnHandle,uint8_t 
   * @note   The VCP_CONTROLLER_AUDIO_INPUT_STATUS_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadAudioInputStatus(uint16_t ConnHandle,uint8_t Inst);
@@ -270,7 +270,7 @@ tBleStatus VCP_CONTROLLER_ReadAudioInputStatus(uint16_t ConnHandle,uint8_t Inst)
   * @note   The VCP_CONTROLLER_AUDIO_INPUT_DESCRIPTION_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadAudioInputDescription(uint16_t ConnHandle,uint8_t Inst);
@@ -286,7 +286,7 @@ tBleStatus VCP_CONTROLLER_ReadAudioInputDescription(uint16_t ConnHandle,uint8_t 
   * @note   If the operation causes a Gain Setting change, the VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  GainSetting: Gain Setting
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
@@ -307,7 +307,7 @@ tBleStatus VCP_CONTROLLER_SetAudioInputGainSetting(uint16_t ConnHandle,
   * @note   If the operation causes a Mute State change, the VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -324,7 +324,7 @@ tBleStatus VCP_CONTROLLER_UnmuteAudioInput(uint16_t ConnHandle,uint8_t Inst,uint
   * @note   If the operation causes a Mute State change, the VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -341,7 +341,7 @@ tBleStatus VCP_CONTROLLER_MuteAudioInput(uint16_t ConnHandle,uint8_t Inst,uint8_
   * @note   If the operation causes a Gain Mode change, the VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -358,7 +358,7 @@ tBleStatus VCP_CONTROLLER_SetManualGainMode(uint16_t ConnHandle,uint8_t Inst,uin
   * @note   If the operation causes a Gain Mode change, the VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -370,7 +370,7 @@ tBleStatus VCP_CONTROLLER_SetAutomaticGainMode(uint16_t ConnHandle,uint8_t Inst,
   * @note   If the operation causes an Audio Input Description change, the VCP_CONTROLLER_AUDIO_INPUT_DESCRIPTION_EVT
   *         event will be received if Audio Input Description Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in VCP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  pDesc: Pointer on the UTF-8 string corresponding to the description of the Audio input
   * @param  Length: length of the description string parameter
   * @retval status of the operation
@@ -382,7 +382,7 @@ tBleStatus VCP_CONTROLLER_WriteAudioInputDesc(uint16_t ConnHandle,uint8_t Inst,u
   * @note   The VCP_CONTROLLER_VOLUME_OFFSET_STATE_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadVolumeOffsetState(uint16_t ConnHandle,uint8_t Inst);
@@ -392,7 +392,7 @@ tBleStatus VCP_CONTROLLER_ReadVolumeOffsetState(uint16_t ConnHandle,uint8_t Inst
   * @note   The VCP_CONTROLLER_AUDIO_LOCATION_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadAudioLocation(uint16_t ConnHandle,uint8_t Inst);
@@ -403,7 +403,7 @@ tBleStatus VCP_CONTROLLER_ReadAudioLocation(uint16_t ConnHandle,uint8_t Inst);
   * @note   The VCP_CONTROLLER_AUDIO_OUTPUT_DESCRIPTION_EVT event will be notified to report the operation result.
   * @note   The VCP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_ReadAudioOutputDescription(uint16_t ConnHandle,uint8_t Inst);
@@ -413,7 +413,7 @@ tBleStatus VCP_CONTROLLER_ReadAudioOutputDescription(uint16_t ConnHandle,uint8_t
   * @note   If the operation causes an Audio Input Description change, the VCP_CONTROLLER_AUDIO_LOCATION_EVT
   *         event will be received if Audio Location Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @param  AudioLocation: bitmask that reflects the location of the audio output
   * @retval status of the operation
   */
@@ -424,7 +424,7 @@ tBleStatus VCP_CONTROLLER_WriteAudioLocation(uint16_t ConnHandle,uint8_t Inst,Au
   * @note   If the operation causes an Audio Input Description change, the VCP_CONTROLLER_AUDIO_OUTPUT_DESCRIPTION_EVT
   *         event will be received if Audio Output Description Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @param  pDesc: Pointer on the UTF-8 string corresponding to the description of the Audio output
   * @param  Length: length of the description string parameter
   * @retval status of the operation
@@ -440,13 +440,24 @@ tBleStatus VCP_CONTROLLER_WriteAudioOutputDesc(uint16_t ConnHandle,uint8_t Inst,
   * @note   If the operation causes a Volume Offset change, the VCP_CONTROLLER_VOLUME_OFFSET_STATE_EVT event will be
   *         received if Volume Offset State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Volume Offset Control Instance specified in VCP_CONTROLLER_VOC_INST_INFO_EVT event
+  * @param  Inst : Volume Offset Control Instance
   * @param  VolOffset: Volume Offset in range [-255;255]
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in VCP Renderer returned in
   *                        VCP_CONTROLLER_VOLUME_OFFSET_STATE_EVT event.
   * @retval status of the operation
   */
 tBleStatus VCP_CONTROLLER_SetVolumeOffset(uint16_t ConnHandle,uint8_t Inst,int16_t VolOffset,uint8_t ChangeCounter);
+
+/**
+  * @brief  Remove the record of the Volume Control Profile Controller stored in the Non Volatile memory.
+  * @param  PeerIdentityAddressType: Identity address type.
+  *                                  Values:
+  *                                     - 0x00: Public Identity Address
+  *                                     - 0x01: Random (static) Identity Address
+  * @param  PeerIdentityAddress : Public or Random (static) Identity address of the peer device
+  * @retval status of the operation
+  */
+tBleStatus VCP_CONTROLLER_RemoveRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6]);
 
 #ifdef __cplusplus
 }

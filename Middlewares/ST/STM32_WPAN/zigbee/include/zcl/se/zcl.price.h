@@ -345,9 +345,6 @@ enum ZbZclPriceClientCommandT {
 /* Alternate Cost units. */
 #define ZCL_PRICE_ALTERNATE_KG_CO2               0x01U
 
-/* Tariff Type not specified*/
-#define ZCL_PRICE_TARIFF_TYPE_NOT_SPECIFIED      0xFFU
-
 /* Currency, from ISO 4217 */
 enum ZbZclPriceCurrencyCodeT {
     ZCL_PRICE_CURRENCY_CODE_AUD = 36, /* Australian dollar */
@@ -394,27 +391,41 @@ enum ZbZclPriceBlockPeriodDurationControlT {
     /* Reserved (0x3 to 0xF) */
 };
 
-/* Tariff Type Enumeration */
+/** Tariff Type Enumeration */
 enum ZbZclPriceTariffTypeT {
-    ZCL_PRICE_DELIV_TARIFF, /* Delivered tariff */
-    ZCL_PRICE_RECV_TARIFF, /* Received tariff */
-    ZCL_PRICE_DELIV_RECV_TARIFF, /* Delivered and received tariff */
+    ZCL_PRICE_TARIFF_TYPE_DELIV = 0x00, /**< Delivered tariff */
+    ZCL_PRICE_TARIFF_TYPE_RECV = 0x01, /**< Received tariff */
+    ZCL_PRICE_TARIFF_TYPE_DELIV_RECV = 0x02, /**< Delivered and received tariff */
     /* Reserved (0x3 to 0xF) */
+    ZCL_PRICE_TARIFF_TYPE_UNSPECIFIED = 0xff /**< Unspecified tariff type, meaning any tariff type. */
 };
 
-/* Tariff Charging Scheme Enumeration */
+/** Tariff Charging Scheme Enumeration */
 enum ZbZclPriceTariffChargingSchemeT {
-    ZCL_PRICE_CHARGE_TOU_TARIFF, /* TOU Tariff */
-    ZCL_PRICE_CHARGE_BLOCK_TARIFF, /* Block Tariff */
-    ZCL_PRICE_CHARGE_BLOCK_TOU_COMM_THRESH, /* Block/TOU Tariff with common thresholds */
-    ZCL_PRICE_CHARGE_BLOCK_TOU_IND_THRESH /* Block/TOU Tariff with individual thresholds per tier */
+    ZCL_PRICE_CHARGE_TOU_TARIFF, /**< TOU Tariff */
+    ZCL_PRICE_CHARGE_BLOCK_TARIFF, /**< Block Tariff */
+    ZCL_PRICE_CHARGE_BLOCK_TOU_COMM_THRESH, /**< Block/TOU Tariff with common thresholds */
+    ZCL_PRICE_CHARGE_BLOCK_TOU_IND_THRESH /**< Block/TOU Tariff with individual thresholds per tier */
     /* Reserved (0x4 to 0xF) */
+};
+
+/** Tier Block Mode Enumeration */
+enum ZbZclPriceTierBlockModeT {
+    ZCL_PRICE_TIER_BLOCK_MODE_0 = 0x00,
+    /**< This tariff employs a single set of thresholds. */
+    ZCL_PRICE_TIER_BLOCK_MODE_1 = 0x01,
+    /**< This tariff employs a single set of thresholds common across all TOU tiers. */
+    ZCL_PRICE_TIER_BLOCK_MODE_2 = 0x02,
+    /**< This combination tariff employs an individual set of Thresholds for each
+     * TOU tier. */
+    /* Reserved for future use (0x3 to 0xFE) */
+    /* Reserved 0xFF */
 };
 
 /* Price Cluster Structures */
 
 /* ZCL_PRICE_SVR_CMD_PUB_PRICE */
-#define ZCL_PRICE_PUBLISH_MIN_SIZE               28U /* assume rate_label is only 1 byte */
+#define ZCL_PRICE_PUBLISH_MIN_SIZE               27U /* assume rate_label is only 1 byte */
 #define ZCL_PRICE_PUBLISH_MAX_SIZE               59U
 
 /* ZCL_PRICE_SVR_CMD_PUB_CALORIFIC_VALUE */
@@ -446,6 +457,9 @@ enum ZbZclPriceTariffChargingSchemeT {
 /* ZCL_PRICE_SVR_CMD_GET_CONSOLIDATED_BILL */
 #define ZCL_PRICE_CONSOLIDATED_GET_MIN_SIZE      9U
 #define ZCL_PRICE_CONSOLIDATED_GET_MAX_SIZE      10U
+
+/* ZCL_PRICE_SVR_CMD_PUB_CURRENCY_CONVERSION */
+#define ZCL_PRICE_CURRENCY_CONV_PUB_SIZE         25U
 
 /* Table D-100 Price Control Field BitMap */
 #define ZCL_PRICE_CTRL_MASK_PRICE_ACK               0x01 /* Price Acknowledgement required */
@@ -486,6 +500,9 @@ struct ZbZclPriceServerPublishPriceT {
     uint8_t ext_price_tier; /**< Extended Price Tier (Optional) */
     uint8_t ext_register_tier; /**< Extended Register Tier (Optional) */
 };
+
+#define ZCL_PRICE_PUBLISH_TARIFF_INFO_MIN_SIZE      37U /* assume tariff_label is only 1 byte */
+#define ZCL_PRICE_PUBLISH_TARIFF_INFO_MAX_SIZE      61U
 
 /** Publish Tariff Info command structure */
 struct ZbZclPriceServerPublishTariffInfoT {
@@ -528,7 +545,7 @@ struct ZbZclPriceServerPublishCO2ValueT {
     uint32_t provider_id; /**< Provider ID */
     uint32_t issuer_event_id; /**< Issuer Event ID */
     uint32_t start_time; /**< Start Time - UTC Time */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
     uint32_t co2_value; /**< CO2 Value */
     uint8_t co2_value_unit; /**< CO2 Value Unit */
     uint8_t co2_value_trail_digits; /**< CO2 Value Trailing Digit */
@@ -541,7 +558,7 @@ struct ZbZclPriceServerPublishBillingPeriodT {
     uint32_t start_time; /**< Billing Period Start Time - UTC Time */
     uint32_t duration; /**< Billing Period Duration */
     uint8_t duration_type; /**< Billing Period Duration Type */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
 };
 
 /** Publish Consolidated Bill command structure */
@@ -551,15 +568,33 @@ struct ZbZclPriceServerPublishConsolidatedBillT {
     uint32_t start_time; /**< Billing Period Start Time - UTC Time */
     uint32_t duration; /**< Billing Period Duration */
     uint8_t duration_type; /**< Billing Period Duration Type */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
     uint32_t consolidated_bill; /**< Consolidated Bill */
     uint16_t currency; /**< Currency */
     uint8_t bill_trail_digits; /**< Bill Trailing Digit */
 };
 
+/** Publish Currency Conversion command structure */
+struct ZbZclPriceServerPublishCurrencyConversionT {
+    uint32_t provider_id; /**< Provider ID */
+    uint32_t issuer_event_id; /**< Issuer Event ID */
+    uint32_t start_time; /**< Start Time - UTC Time */
+    uint16_t old_currency; /**< Old Currency */
+    uint16_t new_currency; /**< New Currency */
+    uint32_t conversion_factor; /**< Conversion Factor */
+    uint8_t conversion_trail_digits; /**< Conversion Trailing Digit */
+    uint32_t currency_change_control_flags; /**< Currency Change Control Flags */
+};
+
 /* ZCL_PRICE_SVR_CMD_PUB_PRICE_MATRIX */
-#define ZCL_PRICE_SVR_PRICE_MATRIX_NUM_SUB_PAYLOAD_MAX       15U
-#define ZCL_PRICE_SVR_PRICE_MATRIX_MAX_SIZE                  (19U + (5U * ZCL_PRICE_SVR_PRICE_MATRIX_NUM_SUB_PAYLOAD_MAX))
+#define ZCL_PRICE_SVR_PRICE_MATRIX_MIN_SIZE                 19U
+#define ZCL_PRICE_SVR_PRICE_MATRIX_ENTRY_SIZE               5U
+#define ZCL_PRICE_SVR_PRICE_MATRIX_NUM_SUB_PAYLOAD_MAX      ((ZCL_PAYLOAD_UNFRAG_SAFE_SIZE - ZCL_PRICE_SVR_PRICE_MATRIX_MIN_SIZE) / \
+                                                             ZCL_PRICE_SVR_PRICE_MATRIX_ENTRY_SIZE)
+
+/** Price Matrix Sub-Payload Control */
+#define ZCL_PRICE_SVR_PRICE_MATRIX_CTRL_BLOCK_OR_MIXED      0x00U
+#define ZCL_PRICE_SVR_PRICE_MATRIX_CTRL_TOU_ONLY            0x01U
 
 /** Price Matrix Entry structure */
 struct ZbZclPriceServerPriceMatrixEntryT {
@@ -582,12 +617,18 @@ struct ZbZclPriceServerPublishPriceMatrixT {
 };
 
 /* ZCL_PRICE_SVR_CMD_PUB_BLK_THRESHOLDS */
-/* max tiers */
-#define ZCL_PRICE_SVR_BLOCK_THRESH_NUM_SUB_PAYLOAD_MAX       15U
+#define ZCL_PRICE_SVR_BLOCK_THRESH_MIN_SIZE                 19U
+#define ZCL_PRICE_SVR_BLOCK_THRESH_ENTRY_SIZE               7U
+#define ZCL_PRICE_SVR_BLOCK_THRESH_NUM_SUB_PAYLOAD_MAX      ((ZCL_PAYLOAD_UNFRAG_SAFE_SIZE - ZCL_PRICE_SVR_BLOCK_THRESH_MIN_SIZE) / \
+                                                             ZCL_PRICE_SVR_BLOCK_THRESH_ENTRY_SIZE)
+
+/** Block Threshold Sub-Payload Control */
+#define ZCL_PRICE_SVR_BLOCK_THRESH_CTRL_SPECIFIC_TOU_TIER               0x00U
+#define ZCL_PRICE_SVR_BLOCK_THRESH_CTRL_ALL_TOU_TIERS_OR_BLOCK_ONLY     0x01U
 
 /** Block Threshold Entry structure */
 struct ZbZclPriceServerBlockThreshEntryT {
-    uint8_t tier; /**< Tier */
+    uint8_t tier_num_block_thresh; /**< Tier/NumberOfBlockThresholds */
     uint64_t *block_thresh; /**< Block Threshold */
 };
 
@@ -613,7 +654,7 @@ struct ZbZclPriceServerPublishBlockPeriodT {
     uint32_t block_period_duration; /**< Block Period Duration */
     uint8_t block_period_control; /**< Block Period Control */
     uint8_t block_period_duration_type; /**< Block Period Duration Type */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
     uint8_t tariff_resolution_period; /**< Tariff Resolution Period */
 };
 
@@ -655,7 +696,7 @@ struct ZbZclPriceClientGetTariffInfoT {
     uint32_t earliest_start_time; /**< Earliest Start Time */
     uint32_t min_issuer_event_id; /**< Min. Issuer Event ID */
     uint8_t num_commands; /**< Number of Commands */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
 };
 
 /** Get Price Matrix command structure */
@@ -673,14 +714,14 @@ struct ZbZclPriceClientGetCO2ValueT {
     uint32_t earliest_start_time; /**< Earliest Start Time */
     uint32_t min_issuer_event_id; /**< Min. Issuer Event ID */
     uint8_t num_commands; /**< Number of Commands */
-    uint8_t tariff_type; /**< Optional - Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Optional - Tariff Type */
 };
 
 /** Get Block Period command structure */
 struct ZbZclPriceClientGetBlockPeriodT {
     uint32_t start_time; /**< Start Time - UTC Time */
     uint8_t num_events; /**< Number of Events requested */
-    uint8_t tariff_type; /**< Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Tariff Type */
 };
 
 /** Get Billing Period command structure */
@@ -688,7 +729,7 @@ struct ZbZclPriceClientGetBillingPeriodT {
     uint32_t earliest_start_time; /**< Earliest Start Time */
     uint32_t min_issuer_event_id; /**< Min. Issuer Event ID */
     uint8_t num_commands; /**< Number of Commands */
-    uint8_t tariff_type; /**< Optional - Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Optional - Tariff Type */
 };
 
 /** Get Consolidated Bill command structure */
@@ -696,7 +737,7 @@ struct ZbZclPriceClientGetConsolidatedBillT {
     uint32_t earliest_start_time; /**< Earliest Start Time */
     uint32_t min_issuer_event_id; /**< Min. Issuer Event ID */
     uint8_t num_commands; /**< Number of Commands */
-    uint8_t tariff_type; /**< Optional - Tariff Type */
+    enum ZbZclPriceTariffTypeT tariff_type; /**< Optional - Tariff Type */
 };
 
 /*---------------------------------------------------------
@@ -776,6 +817,12 @@ struct ZbZclPriceServerCallbacksT {
      * Return ZCL_STATUS_SUCCESS if Publish Consolidated Bill command sent or
      * ZCL_STATUS_NOT_FOUND otherwise. */
 
+    enum ZclStatusCodeT (*get_currency_conversion)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Get Currency Conversion command.
+     * Return ZCL_STATUS_SUCCESS if Publish Currency Conversion command sent or
+     * ZCL_STATUS_NOT_FOUND otherwise. */
+
     /* Optional commands not parsed into a struct or specific callback */
     enum ZclStatusCodeT (*optional)(struct ZbZclClusterT *cluster,
         struct ZbZclHeaderT *zclHdrPtr, struct ZbApsdeDataIndT *dataIndPtr);
@@ -831,7 +878,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishPriceRsp(struct ZbZclClusterT *cl
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Tariff Information command
+ * Send an unsolicited Publish Tariff Information command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Tariff Info command structure
@@ -852,7 +899,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishTariffInfoRsp(struct ZbZclCluster
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Price Matrix command
+ * Send an unsolicited Publish Price Matrix command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Price Matrix command structure
@@ -873,7 +920,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishMatrixRsp(struct ZbZclClusterT *c
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Block Thresholds command
+ * Send an unsolicited Publish Block Thresholds command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Block Thresholds command structure
@@ -905,6 +952,20 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishBlockThresholdsRsp(struct ZbZclCl
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
+ * Send an unsolicited Publish Block Period command
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination address for command, including sequence number and tx options
+ * @param info Publish Block Period command structure
+ * @param callback Callback function for an APSDE-DATA.confirm
+ * @param arg Pointer to application data that will later be provided back
+ * to the callback function when invoked
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclPriceServerSendPublishBlockPeriodUnsolic(struct ZbZclClusterT *cluster,
+    const struct ZbApsAddrT *dst, struct ZbZclPriceServerPublishBlockPeriodT *info,
+    void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/**
  * Send a Publish Block Period command as a response
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command, including sequence number and tx options
@@ -919,7 +980,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishBlockPeriodRsp(struct ZbZclCluste
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Calorific Value command
+ * Send an unsolicited Publish Calorific Value command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Calorific Value command structure
@@ -949,7 +1010,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishCalorificValueRsp(struct ZbZclClu
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Conversion Factor command
+ * Send an unsolicited Publish Conversion Factor command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Conversion Factor command structure
@@ -979,7 +1040,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishConversionFactorRsp(struct ZbZclC
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish CO2 Value command
+ * Send an unsolicited Publish CO2 Value command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish CO2 Value command structure
@@ -1009,7 +1070,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishCO2ValueRsp(struct ZbZclClusterT 
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Billing Period command
+ * Send an unsolicited Publish Billing Period command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Billing Period command structure
@@ -1039,7 +1100,7 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishBillingPeriodRsp(struct ZbZclClus
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /**
- * Send a Publish Consolidated Bill command
+ * Send an unsolicited Publish Consolidated Bill command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param info Publish Consolidated Bill command structure
@@ -1068,6 +1129,36 @@ enum ZclStatusCodeT ZbZclPriceServerSendPublishConsolidatedBillRsp(struct ZbZclC
     struct ZbZclAddrInfoT *dst, struct ZbZclPriceServerPublishConsolidatedBillT *info,
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
+/**
+ * Send an unsolicited Publish Currency Conversion command
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination address for command
+ * @param info Publish Currency Conversion command structure
+ * @param callback Callback function that will be invoked when response
+ * is received, if one is expected. If broadcasting, then this should be set to NULL
+ * since no response is expected.
+ * @param arg Pointer to application data that will later be provided back
+ * to the callback function when invoked
+ * @return ZCL_STATUS_SUCCESS if successful or other ZCL_STATUS value on error
+ */
+enum ZclStatusCodeT ZbZclPriceServerSendPublishCurrencyConversionUnsolic(struct ZbZclClusterT *cluster,
+    const struct ZbApsAddrT *dst, struct ZbZclPriceServerPublishCurrencyConversionT *info,
+    void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/**
+ * Send a Publish Currency Conversion command as a response
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination address for command, including sequence number and tx options
+ * @param info Publish Currency Conversion command structure
+ * @param callback Callback function for an APSDE-DATA.confirm
+ * @param arg Pointer to application data that will later be provided back
+ * to the callback function when invoked
+ * @return ZCL_STATUS_SUCCESS or other ZCL_STATUS value on error
+ */
+enum ZclStatusCodeT ZbZclPriceServerSendPublishCurrencyConversionRsp(struct ZbZclClusterT *cluster,
+    struct ZbZclAddrInfoT *dst, struct ZbZclPriceServerPublishCurrencyConversionT *info,
+    void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
+
 /*---------------------------------------------------------
  * Price Client
  *---------------------------------------------------------
@@ -1079,17 +1170,33 @@ struct ZbZclPriceClientCallbacksT {
         struct ZbZclPriceServerPublishPriceT *price, struct ZbZclAddrInfoT *srcInfo);
     /**< Callback to application, invoked on receipt of Publish Price command. */
 
+    enum ZclStatusCodeT (*publish_conversion_factor)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishConversionFactorT *co2, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Conversion Factor command. */
+
     enum ZclStatusCodeT (*publish_calorific_value)(struct ZbZclClusterT *cluster, void *arg,
         struct ZbZclPriceServerPublishCalorificValueT *calorific, struct ZbZclAddrInfoT *srcInfo);
     /**< Callback to application, invoked on receipt of Publish Calorific Value command. */
 
+    enum ZclStatusCodeT (*publish_tariff_info)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishTariffInfoT *tariff_info, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Tariff information command. */
+
+    enum ZclStatusCodeT (*publish_price_matrix)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishPriceMatrixT *price_matrix, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Price Matrix command. */
+
+    enum ZclStatusCodeT (*publish_block_thresholds)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishBlockThresholdsT *block_threshs, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Block Thresholds command. */
+
+    enum ZclStatusCodeT (*publish_block_period)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishBlockPeriodT *block_period, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Block Period command. */
+
     enum ZclStatusCodeT (*publish_co2_value)(struct ZbZclClusterT *cluster, void *arg,
         struct ZbZclPriceServerPublishCO2ValueT *co2, struct ZbZclAddrInfoT *srcInfo);
     /**< Callback to application, invoked on receipt of Publish CO2 Value command. */
-
-    enum ZclStatusCodeT (*publish_conversion_factor)(struct ZbZclClusterT *cluster, void *arg,
-        struct ZbZclPriceServerPublishConversionFactorT *co2, struct ZbZclAddrInfoT *srcInfo);
-    /**< Callback to application, invoked on receipt of Publish Conversion Factor command. */
 
     enum ZclStatusCodeT (*publish_billing_period)(struct ZbZclClusterT *cluster, void *arg,
         struct ZbZclPriceServerPublishBillingPeriodT *period, struct ZbZclAddrInfoT *srcInfo);
@@ -1098,6 +1205,10 @@ struct ZbZclPriceClientCallbacksT {
     enum ZclStatusCodeT (*publish_consolidated_bill)(struct ZbZclClusterT *cluster, void *arg,
         struct ZbZclPriceServerPublishConsolidatedBillT *bill, struct ZbZclAddrInfoT *srcInfo);
     /**< Callback to application, invoked on receipt of Publish Consolidated Bill command. */
+
+    enum ZclStatusCodeT (*publish_currency_conversion)(struct ZbZclClusterT *cluster, void *arg,
+        struct ZbZclPriceServerPublishCurrencyConversionT *conversion, struct ZbZclAddrInfoT *srcInfo);
+    /**< Callback to application, invoked on receipt of Publish Currency Conversion command. */
 
     /* EXEGIN - other command callbacks needed? */
 
@@ -1273,5 +1384,40 @@ enum ZclStatusCodeT ZbZclPriceClientCommandGetBillingPeriodReq(struct ZbZclClust
 enum ZclStatusCodeT ZbZclPriceClientCommandGetConsolidatedBillReq(struct ZbZclClusterT *cluster,
     const struct ZbApsAddrT *dst, struct ZbZclPriceClientGetConsolidatedBillT *cmd_req,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/**
+ * Send a Get Currency Conversion command
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination address for request
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will be provided back to the callback function
+ * when invoked.
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclPriceClientCommandGetCurrencyConversionReq(struct ZbZclClusterT *cluster,
+    const struct ZbApsAddrT *dst, void (*callback)(struct ZbZclCommandRspT *rsp, void *arg),
+    void *arg);
+
+/*-----------------------------------------------------------------------------
+ * Price Mirror Client
+ *-----------------------------------------------------------------------------
+ */
+
+/**
+ * Allocates a Price Client Mirror cluster.
+ * @param zb Zigbee stack instance
+ * @param endpoint Endpoint on which to create cluster
+ * @param price_server Pointer to Price Server cluster. This is used by the
+ *  Metering Mirror to send mirrored commands to the BOMD.
+ * @param meter_mirror Pointer to Metering Mirror cluster. This is used to queue
+ *  any commands that need to be forwarded to the BOMD when it wakes up.
+ * @param meter_client Pointer to Metering Client cluster. This is used to know the
+ *  existing notification scheme setup between BOMD & ESI and to determine if the
+ *  command needs to be queued or only the notification flag needs to be set.
+ * @return Cluster pointer, or NULL if there is an error
+ */
+struct ZbZclClusterT * ZbZclPriceMirrorAlloc(struct ZigBeeT *zb, uint8_t endpoint,
+    struct ZbZclClusterT *price_server, struct ZbZclClusterT *meter_mirror,
+    struct ZbZclClusterT *meter_client);
 
 #endif

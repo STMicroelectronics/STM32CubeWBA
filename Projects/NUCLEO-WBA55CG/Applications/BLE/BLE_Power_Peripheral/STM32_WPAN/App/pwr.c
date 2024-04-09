@@ -286,7 +286,7 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
 void PWR_Init(void)
 {
   Char_UUID_t  uuid;
-  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus ret;
   uint8_t max_attr_record;
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */

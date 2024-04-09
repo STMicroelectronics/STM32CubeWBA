@@ -32,6 +32,7 @@
  *   This file includes the platform-specific initializers.
  *
  */
+#include <stdio.h>
 #include "stm32wbaxx_hal.h"
 #include "stm32wbaxx_hal_cortex.h"
 #include "stm32wbaxx_ll_system.h"
@@ -65,7 +66,9 @@ extern uint8_t ral_set_auto_sleep_state(uint8_t ral_instance, uint8_t cont_recp_
 
 static void systemRxDone(otInstance *aInstance, otRadioFrame *aFrame, otError aError)
 {
+#ifndef OPENTHREAD_RCP
   otLinkModeConfig sLinkConfig = {0};
+#endif
   /*
    * Current version of Thread stack does not handle very well NULL packets (i.e. hardfault).
    * If OT_ERROR_ABORT, it can be considered it as a non-valid RX (when continuous
@@ -74,10 +77,11 @@ static void systemRxDone(otInstance *aInstance, otRadioFrame *aFrame, otError aE
    */
   if (aError == OT_ERROR_ABORT) {
     /* Do not call upper layer, OT stack doesn't handle RX error */
-
-    /* Update radio auto sleep state in function of Thread mode (if rx_on_when_idle then deactivate autosleep to let radio continue rx) */
+#ifndef OPENTHREAD_RCP
+    /* Update radio continuous reception state in function of Thread mode */
     sLinkConfig = otThreadGetLinkMode(aInstance);
-    ral_set_auto_sleep_state(0, !sLinkConfig.mRxOnWhenIdle); //disable/enable auto sleep
+    setContRecp(sLinkConfig.mRxOnWhenIdle);
+#endif
   }
   else{
     otPlatRadioReceiveDone(aInstance, aFrame, aError);
@@ -153,12 +157,23 @@ void otPlatRadioGetIeeeEui64(otInstance *aInstance, uint8_t *aIeeeEui64)
         /* Need to add random in this case ? */
       }
 
-      aIeeeEui64[0] = (company_id>>0)&0xff;
+      aIeeeEui64[0] = (company_id>>16)&0xff;
       aIeeeEui64[1] = (company_id>>8)&0xff;
-      aIeeeEui64[2] = (company_id>>16)&0xff;
+      aIeeeEui64[2] = (company_id>>0)&0xff;
       aIeeeEui64[3] = 0xFF;
       aIeeeEui64[4] = 0xFE;
-      aIeeeEui64[5] = (device_uid>>0)&0xff;
+      aIeeeEui64[5] = (device_uid>>16)&0xff;
       aIeeeEui64[6] = (device_uid>>8)&0xff;
-      aIeeeEui64[7] = (device_uid>>16)&0xff;
+      aIeeeEui64[7] = (device_uid>>0)&0xff;
+}
+
+/**
+ * __2snprintf symbol missing in aeabi OT libs, add it on platform 
+ *
+ */
+int __2snprintf(char * s, size_t n, const char * format, ...)
+{
+  va_list args;
+  va_start (args, format);
+  return vsnprintf(s, n, format, args);
 }

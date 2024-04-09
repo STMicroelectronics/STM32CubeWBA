@@ -169,6 +169,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_lptim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_lptim.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</locationURI>
@@ -222,11 +227,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_uart_ex.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
-		</link>		
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_lptim.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_lptim.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/STM32_WPAN/ll_sys_cs.c</name>
@@ -277,17 +277,17 @@
 			<name>Application/User/STM32_WPAN/App/app_mac.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/src/app_mac.c</locationURI>
-		</link>		
+		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/app_mac_802_15_4_process.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/src/app_mac_802_15_4_process.c</locationURI>
-		</link>	
+		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/bpka.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bpka.c</locationURI>
-		</link>				
+		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/linklayer_plat.c</name>
 			<type>1</type>
@@ -302,7 +302,7 @@
 			<name>Application/User/STM32_WPAN/Target/mac_sys_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/mac_sys_if.c</locationURI>
-		</link>		
+		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/power_table.c</name>
 			<type>1</type>
@@ -312,7 +312,7 @@
 			<name>Application/User/System/Interfaces/hw_pka.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_pka.c</locationURI>
-		</link>		
+		</link>
 		<link>
 			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
@@ -322,7 +322,7 @@
 			<name>Application/User/System/Interfaces/pka_p256.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/pka_p256.c</locationURI>
-		</link>			
+		</link>
 		<link>
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
 			<type>1</type>
@@ -357,6 +357,11 @@
 			<name>Application/User/System/Modules/scm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/scm.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/temp_measurement.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/temp_measurement.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>

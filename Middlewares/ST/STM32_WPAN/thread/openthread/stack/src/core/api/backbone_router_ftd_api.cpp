@@ -50,7 +50,7 @@ void otBackboneRouterSetEnabled(otInstance *aInstance, bool aEnabled)
 
 otBackboneRouterState otBackboneRouterGetState(otInstance *aInstance)
 {
-    return AsCoreType(aInstance).Get<BackboneRouter::Local>().GetState();
+    return MapEnum(AsCoreType(aInstance).Get<BackboneRouter::Local>().GetState());
 }
 
 void otBackboneRouterGetConfig(otInstance *aInstance, otBackboneRouterConfig *aConfig)
@@ -161,13 +161,12 @@ otError otBackboneRouterMulticastListenerAdd(otInstance *aInstance, const otIp6A
 {
     if (aTimeout == 0)
     {
-        BackboneRouter::BackboneRouterConfig config;
+        BackboneRouter::Config config;
         AsCoreType(aInstance).Get<BackboneRouter::Local>().GetConfig(config);
         aTimeout = config.mMlrTimeout;
     }
 
-    aTimeout =
-        aTimeout > static_cast<uint32_t>(Mle::kMlrTimeoutMax) ? static_cast<uint32_t>(Mle::kMlrTimeoutMax) : aTimeout;
+    aTimeout = Min(aTimeout, BackboneRouter::kMaxMlrTimeout);
     aTimeout = Time::SecToMsec(aTimeout);
 
     return AsCoreType(aInstance).Get<BackboneRouter::MulticastListenersTable>().Add(AsCoreType(aAddress),

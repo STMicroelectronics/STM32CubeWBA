@@ -6,8 +6,8 @@
 ** @author      : Application team
 **
 ** @brief       : Linker script for STM32WBA55CGUx Device from STM32WBA series
-**                      1024Kbytes FLASH
-**                      128Kbytes RAM
+**                      1024 KBytes FLASH
+**                      128 KBytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.

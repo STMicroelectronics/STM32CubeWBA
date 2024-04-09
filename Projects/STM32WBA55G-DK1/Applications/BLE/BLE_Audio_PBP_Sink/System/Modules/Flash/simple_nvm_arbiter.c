@@ -8,7 +8,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -34,7 +34,8 @@
 /* Needed modules */
 #include "flash_manager.h"
 #include "stm32wbaxx_hal_flash_ex.h"
-#include "stm32wbaxx_hal_crc.h"
+#include "crc_ctrl.h"
+#include "crc_ctrl_conf.h"
 
 /* Tools */
 #include "stm_list.h"
@@ -44,9 +45,8 @@
 #include "log_module.h"
 
 /* Global variables ----------------------------------------------------------*/
-
-/* Handle of HAL CRC */
-extern CRC_HandleTypeDef hcrc;
+/* Error handler */
+extern void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* Alignment 128bits for NVM Start address */
@@ -236,6 +236,8 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
   uint32_t nvmOffset = 0x00;
   uint32_t addressOffset = 0x00;
 
+  CRCCTRL_Cmd_Status_t crcCtrlStatus = CRCCTRL_UNKNOWN;
+
   SNVMA_BankElt_t * p_currentRestoreBank = NULL;
 
   /* Check if not already initialized */
@@ -262,8 +264,11 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
   }
   else
   {
-    if ((hcrc.State == HAL_CRC_STATE_RESET) ||
-        (hcrc.State == HAL_CRC_STATE_ERROR))
+    /* Init the crc handle */
+    crcCtrlStatus = CRCCTRL_RegisterHandle(&SNVMA_Handle);
+
+    if ((CRCCTRL_OK != crcCtrlStatus) &&
+        (CRCCTRL_HANDLE_ALREADY_REGISTERED != crcCtrlStatus))
     {
       error = SNVMA_ERROR_CRC_INIT;
     }
@@ -1524,37 +1529,150 @@ uint8_t IsCrcOk (const uint32_t * const p_BankStartAddress)
 {
   uint8_t error = FALSE;
 
-  uint16_t crcComputedValue = 0x00;
+  uint32_t crcComputedValue = 0x00;
   uint32_t * payloadAddr = (uint32_t *)((uint32_t)(p_BankStartAddress) + sizeof (SNVMA_BankHeader_t));
   uint32_t offSet = 0x00;
+  uint32_t cnt = 0x00;
+  CRCCTRL_Cmd_Status_t eReturn;
 
   LOG_INFO_SYSTEM("\r\nStart of CRC computation");
 
-  /* First buffer CRC computation */
-  crcComputedValue = HAL_CRC_Calculate (&hcrc,
-                                        payloadAddr,
-                                        ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1);
+  /* Compute CRC for every buffer */
+  while (cnt < SNVMA_MAX_NUMBER_BUFFER)
+  {
+    switch (cnt)
+    {
+      case 0:
+      {
+        if (0x00 != ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1)
+        {
+          eReturn = CRCCTRL_Calculate (&SNVMA_Handle,
+                                       payloadAddr,
+                                       ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1,
+                                       &crcComputedValue);
 
-  offSet = SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1 * sizeof (uint32_t));
+          if (CRCCTRL_OK == eReturn)
+          {
+            offSet = SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1 * sizeof (uint32_t));
 
-  /* Second buffer CRC computation */
-  crcComputedValue = HAL_CRC_Accumulate (&hcrc,
-                                         (uint32_t *)((uint32_t)payloadAddr + offSet),
-                                         ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2);
+            cnt++;
+          }
+          else if (CRCCTRL_BUSY == eReturn)
+          {
+            /* Do nothing */
+          }
+          else
+          {
+            Error_Handler();
+          }
+        }
+        else
+        {
+          cnt++;
+        }
+        break;
+      }
 
-  offSet += SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2 * sizeof (uint32_t));
+      case 1:
+      {
+        if (0x00 != ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2)
+        {
+          eReturn = CRCCTRL_Accumulate (&SNVMA_Handle,
+                                        (uint32_t *)((uint32_t)payloadAddr + offSet),
+                                        ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2,
+                                        &crcComputedValue);
 
-  /* Third buffer CRC computation */
-  crcComputedValue = HAL_CRC_Accumulate (&hcrc,
-                                         (uint32_t *)((uint32_t)payloadAddr + offSet),
-                                         ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3);
+          if (CRCCTRL_OK == eReturn)
+          {
+            offSet += SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2 * sizeof (uint32_t));
 
-  offSet += SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3 * sizeof (uint32_t));
+            cnt++;
+          }
+          else if (CRCCTRL_BUSY == eReturn)
+          {
+            /* Do nothing */
+          }
+          else
+          {
+            Error_Handler();
+          }
+        }
+        else
+        {
+          cnt++;
+        }
+        break;
+      }
 
-  /* Second buffer CRC computation */
-  crcComputedValue = HAL_CRC_Accumulate (&hcrc,
-                                         (uint32_t *)((uint32_t)payloadAddr + offSet),
-                                         ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4);
+      case 2:
+      {
+        if (0x00 != ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3)
+        {
+          eReturn = CRCCTRL_Accumulate (&SNVMA_Handle,
+                                        (uint32_t *)((uint32_t)payloadAddr + offSet),
+                                        ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3,
+                                        &crcComputedValue);
+
+          if (CRCCTRL_OK == eReturn)
+          {
+            offSet += SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3 * sizeof (uint32_t));
+
+            cnt++;
+          }
+          else if (CRCCTRL_BUSY == eReturn)
+          {
+            /* Do nothing */
+          }
+          else
+          {
+            Error_Handler();
+          }
+        }
+        else
+        {
+          cnt++;
+        }
+        break;
+      }
+
+      case 3:
+      {
+        if (0x00 != ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4)
+        {
+          eReturn = CRCCTRL_Accumulate (&SNVMA_Handle,
+                                        (uint32_t *)((uint32_t)payloadAddr + offSet),
+                                        ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4,
+                                        &crcComputedValue);
+
+          if (CRCCTRL_OK == eReturn)
+          {
+            offSet += SNVMA_ALIGN_128(((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4 * sizeof (uint32_t));
+
+            cnt++;
+          }
+          else if (CRCCTRL_BUSY == eReturn)
+          {
+            /* Do nothing */
+          }
+          else
+          {
+            Error_Handler();
+          }
+        }
+        else
+        {
+          cnt++;
+        }
+        break;
+      }
+
+      default:
+      {
+        /* Should never be reached */
+        break;
+      }
+    }
+  }
 
   /* Compare the CRC values */
   if (crcComputedValue == ((SNVMA_BankHeader_t *)p_BankStartAddress)->Crc)
@@ -1644,33 +1762,66 @@ FM_Cmd_Status_t StartFlashWrite (const uint8_t NvmId)
 {
   FM_Cmd_Status_t error = FM_ERROR;
 
-  uint16_t crcValue = 0x00;
+  uint32_t crcValue = 0x00;
+  uint32_t cnt = 0x00;
+  CRCCTRL_Cmd_Status_t eReturn;
 
   /* Reset value of SNVMA_BankHeader */
   memset ((void *)&SNVMA_WriteBankHeader,
           0x00,
           sizeof (SNVMA_BankHeader_t));
 
-  /* Calculate CRC for every buffer */
-  for (uint8_t cnt = 0x00;
-       cnt < SNVMA_MAX_NUMBER_BUFFER;
-       cnt++)
+  /* Compute CRC for every buffer */
+  while (cnt < SNVMA_MAX_NUMBER_BUFFER)
   {
     if (SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].p_Addr != NULL)
     {
       /* First crc computation */
       if (crcValue == 0x00)
       {
-        crcValue = HAL_CRC_Calculate (&hcrc,
+        eReturn = CRCCTRL_Calculate (&SNVMA_Handle,
                                       SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].p_Addr,
-                                      SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].Size);
+                                      SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].Size,
+                                      &crcValue);
+
+        if (CRCCTRL_OK == eReturn)
+        {
+          cnt++;
+        }
+        else if (CRCCTRL_BUSY == eReturn)
+        {
+          continue;
+        }
+        else
+        {
+          Error_Handler();
+        }
       }
       else
       {
-        crcValue = HAL_CRC_Accumulate (&hcrc,
-                                       SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].p_Addr,
-                                       SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].Size);
+        eReturn = CRCCTRL_Accumulate (&SNVMA_Handle,
+                                      SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].p_Addr,
+                                      SNVMA_NvmConfiguration[NvmId].a_Buffers[cnt].Size,
+                                      &crcValue);
+
+        if (CRCCTRL_OK == eReturn)
+        {
+          cnt++;
+        }
+        else if (CRCCTRL_BUSY == eReturn)
+        {
+          continue;
+        }
+        else
+        {
+          Error_Handler();
+        }
       }
+    }
+    else
+    {
+      /* Keep going */
+      cnt++;
     }
   }
 
@@ -1687,7 +1838,7 @@ FM_Cmd_Status_t StartFlashWrite (const uint8_t NvmId)
   }
 
   /* Update CRC value */
-  SNVMA_WriteBankHeader.Crc = crcValue;
+  SNVMA_WriteBankHeader.Crc = (uint16_t)(crcValue & 0x0000FFFF);
 
   /* Update buffers info */
   SNVMA_WriteBankHeader.BufferId1 = (NvmId * SNVMA_MAX_NUMBER_BUFFER);

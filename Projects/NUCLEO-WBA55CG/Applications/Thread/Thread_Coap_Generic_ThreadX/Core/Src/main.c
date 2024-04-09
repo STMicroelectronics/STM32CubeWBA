@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include "app_threadx.h"
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -41,18 +42,19 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-UART_HandleTypeDef hlpuart1;
-UART_HandleTypeDef huart1;
-DMA_HandleTypeDef handle_GPDMA1_Channel3;
-DMA_HandleTypeDef handle_GPDMA1_Channel2;
-DMA_HandleTypeDef handle_GPDMA1_Channel1;
-DMA_HandleTypeDef handle_GPDMA1_Channel0;
-
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
+
+UART_HandleTypeDef huart1;
+#ifdef APPLICATION_USE_OTCLI  
+UART_HandleTypeDef hlpuart1;
+DMA_HandleTypeDef handle_GPDMA1_Channel2;
+#endif // APPLICATION_USE_OTCLI
+DMA_HandleTypeDef handle_GPDMA1_Channel1;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* USER CODE BEGIN PV */
 
@@ -61,7 +63,6 @@ RTC_HandleTypeDef hrtc;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
-void MX_ThreadX_Init(void);
 static void MX_GPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -109,7 +110,9 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
+#ifdef APPLICATION_USE_OTCLI  
   MX_LPUART1_UART_Init();
+#endif // APPLICATION_USE_OTCLI  
   MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
@@ -117,6 +120,7 @@ int main(void)
 
   MX_ThreadX_Init();
 
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -221,12 +225,12 @@ static void MX_GPDMA1_Init(void)
   /* GPDMA1 interrupt Init */
     HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
+#ifdef APPLICATION_USE_OTCLI    
     HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel3_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(GPDMA1_Channel3_IRQn);
+#endif // APPLICATION_USE_OTCLI    
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -250,6 +254,8 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
+  /* No retention for ICACHE in stop mode */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
 
   /* USER CODE END ICACHE_Init 1 */
 
@@ -266,101 +272,6 @@ void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
-
-}
-
-/**
-  * @brief LPUART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_LPUART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN LPUART1_Init 0 */
-
-  /* USER CODE END LPUART1_Init 0 */
-
-  /* USER CODE BEGIN LPUART1_Init 1 */
-
-  /* USER CODE END LPUART1_Init 1 */
-  hlpuart1.Instance = LPUART1;
-  hlpuart1.Init.BaudRate = 115200;
-  hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
-  hlpuart1.Init.StopBits = UART_STOPBITS_1;
-  hlpuart1.Init.Parity = UART_PARITY_NONE;
-  hlpuart1.Init.Mode = UART_MODE_TX_RX;
-  hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
-  if (HAL_UART_Init(&hlpuart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN LPUART1_Init 2 */
-
-  /* USER CODE END LPUART1_Init 2 */
-
-}
-
-/**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_8;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -409,12 +320,14 @@ void MX_RNG_Init(void)
 
   /* USER CODE END RNG_Init 1 */
   hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_ENABLE;
+  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
   if (HAL_RNG_Init(&hrng) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN RNG_Init 2 */
+  /* Disable RNG peripheral and its RCC clock */
+  HW_RNG_Disable( );
 
   /* USER CODE END RNG_Init 2 */
 
@@ -490,6 +403,103 @@ void MX_RTC_Init(void)
 
 }
 
+#ifdef APPLICATION_USE_OTCLI
+/**
+  * @brief LPUART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_LPUART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN LPUART1_Init 0 */
+
+  /* USER CODE END LPUART1_Init 0 */
+
+  /* USER CODE BEGIN LPUART1_Init 1 */
+
+  /* USER CODE END LPUART1_Init 1 */
+  hlpuart1.Instance = LPUART1;
+  hlpuart1.Init.BaudRate = 115200;
+  hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
+  hlpuart1.Init.StopBits = UART_STOPBITS_1;
+  hlpuart1.Init.Parity = UART_PARITY_NONE;
+  hlpuart1.Init.Mode = UART_MODE_TX_RX;
+  hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
+  if (HAL_UART_Init(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_EnableFifoMode(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPUART1_Init 2 */
+
+  /* USER CODE END LPUART1_Init 2 */
+
+}
+
+#endif // APPLICATION_USE_OTCLI
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_8;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_EnableFifoMode(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -529,8 +539,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 0 */
 
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM2) 
-  {
+  if (htim->Instance == TIM2) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
@@ -564,20 +573,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(file);
-  UNUSED(line);
-
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  
-  /* SW breakpoint for debugging purpose */
-  __asm("BKPT #0\n") ;
-
-  /* Infinite loop */
-  while (1)
-  {
-  }
+  Error_Handler();
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

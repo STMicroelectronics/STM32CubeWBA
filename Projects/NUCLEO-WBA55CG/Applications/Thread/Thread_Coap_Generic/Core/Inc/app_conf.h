@@ -84,9 +84,6 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/
@@ -157,7 +154,7 @@ typedef enum
   CFG_TASK_OT_TASKLETS,
   CFG_TASK_SET_THREAD_MODE,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_SW1,
+  CFG_TASK_BUTTON_SW1,		        /* Task linked to push-button. */
   CFG_TASK_BUTTON_SW2,
   CFG_TASK_BUTTON_SW3,
 
@@ -187,6 +184,9 @@ typedef enum
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 /* USER CODE BEGIN TASK_ID_Define */
+#define TASK_BUTTON_SW1                     ( 1u << CFG_TASK_BUTTON_SW1 )
+#define TASK_BUTTON_SW2                     ( 1u << CFG_TASK_BUTTON_SW2 )
+#define TASK_BUTTON_SW3                     ( 1u << CFG_TASK_BUTTON_SW3 )
 
 /* USER CODE END TASK_ID_Define */
 
@@ -276,19 +276,32 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
-
-/******************************************************************************
+/**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
- ******************************************************************************/
-#if (CFG_FULL_LOW_POWER == 1)
-#define CFG_LED_SUPPORTED         (0)
-#define CFG_BUTTON_SUPPORTED      (0)
-#else
-#define CFG_LED_SUPPORTED         (1)
-#define CFG_BUTTON_SUPPORTED      (1)
+ */
+
+#define CFG_LED_SUPPORTED           (1)
+#define CFG_BUTTON_SUPPORTED        (1)
+
+/**
+ * If CFG_LPM_LEVEL at 2, make sure LED are disabled
+ */
+#if (CFG_LPM_LEVEL > 1)
+  #undef  CFG_LED_SUPPORTED
+  #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
+
+#if ( CFG_LED_SUPPORTED == 1 )
+#define APP_LED_ON( LED )           BSP_LED_On( LED )
+#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
+#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
+#else /* ( CFG_LED_SUPPORTED == 1 ) */
+#define APP_LED_ON( LED )
+#define APP_LED_OFF( LED )
+#define APP_LED_TOGGLE( LED )
+#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -165,7 +165,7 @@ extern "C" {
  */
 #define BLE_APP_NUM_GATT_SERVICES       (2u + BAP_PACS_SRV_NUM_GATT_SERVICES \
                                         + BAP_BASS_SRV_NUM_GATT_SERVICES \
-                                        + CAP_ACC_NUM_GATT_SERVICES)
+                                        + CAP_ACC_COM_NUM_GATT_SERVICES)
 
 /**
  * GATT Attributes Configuration

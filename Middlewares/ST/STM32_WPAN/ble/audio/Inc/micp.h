@@ -57,7 +57,7 @@ tBleStatus MICP_DEVICE_UpdateGainSettingProperties(uint8_t InstID,MICP_GainSetti
   * @param  AudioInputType: Audio Input Type value
   * @retval status of the operation
   */
-tBleStatus MICP_DEVICE_UpdateAudioInputType(uint8_t InstID,MICP_AudioInput_t AudioInputType);
+tBleStatus MICP_DEVICE_UpdateAudioInputType(uint8_t InstID,Audio_Input_t AudioInputType);
 
 /**
   * @brief  Update the statue of the Audio Input Device Instance
@@ -80,8 +80,7 @@ tBleStatus MICP_DEVICE_UpdateAudioInputDescription(uint8_t InstID,uint8_t *pDesc
   * @brief  Set the Mute value for the remote MICP Device
   * @note   The MICP_CONTROLLER_CTRL_OPERATION_TRANSMITTED_EVT event will be notified once the operation is transmitted.
   * @param  ConnHandle: ACL connection handle
-  * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Device returned in
-  *                        MICP_CONTROLLER_MUTE_EVT event.
+  * @param  Mute: Mute value to set
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_SetMute(uint16_t ConnHandle, Microphone_Mute_t Mute);
@@ -113,7 +112,7 @@ tBleStatus MICP_CONTROLLER_ConfigureMuteNotification(uint16_t ConnHandle,uint8_t
   * @note   If notification is enabled, MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event would be notified when
   *         Audio Input State change in MICP Renderer.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  Enabled: if 0, Audio Input State change in MICP Renderer is never notified.
   *                  if 1, Audio Input State change in MICP Renderer is notified.
   * @retval status of the operation
@@ -126,7 +125,7 @@ tBleStatus MICP_CONTROLLER_ConfigureAudioInputStateNotification(uint16_t ConnHan
   * @note   If notification is enabled, MICP_CONTROLLER_AUDIO_INPUT_STATUS_EVT event would be notified when
   *         Audio Input Status change in MICP Renderer.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  Enabled: if 0, Audio Input Status change in MICP Renderer is never notified.
   *                  if 1, Audio Input Status change in MICP Renderer is notified.
   * @retval status of the operation
@@ -139,7 +138,7 @@ tBleStatus MICP_CONTROLLER_ConfigureAudioInputStatusNotification(uint16_t ConnHa
   * @note   If notification is enabled, MICP_CONTROLLER_AUDIO_INPUT_DESCRIPTION_EVT event would be notified when
   *         Audio Input Description change in MICP Renderer.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  Enabled: if 0, Audio Input Description change in MICP Renderer is never notified.
   *                  if 1, Audio Input Description change in MICP Renderer is notified.
   * @retval status of the operation
@@ -151,6 +150,7 @@ tBleStatus MICP_CONTROLLER_ConfigureAudioInputDescNotification(uint16_t ConnHand
   * @note   The MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be notified to report the operation result.
   * @note   The MICP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_ReadAudioInputState(uint16_t ConnHandle,uint8_t Inst);
@@ -160,7 +160,7 @@ tBleStatus MICP_CONTROLLER_ReadAudioInputState(uint16_t ConnHandle,uint8_t Inst)
   * @note   The MICP_CONTROLLER_GAIN_SETTING_PROP_EVT event will be notified to report the operation result.
   * @note   The MICP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_ReadGainSettingProperties(uint16_t ConnHandle,uint8_t Inst);
@@ -170,7 +170,7 @@ tBleStatus MICP_CONTROLLER_ReadGainSettingProperties(uint16_t ConnHandle,uint8_t
   * @note   The MICP_CONTROLLER_AUDIO_INPUT_STATUS_EVT event will be notified to report the operation result.
   * @note   The MICP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_ReadAudioInputStatus(uint16_t ConnHandle,uint8_t Inst);
@@ -181,7 +181,7 @@ tBleStatus MICP_CONTROLLER_ReadAudioInputStatus(uint16_t ConnHandle,uint8_t Inst
   * @note   The MICP_CONTROLLER_AUDIO_INPUT_DESCRIPTION_EVT event will be notified to report the operation result.
   * @note   The MICP_CONTROLLER_OPERATION_COMPLETE_EVT event will be notified once the operation is complete.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_ReadAudioInputDescription(uint16_t ConnHandle,uint8_t Inst);
@@ -197,7 +197,7 @@ tBleStatus MICP_CONTROLLER_ReadAudioInputDescription(uint16_t ConnHandle,uint8_t
   * @note   If the operation causes a Gain Setting change, the MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  GainSetting: Gain Setting
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Renderer returned in
   *                        MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
@@ -218,7 +218,7 @@ tBleStatus MICP_CONTROLLER_SetAudioInputGainSetting(uint16_t ConnHandle,
   * @note   If the operation causes a Mute State change, the MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Renderer returned in
   *                        MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -235,7 +235,7 @@ tBleStatus MICP_CONTROLLER_UnmuteAudioInput(uint16_t ConnHandle,uint8_t Inst,uin
   * @note   If the operation causes a Mute State change, the MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Renderer returned in
   *                        MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -252,7 +252,7 @@ tBleStatus MICP_CONTROLLER_MuteAudioInput(uint16_t ConnHandle,uint8_t Inst,uint8
   * @note   If the operation causes a Gain Mode change, the MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Renderer returned in
   *                        MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -269,7 +269,7 @@ tBleStatus MICP_CONTROLLER_SetManualGainMode(uint16_t ConnHandle,uint8_t Inst,ui
   * @note   If the operation causes a Gain Mode change, the MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event will be
   *         received if Audio Input State Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  ChangeCounter: Change Counter value which shall match with the Change Counter in MICP Renderer returned in
   *                        MICP_CONTROLLER_AUDIO_INPUT_STATE_EVT event.
   * @retval status of the operation
@@ -281,12 +281,23 @@ tBleStatus MICP_CONTROLLER_SetAutomaticGainMode(uint16_t ConnHandle,uint8_t Inst
   * @note   If the operation causes an Audio Input Description change, the MICP_CONTROLLER_AUDIO_INPUT_DESCRIPTION_EVT
   *         event will be received if Audio Input Description Update Notification is enabled.
   * @param  ConnHandle: ACL connection handle
-  * @param  Inst : Audio Input Control Instance specified in MICP_CONTROLLER_AIC_INST_INFO_EVT event
+  * @param  Inst : Audio Input Control Instance
   * @param  pDesc: Pointer on the UTF-8 string corresponding to the description of the Audio input
   * @param  Length: length of the description string parameter
   * @retval status of the operation
   */
 tBleStatus MICP_CONTROLLER_WriteAudioInputDesc(uint16_t ConnHandle,uint8_t Inst,uint8_t *pDesc,uint8_t Length);
+
+/**
+  * @brief  Remove the record of the Microphone Control Profile Controller stored in the Non Volatile memory.
+  * @param  PeerIdentityAddressType: Identity address type.
+  *                                  Values:
+  *                                     - 0x00: Public Identity Address
+  *                                     - 0x01: Random (static) Identity Address
+  * @param  PeerIdentityAddress : Public or Random (static) Identity address of the peer device
+  * @retval status of the operation
+  */
+tBleStatus MICP_CONTROLLER_RemoveRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6]);
 
 #ifdef __cplusplus
 }

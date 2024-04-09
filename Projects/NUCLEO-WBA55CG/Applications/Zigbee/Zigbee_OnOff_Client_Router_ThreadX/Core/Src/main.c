@@ -75,6 +75,7 @@ static void MX_GPDMA1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -114,6 +115,7 @@ int main(void)
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -133,6 +135,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -175,6 +181,15 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
   {
     Error_Handler();
   }

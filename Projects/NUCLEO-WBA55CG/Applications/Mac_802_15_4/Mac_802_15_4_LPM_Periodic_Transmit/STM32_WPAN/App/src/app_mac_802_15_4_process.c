@@ -173,14 +173,14 @@ MAC_Status_t APP_MAC_mcpsDataIndCb( const  ST_MAC_dataInd_t * pDataInd )
                            pDataInd->msdu[pDataInd->msdu_length-1],
                            0x00))
   {
-    APP_DBG("RFD MAC APP - ERROR : CORRUPTED RECEIVED DATA ");
+    APP_DBG("LPM MAC APP - ERROR : CORRUPTED RECEIVED DATA ");
   }
   else{
     //copy payload message
     memcpy(&data_payload,pDataInd->msdu,(pDataInd->msdu_length)-1);
     // add \0 in end of the message
     data_payload[(pDataInd->msdu_length)-1] ='\0';
-    APP_DBG("RFD MAC APP - DATA RECEIVED: %s \r\n", data_payload);
+    APP_DBG("LPM MAC APP - DATA RECEIVED: %s \r\n", data_payload);
   }
   /* return */
   return MAC_SUCCESS;
@@ -189,7 +189,7 @@ MAC_Status_t APP_MAC_mcpsDataIndCb( const  ST_MAC_dataInd_t * pDataInd )
 
 MAC_Status_t APP_MAC_mcpsDataCnfCb( const  ST_MAC_dataCnf_t * pDataCnf )
 {
-  APP_DBG("RFD MAC APP - DATA CNF \r\n");
+  APP_DBG("LPM MAC APP - DATA CNF \r\n");
   UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_ENABLE);
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
   UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE);

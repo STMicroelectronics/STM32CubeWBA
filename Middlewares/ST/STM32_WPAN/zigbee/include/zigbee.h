@@ -59,8 +59,7 @@ struct WpanPublicT;
 
 /* Channel Mask / Page Helpers */
 #define ZB_CHANNELMASK_GETPAGE(x)       (uint8_t)(((x) >> WPAN_PAGE_CHANNELS_MAX) & 0x1FU)
-#define ZB_CHANNELMASK(mask, page)      ((page != 0U) ? \
-                                         ((mask) | ((((uint32_t)page) & 0x1FU) << WPAN_PAGE_CHANNELS_MAX)) : (mask))
+#define ZB_CHANNELMASK(mask, page)      ((mask) | ((((uint32_t)page) & 0x1FU) << WPAN_PAGE_CHANNELS_MAX))
 
 /* A value of 0xffff means the device is not associated. */
 #define ZB_PANID_MAX                    0xfffeU

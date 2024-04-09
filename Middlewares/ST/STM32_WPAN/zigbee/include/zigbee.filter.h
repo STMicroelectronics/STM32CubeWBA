@@ -87,8 +87,6 @@ enum ZbMsgStackEventTypeT {
     ZB_MSG_STACK_EVENT_ATTEMPT_REJOIN,
     /**< A message that is sent if the stack handles an NLME-LEAVE.indication message
      * for the local device that has left the network and the rejoin flag was set.
-     * This message can also occur if the device is an end-device and it has received an
-     * NLME-NETWORK-STATUS.indication with the PARENT_LINK_FAILURE status set.
      * The application should attempt to rejoin the network using the ZbStartupRejoin()
      * API call at its convenience. */
 
@@ -141,9 +139,15 @@ enum ZbMsgStackEventTypeT {
      * trust center. Will only get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT
      * enabled. */
 
-    ZB_MSG_STACK_EVENT_STARTUP_JOIN_AUTH_TOKEN
+    ZB_MSG_STACK_EVENT_STARTUP_JOIN_AUTH_TOKEN,
     /**< A message that is sent after the stack completes updating the symmetric Passphrase
      * after initially joining a network and negotiating the trust center link key using DLK. */
+
+    ZB_MSG_STACK_EVENT_PARENT_LINK_FAIL
+    /** A message that is sent if the device is an end-device and it has received an
+     * NLME-NETWORK-STATUS.indication with the PARENT_LINK_FAILURE status set.
+     * Outside of testing 18.4.* TP/R23/ZDO/APC-*, the application should attempt to
+     * rejoin the network using the ZbStartupRejoin() API call at its convenience. */
 };
 
 struct ZbMsgStackEventT {

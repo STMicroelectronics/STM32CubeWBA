@@ -26,12 +26,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-
 /* Exported types ------------------------------------------------------------*/
 /*
- *  List of all errors tracked by the Thread application
- *  running on M4. Some of these errors may be fatal
- *  or just warnings
+ *  List of all errors tracked by the Thread application.
+ *  Some of these errors may be fatal or just warnings
  */
 typedef enum
 {
@@ -44,7 +42,7 @@ typedef enum
   ERR_THREAD_START,
   ERR_THREAD_ERASE_PERSISTENT_INFO,
   ERR_THREAD_SET_NETWORK_KEY,
-/* USER CODE BEGIN ERROR_APPLI_ENUM */
+  /* USER CODE BEGIN ERROR_APPLI_ENUM */
   ERR_THREAD_COAP_START,
   ERR_THREAD_COAP_ADD_RESSOURCE,
   ERR_THREAD_MESSAGE_READ,
@@ -60,7 +58,7 @@ typedef enum
   ERR_THREAD_MSG_COMPARE_FAILED,
   ERR_THREAD_COAP_ADDRESS_NOT_DEFINED,
 
-/* USER CODE END ERROR_APPLI_ENUM */
+  /* USER CODE END ERROR_APPLI_ENUM */
   ERR_THREAD_CHECK_WIRELESS
 } ErrAppliIdEnum_t;
 
@@ -69,33 +67,27 @@ typedef enum
 /* USER CODE BEGIN ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define APP_READ32_REG(base_addr)         (*(volatile uint32_t *)(base_addr))
-#define APP_WRITE32_REG(base_addr, data)  (*(volatile uint32_t *)(base_addr) = (data))
+#define APP_READ32_REG(base_addr)           (*(volatile uint32_t *)(base_addr))
+#define APP_WRITE32_REG(base_addr, data)    (*(volatile uint32_t *)(base_addr) = (data))
 
 /* USER CODE BEGIN EC */
-/* ipv6-addressing defines        */
-/* Key Point: A major difference between FTDs and MTDs are that FTDs subscribe to the ff03::2 multicast address.
- * MTDs do not. */
-
-#define MULICAST_FTD_MED            "ff03::1"
-#define MULICAST_FTD_BORDER_ROUTER  "ff03::2"
 
 /* USER CODE END EC */
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Thread_Init(void);
+void ProcessLinkLayer(void);
+void ProcessTasklets(void);
+void ProcessAlarm(void);
+void ProcessUsAlarm(void);
+void ProcessOpenThreadTasklets(void);
 
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
 
 /* USER CODE BEGIN EFP */
-#if (CFG_BUTTON_SUPPORTED == 1)
-void APP_THREAD_Button1Action();
-void APP_THREAD_Button2Action();
-void APP_THREAD_Button3Action();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
-/* USER CODE BEGIN EFP */
 
+/* USER CODE BEGIN EFP */
 
 #endif /* APP_THREAD_H */

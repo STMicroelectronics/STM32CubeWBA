@@ -22,6 +22,19 @@
 #include "scm.h"
 #include "RTDebug.h"
 
+#if (CFG_SCM_SUPPORTED == 1)
+
+__weak void SCM_HSI_CLK_ON(void)
+{
+  LL_RCC_HSI_Enable();
+  while(LL_RCC_HSI_IsReady() == 0);
+}
+
+__weak void SCM_HSI_CLK_OFF(void)
+{
+  LL_RCC_HSI_Disable();
+}
+
 /* Private typedef -----------------------------------------------------------*/
 #define PLL_INPUTRANGE0_FREQMAX         8000000u  /* 8 MHz is maximum frequency for VCO input range 0 */
 
@@ -46,14 +59,17 @@ RAMCFG_HandleTypeDef sram2_ns =
 static scm_system_clock_t scm_system_clock_config;
 static scm_clockconfig_t scm_system_clock_requests[(scm_user_id_t)TOTAL_CLIENT_NUM] = {NO_CLOCK_CONFIG};
 static scm_radio_state_t RadioState;
+
 /* Private function prototypes -----------------------------------------------*/
 static scm_clockconfig_t scm_getmaxfreq(void);
 static void scm_systemclockconfig(void);
 static void ConfigStartPll(void);
 static void ConfigHwPll(scm_pll_config_t *p_hw_config);
+static void SwitchHsePre(scm_hse_hsepre_t hse_pre);
 static void SwitchHse16toHse32(void);
 static void SwitchHse32toHse16(void);
 static void SwitchPlltoHse32(void);
+
 /* Private functions ---------------------------------------------------------*/
 static scm_clockconfig_t scm_getmaxfreq(void)
 {
@@ -153,6 +169,37 @@ static void scm_systemclockconfig(void)
   SYSTEM_DEBUG_SIGNAL_RESET(SCM_SYSTEM_CLOCK_CONFIG);
 }
 
+static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
+{
+  /* Start HSI */
+  SCM_HSI_CLK_ON();
+
+  /* Set HSI as SYSCLK */
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI);
+
+  /* Enable HSEON */
+  LL_RCC_HSE_Enable();
+  while(LL_RCC_HSE_IsReady() == 0);
+
+  /* Set/Clear HSEPRE */
+  if(hse_pre == HSEPRE_DISABLE)
+  {
+    LL_RCC_HSE_DisablePrescaler();
+  }
+  else
+  {
+    LL_RCC_HSE_EnablePrescaler();
+  }
+
+  /* Set HSE as SYSCLK */
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
+
+  /* Disable HSI */
+  SCM_HSI_CLK_OFF();
+}
+
 static void SwitchHse16toHse32(void)
 {
   /**
@@ -168,7 +215,7 @@ static void SwitchHse16toHse32(void)
   while (LL_PWR_IsActiveFlag_VOS() == 0);
 
   /* Switch to 32Mhz */
-  LL_RCC_HSE_DisablePrescaler();
+  SwitchHsePre(HSEPRE_DISABLE);
 
   /* Configure flash and SRAMs */
   scm_setwaitstates(HSE32);
@@ -194,7 +241,7 @@ static void SwitchHse32toHse16(void)
   scm_setwaitstates(HSE16);
 
   /* Switch to HSE 16 */
-  LL_RCC_HSE_EnablePrescaler();
+  SwitchHsePre(HSEPRE_ENABLE);
 
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
 }
@@ -272,6 +319,9 @@ static void ConfigHwPll(scm_pll_config_t *p_hw_config)
                         );
 
   LL_RCC_SetAHB5Prescaler(p_hw_config->AHB5_PLL1_CLKDivider);
+
+  /* PLL is now initialized */
+  scm_system_clock_config.pll.are_pll_params_initialized = 1;
 }
 
 /* Public functions ----------------------------------------------------------*/
@@ -534,11 +584,11 @@ void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t sysclockconfig)
             /* Wait until HSE is ready */
             while (LL_RCC_HSE_IsReady() == 0);
 
+            LL_RCC_HSE_DisablePrescaler();
+
             /* Switch to HSE */
             LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
             while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
-
-            LL_RCC_HSE_DisablePrescaler();
 
             scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
 
@@ -604,18 +654,21 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
   switch (ws_lp_config) {
   case LP:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
     break;
 
   case RUN:
     __HAL_FLASH_SET_LATENCY(scm_system_clock_config.flash_ws_cfg);
+    while(__HAL_FLASH_GET_LATENCY() != scm_system_clock_config.flash_ws_cfg);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, scm_system_clock_config.sram_ws_cfg);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, scm_system_clock_config.sram_ws_cfg);
     break;
 
   case HSE16:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_1);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_1);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
 
@@ -626,6 +679,7 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
 
   case HSE32:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
 
@@ -639,6 +693,7 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
     /* Set Flash LATENCY according to PLL configuration */
     /* BELOW CONFIGURATION IS WORST CASE, SHALL BE OPTIMIZED */
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
     scm_system_clock_config.flash_ws_cfg = FLASH_LATENCY_3;
     break;
 
@@ -680,11 +735,11 @@ void scm_hserdy_isr(void)
         * Range1
         */
 
+      LL_RCC_HSE_DisablePrescaler();
+
       /* Switch to HSE */
       LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
       while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
-
-      LL_RCC_HSE_DisablePrescaler();
 
       scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
 
@@ -701,7 +756,7 @@ void scm_hserdy_isr(void)
     }
 
     /* As system switched to HSE, disable HSI */
-    LL_RCC_HSI_Disable();
+    SCM_HSI_CLK_OFF();
 
     /* Disable HSERDY interrupt */
     __HAL_RCC_DISABLE_IT(RCC_IT_HSERDY);
@@ -778,8 +833,16 @@ void scm_notifyradiostate(const scm_radio_state_t radio_state)
   */
 void scm_standbyexit(void)
 {
-  /* Restore PLL even if not yet used in case it has been setup upfron at initialization */
-  ConfigHwPll(&scm_system_clock_config.pll);
+  if(scm_system_clock_config.pll.are_pll_params_initialized == 1)
+  {
+    /* Restore PLL even if not yet used in case it has been setup upfron at initialization */
+    ConfigHwPll(&scm_system_clock_config.pll);
+  }
 
   scm_setup();
 }
+
+#else /* CFG_SCM_SUPPORTED */
+void scm_pllrdy_isr(void){/* Intentionally enpty */}
+void scm_hserdy_isr(void){/* Intentionally enpty */}
+#endif /* CFG_SCM_SUPPORTED */

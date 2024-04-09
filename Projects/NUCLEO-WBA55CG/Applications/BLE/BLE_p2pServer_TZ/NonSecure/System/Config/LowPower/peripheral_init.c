@@ -22,7 +22,10 @@
 #include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
-
+#include "crc_ctrl.h"
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+#include "adc_ctrl.h"
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
@@ -54,6 +57,11 @@ void MX_StandbyExit_PeripharalInit(void)
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
+  /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+  /* Re-Initialize Tick with new clock source */
+  HAL_InitTick(TICK_INT_PRIORITY);
+
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   memset(&hadc4, 0, sizeof(hadc4));
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
@@ -63,24 +71,31 @@ void MX_StandbyExit_PeripharalInit(void)
   memset(&hrng, 0, sizeof(hrng));
 
   MX_GPIO_Init();
-  MX_CRC_Init();
-  MX_ICACHE_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   MX_ADC4_Init();
+
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+  MX_CRC_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
+  MX_ICACHE_Init();
+  CRCCTRL_Init();
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ADCCTRL_Init();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */

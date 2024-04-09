@@ -32,7 +32,7 @@ __weak void SCM_HSI_CLK_ON(void)
 
 __weak void SCM_HSI_CLK_OFF(void)
 {
-  LL_RCC_HSI_Disable();
+
 }
 
 /* Private typedef -----------------------------------------------------------*/
@@ -756,7 +756,7 @@ void scm_hserdy_isr(void)
     }
 
     /* As system switched to HSE, disable HSI */
-    LL_RCC_HSI_Disable();
+    SCM_HSI_CLK_OFF();
 
     /* Disable HSERDY interrupt */
     __HAL_RCC_DISABLE_IT(RCC_IT_HSERDY);
@@ -842,4 +842,7 @@ void scm_standbyexit(void)
   scm_setup();
 }
 
+#else /* CFG_SCM_SUPPORTED */
+void scm_pllrdy_isr(void){/* Intentionally enpty */}
+void scm_hserdy_isr(void){/* Intentionally enpty */}
 #endif /* CFG_SCM_SUPPORTED */

@@ -10,12 +10,14 @@
   <project>
     <PathAndName>.\thread_ftd_keil_config\thread_ftd_keil_config.uvprojx</PathAndName>
     <NodeIsActive>1</NodeIsActive>
-    <NodeIsExpanded>1</NodeIsExpanded>
   </project>
 
   <project>
     <PathAndName>.\thread_mtd_keil_config\thread_mtd_keil_config.uvprojx</PathAndName>
-    <NodeIsExpanded>1</NodeIsExpanded>
+  </project>
+
+  <project>
+    <PathAndName>.\thread_rcp_keil_config\thread_rcp_keil_config.uvprojx</PathAndName>
   </project>
 
 </ProjectWorkspace>

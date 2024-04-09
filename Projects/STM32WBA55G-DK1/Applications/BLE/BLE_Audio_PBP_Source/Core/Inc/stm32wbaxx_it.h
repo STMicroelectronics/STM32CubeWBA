@@ -62,7 +62,6 @@ void GPDMA1_Channel1_IRQHandler(void);
 void GPDMA1_Channel2_IRQHandler(void);
 void GPDMA1_Channel7_IRQHandler(void);
 void USART1_IRQHandler(void);
-void RNG_IRQHandler(void);
 void ADC4_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);

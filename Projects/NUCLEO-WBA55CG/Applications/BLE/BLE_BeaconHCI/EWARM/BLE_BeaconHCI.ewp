@@ -380,6 +380,8 @@
           <state>$PROJ_DIR$/../System/Modules/Flash</state>
           <state>$PROJ_DIR$/../System/Modules/Nvm</state>
           <state>$PROJ_DIR$/../System/Config/Flash</state>
+          <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
+          <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1176,6 +1178,12 @@
         <group>
           <name>Config</name>
           <group>
+            <name>CRC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
+            </file>
+          </group>
+          <group>
             <name>Debug_GPIO</name>
             <file>
               <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
@@ -1200,6 +1208,12 @@
             </file>
             <file>
               <name>$PROJ_DIR$\..\System\Config\LowPower\peripheral_init.c</name>
+            </file>
+          </group>
+          <group>
+            <name>ADC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
             </file>
           </group>
         </group>
@@ -1302,6 +1316,9 @@
             <name>$PROJ_DIR$\..\System\Modules\ble_timer.c</name>
           </file>
           <file>
+            <name>$PROJ_DIR$\..\System\Modules\crc_ctrl.c</name>
+          </file>
+          <file>
             <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
           </file>
           <file>
@@ -1309,6 +1326,9 @@
           </file>
           <file>
             <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$\..\System\Modules\temp_measurement.c</name>
           </file>
         </group>
         <group>
@@ -1328,18 +1348,6 @@
   </group>
   <group>
     <name>Drivers</name>
-    <group>
-      <name>BSP</name>
-      <group>
-        <name>STM32WBAxx_Nucleo</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo\stm32wbaxx_nucleo.c</name>
-          <excluded>
-            <configuration>BLE_BeaconHCI</configuration>
-          </excluded>
-        </file>
-      </group>
-    </group>
     <group>
       <name>CMSIS</name>
       <file>
@@ -1427,10 +1435,16 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
       </file>
     </group>
   </group>
@@ -1439,10 +1453,10 @@
     <group>
       <name>STM32_WPAN</name>
       <file>
-        <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_lib.a</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_BLE_Basic_lib.a</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_llobasic.a</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\lib\stm32wba_ble_stack_llobasic.a</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Src\svc_ctl.c</name>

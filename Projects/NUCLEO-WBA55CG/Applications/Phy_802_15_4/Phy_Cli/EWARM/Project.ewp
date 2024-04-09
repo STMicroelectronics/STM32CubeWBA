@@ -348,7 +348,11 @@
                     <state>$PROJ_DIR$\..\System\Modules\Nvm</state>
                     <state>$PROJ_DIR$\..\System\Modules\Flash</state>
                     <state>$PROJ_DIR$\..\System\Config</state>
+                    <state>$PROJ_DIR$\..\System\Config\Log</state>
                     <state>$PROJ_DIR$\..\System\Config\Flash</state>
+                    <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
+                    <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
+                    <state>$PROJ_DIR$\..\System\Config\LowPower</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
@@ -363,11 +367,9 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\tim_serv</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\thread</state>
-                    <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
-                    <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
-                    <state>$PROJ_DIR$\..\System\Config\LowPower</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
                 </option>
                 <option>
@@ -1146,6 +1148,15 @@
                 <name>System</name>
                 <group>
                     <name>Config</name>
+                    <group>
+                        <name>LowPower</name>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Config\LowPower\peripheral_init.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Config\LowPower\user_low_power_config.c</name>
+                        </file>
+                    </group>
                     <file>
                         <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
                     </file>
@@ -1169,9 +1180,6 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\System\Interfaces\timer_if.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\usart_if.c</name>
                     </file>
                 </group>
                 <group>
@@ -1198,7 +1206,7 @@
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
                     </file>
                 </group>
             </group>
@@ -1291,7 +1299,7 @@
     <group>
         <name>lib</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_RawMac_lib.a</name>
+            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
@@ -1320,9 +1328,6 @@
     </group>
     <group>
         <name>Utilities</name>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\trace\adv_trace\stm32_adv_trace.c</name>
-        </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</name>
         </file>

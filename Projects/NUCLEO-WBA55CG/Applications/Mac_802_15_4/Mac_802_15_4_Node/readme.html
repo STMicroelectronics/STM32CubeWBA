@@ -106,14 +106,16 @@
 <p>Upon COORDINATOR start, the device initializes the MAC 802.15.4 and associates resources in non-beaconned enable mode.</p>
 <p>MAC PIB is then configured as follow :</p>
 <ul>
-<li>PanID : 0x1AAA, can be define in app_conf.h</li>
+<li>PanID : 0xBEEF, can be define in app_conf.h, if define MAC_802_15_4_RANDOM_PAN_ID enable, the PANID is random</li>
 <li>Coordinator Extended Address : depending to the device but begin by 00:80:E1</li>
 <li>Coordinator Short Address : 0x2000, can be define in app_conf.h</li>
 <li>Poll Short Address : 0x2001 - 0x2010</li>
 <li>Channel : take the lest noisy channel, can be define in app_conf.h</li>
+<li>Beacon Payload : 0x42,0x5A,0x48, can be define in app_conf.h</li>
 </ul>
 <p>Once MAC PIB is initialized, Coordinator is started on least noisy channel with ED scan as an association capable coordinator. At this stage the Coordinator is waiting for an association request. Blue LED (ID 1) is switch on once the coordinator is started.</p>
 <p>On Node side, the MAC layer is initialized on startup. In this state, blue LED (ID 1) is switch on.</p>
+<p>The Node device can recognize the coordinator device with the beacon payload define in app_conf.h on both devices.</p>
 <p>Node issues an association request to the Coodinator to retrieve its short address. On in coming association request Coordinator’s green LED (ID 2) blinks.</p>
 <p>Once the association between two devices is completed, Node’s green LED (ID 2) is switch on to indicate the node is associated to the coordinator.</p>
 <p>The Node sends data to the coordinator that issues a Data Indication. On both devices side, on data transmission red led (ID 3) blinked.</p>

@@ -193,6 +193,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -406,8 +408,9 @@ static void APP_ZIGBEE_TempMeasServerReport( struct ZbZclClusterT * pstCluster, 
 {
   int       iAttrLen;
   int16_t   iAttrValue;
+  int64_t   lExtendedAddress;
   float     fTempValue;
-  char      szText[32]; 
+  char      szText[10];
 
   iAttrLen = ZbZclAttrParseLength( eDataType, pDataInputPayload, pstDataInd->asduLength, 0 );
   if ( iAttrLen < 0 )
@@ -433,8 +436,9 @@ static void APP_ZIGBEE_TempMeasServerReport( struct ZbZclClusterT * pstCluster, 
     case ZCL_TEMP_MEAS_ATTR_MEAS_VAL:
         iAttrValue= (int16_t)( pletoh16( pDataInputPayload ) );
         fTempValue = (float)iAttrValue / 100;
-        sprintf( szText, "%.2f", fTempValue );
-        LOG_INFO_APP( "[TEMP MEAS] From 0x%016" PRIX64 ", Temp. value is %s C", pstDataInd->src.extAddr, szText );
+        lExtendedAddress = pstDataInd->src.extAddr;
+        snprintf( szText, sizeof(szText), "%.2f", fTempValue );
+        LOG_INFO_APP( "[TEMP MEAS] From 0x%08X%08X, Temp. value is %s C", (uint32_t)( lExtendedAddress >> 32u ), (uint32_t)lExtendedAddress, szText );
         APP_LED_TOGGLE( LED_BLUE );
         break;
 

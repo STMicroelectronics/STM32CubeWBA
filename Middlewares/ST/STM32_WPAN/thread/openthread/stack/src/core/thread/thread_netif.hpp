@@ -54,7 +54,7 @@ class ThreadNetif : public Ip6::Netif
 {
 public:
     /**
-     * This constructor initializes the Thread network interface.
+     * Initializes the Thread network interface.
      *
      * @param[in]  aInstance  A reference to the OpenThread instance.
      *
@@ -62,58 +62,25 @@ public:
     explicit ThreadNetif(Instance &aInstance);
 
     /**
-     * This method enables the Thread network interface.
+     * Enables the Thread network interface.
      *
      */
     void Up(void);
 
     /**
-     * This method disables the Thread network interface.
+     * Disables the Thread network interface.
      *
      */
     void Down(void);
 
     /**
-     * This method indicates whether or not the Thread network interface is enabled.
+     * Indicates whether or not the Thread network interface is enabled.
      *
      * @retval TRUE   If the Thread network interface is enabled.
      * @retval FALSE  If the Thread network interface is not enabled.
      *
      */
     bool IsUp(void) const { return mIsUp; }
-
-    /**
-     * This method submits a message to the network interface.
-     *
-     * @param[in]  aMessage  A reference to the message.
-     *
-     * @retval kErrorNone  Successfully submitted the message to the interface.
-     *
-     */
-    Error SendMessage(Message &aMessage);
-
-    /**
-     * This method performs a route lookup.
-     *
-     * @param[in]   aSource       A reference to the IPv6 source address.
-     * @param[in]   aDestination  A reference to the IPv6 destination address.
-     *
-     * @retval kErrorNone      Successfully found a route.
-     * @retval kErrorNoRoute   Could not find a valid route.
-     *
-     */
-    Error RouteLookup(const Ip6::Address &aSource, const Ip6::Address &aDestination);
-
-    /**
-     * This method indicates whether @p aAddress matches an on-mesh prefix.
-     *
-     * @param[in]  aAddress  The IPv6 address.
-     *
-     * @retval TRUE   If @p aAddress matches an on-mesh prefix.
-     * @retval FALSE  If @p aAddress does not match an on-mesh prefix.
-     *
-     */
-    bool IsOnMesh(const Ip6::Address &aAddress) const;
 
 private:
     bool mIsUp;

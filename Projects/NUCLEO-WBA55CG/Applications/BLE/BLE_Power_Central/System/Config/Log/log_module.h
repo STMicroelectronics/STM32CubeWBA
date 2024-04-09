@@ -158,9 +158,10 @@ typedef struct
  * @brief Callback function to insert Time Stamp.
  *
  * @param  pData    The location where insert the new TimeStamp
- * @param  piSize   The size of the TimeStamp insert.
+ * @param  iSizeMax The maximum size for the TimeStamp insert.
+ * @param  piSize   Pointer on the size of the TimeStamp insert.
  */
-typedef void CallBack_TimeStamp( uint8_t * pData, uint16_t * piSize );
+typedef void CallBack_TimeStamp( char * pData, uint16_t iSizeMax, uint16_t * piSize );
 
 /* USER CODE BEGIN ET */
 

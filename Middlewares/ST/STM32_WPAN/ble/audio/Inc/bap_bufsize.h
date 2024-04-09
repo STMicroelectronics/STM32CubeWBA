@@ -204,7 +204,7 @@
  * BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES: memory size used to allocate ASCS Client Context
  *                                            per Unicast Client Connection Instance
  */
-#define BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (360u)
+#define BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       364u
 
 /*
  * BAP_ASCS_CLT_MEM_CONTEXT_SIZE_BYTES: memory size used per Unicast Client for ACSC Client Context Allocation
@@ -242,7 +242,7 @@
  * BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES: memory size used per Connection BASS Client Instance
  *                                            by Broadcast Assistant
  */
-#define BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (48u)
+#define BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (52u)
 
 /*
  * BAP_BASS_CLT_MEM_CONTEXT_SIZE_BYTES: memory size used for BASS Client Context Allocation by Broadcast Assistant

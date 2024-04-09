@@ -28,7 +28,8 @@
  * g_vdd_ldo_value_2 : is to be set in PHY register address 0xEA. */
 
 typedef enum _vdd_ldo_value_e {
-  VDD_LDO_VALUE_1_ID_0  = 0x70,
+  VDD_LDO_VALUE_MAX_POWER  = 0x70,
+  VDD_LDO_VALUE_LOW_POWER  = 0x20,
   VDD_LDO_VALUE_2_ID_0  = 0x00,
 } vdd_ldo_value_e;
 
@@ -103,8 +104,8 @@ const power_table_entry ll_tx_power_table_low_power[] = {
 
 /* Supported TX_Power tables. */
 const power_table_id_t ll_tx_power_tables[] = {
-  {ll_tx_power_table_max_power, sizeof(ll_tx_power_table_max_power)/sizeof(ll_tx_power_table_max_power[0]), VDD_LDO_VALUE_1_ID_0, VDD_LDO_VALUE_2_ID_0, 0},
-  {ll_tx_power_table_low_power, sizeof(ll_tx_power_table_low_power)/sizeof(ll_tx_power_table_low_power[0]), VDD_LDO_VALUE_1_ID_0, VDD_LDO_VALUE_2_ID_0, 1},
+  {ll_tx_power_table_max_power, sizeof(ll_tx_power_table_max_power)/sizeof(ll_tx_power_table_max_power[0]), VDD_LDO_VALUE_MAX_POWER, VDD_LDO_VALUE_2_ID_0, 0},
+  {ll_tx_power_table_low_power, sizeof(ll_tx_power_table_low_power)/sizeof(ll_tx_power_table_low_power[0]), VDD_LDO_VALUE_LOW_POWER, VDD_LDO_VALUE_2_ID_0, 1},
   /* USER CODE BEGIN ll_tx_power_tables */
 
   /* USER CODE END ll_tx_power_tables */

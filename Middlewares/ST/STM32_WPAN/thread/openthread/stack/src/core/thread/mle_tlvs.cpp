@@ -66,5 +66,33 @@ exit:
 
 #endif // #if !OPENTHREAD_CONFIG_MLE_LONG_ROUTES_ENABLE
 
+void ConnectivityTlv::IncrementLinkQuality(LinkQuality aLinkQuality)
+{
+    switch (aLinkQuality)
+    {
+    case kLinkQuality0:
+        break;
+    case kLinkQuality1:
+        mLinkQuality1++;
+        break;
+    case kLinkQuality2:
+        mLinkQuality2++;
+        break;
+    case kLinkQuality3:
+        mLinkQuality3++;
+        break;
+    }
+}
+
+int8_t ConnectivityTlv::GetParentPriority(void) const
+{
+    return Preference::From2BitUint(mFlags >> kFlagsParentPriorityOffset);
+}
+
+void ConnectivityTlv::SetParentPriority(int8_t aParentPriority)
+{
+    mFlags = static_cast<uint8_t>(Preference::To2BitUint(aParentPriority) << kFlagsParentPriorityOffset);
+}
+
 } // namespace Mle
 } // namespace ot

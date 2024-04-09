@@ -41,6 +41,7 @@
 #include "common/instance.hpp"
 #include "common/locator_getters.hpp"
 #include "common/log.hpp"
+#include "common/settings.hpp"
 #include "meshcop/meshcop.hpp"
 #include "meshcop/meshcop_tlvs.hpp"
 #include "thread/thread_netif.hpp"
@@ -225,9 +226,52 @@ BorderAgent::BorderAgent(Instance &aInstance)
     , mTimer(aInstance)
     , mState(kStateStopped)
     , mUdpProxyPort(0)
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
+    , mIdInitialized(false)
+#endif
 {
     mCommissionerAloc.InitAsThreadOriginRealmLocalScope();
 }
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
+Error BorderAgent::GetId(Id &aId)
+{
+    Error                   error = kErrorNone;
+    Settings::BorderAgentId id;
+
+    VerifyOrExit(!mIdInitialized, error = kErrorNone);
+
+    if (Get<Settings>().Read(id) != kErrorNone)
+    {
+        Random::NonCrypto::Fill(id.GetId());
+        SuccessOrExit(error = Get<Settings>().Save(id));
+    }
+
+    mId            = id.GetId();
+    mIdInitialized = true;
+
+exit:
+    if (error == kErrorNone)
+    {
+        aId = mId;
+    }
+    return error;
+}
+
+Error BorderAgent::SetId(const Id &aId)
+{
+    Error                   error = kErrorNone;
+    Settings::BorderAgentId id;
+
+    id.SetId(aId);
+    SuccessOrExit(error = Get<Settings>().Save(id));
+    mId            = aId;
+    mIdInitialized = true;
+
+exit:
+    return error;
+}
+#endif // OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
 
 void BorderAgent::HandleNotifierEvents(Events aEvents)
 {
@@ -271,7 +315,7 @@ template <> void BorderAgent::HandleTmf<kUriProxyTx>(Coap::Message &aMessage, co
 
     VerifyOrExit(udpEncapHeader.GetSourcePort() > 0 && udpEncapHeader.GetDestinationPort() > 0, error = kErrorDrop);
 
-    VerifyOrExit((message = Get<Ip6::Udp>().NewMessage(0)) != nullptr, error = kErrorNoBufs);
+    VerifyOrExit((message = Get<Ip6::Udp>().NewMessage()) != nullptr, error = kErrorNoBufs);
     SuccessOrExit(error = message->AppendBytesFromMessage(aMessage, offset, length));
 
     messageInfo.SetSockPort(udpEncapHeader.GetSourcePort());

@@ -1,12 +1,11 @@
 /*****************************************************************************
  * @file    ble_hci_le.h
- * @author  MDG
  * @brief   STM32WBA BLE API (hci_le)
  *          Auto-generated file: do not edit!
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2023 STMicroelectronics.
+ * Copyright (c) 2018-2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -291,6 +290,38 @@ tBleStatus hci_host_buffer_size( uint16_t Host_ACL_Data_Packet_Length,
  */
 tBleStatus hci_host_number_of_completed_packets( uint8_t Number_Of_Handles,
                                                  const Host_Nb_Of_Completed_Pkt_Pair_t* Host_Nb_Of_Completed_Pkt_Pair );
+
+/**
+ * @brief HCI_READ_AFH_CHANNEL_ASSESSMENT_MODE
+ * This command reads the value for the AFH_Channel_Assessment_Mode parameter.
+ * The AFH_Channel_Assessment_Mode parameter controls whether the Controller's
+ * channel assessment scheme is enabled or disabled.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.3.53].
+ * 
+ * @param[out] AFH_Channel_Assessment_Mode Controller channel assessment
+ *        enable/disable.
+ *        Values:
+ *        - 0x00: Controller channel assessment disabled
+ *        - 0x01: Controller channel assessment enabled
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_read_afh_channel_assessment_mode( uint8_t* AFH_Channel_Assessment_Mode );
+
+/**
+ * @brief HCI_WRITE_AFH_CHANNEL_ASSESSMENT_MODE
+ * This command writes the value for the AFH_Channel_Assessment_Mode parameter.
+ * The AFH_Channel_Assessment_Mode parameter controls whether the Controller's
+ * channel assessment scheme is enabled or disabled.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.3.54].
+ * 
+ * @param AFH_Channel_Assessment_Mode Controller channel assessment
+ *        enable/disable.
+ *        Values:
+ *        - 0x00: Controller channel assessment disabled
+ *        - 0x01: Controller channel assessment enabled
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_write_afh_channel_assessment_mode( uint8_t AFH_Channel_Assessment_Mode );
 
 /**
  * @brief HCI_SET_EVENT_MASK_PAGE_2
@@ -4038,6 +4069,103 @@ tBleStatus hci_le_transmitter_test_v4( uint8_t TX_Frequency,
                                        uint8_t Switching_Pattern_Length,
                                        const uint8_t* Antenna_IDs,
                                        uint8_t TX_Power_Level );
+
+/**
+ * @brief HCI_LE_SET_DATA_RELATED_ADDRESS_CHANGES
+ * This command specifies circumstances when the Controller shall refresh any
+ * Resolvable Private Address used by the advertising set identified by the
+ * Advertising_Handle parameter, whether or not the address timeout period has
+ * been reached. This command may be used while advertising is enabled.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.8.122].
+ * 
+ * @param Advertising_Handle Used to identify an advertising set.
+ *        Values:
+ *        - 0x00 ... 0xEF
+ * @param Change_Reasons Reason(s) for refreshing addresses.
+ *        Flags:
+ *        - 0x01: Change the address whenever the advertising data changes
+ *        - 0x02: Change the address whenever the scan response data changes
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_set_data_related_address_changes( uint8_t Advertising_Handle,
+                                                    uint8_t Change_Reasons );
+
+/**
+ * @brief HCI_LE_SET_DEFAULT_SUBRATE
+ * This command is used by the Host to set the initial values for the
+ * acceptable parameters for subrating requests, as defined by the HCI_LE
+ * Subrate_Request command, for all future ACL connections where the Controller
+ * is the Central. This command does not affect any existing connection.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.8.123].
+ * 
+ * @param Subrate_Min Minimum subrate factor.
+ *        Values:
+ *        - 0x0001 ... 0x01F4
+ * @param Subrate_Max Maximum subrate factor.
+ *        Values:
+ *        - 0x0001 ... 0x01F4
+ * @param Max_Latency Maximum Peripheral latency allowed in requests by a
+ *        Peripheral, in units of subrated connection intervals.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Continuation_Number Minimum number of underlying connection events to
+ *        remain active after a packet containing a Link Layer PDU with a non-
+ *        zero Length field is sent or received in requests by a Peripheral.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Supervision_Timeout Supervision timeout for the LE Link.
+ *        It shall be a multiple of 10 ms and larger than (1 +
+ *        connPeripheralLatency) * connInterval * 2.
+ *        Time = N * 10 ms.
+ *        Values:
+ *        - 0x000A (100 ms)  ... 0x0C80 (32000 ms)
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_set_default_subrate( uint16_t Subrate_Min,
+                                       uint16_t Subrate_Max,
+                                       uint16_t Max_Latency,
+                                       uint16_t Continuation_Number,
+                                       uint16_t Supervision_Timeout );
+
+/**
+ * @brief HCI_LE_SUBRATE_REQUEST
+ * This command is used by a Central or a Peripheral to request a change to the
+ * subrating factor and/or other parameters applied to an existing connection
+ * using the Connection Subrate Update procedure.
+ * See Bluetooth spec. v.5.4 [Vol 4, Part E, 7.8.124].
+ * 
+ * @param Connection_Handle Connection handle for which the command applies.
+ *        Values:
+ *        - 0x0000 ... 0x0EFF
+ * @param Subrate_Min Minimum subrate factor.
+ *        Values:
+ *        - 0x0001 ... 0x01F4
+ * @param Subrate_Max Maximum subrate factor.
+ *        Values:
+ *        - 0x0001 ... 0x01F4
+ * @param Max_Latency Maximum Peripheral latency allowed in requests by a
+ *        Peripheral, in units of subrated connection intervals.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Continuation_Number Minimum number of underlying connection events to
+ *        remain active after a packet containing a Link Layer PDU with a non-
+ *        zero Length field is sent or received in requests by a Peripheral.
+ *        Values:
+ *        - 0x0000 ... 0x01F3
+ * @param Supervision_Timeout Supervision timeout for the LE Link.
+ *        It shall be a multiple of 10 ms and larger than (1 +
+ *        connPeripheralLatency) * connInterval * 2.
+ *        Time = N * 10 ms.
+ *        Values:
+ *        - 0x000A (100 ms)  ... 0x0C80 (32000 ms)
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_subrate_request( uint16_t Connection_Handle,
+                                   uint16_t Subrate_Min,
+                                   uint16_t Subrate_Max,
+                                   uint16_t Max_Latency,
+                                   uint16_t Continuation_Number,
+                                   uint16_t Supervision_Timeout );
 
 /**
  * @brief HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2

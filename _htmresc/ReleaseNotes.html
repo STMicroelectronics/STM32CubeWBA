@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.2.0 / 02-November-2023</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.3.0 / 07-February-2024</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -20,19 +20,25 @@
 <b>Connectivity</b>
 </p>
 <p>
-- Bluetooth Low Energy 5.4 with new features: Enhanced ATT, Isochronous Broadcaster / Synchronizer, Connected Isochronous, AOA/AOD, LE Power Control
+- Adding support of BLE/Thread and BLE/Zigbee Concurrent Modes. 
 </p>
 <p>
-- Bluetooth Low Energy Audio: Generic Audio Framework Stack (CAP, BAP, VCP, MICP, MCP, CCP, CSIP), Use Case Profile : PBP, LC3 Codec
+- Bluetooth Low Energy new features: Connection Subrating / Channel Classification enhancement / Periodic Advertising Enhancement
 </p>
 <p>
-- Zigbee stack Revision 23 (R23) / Zigbee Clusters ZCL 8.0
+- Bluetooth Low Energy compliancy with TCRL2023-1. 
 </p>
 <p>
-- OpenThread: compliant Thread 1.1, 1.2 and 1.3
+- Bluetooth Low Energy Audio: Telephony Media Audio Profile : Call Terminal / Unicast Media Receiver / Call Gateway / Unicast Media Sender
 </p>
 <p>
-- Mac 802.15.4: compliant Zigbee IEEE 802.15.4 MAC Test Plan V2
+- OpenThread: stack update to SHA-1 : 8bc25042ba5cde20605eec2a329c0dff575303f4 (07/07/2023)
+</p>
+<p>
+- Zigbee : Support of GreenPower proxy feature / Adding of additional information in the traces showing useful parameters like link key, cluster in use, end points. 
+</p>
+<p>
+- Application : BLE and Zigbee project are now supporting SMPS power supply by default.
 </p>
 <b>Drivers</b>
 </p>
@@ -45,7 +51,6 @@
 <p>
 - BSP Drivers supporting NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards
 </p>
-
 <p>
 <b>Middlewares</b>
 </p>
@@ -62,19 +67,29 @@
 <b>Projects</b>
 </p>
 <p>
-- Add Applications to demonstrate Bluetooth Low Energy capabilities with STM32WBA55x
+- NUCLEO-WBA55CG
 </p>
 <p>
-- Add new Applications demonstrating Zigbee, Thread and MAC 802.15.4 capabilities
+- Update Applications demonstrating BLE, Zigbee, Thread and MAC 802.15.4 capabilities
 </p>
 <p>
-- Add new Applications demonstrating BLE Audio
+- Update Examples LL demonstrating IP peripherals with use of push-button to enable internal pull-up
 </p>
 <p>
-- Add LL/HAL Examples demonstrating the same peripherals as NUCLEO-WBA52CG and add new COMP, PWR, RCC LL/HAL Examples on NUCLEO-WBA55CG
+- NUCLEO-WBA52CG
 </p>
 <p>
-- Add LL/HAL Examples demonstrating main system and SAI peripherals on STM32WBA55G-DK1
-</p></div>
+- Update Examples LL demonstrating IP peripherals with use of push-button to enable internal pull-up
+</p>
+<p>
+- STM32WBA55G-DK1
+</p>
+<p>
+- Add new applications demonstrating BLE Audio capabilities : BLE_Audio_TMAP_Unicast_Server, BLE_Audio_TMAP_Unicast_Client
+</p>
+<p>
+- Update applications demonstrating  BLE, Zigbee capabilities
+</p>
+</div>
 </body>
 </html>

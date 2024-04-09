@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -158,9 +158,10 @@ typedef struct
  * @brief Callback function to insert Time Stamp.
  *
  * @param  pData    The location where insert the new TimeStamp
- * @param  piSize   The size of the TimeStamp insert.
+ * @param  iSizeMax The maximum size for the TimeStamp insert.
+ * @param  piSize   Pointer on the size of the TimeStamp insert.
  */
-typedef void CallBack_TimeStamp( uint8_t * pData, uint16_t * piSize );
+typedef void CallBack_TimeStamp( char * pData, uint16_t iSizeMax, uint16_t * piSize );
 
 /* USER CODE BEGIN ET */
 
@@ -299,7 +300,7 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_BLE(...)         Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_BLE, __VA_ARGS__);
+ * #define LOG_CUSTOM_BLE(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_BLE, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM

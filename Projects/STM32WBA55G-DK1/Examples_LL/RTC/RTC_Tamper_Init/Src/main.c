@@ -295,8 +295,8 @@ static void MX_RTC_Init(void)
   NVIC_EnableIRQ(TAMP_IRQn);
 
   /* RTC Tamper Interrupt Configuration: EXTI configuration */
-  LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_1);
-  LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_1);
+  LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_13);
+  LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_13);
 
   /* Clear the Tamper interrupt pending bit */
   LL_RTC_ClearFlag_TAMP4(RTC);

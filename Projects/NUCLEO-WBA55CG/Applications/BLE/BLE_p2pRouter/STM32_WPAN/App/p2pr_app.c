@@ -393,14 +393,14 @@ uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report)
         {
           manufBlueST = UINT8_MAX;
           if ((ad_length >= 7) && 
-              (p_adv_data[i + 4] == 0x02) && 
-              (p_adv_data[i + 6] == 0x83))
+              ((*(p_adv_data + i + 4)) == 0x02) && /* blueST v2*/
+              ((*(p_adv_data + i + 6)) == 0x83))   /* p2pServer application */
           {
             /* p2pServer BlueST v2 detected */
             manufBlueST = 0x02;
           }
           else if ((ad_length >= 7) && 
-                   (p_adv_data[i + 2] == 0x01))
+                   ((*(p_adv_data + i + 2)) == 0x01)) /* blueST v1*/
           {
             /* p2pServer BlueST v1 detected */
             manufBlueST = 0x01;

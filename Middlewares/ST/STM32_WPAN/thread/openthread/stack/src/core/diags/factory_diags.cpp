@@ -79,6 +79,7 @@ const struct Diags::Command Diags::sCommands[] = {
     {"rawpowersetting", &Diags::ProcessRawPowerSetting},
     {"start", &Diags::ProcessStart},
     {"stop", &Diags::ProcessStop},
+    {"stream", &Diags::ProcessStream},
 };
 
 Diags::Diags(Instance &aInstance)
@@ -136,8 +137,7 @@ Error Diags::ProcessEcho(uint8_t aArgsLength, char *aArgs[], char *aOutput, size
         uint32_t      number;
 
         SuccessOrExit(error = ParseLong(aArgs[1], value));
-        number = static_cast<uint32_t>(value);
-        number = (number < outputMaxLen) ? number : outputMaxLen;
+        number = Min(static_cast<uint32_t>(value), outputMaxLen);
 
         for (i = 0; i < number; i++)
         {
@@ -197,6 +197,7 @@ const struct Diags::Command Diags::sCommands[] = {
     {"start", &Diags::ProcessStart},
     {"stats", &Diags::ProcessStats},
     {"stop", &Diags::ProcessStop},
+    {"stream", &Diags::ProcessStream},
 };
 
 Diags::Diags(Instance &aInstance)
@@ -574,6 +575,27 @@ exit:
     return error;
 }
 
+Error Diags::ProcessStream(uint8_t aArgsLength, char *aArgs[], char *aOutput, size_t aOutputMaxLen)
+{
+    Error error = kErrorInvalidArgs;
+
+    VerifyOrExit(otPlatDiagModeGet(), error = kErrorInvalidState);
+    VerifyOrExit(aArgsLength > 0, error = kErrorInvalidArgs);
+
+    if (strcmp(aArgs[0], "start") == 0)
+    {
+        error = otPlatDiagRadioTransmitStream(&GetInstance(), true);
+    }
+    else if (strcmp(aArgs[0], "stop") == 0)
+    {
+        error = otPlatDiagRadioTransmitStream(&GetInstance(), false);
+    }
+
+exit:
+    AppendErrorResult(error, aOutput, aOutputMaxLen);
+    return error;
+}
+
 Error Diags::GetPowerSettings(uint8_t aChannel, PowerSettings &aPowerSettings)
 {
     aPowerSettings.mRawPowerSetting.mLength = RawPowerSetting::kMaxDataSize;
@@ -933,6 +955,14 @@ OT_TOOL_WEAK otError otPlatDiagRadioRawPowerSettingEnable(otInstance *aInstance,
 }
 
 OT_TOOL_WEAK otError otPlatDiagRadioTransmitCarrier(otInstance *aInstance, bool aEnable)
+{
+    OT_UNUSED_VARIABLE(aInstance);
+    OT_UNUSED_VARIABLE(aEnable);
+
+    return OT_ERROR_NOT_IMPLEMENTED;
+}
+
+OT_TOOL_WEAK otError otPlatDiagRadioTransmitStream(otInstance *aInstance, bool aEnable)
 {
     OT_UNUSED_VARIABLE(aInstance);
     OT_UNUSED_VARIABLE(aEnable);

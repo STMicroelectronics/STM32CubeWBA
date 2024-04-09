@@ -76,6 +76,7 @@ void PeriphCommonClock_Config(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -106,8 +107,6 @@ int main(void)
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_ADC4_Init();
-  MX_CRC_Init();
   MX_RNG_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
@@ -137,6 +136,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -182,6 +185,15 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -218,7 +230,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  memset(&hadc4, 0, sizeof(hadc4));
+  
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -396,7 +408,7 @@ void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
-  memset(&hrng, 0, sizeof(hrng));
+
   /* USER CODE END RNG_Init 0 */
 
   /* USER CODE BEGIN RNG_Init 1 */

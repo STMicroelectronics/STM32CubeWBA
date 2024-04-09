@@ -27,10 +27,15 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stdint.h"
 
-#define DATA_PATH_INPUT 0
-#define DATA_PATH_OUTPUT 1
+/* Audio Data Path Direction Type*/
+typedef	uint8_t	Audio_Data_Direction_t;
+#define DATA_PATH_INPUT                         (0x00)
+#define DATA_PATH_OUTPUT                        (0x01)
 
-#define DATA_PATH_HCI 0
+/* Audio Data Interface.
+ * DATA_PATH_HCI is defined in Bluetooth Specification. Other values are Vendor Specific
+*/
+#define DATA_PATH_HCI                           (0x00)
 
 /* Coding Format Type
  * (see Bluetooth Assigned Numbers for Host Controller Interface)
@@ -80,6 +85,17 @@ typedef	uint32_t Audio_Location_t;
 #define LEFT_SURROUND			        (0x04000000)
 #define RIGHT_SURROUND			        (0x08000000)
 
+/* Types of audio input*/
+typedef uint8_t Audio_Input_t;
+#define AUDIO_INPUT_UNSPECIFIED                 (0x00u) /* Unspecified Input */
+#define AUDIO_INPUT_BLUETOOTH                   (0x01u) /* Bluetooth Audio Stream */
+#define AUDIO_INPUT_MICROPHONE                  (0x02u) /* Microphone */
+#define AUDIO_INPUT_ANALOG                      (0x03u) /* Analog Interface */
+#define AUDIO_INPUT_DIGITAL                     (0x04u) /* Digital Interface */
+#define AUDIO_INPUT_RADIO                       (0x05u) /* AM/FM/XM/etc */
+#define AUDIO_INPUT_STREAMING                   (0x06u) /* Streaming Audio Source */
+
+
 /* Audio Contexts Type
  */
 typedef	uint16_t Audio_Context_t;
@@ -95,10 +111,6 @@ typedef	uint16_t Audio_Context_t;
 #define AUDIO_CONTEXT_RINGTONE                  (0x0200)
 #define AUDIO_CONTEXT_ALERTS                    (0x0400)
 #define AUDIO_CONTEXT_EMERGENCY_ALARM	        (0x0800)
-
-/** @defgroup Generic Audio - Codec_Specific_Capabilities
-  *  @{
-  */
 
 /* Codec Specific Capabilities Type
  */
@@ -153,13 +165,6 @@ typedef	uint8_t Supported_Channel_Counts_t;
 #define SUPPORTED_AUDIO_CHNL_COUNT_7		(0x40)
 #define SUPPORTED_AUDIO_CHNL_COUNT_8		(0x80)
 
-/**
-  * @}
-  */
-
-/** @defgroup Generic Audio - Codec_Specific_Configuration
-  *  @{
-  */
 /* Codec Specific Configuration Type
  */
 typedef	uint8_t  Codec_Specific_Conf_t;
@@ -186,23 +191,19 @@ typedef	uint8_t Sampling_Freq_t;
 #define SAMPLE_FREQ_192000_HZ	                (0x0C)
 #define SAMPLE_FREQ_384000_HZ	                (0x0D)
 
+#define SAMPLE_FREQ_NUMBER                      (13U)
+
 /* Frame Duration Type
  */
 typedef	uint8_t Frame_Duration_t;
 #define FRAME_DURATION_7_5_MS	                (0x00)
 #define FRAME_DURATION_10_MS	                (0x01)
 
+#define FRAME_DURATION_NUMBER                   (2U)
+
 /* Audio Channel Allocation Type
  */
 typedef	Audio_Location_t Audio_Chnl_Allocation_t;
-
-/**
-  * @}
-  */
-
-/** @defgroup Generic Audio - Metadata
-  *  @{
-  */
 
 /* Preferred Audio Contexts Type
  * Bitfield of Context Type values
@@ -214,10 +215,6 @@ typedef	Audio_Context_t Preferred_Audio_Context_t;
  */
 typedef	Audio_Context_t Streaming_Audio_Context_t;
 
-
-/** @defgroup Generic Audio - Metadata LTV structures
-  *  @{
-  */
 /* Metadata LTV Type */
 typedef	uint8_t  Metadata_t;
 #define METADATA_PREFERRED_AUDIO_CONTEXTS               (0x01)
@@ -237,9 +234,6 @@ typedef	uint8_t  Metadata_t;
 #define METADATA_PREFERRED_AUDIO_CONTEXTS_LENGTH        (0x03)
 #define METADATA_STREAMING_AUDIO_CONTEXTS_LENGTH        (0x03)
 
-/**
-  * @}
-  */
 /* type for Audio Stream Endpoint */
 typedef uint8_t ASE_Type_t;
 #define ASE_SINK                                        (0x00)

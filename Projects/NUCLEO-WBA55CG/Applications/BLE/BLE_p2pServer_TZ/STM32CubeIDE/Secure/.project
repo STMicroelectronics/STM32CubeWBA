@@ -137,29 +137,29 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/Secure/Core/main.c</name>
+			<name>Application/User/Core/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Secure/Core/Src/main.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Secure/Core/secure_nsc.c</name>
+			<name>Application/User/Core/secure_nsc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Secure/Core/Src/secure_nsc.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Secure/Core/stm32wbaxx_hal_msp.c</name>
+			<name>Application/User/Core/stm32wbaxx_hal_msp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Secure/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Secure/Core/stm32wbaxx_it.c</name>
+			<name>Application/User/Core/stm32wbaxx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Secure/Core/Src/stm32wbaxx_it.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

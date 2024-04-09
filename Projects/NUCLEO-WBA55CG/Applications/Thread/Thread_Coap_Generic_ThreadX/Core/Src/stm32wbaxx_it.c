@@ -66,14 +66,19 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-extern UART_HandleTypeDef huart1;
 extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
+#ifdef APPLICATION_USE_OTCLI
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
+#endif // APPLICATION_USE_OTCLI
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+#ifdef APPLICATION_USE_OTCLI
+extern UART_HandleTypeDef hlpuart1;
+#endif // APPLICATION_USE_OTCLI
+extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim2;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -169,7 +174,6 @@ void DebugMon_Handler(void)
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
-
 /******************************************************************************/
 /* STM32WBAxx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
@@ -243,6 +247,7 @@ void GPDMA1_Channel1_IRQHandler(void)
   /* USER CODE END GPDMA1_Channel1_IRQn 1 */
 }
 
+#ifdef APPLICATION_USE_OTCLI
 /**
   * @brief This function handles GPDMA1 Channel 2 global interrupt.
   */
@@ -257,20 +262,7 @@ void GPDMA1_Channel2_IRQHandler(void)
   /* USER CODE END GPDMA1_Channel2_IRQn 1 */
 }
 
-/**
-  * @brief This function handles GPDMA1 Channel 3 global interrupt.
-  */
-void GPDMA1_Channel3_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel3_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel3);
-  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel3_IRQn 1 */
-}
-
+#endif // APPLICATION_USE_OTCLI
 /**
   * @brief This function handles TIM2 global interrupt.
   */
@@ -299,6 +291,22 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
+#ifdef APPLICATION_USE_OTCLI
+/**
+  * @brief This function handles LPUART1 global interrupt.
+  */
+void LPUART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN LPUART1_IRQn 0 */
+
+  /* USER CODE END LPUART1_IRQn 0 */
+  HAL_UART_IRQHandler(&hlpuart1);
+  /* USER CODE BEGIN LPUART1_IRQn 1 */
+
+  /* USER CODE END LPUART1_IRQn 1 */
+}
+
+#endif // APPLICATION_USE_OTCLI
 /**
   * @brief This function handles RNG global interrupt.
   */
@@ -366,6 +374,18 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief This function handles WKUP global interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* Verif WakeUp Source */
+  
+  /* Clear all WakeUp flags*/
+  LL_PWR_ClearFlag_WU( );
+}
+
 /**
   * @brief This function handles EXTI Line6 interrupt.
   */

@@ -20,8 +20,7 @@
 #ifndef APP_SYS_H
 #define APP_SYS_H
 
-#include <stdint.h>
-
+/* Exported constants --------------------------------------------------------*/
 /*
  * high ceil for standby exit -> 500us in theory NOTE: Minimum value for UTIL Timer is 1ms
  * high ceil for radio exit deep sleep -> 300us
@@ -29,9 +28,15 @@
  */
 #define RADIO_DEEPSLEEP_WAKEUP_TIME_US (1500)
 
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* Exported functions prototypes ---------------------------------------------*/
+
 void APP_SYS_LPM_EnterLowPowerMode(void);
+/* USER CODE BEGIN EFP */
 
-void APP_SYS_LinkLayer_BackgroundProcessInit(void);
+/* USER CODE END EFP */
 
-extern uint32_t llhwc_cmn_is_dp_slp_enabled(void);
 #endif /* APP_SYS_H */

@@ -172,8 +172,8 @@ extern "C" {
  * @param max_uri_length: Maximum size of the Call URI composed of URI scheme followed by the Caller ID.
  */
 #define BLE_CCP_SRV_MEM_BLOCKS_URI_SIZE_BYTES(num_bearer_instances,max_num_calls,ccp_feature,max_uri_length) \
-          (DIVC(((max_uri_length * max_num_calls * (1+num_bearer_instances)) *\
-          (1+((ccp_feature & CCP_FEATURE_INC_CALL_TARGET_BEARER_URI)/CCP_FEATURE_INC_CALL_TARGET_BEARER_URI))),4u) * 4u)
+          ((DIVC((max_uri_length * max_num_calls * (1+num_bearer_instances)),4u) * 4u) + \
+          (((ccp_feature & CCP_FEATURE_INC_CALL_TARGET_BEARER_URI) != (0x00)) ? ((DIVC((max_uri_length * max_num_calls * (1+num_bearer_instances)),4u) * 4u)) : (0)))
 
 /*
  * BLE_CCP_SRV_MEM_BLOCKS_CALL_FRIENDLY_NAME_SIZE_BYTES: this macro returns the amount of memory,in bytes, needed for
@@ -223,14 +223,6 @@ typedef uint8_t CCP_Role_t;
 #define CCP_ROLE_SERVER			        (0x01)
 #define CCP_ROLE_CLIENT		                (0x02)
 
-/* Types of Call Control Profile Linkup Mode */
-typedef uint8_t CCP_LinkupMode_t;
-#define CCP_LINKUP_MODE_COMPLETE                (0x00u) /* Link Up procedure shall be a complete one
-                                                         * with remote service and characteristic discovery
-                                                         */
-#define CCP_LINKUP_MODE_RESTORE                 (0x01u) /* Link Up information is restored from previous
-                                                         * complete Link Up from persistent memory.
-                                                         */
 
 /* CCP Client Procedure type.
  * This type is used during CCP Initialization to describe what are the CCP procedures supported by the CCP Client
@@ -435,6 +427,17 @@ typedef enum
                                          * The pInfo field indicates the state of the call and the associated
                                          * information through the CCP_SRV_Call_State_Params_Evt_t type.
                                          */
+  CCP_CLT_GTBS_INFO_EVT,                /* This event is notified by CCP Client during the link up process for the
+                                         * Generic Telephony Bearer.
+                                         * The pInfo field indicates information through the CCP_CLT_BearerInfo_Evt_t
+                                         * type.
+                                         */
+  CCP_CLT_TBS_INFO_EVT,                 /* This event is notified by CCP Client during the link up process for a
+                                         * Telephony Bearer Instance.
+                                         * Note this event is notified for each Telephony Bearer Instance
+                                         * The pInfo field indicates information through the CCP_CLT_BearerInfo_Evt_t
+                                         * type.
+                                         */
   CCP_CLT_CALL_STATE_EVT,               /* This event is notified when the state of a call changes.
                                          * The state changes could be issued from a CCP Client
                                          * operation request or from a CCP Server operation.
@@ -558,6 +561,15 @@ typedef struct
   uint8_t               *pCallURI;      /* Pointer on the Call URI*/
 } CCP_SRV_Call_State_Params_Evt_t;
 
+
+
+/* Structure used in parameter when CCP_CLT_GTBS_INFO_EVT and CCP_CLT_TBS_INFO_EVT events are notified*/
+typedef struct
+{
+  CCP_OptionFeatures_t  FeaturesMask;   /*Mask of Bearer features supported on the remote CCP Server*/
+  uint16_t              StartAttHandle; /* ATT Start Handle of the Telephone Bearer Service in the remote CCP Server */
+  uint16_t              EndAttHandle;   /* ATT End Handle of the Telephone Bearer Service in the remote CCP Server */
+} CCP_CLT_BearerInfo_Evt_t;
 
 /* Structure used in parameter when CCP_CLT_OPERATION_TRANSMITTED_EVT event is notified*/
 typedef struct

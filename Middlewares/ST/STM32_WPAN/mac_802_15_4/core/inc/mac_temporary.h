@@ -27,7 +27,9 @@
 #define ST_MAC_HANDLE_INCOMING_MAC_CMD 0x00
 #define ST_MAC_HANDLE_OUTGOING_MAC_MSG 0x01
 
+#define MAC_WRAPPER_LOG 0x00
 
+/* Maybe we need to change this for WBA2 */
 #if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
 #define MAC_MEMSET  ble_memset
 #define MAC_MEMCPY  ble_memcpy

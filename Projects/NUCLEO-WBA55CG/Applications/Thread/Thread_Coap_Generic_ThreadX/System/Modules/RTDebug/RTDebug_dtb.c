@@ -31,7 +31,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-#if(RT_DEBUG_DTB == 1)
+#if(CFG_RT_DEBUG_DTB == 1)
 /* Private function prototypes -----------------------------------------------*/
 static void RT_DEBUG_SetDTBMode(uint8_t dtb, uint8_t mode);
 
@@ -145,5 +145,5 @@ void RT_DEBUG_DTBConfig(void)
   //RT_DEBUG_SetDTBMode(6, 6); /* test tm 01 */
 }
 
-#endif /* RT_DEBUG_DTB */
+#endif /* CFG_RT_DEBUG_DTB */
 

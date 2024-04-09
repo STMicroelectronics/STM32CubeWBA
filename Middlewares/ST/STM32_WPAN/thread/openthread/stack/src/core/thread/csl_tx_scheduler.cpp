@@ -115,7 +115,7 @@ void CslTxScheduler::Clear(void)
 }
 
 /**
- * This method always finds the most recent CSL tx among all children,
+ * Always finds the most recent CSL tx among all children,
  * and requests `Mac` to do CSL tx at specific time. It shouldn't be called
  * when `Mac` is already starting to do the CSL tx (indicated by `mCslTxMessage`).
  *
@@ -156,10 +156,11 @@ uint32_t CslTxScheduler::GetNextCslTransmissionDelay(const Child &aChild,
                                                      uint32_t    &aDelayFromLastRx,
                                                      uint32_t     aAheadUs) const
 {
-    uint64_t radioNow      = otPlatRadioGetNow(&GetInstance());
-    uint32_t periodInUs    = aChild.GetCslPeriod() * kUsPerTenSymbols;
-    uint64_t firstTxWindow = aChild.GetLastRxTimestamp() + aChild.GetCslPhase() * kUsPerTenSymbols;
-    uint64_t nextTxWindow  = radioNow - (radioNow % periodInUs) + (firstTxWindow % periodInUs);
+    uint64_t radioNow   = otPlatRadioGetNow(&GetInstance());
+    uint32_t periodInUs = aChild.GetCslPeriod() * kUsPerTenSymbols;
+    uint64_t firstTxWindow =
+        aChild.GetLastRxTimestamp() - kRadioHeaderShrDuration + aChild.GetCslPhase() * kUsPerTenSymbols;
+    uint64_t nextTxWindow = radioNow - (radioNow % periodInUs) + (firstTxWindow % periodInUs);
 
     while (nextTxWindow < radioNow + aAheadUs)
     {
@@ -180,6 +181,7 @@ Mac::TxFrame *CslTxScheduler::HandleFrameRequest(Mac::TxFrames &aTxFrames)
     uint32_t      delay;
 
     VerifyOrExit(mCslTxChild != nullptr);
+    VerifyOrExit(mCslTxChild->IsCslSynchronized());
 
 #if OPENTHREAD_CONFIG_MULTI_RADIO
     frame = &aTxFrames.GetTxFrame(Mac::kRadioTypeIeee802154);
@@ -214,6 +216,11 @@ Mac::TxFrame *CslTxScheduler::HandleFrameRequest(Mac::TxFrames &aTxFrames)
     frame->SetChannel(mCslTxChild->GetCslChannel() == 0 ? Get<Mac::Mac>().GetPanChannel()
                                                         : mCslTxChild->GetCslChannel());
 
+    if (frame->GetChannel() != Get<Mac::Mac>().GetPanChannel())
+    {
+        frame->SetRxChannelAfterTxDone(Get<Mac::Mac>().GetPanChannel());
+    }
+
     delay = GetNextCslTransmissionDelay(*mCslTxChild, txDelay, /* aAheadUs */ 0);
 
     // We make sure that delay is less than `mCslFrameRequestAheadUs`
@@ -221,7 +228,7 @@ Mac::TxFrame *CslTxScheduler::HandleFrameRequest(Mac::TxFrames &aTxFrames)
     // in `RescheduleCslTx()` when determining the next CSL delay to
     // schedule CSL tx with `Mac` but here we calculate the delay with
     // zero `aAheadUs`. All the timings are in usec but when passing
-    // delay to `Mac` we divide by `1000` (to covert to msec) which
+    // delay to `Mac` we divide by `1000` (to convert to msec) which
     // can round the value down and cause `Mac` to start operation a
     // bit (some usec) earlier. This is covered by adding the guard
     // time `kFramePreparationGuardInterval`.

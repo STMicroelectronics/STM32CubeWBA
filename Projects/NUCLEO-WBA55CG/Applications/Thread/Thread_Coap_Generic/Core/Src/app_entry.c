@@ -56,6 +56,7 @@ typedef struct
   uint32_t            waitingTime;
 } ButtonDesc_t;
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
@@ -65,6 +66,7 @@ typedef struct
 #define BUTTON_LONG_PRESS_THRESHOLD_MS        (500u)        // Normally 500ms if we use 'Long pression' on button.
 #define BUTTON_NB_MAX                         (B3 + 1u)
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -90,7 +92,7 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
-static ButtonDesc_t   buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0 }, { B2, { 0 }, 0 }, { B3, { 0 }, 0 } } ;
+static ButtonDesc_t   buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0, 0 } , { B2, { 0 } , 0, 0 }, { B3, { 0 }, 0, 0 } };
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PV */
@@ -114,6 +116,7 @@ static void Led_Init                      ( void );
 static void Button_Init                   ( void );
 static void Button_TriggerActions         ( void * arg );
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -147,7 +150,7 @@ uint32_t MX_APPE_Init(void *p_param)
   SystemPower_Config();
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
+#if (CFG_LED_SUPPORTED == 1)  
   Led_Init();
 #endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -170,6 +173,54 @@ uint32_t MX_APPE_Init(void *p_param)
 }
 
 /* USER CODE BEGIN FD */
+#if ( CFG_BUTTON_SUPPORTED == 1 ) 
+
+/**
+ * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
+ *
+ * @param   btnIdx    Button to test, listed in enum Button_TypeDef
+ * @return  '1' if pressed during a 'long time', else '0'.
+ */
+uint8_t APPE_ButtonIsLongPressed( uint16_t btnIdx )
+{
+  uint8_t pressStatus = 0;
+
+  if ( btnIdx < BUTTON_NB_MAX )
+  {
+    pressStatus = buttonDesc[btnIdx].longPressed;
+  }
+
+  return pressStatus;
+}
+
+/**
+ * @brief  Action of button 1 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button1Action( void )
+{
+}
+
+/**
+ * @brief  Action of button 2 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button2Action( void )
+{
+}
+
+/**
+ * @brief  Action of button 3 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button3Action( void )
+{
+}
+
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END FD */
 
@@ -250,19 +301,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -280,6 +327,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -293,7 +344,8 @@ static void RNG_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
+#if ( CFG_LED_SUPPORTED == 1 )
+
 static void Led_Init( void )
 {
   /* Leds Initialization */
@@ -301,28 +353,44 @@ static void Led_Init( void )
   BSP_LED_Init(LED_GREEN);
   BSP_LED_Init(LED_RED);
 
-  return;
+  APP_LED_ON(LED_GREEN);
 }
-#endif /* CFG_LED_SUPPORTED */
 
-#if (CFG_BUTTON_SUPPORTED == 1)
+#endif // (CFG_LED_SUPPORTED == 1)
+#if ( CFG_BUTTON_SUPPORTED == 1 )
+
+static void Button_InitTask( void )
+{
+  /* Task associated with push button SW1 */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_SW1, UTIL_SEQ_RFU, APPE_Button1Action );
+  
+  /* Task associated with push button SW2 */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_SW2, UTIL_SEQ_RFU, APPE_Button2Action );
+    
+  /* Task associated with push button SW3 */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_SW3, UTIL_SEQ_RFU, APPE_Button3Action );
+}
+
+
 static void Button_Init( void )
 {
   Button_TypeDef  buttonIndex;
   
-  /* Button Initialization */
-  BSP_PB_Init(B1, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B2, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B3, BUTTON_MODE_EXTI);
+  /* Buttons HW Initialization */
+  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
 
+  /* Button task initialisation */
+  Button_InitTask();
+  
   /* Button timers initialisation (one for each button) */
   for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
   { 
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, (UTIL_TIMER_Mode_t)hw_ts_Repeated, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
+    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
   }
-  
-  return;
 }
+
 
 /**
  *
@@ -346,21 +414,21 @@ static void Button_TriggerActions( void * arg )
 
   /* Stop Timer */
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
-  
+
   switch ( p_buttonDesc->button )
   {
     case B1:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-    
+
     case B2:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW2, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-    
+
     case B3:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW3, CFG_TASK_PRIO_BUTTON_SWx );
         break;
-        
+
     default:
         break;
   }
@@ -456,28 +524,33 @@ void HWCB_RNG_Process( void )
   UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
@@ -501,6 +574,14 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/**
+ * @brief Function Assert AEABI in case of not described on 'libc' libraries.
+ */
+__WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
+{
+  Error_Handler();
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if ( CFG_BUTTON_SUPPORTED == 1 ) 

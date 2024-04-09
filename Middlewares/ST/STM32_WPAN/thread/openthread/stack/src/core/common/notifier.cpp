@@ -133,9 +133,7 @@ void Notifier::EmitEvents(void)
 #if OPENTHREAD_CONFIG_BACKBONE_ROUTER_ENABLE
     Get<BackboneRouter::Manager>().HandleNotifierEvents(events);
 #endif
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
-    Get<Utils::ChildSupervisor>().HandleNotifierEvents(events);
-#endif
+    Get<ChildSupervisor>().HandleNotifierEvents(events);
 #if OPENTHREAD_CONFIG_DATASET_UPDATER_ENABLE || OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE
     Get<MeshCoP::DatasetUpdater>().HandleNotifierEvents(events);
 #endif
@@ -273,6 +271,8 @@ const char *Notifier::EventToString(Event aEvent) const
         "JoinerState",       // kEventJoinerStateChanged               (1 << 27)
         "ActDset",           // kEventActiveDatasetChanged             (1 << 28)
         "PndDset",           // kEventPendingDatasetChanged            (1 << 29)
+        "Nat64",             // kEventNat64TranslatorStateChanged      (1 << 30)
+        "ParentLq",          // kEventParentLinkQualityChanged         (1 << 31)
     };
 
     for (uint8_t index = 0; index < GetArrayLength(kEventStrings); index++)

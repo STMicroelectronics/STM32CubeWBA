@@ -61,6 +61,7 @@ EddystoneTLM_InitTypeDef EddystoneTLM_InitStruct;
 static tBleStatus EddystoneTLM_Init(EddystoneTLM_InitTypeDef *EddystoneTLM_Init)
 {
   tBleStatus ret = BLE_STATUS_SUCCESS;
+  uint8_t dummy_buffer[1] = {0};
   uint16_t AdvertisingInterval = (EddystoneTLM_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
   uint8_t service_data[] =
   {
@@ -95,9 +96,17 @@ static tBleStatus EddystoneTLM_Init(EddystoneTLM_InitTypeDef *EddystoneTLM_Init)
     (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED) /*< BLE general discoverable, without BR/EDR support. */
   };
 
-  /* Disable scan response. */
-  hci_le_set_scan_response_data(0, NULL);
-
+  /* Send empty scan response data */
+  ret = hci_le_set_scan_response_data(0, &dummy_buffer[0]);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("==>> hci_le_set_scan_response_data - fail, result: 0x%02X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("==>> hci_le_set_scan_response_data - Success\n");
+  }
+  
 /* Put the device in a non-connectable mode. */
   ret = aci_gap_set_discoverable(ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
                                  AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */

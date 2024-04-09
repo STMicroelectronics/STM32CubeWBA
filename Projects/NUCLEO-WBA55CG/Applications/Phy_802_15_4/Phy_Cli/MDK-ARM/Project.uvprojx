@@ -10,20 +10,20 @@
       <TargetName>Phy_Cli</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6180000::V6.18::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32WBA52CGUx</Device>
+          <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00020000) IROM(0x08000000,0x00100000) CPUTYPE("Cortex-M33") FPU3(SFPU) DSP TZ CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2V8M(-S0 -C0 -P0 -FD20000000 -FC8000 -FN2 -FF0STM32WBAx_1M_0800 -FS08000000 -FL0100000 -FF1STM32WBAx_1M_0C00 -FS1C000000 -FL1100000 -FP0($$Device:STM32WBA52CGUx$CMSIS\Flash\STM32WBAx_1M_0800.FLM) -FP1($$Device:STM32WBA52CGUx$CMSIS\Flash\STM32WBAx_1M_0C00.FLM))</FlashDriverDll>
+          <FlashDriverDll>UL2V8M(-S0 -C0 -P0 -FD20000000 -FC8000 -FN2 -FF0STM32WBAx_1M_0800 -FS08000000 -FL0100000 -FF1STM32WBAx_1M_0C00 -FS1C000000 -FL1100000 -FP0($$Device:STM32WBA55CGUx$CMSIS\Flash\STM32WBAx_1M_0800.FLM) -FP1($$Device:STM32WBA55CGUx$CMSIS\Flash\STM32WBAx_1M_0C00.FLM))</FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile>$$Device:STM32WBA52CGUx$Drivers\CMSIS\Device\ST\STM32WBAxx\Include\stm32wbaxx.h</RegisterFile>
+          <RegisterFile>$$Device:STM32WBA55CGUx$Drivers\CMSIS\Device\ST\STM32WBAxx\Include\stm32wbaxx.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32WBA52CGUx$CMSIS\SVD\STM32WBA52.svd</SFDFile>
+          <SFDFile>$$Device:STM32WBA55CGUx$CMSIS\SVD\STM32WBA52.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -134,7 +134,7 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4107</DriverSelection>
+            <DriverSelection>4102</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2V8M.DLL</Flash2>
@@ -331,16 +331,16 @@
             <useXO>0</useXO>
             <v6Lang>5</v6Lang>
             <v6LangP>3</v6LangP>
-            <vShortEn>1</vShortEn>
-            <vShortWch>1</vShortWch>
+            <vShortEn>0</vShortEn>
+            <vShortWch>0</vShortWch>
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
-              <Define>STM32WBA52xx,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,LOGGER_ENABLE=0,OS_BAREMETAL,MAC</Define>
+              <MiscControls>-fshort-enums</MiscControls>
+              <Define>STM32WBA55xx,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,LOGGER_ENABLE=0,OS_BAREMETAL,MAC</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Modules/baes;../System/Modules/MemoryManager;../System/Modules/Nvm;../System/Modules/Flash;../System/Config;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/tim_serv;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../System/Config/Debug_GPIO;../System/Modules/RTDebug;../System/Config/LowPower;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\src\shrd_utils\inc</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Modules/baes;../System/Modules/MemoryManager;../System/Modules/Nvm;../System/Modules/Flash;../System/Config;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/tim_serv;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../System/Config/Debug_GPIO;../System/Modules/RTDebug;../System/Config/LowPower;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\src\shrd_utils\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\System\Config\Log</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -375,8 +375,7 @@
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc>--diag_suppress=L6329
---diag_suppress L6314W
---diag_suppress 1296</Misc>
+--diag_suppress L6314W</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -572,6 +571,11 @@
               <FileType>1</FileType>
               <FilePath>../System/Modules/scm.c</FilePath>
             </File>
+            <File>
+              <FileName>log_module.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\Log\log_module.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -593,9 +597,9 @@
           <GroupName>Application/User/System/Startup</GroupName>
           <Files>
             <File>
-              <FileName>stm32wbaxx_ResetHandler_MDK-ARM.s</FileName>
+              <FileName>stm32wbaxx_ResetHandler.S</FileName>
               <FileType>2</FileType>
-              <FilePath>../System/Startup/stm32wbaxx_ResetHandler_MDK-ARM.s</FilePath>
+              <FilePath>..\System\Startup\stm32wbaxx_ResetHandler.S</FilePath>
             </File>
           </Files>
         </Group>
@@ -799,14 +803,52 @@
           <GroupName>lib</GroupName>
           <Files>
             <File>
-              <FileName>LinkLayer_RawMac_lib_KEIL.lib</FileName>
+              <FileName>LinkLayer15_4.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_RawMac_lib_KEIL.lib</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>1</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds/>
+              </FileOption>
             </File>
             <File>
-              <FileName>wba_mac_lib_KEIL.lib</FileName>
+              <FileName>wba_mac_lib.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib_KEIL.lib</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>1</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds/>
+              </FileOption>
             </File>
           </Files>
         </Group>
@@ -867,6 +909,21 @@
               <FileName>stm32_tiny_vsnprintf.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Utilities/misc/stm32_tiny_vsnprintf.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Config/LowPower</GroupName>
+          <Files>
+            <File>
+              <FileName>peripheral_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\LowPower\peripheral_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>user_low_power_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\LowPower\user_low_power_config.c</FilePath>
             </File>
           </Files>
         </Group>

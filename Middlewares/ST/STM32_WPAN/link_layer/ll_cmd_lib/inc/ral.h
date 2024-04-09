@@ -1,5 +1,44 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/ral.h#1 $*/
-
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/ral.h#1 $*/
+/**
+ ********************************************************************************
+ * @file    ral.h
+ * @brief   The file include description for the RAL (Radio Abstraction Layer) interfaces and call backs,
+ * 			RAL provides functionalities to start, stop and manage different types of events [Transmission - Reception - Energy scanning].
+ *
+ *
+ *
+ ******************************************************************************
+ * @copy
+ * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
+ * associated documentation ( hereinafter the "Software") is an unsupported
+ * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
+ * writing between Synopsys and you. The Software IS NOT an item of Licensed
+ * Software or a Licensed Product under any End User Software License Agreement
+ * or Agreement for Licensed Products with Synopsys or any supplement thereto.
+ * Synopsys is a registered trademark of Synopsys, Inc. Other names included in
+ * the SOFTWARE may be the trademarks of their respective owners.
+ *
+ * Synopsys MIT License:
+ * Copyright (c) 2020-Present Synopsys, Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * the Software), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM,
+ * OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * */
+ 
 #ifndef INCLUDE_RAL_H_
 #define INCLUDE_RAL_H_
 
@@ -62,6 +101,7 @@ typedef enum ral_state_enum {
 	RAL_DISABLE = 0,
 	RAL_ENABLE = 1
 } ral_state_enum_t;
+
 /* @brief: Error codes defined in ral casted to Openthread codes in radio */
 typedef enum ral_error_enum {
     RAL_ERROR_NONE = 0,
@@ -219,6 +259,7 @@ typedef struct _ral_mac_fltr_confg_st {
 	uint16_t short_addr;						/* the device short address to compare the received address with */
 	uint16_t pan_id;							/* the device pan id to compare the received pan id in the packet with */
 	ral_state_enum_t mac_fltr_state;			/* MAC filter state. If disabled so the promiscuous mode is enabled */
+	uint8_t mac_implicit_broadcast;				/* MAC ImplictBoradcast PIB that is set in MAC layer  */
 	uint8_t is_pan_coord;						/* the first bit used to determine if the device is pan coordinator or not
 	 	 	 	 	 	 	 	 	 	 	 	 	the second bit is indicating if this instance is currently performing scanning or not */
 } ral_mac_fltr_confg_st;
@@ -238,20 +279,6 @@ typedef struct _ral_ack_rspnd_fltr_confg_st {
 #endif
 	ral_state_enum_t ack_fltr_state;		/* Enable/Disable packet filtration before sending ack */
 } ral_ack_rspnd_fltr_confg_st;
-/**
- * @struct ral_ack_patch_confg_st
- * @brief ack data patch
- *
- * this structure contains the data may be attached to the ack packet from the received packet.
- *  */
-typedef struct _ral_ack_patch_confg_st {
-#if SUPPORT_A_MAC
-	uint8_t byte_index_in_data;			/* position of the data to be attached in the received packet*/
-	uint8_t byte_index_in_ack;			/* the position in the ack packet where the data should be attached*/
-	uint8_t byte_len;					/* length of the data to be attached*/
-#endif
-	ral_state_enum_t ack_patch_state;	/* Enable/Disable Ack patch */
-} ral_ack_patch_confg_st;
 /**
  * @struct ral_ack_req_confg_st
  * @brief ack request bit configuration
@@ -273,12 +300,7 @@ typedef struct _ral_ack_req_confg_st {
  *  */
 typedef struct _ral_auto_ack_confg_st {
 	ral_ack_rspnd_fltr_confg_st rspnd_fltr_confg;		/* Contains configured filters applied to received packet to determine whether to send ack or not */
-	ral_ack_patch_confg_st ack_patch_confg;				/* Contains configured user defined data to be patched in custom Ack packet */
 	ral_ack_req_confg_st ack_req_confg;					/* Contains configured ack request bit configuration*/
-#if SUPPORT_A_MAC
-	uint8_t * tx_ack_pyld;								/* pointer to transmitted ack packet */
-	uint8_t tx_ack_pyld_len;							/* length of the transmitted ack*/
-#endif
 	uint16_t auto_tx_ack_turnaround;					/*time in micro second between rcvd packet and tx ack */
 	uint16_t auto_rx_ack_turnaround;					/*time in micro second between tx packet and rcvd ack */
 	uint16_t auto_rx_ack_timeout;						/*timeout in microseconds to wait for rcvd ack*/
@@ -351,7 +373,13 @@ typedef struct _ral_cbk_dispatch_tbl_st {
 	void (*ral_tx_done)(ral_instance_t ral_instance, ral_pkt_st * ptr_tx_pkt, ral_pkt_st * ptr_ack_pkt, ral_error_enum_t tx_error);
 	void (*ral_rx_done)(ral_instance_t ral_instance, ral_pkt_st * ptr_rx_pkt, ral_error_enum_t rx_error);
 	void (*ral_ed_scan_done)(ral_instance_t ral_instance, uint32_t scan_durn, int8_t max_rssi);
+#if (!SUPPORT_COEXISTENCE)
 	void (*ral_resume_rx_after_tmr_err)(void);
+#endif /*end of (!SUPPORT_COEXISTENCE)*/
+#if SUPPORT_A_MAC
+	/*This callback will be called when device receives packet that require custom ack*/
+	void (*ral_configure_custom_ack)(ral_instance_t ral_instance,  uint8_t *ptr_ack_pkt, uint16_t*ack_len,uint8_t * ptr_rx_pkt);
+#endif /*end of SUPPORT_A_MAC*/
 } ral_cbk_dispatch_tbl_st;
 /* Definition for hardware control flags */
 //--------------------------------------------
@@ -451,6 +479,8 @@ enum error_flags_shift{
 	SEC_ERR_SHIFT = 30		 /* bit location for security processing error occurred in case of secured Enhanced Ack  */
 #endif
 };
+
+
 /* Start of frame delimiter length as defined in OQPSK phy in MAC 802.15.4 std*/
 #define DEFAULT_MAC_SFD_LENGTH 			1
 /* Preample length as defined in OQPSK phy in MAC 802.15.4 std*/
@@ -623,7 +653,7 @@ ral_event_state_enum_t ral_get_current_event_state(ral_instance_t * curr_ral_ins
  *
  * @retval NONE
  */
-void ral_exec_phy_prdc_clbr();
+void ral_exec_phy_prdc_clbr(void);
 #endif
 /**  @ingroup ral_intf_cmn
 *  @{
@@ -823,7 +853,14 @@ ral_error_enum_t ral_set_cont_recp_state(ral_instance_t ral_instance, ral_state_
  * @retval RAL_ERROR_NONE if new state saved successfully
  */
 ral_error_enum_t ral_set_auto_sleep_state(ral_instance_t ral_instance, ral_state_enum_t auto_sleep_state);
-
+/**
+ * @brief	This function used to get the state of automatic switching to sleep mode 
+ *
+ * @param   ral_instance 	 : [in] ral instance
+ *
+ * @retval automatic sleep state, Enable or Disable
+ */
+ral_state_enum_t ral_get_auto_sleep_state(ral_instance_t ral_instance);
 /**
  * @brief	configure mac filter in rtl while reception.
  * 			when filter is disabled means reception in promiscuous mode.
@@ -899,7 +936,6 @@ ral_error_enum_t ral_set_enh_ack_hdr_ie(ral_instance_t ral_instance, uint8_t * p
  */
 void ral_set_src_match_state(ral_instance_t ral_instance, ral_state_enum_t src_match_state);
 
-void ral_get_pnding_addrs_list(ral_instance_t ral_instance, uint8_t* short_addr_num , uint8_t* ext_addr_num,  uint8_t *aShortAddressLst,  uint8_t *aExtAddressLst );
 /**
  * @brief	Add a short address to the source address match table
  *
@@ -971,7 +1007,7 @@ void ral_clr_all_src_match_ext(ral_instance_t ral_instance);
  * @retval None
  *
  */
-void ral_reset_ed();
+void ral_reset_ed(void);
 /**
  * @brief	start energy detection scan on specific channel,
  * 			ral_ed_scan_done callback is called to notify upper layer that the energy scan is complete.
@@ -1007,7 +1043,7 @@ uint8_t ral_dtmGetLQIValue(int8_t last_rssi);
  * @retval 0:  No Ack is to be transmitted
  *
  */
-uint8_t ral_is_about_to_transmit_ack();
+uint8_t ral_is_about_to_transmit_ack(void);
 /**
  *
  * @brief	This function is used start the triggering of pre tx sequence from sequence ram as early as possible to save time in case of transmitting ack
@@ -1015,7 +1051,7 @@ uint8_t ral_is_about_to_transmit_ack();
  * @retval None
  *
  */
-void ral_early_perpare_phy_to_tx_ack();
+void ral_early_perpare_phy_to_tx_ack(void);
 /**
  *
  * @brief	This function is the phy driver isr handler in case of mac event ,
@@ -1024,19 +1060,30 @@ void ral_early_perpare_phy_to_tx_ack();
  * @retval None
  *
  */
-void ral_handle_phy_driver_isr();
+void ral_handle_phy_driver_isr(void);
 #if SUPPORT_RADIO_SECURITY_OT_1_2
 /**
  * @brief  This function is used to update frame counter sustained in ral instance
  * 		   This function is called only in case of radio support OT_RADIO_CAPS_TRANSMIT_SEC
  * 		   is called from otPlatRadioSetMacFrameCounter()
  *
- * @param  instance    :	Ral instance
- * @param  mac_frm_cntr:	frame counter passed by upper layers
+ * @param  instance    			:	Ral instance
+ * @param  mac_frm_cntr			:	frame counter passed by upper layers
  *
  * @retval None
  */
 void ral_update_mac_frm_cntr(ral_instance_t instance, uint32_t mac_frm_cntr);
+/**
+ * @brief  This function is used to update frame counter sustained in ral instance only if the new value larger than the old one
+ * 		   This function is called only in case of radio support OT_RADIO_CAPS_TRANSMIT_SEC
+ * 		   is called from otPlatRadioSetMacFrameCounterIfLarger()
+ *
+ * @param  instance    			:	Ral instance
+ * @param  mac_frm_cntr			:	frame counter passed by upper layers
+ *
+ * @retval None
+ */
+void ral_update_larger_mac_frm_cntr(ral_instance_t instance, uint32_t mac_frm_cntr);
 /**
  * @brief  This function is used to update keys and keyId sustained in ral instance
  * 		   This function is called only in case of radio support OT_RADIO_CAPS_TRANSMIT_SEC
@@ -1153,7 +1200,7 @@ void ral_set_ot_base_slp_time_value(uint32_t time);
  * @retval uint32_t. base time value
  */
 
-uint32_t ral_get_ot_base_slp_time_value();
+uint32_t ral_get_ot_base_slp_time_value(void);
 /**
  * @brief  Convert the value of sleep timer to openthread time
  * @param  time [in]      : sleep timer value to be converted to openthread time
@@ -1212,7 +1259,7 @@ void ral_set_csl_sample_time(ral_instance_t ral_instance, uint32_t cslSampleTime
  * @retval uint8_t FALSE 0  if not receiving in CSL windoe
  *
  */
-uint8_t ral_is_rcv_in_csl_smple_wndw();
+uint8_t ral_is_rcv_in_csl_smple_wndw(void);
 /**
  * @brief	check and add CSL header ie to any outgoing frame if csl receiver  is enabled.
  *
@@ -1351,6 +1398,35 @@ void radio_handle_pnding_tx_retry_event(void);
  * @retval uint8_t value of pending_tx_retry_flag .
  */
 uint8_t radio_is_tx_retry_event_pending(void);
+/**
+ *
+ * @brief   Set MAC implicit boradcast PIB from MAC layer to be used in filteration
+ *
+ * @param   ImplicitBroadcast: [in] Value for MAC implicit boradcast PIB to be set
+ *
+ * @retval 	None .
+ */
+void radio_set_implicitbroadcast(uint8_t ImplicitBroadcast);
+/**
+ *
+ * @brief   Set MAC implicit boradcast PIB from radio layer to be used in filteration
+ *
+ * @param   ImplicitBroadcast: [in] Value for MAC implicit boradcast PIB to be set
+ *
+ * @retval 	None .
+ */
+void ral_set_implicitbroadcast(ral_instance_t ral_instance, uint8_t ImplicitBroadcast);
+/**
+ * @fn ed_timer_hndl
+ *
+ * @brief	energy detection timer event handle
+ *
+ * @param   ptr_info : [in] pointer to current ral context
+ *
+ * @retval void
+ */
+void ed_timer_hndl(void* ptr_info);
+
 #endif /* INCLUDE_RAL_H_ */
 /**
  * @}

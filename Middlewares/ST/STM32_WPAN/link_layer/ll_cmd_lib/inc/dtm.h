@@ -1,4 +1,41 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/dtm.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/dtm.h#1 $*/
+/**
+ ********************************************************************************
+ * @file    dtm.h
+ * @brief   header file for  Synopsys zigbee phy testing APIs
+ *
+ *
+ ******************************************************************************
+ * @copy
+ * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
+ * associated documentation ( hereinafter the "Software") is an unsupported
+ * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
+ * writing between Synopsys and you. The Software IS NOT an item of Licensed
+ * Software or a Licensed Product under any End User Software License Agreement
+ * or Agreement for Licensed Products with Synopsys or any supplement thereto.
+ * Synopsys is a registered trademark of Synopsys, Inc. Other names included in
+ * the SOFTWARE may be the trademarks of their respective owners.
+ *
+ * Synopsys MIT License:
+ * Copyright (c) 2020-Present Synopsys, Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * the Software), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM,
+ * OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * */
 
 #ifndef MAC_CONTROLLER_INC_DTM_H_
 #define MAC_CONTROLLER_INC_DTM_H_
@@ -74,14 +111,14 @@ typedef struct dtmInfo_st
  * @brief  this function is used to initialize or rest DTM , it also stops the current running DTM
  * @retval None.
  */
-void dtmReset();
+void dtmReset(void);
 
 /**
  * @brief  get the the state of DTM (running or stopped)
  * @retval uin8_t . TRUE if DTM is running ,
  * 					FALSE if DTM is stopped
  */
-uint8_t dtmIsEnabled();
+uint8_t dtmIsEnabled(void);
 
 
 /**
@@ -107,7 +144,7 @@ mac_status_enum_t dtmStartTransmitwithAck(uint8_t * mPsdu, uint8_t mLength, uint
  * @brief  this function is used to stop the current Running DTM  (TX or RX)
  * @retval mac_status_enum_t. MAC error State of stopping DTM
  */
-mac_status_enum_t dtmStop();
+mac_status_enum_t dtmStop(uint16_t *num_rec_pckts, uint8_t *lqi);
 
 /**
  * @brief  this function is used to start continuous DTM reception on the given channel
@@ -128,7 +165,7 @@ mac_status_enum_t dtmPerformCCA(uint8_t channel);
  * @brief  get the current LQI of the last received packet
  * @retval uint8_t. LQI value
  */
-uint8_t dtmGetLQIValue();
+uint8_t dtmGetLQIValue(void);
 /**
  * @}
  */
@@ -137,14 +174,14 @@ uint8_t dtmGetLQIValue();
  * @retval uin8_t . TRUE  Continue DTM transmission ,
  * 					FALSE Stop DTM transmission
  */
-uint8_t dtmCheckMoreTx();
+uint8_t dtmCheckMoreTx(void);
 
 /**
  * @brief  check if that dtm is in reception state
  * @retval uin8_t . TRUE  DTM in reception mode ,
  * 					FALSE DTM is not in reception mode
  */
-uint8_t dtmCheckRxState();
+uint8_t dtmCheckRxState(void);
 
 /**
  * @brief  Done function that should be called after each DTM event

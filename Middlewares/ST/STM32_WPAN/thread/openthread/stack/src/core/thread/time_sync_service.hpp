@@ -40,6 +40,7 @@
 
 #include <openthread/network_time.h>
 
+#include "common/as_core_type.hpp"
 #include "common/callback.hpp"
 #include "common/locator.hpp"
 #include "common/message.hpp"
@@ -50,7 +51,7 @@
 namespace ot {
 
 /**
- * This class implements OpenThread Time Synchronization Service.
+ * Implements OpenThread Time Synchronization Service.
  *
  */
 class TimeSync : public InstanceLocator, private NonCopyable
@@ -59,7 +60,18 @@ class TimeSync : public InstanceLocator, private NonCopyable
 
 public:
     /**
-     * This constructor initializes the object.
+     * Represents Network Time Status
+     *
+     */
+    enum Status : int8_t
+    {
+        kUnsynchronized = OT_NETWORK_TIME_UNSYNCHRONIZED, ///< The device hasn't attached to a network.
+        kResyncNeeded   = OT_NETWORK_TIME_RESYNC_NEEDED,  ///< The device hasn’t received time sync for 2 periods.
+        kSynchronized   = OT_NETWORK_TIME_SYNCHRONIZED,   ///< The device network time is synchronized.
+    };
+
+    /**
+     * Initializes the object.
      *
      */
     TimeSync(Instance &aInstance);
@@ -72,7 +84,7 @@ public:
      * @returns The time synchronization status.
      *
      */
-    otNetworkTimeStatus GetTime(uint64_t &aNetworkTime) const;
+    Status GetTime(uint64_t &aNetworkTime) const;
 
     /**
      * Handle the message which includes time synchronization information.
@@ -96,7 +108,7 @@ public:
 #endif
 
     /**
-     * This method gets the time synchronization sequence.
+     * Gets the time synchronization sequence.
      *
      * @returns The time synchronization sequence.
      *
@@ -104,7 +116,7 @@ public:
     uint8_t GetTimeSyncSeq(void) const { return mTimeSyncSeq; }
 
     /**
-     * This method gets the time offset to the Thread network time.
+     * Gets the time offset to the Thread network time.
      *
      * @returns The time offset to the Thread network time, in microseconds.
      *
@@ -205,8 +217,10 @@ private:
 
     Callback<otNetworkTimeSyncCallbackFn> mTimeSyncCallback; ///< Callback when time sync is handled or status updated.
     SyncTimer                             mTimer;            ///< Timer for checking if a resync is required.
-    otNetworkTimeStatus                   mCurrentStatus;    ///< Current network time status.
+    Status                                mCurrentStatus;    ///< Current network time status.
 };
+
+DefineMapEnum(otNetworkTimeStatus, TimeSync::Status);
 
 /**
  * @}

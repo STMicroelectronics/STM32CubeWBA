@@ -47,6 +47,7 @@
                                     <listOptionValue builtIn="false" value="TFM_LVL=2"/>
                                     <listOptionValue builtIn="false" value="DEFAULT_UART_BAUDRATE=115200"/>
                                     <listOptionValue builtIn="false" value="DOMAIN_NS=1"/>
+                                    <listOptionValue builtIn="false" value="STM32WBAXX_SI_CUT1_0"/>
                                 </option>
                                 <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.2014440746" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
                                     <listOptionValue builtIn="false" value="../../../../../../../../Drivers/CMSIS/Include"/>

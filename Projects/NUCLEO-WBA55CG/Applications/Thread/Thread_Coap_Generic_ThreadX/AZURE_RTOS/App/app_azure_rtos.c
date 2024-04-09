@@ -111,7 +111,7 @@ VOID tx_application_define(VOID *first_unused_memory)
     /* USER CODE END  App_ThreadX_Init_Success */
 
   }
-  
+
   if (tx_byte_pool_create(&wpan_app_byte_pool, "STM32WPAN App memory pool", wpan_byte_pool_buffer, STM32WPAN_APP_MEM_POOL_SIZE) != TX_SUCCESS)
   {
     /* USER CODE BEGIN STM32WPAN_Byte_Pool_Error */
@@ -138,7 +138,6 @@ VOID tx_application_define(VOID *first_unused_memory)
 
     /* USER CODE END  MX_STM32WPAN_Init */
   }
-
 #else
 /*
  * Using dynamic memory allocation requires to apply some changes to the linker file.

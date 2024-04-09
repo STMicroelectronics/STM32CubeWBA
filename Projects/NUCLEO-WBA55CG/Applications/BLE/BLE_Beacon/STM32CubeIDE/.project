@@ -219,6 +219,16 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_uart.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</locationURI>
@@ -384,6 +394,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/ble_timer.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/crc_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/crc_ctrl.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Modules/otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/otp.c</locationURI>
@@ -399,9 +414,24 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/temp_measurement.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/temp_measurement.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/ADC_Ctrl/adc_ctrl_conf.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/CRC_Ctrl/crc_ctrl_conf.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/Debug_GPIO/app_debug.c</name>

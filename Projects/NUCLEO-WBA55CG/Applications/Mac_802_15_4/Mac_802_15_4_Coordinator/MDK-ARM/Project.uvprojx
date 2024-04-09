@@ -331,16 +331,16 @@
             <useXO>0</useXO>
             <v6Lang>3</v6Lang>
             <v6LangP>3</v6LangP>
-            <vShortEn>1</vShortEn>
-            <vShortWch>1</vShortWch>
+            <vShortEn>0</vShortEn>
+            <vShortWch>0</vShortWch>
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>-fshort-enums</MiscControls>
               <Define>STM32WBA55xx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,PHY_2_10_a,PHY_40nm_2_30_a_A1,LOGGER_ENABLE=0,MAC,MAC_LAYER,OS_BAREMETAL</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../STM32_WPAN/App/Inc;../System/Interfaces;../System/Modules;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Modules/RTDebug;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Middlewares/ST/STM32_WPAN/;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/tim_serv;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../System/Config/Log;../System/Modules/SerialCmdInterpreter;../STM32_WPAN/Target;../System/Startup</IncludePath>
+              <IncludePath>../Core/Inc;../STM32_WPAN/App/Inc;../System/Interfaces;../System/Modules;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Modules/RTDebug;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Middlewares/ST/STM32_WPAN/;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/tim_serv;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../System/Config/Log;../System/Modules/SerialCmdInterpreter;../STM32_WPAN/Target;../System/Startup;..\System\Config\ADC_Ctrl;..\System\Config\CRC_Ctrl</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -552,6 +552,11 @@
               <FilePath>../System/Modules/app_sys.c</FilePath>
             </File>
             <File>
+              <FileName>crc_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../System/Modules/crc_ctrl.c</FilePath>
+            </File>
+            <File>
               <FileName>otp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../System/Modules/otp.c</FilePath>
@@ -570,6 +575,11 @@
               <FileName>usart_if.c</FileName>
               <FileType>1</FileType>
               <FilePath>../System/Interfaces/usart_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>temp_measurement.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Modules\temp_measurement.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1246,14 +1256,14 @@
           <GroupName>libs</GroupName>
           <Files>
             <File>
-              <FileName>LinkLayer15_4.lib</FileName>
+              <FileName>wba_mac_lib.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.lib</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</FilePath>
             </File>
             <File>
-              <FileName>wba_mac_lib_KEIL.lib</FileName>
+              <FileName>LinkLayer15_4.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib_KEIL.lib</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</FilePath>
             </File>
           </Files>
         </Group>
@@ -1326,5 +1336,14 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>Project</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

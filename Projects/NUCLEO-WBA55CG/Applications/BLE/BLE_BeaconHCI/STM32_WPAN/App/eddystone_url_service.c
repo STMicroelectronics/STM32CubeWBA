@@ -40,6 +40,7 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
 {
   const uint8_t *p_bd_addr;
   tBleStatus ret;
+  uint8_t dummy_buffer[1] = {0};
   uint16_t AdvertisingInterval = (EddystoneURL_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
   uint8_t service_data[] =
   {
@@ -74,9 +75,17 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
     0x00
   };
 
-  /* Disable scan response. */
-  hci_le_set_scan_response_data(0, NULL);
-
+  /* Send empty scan response data */
+  ret = hci_le_set_scan_response_data(0, &dummy_buffer[0]);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("==>> hci_le_set_scan_response_data - fail, result: 0x%02X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("==>> hci_le_set_scan_response_data - Success\n");
+  }
+  
   /* Put the device in a non-connectable mode. */
   p_bd_addr = BleGetBdAddress();
 

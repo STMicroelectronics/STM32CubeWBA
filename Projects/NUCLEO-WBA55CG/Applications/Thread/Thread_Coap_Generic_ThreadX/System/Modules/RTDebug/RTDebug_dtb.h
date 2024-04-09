@@ -27,10 +27,10 @@
 
 #include "app_conf.h"
 
-#if(RT_DEBUG_DTB == 1)
+#if(CFG_RT_DEBUG_DTB == 1)
 void RT_DEBUG_DTBConfig(void);
 void RT_DEBUG_DTBInit(void);
-#endif /* RT_DEBUG_DTB */
+#endif /* CFG_RT_DEBUG_DTB */
 
 #endif /* RT_DEBUG_DTB_H */
 

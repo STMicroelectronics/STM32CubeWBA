@@ -377,6 +377,8 @@
           <state>$PROJ_DIR$\..\System\Config\Log</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../System/Modules/SerialCmdInterpreter</state>
+          <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
+          <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1196,6 +1198,18 @@
               <name>$PROJ_DIR$/../System/Config/LowPower/peripheral_init.c</name>
             </file>
           </group>
+          <group>
+            <name>CRC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
+            </file>
+          </group>
+          <group>
+            <name>ADC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
+            </file>
+          </group>
         </group>
         <group>
           <name>Interfaces</name>
@@ -1296,6 +1310,9 @@
             <name>$PROJ_DIR$\..\System\Modules\ble_timer.c</name>
           </file>
           <file>
+            <name>$PROJ_DIR$/../System/Modules/crc_ctrl.c</name>
+          </file>
+          <file>
             <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
           </file>
           <file>
@@ -1303,6 +1320,9 @@
           </file>
           <file>
             <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../System/Modules/temp_measurement.c</name>
           </file>
         </group>
         <group>
@@ -1416,6 +1436,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</name>

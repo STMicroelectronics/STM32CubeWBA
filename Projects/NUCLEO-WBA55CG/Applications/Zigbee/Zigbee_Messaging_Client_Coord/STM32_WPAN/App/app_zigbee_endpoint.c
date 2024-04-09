@@ -198,6 +198,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -445,7 +447,7 @@ static void APP_ZIGBEE_ApplicationTaskInit( void )
   UTIL_SEQ_RegTask( 1U << CFG_TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION, UTIL_SEQ_RFU, APP_ZIGBEE_MessageConfirmation );
   
   /* Create Timer used if a message is delayed */
-  UTIL_TIMER_Create( &stDisplayTimerId, 0, (UTIL_TIMER_Mode_t)hw_ts_SingleShot, &APP_ZIGBEE_DisplayDelayingMessage, NULL );
+  UTIL_TIMER_Create( &stDisplayTimerId, 0, UTIL_TIMER_ONESHOT, &APP_ZIGBEE_DisplayDelayingMessage, NULL );
 }
 
 /**

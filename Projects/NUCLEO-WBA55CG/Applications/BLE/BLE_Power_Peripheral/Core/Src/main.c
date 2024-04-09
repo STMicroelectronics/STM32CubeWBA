@@ -77,6 +77,7 @@ static void MX_GPDMA1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -99,18 +100,20 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  if (HAL_PWREx_GetSupplyConfig() == PWR_SMPS_SUPPLY)
+  {
+    HAL_PWREx_SetREGVDDHPAInputSupply(PWR_RADIO_REG_VDDHPA_VD11);
+  }
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   MX_GPDMA1_Init();
   MX_USART1_UART_Init();
-  MX_ADC4_Init();
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
   MX_RTC_Init();
-  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -138,6 +141,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -183,6 +190,15 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+   /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+   /* Re-Initialize Tick with new clock source */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -213,7 +229,7 @@ void MX_ADC4_Init(void)
 {
 
   /* USER CODE BEGIN ADC4_Init 0 */
-  memset(&hadc4, 0, sizeof(hadc4));
+  
   /* USER CODE END ADC4_Init 0 */
 
   ADC_ChannelConfTypeDef sConfig = {0};
@@ -479,7 +495,10 @@ void MX_RTC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RTC_Init 2 */
-
+  if (HAL_RTCEx_SetLowPowerCalib(&hrtc, RTC_LPCAL_SET) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE END RTC_Init 2 */
 
 }
@@ -561,13 +580,13 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : B3_Pin B2_Pin */
   GPIO_InitStruct.Pin = B3_Pin|B2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*RT DEBUG GPIO_Init */

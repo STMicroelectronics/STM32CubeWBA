@@ -45,7 +45,9 @@ typedef enum
   APP_BLE_CONNECTED,
   APP_BLE_DISCOVERING_SERVICES,
   APP_BLE_DISCOVERING_CHARACS,
+  /* USER CODE BEGIN APP_BLE_ConnStatus_t*/
 
+  /* USER CODE END APP_BLE_ConnStatus_t */
 } APP_BLE_ConnStatus_t;
 
 /**

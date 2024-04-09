@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -29,6 +29,9 @@
 #include "adc_ctrl.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
+#if (CFG_LPM_LEVEL != 0)
+#include "stm32_lpm.h"
+#endif /* (CFG_LPM_LEVEL != 0) */
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
 /* USER CODE END Includes */
@@ -65,8 +68,15 @@ volatile uint8_t radio_sw_low_isr_is_running_high_prio = 0;
   */
 void LINKLAYER_PLAT_ClockInit()
 {
-  /* Select LSE as Sleep CLK */
-  __HAL_RCC_RADIOSLPTIM_CONFIG(RCC_RADIOSTCLKSOURCE_LSE);
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
+  /* Get the Link Layer sleep timer clock source */
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_NONE)
+  {
+    /* If there is no clock source defined, should be selected before */
+    assert_param(0);
+  }
 
   /* Enable AHB5ENR peripheral clock (bus CLK) */
   __HAL_RCC_RADIO_CLK_ENABLE();
@@ -416,6 +426,44 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 }
 
 /**
+  * @brief  Link Layer notification for RCO calibration start.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStartClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration end.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStopClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
   * @brief  Link Layer requests temperature.
   * @param  None
   * @retval None
@@ -423,15 +471,7 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 void LINKLAYER_PLAT_RequestTemperature(void)
 {
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  static UTIL_TIMER_Time_t last_temperature_measurement = 0;
-  UTIL_TIMER_Time_t radio_current_time = UTIL_TIMER_GetCurrentTime();
-  
-  /* Check if there is more than 1000ms since the last temperature measurement */
-  if((radio_current_time - last_temperature_measurement) >= 1000)
-  {
-    last_temperature_measurement = radio_current_time;
-    ll_sys_bg_temperature_measurement();
-  }
+  ll_sys_bg_temperature_measurement();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 

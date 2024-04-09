@@ -44,6 +44,15 @@ extern "C" {
   */
 tBleStatus CSIP_SET_MEMBER_RegisterServiceInstance(uint8_t Instance_ID, CSIS_ServiceInit_t *pServiceInfo);
 
+/**
+  * @brief Remove every CSIP services record for CSIP Set Member and/or CSIP Set Coordinator role
+  *        related to a peer address stored in NVM
+  * @param Peer_Address_Type: Peer Address type
+  * @param Peer_Address: Peer Address
+  * @retval status of the operation
+  */
+tBleStatus CSIP_RemoveServiceRecord(uint8_t Peer_Address_Type, const uint8_t Peer_Address[6]);
+
 #ifdef __cplusplus
 }
 #endif

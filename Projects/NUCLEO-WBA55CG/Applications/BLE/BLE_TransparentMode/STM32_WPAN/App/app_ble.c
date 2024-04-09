@@ -53,35 +53,26 @@ typedef enum
 }LowPowerModeStatus_t;
 /* USER CODE END PTD */
 
-/* Definitions for "uart_rx_state" */
-enum
-{
-  HCI_RX_STATE_WAIT_TYPE = 0,
-  HCI_RX_STATE_WAIT_HEADER,
-  HCI_RX_STATE_WAIT_PAYLOAD
-};
-
 /* Maximum size of data buffer (Rx or Tx) */
 #define HCI_DATA_MAX_SIZE         313
-#define NUM_OF_TX_BUFFER           60
-#define NUM_OF_RX_BUFFER           60
+#define NUM_OF_TX_SYNCHRO          2
+#define NUM_OF_TX_ASYNCHRO        50
+#define NUM_OF_RX_BUFFER          12
+#define NUM_OF_TX_BUFFER           (NUM_OF_TX_ASYNCHRO + NUM_OF_TX_SYNCHRO)
+
+typedef struct
+{
+  tListNode                 node;  /* Actual node in the list */
+  uint8_t buf[HCI_DATA_MAX_SIZE];  /* Memory buffer */
+} UART_node;
 
 /* Global variables structure */
 typedef struct
 {
-  uint8_t   uart_state;
   volatile uint8_t uart_tx_on;
-  uint16_t uart_rx_size;
-  uint16_t rx_total_size;
   uint8_t  rx_state;
-  uint8_t  rx_idx;
-  uint8_t  index_rx_free;
-  uint8_t  index_received;
-  uint8_t  rx_buf[NUM_OF_RX_BUFFER][HCI_DATA_MAX_SIZE];
-  uint8_t  index_free;
-  uint8_t  index_to_send;
-  uint8_t  tx_buf[NUM_OF_TX_BUFFER][HCI_DATA_MAX_SIZE];
   uint8_t  rxReceivedState;
+  UART_node buff_node[NUM_OF_RX_BUFFER+NUM_OF_TX_BUFFER];
 } HciTransport_var_t;
 
 extern RNG_HandleTypeDef hrng;
@@ -101,6 +92,15 @@ extern RNG_HandleTypeDef hrng;
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
 
+/* Definitions for "uart_rx_state" */
+#define HCI_RX_STATE_WAIT_TYPE    0
+#define HCI_RX_STATE_WAIT_HEADER  1
+#define HCI_RX_STATE_WAIT_PAYLOAD 2
+
+/* Definition for "hci_event_type" */
+#define HCI_EVENT_SYNCHRO         0
+#define HCI_EVENT_ASYNCHRO        1
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -114,8 +114,16 @@ extern RNG_HandleTypeDef hrng;
 
 uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
 
+tListNode UART_RX_Pool;
+tListNode UART_RX_List;
+tListNode UART_TX_Pool;
+tListNode UART_TX_List;
+
+uint8_t app_busy = 0;
+volatile uint8_t uart_tx_buffer_full = 0;
+
+UART_node *ongoing_TX_node;
 HciTransport_var_t HCI_var;
-uint8_t bufferHci[HCI_DATA_MAX_SIZE] = {0};
 
 static uint8_t *readBusBuffer;
 static uint8_t *writeBusBuffer;
@@ -137,21 +145,21 @@ static LowPowerModeStatus_t LowPowerModeStatus;
 
 /* Private function prototypes -----------------------------------------------*/
 static void BleStack_Process_BG(void);
-static void TM_Init( void );
+static void TM_Init(void);
 static void TM_SysLocalCmd(uint8_t *data);
-static void TM_TxToHost( void );
+static void TM_TxToHost(void);
 static void TM_UART_TxComplete(uint8_t *buffer);
-static void TM_UART_RxComplete( uint8_t *buffer );
+static void TM_UART_RxComplete(uint8_t *buffer);
 
 static void BLEUART_Write(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size);
 static void BLEUART_Read(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size);
 
-static int HCI_UartSend( uint8_t *data );
-static uint16_t HCI_GetDataToSend( uint8_t **dataToSend );
-static uint8_t* HCI_GetFreeTxBuffer( void );
-static uint8_t* HCI_GetDataReceived( void );
-static uint8_t* HCI_GetFreeRxBuffer( void );
-static uint8_t  HOST_BLE_Init(void);
+static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type);
+static uint16_t HCI_GetDataToSend(uint8_t **dataToSend);
+static uint8_t* HCI_GetFreeTxBuffer(uint8_t hci_event_type);
+static uint8_t* HCI_GetDataReceived(void);
+static uint8_t* HCI_GetFreeRxBuffer(void);
+static uint8_t HOST_BLE_Init(void);
 /* USER CODE BEGIN PFP */
 static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status );
 /* USER CODE END PFP */
@@ -215,9 +223,9 @@ void APP_BLE_Init(void)
  * LOCAL FUNCTIONS
  *
  *************************************************************/
-uint8_t HOST_BLE_Init(void)
+static uint8_t HOST_BLE_Init(void)
 {
-  tBleStatus return_status = BLE_STATUS_FAILED;
+  tBleStatus return_status;
 
   pInitParams.numAttrRecord           = CFG_BLE_NUM_GATT_ATTRIBUTES;
   pInitParams.numAttrServ             = CFG_BLE_NUM_GATT_SERVICES;
@@ -245,17 +253,29 @@ uint8_t HOST_BLE_Init(void)
   return ((uint8_t)return_status);
 }
 
-static void TM_Init( void )
+static void TM_Init(void)
 {
   /* UART init. */
-  HCI_var.uart_state = 0;
   HCI_var.uart_tx_on = 0;
   HCI_var.rx_state = HCI_RX_STATE_WAIT_TYPE;
-  HCI_var.rx_idx = 0;
   HCI_var.rxReceivedState = 0;
 
-  os_disable_isr();
-  HCI_var.uart_state |= 1;
+  uart_tx_buffer_full = 0;
+
+  LST_init_head(&UART_RX_Pool);
+  LST_init_head(&UART_RX_List);
+  LST_init_head(&UART_TX_Pool);
+  LST_init_head(&UART_TX_List);
+
+  for (uint8_t rx_index = 0; rx_index < NUM_OF_RX_BUFFER; rx_index++)
+  {
+    LST_insert_tail(&UART_RX_Pool, (tListNode *)(&(HCI_var.buff_node[rx_index])));
+  }
+
+  for (uint8_t tx_index = 0; tx_index < NUM_OF_TX_BUFFER; tx_index++)
+  {
+    LST_insert_tail(&UART_TX_Pool, (tListNode *)(&(HCI_var.buff_node[NUM_OF_RX_BUFFER + tx_index])));
+  }
 
   BLEUART_Read(&huart1, HCI_GetFreeRxBuffer(), 1 /*IDENTIFIER_OFFSET*/);
 
@@ -272,7 +292,6 @@ static void TM_Init( void )
 
 static void TM_SysLocalCmd (uint8_t *data)
 {
-  data = &HCI_var.rx_buf[HCI_var.rx_idx-1][0];
   uint16_t lcmd_opcode =(uint16_t)(data[1] | (data[2]<<8));
 
   switch(lcmd_opcode)
@@ -307,36 +326,37 @@ static void TM_SysLocalCmd (uint8_t *data)
   return;
 }
 
-static void TM_TxToHost( void )
+static void TM_TxToHost(void)
 {
   if ( HCI_var.rxReceivedState != 0 )
   {
     uint8_t *pData = 0;
     uint8_t packet_type;
+    tBleStatus status = BLE_STATUS_SUCCESS;
 
     pData = HCI_GetDataReceived();
 
     if ( pData != NULL )
     {
       packet_type = *pData;
-      HCI_var.uart_rx_size = 0;
-      HCI_var.rx_total_size = 0;
-      HCI_var.uart_state &= ~2;
-      BleStack_Request( pData );
-      HostStack_Process();
 
-      if( packet_type == 0x01 )
-      {
-        HCI_UartSend( pData );
-      }
-      else if( packet_type == TL_LOCCMD_PKT_TYPE )
+      if( packet_type == TL_LOCCMD_PKT_TYPE )
       {
         TM_SysLocalCmd(pData);
-        HCI_UartSend( pData );
       }
-      else if( packet_type == TL_LOCRSP_PKT_TYPE )
+
+      BleStack_Request(pData);
+      HostStack_Process();
+
+      if(( packet_type == 0x01 ) || ( packet_type == TL_LOCCMD_PKT_TYPE ) || ( packet_type == TL_LOCRSP_PKT_TYPE ))
       {
-        HCI_UartSend( pData );
+        status = HCI_UartSend(pData, HCI_EVENT_SYNCHRO);
+      }
+
+      if( status != BLE_STATUS_SUCCESS )
+      {
+        /* No more TX buffer available - Synchro event not sent */
+        assert_param(0);
       }
     }
   }
@@ -347,14 +367,12 @@ static void TM_TxToHost( void )
     uint16_t size;
 
     HCI_var.uart_tx_on |= 2;
-    size = HCI_GetDataToSend( &pData );
+    size = HCI_GetDataToSend(&pData);
 
     if( pData != 0 )
     {
-      HCI_var.uart_state |= 8;
-
       os_disable_isr();
-      BLEUART_Write(&huart1, pData, size );
+      BLEUART_Write(&huart1, pData, size);
       os_enable_isr();
     }
     else
@@ -362,23 +380,16 @@ static void TM_TxToHost( void )
   }
   else
   {}
-
 }
 
 static void TM_UART_TxComplete(uint8_t *buffer)
 {
-  change_state_options_t event_options;
-  HCI_var.index_to_send++;
+  memset(ongoing_TX_node->buf, 0, HCI_DATA_MAX_SIZE);
+  LST_insert_tail(&UART_TX_Pool,(tListNode*) ongoing_TX_node);
 
-  /* Notify LL that Host is ready */
-  event_options.combined_value = 0x0F;
-  ll_intf_chng_evnt_hndlr_state(event_options);
+  uart_tx_buffer_full = 0;
 
-  if ( HCI_var.index_to_send == NUM_OF_TX_BUFFER )
-  {
-    HCI_var.index_to_send = 0;
-  }
-  if ( HCI_var.index_free == HCI_var.index_to_send)
+  if ( LST_get_size(&UART_TX_List) == 0)
   {
     HCI_var.uart_tx_on = 0; /* No more data to send */
   }
@@ -387,16 +398,13 @@ static void TM_UART_TxComplete(uint8_t *buffer)
     HCI_var.uart_tx_on = 1; /* More data to send */
     UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID,CFG_SEQ_PRIO_0);
   }
-
-  HCI_var.uart_state  &= ~8;
 }
 
 static void TM_UART_RxComplete( uint8_t *buffer )
 {
-  uint8_t *data = HCI_var.rx_buf[HCI_var.rx_idx];
+  UART_node *pNode = ((UART_node*)(UART_RX_List.prev));
+  uint8_t *data = pNode->buf;
   uint16_t size_to_receive = 1, header_size, payload_size;
-
-  HCI_var.uart_state &= ~1;
 
   switch ( HCI_var.rx_state )
   {
@@ -438,7 +446,6 @@ static void TM_UART_RxComplete( uint8_t *buffer )
         header_size = HCI_ISODATA_HDR_SIZE;
         payload_size = data[3] | ((data[4] &0x3F) << 8);
       }
-      HCI_var.rx_total_size = header_size + payload_size;
 
       if ( payload_size > 0 )
       {
@@ -453,20 +460,11 @@ static void TM_UART_RxComplete( uint8_t *buffer )
   default:
   case HCI_RX_STATE_WAIT_PAYLOAD:
     {
-      HCI_var.uart_rx_size = HCI_var.rx_total_size;
-      HCI_var.uart_state |= 2;
       HCI_var.rxReceivedState += 1;
-      HCI_var.rx_idx++;
-      if( HCI_var.rx_idx == NUM_OF_RX_BUFFER )
-      {
-        HCI_var.rx_idx = 0;
-      }
       HCI_var.rx_state = HCI_RX_STATE_WAIT_TYPE;
       data = HCI_GetFreeRxBuffer();
     }
   }
-
-  HCI_var.uart_state |= 1;
 
   os_disable_isr();
   BLEUART_Read(&huart1, data, size_to_receive );
@@ -478,32 +476,32 @@ static void TM_UART_RxComplete( uint8_t *buffer )
 static void BLEUART_Write(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size)
 {
   writeBusBuffer = buffer;
-#if defined(OPENTHREAD_FTD) || defined(OPENTHREAD_MTD)
-  HAL_UART_Transmit_IT(huart, buffer, size);
-#else
   HAL_UART_Transmit_DMA(huart, buffer, size);
-#endif
-  return;
 }
 
 static void BLEUART_Read(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size)
 {
+  HAL_StatusTypeDef uart_status;
   readBusBuffer = buffer;
-#if defined(OPENTHREAD_FTD) || defined(OPENTHREAD_MTD)
-  HAL_UART_Receive_IT(huart, buffer, size);
-#else
-  HAL_UART_Receive_DMA(huart, buffer, size);
-#endif
-  return;
+
+  uart_status = HAL_UART_Receive_DMA(huart, buffer, size);
+  if ( uart_status != HAL_OK )
+  {
+    /* No more RX buffer available - UART blocked in idle mode */
+    assert_param(0);
+  }
 }
 
-static int HCI_UartSend( uint8_t *data )
+static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type)
 {
   uint16_t size;
-  uint8_t *pData = HCI_GetFreeTxBuffer();
+  uint8_t *pData = HCI_GetFreeTxBuffer(hci_event_type);
 
   if ( pData == 0 )
-    return 1;
+  {
+    /* No more TX buffer available */
+    return BLE_STATUS_FAILED;
+  }
 
   HCI_var.uart_tx_on |= 1;
 
@@ -534,101 +532,102 @@ static int HCI_UartSend( uint8_t *data )
     memcpy( pData, data, size);
   }
 
-  return 0u;
+  return BLE_STATUS_SUCCESS;
 }
 
-static uint16_t HCI_GetDataToSend( uint8_t **dataToSend )
+static uint16_t HCI_GetDataToSend(uint8_t **dataToSend)
 {
   uint16_t size;
+  UART_node *pNode = NULL;
 
-  if ( HCI_var.tx_buf[HCI_var.index_to_send][0] == HCI_ACLDATA_PKT_TYPE )
+  if (LST_get_size(&UART_TX_List) != 0)
   {
-    size = HCI_ACLDATA_HDR_SIZE + HCI_var.tx_buf[HCI_var.index_to_send][3];
-  }
-  else if( HCI_var.tx_buf[HCI_var.index_to_send][0] == HCI_ISODATA_PKT_TYPE)
-  {
-    size = HCI_ISODATA_HDR_SIZE +
-      (HCI_var.tx_buf[HCI_var.index_to_send][3] |
-       ((HCI_var.tx_buf[HCI_var.index_to_send][4] &0x3F) << 8));
-  }
-  else /* TL_LOCCMD_PKT_TYPE, TL_LOCRSP_PKT_TYPE and other*/
-  {
-    size = HCI_EVENT_HDR_SIZE + HCI_var.tx_buf[HCI_var.index_to_send][2];
-  }
+    LST_remove_head(&UART_TX_List,(tListNode**) &pNode);
 
-  *dataToSend = &HCI_var.tx_buf[HCI_var.index_to_send][0];
-
-  return size;
-}
-
-uint8_t* HCI_GetFreeTxBuffer( void )
-{
-  uint8_t *pBuffer = 0;
-
-  pBuffer = &HCI_var.tx_buf[HCI_var.index_free][0];
-
-  if( (HCI_var.index_free + 1) == HCI_var.index_to_send)
-  {
-    //No more data free.
-    pBuffer = NULL;
-  }
-  else if( (HCI_var.index_free + 1) == NUM_OF_TX_BUFFER )
-  {
-    if( HCI_var.index_to_send == 0)
+    if ( pNode->buf[0] == HCI_ACLDATA_PKT_TYPE )
     {
-      // No more free buffer: index_free = index_to_send = 0
-      pBuffer = NULL;
+      size = HCI_ACLDATA_HDR_SIZE + pNode->buf[3];
+    }
+    else if( pNode->buf[0] == HCI_ISODATA_PKT_TYPE)
+    {
+      size = HCI_ISODATA_HDR_SIZE +
+        (pNode->buf[3] | ((pNode->buf[4] &0x3F) << 8));
     }
     else
     {
-      HCI_var.index_free = 0;
+      size = HCI_EVENT_HDR_SIZE + pNode->buf[2];
+    }
+
+    *dataToSend = &pNode->buf[0];
+
+    ongoing_TX_node = pNode;
+  }
+  else
+  {
+    size = 0;
+  }
+  return size;
+}
+
+static uint8_t* HCI_GetFreeTxBuffer(uint8_t hci_event_type)
+{
+  UART_node *pNode = NULL;
+  uint8_t size = LST_get_size(&UART_TX_Pool);
+
+  if (((hci_event_type == HCI_EVENT_ASYNCHRO) && (size > NUM_OF_TX_SYNCHRO))
+      || ((hci_event_type == HCI_EVENT_SYNCHRO) && (size > 0)))
+  {
+    LST_remove_head(&UART_TX_Pool,(tListNode**) &pNode);
+
+    if (pNode != NULL)
+    {
+      LST_insert_tail(&UART_TX_List, (tListNode *)pNode);
+      return pNode->buf;
+    }
+    else
+    {
+      return NULL;
     }
   }
   else
   {
-    HCI_var.index_free++;
+    return NULL;
   }
-
-  return pBuffer;
 }
 
-static uint8_t* HCI_GetFreeRxBuffer( void )
+static uint8_t* HCI_GetFreeRxBuffer(void)
 {
-  uint8_t *pBuffer = 0;
+  UART_node *pNode = NULL;
 
-  pBuffer = &HCI_var.rx_buf[HCI_var.index_rx_free][0];
-
-  memset( pBuffer, 0, HCI_DATA_MAX_SIZE );
-  HCI_var.index_rx_free++;
-  if ( HCI_var.index_rx_free == NUM_OF_RX_BUFFER )
+  if (LST_get_size(&UART_RX_Pool) != 0)
   {
-    HCI_var.index_rx_free = 0;
-  }
+    LST_remove_head(&UART_RX_Pool,(tListNode**) &pNode);
+    memset( pNode->buf, 0, HCI_DATA_MAX_SIZE );
+    LST_insert_tail(&UART_RX_List, (tListNode *)pNode);
 
-  if ( HCI_var.index_rx_free == HCI_var.index_received)
+    return pNode->buf;
+  }
+  else
   {
-    /* No more data free */
+    return NULL;
   }
-
-  return pBuffer;
 }
 
-static uint8_t* HCI_GetDataReceived( void )
+static uint8_t* HCI_GetDataReceived(void)
 {
-  uint8_t *pBuffer = 0;
-
+  UART_node *pNode = NULL;
   HCI_var.rxReceivedState -= 1;
 
-  pBuffer = &HCI_var.rx_buf[HCI_var.index_received][0];
-
-  /* Increase the index of received data */
-  HCI_var.index_received++;
-  if ( HCI_var.index_received == NUM_OF_RX_BUFFER )
+  if (LST_get_size(&UART_RX_List) != 0)
   {
-    HCI_var.index_received = 0;
+    LST_remove_head(&UART_RX_List,(tListNode**) &pNode);
+    LST_insert_tail(&UART_RX_Pool, (tListNode *)pNode);
+    return pNode->buf;
   }
-
-  return pBuffer;
+  else
+  {
+    return NULL;
+  }
 }
 
 static void BleStack_Process_BG(void)
@@ -702,7 +701,9 @@ tBleStatus BLECB_Indication( const uint8_t* data,
                           const uint8_t* ext_data,
                           uint16_t ext_length )
 {
-  uint8_t status = BLE_STATUS_FAILED;
+  uint8_t status;
+  uint8_t bufferHci[HCI_DATA_MAX_SIZE];
+
   memcpy( &bufferHci[0], data, length);
 
   if ( ext_length > 255 )
@@ -715,10 +716,23 @@ tBleStatus BLECB_Indication( const uint8_t* data,
     memcpy( &bufferHci[length], ext_data, ext_length );
   }
 
-  if(HCI_UartSend( &bufferHci[0] ) == 0)
+  if (bufferHci[1] == 0xFF) /* ACI events */
+  {
+    status = HCI_UartSend(&bufferHci[0], HCI_EVENT_SYNCHRO);
+  }
+  else
+  {
+    status = HCI_UartSend(&bufferHci[0], HCI_EVENT_ASYNCHRO);
+  }
+
+  if(status == BLE_STATUS_SUCCESS)
   {
     UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID,CFG_SEQ_PRIO_0);
-    status = BLE_STATUS_SUCCESS;
+  }
+  else
+  {
+    app_busy = 1;
+    uart_tx_buffer_full = 1;
   }
   return status;
 }

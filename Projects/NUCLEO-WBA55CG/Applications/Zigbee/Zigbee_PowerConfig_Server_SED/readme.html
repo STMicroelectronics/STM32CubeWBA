@@ -50,10 +50,10 @@
            |             |                                                                    |             |                                       
            | PowerConfig |                                                                    | PowerConfig |
            |   Client    |                                                                    |   Server    |  - PowerConfig Server during Init 
-           |             |                                                                    |             |    launch a 30 s Periodic Timer
+           |             | Blue LED toggling (at report rx - 60 seconds)                      |             |    launch a 30 s Periodic Timer
            |             |                                                                    |             |  
            |             |                                                                    |             |  - Every 30 s
-           |             |                                                                    |             |    * Read the battery (if exist)
+           |             |                                                                    |             |    * Read the battery (if exist - it does not)
            |             |                                                                    |             |      or simulate it with RNG.
            |             |                                                                    |             |    * &lt;= ZbZclAttrIntegerWrite(ZCL_POWER_CONFIG_ATTR_BATTERY_PCT) 
            |             |  After a Router was connected :                                    |             |
@@ -62,9 +62,9 @@
            |             | &lt;----------------------------------------------------------------- |             |
            |             |                                                                    |             |
            |             | &lt;-------------- Report (every 60 seconds) -------------------------|             |
-           |             |                                                                    |             | &lt;= PushB SW1 : Start/Restart 30 s Periodic Timer.               
+           |             |                                                                    |             |               
            |             |                                                                    |             |        
-           |             |                                                                    |             | &lt;= PushB SW2 : Stop 30 s Periodic Timer.           
+           |             |                                                                    |             |           
            |             |                                                                    |             |    
            |             |                                                                    |             |            
            +-------------+                                                                    +-------------+
@@ -82,7 +82,7 @@
 → At this stage, the Zigbee network is automatically created, and traces on coordinator indicate that new device is added.<br />
 if you want to have the Led Blue on on SED side when attached to the network, you can modify the <strong>CFG_FULL_LOW_POWER</strong> to the value <strong>2</strong>.<br />
 </li>
-<li><p>On Client side, every 60 s, the battery voltage is reported from the Server. To stop battery voltage evolution on Server, push SW2 push button, and to restart it push SW1.</p></li>
+<li><p>On Client side, every 60 s, the battery voltage is reported from the Server and the Blue led is toggling.</p></li>
 </ol></li>
 </ul>
 <p><strong>Note:</strong> When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.</p>
@@ -99,5 +99,8 @@ if you want to have the Led Blue on on SED side when attached to the network, yo
 <li><p>The UART must be configured as follows:<br />
 <br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1 bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the Line” : &lt;LF&gt;</p></li>
 </ul>
+<h3 id="traces"><strong>Note</strong></h3>
+<p>By default, this application runs with Zigbee PRO stack R23. Switching to R22 is not working for this application.<br />
+</p>
 </body>
 </html>

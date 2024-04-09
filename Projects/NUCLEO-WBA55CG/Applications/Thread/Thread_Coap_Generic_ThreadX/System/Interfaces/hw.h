@@ -116,6 +116,16 @@ extern void HW_AES_Crypt( const uint32_t* input,
                           uint32_t* output );
 
 /*
+ * HW_AES_Crypt
+ *
+ * Encrypts/decrypts the 16-byte input data ("input").
+ * Result is written in the 16-byte buffer ("output") allocated by the user.
+ *
+ * Note : input & output are 8 bits aligned.
+ */
+extern void HW_AES_Crypt8( const uint8_t* input, uint8_t* output );
+
+/*
  * HW_AES_Disable
  *
  * Disables the AES hardware block.

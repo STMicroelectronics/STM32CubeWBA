@@ -125,9 +125,12 @@ static void app_cli_ex_Notif_callback(MAC_RAW_State_t state)
 
 static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * p_RX_evt)
 {
+  bool save_payload = FALSE;
+
   if (p_RX_evt->rx_status == RX_SUCCESS)
   {
     cli_rx_result.packets_received++;
+    save_payload = TRUE;
   }
   else if (p_RX_evt->rx_status == RX_REJECTED)
   {
@@ -139,15 +142,20 @@ static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * 
   }
 
   /* Update recent frame index and number */
-  frame_to_print_nb++;
-  frame_to_print_nb = MIN(frame_to_print_nb, RX_FRAME_MAX_NUM);
-  frame_to_print_idx++;
-  frame_to_print_idx %= RX_FRAME_MAX_NUM;
+  if (save_payload == TRUE)
+  {
+    frame_to_print_nb++;
+    frame_to_print_nb = MIN(frame_to_print_nb, RX_FRAME_MAX_NUM);
+    frame_to_print_idx++;
+    frame_to_print_idx %= RX_FRAME_MAX_NUM;
 
-  //memcpy(&frame_to_print_array[frame_to_print_idx].payload[0], p_RX_evt->payload_ptr, p_RX_evt->payload_len);
-  frame_to_print_array[frame_to_print_idx].payload_len = p_RX_evt->payload_len;
-  frame_to_print_array[frame_to_print_idx].rssi = p_RX_evt->rssi;
-  frame_to_print_array[frame_to_print_idx].lqi = p_RX_evt->lqi;
+    ble_memcpy(&frame_to_print_array[frame_to_print_idx].payload[0],
+           p_RX_evt->payload_ptr, p_RX_evt->payload_len);
+
+    frame_to_print_array[frame_to_print_idx].payload_len = p_RX_evt->payload_len;
+    frame_to_print_array[frame_to_print_idx].rssi = p_RX_evt->rssi;
+    frame_to_print_array[frame_to_print_idx].lqi = p_RX_evt->lqi;
+  }
 
   cli_full_ctx.last_lqi = p_RX_evt->lqi;
   cli_full_ctx.lqi_valid = 1;
@@ -380,6 +388,8 @@ uint8_t app_cli_ex_start_rx(const uint8_t rx_frame_printing, const uint16_t time
 {
   MAC_Status_t status;
 
+  cli_full_ctx.rx_frame_printing = rx_frame_printing;
+  
   /* Start RX request */
   ST_MAC_raw_RX_start_t RawRxReq = { 0 };
   RawRxReq.channel_number = cli_full_ctx.channel;
@@ -393,6 +403,7 @@ uint8_t app_cli_ex_start_rx(const uint8_t rx_frame_printing, const uint16_t time
 
 uint8_t app_cli_ex_stop_rx(void)
 {
+  cli_full_ctx.rx_frame_printing = 0;
   MAC_Status_t status = ST_MAC_raw_stop_RX();
   return (uint8_t)status;
 }

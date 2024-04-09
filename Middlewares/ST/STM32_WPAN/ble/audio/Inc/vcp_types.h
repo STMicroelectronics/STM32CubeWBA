@@ -151,15 +151,6 @@ typedef uint8_t VCP_Role_t;
 #define VCP_ROLE_RENDERER                               (0x01)
 #define VCP_ROLE_CONTROLLER                             (0x02)
 
-/* Types of Volume Control Profile Linkup Mode */
-typedef uint8_t VCP_LinkupMode_t;
-#define VCP_LINKUP_MODE_COMPLETE                        (0x00u) /* Link Up procedure shall be a complete one
-                                                                 * with remote service and characteristic discovery
-                                                                 */
-#define VCP_LINKUP_MODE_RESTORE                         (0x01u) /* Link Up information is restored from previous
-                                                                 * complete Link Up from persistent memory.
-                                                                 */
-
 /* Types of Gain Mode for Audio Input Control representing the VCP Renderer’s gain adjustment functionality.*/
 typedef uint8_t VCP_AICModeGain_t;
 #define VCP_AIC_GAIN_MODE_MANUAL_ONLY                   (0x00u)
@@ -172,16 +163,6 @@ typedef uint8_t VCP_AICMute_t;
 #define VCP_AIC_UNMUTE                                  (0x00u)
 #define VCP_AIC_MUTE                                    (0x01u)
 #define VCP_AIC_MUTE_DISABLED                           (0x02u)
-
-/* Types of source of audio for the audio input*/
-typedef uint8_t VCP_AudioInput_t;
-#define VCP_AUDIO_INPUT_UNSPECIFIED                     (0x00u) /* Unspecified Input */
-#define VCP_AUDIO_INPUT_BLUETOOTH                       (0x01u) /* Bluetooth Audio Stream */
-#define VCP_AUDIO_INPUT_MICROPHONE                      (0x02u) /* Microphone */
-#define VCP_AUDIO_INPUT_ANALOG                          (0x00u) /* Analog Interface */
-#define VCP_AUDIO_INPUT_DIGITAL                         (0x00u) /* Digital Interface */
-#define VCP_AUDIO_INPUT_RADIO                           (0x00u) /* AM/FM/XM/etc */
-#define VCP_AUDIO_INPUT_STREAMING                       (0x00u) /* Streaming Audio Source */
 
 /* Status of the audio input*/
 typedef uint8_t VCP_AudioInputStatus_t;
@@ -264,21 +245,6 @@ typedef enum
                                                  * VCP Controller request only.
                                                  * pInfo field indicates the Audio Output Description information
                                                  * through the VCP_AudioDescription_Evt_t type.
-                                                 */
-  VCP_CONTROLLER_LINKUP_COMPLETE_EVT,           /* This event is notified by VCP Controller when a link is up with the
-                                                 * remote VCP Server.
-                                                 * The potential Audio Input Control Instances and Volume Offset Control
-                                                 * Instances discovery is complete.
-                                                 */
-  VCP_CONTROLLER_AIC_INST_INFO_EVT,             /* This event is notified by VCP Controller during the link up process
-                                                 * when an Audio Input Control Instance is completely discovered.
-                                                 * The pInfo field indicates information through
-                                                 * the VCP_AICInstInfo_Evt_t type.
-                                                 */
-  VCP_CONTROLLER_VOC_INST_INFO_EVT,             /* This event is notified by VCP Controller during the link up process
-                                                 * when an Volume Offset Control Instance is completely discovered.
-                                                 * The pInfo field indicates information through
-                                                 * the VCP_VOCInstInfo_Evt_t type.
                                                  */
   VCP_CONTROLLER_OPERATION_COMPLETE_EVT,        /* This event is notified when a VCP Controller Operation is complete.
                                                  * pInfo field indicates the Complete Operation to the remote
@@ -381,14 +347,18 @@ typedef enum
 /* Structure of VOC instance*/
 typedef struct
 {
-  uint8_t       ID;
+  uint8_t               ID;
+  uint16_t              StartAttHandle; /* ATT Start Handle of the VOC Instance in the remote VCP Renderer */
+  uint16_t              EndAttHandle;   /* ATT End Handle of the VOC Instance in the remote VCP Renderer */
 } VCP_VOCInstInfo_t;
 
 /* Structure of AIC Instance*/
 typedef struct
 {
   uint8_t               ID;
-  VCP_AudioInput_t      AudioInputType;
+  Audio_Input_t         AudioInputType;
+  uint16_t              StartAttHandle; /* ATT Start Handle of the AIC Instance in the remote VCP Renderer */
+  uint16_t              EndAttHandle;   /* ATT End Handle of the AIC Instance in the remote VCP Renderer */
 } VCP_AICInstInfo_t;
 
 typedef struct
@@ -397,6 +367,8 @@ typedef struct
   VCP_AICInstInfo_t     *pAICInst;      /*Pointer on discovered AIC Instance table*/
   uint8_t               NumVOCInst;     /*Number of discovered VOC Instances*/
   VCP_VOCInstInfo_t     *pVOCInst;      /*Pointer on discovered VOC Instance table*/
+  uint16_t              StartAttHandle; /* ATT Start Handle of Volume Control Service in the remote MVCP Renderer */
+  uint16_t              EndAttHandle;   /* ATT End Handle of the Volume Control Service in the remote VCP Renderer */
 } VCP_Info_t;
 
 /* Audio Input State Structure  */
@@ -448,13 +420,6 @@ typedef struct
 {
   uint8_t       VolFlags;
 } VCP_VolumeFlags_Evt_t;
-
-/* Structure used in parameter when VCP_CONTROLLER_AIC_INST_INFO_EVT event is notified*/
-typedef VCP_AICInstInfo_t VCP_AICInstInfo_Evt_t;
-
-
-/* Structure used in parameter when VCP_CONTROLLER_VOC_INST_INFO_EVT event is notified*/
-typedef VCP_VOCInstInfo_t VCP_VOCInstInfo_Evt_t;
 
 
 /* Type associated to VCP_CONTROLLER_OPERATION_COMPLETE_EVT event*/
@@ -543,7 +508,7 @@ typedef struct
                                                  */
   VCP_AudioInputState_t State;                  /* Audio Input State of the audio input Instance */
   VCP_GainSettingProp_t Prop;                   /* Gain Setting Properties of the audio input Instance  */
-  VCP_AudioInput_t      AudioInputType;         /* Audio Input Type of the audio input Instance  */
+  Audio_Input_t         AudioInputType;         /* Audio Input Type of the audio input Instance  */
   uint8_t               MaxDescriptionLength;   /* Maximum Size of the Audio input Description string */
   uint8_t               *pDescription;          /* Pointer on Description string of the audio input Instance  */
   uint8_t               DescriptionLength;      /* Length of the Description string */

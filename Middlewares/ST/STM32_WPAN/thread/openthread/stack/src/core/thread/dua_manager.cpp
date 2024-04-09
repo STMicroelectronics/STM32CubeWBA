@@ -78,10 +78,9 @@ DuaManager::DuaManager(Instance &aInstance)
 #endif
 }
 
-void DuaManager::HandleDomainPrefixUpdate(BackboneRouter::Leader::DomainPrefixState aState)
+void DuaManager::HandleDomainPrefixUpdate(BackboneRouter::DomainPrefixEvent aEvent)
 {
-    if ((aState == BackboneRouter::Leader::kDomainPrefixRemoved) ||
-        (aState == BackboneRouter::Leader::kDomainPrefixRefreshed))
+    if ((aEvent == BackboneRouter::kDomainPrefixRemoved) || (aEvent == BackboneRouter::kDomainPrefixRefreshed))
     {
         if (mIsDuaPending)
         {
@@ -102,16 +101,16 @@ void DuaManager::HandleDomainPrefixUpdate(BackboneRouter::Leader::DomainPrefixSt
     }
 
 #if OPENTHREAD_CONFIG_DUA_ENABLE
-    switch (aState)
+    switch (aEvent)
     {
-    case BackboneRouter::Leader::kDomainPrefixUnchanged:
-        // In case removed for some reason e.g. the kDuaInvalid response from PBBR forcely
+    case BackboneRouter::kDomainPrefixUnchanged:
+        // In case removed for some reason e.g. the kDuaInvalid response from PBBR forcefully
         VerifyOrExit(!Get<ThreadNetif>().HasUnicastAddress(GetDomainUnicastAddress()));
 
         OT_FALL_THROUGH;
 
-    case BackboneRouter::Leader::kDomainPrefixRefreshed:
-    case BackboneRouter::Leader::kDomainPrefixAdded:
+    case BackboneRouter::kDomainPrefixRefreshed:
+    case BackboneRouter::kDomainPrefixAdded:
     {
         const Ip6::Prefix *prefix = Get<BackboneRouter::Leader>().GetDomainPrefix();
         OT_ASSERT(prefix != nullptr);
@@ -273,7 +272,7 @@ void DuaManager::NotifyDuplicateDomainUnicastAddress(void)
 void DuaManager::UpdateReregistrationDelay(void)
 {
     uint16_t               delay = 0;
-    otBackboneRouterConfig config;
+    BackboneRouter::Config config;
 
     VerifyOrExit(Get<BackboneRouter::Leader>().GetConfig(config) == kErrorNone);
 
@@ -304,6 +303,19 @@ void DuaManager::UpdateCheckDelay(uint8_t aDelay)
 void DuaManager::HandleNotifierEvents(Events aEvents)
 {
     Mle::MleRouter &mle = Get<Mle::MleRouter>();
+
+#if OPENTHREAD_CONFIG_DUA_ENABLE
+    if (aEvents.Contains(kEventThreadNetdataChanged))
+    {
+        Lowpan::Context context;
+        // Remove a stale DUA address if any.
+        if (Get<ThreadNetif>().HasUnicastAddress(Get<DuaManager>().GetDomainUnicastAddress()) &&
+            (Get<NetworkData::Leader>().GetContext(Get<DuaManager>().GetDomainUnicastAddress(), context) != kErrorNone))
+        {
+            RemoveDomainUnicastAddress();
+        }
+    }
+#endif
 
     VerifyOrExit(mle.IsAttached(), mDelay.mValue = 0);
 
@@ -338,14 +350,19 @@ exit:
     return;
 }
 
-void DuaManager::HandleBackboneRouterPrimaryUpdate(BackboneRouter::Leader::State               aState,
-                                                   const BackboneRouter::BackboneRouterConfig &aConfig)
+void DuaManager::HandleBackboneRouterPrimaryUpdate(BackboneRouter::Leader::State aState,
+                                                   const BackboneRouter::Config &aConfig)
 {
     OT_UNUSED_VARIABLE(aConfig);
 
     if (aState == BackboneRouter::Leader::kStateAdded || aState == BackboneRouter::Leader::kStateToTriggerRereg)
     {
-        UpdateReregistrationDelay();
+#if OPENTHREAD_CONFIG_DUA_ENABLE
+        if (Get<Mle::Mle>().IsFullThreadDevice() || Get<Mle::Mle>().GetParent().IsThreadVersion1p1())
+#endif
+        {
+            UpdateReregistrationDelay();
+        }
     }
 }
 
@@ -358,7 +375,7 @@ void DuaManager::HandleTimeTick(void)
             mDelay.mFields.mReregistrationDelay, mDelay.mFields.mCheckDelay);
 
     if ((mDuaState != kNotExist) &&
-        (TimerMilli::GetNow() > (mLastRegistrationTime + TimeMilli::SecToMsec(Mle::kDuaDadPeriod))))
+        (TimerMilli::GetNow() > (mLastRegistrationTime + TimeMilli::SecToMsec(kDuaDadPeriod))))
     {
         mDomainUnicastAddress.mPreferred = true;
     }
@@ -523,12 +540,12 @@ void DuaManager::PerformNextRegistration(void)
         Get<DataPollSender>().SendFastPolls();
     }
 
-    LogInfo("Sent DUA.req for DUA %s", dua.ToString().AsCString());
+    LogInfo("Sent %s for DUA %s", UriToString<kUriDuaRegistrationRequest>(), dua.ToString().AsCString());
 
 exit:
     if (error == kErrorNoBufs)
     {
-        UpdateCheckDelay(Mle::kNoBufDelay);
+        UpdateCheckDelay(kNoBufDelay);
     }
 
     LogInfo("PerformNextRegistration: %s", ErrorToString(error));
@@ -556,7 +573,7 @@ void DuaManager::HandleDuaResponse(Coap::Message *aMessage, const Ip6::MessageIn
 
     if (aResult == kErrorResponseTimeout)
     {
-        UpdateCheckDelay(Mle::KResponseTimeoutDelay);
+        UpdateCheckDelay(KResponseTimeoutDelay);
         ExitNow(error = aResult);
     }
 
@@ -574,7 +591,7 @@ exit:
         mRegistrationTask.Post();
     }
 
-    LogInfo("Received DUA.rsp: %s", ErrorToString(error));
+    LogInfo("Received %s response: %s", UriToString<kUriDuaRegistrationRequest>(), ErrorToString(error));
 }
 
 template <>
@@ -588,14 +605,14 @@ void DuaManager::HandleTmf<kUriDuaRegistrationNotify>(Coap::Message &aMessage, c
 
     if (aMessage.IsConfirmable() && Get<Tmf::Agent>().SendEmptyAck(aMessage, aMessageInfo) == kErrorNone)
     {
-        LogInfo("Sent DUA.ntf acknowledgment");
+        LogInfo("Sent %s ack", UriToString<kUriDuaRegistrationNotify>());
     }
 
     error = ProcessDuaResponse(aMessage);
 
 exit:
     OT_UNUSED_VARIABLE(error);
-    LogInfo("Received DUA.ntf: %s", ErrorToString(error));
+    LogInfo("Received %s: %s", UriToString<kUriDuaRegistrationNotify>(), ErrorToString(error));
 }
 
 Error DuaManager::ProcessDuaResponse(Coap::Message &aMessage)
@@ -725,7 +742,8 @@ void DuaManager::SendAddressNotification(Ip6::Address              &aAddress,
 
     SuccessOrExit(error = Get<Tmf::Agent>().SendMessage(*message, messageInfo));
 
-    LogInfo("Sent ADDR_NTF for child %04x DUA %s", aChild.GetRloc16(), aAddress.ToString().AsCString());
+    LogInfo("Sent %s for child %04x DUA %s", UriToString<kUriDuaRegistrationNotify>(), aChild.GetRloc16(),
+            aAddress.ToString().AsCString());
 
 exit:
 
@@ -734,17 +752,16 @@ exit:
         FreeMessage(message);
 
         // TODO: (DUA) (P4) may enhance to  guarantee the delivery of DUA.ntf
-        LogWarn("Sent ADDR_NTF for child %04x DUA %s Error %s", aChild.GetRloc16(), aAddress.ToString().AsCString(),
-                ErrorToString(error));
+        LogWarn("Sent %s for child %04x DUA %s Error %s", UriToString<kUriDuaRegistrationNotify>(), aChild.GetRloc16(),
+                aAddress.ToString().AsCString(), ErrorToString(error));
     }
 }
 
-void DuaManager::UpdateChildDomainUnicastAddress(const Child &aChild, Mle::ChildDuaState aState)
+void DuaManager::HandleChildDuaAddressEvent(const Child &aChild, ChildDuaAddressEvent aEvent)
 {
     uint16_t childIndex = Get<ChildTable>().GetChildIndex(aChild);
 
-    if ((aState == Mle::ChildDuaState::kRemoved || aState == Mle::ChildDuaState::kChanged) &&
-        mChildDuaMask.Get(childIndex))
+    if ((aEvent == kAddressRemoved || aEvent == kAddressChanged) && mChildDuaMask.Get(childIndex))
     {
         // Abort on going proxy DUA.req for this child
         if (mChildIndexDuaRegistering == childIndex)
@@ -756,12 +773,12 @@ void DuaManager::UpdateChildDomainUnicastAddress(const Child &aChild, Mle::Child
         mChildDuaRegisteredMask.Set(childIndex, false);
     }
 
-    if (aState == Mle::ChildDuaState::kAdded || aState == Mle::ChildDuaState::kChanged ||
-        (aState == Mle::ChildDuaState::kUnchanged && !mChildDuaMask.Get(childIndex)))
+    if (aEvent == kAddressAdded || aEvent == kAddressChanged ||
+        (aEvent == kAddressUnchanged && !mChildDuaMask.Get(childIndex)))
     {
         if (mChildDuaMask == mChildDuaRegisteredMask)
         {
-            UpdateCheckDelay(Random::NonCrypto::GetUint8InRange(1, Mle::kParentAggregateDelay));
+            UpdateCheckDelay(Random::NonCrypto::GetUint8InRange(1, BackboneRouter::kParentAggregateDelay));
         }
 
         mChildDuaMask.Set(childIndex, true);

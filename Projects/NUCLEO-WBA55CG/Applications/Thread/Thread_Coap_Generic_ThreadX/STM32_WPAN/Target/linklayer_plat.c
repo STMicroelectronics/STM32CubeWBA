@@ -26,6 +26,8 @@
 #include "app_conf.h"
 #include "scm.h"
 
+#include "stm32_lpm.h"
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -142,8 +144,7 @@ void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
   }
 
   /* Get the remaining number of RNGs */
-  if(nb_remaining_rng > 0)
-  {
+  if(nb_remaining_rng>0){
     generated_rng = 0;
     HW_RNG_Get(1, &generated_rng);
     memcpy((ptr_rnd+(len-nb_remaining_rng)), &generated_rng, nb_remaining_rng);
@@ -303,7 +304,7 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
   *         @arg LL_LOW_ISR_ONLY: disable link layer SW low priority ISR.
   *         @arg SYS_LOW_ISR: unmask interrupts for all the other system ISR with
   *              lower priority that link layer SW low interrupt.
-  * @retval None  
+  * @retval None
   */
 void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
 {
@@ -339,7 +340,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
       local_basepri_value = __get_BASEPRI();
 
       /* Mask all other interrupts with lower priority that link layer SW low ISR */
-      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW << 4);
+      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW<<4);
     }
   }
 }
@@ -389,7 +390,9 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
+#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_ACTIVE);
+#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -401,7 +404,47 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
+#if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration start.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStartClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ); 
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
+}
+
+/**
+  * @brief  Link Layer notification for RCO calibration end.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_RCOStopClbr(void)
+{
+#if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ); 
+  while (LL_PWR_IsActiveFlag_VOS() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 }
 
 /**
@@ -420,6 +463,7 @@ void LINKLAYER_PLAT_RequestTemperature(void)
   */
 void LINKLAYER_PLAT_EnableOSContextSwitch(void)
 {
+  tx_interrupt_control(TX_INT_ENABLE);
 }
 
 /**
@@ -428,5 +472,15 @@ void LINKLAYER_PLAT_EnableOSContextSwitch(void)
   * @retval None
   */
 void LINKLAYER_PLAT_DisableOSContextSwitch(void)
+{
+  tx_interrupt_control(TX_INT_DISABLE);
+}
+
+/**
+ * @brief Notify the upper layer that new Link Layer timings have been applied.
+ * @param evnt_timing[in]: Evnt_timing_t pointer to structure contains drift time , execution time and scheduling time
+ * @retval None.
+ */
+void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
 }

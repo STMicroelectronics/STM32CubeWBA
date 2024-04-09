@@ -49,6 +49,21 @@ otError otNetDataGet(otInstance *aInstance, bool aStable, uint8_t *aData, uint8_
         aStable ? NetworkData::kStableSubset : NetworkData::kFullSet, aData, *aDataLength);
 }
 
+uint8_t otNetDataGetLength(otInstance *aInstance)
+{
+    return AsCoreType(aInstance).Get<NetworkData::Leader>().GetLength();
+}
+
+uint8_t otNetDataGetMaxLength(otInstance *aInstance)
+{
+    return AsCoreType(aInstance).Get<NetworkData::Leader>().GetMaxLength();
+}
+
+void otNetDataResetMaxLength(otInstance *aInstance)
+{
+    AsCoreType(aInstance).Get<NetworkData::Leader>().ResetMaxLength();
+}
+
 otError otNetDataGetNextOnMeshPrefix(otInstance            *aInstance,
                                      otNetworkDataIterator *aIterator,
                                      otBorderRouterConfig  *aConfig)
@@ -77,6 +92,16 @@ otError otNetDataGetNextService(otInstance *aInstance, otNetworkDataIterator *aI
     AssertPointerIsNotNull(aIterator);
 
     return AsCoreType(aInstance).Get<NetworkData::Leader>().GetNextService(*aIterator, AsCoreType(aConfig));
+}
+
+otError otNetDataGetNextLowpanContextInfo(otInstance            *aInstance,
+                                          otNetworkDataIterator *aIterator,
+                                          otLowpanContextInfo   *aContextInfo)
+{
+    AssertPointerIsNotNull(aIterator);
+
+    return AsCoreType(aInstance).Get<NetworkData::Leader>().GetNextLowpanContextInfo(*aIterator,
+                                                                                     AsCoreType(aContextInfo));
 }
 
 uint8_t otNetDataGetVersion(otInstance *aInstance)

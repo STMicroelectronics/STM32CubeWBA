@@ -55,6 +55,9 @@ extern "C" {
 #define CFG_TASK_PRIO_HW_RNG                    11u
 #define CFG_TASK_PREEMP_HW_RNG                  0u
 
+#define CFG_TASK_PRIO_AMM_BCKGND                15u
+#define CFG_TASK_PREEMP_AMM_BCKGND              0u
+
 #define CFG_TASK_PRIO_ZIGBEE_NETWORK_FORM       16u
 #define CFG_TASK_PREEMP_ZIGBEE_NETWORK_FORM     0u
 
@@ -63,7 +66,7 @@ extern "C" {
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define CFG_TASK_PRIO_BUTTON_SWx                13u
-#define CFG_TASK_PREEMP_BUTTON_SWx              0u
+#define CFG_TASK_PREEMP_BUTTON_SWx              13u
 
 /* USER CODE END TASK_Priority_Define */
 
@@ -83,6 +86,7 @@ extern "C" {
 #define TASK_HW_RNG_STACK_SIZE                  RTOS_STACK_SIZE_REDUCED
 #define TASK_ZIGBEE_NETWORK_FORM_STACK_SIZE     RTOS_STACK_SIZE_LARGE
 #define TASK_ZIGBEE_APP_START_STACK_SIZE        RTOS_STACK_SIZE_NORMAL
+#define TASK_AMM_BCKGND_STACK_SIZE              RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
 
@@ -98,9 +102,11 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported variables --------------------------------------------------------*/
-extern TX_MUTEX           LinkLayerMutex;
-
 /* USER CODE BEGIN EV */
+#if (CFG_BUTTON_SUPPORTED == 1)
+/* Button management */
+extern TX_SEMAPHORE       ButtonSw1Semaphore, ButtonSw2Semaphore, ButtonSw3Semaphore;
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END EV */
 

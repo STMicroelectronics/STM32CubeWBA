@@ -122,15 +122,13 @@ Error MeshForwarder::SendMessage(Message &aMessage)
         break;
     }
 
-#if OPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE
     case Message::kTypeSupervision:
     {
-        Child *child = Get<Utils::ChildSupervisor>().GetDestination(aMessage);
+        Child *child = Get<ChildSupervisor>().GetDestination(aMessage);
         OT_ASSERT((child != nullptr) && !child->IsRxOnWhenIdle());
         mIndirectSender.AddMessageForSleepyChild(aMessage, *child);
         break;
     }
-#endif
 
     default:
         aMessage.SetDirectTransmission();
@@ -771,7 +769,7 @@ exit:
 
 bool MeshForwarder::FragmentPriorityList::UpdateOnTimeTick(void)
 {
-    bool contineRxingTicks = false;
+    bool continueRxingTicks = false;
 
     for (Entry &entry : mEntries)
     {
@@ -781,12 +779,12 @@ bool MeshForwarder::FragmentPriorityList::UpdateOnTimeTick(void)
 
             if (!entry.IsExpired())
             {
-                contineRxingTicks = true;
+                continueRxingTicks = true;
             }
         }
     }
 
-    return contineRxingTicks;
+    return continueRxingTicks;
 }
 
 void MeshForwarder::UpdateFragmentPriority(Lowpan::FragmentHeader &aFragmentHeader,

@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_entry.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,27 +89,27 @@ void MX_ThreadX_Init(void)
 }
 
 /**
-  * @brief  App_ThreadX_LowPower_Enter
+  * @brief  ThreadXLowPowerUserEnter
   * @param  None
   * @retval None
   */
-void App_ThreadX_LowPower_Enter(void)
+__weak void ThreadXLowPowerUserEnter(void)
 {
-  /* USER CODE BEGIN  App_ThreadX_LowPower_Enter */
-  ThreadXLowPowerUserEnter();
-  /* USER CODE END  App_ThreadX_LowPower_Enter */
+  /* USER CODE BEGIN  ThreadXLowPowerUserEnter */
+
+  /* USER CODE END  ThreadXLowPowerUserEnter */
 }
 
 /**
-  * @brief  App_ThreadX_LowPower_Exit
+  * @brief  ThreadXLowPowerUserExit
   * @param  None
   * @retval None
   */
-void App_ThreadX_LowPower_Exit(void)
+__weak void ThreadXLowPowerUserExit(void)
 {
-  /* USER CODE BEGIN  App_ThreadX_LowPower_Exit */
-  ThreadXLowPowerUserExit();
-  /* USER CODE END  App_ThreadX_LowPower_Exit */
+  /* USER CODE BEGIN  ThreadXLowPowerUserExit */
+
+  /* USER CODE END  ThreadXLowPowerUserExit */
 }
 
 /* USER CODE BEGIN 1 */

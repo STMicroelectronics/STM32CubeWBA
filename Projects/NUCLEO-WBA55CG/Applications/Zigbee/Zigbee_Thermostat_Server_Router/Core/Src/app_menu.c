@@ -84,7 +84,7 @@ void APP_MENU_DisplayOption( void )
 {
   int16_t   iDiv;
   
-  strcpy( szText, pstMenuButton[iMenuIndex].szSubMenu );
+  strncpy( szText, pstMenuButton[iMenuIndex].szSubMenu, sizeof( szText ) );
   if ( pstMenuButton[iMenuIndex].pszOptionList != NULL )
   {
     LOG_INFO_APP( "%s%s", szText, pstMenuButton[iMenuIndex].pszOptionList[iOptionIndex].szSentence );

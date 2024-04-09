@@ -5,7 +5,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2023 STMicroelectronics.
+ * Copyright (c) 2018-2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -41,7 +41,7 @@
 #define BLE_STATUS_IRK_NOT_FOUND                        0x5BU
 
 /* A search for a specific remote device was unsuccessful because no entry
- * exists either into NVM Database or in volatile database. 
+ * exists either into NVM Database or in volatile database.
  */
 #define BLE_STATUS_DEV_NOT_FOUND                        0x5CU
 
@@ -59,9 +59,9 @@
  */
 #define BLE_STATUS_OUT_OF_HANDLE                        0x61U
 
-/* The requested GATT operation is not allowed in this context/status or using 
- * the provided parameters. 
- * This is a specific GATT error, different from generic Not Allowed error, 
+/* The requested GATT operation is not allowed in this context/status or using
+ * the provided parameters.
+ * This is a specific GATT error, different from generic Not Allowed error,
  * because it refers to specific GATT specifications/rules.
  */
 #define BLE_STATUS_INVALID_OPERATION                    0x62U
@@ -75,7 +75,7 @@
 
 /* Notification/Indication can't be sent to the requested remote device because
  * it doesn't satisfy the needed security permission.
- */ 
+ */
 #define BLE_STATUS_SEC_PERMISSION_ERROR                 0x65U
 
 /* The address of the device could not be resolved using the IRK stored\n
@@ -124,8 +124,8 @@
 #define BLE_STATUS_BUSY                                 0x93U
 
 /* The operation requested cannot be completed immediately by the Host
- * (usually because of lack of resources). 
- * The operation is generally put on hold by the caller and it's usually 
+ * (usually because of lack of resources).
+ * The operation is generally put on hold by the caller and it's usually
  * retried on later time.
  */
 #define BLE_STATUS_PENDING                              0x95U
@@ -136,7 +136,7 @@
 #define BLE_STATUS_ERROR                                0x97U
 
 /* The requested operation failed because of lack of memory.
- * Out of memory shall be returned for situations where memory will never 
+ * Out of memory shall be returned for situations where memory will never
  * become available again (e.g. ATT database)
  */
 #define BLE_STATUS_OUT_OF_MEMORY                        0x98U
@@ -167,14 +167,14 @@
 
 /* Intervals in terms of 625 micro sec
  */
-#define DIR_CONN_ADV_INT_MIN                        0x190U  /* 250 ms */
-#define DIR_CONN_ADV_INT_MAX                        0x320U  /* 500 ms */
-#define UNDIR_CONN_ADV_INT_MIN                      0x800U  /* 1.28 s */
-#define UNDIR_CONN_ADV_INT_MAX                     0x1000U  /* 2.56 s */
-#define LIM_DISC_ADV_INT_MIN                        0x190U  /* 250 ms */
-#define LIM_DISC_ADV_INT_MAX                        0x320U  /* 500 ms */
-#define GEN_DISC_ADV_INT_MIN                        0x800U  /* 1.28 s */
-#define GEN_DISC_ADV_INT_MAX                       0x1000U  /* 2.56 s */
+#define DIR_CONN_ADV_INT_MIN                          0x190U  /* 250 ms */
+#define DIR_CONN_ADV_INT_MAX                          0x320U  /* 500 ms */
+#define UNDIR_CONN_ADV_INT_MIN                        0x800U  /* 1.28 s */
+#define UNDIR_CONN_ADV_INT_MAX                       0x1000U  /* 2.56 s */
+#define LIM_DISC_ADV_INT_MIN                          0x190U  /* 250 ms */
+#define LIM_DISC_ADV_INT_MAX                          0x320U  /* 500 ms */
+#define GEN_DISC_ADV_INT_MIN                          0x800U  /* 1.28 s */
+#define GEN_DISC_ADV_INT_MAX                         0x1000U  /* 2.56 s */
 
 /* GAP Roles
  */
@@ -208,7 +208,7 @@
 #define GAP_ADD_DEV_MODE_RESOLVING_LIST_ONLY         0x00U
 #define GAP_ADD_DEV_MODE_CLEAR                       0x01U
 #define GAP_ADD_DEV_MODE_FILTER_ACC_LIST_ONLY        0x02U
-#define GAP_ADD_DEV_MODE_BOTH_LISTS                  0x04U 
+#define GAP_ADD_DEV_MODE_BOTH_LISTS                  0x04U
 
 /* ------------------------------------------------------------------------- */
 
@@ -321,26 +321,26 @@
 
 /* Access permissions for an attribute
  */
-#define ATTR_NO_ACCESS                           0x00U
-#define ATTR_ACCESS_READ_ONLY                    0x01U
-#define ATTR_ACCESS_WRITE_REQ_ONLY               0x02U
-#define ATTR_ACCESS_READ_WRITE                   0x03U
-#define ATTR_ACCESS_WRITE_WITHOUT_RESPONSE       0x04U
-#define ATTR_ACCESS_SIGNED_WRITE_ALLOWED         0x08U
-#define ATTR_ACCESS_WRITE_ANY                    0x0EU
-#define ATTR_ACCESS_ANY                          0x0FU
+#define ATTR_NO_ACCESS                             0x00U
+#define ATTR_ACCESS_READ_ONLY                      0x01U
+#define ATTR_ACCESS_WRITE_REQ_ONLY                 0x02U
+#define ATTR_ACCESS_READ_WRITE                     0x03U
+#define ATTR_ACCESS_WRITE_WITHOUT_RESPONSE         0x04U
+#define ATTR_ACCESS_SIGNED_WRITE_ALLOWED           0x08U
+#define ATTR_ACCESS_WRITE_ANY                      0x0EU
+#define ATTR_ACCESS_ANY                            0x0FU
 
 /* Characteristic properties
  */
-#define CHAR_PROP_NONE                           0x00U
-#define CHAR_PROP_BROADCAST                      0x01U
-#define CHAR_PROP_READ                           0x02U
-#define CHAR_PROP_WRITE_WITHOUT_RESP             0x04U
-#define CHAR_PROP_WRITE                          0x08U
-#define CHAR_PROP_NOTIFY                         0x10u
-#define CHAR_PROP_INDICATE                       0x20U
-#define CHAR_PROP_SIGNED_WRITE                   0x40U
-#define CHAR_PROP_EXT                            0x80U
+#define CHAR_PROP_NONE                             0x00U
+#define CHAR_PROP_BROADCAST                        0x01U
+#define CHAR_PROP_READ                             0x02U
+#define CHAR_PROP_WRITE_WITHOUT_RESP               0x04U
+#define CHAR_PROP_WRITE                            0x08U
+#define CHAR_PROP_NOTIFY                           0x10u
+#define CHAR_PROP_INDICATE                         0x20U
+#define CHAR_PROP_SIGNED_WRITE                     0x40U
+#define CHAR_PROP_EXT                              0x80U
 
 /* Security permissions for an attribute
  */
@@ -354,13 +354,13 @@
 
 /* Type of UUID (16 bit or 128 bit)
  */
-#define UUID_TYPE_16                             0x01U
-#define UUID_TYPE_128                            0x02U
+#define UUID_TYPE_16                               0x01U
+#define UUID_TYPE_128                              0x02U
 
 /* Type of service (primary or secondary)
  */
-#define PRIMARY_SERVICE                          0x01U
-#define SECONDARY_SERVICE                        0x02U
+#define PRIMARY_SERVICE                            0x01U
+#define SECONDARY_SERVICE                          0x02U
 
 /* Gatt Event Mask
  * Type of event generated by GATT server
@@ -374,49 +374,49 @@
 
 /* Type of characteristic length (see ACI_GATT_ADD_CHAR)
  */
-#define CHAR_VALUE_LEN_CONSTANT                  0x00
-#define CHAR_VALUE_LEN_VARIABLE                  0x01
+#define CHAR_VALUE_LEN_CONSTANT                    0x00
+#define CHAR_VALUE_LEN_VARIABLE                    0x01
 
 /* Encryption key size
  */
-#define MIN_ENCRY_KEY_SIZE                       7U
-#define MAX_ENCRY_KEY_SIZE                      16U
+#define MIN_ENCRY_KEY_SIZE                          7U
+#define MAX_ENCRY_KEY_SIZE                         16U
 
 /* Format
  */
-#define FORMAT_UINT8                             0x04U
-#define FORMAT_UINT16                            0x06U
-#define FORMAT_SINT16                            0x0EU
-#define FORMAT_SINT24                            0x0FU
+#define FORMAT_UINT8                               0x04U
+#define FORMAT_UINT16                              0x06U
+#define FORMAT_SINT16                              0x0EU
+#define FORMAT_SINT24                              0x0FU
 
 /* Unit
  */
-#define UNIT_UNITLESS                          0x2700
-#define UNIT_TEMP_CELSIUS                      0x272F
-#define UNIT_PRESSURE_BAR                      0x2780
+#define UNIT_UNITLESS                              0x2700
+#define UNIT_TEMP_CELSIUS                          0x272F
+#define UNIT_PRESSURE_BAR                          0x2780
 
 /* Update_Type definitions for ACI_GATT_UPDATE_CHAR_VALUE_EXT
  */
-#define GATT_CHAR_UPDATE_LOCAL_ONLY                   0x00U
-#define GATT_CHAR_UPDATE_SEND_NOTIFICATION            0x01U
-#define GATT_CHAR_UPDATE_SEND_INDICATION              0x02U
+#define GATT_CHAR_UPDATE_LOCAL_ONLY                0x00U
+#define GATT_CHAR_UPDATE_SEND_NOTIFICATION         0x01U
+#define GATT_CHAR_UPDATE_SEND_INDICATION           0x02U
 
 /* ------------------------------------------------------------------------- */
 
 /* Advertising Type
  */
-#define ADV_IND                                        0
-#define ADV_DIRECT_IND                                 1
-#define ADV_SCAN_IND                                   2
-#define ADV_NONCONN_IND                                3
-#define ADV_DIRECT_IND_LDC                             4
-#define SCAN_RSP                                       4
+#define ADV_IND                                    0
+#define ADV_DIRECT_IND                             1
+#define ADV_SCAN_IND                               2
+#define ADV_NONCONN_IND                            3
+#define ADV_DIRECT_IND_LDC                         4
+#define SCAN_RSP                                   4
 
 /* Advertising channels
  */
-#define ADV_CH_37                              0x01
-#define ADV_CH_38                              0x02
-#define ADV_CH_39                              0x04
+#define ADV_CH_37                                  0x01
+#define ADV_CH_38                                  0x02
+#define ADV_CH_39                                  0x04
 
 /* ------------------------------------------------------------------------- */
 
@@ -452,27 +452,27 @@
 
 /* Offset for configuration values (see ACI_HAL_WRITE_CONFIG_DATA)
  */
-#define CONFIG_DATA_PUBADDR_OFFSET             0x00U
-#define CONFIG_DATA_ER_OFFSET                  0x08U
-#define CONFIG_DATA_IR_OFFSET                  0x18U
-#define CONFIG_DATA_RANDOM_ADDRESS_OFFSET      0x2EU
-#define CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET     0x34U
-#define CONFIG_DATA_SC_KEY_TYPE_OFFSET         0x35U
-#define CONFIG_DATA_SMP_MODE_OFFSET            0xB0U
-#define CONFIG_DATA_LL_SCAN_CHAN_MAP_OFFSET    0xC0U
-#define CONFIG_DATA_LL_BG_SCAN_MODE_OFFSET     0xC1U
+#define CONFIG_DATA_PUBADDR_OFFSET                 0x00U
+#define CONFIG_DATA_ER_OFFSET                      0x08U
+#define CONFIG_DATA_IR_OFFSET                      0x18U
+#define CONFIG_DATA_RANDOM_ADDRESS_OFFSET          0x2EU
+#define CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET         0x34U
+#define CONFIG_DATA_SC_KEY_TYPE_OFFSET             0x35U
+#define CONFIG_DATA_SMP_MODE_OFFSET                0xB0U
+#define CONFIG_DATA_LL_SCAN_CHAN_MAP_OFFSET        0xC0U
+#define CONFIG_DATA_LL_BG_SCAN_MODE_OFFSET         0xC1U
 
 /* Length for configuration values (see ACI_HAL_WRITE_CONFIG_DATA)
  */
-#define CONFIG_DATA_PUBADDR_LEN                6
-#define CONFIG_DATA_ER_LEN                    16
-#define CONFIG_DATA_IR_LEN                    16
-#define CONFIG_DATA_RANDOM_ADDRESS_LEN         6
-#define CONFIG_DATA_GAP_ADD_REC_NBR_LEN        1
-#define CONFIG_DATA_SC_KEY_TYPE_LEN            1
-#define CONFIG_DATA_SMP_MODE_LEN               1
-#define CONFIG_DATA_LL_SCAN_CHAN_MAP_LEN       1
-#define CONFIG_DATA_LL_BG_SCAN_MODE_LEN        1
+#define CONFIG_DATA_PUBADDR_LEN                     6
+#define CONFIG_DATA_ER_LEN                         16
+#define CONFIG_DATA_IR_LEN                         16
+#define CONFIG_DATA_RANDOM_ADDRESS_LEN              6
+#define CONFIG_DATA_GAP_ADD_REC_NBR_LEN             1
+#define CONFIG_DATA_SC_KEY_TYPE_LEN                 1
+#define CONFIG_DATA_SMP_MODE_LEN                    1
+#define CONFIG_DATA_LL_SCAN_CHAN_MAP_LEN            1
+#define CONFIG_DATA_LL_BG_SCAN_MODE_LEN             1
 
 /* ------------------------------------------------------------------------- */
 

@@ -2,12 +2,12 @@
  ******************************************************************************
  * @file    st_mac_802_15_4_ext_svc.h
  * @author  MCD Application Team
- * @brief   Contains STM32WB specificities requested to debug the 802.15.4
- *          MAC interface.
+ * @brief   Contains STM32WBA Extended Service declaration. Extended service is 
+ * proprietary protocol enabler layer based on Phy layer.
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * <h2><center>&copy; Copyright (c) 2023 STMicroelectronics.
  * All rights reserved.</center></h2>
  *
  * This software component is licensed by ST under Ultimate Liberty license
@@ -20,114 +20,77 @@
 
 #ifndef _ST_MAC_802_15_4_EXT_SYS_H_
 #define _ST_MAC_802_15_4_EXT_SYS_H_
-#ifdef A_MAC
 #include <stdint.h>
 #include "st_mac_802_15_4_sap.h"
 #include "st_mac_802_15_4_types.h"
 #include "mac_temporary.h"
-
-#define MAX_RTX_DEVICE 1 //Max number of DRx device
-#define MAX_DTX_DEVICE 8 //Max number of DTx device
-
-#define TX_ACK_REQUEST    0x61  //Frame control field for ack
-#define TX_NOACK_REQUEST  0x01  // frame control field no ack
-
-#define ACK_FCF    0x07 //Ack frame control field
-
-#define EXT_PT_ID   0xEA  //Protocole ID (used for identify Extended Mac Network)
-
-#define BASE_ADDRESS_SIZE    1
-#define BASE_ADDRESS_DEFAULT 0xAA  //Base address default when device isn't registered 
-#define BASE_ADDRESS_UID_OK  0xBB  //Base address default when device is registered 
-
-#define MAX_UID_ADDRESS      8
-
-//Different Uid Address possible
-#define UID_ADDRESS_TAB      {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80}
-
-//Index of different element of frame
-#define EXT_TX_FRAMECTRL_IDX     0
-#define EXT_TX_PTID_IDX          1
-#define EXT_TX_SEQNUM_IDX        2
-#define EXT_TX_BASEADDRESS_IDX   3
-#define EXT_TX_UIDADDRESS_IDX    4
-#define EXT_TX_PYLDLEN_IDX       5
-#define EXT_TX_PYLD_IDX          6
-
-//Index of different element of ack frame
-#define EXT_ACK_FRAMECTRL_IDX    0
-#define EXT_ACK_PTID_IDX         1
-#define EXT_ACK_SEQNUM_IDX       2
-#define EXT_ACK_UIDRESERVED_IDX  3
-#define EXT_ACK_PYLDLEN_IDX      4
-#define EXT_ACK_PYLD_IDX         5
+#include "mem_intf.h"
 
 
-#define EXT_MAX_TX_LEN 127 // Max Frame Len 
-#define EXT_TX_HEADER_LEN 6 // Header frame Len
-#define EXT_MAX_TX_PAYLOAD_LEN (EXT_MAX_TX_LEN - EXT_TX_HEADER_LEN) //Payload max Len
+/** First byte by provided by user must be one of folowwing :
+  0x01(data) or 0x03(command) or 0x07(extended) 
+  0x21(dataAckreq) or 0x23(commandAckreq) or 0x27(extendedAckreq)
+-> MANDATORY for radio (other FCF is possible but not yet tested) 
 
-#define EXT_MAX_ACK_LEN  127 // Max Ack Frame Len 
-#define EXT_ACK_HEADER_LEN 5 // Ack Header Len
-#define EXT_MAX_ACK_PAYLOAD_LEN (EXT_MAX_ACK_LEN - EXT_ACK_HEADER_LEN) //Ack Payload max len
+3 weak funnctions can be overridden :
+  ST_MAC_ParseRxFrame
+  ST_MAC_ExtRxFilter
+  ST_MAC_custom_ack_cb
+Even if input and output of these functions are defined in this header file, do 
+not hesitate to look at implementation example in Extended apps
+**/
+
+//Memcpy to be used in ack weak function if needed
+#define ACK_MEMCPY ble_memcpy
+
+#define EXT_MIN_TX_LEN 5   // Min Frame Len, do not modify
+#define EXT_MAX_TX_LEN 127 // Max Frame Len, do not modify
+
+#define EXT_MIN_ACK_LEN   5  // Min Ack Frame Len, do not modify
+#define EXT_MAX_ACK_LEN  127 // Max Ack Frame Len, do not modify
 
 #define EXT_CRC_LEN 2 //CRC Len
 
 //DEfault Tx config
 #define DEFAULT_TX_CONFIG  {.TxMode = EXT_TX_AUTO, .TxIfs = 192, .TxRetryTime = 512, .TxRetryCount = 3}
 
-//Default DTx config, can be used in init function parameter
-#define DEFAULT_DTX_CONFIG {.Mode = EXT_DTX, .AckMode = EXT_ACK_ENABLE, .Bitrate = EXT_RATE_2M, .Channel = 11, .Power = 10, .AckCfg = NULL, .TxCfg = NULL, .base_address = BASE_ADDRESS_DEFAULT, .uid_address = 0x00}
-//Default DRx config, can be used in init function parameter
-#define DEFAULT_DRX_CONFIG {.Mode = EXT_DRX, .AckMode = EXT_ACK_ENABLE, .Bitrate = EXT_RATE_2M, .Channel = 11, .Power = 10, .AckCfg = NULL, .TxCfg = NULL, .base_address = BASE_ADDRESS_DEFAULT, .uid_address = 0x00}
+//Default config, can be used in init function parameter
+#define DEFAULT_EXT_CONFIG {.AckMode = EXT_ACK_ENABLE, .Bitrate = EXT_RATE_2M, .Channel = 11, .Power = 10, .AckCfg = NULL, .TxCfg = NULL}
+
 //Default Acknowledge Config
-#define DEFAULT_ACK_CONFIG {.Timeout = 512, .TurnaroundTime = 192, .Len = 0x00}
-
-//Default Tx Frame
-#define DEFAULT_TX_FRAME   {.frame_ctrl = TX_ACK_REQUEST, .pt_id = EXT_PT_ID,  .sequence_number = 0x00, .base_address = BASE_ADDRESS_DEFAULT, .uid_address = 0x00, .payload_len = 0x0}
-
-//DEfault Ack Frame
-#define DEFAULT_ACK_FRAME  {.frame_ctrl = ACK_FCF, .pt_id = EXT_PT_ID,  .sequence_number = 0x00, .uid_reserved = 0x00, .payload_len = 0x00}
+#define DEFAULT_ACK_CONFIG {.Timeout = 512, .TurnaroundTime = 192}
 
 #define TXFIFO_SIZE 5
 #define RXFIFO_SIZE 5
 
+#define EXT_MAX_CHANNEL 40
+
 #define EXT_SCAN_ALL_CHANNEL_KPBS  0xffff000000000000 //Scan all channel (11 to 26)
 #define EXT_SCAN_ALL_CHANNEL_MPBS  0xffffffffff000000 //Scan all channel (11 to 50)
 /* Private typedef -----------------------------------------------------------*/
-/**
- * @brief Extended Frame struct
- */
-typedef struct
-{
-  /* Header */
-  uint8_t frame_ctrl;      //0x01(data) or 0x03(command) or 0x07(extended) |  0x61(dataAckreq) or 0x63(commandAckreq) or 0x67(extendedAckreq) -> Mandatory for radio 
-  uint8_t pt_id;           //0xEA
-  uint8_t sequence_number; //Sequence number to identify packet and allow retransmission
-  uint8_t base_address;    //BASE_ADDRESS_DEFAULT when DTX hasn't UID defined else BASE_ADDRESS_UID_OK
-  uint8_t uid_address;     //Unique identificacion device -> must belong to UID_ADDRESS_TAB
-  uint8_t payload_len;     //[0,EXT_MAX_TX_PAYLOAD_LEN]
-  /* Payload */
-  uint8_t payload[EXT_MAX_TX_PAYLOAD_LEN]; //Tx payload
-}ST_MAC_ExtFrame;
- 
-/**
- * @brief Extended Acknwoledge Frame struct
- */
-typedef struct
-{
-  /* Header */
-  uint8_t frame_ctrl;      //0x07 -> Mandatory for radio Custom Ack
-  uint8_t pt_id;           //0xEA
-  uint8_t sequence_number; //Sequence number to identify packet and allow retransmission
-  uint8_t uid_reserved;    //Unique identificacion device already reserved
-  uint8_t payload_len;     //[0,EXT_MAX_ACK_PAYLOAD_LEN]
-  /* Payload */ 
-  uint8_t payload[EXT_MAX_ACK_PAYLOAD_LEN]; //Ack payload
-}ST_MAC_ExtAckFrame;
 
 /**
- * @brief Extended Rate, Extended Mac is able to work at diffenrent radio rate
+ * @brief Ext Ack Frame struct (returned in Tx success callback)
+ */
+typedef struct {
+  uint8_t Frame[EXT_MAX_ACK_LEN];
+  uint8_t Len;
+}ST_MAC_ExtAckFrame_s;
+
+/**
+ * @brief this structure is used by default, but user can override this struct by is own
+ * thanks ST_MAC_ParseRxFrame weak function
+ *
+ */
+typedef struct {
+  uint8_t* Frame;
+  uint8_t Len;
+  int8_t rssi;
+  uint8_t lqi;
+}ST_MAC_ExtRxFrame_s;
+
+/**
+ * @brief Extended Rate, Extended Service is abled to work at diffenrent radio rate
  */
 typedef enum {
   EXT_RATE_125K,
@@ -135,14 +98,6 @@ typedef enum {
   EXT_RATE_1M,
   EXT_RATE_2M
 }ST_MAC_ExtBitRate_t;
-
-/**
- * @brief Extended Mode Transmission or Reception
- */
-typedef enum  {
-  EXT_DTX,
-  EXT_DRX
-}ST_MAC_ExtMode_t;
 
 /**
  * @brief Extended Transission Mode
@@ -168,12 +123,10 @@ typedef enum {
 typedef struct {
   uint16_t TurnaroundTime;
   uint16_t Timeout;
-  uint8_t Pyld[EXT_MAX_ACK_PAYLOAD_LEN];
-  uint8_t Len;
 }ST_MAC_ExtAckCfg;
 
 /**
- * @brief Extended Mac Tx config of the device Exammple : 
+ * @brief Extended Svc Tx config of the device Exammple : 
  * DEFAULT_TX_CONFIG
  */
 typedef struct {
@@ -185,20 +138,17 @@ typedef struct {
 
 
 /**
- * @brief Extended Mac config of the device Exammple : 
- * DEFAULT_DTX_CONFIG
- * DEFAULT_DRX_CONFIG
+ * @brief Extended Svc config of the device Exammple : 
+ * DEFAULT_EXT_CONFIG
+ * 
  */
 typedef struct {
-  ST_MAC_ExtMode_t Mode;
   ST_MAC_ExtAckMode_t AckMode;
   ST_MAC_ExtBitRate_t Bitrate;
   uint8_t  Channel;  //rate dependent
   int8_t Power;
   ST_MAC_ExtAckCfg* AckCfg; //NULL if not needed
   ST_MAC_ExtTxCfg* TxCfg;
-  uint8_t  uid_address;     //Unique identificacion device -> must belong to UID_ADDRESS_TAB
-  uint8_t  base_address;
 }ST_MAC_ExtConfig;
 
 /**
@@ -208,30 +158,71 @@ typedef enum {
   EXT_NOT_INIT,
   EXT_IDLE,
   EXT_TX,
-  EXT_RX
+  EXT_RX,
+  EXT_ED
 }ST_MAC_ExtState;
 
 /**
+ * @brief status of continuous reception
+ */
+typedef enum {
+  EXT_RX_CONT_DISABLE,
+  EXT_RX_CONT_ENABLE
+}ST_MAC_ExtRxCont;
+
+/**
  * @brief Struct Callback dispatcher, user will receive this callback in case of 
- * Transmission success or failure for DTx
- * Reception for DRx
+ * Transmission success or failure 
+ * Reception Done
+ * Scan done
  */
 typedef struct  {
-	void (*ext_tx_success)(void);
+	void (*ext_tx_success)(ST_MAC_ExtAckFrame_s* AckFrame);
 	void (*ext_tx_failure)(void);
-	void (*ext_rx_done)(uint8_t);
+	void (*ext_rx_done)(MAC_Status_t, void*);
         void (*ext_scan_done)(uint64_t, uint8_t, uint8_t, uint8_t*);
 }ST_MAC_ExtCallback_Dispatcher;
 
+/**
+ * @brief (weak) ST_MAC_ParseRxFrame defined as weak can be overridden by user to parse frame at ext service layer
+ * Hardware radio automatically adds CRC, in this function CRC is returned at end of InFrame
+ *
+ * @param InFrame* : RAW Frame (CRC included +2 bytes at end of frame)
+ *        InLen    : Total Length of the RAW Frame (CRC included = +2 bytes)
+ *        rssi     : receive streng signal indicator
+ *        lqi      : link quality indicator
+ * @retval void* Frame Parsed, return NULL if errors occurs during parsing 
+ */
+void* ST_MAC_ParseRxFrame(uint8_t* InFrame, uint8_t InLen, int8_t rssi, uint8_t lqi);
+
+/**
+ * @brief (weak) ST_MAC_ExtRxFilter defined as weak can be overidden by user to filter frame at ext service layer
+ * if ST_MAC_ParseRxFrame has been defined by user InFrameStruct has same type else : ST_MAC_ExtRxFrame_s*
+ *
+ * @param InFrameStruct* : Frame Parsed to filter
+ * @retval 0 = frame not filtered else frame will be filtered
+ */
+uint8_t ST_MAC_ExtRxFilter(void* InFrameStruct);
+
+/**
+ * @brief (weak) ST_MAC_custom_ack_cb defined as weak can be overridden by user but need to be optimized for fast execution 
+ * By default weak function is defined as IEEE Ack 15.4
+ * ACK_MEMCPY must be used to copy payload (avoid hardfault because of unaligned access)
+ *
+ * @param Ack : Ack Frame to fullfill (CRC added automatically by the HW radio)
+ *        AckLen : Size of Ack Frame (CRC length will be added automatically)
+ *        Rxframe : Frame has just received (sequence number can be retrieved from Rxframe for ex)
+ */
+void ST_MAC_custom_ack_cb(uint8_t* Ack, uint16_t* AckLen, uint8_t* Rxframe);
 
 /**
  * @fn ST_MAC_ExtInit
  *
  * @brief Init Extended Mac service with given configuration and link user callback
- * Configuration example : DEFAULT_DRX_CONFIG, DEFAULT_DTX_CONFIG
+ * Configuration example : DEFAULT_EXT_CONFIG
  *
- * @param   *pStExtMacCfg : [in] configuration of extend mac 
- *          * pExtCallbackDispatcher : [in] user callback (ext_tx_success, ext_tx_failure, ext_rx_done)
+ * @param   *pStExtMacCfg : [in] configuration of extended svc 
+ *          * pExtCallbackDispatcher : [in] user callback (ext_tx_success, ext_tx_failure, ext_rx_done, ext_scan_done)
  *
  * @retval MAC_Status_t
  */
@@ -253,7 +244,7 @@ MAC_Status_t ST_MAC_ExtSetPower(int8_t eExtPower);
  *
  * @brief set radio Rate in Kbps
  *
- * @param   eExtRate : [in] radio in kbps (  EXT_RATE_125K, EXT_RATE_256K, EXT_RATE_1M, EXT_RATE_2M)
+ * @param   eExtRate : [in] radio in bps (  EXT_RATE_125K, EXT_RATE_256K, EXT_RATE_1M, EXT_RATE_2M)
  *
  * @retval MAC_Status_t
  */
@@ -277,7 +268,8 @@ MAC_Status_t ST_MAC_ExtSetTxIfs(uint16_t TxIfs);
  * @brief Set radio frequency channel (dependent of radio rate)
  * EXT_RATE_125K, EXT_RATE_256K : min 11 max 26
  * EXT_RATE_1M, EXT_RATE_2M : min 11 max 50
-
+ * Automatically resume RX if needed
+ *
  * @param   uExtChannel : [in] channel
  *
  * @retval MAC_Status_t
@@ -287,7 +279,7 @@ MAC_Status_t ST_MAC_ExtSetChannel(uint8_t uExtChannel);
 /**
  * @fn ST_MAC_ExtSetAck
  *
- * @brief Set ack mode : Custom Ack or Mac Ack. Only custom ack supported for the moment
+ * @brief Set ack config : Custom Ack or Mac Ack. Only custom ack supported for the moment
  *
  * @param   eAckMode : [in] ST_MAC_ExtAckMode_t Enable or disable
  *         *pCustomAckcfg : [in] Ack config example DEFAULT_ACK_CONFIG
@@ -299,7 +291,7 @@ MAC_Status_t ST_MAC_ExtSetAck(ST_MAC_ExtAckMode_t eAckMode, ST_MAC_ExtAckCfg* pC
 /**
  * @fn ST_MAC_ExtStartStopAck
  *
- * @brief Stop or Start acknowledge for DRx device
+ * @brief Stop or Start acknowledgement at runtime
  *
  * @param   eAckMode : [in] ST_MAC_ExtAckMode_t Enable or disable
  *
@@ -314,12 +306,12 @@ MAC_Status_t ST_MAC_ExtStartStopAck(ST_MAC_ExtAckMode_t eAckMode);
  *      if EXT_TX_AUTO is set then the frame will be send as soon as possible
  *      else user needs to call ST_MAC_ExtStartTx()
  *
- * @param   *Payload : [in] Payload to send 
+ * @param   *TxFrame : [in] TxFrame to send 
  *          Len      : [in] Size of the payloas
  *          eAck     : [in] ST_MAC_ExtAckMode_t Frame must be acknowledge by DRx or not
  * @retval MAC_Status_t
  */
-MAC_Status_t ST_MAC_ExtPushTxFIFO(uint8_t* Payload, uint8_t Len, ST_MAC_ExtAckMode_t eAck);
+MAC_Status_t ST_MAC_ExtPushTxFIFO(uint8_t* TxFrame, uint8_t Len, ST_MAC_ExtAckMode_t eAck);
 
 /**
  * @fn ST_MAC_ExtStartTx
@@ -335,18 +327,20 @@ MAC_Status_t ST_MAC_ExtStartTx(void);
 /**
  * @fn ST_MAC_ExtStartRx
  *
- * @brief Use to start reception for DRx device
+ * @brief Start reception in continuous mode or one time mode
  *
- * @param  void
+ * @param  ST_MAC_ExtRxCont Continuous_Rx : Start_Rx in continuous mode or not
+ * if Continuous_Rx is set to EXT_RX_CONT_ENABLE, device will resume Rx after any event
+ * Rx done callback will be called each time correct frame is received
  *
  * @retval MAC_Status_t
  */
-MAC_Status_t ST_MAC_ExtStartRx(void);
+MAC_Status_t ST_MAC_ExtStartRx(ST_MAC_ExtRxCont Continuous_Rx);
 
 /**
  * @fn ST_MAC_ExtStopRx
  *
- * @brief Use to stop reception for DRx device
+ * @brief Stop Reception
  *
  * @param  void
  *
@@ -374,7 +368,7 @@ ST_MAC_ExtState ST_MAC_GetState(void);
  *
  * @retval ST_MAC_ExtFrame* Rx Frame 
  */
-ST_MAC_ExtFrame* ST_MAC_ExtPopRxFIFO(uint8_t uid);
+//ST_MAC_ExtFrame_s* ST_MAC_ExtPopRxFIFO(void);
 
 /**
  * @fn ST_MAC_ExtStartScan
@@ -393,7 +387,6 @@ ST_MAC_ExtFrame* ST_MAC_ExtPopRxFIFO(uint8_t uid);
  */
 MAC_Status_t ST_MAC_ExtStartScan(uint64_t channel_mask, uint32_t ScanDurationChannel);
 
-#endif /*  A_MAC */
 #endif /* _ST_MAC_802_15_4_EXT_SYS_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

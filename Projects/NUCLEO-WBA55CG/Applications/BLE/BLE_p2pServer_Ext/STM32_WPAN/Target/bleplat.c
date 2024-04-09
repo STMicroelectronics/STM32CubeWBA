@@ -145,7 +145,7 @@ void BPKACB_Complete( void )
 
 /*****************************************************************************/
 
-uint8_t BLEPLAT_TimerStart( uint8_t layer,
+uint8_t BLEPLAT_TimerStart( uint16_t layer,
                             uint32_t timeout )
 {
   return BLE_TIMER_Start( (uint16_t)layer, timeout );
@@ -153,7 +153,7 @@ uint8_t BLEPLAT_TimerStart( uint8_t layer,
 
 /*****************************************************************************/
 
-void BLEPLAT_TimerStop( uint8_t layer )
+void BLEPLAT_TimerStop( uint16_t layer )
 {
   BLE_TIMER_Stop( (uint16_t)layer );
 }

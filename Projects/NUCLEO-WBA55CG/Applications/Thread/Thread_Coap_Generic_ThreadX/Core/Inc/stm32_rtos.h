@@ -39,19 +39,51 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define RTOS_MAX_THREAD			        20u
+/* ThreadX priorities by default  */
+#define CFG_TASK_PRIO_HW_RNG                    6u
+#define CFG_TASK_PREEMP_HW_RNG                  6u
   
-#define RTOS_STACK_SIZE_LARGE                 ( 1024u * 3u )
-#define RTOS_STACK_SIZE_ENHANCED 	      ( 1024u * 2u )
-#define RTOS_STACK_SIZE_NORMAL		      ( 1024u )
-#define RTOS_STACK_SIZE_REDUCED		      ( 512u )
-#define RTOS_STACK_SIZE_SMALL	              ( 384u )
-#define RTOS_BLOCK_POOL_SIZE        	      ( 100u )
+#define CFG_TASK_PRIO_ALARM                     6u
+#define CFG_TASK_PREEMP_ALARM                   6u
   
+#define CFG_TASK_PRIO_US_ALARM                  CFG_TASK_PRIO_ALARM
+#define CFG_TASK_PREEMP_US_ALARM                CFG_TASK_PRIO_ALARM
+  
+#define CFG_TASK_PRIO_TASKLETS                  7u
+#define CFG_TASK_PREEMP_TASKLETS                7u
+
+#define CFG_TASK_PRIO_LINK_LAYER                8u
+#define CFG_TASK_PREEMP_LINK_LAYER              8u
+  
+#define CFG_TASK_PRIO_CLI_UART                  12u
+#define CFG_TASK_PREEMP_CLI_UART                12u  
+
+/* USER CODE BEGIN TASK_Priority_Define */
+#define CFG_TASK_PRIO_BUTTON_SWx                13u
+#define CFG_TASK_PREEMP_BUTTON_SWx              13u
+
+/* USER CODE END TASK_Priority_Define */
+
+#define RTOS_MAX_THREAD                         20u
+
+#define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
+#define RTOS_STACK_SIZE_ENHANCED                ( 1024u * 2u )
+#define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
+#define RTOS_STACK_SIZE_REDUCED                 ( 512u )
+#define RTOS_STACK_SIZE_SMALL                   ( 384u )
+
 /* Tasks stack sizes by default  */
-#define TASK_LINK_LAYER_STACK_SIZE            RTOS_STACK_SIZE_LARGE
-#define TASK_HW_RNG_STACK_SIZE                RTOS_STACK_SIZE_REDUCED   
-  
+#define TASK_LINK_LAYER_STACK_SIZE              RTOS_STACK_SIZE_LARGE
+#define TASK_HW_RNG_STACK_SIZE                  RTOS_STACK_SIZE_REDUCED
+#define TASK_ALARM_STACK_SIZE                   RTOS_STACK_SIZE_ENHANCED
+#define TASK_ALARM_US_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
+#define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
+#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
+/* USER CODE BEGIN TASK_Size_Define */
+#define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
+
+/* USER CODE END TASK_Size_Define */
+
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */

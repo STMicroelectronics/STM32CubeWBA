@@ -89,11 +89,18 @@ void arcUartProcess(void);
 otError otPlatUartEnable(void);
 
 /**
- * This function is called by the OT stack to print informatino from the stack
+ * This function is called by the OT stack to print information from the stack
  * (for example return of CLI commands).
  */
 int CliUartOutput(void *aContext, const char *aFormat, va_list aArguments);
 
+/**
+ * This function initializes the NCP, definition in examples/apps/ncp.c.
+ *
+ * @param[in]  aInstance  The OpenThread instance structure.
+ *
+ */
+void otAppNcpInit(otInstance *aInstance);
 
 /**
  * This function performs all platform-specific initialization of OpenThread's drivers.

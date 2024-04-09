@@ -18,7 +18,7 @@ define symbol __region_DOWNLOAD_end__      = 0x080FA000;
 define symbol __region_FLASH_start__       = 0x08006000;
 define symbol __region_FLASH_end__         = 0x0807FFFF;
 
-define symbol __region_SRAM1_start__       = 0x20000010;
+define symbol __region_SRAM1_start__       = 0x20002000;
 define symbol __region_SRAM1_end__         = 0x2000FFFF;
 define symbol __region_SRAM2_start__       = 0x20010000;
 define symbol __region_SRAM2_end__         = 0x2001FFFF;

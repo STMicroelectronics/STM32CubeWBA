@@ -47,6 +47,7 @@
 #include "app_debug.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
+#include "temp_measurement.h"
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* Private includes -----------------------------------------------------------*/
@@ -71,22 +72,22 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* AMM_BCKGND_TASK related defines */
-#define AMM_BCKGND_TASK_STACK_SIZE    (256*7)
-#define AMM_BCKGND_TASK_PRIO          (15)
-#define AMM_BCKGND_TASK_PREEM_TRES    (0)
+#define AMM_BCKGND_TASK_STACK_SIZE              (256)
+#define AMM_BCKGND_TASK_PRIO                    (15)
+#define AMM_BCKGND_TASK_PREEM_TRES              (0)
 
 /* BPKA_TASK related defines */
-#define BPKA_TASK_STACK_SIZE    (256*7)
-#define BPKA_TASK_PRIO          (15)
-#define BPKA_TASK_PREEM_TRES    (0)
+#define BPKA_TASK_STACK_SIZE                    (256)
+#define BPKA_TASK_PRIO                          (15)
+#define BPKA_TASK_PREEM_TRES                    (0)
 
 /* HW_RNG_TASK related defines */
-#define HW_RNG_TASK_STACK_SIZE    (256*7)
-#define HW_RNG_TASK_PRIO          (15)
-#define HW_RNG_TASK_PREEM_TRES    (0)
+#define HW_RNG_TASK_STACK_SIZE                  (256)
+#define HW_RNG_TASK_PRIO                        (15)
+#define HW_RNG_TASK_PREEM_TRES                  (0)
 
 /* FLASH_MANAGER_BCKGND_TASK related defines */
-#define FLASH_MANAGER_BCKGND_TASK_STACK_SIZE    (256*7)
+#define FLASH_MANAGER_BCKGND_TASK_STACK_SIZE    (1024)
 #define FLASH_MANAGER_BCKGND_TASK_PRIO          (15)
 #define FLASH_MANAGER_BCKGND_TASK_PREEM_TRES    (0)
 
@@ -97,17 +98,17 @@ typedef struct
 #endif
 
 /* PB1_BUTTON_PUSHED_TASK related defines */
-#define PB1_BUTTON_PUSHED_TASK_STACK_SIZE    (256*7)
+#define PB1_BUTTON_PUSHED_TASK_STACK_SIZE    (256)
 #define PB1_BUTTON_PUSHED_TASK_PRIO          (15)
 #define PB1_BUTTON_PUSHED_TASK_PREEM_TRES    (0)
 
 /* PB2_BUTTON_PUSHED_TASK related defines */
-#define PB2_BUTTON_PUSHED_TASK_STACK_SIZE    (256*7)
+#define PB2_BUTTON_PUSHED_TASK_STACK_SIZE    (1024)
 #define PB2_BUTTON_PUSHED_TASK_PRIO          (15)
 #define PB2_BUTTON_PUSHED_TASK_PREEM_TRES    (0)
 
 /* PB3_BUTTON_PUSHED_TASK related defines */
-#define PB3_BUTTON_PUSHED_TASK_STACK_SIZE    (256*7)
+#define PB3_BUTTON_PUSHED_TASK_STACK_SIZE    (1024)
 #define PB3_BUTTON_PUSHED_TASK_PRIO          (15)
 #define PB3_BUTTON_PUSHED_TASK_PREEM_TRES    (0)
 
@@ -124,11 +125,13 @@ typedef struct
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
+
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+/* AMM configuration */
 static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
@@ -167,9 +170,6 @@ TX_SEMAPHORE HW_RNG_Thread_Sem;
 /* FLASH_MANAGER_BCKGND_TASK related resources */
 TX_THREAD FLASH_MANAGER_BCKGND_Thread;
 TX_SEMAPHORE FLASH_MANAGER_BCKGND_Thread_Sem;
-
-TX_SEMAPHORE          AppliStartEndSemaphore, HwRngSemaphore;
-TX_THREAD             AppliStartThread, HwRngThread;
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -241,7 +241,7 @@ static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
  */
 static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
-static void BPKA_BG_Process_Entry(unsigned long thread_input);
+static void BPKA_BackgroundProcess_Entry(unsigned long thread_input);
 static void AMM_BackgroundProcess_Entry(unsigned long thread_input);
 static void FM_BackgroundProcess_Entry(unsigned long thread_input);
 
@@ -289,6 +289,11 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Configure the system Power Mode */
   SystemPower_Config();
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  /* Initialize the Temperature measurement */
+  TEMPMEAS_Init ();
+#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
   /* Initialize the Advance Memory Manager */
   AMM_Init (&ammInitConfig);
@@ -346,7 +351,7 @@ uint32_t MX_APPE_Init(void *p_param)
   {
     Error_Handler();
   }
-  if (tx_thread_create(&BPKA_Thread, "BPKA Thread", BPKA_BG_Process_Entry, 0,
+  if (tx_thread_create(&BPKA_Thread, "BPKA Thread", BPKA_BackgroundProcess_Entry, 0,
                          pStack, BPKA_TASK_STACK_SIZE,
                          BPKA_TASK_PRIO, BPKA_TASK_PREEM_TRES,
                          TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
@@ -370,6 +375,7 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
   APP_BLE_Init();
+
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
@@ -482,7 +488,7 @@ static void System_Init( void )
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  adc_ctrl_init();
+  ADCCTRL_Init ();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
   return;
@@ -509,19 +515,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -537,6 +539,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 static void HW_RNG_Process_Task( ULONG lArgument )
@@ -677,7 +683,7 @@ static void Button_Init( void )
   {
     UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId,
                        0,
-                       (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
+                       UTIL_TIMER_ONESHOT,
                        &Button_TriggerActions,
                        &buttonDesc[buttonIndex] );
   }
@@ -759,7 +765,7 @@ void BPKACB_Process( void )
   tx_semaphore_put(&BPKA_Thread_Sem);
 }
 
-void BPKA_BG_Process_Entry(unsigned long thread_input)
+void BPKA_BackgroundProcess_Entry(unsigned long thread_input)
 {
   (void)(thread_input);
 
@@ -778,7 +784,7 @@ void BPKA_BG_Process_Entry(unsigned long thread_input)
  */
 void HWCB_RNG_Process( void )
 {
-  tx_semaphore_put(&HwRngSemaphore);
+  tx_semaphore_put(&HW_RNG_Thread_Sem);
 }
 
 void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
@@ -795,9 +801,9 @@ void AMM_ProcessRequest (void)
   tx_semaphore_put(&AMM_BCKGND_Thread_Sem);
 }
 
-void AMM_BackgroundProcess_Entry(unsigned long thread_input)
+static void AMM_BackgroundProcess_Entry(unsigned long thread_input)
 {
-  (void)(thread_input);
+  UNUSED(thread_input);
 
   while(1)
   {
@@ -815,9 +821,9 @@ void FM_ProcessRequest (void)
   tx_semaphore_put(&FLASH_MANAGER_BCKGND_Thread_Sem);
 }
 
-void FM_BackgroundProcess_Entry(unsigned long thread_input)
+static void FM_BackgroundProcess_Entry(unsigned long thread_input)
 {
-  (void)(thread_input);
+  UNUSED(thread_input);
 
   while(1)
   {
@@ -829,28 +835,33 @@ void FM_BackgroundProcess_Entry(unsigned long thread_input)
   }
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)

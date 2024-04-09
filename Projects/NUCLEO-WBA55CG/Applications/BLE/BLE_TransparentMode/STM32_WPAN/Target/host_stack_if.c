@@ -27,7 +27,7 @@
 
 /* External function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN EFP */
-
+extern volatile uint8_t uart_tx_buffer_full;
 /* USER CODE END EFP */
 
 /**
@@ -57,12 +57,13 @@ void HostStack_Process(void)
 void BleStackCB_Process(void)
 {
   /* USER CODE BEGIN BleStackCB_Process 0 */
-
+  if (uart_tx_buffer_full == 0)
+  {
   /* USER CODE END BleStackCB_Process 0 */
   /* BLE Host stack processing through background task */
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
   /* USER CODE BEGIN BleStackCB_Process 1 */
-
+  }
   /* USER CODE END BleStackCB_Process 1 */
 }

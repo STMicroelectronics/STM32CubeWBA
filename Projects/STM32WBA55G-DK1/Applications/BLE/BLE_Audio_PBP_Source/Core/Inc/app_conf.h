@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,7 +28,7 @@
 #include "log_module.h"
 
 /* USER CODE BEGIN Includes */
-#include "pbp_app.h"
+
 /* USER CODE END Includes */
 
 /******************************************************************************
@@ -42,9 +42,10 @@
 #define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
 
 /**
- * Define Advertising parameters
+ * Definition of public BD Address,
+ * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0x000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -91,7 +92,7 @@
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_SUPPORTED)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
@@ -125,6 +126,7 @@
                                      0 | \
                                      BLE_OPTIONS_EXTENDED_ADV | \
                                      BLE_OPTIONS_REDUCED_DB_IN_NVM | \
+                                     0 | \
                                      0 | \
                                      0 | \
                                      0)
@@ -204,7 +206,7 @@
 #define CFG_PHY_PREF_RX               (HCI_RX_PHYS_LE_2M_PREF)
 
 /* USER CODE BEGIN BLE_Stack */
-
+#include "pbp_app.h"
 /* USER CODE END BLE_Stack */
 
 /******************************************************************************
@@ -243,9 +245,6 @@ typedef enum
 /* USER CODE BEGIN Low_Power 1 */
 
 /* USER CODE END Low_Power 1 */
-
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
 
 /******************************************************************************
  * RTC
@@ -319,6 +318,7 @@ typedef enum
   CFG_TASK_AUDIO_ID,
   CFG_TASK_JOYSTICK_ID,
   CFG_TASK_DRAW_SPEAKER_ID,
+  CFG_TASK_PLL_READY_ID,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -459,15 +459,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                          (2000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_MM_POOL_SIZE                                  (2000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
+#define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -480,7 +479,7 @@ typedef enum
  * When CFG_JOYSTICK_SUPPORTED is set, the joystick is activated if requested
  */
 
-#define CFG_LED_SUPPORTED                       (0) /* not compatible with LCD */
+#define CFG_LED_SUPPORTED                       (0) /* may be not compatible with LCD, check PCB revision */
 #define CFG_JOYSTICK_SUPPORTED                  (1)
 #define CFG_LCD_SUPPORTED                       (1)
 
@@ -516,6 +515,7 @@ typedef enum
 #define CFG_OUTPUT_POWER_TABLE_PS0_0x20 (1)
 #define CFG_OUTPUT_POWER_TABLE_PS2_0x10 (2)
 
+
 #define CFG_OUTPUT_POWER_TABLE_VERSION  (CFG_OUTPUT_POWER_TABLE_PS0_0x20)
 
 /* USER CODE END Defines */
@@ -542,6 +542,16 @@ typedef enum
 #endif /* CFG_LPM_STDBY_SUPPORTED */
 
 /* USER CODE BEGIN Defines_2 */
+/* When the PLL is switched on for audio, Link layer execution is faster and its timings margin can be reduced
+   These values have been qualified for LE audio use case and should not be changed by the user */
+#define DEFAULT_DRIFT_TIME                      (15)
+#define ISO_PLL_DRIFT_TIME                      (13)
+
+#define DEFAULT_EXEC_TIME                       (22)
+#define ISO_PLL_EXEC_TIME                       (13)
+
+#define DEFAULT_SCHDL_TIME                      (20)
+#define ISO_PLL_SCHDL_TIME                      (20)
 
 /* USER CODE END Defines_2 */
 

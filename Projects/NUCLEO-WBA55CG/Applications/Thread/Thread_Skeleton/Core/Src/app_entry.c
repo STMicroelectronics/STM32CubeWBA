@@ -135,6 +135,15 @@ uint32_t MX_APPE_Init(void *p_param)
 
 /* USER CODE BEGIN FD */
 
+/* stubs for alarm.c (OpenThread platform abstraction) */
+void APP_THREAD_ScheduleAlarm(void)
+{
+}
+
+void APP_THREAD_ScheduleUsAlarm(void)
+{
+}
+
 /* USER CODE END FD */
 
 /*************************************************************
@@ -214,19 +223,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -244,6 +249,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -255,6 +264,7 @@ static void RNG_Init(void)
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
+
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -346,28 +356,33 @@ void HWCB_RNG_Process( void )
   UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
@@ -389,8 +404,15 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
 }
-
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/**
+ * @brief Function Assert AEABI in case of not described on 'libc' libraries.
+ */
+__WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
+{
+  Error_Handler();
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 

@@ -1,5 +1,41 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/platform.h#1 $*/
-
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/platform.h#1 $*/
+/**
+ ********************************************************************************
+ * @file    platform.h
+ * @brief   this file include all helper functions in radio.c which is not described in Openthread
+ *
+ *
+ ******************************************************************************
+ * @copy
+ * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
+ * associated documentation ( hereinafter the "Software") is an unsupported
+ * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
+ * writing between Synopsys and you. The Software IS NOT an item of Licensed
+ * Software or a Licensed Product under any End User Software License Agreement
+ * or Agreement for Licensed Products with Synopsys or any supplement thereto.
+ * Synopsys is a registered trademark of Synopsys, Inc. Other names included in
+ * the SOFTWARE may be the trademarks of their respective owners.
+ *
+ * Synopsys MIT License:
+ * Copyright (c) 2020-Present Synopsys, Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * the Software), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM,
+ * OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * */
 
 
 #ifndef INCLUDE_PLATFORM_H_
@@ -120,7 +156,7 @@ struct mac_cbk_dispatch_tbl{
  *
  * @retval none
  */
-void radio_init();
+void radio_init(void);
 /**
  * @brief  This function called from upper layer init function (mac_init in case of mac integration e.g. Zigbee stack)
  * 		   to register the upper layer callback functions
@@ -192,7 +228,7 @@ otError radio_set_auto_Ack_state(uint8_t auto_ack_state);
  * @fn	uint32_t  radio_reset()
  * @brief This API is used to reset radio layer operation which in turns stop all running operations
  */
-uint32_t  radio_reset();
+uint32_t  radio_reset(void);
 /**
  * @}
  *
@@ -251,7 +287,7 @@ void disableScanFilters(otInstance *aInstance);
  * @brief  get the latest  LQI value
  * @retval uint8_t. LQI value
  */
-uint8_t radio_GetLQIValue();
+uint8_t radio_GetLQIValue(void);
 /**
  * @}
  *
@@ -422,10 +458,9 @@ uint32_t platform_crypto(uint8_t *ptr_pckt, const uint8_t *ptr_key,
  *
  * @retval Nonr
  */
-void radio_run_phy_clbr_on_temp_change();
+void radio_run_phy_clbr_on_temp_change(void);
 #endif /*!SUPPORT_COEXISTENCE*/
 
-void radio_get_pnding_addrs_list(otInstance *aInstance, uint8_t* short_addr_num , uint8_t* ext_addr_num,  uint8_t *aShortAddressLst,  uint8_t *aExtAddressLst );
 #if (!SUPPORT_COEXISTENCE)
 /**
  *
@@ -437,6 +472,22 @@ void radio_get_pnding_addrs_list(otInstance *aInstance, uint8_t* short_addr_num 
  */
 otError radio_set_dp_slp_mode(dpslp_state_e dp_slp_mode);
 #endif /*end of (!SUPPORT_COEXISTENCE)*/
+
+#ifdef PHY_40nm_3_00_a
+/**
+ *
+ * @brief set the phy continuous modulation and continuous wave modes
+ * 	upon enable, if the selected mode is already enabled and likewise
+ * 	in disabling, the change will take no effect
+ *
+ * @param	type[in]		: the type of the modulation (0: modulation, 1: wave)
+ * @param	enable_mode[in]	: if true then enable the selected mode otherwise disable it
+ * @param	chnl_num[in]	: channel number to be used in modulation (range: 0 to 15)
+ * @retval Status
+ */
+otError platform_zigbee_set_phy_cont_modul_mode(uint8_t type, uint8_t enable_mode, uint8_t chnl_num);
+#endif /* PHY_40nm_3_00_a */
+
 #endif /* INCLUDE_PLATFORM_H_ */
 /**
  * @}

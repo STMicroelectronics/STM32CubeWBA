@@ -62,11 +62,6 @@
 
 /* USER CODE END PD */
 
-/* External variables --------------------------------------------------------*/
-/* USER CODE BEGIN EV */
-
-/* USER CODE END EV */
-
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
@@ -254,7 +249,7 @@ UTIL_TIMER_Status_t TIMER_IF_StartTimer(uint32_t timeout)
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     /* Initialization Error */
-    while(1);
+    Error_Handler();
   }
 
   /* USER CODE BEGIN TIMER_IF_StartTimer_2 */

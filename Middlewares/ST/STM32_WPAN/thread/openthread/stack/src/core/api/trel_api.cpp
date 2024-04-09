@@ -43,9 +43,10 @@
 
 using namespace ot;
 
-void otTrelEnable(otInstance *aInstance) { AsCoreType(aInstance).Get<Trel::Interface>().Enable(); }
-
-void otTrelDisable(otInstance *aInstance) { AsCoreType(aInstance).Get<Trel::Interface>().Disable(); }
+void otTrelSetEnabled(otInstance *aInstance, bool aEnable)
+{
+    AsCoreType(aInstance).Get<Trel::Interface>().SetEnabled(aEnable);
+}
 
 bool otTrelIsEnabled(otInstance *aInstance) { return AsCoreType(aInstance).Get<Trel::Interface>().IsEnabled(); }
 

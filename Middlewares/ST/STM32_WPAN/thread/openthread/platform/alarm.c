@@ -127,6 +127,12 @@ void arcAlarmInit(void)
   ral_set_ot_base_slp_time_value(sCounter_steps);
 }
 
+/* Used by RCP for CSL latency transport (UART, SPI etc..) offset calculation */
+uint32_t otPlatTimeGet(void)
+{
+  return otPlatAlarmMicroGetNow();
+}
+
 uint32_t otPlatAlarmMilliGetNow(void)
 {
   UTIL_TIMER_Time_t curr_timer_ms = UTIL_TIMER_GetCurrentTime();

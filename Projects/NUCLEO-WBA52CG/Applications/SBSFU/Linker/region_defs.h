@@ -65,8 +65,8 @@
 #define S_TOTAL_RAM_SIZE        (_SRAM2_SIZE_MAX) /*! size require for Secure part */
 
 /*  This area in SRAM 2 is updated BL2 and can be lock to avoid any changes */
-#define BOOT_TFM_SHARED_DATA_SIZE        0
-#define BOOT_TFM_SHARED_DATA_BASE        (S_RAM_ALIAS(_SRAM1_SIZE_MAX))
+#define BOOT_SHARED_DATA_SIZE        0
+#define BOOT_SHARED_DATA_BASE        (S_RAM_ALIAS(_SRAM1_SIZE_MAX))
 /*
  * Boot partition structure if MCUBoot is used:
  * 0x0_0000 Bootloader header

@@ -43,11 +43,15 @@
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/bpka.h This file contains the interface of the BLE PKA module.</li>
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/host_stack_if.h This file contains the interface for the stack tasks</li>
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/ll_sys_if.h Header file for ll_sys_if.c</li>
+<li>BLE_DataThroughput_Server/System/Config/ADC_Ctrl/adc_ctrl_conf.h Configuration Header for ADC controller module</li>
+<li>BLE_DataThroughput_Server/System/Config/CRC_Ctrl/crc_ctrl_conf.h Configuration Header for CRC controller module</li>
 <li>BLE_DataThroughput_Server/System/Config/Debug_GPIO/app_debug.h Real Time Debug module application APIs and signal table</li>
 <li>BLE_DataThroughput_Server/System/Config/Debug_GPIO/app_debug_signal_def.h Real Time Debug module application signal definition</li>
 <li>BLE_DataThroughput_Server/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
 <li>BLE_DataThroughput_Server/System/Config/Flash/simple_nvm_arbiter_conf.h Configuration header for simple_nvm_arbiter.c module</li>
+<li>BLE_DataThroughput_Server/System/Config/Log/log_module.h Configuration Header for log module</li>
 <li>BLE_DataThroughput_Server/System/Config/LowPower/app_sys.h Header for app_sys.c</li>
+<li>BLE_DataThroughput_Server/System/Config/LowPower/peripheral_init.h Header for peripheral init module</li>
 <li>BLE_DataThroughput_Server/System/Config/LowPower/user_low_power_config.h Header for user_low_power_config.c</li>
 <li>BLE_DataThroughput_Server/System/Interfaces/hw.h This file contains the interface of STM32 HW drivers.</li>
 <li>BLE_DataThroughput_Server/System/Interfaces/hw_if.h Hardware Interface</li>
@@ -56,10 +60,12 @@
 <li>BLE_DataThroughput_Server/System/Interfaces/usart_if.h Header file for stm32_adv_trace interface file</li>
 <li>BLE_DataThroughput_Server/System/Modules/adc_ctrl.h Header for ADC client manager module</li>
 <li>BLE_DataThroughput_Server/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
+<li>BLE_DataThroughput_Server/System/Modules/crc_ctrl.h Header for CRC client manager module</li>
 <li>BLE_DataThroughput_Server/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
 <li>BLE_DataThroughput_Server/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
 <li>BLE_DataThroughput_Server/System/Modules/scm.h Header for scm.c module</li>
 <li>BLE_DataThroughput_Server/System/Modules/stm_list.h Header file for linked list library.</li>
+<li>BLE_DataThroughput_Server/System/Modules/temp_measurement.h Header file for temperature measurement module</li>
 <li>BLE_DataThroughput_Server/System/Modules/utilities_common.h Common file to utilities</li>
 <li>BLE_DataThroughput_Server/System/Modules/baes/baes.h This file contains the interface of the basic AES software module.</li>
 <li>BLE_DataThroughput_Server/System/Modules/baes/baes_global.h This file contains the internal definitions of the AES software module.</li>
@@ -77,6 +83,7 @@
 </li>
 <li>BLE_DataThroughput_Server/System/Modules/RTDebug/RTDebug.h Real Time Debug module API declaration</li>
 <li>BLE_DataThroughput_Server/System/Modules/RTDebug/RTDebug_dtb.h Real Time Debug module API declaration for DTB usage</li>
+<li>BLE_DataThroughput_Server/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.h Header file for the serial commands interpreter module</li>
 <li>BLE_DataThroughput_Server/Core/Src/app_entry.c Entry point of the application</li>
 <li>BLE_DataThroughput_Server/Core/Src/main.c Main program body</li>
 <li>BLE_DataThroughput_Server/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
@@ -91,8 +98,12 @@
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/linklayer_plat.c Source file for the linklayer plateform adaptation layer</li>
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/ll_sys_if.c Source file for initiating the system sequencer</li>
 <li>BLE_DataThroughput_Server/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
+<li>BLE_DataThroughput_Server/System/Config/ADC_Ctrl/adc_ctrl_conf.c Source for ADC client controller module configuration file</li>
+<li>BLE_DataThroughput_Server/System/Config/CRC_Ctrl/crc_ctrl_conf.c Source for CRC client controller module configuration file</li>
 <li>BLE_DataThroughput_Server/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
+<li>BLE_DataThroughput_Server/System/Config/Log/log_module.c Source file of the log module</li>
 <li>BLE_DataThroughput_Server/System/Config/LowPower/user_low_power_config.c Low power related user configuration</li>
+<li>BLE_DataThroughput_Server/System/Config/LowPower/peripheral_init.c Source for peripheral init module</li>
 <li>BLE_DataThroughput_Server/System/Interfaces/hw_aes.c This file contains the AES driver for STM32WBA</li>
 <li>BLE_DataThroughput_Server/System/Interfaces/hw_otp.c This file contains the OTP driver.</li>
 <li>BLE_DataThroughput_Server/System/Interfaces/hw_pka.c This file contains the PKA driver for STM32WBA</li>
@@ -104,9 +115,11 @@
 <li>BLE_DataThroughput_Server/System/Modules/adc_ctrl.c Header for ADC client manager module</li>
 <li>BLE_DataThroughput_Server/System/Modules/app_sys.c Application system for STM32WPAN Middleware.</li>
 <li>BLE_DataThroughput_Server/System/Modules/ble_timer.c This module implements the timer core functions</li>
+<li>BLE_DataThroughput_Server/System/Modules/crc_ctrl.c Source for CRC client controller module</li>
 <li>BLE_DataThroughput_Server/System/Modules/otp.c Source file for One Time Programmable (OTP) area</li>
 <li>BLE_DataThroughput_Server/System/Modules/scm.c Functions for the System Clock Manager.</li>
 <li>BLE_DataThroughput_Server/System/Modules/stm_list.c TCircular Linked List Implementation.</li>
+<li>BLE_DataThroughput_Server/System/Modules/temp_measurement.c Temperature measurement module</li>
 <li>BLE_DataThroughput_Server/System/Modules/baes/baes_cmac.c This file contains the AES CMAC implementation.</li>
 <li>BLE_DataThroughput_Server/System/Modules/baes/baes_ecb.c This file contains the AES ECB functions implementation.</li>
 <li>BLE_DataThroughput_Server/System/Modules/Flash/flash_driver.c The Flash Driver module is the interface layer between Flash management modules and HAL Flash drivers</li>
@@ -119,6 +132,7 @@
 <li>BLE_DataThroughput_Server/System/Modules/RFControl/rf_antenna_switch.c RF related module to handle dedictated GPIOs for antenna switch</li>
 <li>BLE_DataThroughput_Server/System/Modules/RTDebug/RTDebug.c Real Time Debug module API definition</li>
 <li>BLE_DataThroughput_Server/System/Modules/RTDebug/RTDebug_dtb.c Real Time Debug module API definition for DTB usage</li>
+<li>BLE_DataThroughput_Server/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c Source file for the serial commands interpreter module</li>
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
@@ -177,7 +191,7 @@
 <li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
 <li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
 </ul>
-<p>One STM32WBA52 Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).</p>
+<p>One STM32WBA55 Nucleo board is used as GATT Server and GAP peripheral (flashed with BLE_DataThroughput_Server).</p>
 <p>This board can be connected with a smartphone supporting ST BLE Toolbox application.</p>
 <p>Start a scan and choose DT_XX (XX LSB byte of BD address) board to connect.</p>
 <p>Same use of buttons on server side.</p>

@@ -182,7 +182,7 @@
 
 void SystemInit(void)
 {
-#if defined(STM32WBAXX_SI_CUT1_0)
+ #if defined(STM32WBAXX_SI_CUT1_0)
   __IO uint32_t timeout_cpu_cycles;
   __IO uint32_t tmpreg;
 #endif /* STM32WBAXX_SI_CUT1_0 */

@@ -48,12 +48,13 @@ typedef struct
   uint32_t              PresentationDelay;
 } PBPAPP_QoSConf_t;
 /* Private defines -----------------------------------------------------------*/
+/* Allows the codec manager to support latencies up to 8 LC3 frames at 48KHz (120 bytes) for each audio channel */
 #define CODEC_POOL_SUB_SIZE                     (960u)
 
 /* double buffer, stereo :
  * 480 (max LC3 frame len (48KHz, 10ms)) x 2 (Max Channels Number (stereo)) x 2 (double buffer configuration)
  */
-#define PLAY_BUFF_SIZE                          (480*2*2)
+#define SAI_MAX_BUFF_SIZE                       (480*2*2)
 
 #define SOURCE_ID_LIST_SIZE                     (3u)
 
@@ -87,14 +88,16 @@ typedef struct
 
 #define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
 
-/*Memory required for CAP Initiator Context*/
-#define CAP_INITIATOR_DYN_ALLOC_SIZE \
-        (CAP_MEM_PER_REMOTE_ACCEPTOR_SIZE_BYTES * CFG_BLE_NUM_LINK) \
-        + CAP_INITIATOR_MEM_TOTAL_BUFFER_SIZE(MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG,\
-                                              CFG_BLE_NUM_LINK,MAX_NUM_UCL_SNK_ASE,MAX_NUM_UCL_SRC_ASE)
-
 /*Memory required for CAP*/
-#define CAP_DYN_ALLOC_SIZE                      (CAP_INITIATOR_DYN_ALLOC_SIZE)
+#define CAP_DYN_ALLOC_SIZE      CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_INITIATOR,CFG_BLE_NUM_LINK, \
+                                    MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
+                                    MAX_NUM_UCL_SNK_ASE, \
+                                    MAX_NUM_UCL_SRC_ASE, \
+                                    0u,0u,\
+                                    0u,0u, \
+                                    0u,0u, \
+                                    0u,0u,0u, \
+                                    0u,0u)
 
 #define CODEC_LC3_SESSION_DYN_ALLOC_SIZE CODEC_GET_TOTAL_SESSION_BUFFER_SIZE(CODEC_LC3_NUM_SESSION)
 
@@ -184,7 +187,7 @@ uint8_t aCodecPacketsMemory[MAX_PATH_NB][CODEC_POOL_SUB_SIZE];
 
 
 /*Double buffer for an LC3 frame at source*/
-uint16_t aPlayBuff[PLAY_BUFF_SIZE] __attribute__((aligned));
+uint16_t aSrcBuff[SAI_MAX_BUFF_SIZE] __attribute__((aligned));
 
 #if (BAP_BROADCAST_ENCRYPTION == 1)
 uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000001, 0x00000002, 0x00000003, 0x00000004};
@@ -192,7 +195,7 @@ uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000001, 0x00000002, 0x00000003, 0x0000
 uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 #endif /*(BAP_BROADCAST_ENCRYPTION == 1)*/
 
-uint8_t aPBPAPP_BroadcastName[BROADCAST_NAME_LENGTH] = "PBP SOURCE";
+uint8_t aPBPAPP_BroadcastName[10] = "PBP SOURCE";
 uint32_t PreferredControllerDelay = 12000u;
 
 /* Advertising Parameters */
@@ -260,12 +263,12 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
     case PBP_PBS_BROADCAST_AUDIO_STARTED_EVT:
       {
         CAP_Broadcast_AudioStarted_Info_t *data = (CAP_Broadcast_AudioStarted_Info_t*) pNotification->pInfo;
-        APP_DBG_MSG(">>== PBP_PBS_BROADCAST_AUDIO_STARTED_EVT\n");
-        APP_DBG_MSG("     - Status = 0x%02X\n",pNotification->Status);
-        APP_DBG_MSG("     - BIG_Handle : 0x%02x\n",BIG_HANDLE);
+        LOG_INFO_APP(">>== PBP_PBS_BROADCAST_AUDIO_STARTED_EVT\n");
+        LOG_INFO_APP("     - Status = 0x%02X\n",pNotification->Status);
+        LOG_INFO_APP("     - BIG_Handle : 0x%02x\n",BIG_HANDLE);
         if (pNotification->Status == BLE_STATUS_SUCCESS)
         {
-          APP_DBG_MSG("     - Num Created BISes = %d\n",data->NumBISes);
+          LOG_INFO_APP("     - Num Created BISes = %d\n",data->NumBISes);
         }
         PBPAPP_Context.current_num_bis = data->NumBISes;
 
@@ -283,7 +286,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
     case PBP_BROADCAST_AUDIO_DOWN_EVT:
     {
       MX_AudioDeInit();
-      APP_DBG_MSG(">>== PBP_BROADCAST_AUDIO_DOWN_EVT\n");
+      LOG_INFO_APP(">>== PBP_BROADCAST_AUDIO_DOWN_EVT\n");
     }
     break;
 
@@ -318,15 +321,15 @@ uint8_t PBPAPP_InitSource(void)
 
   PreferredControllerDelay = BROADCAST_CONTROLLER_DELAY;
 
-  APP_DBG_MSG(">>==  Start CAP Initiator initialization\n");
+  LOG_INFO_APP(">>==  Start CAP Initiator initialization\n");
   ret = PBPAPP_Init(CAP_ROLE_INITIATOR, BAP_ROLE_BROADCAST_SOURCE);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : PBPAPP_Init() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : PBPAPP_Init() function, result: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: PBPAPP_Init() function\n");
+    LOG_INFO_APP("  Success: PBPAPP_Init() function\n");
   }
 
   /*Enable Audio Codec in LE Controller */
@@ -340,11 +343,11 @@ uint8_t PBPAPP_InitSource(void)
   ret = CAP_EnableAudioCodecController(&PBPAPP_Context.AudioCodecInController);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : CAP_EnableAudioCodecController() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : CAP_EnableAudioCodecController() function, result: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: CAP_EnableAudioCodecController() function\n");
+    LOG_INFO_APP("  Success: CAP_EnableAudioCodecController() function\n");
   }
 
   PBPAPP_Context.audio_driver_config = AUDIO_DRIVER_CONFIG_HEADSET;
@@ -368,7 +371,7 @@ uint8_t PBPAPP_InitSource(void)
 
   ret = PBP_Init(PBP_ROLE_PUBLIC_BROADCAST_SOURCE);
 
-  APP_DBG_MSG(">>==  End CAP Initiator initialization\n");
+  LOG_INFO_APP(">>==  End CAP Initiator initialization\n");
   return ret;
 }
 
@@ -376,11 +379,11 @@ uint8_t PBPAPP_StartSource(void)
 {
   uint8_t ret;
   uint8_t a_additional_adv_data[6+16] = {5u,
-                                         AD_TYPE_COMPLETE_LOCAL_NAME,
-                                         (uint8_t) 'P',
-                                         (uint8_t) 'B',
-                                         (uint8_t) 'P',
-                                         (uint8_t) '1'};
+                                                   AD_TYPE_COMPLETE_LOCAL_NAME,
+                                                   (uint8_t) 'P',
+                                                   (uint8_t) 'B',
+                                                   (uint8_t) 'P',
+                                                   (uint8_t) '1'};
   PBP_PBS_BroadcastAudioStart_Params_t pbp_audio_start_params;
   CAP_Broadcast_AudioStart_Params_t cap_audio_start_params;
 
@@ -395,6 +398,12 @@ uint8_t PBPAPP_StartSource(void)
 
   cap_audio_start_params.pBaseGroup = &PBPAPP_Context.base_group;
   cap_audio_start_params.BigHandle = 0;
+
+  /* Generate Random Broadcast ID */
+  HW_RNG_Get(1, &cap_audio_start_params.BroadcastId);
+  /* Reduce broadcast id on 3 bytes */
+  cap_audio_start_params.BroadcastId &= 0x00FFFFFF;
+
   cap_audio_start_params.Rtn = PBPAPP_Context.RTN;
   cap_audio_start_params.Phy = 0x02;
   cap_audio_start_params.Packing = BAP_PACKING_SEQUENTIAL;
@@ -421,16 +430,16 @@ uint8_t PBPAPP_StartSource(void)
                                                  &(a_additional_adv_data[cap_audio_start_params.AdditionalAdvDataLen]),
                                                  16);
 
-  APP_DBG_MSG("  Start Broadcast Audio\n");
+  LOG_INFO_APP("  Start Broadcast Audio\n");
   ret = PBP_PBS_BroadcastAudioStart(&pbp_audio_start_params);
 
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : PBP_PBS_BroadcastAudioStart() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : PBP_PBS_BroadcastAudioStart() function, result: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: PBP_PBS_BroadcastAudioStart() function\n");
+    LOG_INFO_APP("  Success: PBP_PBS_BroadcastAudioStart() function\n");
   }
 
   return ret;
@@ -440,16 +449,16 @@ uint8_t PBPAPP_StopSource(void)
 {
   uint8_t ret;
 
-  APP_DBG_MSG("  Stop Broadcast Audio\n");
+  LOG_INFO_APP("  Stop Broadcast Audio\n");
   ret = PBP_PBS_BroadcastAudioStop(BIG_HANDLE, 1);
 
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : PBP_PBS_BroadcastAudioStop() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : PBP_PBS_BroadcastAudioStop() function, result: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: PBP_PBS_BroadcastAudioStop() function\n");
+    LOG_INFO_APP("  Success: PBP_PBS_BroadcastAudioStop() function\n");
   }
 
   return ret;
@@ -463,7 +472,7 @@ void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)
   {
     for (i = 0; i< PBPAPP_Context.current_num_bis; i++)
     {
-      CODEC_SendData(PBPAPP_Context.current_BIS_conn_handles[i], 1, &aPlayBuff[0] + AudioFrameSize/2 + i);
+      CODEC_SendData(PBPAPP_Context.current_BIS_conn_handles[i], 1, &aSrcBuff[0] + AudioFrameSize/2 + i);
     }
   }
 }
@@ -476,7 +485,7 @@ void APP_NotifyRxAudioHalfCplt(void)
   {
     for (i = 0; i< PBPAPP_Context.current_num_bis; i++)
     {
-      CODEC_SendData(PBPAPP_Context.current_BIS_conn_handles[i], 1, &aPlayBuff[0] + i);
+      CODEC_SendData(PBPAPP_Context.current_BIS_conn_handles[i], 1, &aSrcBuff[0] + i);
     }
   }
 }
@@ -507,12 +516,15 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
   {
     case CAP_CODEC_CONFIGURED_EVT:
       {
-        APP_DBG_MSG(">>== CAP_CODEC_CONFIGURED_EVT\n");
+        LOG_INFO_APP(">>== CAP_CODEC_CONFIGURED_EVT\n");
         Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
-        APP_DBG_MSG("     - Sample Frequency Type:   0x%02X\n",*freq);
-        APP_DBG_MSG("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
+        LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
+        LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
         AudioClock_Init(*freq);
       }
+      break;
+
+    default:
       break;
   }
 }
@@ -527,12 +539,12 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
   ret = BLE_AUDIO_STACK_Init(&BleAudioInit);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("  Fail   : BLE_AUDIO_STACK_Init() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : BLE_AUDIO_STACK_Init() function, result: 0x%02X\n", ret);
   }
   else
   {
-    APP_DBG_MSG("  Success: BLE_AUDIO_STACK_Init() function\n");
-    APP_DBG_MSG("BLE Audio Stack Lib version: %s\n", BLE_AUDIO_STACK_GetFwVersion());
+    LOG_INFO_APP("  Success: BLE_AUDIO_STACK_Init() function\n");
+    LOG_INFO_APP("BLE Audio Stack Lib version: %s\n", BLE_AUDIO_STACK_GetFwVersion());
   }
   if (ret == BLE_STATUS_SUCCESS)
   {
@@ -585,11 +597,11 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
                    &PBPAPP_CSIP_Config);
     if (ret != BLE_STATUS_SUCCESS)
     {
-      APP_DBG_MSG("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
+      LOG_INFO_APP("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
     }
     else
     {
-      APP_DBG_MSG("  Success: CAP_Init() function\n");
+      LOG_INFO_APP("  Success: CAP_Init() function\n");
     }
     if (ret == BLE_STATUS_SUCCESS)
     {
@@ -615,7 +627,12 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
       lc3_config.pDecChannelStart = aLC3DecoderMemBuffer;
 #endif /* CODEC_LC3_NUM_DECODER_CHANNEL */
 
-      CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,(uint8_t*)aCodecPacketsMemory, &lc3_config, 100u, 1700u);
+      CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
+                        (uint8_t*)aCodecPacketsMemory,
+                        &lc3_config,
+                        100u,
+                        1700u,
+                        CODEC_MODE_DEFAULT);
     }
   }
   return ret;
@@ -747,11 +764,13 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
   Sampling_Freq_t sampling_freq;
   Frame_Duration_t frame_duration;
   uint8_t direction = DATA_PATH_INPUT;
-  uint32_t controller_delay, controller_delay_min, controller_delay_max;
+  uint32_t controller_delay;
+  uint32_t controller_delay_min = 0;
+  uint32_t controller_delay_max = 0;
   uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
   tBleStatus ret;
 
-  APP_DBG_MSG("==>> Start PBPAPP_BroadcastSetupAudio function\n");
+  LOG_INFO_APP("==>> Start PBPAPP_BroadcastSetupAudio function\n");
 
   a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
 
@@ -769,8 +788,8 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
     MX_AudioInit(role,
                  sampling_freq,
                  frame_duration,
-                 0,
-                 (uint8_t *)aPlayBuff,
+                 NULL,
+                 (uint8_t *)aSrcBuff,
                  (AudioDriverConfig)PBPAPP_Context.audio_driver_config);
 
     if (role == AUDIO_ROLE_SINK)
@@ -789,19 +808,19 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
       if ( controller_delay > controller_delay_max)
       {
         controller_delay = controller_delay_max;
-        APP_DBG_MSG("Controller delay chosen to maximum value %d us\n",controller_delay);
+        LOG_INFO_APP("Controller delay chosen to maximum value %d us\n",controller_delay);
       }
       else
       {
-        APP_DBG_MSG("Controller delay chosen to %d us\n",controller_delay);
+        LOG_INFO_APP("Controller delay chosen to %d us\n",controller_delay);
       }
 
       /* compute the application delay */
-      APP_DBG_MSG("Expecting application to respect the delay of %d us\n",
+      LOG_INFO_APP("Expecting application to respect the delay of %d us\n",
                   (PBPAPP_Context.base_group.PresentationDelay - controller_delay));
       if ((PBPAPP_Context.base_group.PresentationDelay - controller_delay) > APP_DELAY_SNK_MAX)
       {
-        APP_DBG_MSG("Warning, could not respect the presentation delay value");
+        LOG_INFO_APP("Warning, could not respect the presentation delay value");
       }
     }
     else
@@ -819,7 +838,7 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
       if ( controller_delay > controller_delay_max)
       {
         controller_delay = controller_delay_max;
-        APP_DBG_MSG("Controller delay chosen to value %d us\n", controller_delay);
+        LOG_INFO_APP("Controller delay chosen to value %d us\n", controller_delay);
       }
     }
 
@@ -841,19 +860,19 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
 
     if (ret != BLE_STATUS_SUCCESS)
     {
-      APP_DBG_MSG("  Fail   : CAP_Broadcast_SetupAudioDataPath() function, result: 0x%02X\n", ret);
+      LOG_INFO_APP("  Fail   : CAP_Broadcast_SetupAudioDataPath() function, result: 0x%02X\n", ret);
     }
     else
     {
-      APP_DBG_MSG("  Success: CAP_Broadcast_SetupAudioDataPath() function\n");
+      LOG_INFO_APP("  Success: CAP_Broadcast_SetupAudioDataPath() function\n");
     }
   }
   else
   {
-    APP_DBG_MSG("Sampling Frequency in LTV is invalid\n");
+    LOG_INFO_APP("Sampling Frequency in LTV is invalid\n");
     ret = BLE_STATUS_FAILED;
   }
-  APP_DBG_MSG("==>> End PBPAPP_BroadcastSetupAudio function\n");
+  LOG_INFO_APP("==>> End PBPAPP_BroadcastSetupAudio function\n");
   return ret;
 }
 

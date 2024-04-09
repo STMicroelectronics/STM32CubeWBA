@@ -65,7 +65,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -200,12 +199,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -269,26 +272,14 @@ void USART1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-
+  /* WORKAROUND : when using PLL, force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
+  uint32_t mul,div;
+  ll_intf_get_aligned_us_now(&mul, &div);
   /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)

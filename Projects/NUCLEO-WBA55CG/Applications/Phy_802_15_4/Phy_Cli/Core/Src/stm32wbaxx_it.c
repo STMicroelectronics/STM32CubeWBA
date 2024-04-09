@@ -238,12 +238,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 

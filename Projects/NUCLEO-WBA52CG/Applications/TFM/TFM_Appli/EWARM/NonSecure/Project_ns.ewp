@@ -229,6 +229,7 @@
           <state>__STACK_LIMIT=ARM_LIB_STACK$$Base</state>
           <state>DEFAULT_UART_BAUDRATE=115200</state>
           <state>DOMAIN_NS=1</state>
+          <state>STM32WBAXX_SI_CUT1_0</state>
         </option>
         <option>
           <name>CCPreprocFile</name>

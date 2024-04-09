@@ -16,6 +16,9 @@
 #define CONFIG_ZB_REV 23
 #endif
 
+/* Just in case we're not building the R23+ stack. */
+struct ZbApsRelayInfoT;
+
 /** Startup control-codes as per the ZCL Spec, Commissioning Cluster's StartupControl
  * attribute in the "Startup Parameters Attribute Set" */
 enum ZbStartType {
@@ -81,7 +84,6 @@ struct ZbStartupCbkeT {
 
     void *tcso_arg; /** Application callback argument for 'tcso_callback' */
 };
-
 
 /**
  * The set of configuration parameters used to form or join a network using ZbStartup.
@@ -218,7 +220,8 @@ struct ZbStartupT {
         /**< DeviceId to assign to the endpoint on which Sub-GHz server cluster is created. */
     } subghz; /**< Sub-GHz cluster configuration, only applicable on a coordiantor. */
 
-#if (CONFIG_ZB_REV >= 23)
+    /* NOTE: The following is for (CONFIG_ZB_REV >= 23), but we prefer to not add
+     * conditionals in header files. */
     bool (*device_interview_cb)(struct ZbApsRelayInfoT *relay_info, uint64_t joiner_eui, void *arg);
     /**< Device interview callback. Application can do the following as
      * part of this callback,
@@ -240,13 +243,12 @@ struct ZbStartupT {
      * On joiner side: this callback marks the completion of DLK and start of
      * potential device interview window. And TC decides if it wants to perform
      * device interview or not. Stack ignores the returned value of this callback
-     * and waits for apsSecurityTimeOutPeriod seconds of inactivity before
+     * and waits for apsDeviceInterviewTimeoutPeriod seconds of inactivity before
      * terminating the join procedure on not receiving network key. Joiner extends
-     * authentication timeout by apsSecurityTimeOutPeriod on every downstream relay
-     * command with a relay payload encrypted with the negotiated TCLK. */
+     * authentication timeout by apsDeviceInterviewTimeoutPeriod on every downstream
+     * relay command with a relay payload encrypted with the negotiated TCLK. */
     void *device_interview_cb_arg;
     /**< Argument pointer for device interview callback. */
-#endif
 };
 
 /**

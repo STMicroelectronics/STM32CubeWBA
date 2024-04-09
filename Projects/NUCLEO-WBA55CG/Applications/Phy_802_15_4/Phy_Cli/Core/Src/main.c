@@ -138,9 +138,13 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+  /** Supply configuration update enable
+  */
+  //HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+
   /** Configure the main internal regulator output voltage
   */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE2) != HAL_OK)
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -155,7 +159,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
                               |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV2;
+  RCC_OscInitStruct.HSEDiv = RCC_HSE_DIV1;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -182,6 +186,15 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+   /* Select SysTick source clock */
+   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+
+   /* Re-Initialize Tick with new clock source */
+   if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+   {
+     Error_Handler();
+   }
 }
 
 /**
@@ -260,6 +273,28 @@ void MX_ADC4_Init(void)
   /* USER CODE BEGIN ADC4_Init 2 */
 
   /* USER CODE END ADC4_Init 2 */
+
+}
+
+/**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
 
 }
 
@@ -498,7 +533,6 @@ void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -522,18 +556,7 @@ void MX_GPIO_Init(void)
   RT_DEBUG_GPIO_Init();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-#if 0
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_13;
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
-  
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
-#endif
+
 /* USER CODE END MX_GPIO_Init_2 */
 }
 

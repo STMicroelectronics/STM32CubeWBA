@@ -121,7 +121,8 @@ enum ZbNwkNibAttrIdT {
      * (type: uint16_t, reset: yes, persist: no) */
     /* nwkSymLink has been deprecated, assumed to be true (0x8e) */
     ZB_NWK_NIB_ID_CapabilityInformation = 0x8f,
-    /**< (type: uint8_t, reset: yes, persist: yes) */
+    /**< Bitmask of device capability flags (e.g. MCP_ASSOC_CAP_RXONIDLE).
+     * (type: uint8_t, reset: yes, persist: yes) */
     /* nwkAddrAlloc has been deprecated in R23 (0x90) */
     /* nwkUseTreeRouting has been deprecated in R23 (0x91) */
     ZB_NWK_NIB_ID_ManagerAddr = 0x92,
@@ -233,10 +234,9 @@ enum ZbNwkNibAttrIdT {
     /**< (type: uint16_t, reset: yes, persist: yes) */
     ZB_NWK_NIB_ID_EndDeviceTimeoutDefault = 0x0409,
     /**< (type: uint8_t, reset: yes, persist: yes) */
-    ZB_NWK_NIB_ID_EdkaFailThreshold = 0x040a,
-    /**< Number of consecutive EDKA request failures before triggering a
-     * PARENT_LINK_FAILURE. Valid range is 1 to 4. Default is 1.
-     * (type: uint8_t, reset: no, persist: no) */
+
+    /* Discontinuity, 0x040a previously used as ZB_NWK_NIB_ID_EdkaFailThreshold. */
+
     ZB_NWK_NIB_ID_LeaveRequestWithoutRejoinAllowed = 0x040b,
     /**< (type: uint8_t, reset: yes, persist: no) */
     ZB_NWK_NIB_ID_DisablePeriodicTimers = 0x040c,

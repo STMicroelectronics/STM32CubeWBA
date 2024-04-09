@@ -128,10 +128,6 @@ extern void BLE_AUDIO_PLAT_TimerStart(void *pCallbackFunc, void *pParam, uint32_
  * This function is used by the BLE Audio Stack to stop timer. This function
  * requests destruction of the timer created by BLE_AUDIO_PLAT_TimerStart()
  *
- * @param func : pointer to a function to call when the timer expires
- * @param param : param to pass in func when the timer expire
- * @param timeout : time in milliseconds to wait before the timer expiration
- *
  */
 extern void BLE_AUDIO_PLAT_TimerStop(void);
 

@@ -22,6 +22,8 @@
 #include "scm.h"
 #include "RTDebug.h"
 
+#if (CFG_SCM_SUPPORTED == 1)
+
 __weak void SCM_HSI_CLK_ON(void)
 {
   LL_RCC_HSI_Enable();
@@ -652,18 +654,21 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
   switch (ws_lp_config) {
   case LP:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
     break;
 
   case RUN:
     __HAL_FLASH_SET_LATENCY(scm_system_clock_config.flash_ws_cfg);
+    while(__HAL_FLASH_GET_LATENCY() != scm_system_clock_config.flash_ws_cfg);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, scm_system_clock_config.sram_ws_cfg);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, scm_system_clock_config.sram_ws_cfg);
     break;
 
   case HSE16:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_1);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_1);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_1);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_1);
 
@@ -674,6 +679,7 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
 
   case HSE32:
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_0);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_0);
     HAL_RAMCFG_ConfigWaitState(&sram1_ns, RAMCFG_WAITSTATE_0);
     HAL_RAMCFG_ConfigWaitState(&sram2_ns, RAMCFG_WAITSTATE_0);
 
@@ -687,6 +693,7 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
     /* Set Flash LATENCY according to PLL configuration */
     /* BELOW CONFIGURATION IS WORST CASE, SHALL BE OPTIMIZED */
     __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_3);
+    while(__HAL_FLASH_GET_LATENCY() != FLASH_LATENCY_3);
     scm_system_clock_config.flash_ws_cfg = FLASH_LATENCY_3;
     break;
 
@@ -749,7 +756,7 @@ void scm_hserdy_isr(void)
     }
 
     /* As system switched to HSE, disable HSI */
-    LL_RCC_HSI_Disable();
+    SCM_HSI_CLK_OFF();
 
     /* Disable HSERDY interrupt */
     __HAL_RCC_DISABLE_IT(RCC_IT_HSERDY);
@@ -834,3 +841,8 @@ void scm_standbyexit(void)
 
   scm_setup();
 }
+
+#else /* CFG_SCM_SUPPORTED */
+void scm_pllrdy_isr(void){/* Intentionally enpty */}
+void scm_hserdy_isr(void){/* Intentionally enpty */}
+#endif /* CFG_SCM_SUPPORTED */

@@ -431,7 +431,7 @@ define block APP_UNPRIV_DATA with fixed order {
 
 place at address S_CODE_START         { block LR_CODE };
 
-define block DATA with fixed order, size = S_DATA_SIZE - BOOT_TFM_SHARED_DATA_SIZE {
+define block DATA with fixed order, size = S_DATA_SIZE - BOOT_SHARED_DATA_SIZE {
 
     /**** Base address of secure data area */
     block  TFM_SECURE_DATA_START,
@@ -500,7 +500,7 @@ define block DATA with fixed order, size = S_DATA_SIZE - BOOT_TFM_SHARED_DATA_SI
      */
 };
 
-place at address S_DATA_START + BOOT_TFM_SHARED_DATA_SIZE          { block DATA };
+place at address S_DATA_START + BOOT_SHARED_DATA_SIZE          { block DATA };
 
 
     /*

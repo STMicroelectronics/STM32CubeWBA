@@ -39,6 +39,7 @@
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+#define IRQ_BADIRQ       ((IRQn_Type)(-666))
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -113,11 +114,11 @@ UTIL_ADV_TRACE_Status_t UART_DeInit( void )
 
   /* USER CODE END UART_DeInit 1 */
 
-  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
-
   /* USER CODE BEGIN UART_DeInit 2 */
 
   /* USER CODE END UART_DeInit 2 */
+
+  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
 }
 
 UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, uint8_t error))
@@ -126,11 +127,11 @@ UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, u
 
   /* USER CODE END UART_StartRx 1 */
 
-  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
-
   /* USER CODE BEGIN UART_StartRx 2 */
 
   /* USER CODE END UART_StartRx 2 */
+
+  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
 }
 
 UTIL_ADV_TRACE_Status_t UART_TransmitDMA ( uint8_t *pdata, uint16_t size )
@@ -139,11 +140,11 @@ UTIL_ADV_TRACE_Status_t UART_TransmitDMA ( uint8_t *pdata, uint16_t size )
 
   /* USER CODE END UART_TransmitDMA 1 */
 
-  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
-
   /* USER CODE BEGIN UART_TransmitDMA 2 */
 
   /* USER CODE END UART_TransmitDMA 2 */
+
+  return UTIL_ADV_TRACE_UNKNOWN_ERROR;
 }
 
 /* Private user code ---------------------------------------------------------*/

@@ -31,6 +31,7 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Global variables ----------------------------------------------------------*/
+extern uint32_t FW_Version;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Functions Definition ------------------------------------------------------*/
@@ -187,6 +188,23 @@ void LHCI_C1_Read_Device_Information( BleCmdSerial_t *pcmd )
    */
   ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->uid96_2 =
       LL_GetUID_Word2();
+
+  /**
+   * Reserved Fields
+   */
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField1 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField2 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField3 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField4 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField5 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField6 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField7 = 0xFFFFFFFF;
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->ReservedField.ReservedField8 = 0xFFFFFFFF;
+
+  /**
+   * AppFwInf
+   */
+  ((LHCI_C1_Device_Information_ccrp_t *) (((TL_CcEvt_t *) (((BleEvtSerial_t*) pcmd)->evt.payload))->payload))->AppFwInf = FW_Version;
 
   return;
 }

@@ -284,18 +284,16 @@ typedef struct {
     uint8_t a_scan_channels[4];
     /*! Originator of the key to be used */
     uint8_t a_key_source[8];
-    /*!< structure to header IE List*/
+    /*! Structure to header IE List*/
     ST_MAC_hdr_ie hdr_ie_list;
-    /*!< structure to payload IE List*/
+    /*! Structure to payload IE List*/
     ST_MAC_pyld_ie pyld_ie_list;
-    /*!< The sub-IDs of nested IEs */
-    uint16_t mpm_scan_duration_nb_pan;
+    /*! Set to TRUE if the sequence number is suppressed in the frame */
+    uint8_t scan_seq_sup;
     /*! Mode used to identify the key to be used */
     uint8_t key_id_mode;
     /*! Index of the key to be used */
     uint8_t key_index;
-    /*! Byte Stuffing to keep 32 bit alignment*/
-    uint8_t a_stuffing[1];
 } ST_MAC_scanReq_t;
 
 /******************************************************************************/
@@ -712,10 +710,8 @@ typedef struct {
     uint8_t a_energy_detect_list[g_MAX_ED_SCAN_RESULTS_SUPPORTED_c];
     /*! List of PAN descriptors */
     ST_MAC_PAN_Desc_t a_PAN_descriptor_list[g_MAX_PAN_DESC_SUPPORTED_c];
-    /*! Categorization of energy detected in channel*/
-    uint8_t detected_category;
-    /*! For UWB PHYs, the list of energy measurements taken*/
-    uint8_t a_UWB_energy_detect_list[g_MAX_ED_SCAN_RESULTS_SUPPORTED_c];
+    /*! Byte Stuffing to keep 32 bit alignment*/
+    uint8_t a_stuffing[2];
 } ST_MAC_scanCnf_t;
 
 

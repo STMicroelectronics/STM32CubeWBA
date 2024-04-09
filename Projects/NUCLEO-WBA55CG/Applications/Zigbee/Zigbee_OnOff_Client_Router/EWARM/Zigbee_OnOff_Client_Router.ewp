@@ -90,7 +90,7 @@
                 </option>
                 <option>
                     <name>GEndianModeBE</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OGBufferedTerminalOutput</name>
@@ -107,7 +107,7 @@
                 <option>
                     <name>GBECoreSlave</name>
                     <version>31</version>
-                    <state>0</state>
+                    <state>59</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -258,6 +258,7 @@
                     <state>APPLICATION_USE_BAREMETAL</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
+                    
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -383,6 +384,7 @@
                     <state>$PROJ_DIR$\..\Core\Inc</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
+                    <state>$PROJ_DIR$\..\System\Config\CRC_Ctrl</state>
                     <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
                     <state>$PROJ_DIR$\..\System\Config\LowPower</state>
@@ -747,7 +749,7 @@
             <data>
                 <extensions/>
                 <cmdline/>
-                <hasPrio>1</hasPrio>
+                <hasPrio>176</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -1248,6 +1250,12 @@
                 <group>
                     <name>Config</name>
                     <group>
+                        <name>CRC_Ctrl</name>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
+                        </file>
+                    </group>
+                    <group>
                         <name>Debug_GPIO</name>
                         <file>
                             <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
@@ -1301,7 +1309,7 @@
                     <group>
                         <name>MemoryManager</name>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\MemoryManager\memory_manager.c</name>
+                            <name>$PROJ_DIR$\..\System\Modules\MemoryManager\advanced_memory_manager.c</name>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\System\Modules\MemoryManager\stm32_mm.c</name>
@@ -1330,6 +1338,9 @@
                     </group>
                     <file>
                         <name>$PROJ_DIR$\..\System\Modules\app_sys.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\System\Modules\crc_ctrl.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
@@ -1619,43 +1630,11 @@
                     
                     
                     
-                    
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigbeeProFFD.a</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
                         
                     </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigbeeProRFD.a</name>
-                        <excluded>
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            <configuration>Zigbee_OnOff_Client_Router</configuration>
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                        </excluded>
-                    </file>
+                    
                 </group>
             </group>
         </group>

@@ -36,8 +36,6 @@
 
 #include "openthread-core-config.h"
 
-#if OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
-
 #include <openthread/netdiag.h>
 
 #include "common/callback.hpp"
@@ -46,6 +44,7 @@
 #include "net/udp6.hpp"
 #include "thread/network_diagnostic_tlvs.hpp"
 #include "thread/tmf.hpp"
+#include "thread/uri_paths.hpp"
 
 namespace ot {
 
@@ -60,63 +59,166 @@ namespace NetworkDiagnostic {
  * @{
  */
 
+class Client;
+
 /**
- * This class implements the Network Diagnostic processing.
+ * Implements the Network Diagnostic server responding to requests.
  *
  */
-class NetworkDiagnostic : public InstanceLocator, private NonCopyable
+class Server : public InstanceLocator, private NonCopyable
+{
+    friend class Tmf::Agent;
+    friend class Client;
+
+public:
+    /**
+     * Initializes the Server.
+     *
+     * @param[in] aInstance   The OpenThread instance.
+     *
+     */
+    explicit Server(Instance &aInstance);
+
+#if OPENTHREAD_CONFIG_NET_DIAG_VENDOR_INFO_SET_API_ENABLE
+    /**
+     * Returns the vendor name string.
+     *
+     * @returns The vendor name string.
+     *
+     */
+    const char *GetVendorName(void) const { return mVendorName; }
+
+    /**
+     * Sets the vendor name string.
+     *
+     * @param[in] aVendorName     The vendor name string.
+     *
+     * @retval kErrorNone         Successfully set the vendor name.
+     * @retval kErrorInvalidArgs  @p aVendorName is not valid (too long or not UTF8).
+     *
+     */
+    Error SetVendorName(const char *aVendorName);
+
+    /**
+     * Returns the vendor model string.
+     *
+     * @returns The vendor model string.
+     *
+     */
+    const char *GetVendorModel(void) const { return mVendorModel; }
+
+    /**
+     * Sets the vendor model string.
+     *
+     * @param[in] aVendorModel     The vendor model string.
+     *
+     * @retval kErrorNone         Successfully set the vendor model.
+     * @retval kErrorInvalidArgs  @p aVendorModel is not valid (too long or not UTF8).
+     *
+     */
+    Error SetVendorModel(const char *aVendorModel);
+
+    /**
+     * Returns the vendor software version string.
+     *
+     * @returns The vendor software version string.
+     *
+     */
+    const char *GetVendorSwVersion(void) const { return mVendorSwVersion; }
+
+    /**
+     * Sets the vendor sw version string
+     *
+     * @param[in] aVendorSwVersion     The vendor sw version string.
+     *
+     * @retval kErrorNone         Successfully set the vendor sw version.
+     * @retval kErrorInvalidArgs  @p aVendorSwVersion is not valid (too long or not UTF8).
+     *
+     */
+    Error SetVendorSwVersion(const char *aVendorSwVersion);
+
+#else
+    const char *GetVendorName(void) const { return kVendorName; }
+    const char *GetVendorModel(void) const { return kVendorModel; }
+    const char *GetVendorSwVersion(void) const { return kVendorSwVersion; }
+#endif // OPENTHREAD_CONFIG_NET_DIAG_VENDOR_INFO_SET_API_ENABLE
+
+private:
+    static constexpr uint16_t kMaxChildEntries = 398;
+
+    static const char kVendorName[];
+    static const char kVendorModel[];
+    static const char kVendorSwVersion[];
+
+    Error AppendDiagTlv(uint8_t aTlvType, Message &aMessage);
+    Error AppendIp6AddressList(Message &aMessage);
+    Error AppendMacCounters(Message &aMessage);
+    Error AppendChildTable(Message &aMessage);
+    Error AppendRequestedTlvs(const Message &aRequest, Message &aResponse);
+    void  PrepareMessageInfoForDest(const Ip6::Address &aDestination, Tmf::MessageInfo &aMessageInfo) const;
+
+    template <Uri kUri> void HandleTmf(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
+
+#if OPENTHREAD_CONFIG_NET_DIAG_VENDOR_INFO_SET_API_ENABLE
+    Error SetVendorString(char *aDestString, uint16_t kMaxSize, const char *aSrcString);
+
+    VendorNameTlv::StringType      mVendorName;
+    VendorModelTlv::StringType     mVendorModel;
+    VendorSwVersionTlv::StringType mVendorSwVersion;
+#endif
+};
+
+DeclareTmfHandler(Server, kUriDiagnosticGetRequest);
+DeclareTmfHandler(Server, kUriDiagnosticGetQuery);
+DeclareTmfHandler(Server, kUriDiagnosticGetAnswer);
+
+#if OPENTHREAD_CONFIG_TMF_NETDIAG_CLIENT_ENABLE
+
+/**
+ * Implements the Network Diagnostic client sending requests and queries.
+ *
+ */
+class Client : public InstanceLocator, private NonCopyable
 {
     friend class Tmf::Agent;
 
 public:
-    /**
-     * This type represents an iterator used to iterate through Network Diagnostic TLVs from `GetNextDiagTlv()`.
-     *
-     */
-    typedef otNetworkDiagIterator Iterator;
+    typedef otNetworkDiagIterator          Iterator;    ///< Iterator to go through TLVs in `GetNextDiagTlv()`.
+    typedef otNetworkDiagTlv               TlvInfo;     ///< Parse info from a Network Diagnostic TLV.
+    typedef otNetworkDiagChildEntry        ChildInfo;   ///< Parsed info for child table entry.
+    typedef otReceiveDiagnosticGetCallback GetCallback; ///< Diagnostic Get callback function pointer type.
 
     static constexpr Iterator kIteratorInit = OT_NETWORK_DIAGNOSTIC_ITERATOR_INIT; ///< Initializer for Iterator.
 
     /**
-     * This type represents parsed information from a Network Diagnostic TLV.
+     * Initializes the Client.
+     *
+     * @param[in] aInstance   The OpenThread instance.
      *
      */
-    typedef otNetworkDiagTlv TlvInfo;
+    explicit Client(Instance &aInstance);
 
     /**
-     * This structure represents parsed information from Network Diagnostic Child Table entry.
-     *
-     */
-    typedef otNetworkDiagChildEntry ChildInfo;
-
-    /**
-     * This constructor initializes the object.
-     *
-     */
-    explicit NetworkDiagnostic(Instance &aInstance);
-
-    /**
-     * This method sends Diagnostic Get request. If the @p aDestination is of multicast type, the DIAG_GET.qry
+     * Sends Diagnostic Get request. If the @p aDestination is of multicast type, the DIAG_GET.qry
      * message is sent or the DIAG_GET.req otherwise.
      *
-     * @param[in]  aDestination      A reference to the destination address.
+     * @param[in]  aDestination      The destination address.
      * @param[in]  aTlvTypes         An array of Network Diagnostic TLV types.
-     * @param[in]  aCount            Number of types in aTlvTypes.
-     * @param[in]  aCallback         A pointer to a function that is called when Network Diagnostic Get response
-     *                               is received or NULL to disable the callback.
-     * @param[in]  aCallbackContext  A pointer to application-specific context.
+     * @param[in]  aCount            Number of types in @p aTlvTypes.
+     * @param[in]  aCallback         Callback when Network Diagnostic Get response is received (can be NULL).
+     * @param[in]  Context           Application-specific context used with @p aCallback.
      *
      */
-    Error SendDiagnosticGet(const Ip6::Address            &aDestination,
-                            const uint8_t                  aTlvTypes[],
-                            uint8_t                        aCount,
-                            otReceiveDiagnosticGetCallback aCallback,
-                            void                          *aCallbackContext);
+    Error SendDiagnosticGet(const Ip6::Address &aDestination,
+                            const uint8_t       aTlvTypes[],
+                            uint8_t             aCount,
+                            GetCallback         aCallback,
+                            void               *Context);
 
     /**
-     * This method sends Diagnostic Reset request.
+     * Sends Diagnostic Reset request.
      *
-     * @param[in] aDestination  A reference to the destination address.
+     * @param[in] aDestination  The destination address.
      * @param[in] aTlvTypes     An array of Network Diagnostic TLV types.
      * @param[in] aCount        Number of types in aTlvTypes
      *
@@ -124,12 +226,11 @@ public:
     Error SendDiagnosticReset(const Ip6::Address &aDestination, const uint8_t aTlvTypes[], uint8_t aCount);
 
     /**
-     * This static method gets the next Network Diagnostic TLV in a given message.
+     * Gets the next Network Diagnostic TLV in a given message.
      *
-     * @param[in]      aMessage         A message.
-     * @param[in,out]  aIterator        The Network Diagnostic iterator. To get the first TLV set it to
-     *                                  `kIteratorInit`.
-     * @param[out]     aTlvInfo         A reference to a `TlvInfo` to output the next TLV data.
+     * @param[in]      aMessage    Message to read TLVs from.
+     * @param[in,out]  aIterator   The Network Diagnostic iterator. To get the first TLV set it to `kIteratorInit`.
+     * @param[out]     aTlvInfo    A reference to a `TlvInfo` to output the next TLV data.
      *
      * @retval kErrorNone       Successfully found the next Network Diagnostic TLV.
      * @retval kErrorNotFound   No subsequent Network Diagnostic TLV exists in the message.
@@ -139,38 +240,31 @@ public:
     static Error GetNextDiagTlv(const Coap::Message &aMessage, Iterator &aIterator, TlvInfo &aTlvInfo);
 
 private:
-    static constexpr uint16_t kMaxChildEntries = 398;
+    Error SendCommand(Uri                   aUri,
+                      const Ip6::Address   &aDestination,
+                      const uint8_t         aTlvTypes[],
+                      uint8_t               aCount,
+                      Coap::ResponseHandler aHandler = nullptr,
+                      void                 *aContext = nullptr);
 
-    enum CommandType : uint8_t
-    {
-        kDiagnosticGet,
-        kDiagnosticReset,
-    };
-
-    Error SendDiagnosticCommand(CommandType         aCommandType,
-                                const Ip6::Address &aDestination,
-                                const uint8_t       aTlvTypes[],
-                                uint8_t             aCount);
-    Error AppendIp6AddressList(Message &aMessage);
-    Error AppendChildTable(Message &aMessage);
-    void  FillMacCountersTlv(MacCountersTlv &aMacCountersTlv);
-    Error FillRequestedTlvs(const Message &aRequest, Message &aResponse, NetworkDiagnosticTlv &aNetworkDiagnosticTlv);
-
-    static void HandleDiagnosticGetResponse(void                *aContext,
-                                            otMessage           *aMessage,
-                                            const otMessageInfo *aMessageInfo,
-                                            Error                aResult);
-    void HandleDiagnosticGetResponse(Coap::Message *aMessage, const Ip6::MessageInfo *aMessageInfo, Error aResult);
+    static void HandleGetResponse(void                *aContext,
+                                  otMessage           *aMessage,
+                                  const otMessageInfo *aMessageInfo,
+                                  Error                aResult);
+    void        HandleGetResponse(Coap::Message *aMessage, const Ip6::MessageInfo *aMessageInfo, Error aResult);
 
     template <Uri kUri> void HandleTmf(Coap::Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
 
-    Callback<otReceiveDiagnosticGetCallback> mReceiveDiagnosticGetCallback;
+#if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
+    static const char *UriToString(Uri aUri);
+#endif
+
+    Callback<GetCallback> mGetCallback;
 };
 
-DeclareTmfHandler(NetworkDiagnostic, kUriDiagnosticGetRequest);
-DeclareTmfHandler(NetworkDiagnostic, kUriDiagnosticGetQuery);
-DeclareTmfHandler(NetworkDiagnostic, kUriDiagnosticGetAnswer);
-DeclareTmfHandler(NetworkDiagnostic, kUriDiagnosticReset);
+DeclareTmfHandler(Client, kUriDiagnosticReset);
+
+#endif // OPENTHREAD_CONFIG_TMF_NETDIAG_CLIENT_ENABLE
 
 /**
  * @}
@@ -178,7 +272,5 @@ DeclareTmfHandler(NetworkDiagnostic, kUriDiagnosticReset);
 } // namespace NetworkDiagnostic
 
 } // namespace ot
-
-#endif // OPENTHREAD_FTD || OPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE
 
 #endif // NETWORK_DIAGNOSTIC_HPP_

@@ -32,6 +32,7 @@
 #include "stm32wbaxx.h"
 #include "utilities_common.h"
 #include "cmsis_compiler.h"
+#include "peripheral_init.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,11 +48,6 @@
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
-
-/* External variables -----------------------------------------------------------*/
-/* USER CODE BEGIN EV */
-
-/* USER CODE END EV */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
@@ -78,6 +74,13 @@ const struct UTIL_LPM_Driver_s UTIL_PowerDriver =
 /* External variables --------------------------------------------------------*/
 /* Variable to store the MainStackPointer before entering standby wfi */
 uint32_t backup_MSP;
+uint32_t backup_MSPLIM;
+uint32_t backup_PSP;
+uint32_t backup_PSPLIM;
+uint32_t backup_CONTROL;
+uint32_t backup_prio_SysTick_IRQn;
+uint32_t backup_prio_SVCall_IRQn;
+uint32_t backup_prio_PendSV_IRQn;
 static uint32_t boot_after_standby;
 
 /* USER CODE BEGIN EV */
@@ -119,13 +122,13 @@ static void Standby_Restore_GPIO(void)
 
   // ---------------------------------------------------------------------------
 
-  *(uint32_t *)0x42020000 = 0xA8000000;  // Configure GPIOA_MODER 15:13 AF (JTAG), 12:0 In  STANDBY MESURMENTS OK
+  *(uint32_t *)0x42020000 = 0xA8000000;  /* Configure GPIOA_MODER 15:13 AF (JTAG), 12:0 Input */
 
-  __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
-  __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
+  __ASM("mov r0, r0"); /* Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input */
+  __ASM("mov r0, r0"); /* Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input */
 
   temp = LL_GPIO_ReadInputPort(GPIOA);
-  LL_GPIO_WriteOutputPort(GPIOA, temp); // Restore Port A output drive levels
+  LL_GPIO_WriteOutputPort(GPIOA, temp); /* Restore Port A output drive levels */
 
   /* GPIOA_MODER set to reset value */
   *(uint32_t *)0x42020000 = 0xABFFFFFF;
@@ -174,16 +177,19 @@ static void Standby_Restore_GPIO(void)
 
 static void Enter_Stop_Standby_Mode(void)
 {
-      /* Disabling ICACHE */
+  /* Disabling ICACHE */
   LL_ICACHE_Disable();
-
+#if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until ICACHE_SR.BUSYF is cleared */
   while(LL_ICACHE_IsActiveFlag_BUSY() == 1U);
 
   /* Wait until ICACHE_SR.BSYENDF is set */
   while(LL_ICACHE_IsActiveFlag_BSYEND() == 0U);
+#endif /* STM32WBAXX_SI_CUT1_0 */
 
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setwaitstates(LP);
+#endif /* CFG_SCM_SUPPORTED */
 
   LL_LPM_EnableDeepSleep();
 
@@ -192,17 +198,20 @@ static void Enter_Stop_Standby_Mode(void)
 
 static void Exit_Stop_Standby_Mode(void)
 {
-    LL_ICACHE_Enable();
-    while(LL_ICACHE_IsEnabled() == 0U);
-
-    if (LL_PWR_IsActiveFlag_STOP() == 1U)
-    {
-      scm_setup();
-    }
-    else
-    {
-      scm_setwaitstates( RUN );
-    }
+#if defined(STM32WBAXX_SI_CUT1_0)
+  LL_ICACHE_Enable();
+  while(LL_ICACHE_IsEnabled() == 0U);
+#endif /* STM32WBAXX_SI_CUT1_0 */
+#if (CFG_SCM_SUPPORTED == 1)
+  if (LL_PWR_IsActiveFlag_STOP() == 1U)
+  {
+    scm_setup();
+  }
+  else
+  {
+    scm_setwaitstates( RUN );
+  }
+#endif /* CFG_SCM_SUPPORTED */
 }
 
 void PWR_EnterOffMode( void )
@@ -227,31 +236,57 @@ void PWR_EnterOffMode( void )
   LL_PWR_SetPowerMode( LL_PWR_MODE_STANDBY );
 
   /* This option is used to ensure that store operations are completed */
-#if defined (__CC_ARM)
+#if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
   __force_stores();
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 
-  /* Save all Cortex registers on stack and call WFI instruction */
+  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ACTIVE);
+  backup_CONTROL = __get_CONTROL();
+
+  /* Check if Stack Pointer if pointing to PSP */
+  if((backup_CONTROL & CONTROL_SPSEL_Msk) == CONTROL_SPSEL_Msk)
+  {
+    __set_CONTROL( __get_CONTROL() & ~CONTROL_SPSEL_Msk ); /* switch SP to MSP */
+  }
+
+  /* Save selected CPU peripheral regisers */
+  backup_PSP = __get_PSP();
+  backup_PSPLIM = __get_PSPLIM();
+  backup_MSPLIM = __get_MSPLIM();
+  backup_prio_SysTick_IRQn = NVIC_GetPriority(SysTick_IRQn);
+  backup_prio_SVCall_IRQn = NVIC_GetPriority(SVCall_IRQn);
+  backup_prio_PendSV_IRQn = NVIC_GetPriority(PendSV_IRQn);
+  backup_system_register();
+
+  /* Save Cortex general purpose registers on stack and call WFI instruction */
   CPUcontextSave();
+
+  /* At this point, system comes out of standby. Restore selected CPU peripheral registers */
+  restore_system_register();
+#if defined(STM32WBAXX_SI_CUT1_0)
   SYS_WAITING_CYCLES_25();
+#endif /* STM32WBAXX_SI_CUT1_0 */
+
+  __set_MSPLIM(backup_MSPLIM);
+  __set_PSPLIM(backup_PSPLIM);
+  __set_PSP(backup_PSP);
+  __set_CONTROL(backup_CONTROL); /* SP may switch back to PSP */
+
+  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
+
   /* USER CODE BEGIN PWR_EnterOffMode_2 */
 
   /* USER CODE END PWR_EnterOffMode_2 */
 
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ENTER);
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ACTIVE);
 }
 
 void PWR_ExitOffMode( void )
 {
-  SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
-  SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_EXIT);
-
   /* USER CODE BEGIN PWR_ExitOffMode_1 */
 
   /* USER CODE END PWR_ExitOffMode_1 */
 
-  if( 1UL == boot_after_standby )
+  if ( 1UL == boot_after_standby )
   {
     boot_after_standby = 0;
 
@@ -263,27 +298,50 @@ void PWR_ExitOffMode( void )
     HAL_NVIC_EnableIRQ(RCC_IRQn);
     HAL_NVIC_SetPriority(RTC_IRQn, 0x07, 0);
     HAL_NVIC_EnableIRQ(RTC_IRQn);
+    NVIC_SetPriority(SysTick_IRQn, backup_prio_SysTick_IRQn);
+    NVIC_EnableIRQ(SysTick_IRQn);
+    NVIC_SetPriority(SVCall_IRQn, backup_prio_SVCall_IRQn);
+    NVIC_EnableIRQ(SVCall_IRQn);
+    NVIC_SetPriority(PendSV_IRQn, backup_prio_PendSV_IRQn);
+    NVIC_EnableIRQ(PendSV_IRQn);
 
     /*
      ***********************************
      * Restore SoC HW configuration
      ***********************************
      */
+
+    /* Enable AHB5ENR peripheral clock (bus CLK) */
+    __HAL_RCC_RADIO_CLK_ENABLE();
+
+    /* Apply Prefetch configuration is enabled */
+#if (PREFETCH_ENABLE != 0U)
+  __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+#endif /* PREFETCH_ENABLE */
+
     Standby_Restore_GPIO();
-    MX_GPIO_Init();
 
-    /* RNG */
-    MX_RNG_Init();
+    MX_StandbyExit_PeripharalInit();
 
-    /* Restore ICACHE */
-    MX_ICACHE_Init();
+    SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_ACTIVE);
+    SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_EXIT);
 
     /* Restore system clock configuration */
+#if (CFG_SCM_SUPPORTED == 1)
     scm_standbyexit();
+#endif /* CFG_SCM_SUPPORTED */
 
     /* Enable RTC peripheral clock */
     LL_PWR_EnableBkUpAccess();
     __HAL_RCC_RTCAPB_CLK_ENABLE();
+
+    /* Important note: at this point, all the IOs configuration is done */
+
+    /* Clear all IOs retention status  */
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_A, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_B, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_C, PWR_GPIO_PIN_MASK);
+    HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
   }
   else
   {
@@ -293,14 +351,6 @@ void PWR_ExitOffMode( void )
   /* USER CODE BEGIN PWR_ExitOffMode_2 */
 
   /* USER CODE END PWR_ExitOffMode_2 */
-
-  /* Important note: at this point, all the IOs configuration is done */
-
-  /* Clear all IOs retention status  */
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_A, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_B, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_C, PWR_GPIO_PIN_MASK);
-  HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
 
   SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_EXIT);
 }
@@ -318,8 +368,9 @@ void PWR_EnterStopMode( void )
   LL_PWR_SetPowerMode(LL_PWR_MODE_STOP1);
 
   __WFI( );
+#if defined(STM32WBAXX_SI_CUT1_0)
   SYS_WAITING_CYCLES_25();
-
+#endif /* STM32WBAXX_SI_CUT1_0 */
   /* USER CODE BEGIN PWR_EnterStopMode_2 */
 
   /* USER CODE END PWR_EnterStopMode_2 */
@@ -367,20 +418,17 @@ void PWR_ExitSleepMode( void )
   /* USER CODE END PWR_ExitSleepMode */
 }
 
-static uint32_t standby_cnt = 0; // Debug only
 uint32_t is_boot_from_standby(void)
 {
-#if (CFG_DBG_SUPPORTED == 0)
+#if (CFG_DEBUGGER_LEVEL > 1)
   LL_DBGMCU_DisableDBGStopMode();
   LL_DBGMCU_DisableDBGStandbyMode();
-#endif
+#endif /* CFG_DEBUGGER_LEVEL */
 
   __HAL_RCC_PWR_CLK_ENABLE();
 
   LL_PWR_EnableUltraLowPowerMode();
   __HAL_FLASH_SLEEP_POWERDOWN_ENABLE();
-
-  standby_cnt++;
 
   /* Ensure this is a return from Standby, and not a reset */
   if( (LL_PWR_IsActiveFlag_SB() == 1UL ) &&

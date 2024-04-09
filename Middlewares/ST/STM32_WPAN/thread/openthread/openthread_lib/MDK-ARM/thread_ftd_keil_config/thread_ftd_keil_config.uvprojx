@@ -10,14 +10,14 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6180000::V6.18::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAx_DFP.0.0.1</PackID>
-          <PackURL>http://www.keil.com/pack</PackURL>
+          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>stm32wba_ot_ftd_lib_KEIL</OutputName>
+          <OutputName>stm32wba_ot_ftd_lib</OutputName>
           <CreateExecutable>0</CreateExecutable>
           <CreateLib>1</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -80,9 +80,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>..\POST_BUILD_COPY.bat #L @L</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -331,14 +331,14 @@
             <useXO>0</useXO>
             <v6Lang>5</v6Lang>
             <v6LangP>3</v6LangP>
-            <vShortEn>1</vShortEn>
-            <vShortWch>1</vShortWch>
+            <vShortEn>0</vShortEn>
+            <vShortWch>0</vShortWch>
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
-              <Define>WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_FTD</Define>
+              <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
+              <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_FTD</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\..\source\target\stm32wbxx_thread_host\,..\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBxx_GEN2\Include,..\..\..\..\..\..\Drivers\CMSIS\Include,..\..\..\..\..\..\Drivers\BSP\STM32WBxx_Nucleo,..\..\..\..\..\..\Drivers\STM32WBxx_HAL_Driver\Inc,..\..\..\source\common,..\..\..\source\hw,..\..\..\source\debug,..\..\..\source\nvm,..\..\..\source\openthread_platform,..\..\..\source\openthread_platform\crypto,..\..\..\source\target\stm32wbxx_thread_host,..\..\..\stack\src\diag,..\..\..\stack\src,..\..\..\stack\src\core,..\..\..\stack\include,..\..\..\stack\include\openthread,..\..\..\stack\include\openthread\platform,..\..\..\stack\third_party\mbedtls\repo\include,..\..\..\stack\third_party\mbedtls\repo\configs,..\..\..\stack\examples\platforms,..\..\..\stack\examples\platforms\utils,..\..\..\stack\third_party\mbedtls,..\..\..\..\..\..\Middlewares\ST\Thread\OpenThread\patterns\pattern1\tl_thread,..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\core\openthread_api,..\..\..\source\rf_low_level_driver\aes\inc,..\..\..\source\rf_low_level_driver\ip802154\inc,..\..\..\source\rf_low_level_driver\\radio\inc,..\..\..\source\rf_low_level_driver\sys\inc,..\..\..\source\rf_low_level_driver\common_rf\inc,..\..\..\source\thread_interface,..\..\..\source\tl,..\..\..\source\host,..\..\..\source\syshci,..\..\..\..\..\..\Middlewares\ST\STM32_WPAN,..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface\patterns\ble_thread\tl,..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities,..\..\..\..\..\..\Utilities\sequencer,..\..\..\..\..\..\Utilities\lpm\tiny_lpm,..\..\..\config,..\..\..\..\..\hw,..\..\..\..\..\..\..\..\Drivers\CMSIS\Core\Include,..\..\..\stack\wbx_include,..\..\..\stack\wbx_include\sys</IncludePath>
             </VariousControls>
@@ -374,7 +374,7 @@
             <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc></Misc>
+            <Misc>-library_interface=aeabi_clib</Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -418,11 +418,6 @@
               <FileName>settings_ram.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\stack\examples\platforms\utils\settings_ram.c</FilePath>
-            </File>
-            <File>
-              <FileName>soft_source_match_table.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\examples\platforms\utils\soft_source_match_table.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -493,6 +488,21 @@
               <FileName>cli_udp.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\cli\cli_udp.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_bbr.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_bbr.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_dns.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_dns.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_mac_filter.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_mac_filter.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -759,6 +769,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\api\udp_api.cpp</FilePath>
             </File>
+            <File>
+              <FileName>mesh_diag_api.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\api\mesh_diag_api.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -948,6 +963,11 @@
               <FileName>uptime.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\uptime.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>preference.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\preference.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1549,6 +1569,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\uri_paths.cpp</FilePath>
             </File>
+            <File>
+              <FileName>child_supervision.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\child_supervision.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1563,11 +1588,6 @@
               <FileName>channel_monitor.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\utils\channel_monitor.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>child_supervision.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\child_supervision.cpp</FilePath>
             </File>
             <File>
               <FileName>flash.cpp</FileName>
@@ -1613,6 +1633,11 @@
               <FileName>srp_client_buffers.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\utils\srp_client_buffers.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mesh_diag.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\utils\mesh_diag.cpp</FilePath>
             </File>
           </Files>
         </Group>

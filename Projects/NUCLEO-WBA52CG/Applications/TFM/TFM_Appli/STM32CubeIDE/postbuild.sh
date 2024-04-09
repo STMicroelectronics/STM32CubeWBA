@@ -96,6 +96,7 @@ else
 echo Postbuild with python script
 imgtool=$mcuboot_dir"/scripts/imgtool/main.py"
 python="python "
+python3 --version >& /dev/null && python="python3 "
 fi
 
 #sign mode
@@ -173,9 +174,9 @@ fi
 
 echo $signing signing
 if [ "$signing" == "nonsecure" ]; then
-command_init=$python$imgtool" sign -k "$key_ns" "$encrypt" -S "$image_ns_size" "$option" -v "$version" "$tfm_ns" "$tfm_ns_init
+command_init=$python$imgtool" sign -k "$key_ns" "$encrypt" -S "$image_ns_size" "$option" -v "$version" --confirm --pad "$tfm_ns" "$tfm_ns_init
 else
-command_init=$python$imgtool" sign -k "$key_s" "$encrypt" -S "$image_s_size" "$option" -v "$version" "$tfm_s" "$tfm_s_init
+command_init=$python$imgtool" sign -k "$key_s" "$encrypt" -S "$image_s_size" "$option" -v "$version" --confirm --pad "$tfm_s" "$tfm_s_init
 fi
 $command_init >> $projectdir"/output.txt"
 ret=$?

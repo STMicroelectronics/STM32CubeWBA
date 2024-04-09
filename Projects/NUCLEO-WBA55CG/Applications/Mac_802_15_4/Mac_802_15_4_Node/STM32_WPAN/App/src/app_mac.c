@@ -34,6 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 #define DATA "HELLO COORDINATOR\0"
+#define FRAME_MAX_SIZE 127
 
 /* Set the Maximum value of the counter (Auto-Reload) that defines the Period */
 #define SEND_TIMEOUT  (5000) /**< 5s */
@@ -47,6 +48,7 @@ static uint8_t rfBuffer[256];
 /* Private functions ---------------------------------------------------------*/
 static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 static void SendTimerCallback(void *arg);
+static void Prepare_MLME_Set_Req(uint8_t PIB_attribute_indice, uint8_t * PIB_attribute_value);
 
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl; // Instance MAC 
@@ -55,6 +57,7 @@ ST_MAC_associateCnf_t g_MAC_associateCnf;
 ST_MAC_beaconNotifyInd_t  g_BeaconNotifyInd;
 uint8_t deviceAssociated = 0; //This variable allows to know if the device is associated or not, associated = 1 otherwise 0
 uint8_t enablePollTimer = 0; //This variable allows to enable the poll Timer which send data poll every 5s
+uint8_t beacon_coord_received  = 0x00; // This variable allows to check if we have receive beacon or not
 
 /*  All variables for configuration and set data */
 uint16_t        g_panId                = 0x0000;
@@ -63,7 +66,7 @@ uint8_t         g_coordExtendedAddr[8] = {0xAC,0xDE,0x48,00,0x00,0x00,0x00,0x01}
 uint16_t        g_BroacastShortAddr    = 0xFFFF;
 uint8_t         g_dataHandle           = 0x02;
 uint8_t         extAddr[8]             = {0xAC,0xDE,0x48,00,0x00,0x00,0x00,0x02};
-uint8_t         g_channel              = DEMO_CHANNEL; // General channel
+uint8_t         g_channel              = 11; // General channel
 uint8_t         g_channel_page         = 0x00;
 
 
@@ -74,7 +77,6 @@ uint8_t         g_channel_page         = 0x00;
   * @param  message_len: Message Len
   * @retval Message Signature
   */
-
 static uint8_t xorSign( const char * pmessage, uint8_t message_len)
 {
   uint8_t seed = 0x00;
@@ -83,6 +85,38 @@ static uint8_t xorSign( const char * pmessage, uint8_t message_len)
   return seed; 
 }
 
+/**
+  * @brief  This function allows you to set a PIB attribute to put in parameters 
+  * only the PIB attribute and this value.
+  *
+  * @param  PIB_attribute_indice   : PIB attribute you want to change
+  * @param  PIB_attribute_value: PIB attribute value you want to change
+  * @retval nothing
+  */
+static void Prepare_MLME_Set_Req(uint8_t PIB_attribute_indice, uint8_t * PIB_attribute_value)
+{
+  MAC_Status_t MacStatus;
+  ST_MAC_setReq_t   SetReq;
+  
+  memset(&SetReq, 0x00, sizeof(ST_MAC_setReq_t));
+  SetReq.PIB_attribute = PIB_attribute_indice;
+  SetReq.PIB_attribute_valuePtr = PIB_attribute_value;
+  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq);
+  if (MAC_SUCCESS != MacStatus) {
+    APP_DBG("Node MAC APP - Set PIB attribute Fails\r\n");
+    return;
+  }
+  
+  /* Wait SET CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_SET_CNF); 
+}
+
+/**
+  * @brief  Task to release the IRQ for POLL.req
+  *
+  * @param  arg
+  * @retval Nothing
+  */
 static void SendTimerCallback(void *arg)
 {
   // Run Data pool task
@@ -106,7 +140,7 @@ void APPE_Button1Action(void)
 void APPE_Button2Action(void)
 {
   /* Send data in broadcast */
-  APP_RFD_MAC_802_15_4_SendData_broacast("Data In Broadcast\0");
+  APP_RFD_MAC_802_15_4_SendData_broacast("Node MAC APP - Data In Broadcast\0");
 }
 
 void APPE_Button3Action(void)
@@ -115,7 +149,7 @@ void APPE_Button3Action(void)
   if (deviceAssociated){
     APP_RFD_MAC_802_15_4_Disassociation();
   }else{
-   APP_DBG("This device is not associated\r\n");
+   APP_DBG("Node MAC APP - This device is not associated\r\n");
   }
 
 }
@@ -154,18 +188,16 @@ void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
   macCallback->mlmeSetPwrInfoTableCnfCb = APP_MAC_mlmeSetPwrInfoTableCnfCb;
 }
 
-void APP_MAC_Init(void) {
+void APP_MAC_Init(void) 
+{
   /* Disable Low power */
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   /* Register tasks */
   UTIL_SEQ_RegTask(TASK_RFD, UTIL_SEQ_RFU, APP_RFD_MAC_802_15_4_SetupTask); // Setup task
 
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_1, UTIL_SEQ_RFU, APPE_Button1Action); // Button 1
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_2, UTIL_SEQ_RFU, APPE_Button2Action); // Button 2
-  UTIL_SEQ_RegTask( 1<<TASK_BUTTON_3, UTIL_SEQ_RFU, APPE_Button3Action); // Button 3
-  UTIL_SEQ_RegTask( 1<<CFG_TASK_DATA_POOL, UTIL_SEQ_RFU, APP_RFD_MAC_802_15_4_poll); // Data pool task
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DATA_POOL, UTIL_SEQ_RFU, APP_RFD_MAC_802_15_4_poll); // Data pool task
   
   /* Configuration MAC 802_15_4 */
   app_mac_regMacCallback(&macCallback);
@@ -185,15 +217,20 @@ void APP_MAC_Init(void) {
 
 void APP_RFD_MAC_802_15_4_SetupTask(void)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_resetReq_t    ResetReq;
-  ST_MAC_setReq_t      SetReq;
   ST_MAC_scanReq_t     ScanReq;
   uint8_t PIB_Value = 0x00;
-  uint8_t scan_channel[4];
-  int8_t tx_power_pib_value = 0;
+  static uint8_t max_retry_scan = 0;
+  static uint8_t scan_duration = 5;
+  /** Select all channels 
+    * The channel numbers to be scanned. The 27 bits (b0, b1, …, b26) indicate 
+    * which channels are to be scanned (1 = scan, 0 = do not scan) for each 
+    * of the 27 channels.
+  **/
+  uint8_t scan_channel[4] = {0x00, 0xF8, 0xFF, 0x07};
   
-  APP_DBG("Run Node MAC 802.15.4 - 2 - Node Startup\r\n");
+  APP_DBG("Node MAC APP - Node Startup\r\n");
   /* Reset MAC */
   memset(&ResetReq, 0x00, sizeof(ST_MAC_resetReq_t));
   ResetReq.set_default_PIB = TRUE;
@@ -206,66 +243,28 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
   /* Wait RESET CONFIRMATION */
   UTIL_SEQ_WaitEvt(EVENT_RESET_CNF);     
     
-  /* Get automatically the extended address */
+  /* Get automatically the extended address, but already set during MAC init */
   otPlatRadioGetIeeeEui64(NULL, extAddr);
-  APP_DBG("COORD MAC APP - Extended address: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n",extAddr[0],
-            extAddr[1],extAddr[2],extAddr[3],extAddr[4],extAddr[5],extAddr[6],extAddr[7]);
+  APP_DBG("Node MAC APP - Extended address: %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\r\n",extAddr[7],
+          extAddr[6],extAddr[5],extAddr[4],extAddr[3],extAddr[2],extAddr[1],extAddr[0]);
   
-  /* Set Device Extended Address */
-  memset(&SetReq, 0x00, sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_MAC_EXTENDED_ADDRESS_c;
-  SetReq.PIB_attribute_valuePtr = (uint8_t *) &extAddr;
-  
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq);
-  if (MAC_SUCCESS != MacStatus) {
-    APP_DBG("Node MAC APP - Set Extended Addr Fails\r\n");
-    return;
-  }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);     
-
   /* Set MAC_AUTO_REQUEST to 0 to able to receive beaconNotify.ind */
-  memset(&SetReq, 0x00, sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_MAC_AUTO_REQUEST_c;
   PIB_Value = FALSE; 
-  SetReq.PIB_attribute_valuePtr = (uint8_t *) &PIB_Value;
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq);
-  if (MAC_SUCCESS != MacStatus) {
-    APP_DBG("Node MAC - Set MAC_AUTO_REQUEST Fails\r\n");
-    return;
-  }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
+  Prepare_MLME_Set_Req(g_MAC_AUTO_REQUEST_c, (uint8_t *) &PIB_Value);
   
-  /* Set Tx Power */
-  memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_PHY_TRANSMIT_POWER_c;
-  tx_power_pib_value = 10; // int8 dBm value in the range [-20;10]
-  SetReq.PIB_attribute_valuePtr = (uint8_t *) &tx_power_pib_value;
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq );
-  if (MAC_SUCCESS != MacStatus) {
-    APP_DBG("Node MAC - Set Tx Power Fails\r\n");
-    return;
-  }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
+  /* Set TX Power */
+  PIB_Value = 10; 
+  Prepare_MLME_Set_Req(g_PHY_TRANSMIT_POWER_c, (uint8_t *) &PIB_Value);
   
   /* Scan Active */
+  while (!beacon_coord_received && max_retry_scan < MAC_RETRY_SCAN) {
   APP_DBG("Node MAC APP - Active Scan\r\n");
-  /** Select all channels 
-   * The channel numbers to be scanned. The 27 bits (b0, b1, …, b26) indicate 
-   * which channels are to be scanned (1 = scan, 0 = do not scan) for each 
-   * of the 27 channels.
-  **/
-  scan_channel[0] = 0x00;
-  scan_channel[1] = 0xF8;
-  scan_channel[2] = 0xFF;
-  scan_channel[3] = 0x07;//all channels
-  memset(&ScanReq, 0x00, sizeof(ST_MAC_scanReq_t));
-  ScanReq.scan_type = g_MAC_ACTIVE_SCAN_TYPE_c; //Active scan
-  ScanReq.scan_duration = g_PHY_MAX_FRAME_DURATION_c;
-  ScanReq.channel_page = g_channel_page;
-  ScanReq.security_level = g_channel_page;
+  scan_duration = BASE_SCAN_DURATION + max_retry_scan; // Increase scan duration each retry, to have more change to receive coordinator beacon's
+  memset(&ScanReq, 0x00, sizeof(ST_MAC_scanReq_t)); // Structure initialization
+  ScanReq.scan_type = g_MAC_ACTIVE_SCAN_TYPE_c; // Active scan
+  ScanReq.scan_duration = scan_duration; // Max frame duration in µs (16 x 960 × (2^n + 1)) , with n = scan_duration
+  ScanReq.channel_page = g_channel_page; // Always this value in 802.15.4 non-beacon enabled
+  ScanReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   memcpy(&ScanReq.a_scan_channels,(uint8_t *) &scan_channel, 0x04);
     
   MacStatus = ST_MAC_MLMEScanReq(mac_hndl, &ScanReq);
@@ -275,78 +274,75 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
   }
   /* Wait SCAN CONFIRMATION */
   UTIL_SEQ_WaitEvt(EVENT_SCAN_CNF);
-
-  /* Association */
+  max_retry_scan++;
+  }
+  /* Association to the coordinator */
+  if (beacon_coord_received) {
   APP_RFD_MAC_802_15_4_Association();
-  /* Wait ASSOCIATION CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_ASSOCIATE_CNF);
   
   /* Set Device Short Address */
-  memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_MAC_SHORT_ADDRESS_c;
-  SetReq.PIB_attribute_valuePtr = (uint8_t*) &g_MAC_associateCnf.a_assoc_short_address;
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq);
-  if ( MAC_SUCCESS != MacStatus ) {
-    APP_DBG("RFD MAC APP - Set Short Addr Fails\n\r");
-    return;
-  }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
+  Prepare_MLME_Set_Req(g_MAC_SHORT_ADDRESS_c, (uint8_t *) &g_MAC_associateCnf.a_assoc_short_address);
 
   /* Set RxOnWhenIdle */
-  memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_MAC_RX_ON_WHEN_IDLE_c;
-  PIB_Value = g_TRUE;
-  SetReq.PIB_attribute_valuePtr = &PIB_Value;
-
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq);
-  if (MAC_SUCCESS != MacStatus) {
-    APP_DBG("Node MAC APP - Set Rx On When Idle Fails\r\n");
-    return;
-  }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
+  PIB_Value = g_TRUE; 
+  Prepare_MLME_Set_Req(g_MAC_RX_ON_WHEN_IDLE_c, (uint8_t *) &PIB_Value); 
 
   APP_DBG("Node MAC APP - Ready \r\n"); //to Handle Association Req and Receive Data
   BSP_LED_On(LD1);
-  APP_RFD_MAC_802_15_4_poll(); //send data to the coordinator
+  APP_RFD_MAC_802_15_4_poll(); // Send data to the coordinator
+  
+  }else {
+    APP_DBG("Node MAC APP - No coordinator detected after several retries...\r\n");
+  }
 }
 
 void APP_RFD_MAC_802_15_4_SendData_broacast(const char * data)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_dataReq_t DataReq;
-  BSP_LED_On(LD3);
-  
-  APP_DBG("Node MAC APP - Send Data to 0x%04x\r\n",g_BroacastShortAddr);
-  DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c; //if the device is associated, we send the broadcast with the short address
-  if (!deviceAssociated){
-    DataReq.src_addr_mode = g_EXTENDED_ADDR_MODE_c; //if the device is not associated, we send the broadcast with the extended address
+
+  /* If the payload frame is greater than 127 bytes, we don't send the frame */
+  if (strlen(data) > FRAME_MAX_SIZE) {
+      return;
   }
-  DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c;
+  
+  BSP_LED_On(LD3);
+  APP_DBG("Node MAC APP - Send Data to 0x%04x\r\n", g_BroacastShortAddr);
+  /* structure initialization */
+  memset(&DataReq, 0x00, sizeof(ST_MAC_dataReq_t));
+  
+  DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c; // If the device is associated, we send the broadcast with the short address
+  if (!deviceAssociated){
+    DataReq.src_addr_mode = g_EXTENDED_ADDR_MODE_c; // If the device is not associated, we send the broadcast with the extended address
+  }
+  DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c; // Address source mode
 
-  memcpy(DataReq.a_dst_PAN_id, &g_panId, 0x02);
-  memcpy(DataReq.dst_address.a_short_addr, &g_BroacastShortAddr, 0x02);
+  memcpy(DataReq.a_dst_PAN_id, &g_panId, 0x02); // PANID destination
+  memcpy(DataReq.dst_address.a_short_addr, &g_BroacastShortAddr, 0x02); // Address destination 
 
-  DataReq.msdu_handle = g_dataHandle++;
-  DataReq.ack_Tx = 0x00; // No ACK request
-  DataReq.GTS_Tx = FALSE;
+  DataReq.msdu_handle = g_dataHandle++; // The handle associated with the MSDU
+  DataReq.ack_Tx = FALSE; // Request ACK = TRUE, overwise FALSE
+  DataReq.GTS_Tx = FALSE; // Always this value in 802.15.4 non-beacon enabled
   memcpy(&rfBuffer, data, strlen(data));
+  
+  /* Xor Data to potentially verified data paylaod on receiver side (optional) */
   rfBuffer[strlen(data)] = xorSign(data, strlen(data));
-  DataReq.msduPtr = (uint8_t *) rfBuffer;
-  DataReq.msdu_length = strlen(data) + 1;
-  DataReq.security_level = g_MAC_UNSECURED_MODE_c;
+  DataReq.msduPtr = (uint8_t *) rfBuffer; // Data payload
+  DataReq.msdu_length = strlen(data) + 1; // Data length
+  DataReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   MacStatus = ST_MAC_MCPSDataReq(mac_hndl, &DataReq);
   if (MAC_SUCCESS != MacStatus) {
     APP_DBG("Node MAC APP - Data Req Fails\r\n");
     return;
   }
+  /* Wait DATA CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_DATA_CNF);
   BSP_LED_Off(LD3);
 }
 
 void APP_RFD_MAC_802_15_4_Disassociation(void)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_disassociateReq_t DisassiociateReq;
   BSP_LED_On(LD3);
   
@@ -356,31 +352,38 @@ void APP_RFD_MAC_802_15_4_Disassociation(void)
     UTIL_TIMER_Stop(&SendTimer);
   }
   
-  DisassiociateReq.device_addr_mode = g_SHORT_ADDR_MODE_c; //short address
-  memcpy(DisassiociateReq.a_device_PAN_id, &g_panId, 0x02); //PAN ID 0x1AAA
-  DisassiociateReq.disassociate_reason = g_DEVICE_REQUESTED_c; //The device wishes to leave the PAN
-  memcpy(DisassiociateReq.device_address.a_short_addr, &g_coordShortAddr,0x02);
+  /* structure initialization */
+  memset(&DisassiociateReq, 0x00, sizeof(ST_MAC_disassociateReq_t));
+  
+  DisassiociateReq.device_addr_mode = g_SHORT_ADDR_MODE_c; // Short address mode
+  memcpy(DisassiociateReq.a_device_PAN_id, &g_panId, 0x02); // Device PAN ID
+  DisassiociateReq.disassociate_reason = g_DEVICE_REQUESTED_c; // The device wishes to leave the PAN
+  memcpy(DisassiociateReq.device_address.a_short_addr, &g_coordShortAddr,0x02); // Coordinator Address 
   DisassiociateReq.tx_Indirect = FALSE;
-  DisassiociateReq.security_level = g_MAC_UNSECURED_MODE_c;
+  DisassiociateReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   MacStatus = ST_MAC_MLMEDisassociateReq(mac_hndl, &DisassiociateReq);
   if (MAC_SUCCESS != MacStatus) {
     APP_DBG("Node MAC APP - Disassociate Req Fails\r\n");
     return;
   }
 
+  /* Wait DISASSOCIATION CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_DISASSOCIATE_CNF);
   BSP_LED_Off(LD3);
 }
 
 void APP_RFD_MAC_802_15_4_poll(void)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_pollReq_t PollReq;
   BSP_LED_On(LD3);
   
-  PollReq.coord_addr_mode = g_SHORT_ADDR_MODE_c; //short address
-  memcpy(PollReq.coord_address.a_short_addr,&g_coordShortAddr,0x02); //coordinator address
-  memcpy(PollReq.a_coord_PAN_id, &g_panId, 0x02); //PAN ID
-  PollReq.security_level = g_MAC_UNSECURED_MODE_c; //No secured
+  /* structure initialization */
+  memset(&PollReq, 0x00, sizeof(ST_MAC_pollReq_t));
+  PollReq.coord_addr_mode = g_SHORT_ADDR_MODE_c; // Short address mode
+  memcpy(PollReq.coord_address.a_short_addr,&g_coordShortAddr,0x02); // Coordinator Address
+  memcpy(PollReq.a_coord_PAN_id, &g_panId, 0x02); // PANID destination 
+  PollReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   
   MacStatus = ST_MAC_MLMEPollReq(mac_hndl, &PollReq);
   if (MAC_SUCCESS != MacStatus) {
@@ -388,27 +391,31 @@ void APP_RFD_MAC_802_15_4_poll(void)
     return;
   }
 
+  /* Wait POLL CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_POLL_CNF);
   BSP_LED_Off(LD3);
 }
 
 void APP_RFD_MAC_802_15_4_Association(void)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_associateReq_t AssociateReq;
 
+  /* structure initialization */
   memset(&AssociateReq,0x00,sizeof(ST_MAC_associateReq_t));
+  
   APP_DBG("Node MAC APP - Association REQ\r\n");
-  g_channel = g_BeaconNotifyInd.PAN_descriptor.logical_channel;
-  g_panId = ((g_BeaconNotifyInd.PAN_descriptor.a_coord_PAN_id[1]) << 8) + g_BeaconNotifyInd.PAN_descriptor.a_coord_PAN_id[0];
+  g_channel = g_BeaconNotifyInd.PAN_descriptor.logical_channel; // Getting the channel in the beacon
+  g_panId = ((g_BeaconNotifyInd.PAN_descriptor.a_coord_PAN_id[1]) << 8) + g_BeaconNotifyInd.PAN_descriptor.a_coord_PAN_id[0]; // Getting the PANID in the beacon
   if (g_BeaconNotifyInd.PAN_descriptor.coord_addr_mode == g_SHORT_ADDR_MODE_c) {
     g_coordShortAddr = ((g_BeaconNotifyInd.PAN_descriptor.coord_addr.a_short_addr[1]) << 8 ) + g_BeaconNotifyInd.PAN_descriptor.coord_addr.a_short_addr[0]; 
-    /* prepare coordinator address for association */
+    /* Prepare coordinator address for association */
     AssociateReq.coord_addr_mode  = g_SHORT_ADDR_MODE_c;
     memcpy(AssociateReq.coord_address.a_short_addr, &g_coordShortAddr, 0x02);
       
-  }else{ if (g_BeaconNotifyInd.PAN_descriptor.coord_addr_mode == g_EXTENDED_ADDR_MODE_c) {
+  }else { if (g_BeaconNotifyInd.PAN_descriptor.coord_addr_mode == g_EXTENDED_ADDR_MODE_c) {
     memcpy(g_coordExtendedAddr, &(g_BeaconNotifyInd.PAN_descriptor.coord_addr.a_extend_addr[0]), 0x08);
-    /* prepare coordinator address for association */
+    /* Prepare coordinator address for association */
     AssociateReq.coord_addr_mode  = g_SHORT_ADDR_MODE_c;
     memcpy(AssociateReq.coord_address.a_extend_addr, &g_coordExtendedAddr, 0x08);
   }else {
@@ -416,20 +423,23 @@ void APP_RFD_MAC_802_15_4_Association(void)
     return;
   }
   }
-  /* prepare channel for association */
+  /* Prepare channel for association */
   AssociateReq.channel_number   = g_channel;
-  AssociateReq.channel_page     = g_channel_page;//always this value
+  AssociateReq.channel_page     = g_channel_page; // Always this value in 802.15.4 non-beacon enabled
     
-  /* allows you to allocate address and receive ON when IDLE*/
+  /* Allows you to allocate address and receive ON when IDLE*/
   AssociateReq.capability_information = 0x88;
     
-  /* prepare PANID for association */
+  /* Prepare PANID for association */
   memcpy(AssociateReq.a_coord_PAN_id, &g_panId, 0x02);
-  AssociateReq.security_level = g_MAC_UNSECURED_MODE_c;
+  AssociateReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   MacStatus = ST_MAC_MLMEAssociateReq(mac_hndl, &AssociateReq);
   if (MAC_SUCCESS != MacStatus) {
     APP_DBG("Node MAC APP - Association Req Fails\n\r");
     return;
   }
-
+  
+  /* Wait ASSOCIATION CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_ASSOCIATE_CNF);
+  
 }

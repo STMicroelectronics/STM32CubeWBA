@@ -149,7 +149,7 @@ static void Uart_Cmd_Execute(void)
 
   /* USER CODE BEGIN Uart_Cmd_Execute */
   Button_TypeDef      eButton;
-  
+
   /* Parse received frame */
   if ( strcmp((char const*)RxBuffer, "SW1") == 0 )
   {
@@ -165,7 +165,7 @@ static void Uart_Cmd_Execute(void)
   }
   else
   {
-    LOG_ERROR_APP( "NOT RECOGNIZED COMMAND : %s\n", RxBuffer );
+    LOG_ERROR_APP( "ERROR : NOT RECOGNIZED COMMAND : %s\n", RxBuffer );
     return;
   }
 

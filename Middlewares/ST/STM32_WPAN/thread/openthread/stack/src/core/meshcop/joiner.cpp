@@ -238,20 +238,8 @@ uint8_t Joiner::CalculatePriority(int8_t aRssi, bool aSteeringDataAllowsAny)
         aRssi = -127;
     }
 
-    // Limit the RSSI to range (-128, 0), i.e. -128 < aRssi < 0.
-
-    if (aRssi <= -128)
-    {
-        priority = -127;
-    }
-    else if (aRssi >= 0)
-    {
-        priority = -1;
-    }
-    else
-    {
-        priority = aRssi;
-    }
+    // Clamp the RSSI to range [-127, -1]
+    priority = Clamp<int8_t>(aRssi, -127, -1);
 
     // Assign higher priority to networks with an exact match of Joiner
     // ID in the Steering Data (128 < priority < 256) compared to ones
@@ -407,7 +395,7 @@ void Joiner::HandleSecureCoapClientConnect(bool aConnected)
     {
         SetState(kStateConnected);
         SendJoinerFinalize();
-        mTimer.Start(kReponseTimeout);
+        mTimer.Start(kResponseTimeout);
     }
     else
     {
@@ -486,7 +474,7 @@ void Joiner::SendJoinerFinalize(void)
     SuccessOrExit(Get<Tmf::SecureAgent>().SendMessage(*mFinalizeMessage, Joiner::HandleJoinerFinalizeResponse, this));
     mFinalizeMessage = nullptr;
 
-    LogInfo("Joiner sent finalize");
+    LogInfo("Sent %s", UriToString<kUriJoinerFinalize>());
 
 exit:
     return;
@@ -515,9 +503,9 @@ void Joiner::HandleJoinerFinalizeResponse(Coap::Message *aMessage, const Ip6::Me
     SuccessOrExit(Tlv::Find<StateTlv>(*aMessage, state));
 
     SetState(kStateEntrust);
-    mTimer.Start(kReponseTimeout);
+    mTimer.Start(kResponseTimeout);
 
-    LogInfo("Joiner received finalize response %d", state);
+    LogInfo("Received %s %d", UriToString<kUriJoinerFinalize>(), state);
 
 #if OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE
     LogCertMessage("[THCI] direction=recv | type=JOIN_FIN.rsp |", *aMessage);
@@ -535,7 +523,7 @@ template <> void Joiner::HandleTmf<kUriJoinerEntrust>(Coap::Message &aMessage, c
 
     VerifyOrExit(mState == kStateEntrust && aMessage.IsConfirmablePostRequest(), error = kErrorDrop);
 
-    LogInfo("Joiner received entrust");
+    LogInfo("Received %s", UriToString<kUriJoinerEntrust>());
     LogCert("[THCI] direction=recv | type=JOIN_ENT.ntf");
 
     datasetInfo.Clear();
@@ -574,7 +562,7 @@ void Joiner::SendJoinerEntrustResponse(const Coap::Message &aRequest, const Ip6:
 
     SetState(kStateJoined);
 
-    LogInfo("Joiner sent entrust response");
+    LogInfo("Sent %s response", UriToString<kUriJoinerEntrust>());
     LogCert("[THCI] direction=send | type=JOIN_ENT.rsp");
 
 exit:

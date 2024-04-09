@@ -59,6 +59,12 @@ typedef uint8_t BAP_Audio_Path_Direction_t;
 #define BAP_AUDIO_PATH_INPUT                    (0x00)  /* Audio Data packets are sent to the remote device*/
 #define BAP_AUDIO_PATH_OUTPUT                   (0x01)  /* Audio Data packets are received from the remote device.*/
 
+/* Type used to specify the kind of encryption for adding a Broadcast Source to the BASS */
+typedef uint8_t BAP_Broadcast_Source_Encryption_t;
+#define BAP_BROADCAST_SOURCE_NOT_ENCRYPTED          (0x00) /* If added source is not encrypted or if status is unknown */
+#define BAP_BROADCAST_SOURCE_ENCRYPTED_CODE_KNOWN   (0x01) /* If added source is encrypted and the broadcast code is known */
+#define BAP_BROADCAST_SOURCE_ENCRYPTED_CODE_UNKNOWN (0x02) /* If added source is encrypted and the broadcast code is unknown */
+
 /* Configuration settings of Audio Capabilities in Server role structure.
  * These configuration settings are required by Unicast server and Broadcast Sink role.
  */
@@ -738,7 +744,11 @@ typedef struct
  */
 typedef struct
 {
-  uint8_t NumberBroadcastReceiveStateChar;
+  uint8_t       NumberBroadcastReceiveStateChar;
+  uint16_t      BASS_StartAttHandle;            /* ATT Start Handle of the BASS Service in the remote Unicast Server */
+  uint16_t      BASS_EndAttHandle;              /* ATT End Handle of the BASS Service in the remote Unicast Server */
+  uint16_t      PACS_StartAttHandle;            /* Start ATT Handle of the PACS Service in the remote Unicast Server */
+  uint16_t      PACS_EndAttHandle;              /* End ATT Handle of the PACS Service in the remote Unicast Server */
 } BAP_Broadcast_Assistant_Info_t;
 
 /* Structure containing information about remote Unicast Server reported by Unicast Client once link is complete */
@@ -749,6 +759,10 @@ typedef struct
   Audio_Location_t      SrcAudioLocations;      /* Source audio Locations */
   BAP_Audio_Contexts_t  AvailAudioContexts;     /* Available audio contexts */
   BAP_Audio_Contexts_t  SuppAudioContexts;      /* Supported audio contexts */
+  uint16_t              ASCS_StartAttHandle;    /* ATT Start Handle of the ASCS Service in the remote Unicast Server */
+  uint16_t              ASCS_EndAttHandle;      /* ATT End Handle of the ASCS Service in the remote Unicast Server */
+  uint16_t              PACS_StartAttHandle;    /* Start ATT Handle of the PACS Service in the remote Unicast Server */
+  uint16_t              PACS_EndAttHandle;      /* End ATT Handle of the PACS Service in the remote Unicast Server */
 } BAP_Unicast_Server_Info_t;
 
 

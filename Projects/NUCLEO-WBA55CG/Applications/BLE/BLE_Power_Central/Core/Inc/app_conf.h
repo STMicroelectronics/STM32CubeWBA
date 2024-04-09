@@ -42,9 +42,10 @@
 #define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
 
 /**
- * Define Advertising parameters
+ * Definition of public BD Address,
+ * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0x0000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -91,7 +92,7 @@
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_SUPPORTED)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
@@ -121,6 +122,7 @@
  * BLE stack options, bitmap to active or not some features at BleStack_Init() function call.
  */
 #define CFG_BLE_OPTIONS             (0 | \
+                                     0 | \
                                      0 | \
                                      0 | \
                                      0 | \
@@ -200,8 +202,8 @@
  * PHY preferences
  */
 #define CFG_PHY_PREF                  (0)
-#define CFG_PHY_PREF_TX               (HCI_TX_PHYS_LE_1M_PREF)
-#define CFG_PHY_PREF_RX               (HCI_RX_PHYS_LE_1M_PREF)
+#define CFG_PHY_PREF_TX               (HCI_TX_PHYS_LE_2M_PREF)
+#define CFG_PHY_PREF_RX               (HCI_RX_PHYS_LE_2M_PREF)
 
 /* USER CODE BEGIN BLE_Stack */
 
@@ -243,9 +245,6 @@ typedef enum
 /* USER CODE BEGIN Low_Power 1 */
 
 /* USER CODE END Low_Power 1 */
-
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_SMPS_SUPPLY)
 
 /******************************************************************************
  * RTC
@@ -458,7 +457,7 @@ typedef enum
  *   0 -> RF TX output level from -20 dBm to +10 dBm
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
-#define CFG_RF_TX_POWER_TABLE_ID            1
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -479,15 +478,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                          (4000)
-#define CFG_PWR_VOS2_SUPPORTED                    (0)   /* VOS2 power configuration not currently supported with radio activity */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER             (2u)
-#define CFG_AMM_VIRTUAL_STACK_BLE                   (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE       (400U)
-#define CFG_AMM_VIRTUAL_APP_BLE                   (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE       (200U)
-#define CFG_AMM_POOL_SIZE                      DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                               + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_MM_POOL_SIZE                                  (4000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
+#define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -495,7 +493,7 @@ typedef enum
 
 /* USER CODE BEGIN Defines */
 /* Set the peripheral BD address */
-#define CFG_PERIPH_BD_ADDRESS           0x0080e12a4d86
+#define CFG_PERIPH_BD_ADDRESS           0x0080e12a7959
   
 /* Set the data sending interval in milliseconds */
 #define WRITE_TX_INT_MS                 (1000)

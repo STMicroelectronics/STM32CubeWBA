@@ -106,6 +106,8 @@ int main(void)
   BSP_LED_Init(LD1);
   /* Configure LD3 for error handler */
   BSP_LED_Init(LD3);
+  /* USER push-button (line 13) will be used to wakeup the system from STANDBY mode */
+  BSP_PB_Init(B1, BUTTON_MODE_EXTI);
 
   /* Enable Power Control clock */
   __HAL_RCC_PWR_CLK_ENABLE();
@@ -130,7 +132,8 @@ int main(void)
      - Enter the Standby mode.
   */
 
-  /* Enable WakeUp Pin PWR_WAKEUP_PIN2 connected to PC.13 (D4 pin6 CN6) */
+  /* Enable WakeUp Pin PWR_WAKEUP_PIN2 connected to PC.13 (B1) */
+  HAL_PWREx_EnableStandbyIORetention(BUTTON_USER_GPIO_Port, BUTTON_USER_Pin);
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);
 
   /* Clear all related wakeup flags*/

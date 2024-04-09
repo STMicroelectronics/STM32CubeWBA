@@ -85,14 +85,14 @@ namespace Ip6 {
  */
 
 /**
- * This class implements TCP message handling.
+ * Implements TCP message handling.
  *
  */
 class Tcp : public InstanceLocator, private NonCopyable
 {
 public:
     /**
-     * This class represents an endpoint of a TCP/IPv6 connection.
+     * Represents an endpoint of a TCP/IPv6 connection.
      *
      */
     class Endpoint : public otTcpEndpoint, public LinkedListEntry<Endpoint>, public GetProvider<Endpoint>
@@ -411,7 +411,7 @@ public:
     };
 
     /**
-     * This class represents a TCP/IPv6 listener.
+     * Represents a TCP/IPv6 listener.
      *
      */
     class Listener : public otTcpListener, public LinkedListEntry<Listener>, public GetProvider<Listener>
@@ -538,7 +538,7 @@ public:
     };
 
     /**
-     * This class implements TCP header parsing.
+     * Implements TCP header parsing.
      *
      */
     OT_TOOL_PACKED_BEGIN
@@ -548,7 +548,7 @@ public:
         static constexpr uint8_t kChecksumFieldOffset = 16; ///< Byte offset of the Checksum field in the TCP header.
 
         /**
-         * This method returns the TCP Source Port.
+         * Returns the TCP Source Port.
          *
          * @returns The TCP Source Port.
          *
@@ -556,7 +556,7 @@ public:
         uint16_t GetSourcePort(void) const { return HostSwap16(mSource); }
 
         /**
-         * This method returns the TCP Destination Port.
+         * Returns the TCP Destination Port.
          *
          * @returns The TCP Destination Port.
          *
@@ -564,7 +564,7 @@ public:
         uint16_t GetDestinationPort(void) const { return HostSwap16(mDestination); }
 
         /**
-         * This method returns the TCP Sequence Number.
+         * Returns the TCP Sequence Number.
          *
          * @returns The TCP Sequence Number.
          *
@@ -572,7 +572,7 @@ public:
         uint32_t GetSequenceNumber(void) const { return HostSwap32(mSequenceNumber); }
 
         /**
-         * This method returns the TCP Acknowledgment Sequence Number.
+         * Returns the TCP Acknowledgment Sequence Number.
          *
          * @returns The TCP Acknowledgment Sequence Number.
          *
@@ -580,7 +580,7 @@ public:
         uint32_t GetAcknowledgmentNumber(void) const { return HostSwap32(mAckNumber); }
 
         /**
-         * This method returns the TCP Flags.
+         * Returns the TCP Flags.
          *
          * @returns The TCP Flags.
          *
@@ -588,7 +588,7 @@ public:
         uint16_t GetFlags(void) const { return HostSwap16(mFlags); }
 
         /**
-         * This method returns the TCP Window.
+         * Returns the TCP Window.
          *
          * @returns The TCP Window.
          *
@@ -596,7 +596,7 @@ public:
         uint16_t GetWindow(void) const { return HostSwap16(mWindow); }
 
         /**
-         * This method returns the TCP Checksum.
+         * Returns the TCP Checksum.
          *
          * @returns The TCP Checksum.
          *
@@ -604,7 +604,7 @@ public:
         uint16_t GetChecksum(void) const { return HostSwap16(mChecksum); }
 
         /**
-         * This method returns the TCP Urgent Pointer.
+         * Returns the TCP Urgent Pointer.
          *
          * @returns The TCP Urgent Pointer.
          *
@@ -623,7 +623,7 @@ public:
     } OT_TOOL_PACKED_END;
 
     /**
-     * This constructor initializes the object.
+     * Initializes the object.
      *
      * @param[in] aInstance  A reference to the OpenThread instance.
      *

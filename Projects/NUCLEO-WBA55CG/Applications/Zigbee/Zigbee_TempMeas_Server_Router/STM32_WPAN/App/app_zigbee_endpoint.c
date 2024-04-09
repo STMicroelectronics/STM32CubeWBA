@@ -202,6 +202,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -403,7 +405,7 @@ static void APP_ZIGBEE_TempMeasAttributeUpdate( void )
     }
   }
     
-  sprintf( szText, "%.2f", ( (float)iTemperatureCurrent / 100 ) );
+  snprintf( szText, sizeof(szText), "%.2f", ( (float)iTemperatureCurrent / 100u ) );
   LOG_INFO_APP( "[TEMP MEAS] Update TempMeasure : %s C", szText );
   APP_LED_TOGGLE(LED_GREEN);
   

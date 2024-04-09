@@ -51,11 +51,11 @@ RegisterLogModule("BbrLocal");
 
 Local::Local(Instance &aInstance)
     : InstanceLocator(aInstance)
-    , mState(OT_BACKBONE_ROUTER_STATE_DISABLED)
-    , mMlrTimeout(Mle::kMlrTimeoutDefault)
-    , mReregistrationDelay(Mle::kRegistrationDelayDefault)
+    , mState(kStateDisabled)
+    , mMlrTimeout(kDefaultMlrTimeout)
+    , mReregistrationDelay(kDefaultRegistrationDelay)
     , mSequenceNumber(Random::NonCrypto::GetUint8() % 127)
-    , mRegistrationJitter(Mle::kBackboneRouterRegistrationJitter)
+    , mRegistrationJitter(kDefaultRegistrationJitter)
     , mIsServiceAdded(false)
 {
     mDomainPrefixConfig.GetPrefix().SetLength(0);
@@ -81,11 +81,11 @@ Local::Local(Instance &aInstance)
 
 void Local::SetEnabled(bool aEnable)
 {
-    VerifyOrExit(aEnable == (mState == OT_BACKBONE_ROUTER_STATE_DISABLED));
+    VerifyOrExit(aEnable != IsEnabled());
 
     if (aEnable)
     {
-        SetState(OT_BACKBONE_ROUTER_STATE_SECONDARY);
+        SetState(kStateSecondary);
         AddDomainPrefixToNetworkData();
         IgnoreError(AddService());
     }
@@ -93,7 +93,7 @@ void Local::SetEnabled(bool aEnable)
     {
         RemoveDomainPrefixFromNetworkData();
         RemoveService();
-        SetState(OT_BACKBONE_ROUTER_STATE_DISABLED);
+        SetState(kStateDisabled);
     }
 
 exit:
@@ -102,36 +102,36 @@ exit:
 
 void Local::Reset(void)
 {
-    VerifyOrExit(mState != OT_BACKBONE_ROUTER_STATE_DISABLED);
+    VerifyOrExit(mState != kStateDisabled);
 
     RemoveService();
 
-    if (mState == OT_BACKBONE_ROUTER_STATE_PRIMARY)
+    if (mState == kStatePrimary)
     {
         // Increase sequence number when changing from Primary to Secondary.
         SequenceNumberIncrease();
         Get<Notifier>().Signal(kEventThreadBackboneRouterLocalChanged);
-        SetState(OT_BACKBONE_ROUTER_STATE_SECONDARY);
+        SetState(kStateSecondary);
     }
 
 exit:
     return;
 }
 
-void Local::GetConfig(BackboneRouterConfig &aConfig) const
+void Local::GetConfig(Config &aConfig) const
 {
     aConfig.mSequenceNumber      = mSequenceNumber;
     aConfig.mReregistrationDelay = mReregistrationDelay;
     aConfig.mMlrTimeout          = mMlrTimeout;
 }
 
-Error Local::SetConfig(const BackboneRouterConfig &aConfig)
+Error Local::SetConfig(const Config &aConfig)
 {
     Error error  = kErrorNone;
     bool  update = false;
 
 #if !OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE
-    VerifyOrExit(aConfig.mMlrTimeout >= Mle::kMlrTimeoutMin && aConfig.mMlrTimeout <= Mle::kMlrTimeoutMax,
+    VerifyOrExit(aConfig.mMlrTimeout >= kMinMlrTimeout && aConfig.mMlrTimeout <= kMaxMlrTimeout,
                  error = kErrorInvalidArgs);
 #endif
     // Validate configuration according to Thread 1.2.1 Specification 5.21.3.3:
@@ -176,7 +176,7 @@ Error Local::AddService(bool aForce)
     Error                                            error = kErrorInvalidState;
     NetworkData::Service::BackboneRouter::ServerData serverData;
 
-    VerifyOrExit(mState != OT_BACKBONE_ROUTER_STATE_DISABLED && Get<Mle::Mle>().IsAttached());
+    VerifyOrExit(mState != kStateDisabled && Get<Mle::Mle>().IsAttached());
 
     VerifyOrExit(aForce /* if register by force */ ||
                  !Get<BackboneRouter::Leader>().HasPrimary() /* if no available Backbone Router service */ ||
@@ -210,21 +210,21 @@ exit:
     LogBackboneRouterService("Remove", error);
 }
 
-void Local::SetState(BackboneRouterState aState)
+void Local::SetState(State aState)
 {
     VerifyOrExit(mState != aState);
 
-    if (mState == OT_BACKBONE_ROUTER_STATE_DISABLED)
+    if (mState == kStateDisabled)
     {
         // Update All Network Backbone Routers Multicast Address for both Secondary and Primary state.
         mAllNetworkBackboneRouters.SetMulticastNetworkPrefix(Get<Mle::MleRouter>().GetMeshLocalPrefix());
     }
 
-    if (mState == OT_BACKBONE_ROUTER_STATE_PRIMARY)
+    if (mState == kStatePrimary)
     {
         Get<ThreadNetif>().RemoveUnicastAddress(mBackboneRouterPrimaryAloc);
     }
-    else if (aState == OT_BACKBONE_ROUTER_STATE_PRIMARY)
+    else if (aState == kStatePrimary)
     {
         // Add Primary Backbone Router Aloc for Primary Backbone Router.
         mBackboneRouterPrimaryAloc.GetAddress().SetPrefix(Get<Mle::MleRouter>().GetMeshLocalPrefix());
@@ -239,11 +239,11 @@ exit:
     return;
 }
 
-void Local::HandleBackboneRouterPrimaryUpdate(Leader::State aState, const BackboneRouterConfig &aConfig)
+void Local::HandleBackboneRouterPrimaryUpdate(Leader::State aState, const Config &aConfig)
 {
     OT_UNUSED_VARIABLE(aState);
 
-    VerifyOrExit(mState != OT_BACKBONE_ROUTER_STATE_DISABLED && Get<Mle::MleRouter>().IsAttached());
+    VerifyOrExit(IsEnabled() && Get<Mle::MleRouter>().IsAttached());
 
     // Wait some jitter before trying to Register.
     if (aConfig.mServer16 == Mac::kShortAddrInvalid)
@@ -279,7 +279,7 @@ void Local::HandleBackboneRouterPrimaryUpdate(Leader::State aState, const Backbo
     }
     else
     {
-        SetState(OT_BACKBONE_ROUTER_STATE_PRIMARY);
+        SetState(kStatePrimary);
     }
 
 exit:
@@ -358,19 +358,19 @@ exit:
     return;
 }
 
-void Local::HandleDomainPrefixUpdate(Leader::DomainPrefixState aState)
+void Local::HandleDomainPrefixUpdate(DomainPrefixEvent aEvent)
 {
     if (!IsEnabled())
     {
         ExitNow();
     }
 
-    if (aState == Leader::kDomainPrefixRemoved || aState == Leader::kDomainPrefixRefreshed)
+    if (aEvent == kDomainPrefixRemoved || aEvent == kDomainPrefixRefreshed)
     {
         Get<BackboneTmfAgent>().UnsubscribeMulticast(mAllDomainBackboneRouters);
     }
 
-    if (aState == Leader::kDomainPrefixAdded || aState == Leader::kDomainPrefixRefreshed)
+    if (aEvent == kDomainPrefixAdded || aEvent == kDomainPrefixRefreshed)
     {
         mAllDomainBackboneRouters.SetMulticastNetworkPrefix(*Get<Leader>().GetDomainPrefix());
         Get<BackboneTmfAgent>().SubscribeMulticast(mAllDomainBackboneRouters);
@@ -378,15 +378,15 @@ void Local::HandleDomainPrefixUpdate(Leader::DomainPrefixState aState)
 
     if (mDomainPrefixCallback.IsSet())
     {
-        switch (aState)
+        switch (aEvent)
         {
-        case Leader::kDomainPrefixAdded:
+        case kDomainPrefixAdded:
             mDomainPrefixCallback.Invoke(OT_BACKBONE_ROUTER_DOMAIN_PREFIX_ADDED, Get<Leader>().GetDomainPrefix());
             break;
-        case Leader::kDomainPrefixRemoved:
+        case kDomainPrefixRemoved:
             mDomainPrefixCallback.Invoke(OT_BACKBONE_ROUTER_DOMAIN_PREFIX_REMOVED, Get<Leader>().GetDomainPrefix());
             break;
-        case Leader::kDomainPrefixRefreshed:
+        case kDomainPrefixRefreshed:
             mDomainPrefixCallback.Invoke(OT_BACKBONE_ROUTER_DOMAIN_PREFIX_CHANGED, Get<Leader>().GetDomainPrefix());
             break;
         default:

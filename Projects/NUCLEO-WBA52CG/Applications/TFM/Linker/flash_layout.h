@@ -74,7 +74,7 @@
  * sw binary. Each FLASH_AREA_IMAGE contains two partitions. See Flash layout
  * above.
  */
-#define LOADER_FLASH_DEV_NAME             TFM_Driver_FLASH0
+#define LOADER_FLASH_DEV_NAME             Driver_FLASH0
 
 /* Flash layout info for BL2 bootloader */
 #define FLASH_AREA_IMAGE_SECTOR_SIZE    (0x2000)     /* 8 KB */
@@ -388,25 +388,25 @@
  */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2)
 /* Flash Driver Used to Confirm Secure App Image */
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             TFM_Driver_FLASH0
+#define  FLASH_PRIMARY_SECURE_DEV_NAME            Driver_FLASH0
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2) */
 /* Flash Driver Used to Confirm NonSecure App Image or MCUBOOT_APP_IMAGE_NUMBER = 1 */
-#define  FLASH_PRIMARY_NONSECURE_DEV_NAME          TFM_Driver_FLASH0
+#define  FLASH_PRIMARY_NONSECURE_DEV_NAME         Driver_FLASH0
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 /* Flash Driver Used to Confirm Secure Data Image */
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        TFM_Driver_FLASH0
+#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_FLASH0
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
 /* Flash Driver Used to Confirm NonSecure Data Image */
-#define  FLASH_PRIMARY_DATA_NONSECURE_DEV_NAME     TFM_Driver_FLASH0
+#define  FLASH_PRIMARY_DATA_NONSECURE_DEV_NAME     Driver_FLASH0
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
-#define FLASH_DEV_NAME                             TFM_Driver_FLASH0
+#define FLASH_DEV_NAME                             Driver_FLASH0
 
 /* Protected Storage (PS) Service definitions
  * Note: Further documentation of these definitions can be found in the
  * TF-M PS Integration Guide.
  */
-#define TFM_HAL_PS_FLASH_DRIVER TFM_Driver_FLASH0
+#define TFM_HAL_PS_FLASH_DRIVER Driver_FLASH0
 
 /* In this target the CMSIS driver requires only the offset from the base
  * address instead of the full memory address.
@@ -433,7 +433,7 @@
  * Note: Further documentation of these definitions can be found in the
  * TF-M ITS Integration Guide.
  */
-#define TFM_HAL_ITS_FLASH_DRIVER TFM_Driver_FLASH0
+#define TFM_HAL_ITS_FLASH_DRIVER Driver_FLASH0
 
 /* In this target the CMSIS driver requires only the offset from the base
  * address instead of the full memory address.

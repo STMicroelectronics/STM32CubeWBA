@@ -55,7 +55,7 @@ namespace ot {
 class Child;
 
 /**
- * This class implements CSL tx scheduling functionality.
+ * Implements CSL tx scheduling functionality.
  *
  */
 class CslTxScheduler : public InstanceLocator, private NonCopyable
@@ -67,7 +67,7 @@ public:
     static constexpr uint8_t kMaxCslTriggeredTxAttempts = OPENTHREAD_CONFIG_MAC_MAX_TX_ATTEMPTS_INDIRECT_POLLS;
 
     /**
-     * This class defines all the child info required for scheduling CSL transmissions.
+     * Defines all the child info required for scheduling CSL transmissions.
      *
      * `Child` class publicly inherits from this class.
      *
@@ -97,8 +97,8 @@ public:
         TimeMilli GetCslLastHeard(void) const { return mCslLastHeard; }
         void      SetCslLastHeard(TimeMilli aCslLastHeard) { mCslLastHeard = aCslLastHeard; }
 
-        uint64_t GetLastRxTimestamp(void) const { return mLastRxTimstamp; }
-        void     SetLastRxTimestamp(uint64_t aLastRxTimestamp) { mLastRxTimstamp = aLastRxTimestamp; }
+        uint64_t GetLastRxTimestamp(void) const { return mLastRxTimestamp; }
+        void     SetLastRxTimestamp(uint64_t aLastRxTimestamp) { mLastRxTimestamp = aLastRxTimestamp; }
 
     private:
         uint8_t   mCslTxAttempts : 7;   ///< Number of CSL triggered tx attempts.
@@ -108,13 +108,13 @@ public:
         uint16_t  mCslPeriod;           ///< CSL sampled listening period in units of 10 symbols (160 microseconds).
         uint16_t  mCslPhase;            ///< The time when the next CSL sample will start.
         TimeMilli mCslLastHeard;        ///< Time when last frame containing CSL IE was heard.
-        uint64_t  mLastRxTimstamp;      ///< Time when last frame containing CSL IE was received, in microseconds.
+        uint64_t  mLastRxTimestamp;     ///< Time when last frame containing CSL IE was received, in microseconds.
 
         static_assert(kMaxCslTriggeredTxAttempts < (1 << 7), "mCslTxAttempts cannot fit max!");
     };
 
     /**
-     * This class defines the callbacks used by the `CslTxScheduler`.
+     * Defines the callbacks used by the `CslTxScheduler`.
      *
      */
     class Callbacks : public InstanceLocator
@@ -125,7 +125,7 @@ public:
         typedef IndirectSenderBase::FrameContext FrameContext;
 
         /**
-         * This constructor initializes the callbacks object.
+         * Initializes the callbacks object.
          *
          * @param[in]  aInstance   A reference to the OpenThread instance.
          *
@@ -163,7 +163,7 @@ public:
                                     Child              &aChild);
     };
     /**
-     * This constructor initializes the CSL tx scheduler object.
+     * Initializes the CSL tx scheduler object.
      *
      * @param[in]  aInstance   A reference to the OpenThread instance.
      *
@@ -171,7 +171,7 @@ public:
     explicit CslTxScheduler(Instance &aInstance);
 
     /**
-     * This method updates the next CSL transmission (finds the nearest child).
+     * Updates the next CSL transmission (finds the nearest child).
      *
      * It would then request the `Mac` to do the CSL tx. If the last CSL tx has been fired at `Mac` but hasn't been
      * done yet, and it's aborted, this method would set `mCslTxChild` to `nullptr` to notify the `HandleTransmitDone`
@@ -181,13 +181,13 @@ public:
     void Update(void);
 
     /**
-     * This method clears all the states inside `CslTxScheduler` and the related states in each child.
+     * Clears all the states inside `CslTxScheduler` and the related states in each child.
      *
      */
     void Clear(void);
 
 private:
-    // Guard time in usec to add when checking delay while preparaing the CSL frame for tx.
+    // Guard time in usec to add when checking delay while preparing the CSL frame for tx.
     static constexpr uint32_t kFramePreparationGuardInterval = 1500;
 
     void InitFrameRequestAhead(void);

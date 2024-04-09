@@ -571,7 +571,7 @@ static ARM_FLASH_INFO *Flash_GetInfo(void)
 }
 #if !defined(LOCAL_LOADER_CONFIG)
 
-ARM_DRIVER_FLASH TFM_Driver_FLASH0 =
+ARM_DRIVER_FLASH Driver_FLASH0 =
 {
   /* Get Version */
   Flash_GetVersion,
@@ -597,7 +597,7 @@ ARM_DRIVER_FLASH TFM_Driver_FLASH0 =
   Flash_GetInfo
 };
 #else
-ARM_DRIVER_FLASH TFM_Driver_FLASH0 =
+ARM_DRIVER_FLASH Driver_FLASH0 =
 {
   /* Get Version */
   NULL,

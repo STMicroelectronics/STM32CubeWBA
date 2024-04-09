@@ -38,6 +38,7 @@ extern LPTIM_HandleTypeDef hlptim1;
 /* Private define ------------------------------------------------------------*/
 #define DEMO_CHANNEL             11
 #define DATA "HELLO COORDINATOR\0"
+#define FRAME_MAX_SIZE 127
 
 /* Set the Maximum value of the counter (Auto-Reload) that defines the Period */
 #define PERIOD               (uint32_t) (32768 - 1) // 1s
@@ -200,13 +201,12 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_NodeDataTask(void)
   APP_LPM_TRANSMIT_MAC_802_15_4_SendData(DATA);
 }
 
-
 void APP_LPM_TRANSMIT_MAC_802_15_4_SetupTask(void)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
+  MAC_Status_t MacStatus;
   ST_MAC_resetReq_t    ResetReq;
   ST_MAC_setReq_t      SetReq;
-  int8_t tx_power_pib_value = 0;
+  int8_t tx_power_pib_value;
 
   APP_DBG("Run LPM MAC 802.15.4 - 2 - LPM Startup\r\n");
   /* Reset MAC */
@@ -263,7 +263,7 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SetupTask(void)
   APP_DBG("LPM MAC APP - Set TX Power\r\n");
   memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
   SetReq.PIB_attribute = g_PHY_TRANSMIT_POWER_c;
-  tx_power_pib_value = 10;                       /* int8 dBm value in the range [-20;10] */
+  tx_power_pib_value = 10; // in dBm value in the range [-20;10]
   SetReq.PIB_attribute_valuePtr = (uint8_t *)&tx_power_pib_value;
   MacStatus = ST_MAC_MLMESetReq(mac_hndl, &SetReq );
   if ( MAC_SUCCESS != MacStatus ) {
@@ -273,7 +273,7 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SetupTask(void)
   /* Wait SET CONFIRMATION */
   UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
     
-  APP_DBG("LPM MAC APP - Ready \r\n");//to Handle Association Req and Receive Data
+  APP_DBG("LPM MAC APP - Ready \r\n"); // To Handle Association Req and Receive Data
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
   UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_NODE, TASK_MAC_APP_PRIO );
   UTIL_TIMER_Start(&SendTimer);
@@ -286,36 +286,37 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SetupTask(void)
 
 void APP_LPM_TRANSMIT_MAC_802_15_4_SendData(const char * data)
 {
-  MAC_Status_t MacStatus = MAC_ERROR;
-  
+  MAC_Status_t MacStatus;
   ST_MAC_dataReq_t DataReq;
-  DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c;
-  DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c;
   
-  memcpy(DataReq.a_dst_PAN_id,&g_panId,0x02);
-  memcpy(DataReq.dst_address.a_short_addr,&g_broadcastAddr,0x02);
-
-  DataReq.msdu_handle = g_dataHandle++;
-  /* No ACK is required */
-  DataReq.ack_Tx =0x00;
-  /* GTS not enabled */
-  DataReq.GTS_Tx = FALSE;
-
+  /* If the payload frame is greater than 127 bytes, we don't send the frame */
+  if (strlen(data) > FRAME_MAX_SIZE) {
+      return;
+  }
+  
+  /* structure initalization */
+  memset(&DataReq, 0x00, sizeof(ST_MAC_dataReq_t));
+  
+  DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c; // Address source mode
+  DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c; // Address destination mode
+  memcpy(DataReq.a_dst_PAN_id,&g_panId,0x02); // PANID destination
+  memcpy(DataReq.dst_address.a_short_addr,&g_broadcastAddr,0x02); // Address destination
+  DataReq.msdu_handle = g_dataHandle++; // The handle associated with the MSDU
+  DataReq.ack_Tx = 0x00;  // No ACK is required
   memcpy(&rfBuffer,data,strlen(data));
 
-  /* Xor Data to potentially verified data paylaod on receiver side */
+  /* Xor Data to potentially verified data paylaod on receiver side (optional) */
   rfBuffer[strlen(data)] = xorSign(data,strlen(data));
-  DataReq.msduPtr = (uint8_t*) rfBuffer;
-  DataReq.msdu_length = strlen(data)+1;
-
-  /* No Security @ MAC level */
-  DataReq.security_level = 0x00;
+  DataReq.msduPtr = (uint8_t*) rfBuffer; // Data payload
+  DataReq.msdu_length = strlen(data)+1; // Data length
 
   /* Request Data transmission */
   MacStatus = ST_MAC_MCPSDataReq(mac_hndl, &DataReq );
-  /* Treat Error in case of failure */
   if ( MAC_SUCCESS != MacStatus ) {
+    APP_DBG("LPM MAC APP - Data Req Fails\r\n");
     return;
   }
-  UTIL_SEQ_WaitEvt( EVENT_DATA_CNF );
+  
+  /* Wait DATA CONFIRMATION */
+  UTIL_SEQ_WaitEvt(EVENT_DATA_CNF);
 }

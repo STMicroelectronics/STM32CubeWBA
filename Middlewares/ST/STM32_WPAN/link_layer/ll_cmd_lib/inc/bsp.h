@@ -1,5 +1,40 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05PatchV6/firmware/public_inc/bsp.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/bsp.h#1 $*/
 
+/**
+ ********************************************************************************
+ * @file    bsp.h
+ * @brief   board support package interface wrapper file.
+ ******************************************************************************
+ * @copy
+ * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
+ * associated documentation ( hereinafter the "Software") is an unsupported
+ * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
+ * writing between Synopsys and you. The Software IS NOT an item of Licensed
+ * Software or a Licensed Product under any End User Software License Agreement
+ * or Agreement for Licensed Products with Synopsys or any supplement thereto.
+ * Synopsys is a registered trademark of Synopsys, Inc. Other names included in
+ * the SOFTWARE may be the trademarks of their respective owners.
+ *
+ * Synopsys MIT License:
+ * Copyright (c) 2020-Present Synopsys, Inc
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * the Software), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE ARISING FROM,
+ * OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef LL_BSP_H_
@@ -246,8 +281,9 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_PROFILE_MARKER_PHY_WAKEUP_TIME                       ,
 	DBG_IO_PROFILE_END_DRIFT_TIME                               ,
 	DBG_IO_PROC_RADIO_RCV										,
+
 	DBG_IO_EVNT_TIME_UPDT										,
-	Debug_GPIO_num												,
+												
 	DBG_IO_MAC_RECEIVE_DONE										,
 	DBG_IO_MAC_TX_DONE											,
 	DBG_IO_RADIO_APPLY_CSMA										,
@@ -259,7 +295,40 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_RAL_CONTINUE_RX										,
 	DBG_IO_RAL_PERFORM_CCA										,
 	DBG_IO_RAL_ENABLE_TRANSMITTER								,
-	DBG_IO_LLHWC_GET_CH_IDX_ALGO_2
+	DBG_IO_LLHWC_GET_CH_IDX_ALGO_2 ,
+	DBG_IO_ADV_EXT_MNGR_PAWR_ADV_SE_CBK                         ,
+	DBG_IO_ADV_EXT_MNGR_PAWR_ADV_SE_ERR_CBK                     ,
+	DBG_IO_ADV_EXT_MNGR_PAWR_SCN_ERR_CBK                        ,
+
+	DBG_IO_LLHWC_SET_ADV_PAWR_SE_PARAM							,
+	DBG_IO_LLHWC_ADV_PAWR_SE_DONE								,
+	DBG_IO_LLHWC_SET_PAWR_RSP_PARAM								,
+	DBG_IO_LLHWC_ADV_PAWR_RSP_DONE								,
+	DBG_IO_LLHWC_ADV_PAWR_RSP_DONE_RCV_PCKT						,
+	DBG_IO_LLHWC_ADV_PAWR_RSP_DONE_FREE_PCKT					,
+	DBG_IO_LLHWC_PAWR_PING_PONG_HNDL							,
+	DBG_IO_LLHWC_PAWR_PING_PONG_RCV_PCKT						,
+	DBG_IO_LLHWC_PAWR_ADV_STOP_RSPS								,
+	DBG_IO_LLHWC_PAWR_SYNC_SET_PARAM							,
+	DBG_IO_LLHWC_PAWR_SYNC_DONE									,
+	DBG_IO_LLHWC_PAWR_SYNC_SEND_RSP								,
+
+	DBG_IO_PAWR_ADV_SE_MISS_RSP									,
+	DBG_IO_PAWR_ADV_FORCE_RP									,
+	DBG_IO_PAWR_ADV_PUSH_STRT_TIM_FORW							,
+	DBG_IO_PAWR_ADV_RSP_NEAR									,
+	DBG_IO_EVNT_STRT_TIM_PUSHED									,
+	DBG_IO_PAWR_ADV_RSP_SWITCH_SE								,
+	DBG_IO_PAWR_ADV_QUEUE_WIN_UPDT								,
+	DBG_IO_PAWR_SYNC_REFUSE_INST_RSP							,
+	DBG_IO_PAWR_SYNC_ABOUT_TIMEOUT								,
+	DBG_IO_PAWR_SYNC_INST_RSP_TOO_LATE							,
+	DBG_IO_PAWR_SYNC_EXEC_SKIPPED								,
+	DBG_IO_NULL_PKT_STATUS										,
+	DBG_IO_PAWR_MULTIPLE_EVNTS_MISSED							,
+	DBG_IO_PAWR_CHM_UPDT_END									,
+	DBG_IO_LLHWC_CMN_INIT                                       ,
+	Debug_GPIO_num
 
 }Debug_GPIO_t;
 
@@ -391,7 +460,7 @@ void bsp_delay_us(uint32_t delay);
  * @retval  None
  *
  */
-int bsp_intr_enable (uint32_t intrNum, void (*intr_cb)());
+int bsp_intr_enable (uint32_t intrNum, void (*intr_cb)(void));
 /**
  * @brief   interrupt set pri  Function
  *
@@ -402,7 +471,7 @@ int bsp_intr_enable (uint32_t intrNum, void (*intr_cb)());
  * @retval  None
  *
  */
-int bsp_intr_set_pri(uint32_t intrNum, void (*intr_cb)(), int32_t intpri);
+int bsp_intr_set_pri(uint32_t intrNum, void (*intr_cb)(void), int32_t intpri);
 
 
 
@@ -456,6 +525,18 @@ void bsp_control_aclk(uint8_t enable);
  * @retval None.
  */
 void bsp_evnt_not(EvntNotiState enable);
+
+/**
+ * @brief	Notification that LL FW will start or end RCO Calibration .
+ *
+ *@note this is an optional wrapper that used to inform the upper layer of the state of RCO calibration.
+ *@note the upper layer may ignore this wrapper
+ * @param	enable: EVNT_START , RCO calibration will be started
+ * 				  : Evnt_END     RCO calibration has  completed
+  *
+ * @retval None.
+ */
+void bsp_rco_clbr_not(EvntNotiState enable);
 
 /**
  * @brief used to assert/trigger the low priority interrupt from the SW.

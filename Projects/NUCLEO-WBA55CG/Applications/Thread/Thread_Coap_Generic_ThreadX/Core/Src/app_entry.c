@@ -22,19 +22,22 @@
 #include "app_common.h"
 #include "app_conf.h"
 #include "main.h"
+#include "app_thread.h"
 #include "app_entry.h"
-#if (CFG_LPM_SUPPORTED == 1)
+#if (CFG_LPM_LEVEL != 0)
+#include "app_sys.h"
 #include "stm32_lpm.h"
-#endif /* CFG_LPM_SUPPORTED */
+#endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
+#include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
-#include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
 #include "stm32_rtos.h"
-#include "ll_sys.h"
+#include "stm32wbaxx_ll_rcc.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -55,29 +58,31 @@ typedef struct
   uint32_t            waitingTime;
 } ButtonDesc_t;
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
-
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
 #define BUTTON_LONG_PRESS_THRESHOLD_MS        (500u)        // Normally 500ms if we use 'Long pression' on button.
 #define BUTTON_NB_MAX                         (B3 + 1u)
-
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 /* Push Button SW1 Task related defines */
 #define TASK_BUTTON_SW1_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
 #define TASK_BUTTON_SW1_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
+#define TASK_BUTTON_SW1_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
+
 /* Push Button SW2 Task related defines */
 #define TASK_BUTTON_SW2_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
 #define TASK_BUTTON_SW2_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
+#define TASK_BUTTON_SW2_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
 
 /* Push Button SW3 Task related defines */
 #define TASK_BUTTON_SW3_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
 #define TASK_BUTTON_SW3_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
+#define TASK_BUTTON_SW3_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
 
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -86,30 +91,27 @@ typedef struct
 /* USER CODE END PM */
 
 /* Private constants ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-#if ( CFG_LPM_SUPPORTED == 1)
-static bool system_startup_done = FALSE;
-#endif /* ( CFG_LPM_SUPPORTED == 1) */
-
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-TX_SEMAPHORE          RandomProcessSemaphore;
-TX_THREAD             RandomProcessThread;
+
+TX_SEMAPHORE          HwRngSemaphore;
+TX_THREAD             AppliStartThread, HwRngThread;
+
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
 TX_SEMAPHORE          ButtonSw1Semaphore, ButtonSw2Semaphore, ButtonSw3Semaphore;
 TX_THREAD             ButtonSw1Thread, ButtonSw2Thread, ButtonSw3Thread;
-static ButtonDesc_t   buttonDesc[BUTTON_NB_MAX] = { { B1, 0, 0 }, { B2, 0, 0 }, { B3, 0, 0 } } ;
+static ButtonDesc_t   buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0, 0 } , { B2, { 0 } , 0, 0 }, { B3, { 0 }, 0, 0 } };
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PV */
@@ -129,6 +131,14 @@ static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
 
+#ifndef TX_LOW_POWER_USER_ENTER
+void ThreadXLowPowerUserEnter( void );
+#endif
+#ifndef TX_LOW_POWER_USER_EXIT
+void ThreadXLowPowerUserExit( void );
+#endif
+
+
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
 static void Led_Init                      ( void );
@@ -137,6 +147,7 @@ static void Led_Init                      ( void );
 static void Button_Init                   ( void );
 static void Button_TriggerActions         ( void * arg );
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -161,16 +172,17 @@ uint32_t MX_APPE_Init(void *p_param)
 { 
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
 
+  /* Save ThreadX byte pool for whole WPAN middleware */
+  pBytePool = p_param;
+
   /* System initialization */
   System_Init();
 
   /* Configure the system Power Mode */
   SystemPower_Config();
-  
-  /* Save ThreadX byte pool for whole WPAN middleware */
-  pBytePool = p_param;
 
   /* USER CODE BEGIN APPE_Init_1 */
+  /* Initialize Peripherals */
 #if (CFG_LED_SUPPORTED == 1)
   Led_Init();
 #endif /* (CFG_LED_SUPPORTED == 1) */
@@ -194,6 +206,54 @@ uint32_t MX_APPE_Init(void *p_param)
 }
 
 /* USER CODE BEGIN FD */
+#if ( CFG_BUTTON_SUPPORTED == 1 ) 
+
+/**
+ * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
+ *
+ * @param   btnIdx    Button to test, listed in enum Button_TypeDef
+ * @return  '1' if pressed during a 'long time', else '0'.
+ */
+uint8_t APPE_ButtonIsLongPressed( uint16_t btnIdx )
+{
+  uint8_t pressStatus = 0;
+
+  if ( btnIdx < BUTTON_NB_MAX )
+  {
+    pressStatus = buttonDesc[btnIdx].longPressed;
+  }
+
+  return pressStatus;
+}
+
+/**
+ * @brief  Action of button 1 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button1Action( void )
+{
+}
+
+/**
+ * @brief  Action of button 2 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button2Action( void )
+{
+}
+
+/**
+ * @brief  Action of button 3 when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APPE_Button3Action( void )
+{
+}
+
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END FD */
 
@@ -241,14 +301,10 @@ static void System_Init( void )
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
   Log_Module_Add_Region( LOG_REGION_THREAD );
-
+  
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
-
-#if ( CFG_LPM_SUPPORTED == 1)
-  system_startup_done = TRUE;
-#endif /* ( CFG_LPM_SUPPORTED == 1) */
 
   return;
 }
@@ -263,10 +319,31 @@ static void System_Init( void )
  */
 static void SystemPower_Config(void)
 {
+#if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#endif /* CFG_SCM_SUPPORTED */
 
-#if (CFG_LPM_SUPPORTED == 1)
+#if (CFG_DEBUGGER_LEVEL == 0)
+  /* Pins used by SerialWire Debug are now analog input */
+  GPIO_InitTypeDef DbgIOsInit = {0};
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+
+  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
+  DbgIOsInit.Pull = GPIO_NOPULL;
+  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+#endif /* CFG_DEBUGGER_LEVEL */
+
+#if (CFG_SCM_SUPPORTED == 1)
+  /* Set the HSE clock to 32MHz */
+  scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
+#endif /* CFG_SCM_SUPPORTED */
+
+#if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
@@ -281,18 +358,18 @@ static void SystemPower_Config(void)
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_SUPPORTED == 1)  */
+#endif /* (CFG_LPM_LEVEL != 0)  */
 }
-
 
 static void HW_RNG_Process_Task( ULONG lArgument )
 {
   UNUSED( lArgument );
-  
+
   for(;;)
   {
-    tx_semaphore_get( &RandomProcessSemaphore, TX_WAIT_FOREVER );
+    tx_semaphore_get( &HwRngSemaphore, TX_WAIT_FOREVER );
     HW_RNG_Process();
+    tx_thread_relinquish();
   }
 }
 
@@ -302,12 +379,12 @@ static void HW_RNG_Process_Task( ULONG lArgument )
 static void RNG_Init(void)
 {
   UINT        ThreadXStatus;
-  
-  HW_RNG_Start( );
-  
+
+  HW_RNG_Start();
+
   /* Register Semaphore to launch the Random Process */
-  ThreadXStatus = tx_semaphore_create( &RandomProcessSemaphore, "RandomProcess Semaphore", 0 );
-  
+  ThreadXStatus = tx_semaphore_create( &HwRngSemaphore, "RandomProcess Semaphore", 0 );
+
   /* Create the Random Process Thread and this Stack */
   if ( ThreadXStatus == TX_SUCCESS )
   {
@@ -315,21 +392,24 @@ static void RNG_Init(void)
   }
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus |= tx_thread_create( &RandomProcessThread, "RandomProcess Thread", HW_RNG_Process_Task, 0, pStack,
-                                       TASK_HW_RNG_STACK_SIZE, CFG_TASK_PRIO_HW_RNG, CFG_TASK_PRIO_HW_RNG,
+    ThreadXStatus |= tx_thread_create( &HwRngThread, "RandomProcess Thread", HW_RNG_Process_Task, 0, pStack,
+                                       TASK_HW_RNG_STACK_SIZE, CFG_TASK_PRIO_HW_RNG, CFG_TASK_PREEMP_HW_RNG,
                                        TX_NO_TIME_SLICE, TX_AUTO_START);
   }
-  
+
   /* Verify if it's OK */
   if ( ThreadXStatus != TX_SUCCESS )
-  { 
+  {
     APP_DBG( "ERROR THREADX : RANDOM PROCESS THREAD CREATION FAILED (%d)", ThreadXStatus );
     while(1);
   }
 }
 
+
+
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
+#if ( CFG_LED_SUPPORTED == 1 )
+
 static void Led_Init( void )
 {
   /* Leds Initialization */
@@ -337,11 +417,11 @@ static void Led_Init( void )
   BSP_LED_Init(LED_GREEN);
   BSP_LED_Init(LED_RED);
 
-  return;
+  APP_LED_ON(LED_GREEN);
 }
-#endif /* CFG_LED_SUPPORTED */
 
-#if (CFG_BUTTON_SUPPORTED == 1)
+#endif // (CFG_LED_SUPPORTED == 1)
+#if ( CFG_BUTTON_SUPPORTED == 1 )
 
 /**
  * @brief  Management of the SW1 pushbutton task
@@ -355,7 +435,8 @@ static void ButtonSw1Task( ULONG lArgument )
   for(;;)
   {
     tx_semaphore_get( &ButtonSw1Semaphore, TX_WAIT_FOREVER );
-    APP_THREAD_Button1Action();
+    APPE_Button1Action();
+    tx_thread_relinquish();
   }
 }
     
@@ -371,7 +452,8 @@ static void ButtonSw2Task( ULONG lArgument )
   for(;;)
   {
     tx_semaphore_get( &ButtonSw2Semaphore, TX_WAIT_FOREVER );
-    APP_THREAD_Button2Action();
+    APPE_Button2Action();
+    tx_thread_relinquish();
   }
 }
 
@@ -387,7 +469,8 @@ static void ButtonSw3Task( ULONG lArgument )
   for(;;)
   {
     tx_semaphore_get( &ButtonSw3Semaphore, TX_WAIT_FOREVER );
-    APP_THREAD_Button3Action();
+    APPE_Button3Action();
+    tx_thread_relinquish();
   }
 }
 
@@ -406,7 +489,7 @@ static void Button_InitTask( void )
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw1Thread, "ButtonSw1 Thread", ButtonSw1Task, 0, pStack,
-                                        TASK_BUTTON_SW1_STACK_SIZE, TASK_BUTTON_SW1_PRIORITY, TASK_BUTTON_SW1_PRIORITY,
+                                        TASK_BUTTON_SW1_STACK_SIZE, TASK_BUTTON_SW1_PRIORITY, TASK_BUTTON_SW1_PREEM_TRES,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -429,7 +512,7 @@ static void Button_InitTask( void )
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw2Thread, "ButtonSw2 Thread", ButtonSw2Task, 0, pStack,
-                                        TASK_BUTTON_SW2_STACK_SIZE, TASK_BUTTON_SW2_PRIORITY, TASK_BUTTON_SW2_PRIORITY,
+                                        TASK_BUTTON_SW2_STACK_SIZE, TASK_BUTTON_SW2_PRIORITY, TASK_BUTTON_SW2_PREEM_TRES,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -452,7 +535,7 @@ static void Button_InitTask( void )
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw3Thread, "ButtonSw3 Thread", ButtonSw3Task, 0, pStack,
-                                        TASK_BUTTON_SW3_STACK_SIZE, TASK_BUTTON_SW3_PRIORITY, TASK_BUTTON_SW3_PRIORITY,
+                                        TASK_BUTTON_SW3_STACK_SIZE, TASK_BUTTON_SW3_PRIORITY, TASK_BUTTON_SW3_PREEM_TRES,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -464,14 +547,15 @@ static void Button_InitTask( void )
   }
 }
 
+
 static void Button_Init( void )
 {
   Button_TypeDef  buttonIndex;
   
-  /* Button HW Initialization */
-  BSP_PB_Init(B1, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B2, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B3, BUTTON_MODE_EXTI);
+  /* Buttons HW Initialization */
+  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
 
   /* Button task initialisation */
   Button_InitTask();
@@ -482,6 +566,7 @@ static void Button_Init( void )
     UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, (UTIL_TIMER_Mode_t)hw_ts_Repeated, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
   }
 }
+
 
 /**
  *
@@ -505,21 +590,21 @@ static void Button_TriggerActions( void * arg )
 
   /* Stop Timer */
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
-  
+
   switch ( p_buttonDesc->button )
   {
     case B1:
-        tx_semaphore_put(&ButtonSw1Semaphore);
+        tx_semaphore_put( &ButtonSw1Semaphore );
         break;
-    
+
     case B2:
-        tx_semaphore_put(&ButtonSw2Semaphore);
+        tx_semaphore_put( &ButtonSw2Semaphore );
         break;
-    
+
     case B3:
-        tx_semaphore_put(&ButtonSw3Semaphore);
+        tx_semaphore_put( &ButtonSw3Semaphore );
         break;
-        
+
     default:
         break;
   }
@@ -539,11 +624,13 @@ static void Button_TriggerActions( void * arg )
  */
 void HWCB_RNG_Process( void )
 {
-  if (RandomProcessSemaphore.tx_semaphore_count == 0)
+  if (HwRngSemaphore.tx_semaphore_count == 0)
   {
-    tx_semaphore_put(&RandomProcessSemaphore);
+    tx_semaphore_put(&HwRngSemaphore);
   }
 }
+
+
 
 #if (CFG_LOG_SUPPORTED != 0)
 /**
@@ -558,7 +645,95 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF */
 }
 
+void SCM_HSI_CLK_OFF(void)
+{
+  /* SCM module may not switch off HSI clock when traces are used */
+
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+
+  /* USER CODE END SCM_HSI_CLK_OFF */
+}
+
+void UTIL_ADV_TRACE_PreSendHook(void)
+{
+#if (CFG_LPM_LEVEL != 0)
+  /* Disable Stop mode before sending a LOG message over UART */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
+
+  /* USER CODE END UTIL_ADV_TRACE_PreSendHook */
+}
+
+void UTIL_ADV_TRACE_PostSendHook(void)
+{
+#if (CFG_LPM_LEVEL != 0)
+  /* Enable Stop mode after LOG message over UART sent */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
+
+  /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
+}
+
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/**
+ * @brief   Enter in LowPower Mode after a ThreadX call
+ */
+void ThreadXLowPowerUserEnter( void )
+{
+  /* USER CODE BEGIN ThreadXLowPowerUserEnter_1 */
+
+  /* USER CODE END ThreadXLowPowerUserEnter_1 */
+
+#if ( CFG_LPM_LEVEL != 0 )
+  LL_PWR_ClearFlag_STOP();
+
+  LL_RCC_ClearResetFlags();
+
+  /* Wait until HSE is ready */
+  while ( LL_RCC_HSE_IsReady() == 0 );
+
+  UTILS_ENTER_LIMITED_CRITICAL_SECTION( RCC_INTR_PRIO << 4U );
+  scm_hserdy_isr();
+  UTILS_EXIT_LIMITED_CRITICAL_SECTION();
+  HAL_SuspendTick();
+
+  /* Disable SysTick Interrupt */
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+  UTIL_LPM_EnterLowPower();
+#endif /* CFG_LPM_LEVEL */
+
+  /* USER CODE BEGIN ThreadXLowPowerUserEnter_2 */
+
+  /* USER CODE END ThreadXLowPowerUserEnter_2 */
+  return;
+}
+
+/**
+ * @brief   Exit of LowPower Mode after a ThreadX call
+ */
+void ThreadXLowPowerUserExit( void )
+{
+  /* USER CODE BEGIN ThreadXLowPowerUserExit_1 */
+
+  /* USER CODE END ThreadXLowPowerUserExit_1 */
+
+#if ( CFG_LPM_LEVEL != 0 )
+  HAL_ResumeTick();
+
+  /* Enable SysTick Interrupt */
+  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+  LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
+  ll_sys_dp_slp_exit();
+#endif /* CFG_LPM_LEVEL */
+
+  /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */
+
+  /* USER CODE END ThreadXLowPowerUserExit_2 */
+  return;
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if ( CFG_BUTTON_SUPPORTED == 1 ) 

@@ -54,6 +54,7 @@ typedef enum {
 typedef enum {
   SCM_USER_APP,
   SCM_USER_LL_FW,
+  SCM_USER_LL_HW_RCO_CLBR,
   TOTAL_CLIENT_NUM, /* To be at the end of the enum */
 } scm_user_id_t;
 
@@ -204,13 +205,19 @@ void scm_pllrdy_isr(void);
 extern void SCM_HSI_CLK_ON(void);
 
 /**
-  * @brief  SCM HSI clock disable
+  * @brief  SCM HSI clock may be disabled when this function is called
   * @details A weak version is implemented in the module sources.
   * @details It can be overridden by user.
   * @param  None
   * @retval None
   */
 extern void SCM_HSI_CLK_OFF(void);
+
+#else /* CFG_SCM_SUPPORTED */
+
+/* Unused empty functions */
+void scm_hserdy_isr(void);
+void scm_pllrdy_isr(void);
 
 #endif /* CFG_SCM_SUPPORTED */
 

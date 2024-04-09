@@ -24,16 +24,18 @@
 #include "stdint.h"
 #include "cmsis_compiler.h"
 
+#include "audio_types.h"
+
 /* Exported defines -----------------------------------------------------------*/
 
 /* Configuration*/
 #define MAX_PATH_ID             2       /* interface number : HCI + Shared RAM */
 
 #define MAX_PATH_NB             4       /* max number of data path, a path may support multi channel */
-#define MAX_CHANNEL_PER_PATH    2       /* max channel per data path : stereo supported */
+#define MAX_CHANNEL_PER_PATH    4       /* max channel per data path */
 #define MAX_CHANNEL             4       /* number of channel supported, can be <= MAX_PATH_NB*MAX_CHANNEL_PER_PATH */
-#define MAX_ISO_GROUP_NB        1
-#define MAX_ISO_STRM_PER_GRP    2
+#define MAX_ISO_GROUP_NB        1       /* linked to LL capabilities */
+#define MAX_ISO_STRM_PER_GRP    2       /* linked to LL capabilities */
 
 #define SUPPORT_LC3             1
 
@@ -43,15 +45,14 @@
   #define MIN_LC3_NBYTES        20      /* LC3 minimum encoded frame */
   #define MAX_LC3_NBYTES        155     /* LC3 maximum encoded frame */
 
-  /* Codec max Million Cycle Per Second for each frequency listed codec capabilities LTV structure, 0 if unsupported */
-  /* Values for codec V1.3 */
+  /* Codec max Million Cycle Per Second for each frequency listed codec capabilities LTV structure, 0 if unsupported
+   * Values for codec V1.4
+   *                   kHz:      8,     N/A,    16,     N/A,    24,     32,     44.1,    48,    N/A----------
+   */
   #define LC3_MCPS_ENC_75MS     {15,     0,     19,     0,      23,     27,     35,      34,     0, 0, 0, 0, 0}
   #define LC3_MCPS_ENC_10MS     {13,     0,     17,     0,      22,     26,     30,      30,     0, 0, 0, 0, 0}
   #define LC3_MCPS_DEC_75MS     {6,      0,     9,      0,      13,     18,     23,      23,     0, 0, 0, 0, 0}
   #define LC3_MCPS_DEC_10MS     {5,      0,     8,      0,      12,     17,     22,      22,     0, 0, 0, 0, 0}
-
-  /* Expected core clock when executing LC3 codec for each audio frequency: check dependencies with audio peripheral*/
-  #define LC3_EXE_CLOCK_MHZ     {98.304, 0,     98.304, 0,      98.304, 98.304, 90.3168, 98.304, 0, 0, 0, 0, 0};
 
   #include "LC3.h"
   #define CODEC_GET_TOTAL_SESSION_BUFFER_SIZE(num_session)      (num_session * LC3_SESSION_STRUCT_SIZE)
@@ -88,6 +89,10 @@ typedef struct
 } CODEC_DataPathParam_t;
 
 #define CONFIGURE_DATA_PATH_CONFIG_LEN sizeof(CODEC_DataPathParam_t)
+
+/* Codec Mode */
+typedef uint8_t CODEC_Mode_t;
+#define CODEC_MODE_DEFAULT      (0x00)
 
 /* Structure for allocating RAM used by the LC3 codec */
 typedef struct
@@ -131,17 +136,28 @@ typedef __PACKED_STRUCT
   uint8_t decimation;
 } CODEC_ConfigureDataPathCmd_t;
 
+/* Data path types */
 typedef enum
 {
-  CODEC_STATUS_SUCCESS  =   0,
-  CODEC_STATUS_ERROR    =   1
+  DATA_PATH_HCI_LEGACY   =      0,
+  DATA_PATH_CIRCULAR_BUF =      1
+} CODEC_DataPath_t;
+
+/* Status of the codec operation */
+typedef enum
+{
+  CODEC_STATUS_SUCCESS  =       0,
+  CODEC_STATUS_ERROR    =       1
 } codec_status_t;
 
+/* Status of the codec when received packet from link layer
+  Busy means the packet has been handled but memory are currently full */
 typedef enum
 {
-  DATA_PATH_HCI_LEGACY   =   0,
-  DATA_PATH_CIRCULAR_BUF =   1
-} CODEC_DataPath_t;
+  CODEC_RCV_STATUS_OK =    0,
+  CODEC_RCV_STATUS_FAIL =  1,
+  CODEC_RCV_STATUS_BUSY =  2
+} codec_rcv_status_t;
 
 
 /*********************************************************************************************/
@@ -154,15 +170,19 @@ typedef enum
   * @param media_packet_pool_size : size in bytes of the provided pool
   * @param media_packet_pool : pointer to the provided pool
   * @param codecRAMConfig : pointer to the RAM dedicated to the LC3 codec
-  * @param margin_ctrl_delay_us : margin is microseconds added to the controller delay
+  * @param margin_processing_us : margin is microseconds added to the controller delay
   *                               for including higher priority interrupt latency
   * @param rf_max_setup_time_us : maximum timing in microseconds measured from the radio interrupt to the beginning of
   *                               the corresponding ISO event (radio preparation). Added as an extra latency at source
+  * @param codec_mode : configuration of the codec manager behavior, see CODEC_Mode_t
   * @retval status
   */
-codec_status_t CODEC_ManagerInit(uint32_t media_packet_pool_size, uint8_t *media_packet_pool,
-                                 CODEC_LC3Config_t *codecRAMConfig, uint16_t margin_ctrl_delay_us,
-                                 uint16_t rf_max_setup_time_us);
+codec_status_t CODEC_ManagerInit(uint32_t media_packet_pool_size,
+                                 uint8_t *media_packet_pool,
+                                 CODEC_LC3Config_t *codecRAMConfig,
+                                 uint16_t margin_processing_us,
+                                 uint16_t rf_max_setup_time_us,
+                                 CODEC_Mode_t codec_mode);
 
 /**
   * @brief  Reset Codec manager states and memories
@@ -178,7 +198,7 @@ codec_status_t CODEC_ManagerReset( void );
   */
 void CODEC_ManagerProcess( void );
 
-/* local interfaces for audio triggering and data providing */
+/*---------------- local interfaces for audio triggering and data providing -----------------*/
 /**
   * @brief  Register a function that is called once for triggering audio interface in order to respect a controller delay
   * @note At source, the trigger happen one controller delay plus one media packet before an anchor point
@@ -188,44 +208,53 @@ void CODEC_ManagerProcess( void );
   * @param clbk_function : callback function that will be called after de CIS/BIS is established
   * @retval status
   */
-codec_status_t CODEC_RegisterTriggerClbk(uint8_t Path_id, uint8_t Direction, void Clbk_Function(void));
+codec_status_t CODEC_RegisterTriggerClbk(uint8_t path_id, uint8_t direction, void clbk_function(void));
 
 /**
   * @brief  Notify the codec manager that new data is available on a given data path
-  * @param con_handle : related connection handle
+  * @param iso_con_hdl : isochronous connection handle
   * @param path_id : path id
   * @param pdata : pointer to the data, format should be coherent with the configured data path
   * @retval none
   */
-void CODEC_SendData(uint16_t Con_Handle, uint8_t Path_id, void*  Ptr);
+void CODEC_SendData(uint16_t iso_con_hdl, uint8_t path_id, void* pdata);
 
 /**
   * @brief  Notify the codec manager that new data is needed on a given data path
-  * @param con_handle : related connection handle
+  * @param iso_con_hdl : isochronous connection handle
   * @param path_id : path id
   * @param pdata : pointer to the buffer to be filled, format should be coherent with the configured data path
   * @retval none
   */
-void CODEC_ReceiveData(uint16_t Con_Handle, uint8_t Path_id, void*  Ptr);
+void CODEC_ReceiveData(uint16_t iso_con_hdl, uint8_t path_id, void* pdata);
 
-/* integration with clock */
 /**
-  * @brief Function for notify the codec manager that an event on a specific id has happen
+  * @brief Weak function called by the codec manager after finishing to process data on sink path
+  * @note  Could be redefined for triggering other processing on that data at the application level
+  * @param iso_con_hdl: isochronous connection handle
+  * @param pdecoded_data : pointer to the decoded data
+  * @retval none
+  */
+void CODEC_NotifyDataReady(uint16_t iso_con_hdl, void* pdecoded_data);
+
+/*--------------------------------- integration with clock ----------------------------------*/
+/**
+  * @brief Function for notifying the codec manager that an event on a specific id has happen
   * @param id : identifier of the requestor
   * @retval None
   */
-void CODEC_CLK_trigger_event_notify(int8_t id);
+void CODEC_CLK_trigger_event_notify(uint8_t id);
 
 /**
   * @brief Function for initializing the clock corrector by adjusting PLL N fractional value
-  * @note A first drift correction is performed after InitialMinSampling where clocks may drift up to 550ppm
-  * @note Then continuous correction is performed every MinSampling
+  * @note A first drift correction is performed after initialMinSampling milliseconds where clocks may drift up to 550ppm
+  * @note Then continuous correction is performed every minSampling milliseconds
   * @param PLLConfig : PLL configuration
-  * @param InitialMinSampling : first sampling period for generating the first correction
-  * @param MinSampling : sampling frequency used for continuous drift adjustment
+  * @param initialMinSampling : first sampling period in ms for generating the first correction
+  * @param minSampling : sampling period in ms used for continuous drift adjustment
   * @retval None
   */
-void AUDIO_InitializeClockCorrector(AUDIO_PLLConfig_t *PLLConfig, uint32_t InitialMinSampling, uint32_t MinSampling);
+void AUDIO_InitializeClockCorrector(AUDIO_PLLConfig_t *PLLConfig, uint32_t initialMinSampling, uint32_t minSampling);
 
 /**
   * @brief Function for resetting corrector state
@@ -236,7 +265,8 @@ void AUDIO_DeinitializeClockCorrector( void );
 /*********************************************************************************************/
 /******************************** interface with controller **********************************/
 /*********************************************************************************************/
-/* HCI commands */
+
+/*--------------------------------------  HCI commands --------------------------------------*/
 /**
   * @brief Function used for reading supported codecs, following the HCI standard
   * @param *num_stdr : pointer for returning the number of standards supported codec
@@ -299,10 +329,9 @@ uint8_t CODEC_SetupIsoDataPath(uint8_t *hciparam);
   */
 uint8_t CODEC_RemoveIsoDataPath(uint8_t *hciparam);
 
-/* Callbacks and events */
+/*--------------------------------- Callbacks and events ------------------------------------*/
 /**
   * @brief Function for handling vendor specific HCI event containing anchor point and calibration callback timestamp
-  * @note
   * @param group_id : specifies if concerning either BIG or CIG
   * @param next_anchor_point : value of the next anchor point
   * @param timestamp : timestamp of the previous sync event
@@ -326,13 +355,14 @@ void AUDIO_CalibrationClbk(uint32_t timestamp);
   * @param type : 0 for CIS and 1 for BIS
   * @param id : id of the CIG or BIG
   * @param num_str : streams numbers
-  * @param con_handle : pointer to an array of ISO connection handles of size num_str
+  * @param iso_con_hdl : pointer to an array of ISO connection handles of size num_str
   * @param interval: interval of the RF event given in link layer unit
+  * @param is_peripheral : set to 1 if the CIG group is on the peripheral side, 0 otherwise
   * @param m2s_transport_latency : master to slave transport latency
   * @param s2m_transport_latency : slave to master transport latency
   * @retval None
   */
-void AUDIO_RegisterGroup(uint8_t type, uint8_t id, uint8_t num_str, uint16_t* con_handle, uint16_t interval,
+void AUDIO_RegisterGroup(uint8_t type, uint8_t id, uint8_t num_str, uint16_t* iso_con_hdl, uint16_t interval,
                          uint8_t is_peripheral, uint32_t m2s_transport_latency, uint32_t s2m_transport_latency);
 
 /**
@@ -343,13 +373,13 @@ void AUDIO_RegisterGroup(uint8_t type, uint8_t id, uint8_t num_str, uint16_t* co
   */
 void AUDIO_UnregisterGroup(uint8_t type, uint8_t id);
 
-/* Audio data */
+/*-------------------------------------- Audio Data -----------------------------------------*/
 /**
   * @brief  Function for receiving a media packet from the Link Layer
   * @param list of HCI ISO data params
-  * @retval status
+  * @retval status of type codec_rcv_status_t
   */
-codec_status_t CODEC_ReceiveMediaPacket(uint16_t conn_hndl, uint8_t* pData, uint16_t len, uint16_t PSN, uint8_t ts_flag,
-                                 uint32_t timestamp, uint8_t pkt_status_flag);
+codec_rcv_status_t CODEC_ReceiveMediaPacket(uint16_t iso_con_hdl, uint8_t pb_flag, uint8_t ts_flag, uint32_t timestamp,
+                                  uint16_t PSN, uint8_t pkt_status_flag, uint16_t len, uint8_t* pdata);
 
 #endif /* __CODEC_MNGR_H__ */

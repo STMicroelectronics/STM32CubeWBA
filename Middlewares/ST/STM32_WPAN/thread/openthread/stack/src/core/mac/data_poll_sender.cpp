@@ -171,11 +171,7 @@ Error DataPollSender::SetExternalPollPeriod(uint32_t aPeriod)
     {
         VerifyOrExit(aPeriod >= OPENTHREAD_CONFIG_MAC_MINIMUM_POLL_PERIOD, error = kErrorInvalidArgs);
 
-        // Clipped by the maximal value.
-        if (aPeriod > kMaxExternalPeriod)
-        {
-            aPeriod = kMaxExternalPeriod;
-        }
+        aPeriod = Min(aPeriod, kMaxExternalPeriod);
     }
 
     if (mExternalPollPeriod != aPeriod)
@@ -414,15 +410,8 @@ void DataPollSender::SendFastPolls(uint8_t aNumFastPolls)
         aNumFastPolls = kDefaultFastPolls;
     }
 
-    if (aNumFastPolls > kMaxFastPolls)
-    {
-        aNumFastPolls = kMaxFastPolls;
-    }
-
-    if (mRemainingFastPolls < aNumFastPolls)
-    {
-        mRemainingFastPolls = aNumFastPolls;
-    }
+    aNumFastPolls       = Min(aNumFastPolls, kMaxFastPolls);
+    mRemainingFastPolls = Max(mRemainingFastPolls, aNumFastPolls);
 
     if (mEnabled && shouldRecalculatePollPeriod)
     {
@@ -542,8 +531,10 @@ uint32_t DataPollSender::CalculatePollPeriod(void) const
 
 uint32_t DataPollSender::GetDefaultPollPeriod(void) const
 {
-    uint32_t period    = Time::SecToMsec(Get<Mle::MleRouter>().GetTimeout());
     uint32_t pollAhead = static_cast<uint32_t>(kRetxPollPeriod) * kMaxPollRetxAttempts;
+    uint32_t period;
+
+    period = Time::SecToMsec(Min(Get<Mle::MleRouter>().GetTimeout(), Time::MsecToSec(TimerMilli::kMaxDelay)));
 
 #if OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE && OPENTHREAD_CONFIG_MAC_CSL_AUTO_SYNC_ENABLE
     if (Get<Mac::Mac>().IsCslEnabled())

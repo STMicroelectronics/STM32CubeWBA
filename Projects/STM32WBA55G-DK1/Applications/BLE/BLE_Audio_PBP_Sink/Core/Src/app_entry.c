@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -53,9 +53,11 @@
 #include "stm32wba55g_discovery.h"
 #include "stm32wba55g_discovery_audio.h"
 #include "stm32wba55g_discovery_bus.h"
+#if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba55g_discovery_lcd.h"
-#include "stm32_lpm.h"
 #include "stm32_lcd.h"
+#endif /* CFG_LCD_SUPPORTED */
+#include "stm32_lpm.h"
 #include "pbp_app.h"
 /* USER CODE END Includes */
 
@@ -90,6 +92,7 @@ static bool system_startup_done = FALSE;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+/* AMM configuration */
 static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
@@ -120,16 +123,18 @@ static JOYPin_TypeDef Joystick_Event;
 #if (CFG_LCD_SUPPORTED == 1)
 static uint8_t mute;
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-
-static uint32_t frame_byte_size = 0;
-static uint32_t PLL_Target_Clock_Freq=0;
+static uint32_t PLL_Target_Clock_Freq = 0;
 static uint8_t MxAudioInit_Flag = 0;
+static uint32_t Sink_frame_size = 0;
+static uint32_t Source_frame_size = 0;
+static uint8_t Record_Req_Pause = 0;
+static uint8_t Play_Req_Pause = 0;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-extern uint8_t adc_cleared_flag;
+uint8_t JOY_StandbyExitFlag = 0;
 uint32_t ADC_High_Threshold;
 uint32_t ADC_Low_Threshold;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
@@ -172,7 +177,7 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
 static void Led_Init(void);
-#endif /* CFG_LED_SUPPORTED */
+#endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 static void Joystick_Init( uint8_t wkup_mode );
 static void Joystick_ActionHandle(void);
@@ -184,13 +189,15 @@ static void SourceIDToString(uint32_t SourceID, uint8_t *pString);
 static void DrawSpeakerStateTask(void);
 static void DrawSpeakerState(void);
 #endif /* CFG_LCD_SUPPORTED */
-static void Init_AudioBuffer(uint8_t *pRecBuff, uint16_t RecBuffLen,uint8_t *pPlayBuff, uint16_t PlayBuffLen);
+static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen);
 static void AudioClock_Deinit(void);
+static void PLL_Ready_Task(void);
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -240,6 +247,8 @@ uint32_t MX_APPE_Init(void *p_param)
   LCD_Init();
   UTIL_SEQ_RegTask(1U << CFG_TASK_DRAW_SPEAKER_ID, UTIL_SEQ_RFU, DrawSpeakerStateTask);
 #endif /* CFG_LCD_SUPPORTED */
+
+  UTIL_SEQ_RegTask(1U << CFG_TASK_PLL_READY_ID, UTIL_SEQ_RFU, PLL_Ready_Task);
   /* USER CODE END APPE_Init_1 */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
 
@@ -255,6 +264,7 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
 
   APP_BLE_Init();
+
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
@@ -353,19 +363,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -381,6 +387,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -653,14 +663,14 @@ void AudioClock_Init(uint32_t audio_frequency_type)
     {
       pll_config.PLLN = 67;  /* VCO = HSE/M * N * (1 + Nfrac / 8192) < 32 / 6 * (67 + 1) = 362.7 MHz */
       pll_config.PLLFractional = 6042;
-      pll_config.AHB5_PLL1_CLKDivider = 3;
+      pll_config.AHB5_PLL1_CLKDivider = LL_RCC_AHB5_DIV_3;
       /* PLLSYS = 90.31673 MHz */
     }
     else
     {
       pll_config.PLLN = 73;  /* VCO = HSE/M * N * (1 + Nfrac / 8192) < 32 / 6 * (73 + 1) = 394.7 MHz */
       pll_config.PLLFractional = 5964;
-      pll_config.AHB5_PLL1_CLKDivider = 4;
+      pll_config.AHB5_PLL1_CLKDivider = LL_RCC_AHB5_DIV_4;
       /* PLLSYS = 98.30396 MHz */
     }
 
@@ -674,25 +684,47 @@ void AudioClock_Init(uint32_t audio_frequency_type)
     LL_RCC_PLL1_EnableDomain_PLL1P();
 
     PLL_Target_Clock_Freq = target_freq;
-
-    CODEC_CLK_Init();
-
-    AUDIO_PLLConfig_t corrector_pll_config;
-    corrector_pll_config.PLLTargetFreq = target_freq;
-    corrector_pll_config.VCOInputFreq = (32000000.0f / pll_config.PLLM);
-    corrector_pll_config.PLLOutputDiv = pll_config.PLLP;
-    AUDIO_InitializeClockCorrector(&corrector_pll_config, 500000, 4000000);
   }
+}
+
+void PLL_Ready_ProcessIT(void)
+{
+  UTIL_SEQ_SetTask(1U << CFG_TASK_PLL_READY_ID, CFG_SEQ_PRIO_0);
+}
+
+void PLL_Ready_Task(void)
+{
+  /* set Link Layer audio timings */
+  Evnt_timing_t event_time;
+  event_time.drift_time    = ISO_PLL_DRIFT_TIME;
+  event_time.exec_time     = ISO_PLL_EXEC_TIME;
+  event_time.schdling_time = ISO_PLL_SCHDL_TIME;
+  ll_intf_config_schdling_time(&event_time);
+
+  CODEC_CLK_Init();
+
+  AUDIO_PLLConfig_t corrector_pll_config;
+  corrector_pll_config.PLLTargetFreq = PLL_Target_Clock_Freq;
+  corrector_pll_config.VCOInputFreq = (32000000.0f / 6.0f); /* HSE / PLL_M */
+  corrector_pll_config.PLLOutputDiv = 4; /* PLL_P */
+  AUDIO_InitializeClockCorrector(&corrector_pll_config, 500, 4000);
 }
 
 
 static void AudioClock_Deinit( void )
 {
+  /* back to default timings */
+  Evnt_timing_t event_time;
+  event_time.drift_time    = DEFAULT_DRIFT_TIME;
+  event_time.exec_time     = DEFAULT_EXEC_TIME;
+  event_time.schdling_time = DEFAULT_SCHDL_TIME;
+  ll_intf_config_schdling_time(&event_time);
+
+  AUDIO_DeinitializeClockCorrector();
+
   scm_setsystemclock(SCM_USER_APP, NO_CLOCK_CONFIG);
 
   PLL_Target_Clock_Freq = 0;
-
-  AUDIO_DeinitializeClockCorrector();
 
   UTIL_LPM_SetStopMode(1 << CFG_LPM_AUDIO, UTIL_LPM_ENABLE);
 }
@@ -718,14 +750,13 @@ HAL_StatusTypeDef MX_SAI1_ClockConfig(SAI_HandleTypeDef *hsai, uint32_t SampleRa
 void MX_AudioInit(Audio_Role_t role,
                   Sampling_Freq_t sampling_frequency,
                   Frame_Duration_t frame_duration,
-                  uint8_t *pRecBuff,
-                  uint8_t *pPlayBuff,
+                  uint8_t *pSnkBuff,
+                  uint8_t *pSrcBuff,
                   AudioDriverConfig driver_config)
 {
   uint32_t sample_per_frame;
   uint32_t audioFrequency;
-  uint16_t rec_buff_length = 0u;
-  uint16_t play_buff_length = 0u;
+
   BSP_AUDIO_Init_t audio_conf;
 
   switch (sampling_frequency)
@@ -757,6 +788,10 @@ void MX_AudioInit(Audio_Role_t role,
     case SAMPLE_FREQ_48000_HZ:
       audioFrequency = SAI_AUDIO_FREQUENCY_48K;
       break;
+
+    default:
+      Error_Handler();
+      return;
   }
   switch(frame_duration)
   {
@@ -768,6 +803,9 @@ void MX_AudioInit(Audio_Role_t role,
       sample_per_frame = audioFrequency * 100 / 10000;
       break;
 
+    default:
+      Error_Handler();
+      return;
   }
 
   if (sampling_frequency == SAMPLE_FREQ_44100_HZ)
@@ -775,22 +813,26 @@ void MX_AudioInit(Audio_Role_t role,
     /* LC3 need setup like 48Khz for this frequency */
     switch(frame_duration)
     {
-    case FRAME_DURATION_7_5_MS:
-      sample_per_frame = 360;
-      break;
+		case FRAME_DURATION_7_5_MS:
+		  sample_per_frame = 360;
+		  break;
 
-    case FRAME_DURATION_10_MS:
-      sample_per_frame = 480;
-      break;
+		case FRAME_DURATION_10_MS:
+		  sample_per_frame = 480;
+		  break;
+
+		default:
+		  Error_Handler();
+		  return;
     }
   }
 
 
   audio_conf.Device = AUDIO_IN_DEVICE_LINE_IN;
+  audio_conf.ChannelsNbr = 2;
+  audio_conf.Volume = 50; /* input volume is not used */
   audio_conf.SampleRate = audioFrequency;
   audio_conf.BitsPerSample = AUDIO_RESOLUTION_16B;
-  audio_conf.ChannelsNbr = 2;
-  audio_conf.Volume = 50;
 
   if (BSP_AUDIO_IN_Init(0x00, &audio_conf) != BSP_ERROR_NONE)
   {
@@ -806,23 +848,18 @@ void MX_AudioInit(Audio_Role_t role,
   }
 
   /* Start SAI clock without DMA interrupt */
-  uint8_t channel_per_buf = 2; /* SAI is in stereo */
+  uint8_t channel_at_src = 2; /* SAI is in stereo for Line IN */
+  uint8_t channel_at_snk = 2; /* SAI is in stereo for Headset */
   uint8_t buffer_nb = 2; /* double buffer strategie for minimum latency*/
   uint8_t bytes_per_sample = 2;
-  frame_byte_size = sample_per_frame * channel_per_buf * buffer_nb;
-  if (pRecBuff != 0)
-  {
-    rec_buff_length = (sample_per_frame * channel_per_buf * buffer_nb * bytes_per_sample);
-  }
-  if (pPlayBuff != 0)
-  {
-    play_buff_length = (sample_per_frame * channel_per_buf * buffer_nb * bytes_per_sample);
-  }
+
+  Sink_frame_size = sample_per_frame * channel_at_snk * buffer_nb;
+  Source_frame_size = sample_per_frame * channel_at_src * buffer_nb;
   /* Start SAI clock without DMA interrupt */
-  Init_AudioBuffer((uint8_t *)pRecBuff,
-                   rec_buff_length,
-                   (uint8_t *)pPlayBuff,
-                   play_buff_length);
+  Init_AudioBuffer((uint8_t *)pSnkBuff,
+                   Sink_frame_size * bytes_per_sample,
+                   (uint8_t *)pSrcBuff,
+                   Source_frame_size * bytes_per_sample);
 
   /* Release Bus for power consumption optimisation */
   __HAL_RCC_I2C3_CLK_DISABLE();
@@ -859,29 +896,25 @@ void MX_AudioDeInit(void)
 #endif /* (CFG_LCD_SUPPORTED == 1) */
 }
 
-static void Init_AudioBuffer(uint8_t *pRecBuff, uint16_t RecBuffLen,uint8_t *pPlayBuff, uint16_t PlayBuffLen)
+static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen)
 {
-  if ((RecBuffLen  > 0) && (pRecBuff != NULL))
+  /* We start the SAI here but will pause the DMA on the first interrupt.
+     The DMA will be relauched synchronized to the BLE transport for mastering audio latency */
+  if ((SnkBuffLen  > 0) && (pSnkBuff != NULL))
   {
-    if (BSP_AUDIO_OUT_Play(0, (uint8_t *)pRecBuff, RecBuffLen) != BSP_ERROR_NONE)
+    if (BSP_AUDIO_OUT_Play(0, (uint8_t *)pSnkBuff, SnkBuffLen) != BSP_ERROR_NONE)
     {
       Error_Handler();
     }
-    if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
-    {
-      Error_Handler();
-    }
+    Play_Req_Pause = 1;
   }
-  if ((PlayBuffLen  > 0) && (pPlayBuff != NULL))
+  if ((SrcBuffLen  > 0) && (pSrcBuff != NULL))
   {
-    if (BSP_AUDIO_IN_Record(0, (uint8_t *)pPlayBuff, PlayBuffLen) != BSP_ERROR_NONE)
+    if (BSP_AUDIO_IN_Record(0, (uint8_t *)pSrcBuff, SrcBuffLen) != BSP_ERROR_NONE)
     {
       Error_Handler();
     }
-    if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
-    {
-      Error_Handler();
-    }
+    Record_Req_Pause = 1;
   }
 }
 
@@ -890,7 +923,7 @@ void Start_TxAudio(void)
   /* Initialize Bus which bas been released for Power consumption optimisation */
   __HAL_RCC_I2C3_CLK_ENABLE();
 
-  APP_NotifyTxAudioCplt(frame_byte_size);
+  APP_NotifyTxAudioCplt(Sink_frame_size);
   if (BSP_AUDIO_OUT_Resume(0) != BSP_ERROR_NONE)
   {
     Error_Handler();
@@ -921,12 +954,26 @@ void Stop_TxAudio(void)
 
 void BSP_AUDIO_OUT_TransferComplete_CallBack(uint32_t instance)
 {
-  APP_NotifyTxAudioCplt(frame_byte_size);
+  APP_NotifyTxAudioCplt(Sink_frame_size);
 }
 
 void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
 {
+  if (Play_Req_Pause == 1)
+  {
+    __HAL_RCC_I2C3_CLK_ENABLE();
+    /* Pause the DMA that as run one frame only and wait the codec trigger to re run*/
+    if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
+    {
+      Error_Handler();
+    }
+    __HAL_RCC_I2C3_CLK_DISABLE();
+    Play_Req_Pause = 0;
+  }
+  else
+  {
   APP_NotifyTxAudioHalfCplt();
+  }
 }
 
 void Start_RxAudio(void)
@@ -959,12 +1006,25 @@ void Stop_RxAudio(void)
 
 void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t instance)
 {
-  APP_NotifyRxAudioCplt(frame_byte_size);
+  APP_NotifyRxAudioCplt(Source_frame_size);
 }
 
 void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
 {
+  if (Record_Req_Pause == 1)
+  {
+    __HAL_RCC_I2C3_CLK_ENABLE();
+    if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
+    {
+      Error_Handler();
+    }
+    __HAL_RCC_I2C3_CLK_DISABLE();
+    Record_Req_Pause = 0;
+  }
+  else
+  {
   APP_NotifyRxAudioHalfCplt();
+  }
 }
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
@@ -1041,13 +1101,13 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-  if (adc_cleared_flag == 1){
+  if(JOY_StandbyExitFlag == 1){
     BSP_JOY_DeInit(JOY1, JOY_ALL);
     Joystick_Init(0);
 
     /* re set threshold */
     LL_ADC_ConfigAnalogWDThresholds(ADC4, LL_ADC_AWD1, ADC_High_Threshold, ADC_Low_Threshold);
-    adc_cleared_flag=0;
+    JOY_StandbyExitFlag = 0;
   }
 #endif /* CFG_JOYSTICK_SUPPORTED */
 #endif /* CFG_LPM_STDBY_SUPPORTED */
@@ -1088,28 +1148,33 @@ void FM_ProcessRequest (void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SEQ_PRIO_0);
 }
 
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
@@ -1135,27 +1200,6 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-#if (CFG_LOG_SUPPORTED == 0)
-void RNG_KERNEL_CLK_OFF(void)
-{
-  /* RNG module may not switch off HSI clock when traces are used */
-
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
-
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
-}
-
-void SCM_HSI_CLK_OFF(void)
-{
-  /* SCM module may not switch off HSI clock when traces are used */
-
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
-
-  /* USER CODE END SCM_HSI_CLK_OFF */
-}
-
-#endif /* (CFG_LOG_SUPPORTED == 0) */
-
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
   HAL_GPIO_EXTI_Rising_Callback(GPIO_Pin);

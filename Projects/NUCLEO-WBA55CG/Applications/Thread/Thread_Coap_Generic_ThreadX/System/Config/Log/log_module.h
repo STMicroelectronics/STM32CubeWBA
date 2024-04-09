@@ -71,7 +71,6 @@ extern "C" {
 /* USER CODE END Private defines */
 
 /* Exported types ------------------------------------------------------------*/
-
 /* Log module types */
 /**
  * @brief  Customizable enum describing the verbose levels used by the log module.
@@ -136,17 +135,11 @@ typedef enum
 typedef enum
 {
   LOG_COLOR_NONE          = 0,     // Initialization.
-  LOG_COLOR_CODE_BLACK    = 30,
-  LOG_COLOR_CODE_RED      = 31,
-  LOG_COLOR_CODE_GREEN    = 32,
-  LOG_COLOR_CODE_YELLOW   = 33,
-  LOG_COLOR_CODE_BLUE     = 34,
-  LOG_COLOR_CODE_MAGENTA  = 35,
-  LOG_COLOR_CODE_CYAN     = 36,
-  LOG_COLOR_CODE_WHITE    = 37,
-  LOG_COLOR_ADD_BACKGROUND = 10,   // To add at color to have Background Color.
-  LOG_COLOR_ADD_LIGHT     = 60,    // To add at color to have lightning Color.
-  LOG_COLOR_CODE_DEFAULT  = LOG_COLOR_CODE_WHITE,
+  LOG_COLOR_CODE_DEFAULT  = 37,    // White
+  LOG_COLOR_CODE_RED      = 91,
+  LOG_COLOR_CODE_GREEN    = 92,
+  LOG_COLOR_CODE_YELLOW   = 93,
+  LOG_COLOR_CODE_CYAN     = 96,
   /* USER CODE BEGIN Log_Color_t */
 
   /* USER CODE END Log_Color_t */
@@ -161,14 +154,14 @@ typedef struct
   Log_Region_t region;
 } Log_Module_t;
 
-
 /**
  * @brief Callback function to insert Time Stamp.
  *
  * @param  pData    The location where insert the new TimeStamp
- * @param  piSize   The size of the TimeStamp insert.
+ * @param  iSizeMax The maximum size for the TimeStamp insert.
+ * @param  piSize   Pointer on the size of the TimeStamp insert.
  */
-typedef void CallBack_TimeStamp( uint8_t * pData, uint16_t * piSize );
+typedef void CallBack_TimeStamp( uint8_t * pData, uint16_t iSizeMax, uint16_t * piSize );
 
 /* USER CODE BEGIN ET */
 
@@ -307,7 +300,7 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_BLE(...)         Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_BLE, __VA_ARGS__);
+ * #define LOG_CUSTOM_BLE(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_BLE, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM
@@ -327,7 +320,7 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_SYSTEM(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_SYSTEM, __VA_ARGS__);
+ * #define LOG_CUSTOM_SYSTEM(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_APP, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM

@@ -41,7 +41,9 @@ typedef enum
   APP_BLE_LP_CONNECTING,
   APP_BLE_CONNECTED_SERVER,
   APP_BLE_CONNECTED_CLIENT,
+  /* USER CODE BEGIN APP_BLE_ConnStatus_t*/
 
+  /* USER CODE END APP_BLE_ConnStatus_t */
 } APP_BLE_ConnStatus_t;
 
 /**
