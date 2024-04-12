@@ -7,13 +7,13 @@ component.
 
 __SOFTWARE BILL OF MATERIALS__
 
-< Component            | Copyright                                                         | License >
-< ---------            | ----------------------------------------------------------------- | ------- >
-< Bluetooth Low Energy | STMicroelectronics                                                | SLA >
-< Linklayer            | Synopsys, Inc.                                                    | SLA >
-< MAC                  | Synopsys, Inc.                                                    | SLA >
-< OpenThread           | The OpenThread Authors                                            | BSD-3-Clause >
-< Zigbee               | Exegin Technologies Limited, STMicroelectronics, Dr Brian Gladman | SLA >
+ Component            | Copyright                                                         | License
+ ---------            | ----------------------------------------------------------------- | -------
+ Bluetooth Low Energy | STMicroelectronics                                                | SLA
+ Linklayer            | Synopsys, Inc.                                                    | SLA
+ MAC                  | Synopsys, Inc.                                                    | SLA
+ OpenThread           | The OpenThread Authors                                            | BSD-3-Clause
+ Zigbee               | Exegin Technologies Limited, STMicroelectronics, Dr Brian Gladman | SLA
 
 
 __Notes:__ If the license is an open source license, then you can access the
