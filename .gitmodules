@@ -14,3 +14,15 @@
 	path = Drivers/BSP/STM32WBA55G-DK1
 	url = https://github.com/STMicroelectronics/stm32wba55g-dk1-bsp
 	branch = main
+[submodule "Drivers/BSP/Components/Common"]
+	path = Drivers/BSP/Components/Common
+	url = https://github.com/STMicroelectronics/stm32-bsp-common.git
+	branch = main
+[submodule "Drivers/BSP/Components/cs42l51"]
+	path = Drivers/BSP/Components/cs42l51
+	url = https://github.com/STMicroelectronics/stm32-cs42l51.git
+	branch = main
+[submodule "Drivers/BSP/Components/ssd1315"]
+	path = Drivers/BSP/Components/ssd1315
+	url = https://github.com/STMicroelectronics/stm32-ssd1315.git
+	branch = main
