@@ -18,27 +18,20 @@
   */
 /* USER CODE END Header */
 
-#include "app_common.h"
 #include "main.h"
-#include "ll_intf.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
+#include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
-#include "app_threadx.h"
+#include "stm32_rtos.h"
+#include "utilities_common.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "temp_measurement.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Private defines -----------------------------------------------------------*/
-
-/* LINK_LAYER_TASK related defines */
-#define TASK_LINK_LAYER_STACK_SIZE          (1024)
-#define CFG_TASK_PRIO_LINK_LAYER            (15)
-#define CFG_TASK_PREEMP_LINK_LAYER          (0)
-
-/* LINK_LAYER_TEMP_MEAS_TASK related defines */
-#define TASK_LINK_LAYER_TEMP_STACK_SIZE     (256)
-#define CFG_TASK_PRIO_LINK_LAYER_TEMP       (15)
-#define CFG_TASK_PREEMP_LINK_LAYER_TEMP     (0)
 
 /* USER CODE BEGIN PD */
 
@@ -55,13 +48,13 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-/* LINK_LAYER_TEMP_MEAS_TASK related resources */
-static TX_SEMAPHORE     LinkLayerMeasSemaphore;
-static TX_THREAD        LinkLayerMeasThread;
+/* ThreadX objects declaration */
 
-/* Link Layer Task related resources */
+static TX_THREAD        LinkLayerTaskHandle;
 static TX_SEMAPHORE     LinkLayerSemaphore;
-static TX_THREAD        LinkLayerThread;
+
+static TX_THREAD        TempMeasLLTaskHandle;
+static TX_SEMAPHORE     TempMeasLLSemaphore;
 
 /* USER CODE BEGIN PV */
 
@@ -69,7 +62,6 @@ static TX_THREAD        LinkLayerThread;
 
 /* Global variables ----------------------------------------------------------*/
 
-/* Link Layer Task related resources */
 TX_MUTEX                LinkLayerMutex;
 
 /* USER CODE BEGIN GV */
@@ -80,6 +72,11 @@ TX_MUTEX                LinkLayerMutex;
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 static void ll_sys_bg_temperature_measurement_init(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+static void ll_sys_sleep_clock_source_selection(void);
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -92,15 +89,14 @@ static void ll_sys_bg_temperature_measurement_init(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
-
 /**
  * @brief  Link Layer Task for ThreadX
- * @param  ULONG thread_input
+ * @param  ULONG lArgument
  * @retval None
  */
-static void ll_sys_bg_process_task( ULONG thread_input )
+static void LinkLayer_Task_Entry( ULONG lArgument )
 {
-  UNUSED( thread_input );
+  UNUSED(lArgument);
 
   for(;;)
   {
@@ -119,36 +115,28 @@ static void ll_sys_bg_process_task( ULONG thread_input )
   */
 void ll_sys_bg_process_init(void)
 {
-  UINT  ThreadXStatus;
-  CHAR  * pStack = TX_NULL;
+  UINT TXstatus;
+  CHAR *pStack;
 
-  /* Register LinkLayer Semaphore */
-  ThreadXStatus = tx_semaphore_create( &LinkLayerSemaphore, "LinkLayerSem", 0 );
-  if ( ThreadXStatus != TX_SUCCESS )
+  /* Create Link Layer ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_LINK_LAYER, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER SEMAPHORE CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
+    TXstatus = tx_thread_create(&LinkLayerTaskHandle, "Link Layer  Task", LinkLayer_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_LINK_LAYER,
+                                 TASK_PRIO_LINK_LAYER, TASK_PREEMP_LINK_LAYER,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&LinkLayerSemaphore, "Link Layer Semaphore", 0);
+
+    TXstatus |= tx_mutex_create(&LinkLayerMutex, "Link Layer Mutex", 0 );
   }
 
-  /* Register LinkLayer Mutex */
-  ThreadXStatus = tx_mutex_create( &LinkLayerMutex, "LinkLayerMutex", 0 );
-  if ( ThreadXStatus != TX_SUCCESS )
+  if( TXstatus != TX_SUCCESS )
   {
-    LOG_ERROR_APP( "ERROR FREERTOS : LINK LAYER MUTEX CREATION FAILED." );
-    Error_Handler();
-  }
-
-  /* Thread associated with LinkLayer Task */
-  ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_LINK_LAYER_STACK_SIZE, TX_NO_WAIT );
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_thread_create( &LinkLayerThread, "LinkLayerThread", ll_sys_bg_process_task, 0, pStack,
-                                      TASK_LINK_LAYER_STACK_SIZE, CFG_TASK_PRIO_LINK_LAYER, CFG_TASK_PREEMP_LINK_LAYER,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER THREAD CREATION FAILED (%d)", ThreadXStatus );
+    LOG_ERROR_APP( "Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
 }
@@ -180,14 +168,143 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
-  uint16_t freq_value = 0;
-  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
-
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
    */
-  ll_intf_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  ll_intf_cmn_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  /* Initialize link layer temperature measurement background task */
+  ll_sys_bg_temperature_measurement_init();
+
+  /* Link layer IP uses temperature based calibration instead of periodic one */
+  ll_intf_cmn_set_temperature_sensor_state();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+  /* Link Layer power table */
+  ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+}
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+/**
+ * @brief  Temperature Measurement Task for ThreadX
+ * @param  lArgument   Argument passed the first time.
+ * @retval None
+ */
+static void TempMeasureLL_Task_Entry( ULONG lArgument )
+{
+  UNUSED(lArgument);
+
+  for(;;)
+  {
+    tx_semaphore_get(&TempMeasLLSemaphore, TX_WAIT_FOREVER);
+    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+    TEMPMEAS_RequestTemperatureMeasurement();
+    tx_mutex_put(&LinkLayerMutex);
+    tx_thread_relinquish();
+  }
+}
+
+/**
+  * @brief  Link Layer temperature request background process initialization
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement_init(void)
+{
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Create Temperature Measurement Link Layer ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_TEMP_MEAS_LL, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&TempMeasLLTaskHandle, "Temperature Measurement LL Task", TempMeasureLL_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_TEMP_MEAS_LL,
+                                 TASK_PRIO_TEMP_MEAS_LL, TASK_PREEMP_TEMP_MEAS_LL,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&TempMeasLLSemaphore, "Temperature Measurement LL Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "Temperature Measurement Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief  Request backroud task processing for temperature measurement
+  * @param  None
+  * @retval None
+  */
+void ll_sys_bg_temperature_measurement(void)
+{
+  static uint8_t initial_temperature_acquisition = 0;
+
+  if(initial_temperature_acquisition == 0)
+  {
+    TEMPMEAS_RequestTemperatureMeasurement();
+    initial_temperature_acquisition = 1;
+  }
+  else
+  {
+    tx_semaphore_put(&TempMeasLLSemaphore);
+  }
+}
+
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
+{
+  uint8_t BLE_sleep_clock_accuracy = 0;
+  uint32_t RevID = LL_DBGMCU_GetRevisionID();
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+
+  if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_LSE)
+  {
+    /* LSE selected as Link Layer sleep clock source.
+       Sleep clock accuracy is different regarding the WBA device ID and revision
+     */
+#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx)
+    if(RevID == REV_ID_A)
+    {
+      BLE_sleep_clock_accuracy = STM32WBA5x_REV_ID_A_SCA_RANGE;
+    }
+    else if(RevID == REV_ID_B)
+    {
+      BLE_sleep_clock_accuracy = STM32WBA5x_REV_ID_B_SCA_RANGE;
+    }
+    else
+    {
+      /* Revision ID not supported, default value of 500ppm applied */
+      BLE_sleep_clock_accuracy = STM32WBA5x_DEFAULT_SCA_RANGE;
+    }
+#else
+    UNUSED(RevID);
+#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) */
+  }
+  else
+  {
+    /* LSE is not the Link Layer sleep clock source, sleep clock accurcay default value is 500 ppm */
+    BLE_sleep_clock_accuracy = STM32WBA5x_DEFAULT_SCA_RANGE;
+  }
+
+  return BLE_sleep_clock_accuracy;
+}
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
+void ll_sys_sleep_clock_source_selection(void)
+{
+  uint16_t freq_value = 0;
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
 
   linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
   switch(linklayer_slp_clk_src)
@@ -209,91 +326,26 @@ void ll_sys_config_params(void)
       assert_param(0);
       break;
   }
-  ll_intf_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
-
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  /* Initialize link layer temperature measurement background task */
-  ll_sys_bg_temperature_measurement_init();
-
-  /* Link layer IP uses temperature based calibration instead of periodic one */
-  ll_intf_set_temperature_sensor_state();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-
-  /* Link Layer power table */
-  ll_intf_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+  ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 }
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-/**
- * @brief  Link Layer Temperature Measurement Task for ThreadX
- * @param  thread_input   Argument passed the first time.
- * @retval None
- */
-static void TEMPMEAS_RequestTemperatureMeasurement_task( ULONG thread_input )
+void ll_sys_reset(void)
 {
-  UNUSED( thread_input );
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+  uint8_t bsca = 0;
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 
-  for(;;)
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
+
+  /* Configure the link layer sleep clock accuracy if different from the default one */
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
+  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
+#else
+  bsca = ll_sys_BLE_sleep_clock_accuracy_selection();
+  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
   {
-    tx_semaphore_get(&LinkLayerMeasSemaphore, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    TEMPMEAS_RequestTemperatureMeasurement();
-    tx_mutex_put(&LinkLayerMutex);
-    tx_thread_relinquish();
+    ll_intf_le_set_sleep_clock_accuracy(bsca);
   }
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 }
-
-/**
-  * @brief  Link Layer temperature request background process initialization
-  * @param  None
-  * @retval None
-  */
-void ll_sys_bg_temperature_measurement_init(void)
-{
-  UINT  ThreadXStatus;
-  CHAR  * pStack = TX_NULL;
-
-  /* Register Temp Semaphore */
-  ThreadXStatus = tx_semaphore_create( &LinkLayerMeasSemaphore, "LinkLayerTempSem", 0 );
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER MEAS SEMAPHORE CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
-  }
-
-  /* Thread associated with LinkLayer Temp Task */
-  ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_LINK_LAYER_TEMP_STACK_SIZE, TX_NO_WAIT );
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_thread_create( &LinkLayerMeasThread, "LinkLayerMeasThread", TEMPMEAS_RequestTemperatureMeasurement_task, 0, pStack,
-                                      TASK_LINK_LAYER_TEMP_STACK_SIZE, CFG_TASK_PRIO_LINK_LAYER_TEMP, CFG_TASK_PREEMP_LINK_LAYER_TEMP,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER MEAS THREAD CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
-  }
-}
-
-/**
-  * @brief  Request backroud task processing for temperature measurement
-  * @param  None
-  * @retval None
-  */
-void ll_sys_bg_temperature_measurement(void)
-{
-  static uint8_t initial_temperature_acquisition = 0;
-
-  if(initial_temperature_acquisition == 0)
-  {
-    TEMPMEAS_RequestTemperatureMeasurement();
-    initial_temperature_acquisition = 1;
-  }
-  else
-  {
-    tx_semaphore_put(&LinkLayerMeasSemaphore);
-  }
-}
-
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */

@@ -8,7 +8,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,6 +26,11 @@
 #include "baes.h"
 
 /* Default software configuration */
+#define     AES_BLOCK_SIZE_BIT      128u            // AES Size in Bits
+#define     AES_BLOCK_SIZE_BYTE     16u             // AES Size in Bytes.
+#define     AES_BLOCK_SIZE_WORD     4u              // AES Size in Words.
+
+#define     AES_EXPANDED_KEY_SIZE   44u
 
 /* By default, use of AES H/W implementation instead of S/W */
 #ifndef CFG_BAES_SW

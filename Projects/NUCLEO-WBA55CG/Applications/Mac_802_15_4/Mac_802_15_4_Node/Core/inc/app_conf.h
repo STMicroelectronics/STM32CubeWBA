@@ -1,18 +1,18 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
-  * File Name          : app_conf.h
-  * Description        : Application configuration file for STM32WPAN Middleware.
+  ******************************************************************************
+  * @file    app_conf.h
+  * @author  MCD Application Team
+  * @brief   Application configuration file for STM32WPAN Middleware.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -25,12 +25,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 #include "stm32wbaxx_nucleo.h"
+
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
 
 /******************************************************************************
  * Application Config
  ******************************************************************************/
+/**< generic parameters ******************************************************/
+/* USER CODE BEGIN Generic_Parameters */
 
 /******************************************************************************
  * UART interfaces
@@ -55,14 +60,9 @@ extern UART_HandleTypeDef    hlpuart1;
 #define IF_USART_TX          hlpuart1
 #define IF_USART_RX          huart1
 
-/******************************************************************************
- * USB interface
- ******************************************************************************/
+/* USER CODE BEGIN Specific_Parameters */
 
-/**
- * Enable/Disable USB interface
- */
-#define CFG_USB_INTERFACE_ENABLE    0
+/* USER CODE END Specific_Parameters */
 
 /******************************************************************************
  * Low Power
@@ -203,6 +203,7 @@ typedef enum
 /* USER CODE BEGIN DEFINE_TASK */
 
 /* USER CODE END DEFINE_TASK */
+
 /**
  * This is the list of priority required by the application
  * Shall be in the range 0..31
@@ -282,7 +283,7 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (1)
+#define CFG_DEBUGGER_LEVEL           (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
@@ -297,7 +298,6 @@ typedef enum
 
 #define CFG_SCM_SUPPORTED            (1)
 
-
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
@@ -306,9 +306,6 @@ typedef enum
 
 /* Do not modify - must be 1 */
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
-
-/* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
@@ -323,7 +320,6 @@ typedef enum
 #define RADIO_NUM_OF_ANTENNAS               (4)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
-
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm
@@ -354,18 +350,17 @@ typedef enum
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
 
-#define CFG_LED_SUPPORTED                       (1)
-#define CFG_BUTTON_SUPPORTED                    (1)
+#define CFG_LED_SUPPORTED           (1)
+#define CFG_BUTTON_SUPPORTED        (1)
 
 /**
- * Overwrite some configuration imposed by Low Power level selected.
+ * If CFG_LPM_LEVEL at 2, make sure LED are disabled
  */
 #if (CFG_LPM_LEVEL > 1)
-  #if CFG_LED_SUPPORTED
-    #undef  CFG_LED_SUPPORTED
-    #define CFG_LED_SUPPORTED      (0)
-  #endif /* CFG_LED_SUPPORTED */
-#endif /* CFG_LPM_LEVEL */
+  #undef  CFG_LED_SUPPORTED
+  #define CFG_LED_SUPPORTED         (0)
+#endif /* CFG_FULL_LOW_POWER */
+
 
 /* 802.15.4 parameters */
 #define MAC_RETRY_SCAN           0x03

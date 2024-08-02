@@ -26,21 +26,36 @@
 #define g_MAX_PAN_DESC_SUPPORTED_c  6
 
 /** @brief  Defines the max num of sounding devices */
-#define g_MAX_SOUNDING_LIST_SUPPORTED_c 6
+#define g_MAX_SOUNDING_LIST_SUPPORTED_c 1
 
 /** @brief  Defines the max num of target device in beacon indication in case
 of pending data*/
-#define  g_MAX_PENDING_ADDRESS_c 7
+#define  g_MAX_PENDING_ADDRESS_c 1
 
 /** @brief  Defines the max num of ED scan results supported */
 #define g_MAX_ED_SCAN_RESULTS_SUPPORTED_c   16
 
-#define g_MAX_HDR_IE_SIZE  3
-#define g_MAX_PYLD_IE_SIZE 28
+/**
+ * The maximum size of an MPDU, in octets, that can be
+ * followed by a short interframe spacing (SIFS) period.
+ * @ingroup apiMacConst
+ */
+#define aMaxSIFSFrameSize               (18)
 
-#define g_SIZE_LONG_INT_c                   4
+/** @brief  Defines for Information Elements, masks, Number of elements MAX and Size MAX */
+#define MAX_HDR_IE_CONTENT 6   // Savant calcul: 6
+#define MAX_PYLD_IE_CONTENT 28 // MAX_ZIGBEE_EBR_IE_LEN: 28
+#define NB_HDR_IES 3
+#define NB_PYLD_IES 2 // Mandatory at least two
+#define MASK_HDR_IE_SIZE 0x007F
+#define MASK_HDR_IE_ELEMENT_TYPE 0xFF80
+#define MASK_PYLD_IE_SIZE 0x03FF
+#define MASK_PYLD_IE_GROUP_TYPE 0xFC00
+#define MASK_IE_TYPE 0x8000
+
+#define g_SIZE_LONG_INT_c             4
 #define NOBUFFER                      255
-#define g_LONG_ADDRESS_LENGTH_c             8
+#define g_LONG_ADDRESS_LENGTH_c       8
 
 #define g_TX_OPTION_DIRECT_c          0x00
 #define g_TX_OPTION_ACK_c             0x01
@@ -52,6 +67,7 @@ of pending data*/
 
 #define g_TRUE      0x01
 #define g_FALSE     0x00
+
 
 /**************************** Public Enum Definitions ************************/
 
@@ -232,13 +248,6 @@ typedef enum MAC_Security_Mode_Tag {
     g_MAC_SECURED_MODE_c = (uint8_t) 0x02
 } MAC_Security_Mode_t;
 
-/**
- * The maximum size of an MPDU, in octets, that can be
- * followed by a short interframe spacing (SIFS) period.
- * @ingroup apiMacConst
- */
-#define aMaxSIFSFrameSize               (18)
-
 /** @defgroup MAC 802.15.4 MAC PIB IDs
   *   @brief identifier list of the MAC PIB attributes
   * @{
@@ -404,10 +413,6 @@ typedef enum PHY_Pib_Id_Tag {
     g_PHY_SYMBOLS_PER_OCTET_c = 0x7
 } PHY_Pib_Id_t;
 
-
-/**
-  * @}
-  */
 
 /******************************************************************************/
 /** @brief This enum indicates the type of scan to be performed */

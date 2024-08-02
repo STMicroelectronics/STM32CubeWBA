@@ -23,6 +23,7 @@
 
 #include "app_conf.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "app_zigbee_endpoint.h"
@@ -136,7 +137,7 @@ void APP_ZIGBEE_ConfigBasicServer(void)
 {
   static struct ZbZclBasicServerDefaults   stBasicServerDefaults;
 
-  /* Initialize Basic Server Cluster 'defaults' informations */
+  /* Initialize Basic Server Cluster 'defaults' information */
   memset( &stBasicServerDefaults, 0x00, sizeof(stBasicServerDefaults) );
 
   stBasicServerDefaults.mfr_name[0] = sizeof( APP_ZIGBEE_MFR_NAME );
@@ -408,7 +409,7 @@ static enum ZbStatusCodeT ZbStartupWait( struct ZigBeeT * pstZigbee, struct ZbSt
  *        Information around the Device (Address & Capability) are sent on 'APP_ZIGBEE_NewDevice()' function.
  * @param zb        Zigbee stack handler
  * @param lId       Type of filter Message
- * @param pMessage  Pointer on Message informations
+ * @param pMessage  Pointer on Message information
  * @param arg       Pointer on User Argument.
  */
 static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback( struct ZigBeeT * zb, uint32_t lId, void * pMessage, void * arg )

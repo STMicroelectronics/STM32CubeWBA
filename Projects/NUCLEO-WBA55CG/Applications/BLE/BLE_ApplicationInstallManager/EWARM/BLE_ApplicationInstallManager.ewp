@@ -1088,6 +1088,21 @@
           <name>$PROJ_DIR$/../Core/Src/stm32wbaxx_hal_msp.c</name>
         </file>
       </group>
+      <group>
+        <name>System</name>
+        <group>
+          <name>Interfaces</name>
+          <file>
+            <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
+          </file>
+        </group>
+        <group>
+          <name>Startup</name>
+          <file>
+            <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+          </file>
+        </group>
+      </group>
     </group>
   </group>
   <group>
@@ -1111,12 +1126,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.c</name>
@@ -1152,13 +1161,7 @@
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pwr.c</name>

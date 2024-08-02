@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -238,12 +239,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -329,21 +334,6 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles HSEM non-secure global interrupt.
-  */
-void HSEM_IRQHandler(void)
-{
-  /* USER CODE BEGIN HSEM_IRQn 0 */
-
-  /* USER CODE END HSEM_IRQn 0 */
-  HAL_HSEM_IRQHandler();
-  /* USER CODE BEGIN HSEM_IRQn 1 */
-
-  /* USER CODE END HSEM_IRQn 1 */
-}
-
-
-/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)
@@ -374,6 +364,18 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief This function handles WKUP global interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* Verif WakeUp Source */
+  
+  /* Clear all WakeUp flags*/
+  LL_PWR_ClearFlag_WU( );
+}
+
 /**
   * @brief This function handles EXTI Line6 interrupt.
   */
@@ -397,4 +399,5 @@ void EXTI13_IRQHandler(void)
 {
   BSP_PB_IRQHandler(B1);
 }
+
 /* USER CODE END 1 */

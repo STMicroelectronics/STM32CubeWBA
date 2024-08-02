@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,12 +27,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
 extern void (*radio_callback)(void);
 extern void (*low_isr_callback)(void);
-
+extern uint32_t llhwc_cmn_get_aligned_us_now(uint32_t*  multiplier ,   uint32_t *divider);
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -244,12 +245,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -363,7 +368,9 @@ void RNG_IRQHandler(void)
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-
+  /* WORKAROUND : Force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
+  uint32_t mul,div;
+  llhwc_cmn_get_aligned_us_now(&mul, &div);
   /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)
@@ -433,4 +440,5 @@ void EXTI13_IRQHandler(void)
 {
   BSP_PB_IRQHandler(B1);
 }
+
 /* USER CODE END 1 */

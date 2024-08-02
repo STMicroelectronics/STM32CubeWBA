@@ -9,7 +9,8 @@ LR_IROM1 0x08000000 0x6000 {       ; load region size_region
     .ANY (+XO)
   }
 
-  RW_IRAM1 0x20000010 0x1FF0 {
+  RW_IRAM1 0x20000010 0xFFF0 {
+    *.o (STACK, +First)
     .ANY (+RW +ZI)
   }
 }

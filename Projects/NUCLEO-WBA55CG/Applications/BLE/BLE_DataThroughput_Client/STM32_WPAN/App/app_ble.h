@@ -130,6 +130,12 @@ typedef struct
 #define CONN_INT_MS(x) ((uint16_t)((x)/1.25f))
 #define CONN_SUP_TIMEOUT_MS(x) ((uint16_t)((x)/10.0f))
 #define CONN_CE_LENGTH_MS(x) ((uint16_t)((x)/0.625f))
+
+#define HCI_LE_ADVERTISING_REPORT_RSSI(p) \
+        (*(int8_t*)((&((hci_le_advertising_report_event_rp0*)(p))-> \
+                      Advertising_Report[0].Length_Data) + 1 + \
+                    ((hci_le_advertising_report_event_rp0*)(p))-> \
+                    Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

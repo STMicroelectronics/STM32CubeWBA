@@ -20,16 +20,18 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_zigbee.h"
 #include "app_entry.h"
-#include "advanced_memory_manager.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "app_sys.h"
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#include "advanced_memory_manager.h"
 #include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
@@ -37,7 +39,6 @@
 #endif /* CFG_LOG_SUPPORTED */
 #include "otp.h"
 #include "scm.h"
-#include "stm32_rtos.h"
 #include "stm32wbaxx_ll_rcc.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -64,6 +65,7 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
@@ -71,19 +73,19 @@ typedef struct
 #define BUTTON_NB_MAX                         (B3 + 1u)
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 /* Push Button SW1 Task related defines */
-#define TASK_BUTTON_SW1_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW1_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW1_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
+#define TASK_STACK_SIZE_BUTTON_SW1            RTOS_STACK_SIZE_NORMAL
+#define TASK_PRIO_BUTTON_SW1                  TASK_PRIO_BUTTON_SWx
+#define TASK_PREEMP_BUTTON_SW1                TASK_PREEMP_BUTTON_SWx
 
 /* Push Button SW2 Task related defines */
-#define TASK_BUTTON_SW2_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW2_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW2_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
+#define TASK_STACK_SIZE_BUTTON_SW2            RTOS_STACK_SIZE_NORMAL
+#define TASK_PRIO_BUTTON_SW2                  TASK_PRIO_BUTTON_SWx
+#define TASK_PREEMP_BUTTON_SW2                TASK_PREEMP_BUTTON_SWx
 
 /* Push Button SW3 Task related defines */
-#define TASK_BUTTON_SW3_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW3_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW3_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
+#define TASK_STACK_SIZE_BUTTON_SW3            RTOS_STACK_SIZE_NORMAL
+#define TASK_PRIO_BUTTON_SW3                  TASK_PRIO_BUTTON_SWx
+#define TASK_PREEMP_BUTTON_SW3                TASK_PREEMP_BUTTON_SWx
 
 /* USER CODE END PD */
 
@@ -128,11 +130,15 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-TX_SEMAPHORE          HwRngSemaphore;
-TX_THREAD             AppliStartThread, HwRngThread;
+/* ThreadX objects declaration */
 
-TX_THREAD             AmmBackgroundThread;
-TX_SEMAPHORE          AmmBackgroundSemaphore;
+static TX_THREAD      AmmTaskHandle;
+static TX_SEMAPHORE   AmmSemaphore;
+
+static TX_THREAD      RngTaskHandle;
+static TX_SEMAPHORE   RngSemaphore;
+
+static TX_THREAD      AppliStartThread;
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -154,10 +160,18 @@ CHAR          * pStack;
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
+
+static void APPE_AMM_Init(void);
+static void AMM_Task_Entry(ULONG lArgument);
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
+static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
+
+static void RNG_Task_Entry(ULONG lArgument);
 
 #ifndef TX_LOW_POWER_USER_ENTER
 void ThreadXLowPowerUserEnter( void );
@@ -165,36 +179,6 @@ void ThreadXLowPowerUserEnter( void );
 #ifndef TX_LOW_POWER_USER_EXIT
 void ThreadXLowPowerUserExit( void );
 #endif
-
-/**
- * @brief Wrapper for init function of the MM for the AMM
- *
- * @param p_PoolAddr: Address of the pool to use - Not use -
- * @param PoolSize: Size of the pool - Not use -
- *
- * @return None
- */
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
-
-/**
- * @brief Wrapper for allocate function of the MM for the AMM
- *
- * @param BufferSize
- *
- * @return Allocated buffer
- */
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
-
-/**
- * @brief Wrapper for free function of the MM for the AMM
- *
- * @param p_BufferAddr
- *
- * @return None
- */
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
-
-void AMM_BackgroundProcessTask  (unsigned long lArgument);
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -214,7 +198,7 @@ static void Button_TriggerActions         ( void * arg );
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -248,8 +232,6 @@ void MX_APPE_InitTask( ULONG lArgument )
 
   /* USER CODE END APPE_Init_Task_1 */
 
-  RNG_Init();
-
   /* Initialization of the low level : link layer and MAC */
   MX_APPE_LinkLayerInit();
 
@@ -266,11 +248,12 @@ void MX_APPE_InitTask( ULONG lArgument )
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
-  UINT        ThreadXStatus;
+  UINT TXstatus;
+  CHAR *pStack;
 
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
 
@@ -283,48 +266,36 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-  /* Initialize the Advance Memory Manager */
-  AMM_Init(&ammInitConfig);
+  /* Initialize the Advance Memory Manager module */
+  APPE_AMM_Init();
 
-  /* Create semaphore */
-  ThreadXStatus = tx_semaphore_create(&AmmBackgroundSemaphore, "AMM background Semaphore", 0);
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    /* allocate stack */
-    ThreadXStatus = tx_byte_allocate(pBytePool, (VOID**) &pStack, TASK_AMM_BCKGND_STACK_SIZE, TX_NO_WAIT);
-  }
-  if (ThreadXStatus == TX_SUCCESS)
-  {
-    /* Create AMM background task thread */
-    ThreadXStatus = tx_thread_create(&AmmBackgroundThread, "AMM background thread", AMM_BackgroundProcessTask, 0, pStack,
-                                     TASK_AMM_BCKGND_STACK_SIZE, CFG_TASK_PRIO_AMM_BCKGND, CFG_TASK_PREEMP_AMM_BCKGND,
-                                     TX_NO_TIME_SLICE, TX_AUTO_START);
-  }
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR THREADX : AMM BACKGROUND THREAD CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
-  }
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
 
   /* USER CODE END APPE_Init_1 */
 
   /* Create the Application Startup Thread and this Stack */
-  ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_ZIGBEE_APP_START_STACK_SIZE, TX_NO_WAIT);
-  if ( ThreadXStatus == TX_SUCCESS )
+  TXstatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_ZIGBEE_APP_START, TX_NO_WAIT);
+  if ( TXstatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_thread_create( &AppliStartThread, "AppliStart Thread", MX_APPE_InitTask, 0, pStack,
-                                       TASK_ZIGBEE_APP_START_STACK_SIZE, CFG_TASK_PRIO_ZIGBEE_APP_START, CFG_TASK_PREEMP_ZIGBEE_APP_START,
+    TXstatus = tx_thread_create( &AppliStartThread, "AppliStart Thread", MX_APPE_InitTask, 0, pStack,
+                                       TASK_STACK_SIZE_ZIGBEE_APP_START, TASK_PRIO_ZIGBEE_APP_START, TASK_PREEMP_ZIGBEE_APP_START,
                                        TX_NO_TIME_SLICE, TX_AUTO_START);
   }
-  if ( ThreadXStatus != TX_SUCCESS )
+  if ( TXstatus != TX_SUCCESS )
   {
-    LOG_ERROR_APP( "ERROR THREADX : APPLICATION START THREAD CREATION FAILED (%d)", ThreadXStatus );
+    LOG_ERROR_APP( "ERROR THREADX : APPLICATION START THREAD CREATION FAILED (%d)", TXstatus );
     Error_Handler();
   }
 
+  /* USER CODE BEGIN APPE_Init_2 */
+
+  /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
 }
 
@@ -429,6 +400,12 @@ static void System_Init( void )
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
+
   return;
 }
 
@@ -490,13 +467,13 @@ static void SystemPower_Config(void)
   /* USER CODE END SystemPower_Config */
 }
 
-static void HW_RNG_Process_Task( ULONG lArgument )
+static void RNG_Task_Entry(ULONG lArgument)
 {
-  UNUSED( lArgument );
+  UNUSED(lArgument);
 
   for(;;)
   {
-    tx_semaphore_get( &HwRngSemaphore, TX_WAIT_FOREVER );
+    tx_semaphore_get( &RngSemaphore, TX_WAIT_FOREVER );
     HW_RNG_Process();
     tx_thread_relinquish();
   }
@@ -505,41 +482,72 @@ static void HW_RNG_Process_Task( ULONG lArgument )
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
-  UINT        ThreadXStatus;
+  UINT TXstatus;
+  CHAR *pStack;
 
   HW_RNG_Start();
 
-  /* Register Semaphore to launch the Random Process */
-  ThreadXStatus = tx_semaphore_create( &HwRngSemaphore, "RandomProcess Semaphore", 0 );
+  /* Create Random Number Generator ThreadX objects */
 
-  /* Create the Random Process Thread and this Stack */
-  if ( ThreadXStatus == TX_SUCCESS )
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_RNG, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_HW_RNG_STACK_SIZE, TX_NO_WAIT);
-  }
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus |= tx_thread_create( &HwRngThread, "RandomProcess Thread", HW_RNG_Process_Task, 0, pStack,
-                                       TASK_HW_RNG_STACK_SIZE, CFG_TASK_PRIO_HW_RNG, CFG_TASK_PREEMP_HW_RNG,
-                                       TX_NO_TIME_SLICE, TX_AUTO_START);
+    TXstatus = tx_thread_create(&RngTaskHandle, "RNG Task", RNG_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_RNG,
+                                 TASK_PRIO_RNG, TASK_PREEMP_RNG,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&RngSemaphore, "RNG Semaphore", 0);
   }
 
-  /* Verify if it's OK */
-  if ( ThreadXStatus != TX_SUCCESS )
+  if( TXstatus != TX_SUCCESS )
   {
-    APP_DBG( "ERROR THREADX : RANDOM PROCESS THREAD CREATION FAILED (%d)", ThreadXStatus );
-    while(1);
+    LOG_ERROR_APP( "RNG ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
   }
 }
 
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+static void APPE_AMM_Init(void)
+{
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Initialize the Advance Memory Manager */
+  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
+  {
+    Error_Handler();
+  }
+
+  /* Create Advance Memory Manager ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_AMM, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&AmmTaskHandle, "AMM Task", AMM_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_AMM,
+                                 TASK_PRIO_AMM, TASK_PREEMP_AMM,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&AmmSemaphore, "AMM Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "AMM ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
 {
   UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
 }
 
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
 {
   return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
 }
@@ -547,6 +555,18 @@ static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
 static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
 {
   UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
+}
+
+static void AMM_Task_Entry(ULONG lArgument)
+{
+  UNUSED(lArgument);
+
+  for(;;)
+  {
+    tx_semaphore_get(&AmmSemaphore, TX_WAIT_FOREVER);
+    AMM_BackgroundProcess();
+    tx_thread_relinquish();
+  }
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -626,12 +646,12 @@ static void Button_InitTask( void )
   /* Create the pushbutton SWx Thread and this Stack */
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW1_STACK_SIZE, TX_NO_WAIT);
+    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_BUTTON_SW1, TX_NO_WAIT);
   }
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw1Thread, "ButtonSw1 Thread", ButtonSw1Task, 0, pStack,
-                                        TASK_BUTTON_SW1_STACK_SIZE, TASK_BUTTON_SW1_PRIORITY, TASK_BUTTON_SW1_PREEM_TRES,
+                                        TASK_STACK_SIZE_BUTTON_SW1, TASK_PRIO_BUTTON_SW1, TASK_PREEMP_BUTTON_SW1,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -649,12 +669,12 @@ static void Button_InitTask( void )
   /* Create the pushbutton SW2 Thread and this Stack */
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW2_STACK_SIZE, TX_NO_WAIT);
+    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_BUTTON_SW2, TX_NO_WAIT);
   }
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw2Thread, "ButtonSw2 Thread", ButtonSw2Task, 0, pStack,
-                                        TASK_BUTTON_SW2_STACK_SIZE, TASK_BUTTON_SW2_PRIORITY, TASK_BUTTON_SW2_PREEM_TRES,
+                                        TASK_STACK_SIZE_BUTTON_SW2, TASK_PRIO_BUTTON_SW2, TASK_PREEMP_BUTTON_SW2,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -672,12 +692,12 @@ static void Button_InitTask( void )
   /* Create the pushbutton SW3 Thread and this Stack */
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW3_STACK_SIZE, TX_NO_WAIT);
+    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_BUTTON_SW3, TX_NO_WAIT);
   }
   if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_thread_create(  &ButtonSw3Thread, "ButtonSw3 Thread", ButtonSw3Task, 0, pStack,
-                                        TASK_BUTTON_SW3_STACK_SIZE, TASK_BUTTON_SW3_PRIORITY, TASK_BUTTON_SW3_PREEM_TRES,
+                                        TASK_STACK_SIZE_BUTTON_SW3, TASK_PRIO_BUTTON_SW3, TASK_PREEMP_BUTTON_SW3,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
   
@@ -761,14 +781,15 @@ static void Button_TriggerActions( void * arg )
  * WRAP FUNCTIONS
  *
  *************************************************************/
+
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  if (HwRngSemaphore.tx_semaphore_count == 0)
+  if (RngSemaphore.tx_semaphore_count == 0)
   {
-    tx_semaphore_put(&HwRngSemaphore);
+    tx_semaphore_put(&RngSemaphore);
   }
 }
 
@@ -780,22 +801,10 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
   p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
 }
 
-void AMM_ProcessRequest (void)
+void AMM_ProcessRequest(void)
 {
-  /* Ask for AMM background task scheduling */
-  tx_semaphore_put(&AmmBackgroundSemaphore);
-}
-
-void AMM_BackgroundProcessTask(unsigned long lArgument)
-{
-  UNUSED(lArgument);
-
-  while(1)
-  {
-    tx_semaphore_get(&AmmBackgroundSemaphore, TX_WAIT_FOREVER);
-    AMM_BackgroundProcess();
-    tx_thread_relinquish();
-  }
+  /* Trigger to call Advance Memory Manager process function */
+  tx_semaphore_put(&AmmSemaphore);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))

@@ -213,9 +213,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Doc/readme.md</name>
@@ -488,22 +488,22 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_rcc.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</name>
+			<name>Middlewares/STM32_WPAN/ll_sys_cs.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</name>
+			<name>Middlewares/STM32_WPAN/ll_sys_dp_slp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</name>
+			<name>Middlewares/STM32_WPAN/ll_sys_intf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
+			<name>Middlewares/STM32_WPAN/ll_sys_startup.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
 		</link>

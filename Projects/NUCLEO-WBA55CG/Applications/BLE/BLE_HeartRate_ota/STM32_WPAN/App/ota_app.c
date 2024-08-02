@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
@@ -238,7 +239,9 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 {  
                   /* Flash manager erase */
                   if(OTA_APP_Context.sectors == 0)
+                  {
                     OTA_APP_Context.sectors = CFG_USER_DATA_SECTORS_NB;
+                  }
                   error = FM_Erase((uint32_t)USER_CFG_SLOT_START_SECTOR_INDEX, 
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
@@ -329,7 +332,9 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 {  
                   /* Flash manager write */
                   if(OTA_APP_Context.sectors == 0)
+                  {
                     OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
+                  }
                   error = FM_Erase((uint32_t)((OTA_APP_Context.base_address - FLASH_BASE) >> 13), 
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
@@ -593,7 +598,18 @@ static void DeleteSlot( uint8_t page_idx )
 
   p_erase_init.TypeErase = FLASH_TYPEERASE_PAGES;
   p_erase_init.NbPages = NbrOfPageToBeErased;
-  p_erase_init.Page = (uint32_t)page_idx;
+  p_erase_init.Page = (uint32_t)(page_idx & (FLASH_PAGE_NB - 1u));
+
+#if defined(FLASH_DBANK_SUPPORT)
+  if ((FLASH_PAGE_NB & page_idx) ^ (1u & READ_BIT (FLASH->OPTR, FLASH_OPTR_SWAP_BANK_Msk)))
+  {
+    p_erase_init.Banks = FLASH_BANK_2;
+  }
+  else
+  {
+    p_erase_init.Banks = FLASH_BANK_1;
+  } 
+#endif
 
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
   

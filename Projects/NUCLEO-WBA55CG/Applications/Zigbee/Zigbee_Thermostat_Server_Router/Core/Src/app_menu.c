@@ -20,8 +20,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_menu.h"
 #include "dbg_trace.h"

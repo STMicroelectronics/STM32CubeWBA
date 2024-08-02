@@ -4,7 +4,7 @@
  * @brief ZCL Over-The-Air (OTA) Upgrade cluster header
  * ZCL 7 section 11
  * ZCL 8 section 11
- * @copyright Copyright [2014 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2014 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 /* @PICS.ZCL.OTA
@@ -151,7 +151,8 @@ enum ZbZclOtaStatus {
     ZCL_OTA_STATUS_DOWNLOAD_COMPLETE = 2, /**< Download complete */
     ZCL_OTA_STATUS_WAITING_TO_UPGRADE = 3, /**< Waiting to upgrade */
     ZCL_OTA_STATUS_COUNT_DOWN = 4, /**< Count down */
-    ZCL_OTA_STATUS_WAIT_FOR_MORE = 5 /**< Waiting to Upgrade via External Event */
+    ZCL_OTA_STATUS_WAIT_FOR_MORE = 5, /**< Wait for more */
+    ZCL_OTA_STATUS_WAIT_UPGRADE_EXT = 6 /**< Waiting to Upgrade via External Event */
 };
 
 /* OTA ZCL commands */
@@ -497,14 +498,22 @@ struct ZbZclOtaClientCallbacksT {
     enum ZclStatusCodeT (*upgrade_end)(struct ZbZclClusterT *cluster, struct ZbZclOtaHeader *header,
         uint32_t current_time, uint32_t upgrade_time, void *arg);
     /**< Callback to handle an Upgrade End Response command, which specifies the time to
-     * perform the reboot and start using the updated firmware.
-     * The application should update the ZCL_OTA_ATTR_IMAGE_UPGRADE_STATUS attribute accordingly.
+     * perform the reboot and start using the updated firmware. If using the default callback
+     * handler defined by ZbZclOtaClientGetDefaultCallbacks, the 'reboot' callback will be called
+     * when the transfer has completed succesfully and it's time for the upgrade to take place.
+     * If the application has selected the "Out-of-band" Activation Policy, then it's best for
+     * the application to define its own 'upgrade_end' callback to decide when to perform the
+     * upgrade.
+     *
+     * The callback should update the ZCL_OTA_ATTR_IMAGE_UPGRADE_STATUS attribute accordingly.
      * Writing ZCL_OTA_STATUS_NORMAL to the ZCL_OTA_ATTR_IMAGE_UPGRADE_STATUS attribute will
      * reset the cluster back to defaults.
+     *
      * If the callback returns ZCL_STATUS_SUCCESS, the cluster data is not reset, since the OTA
      * upgrade may be waiting to finish through an external event or timeout.
      * Return code is ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
      * (e.g. ZCL_STATUS_FAILURE).
+     *
      * If the callback returns an error, the cluster is reset back to defaults.
      *
      * *Callback Function Parameters:*
@@ -706,14 +715,15 @@ typedef enum ZclStatusCodeT (*ZbZclOtaServerUpgradeEndTimeT)(struct ZbZclOtaHead
 /**
  * Callback to handle an Upgrade End Request command
  * @param image_definition OTA Header Image Definition structure
- * @param status ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ * @param upgrade_status ZCL status code from the Upgrade End Request
  * @param end_response_times Upgrade End Response command structure
  * @param arg Pointer to application data provided in initiating API call
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 typedef enum ZclStatusCodeT (*ZbZclOtaServerUpgradeEndReqT)(
-    struct ZbZclOtaImageDefinition *image_definition, enum ZclStatusCodeT *status,
-    struct ZbZclOtaEndResponseTimes *end_response_times, void *arg);
+    struct ZbZclOtaImageDefinition *image_definition, enum ZclStatusCodeT upgrade_status,
+    struct ZbZclOtaEndResponseTimes *end_response_times, struct ZbZclAddrInfoT *src_info,
+    void *arg);
 
 /** OTA Upgrade Server Configuration structure */
 struct ZbZclOtaServerConfig {
@@ -759,16 +769,35 @@ enum ZclStatusCodeT ZbZclOtaServerImageNotifyReq(struct ZbZclClusterT *cluster,
     struct ZbZclOtaImageDefinition *image_definition);
 
 /**
- * Send an OTA Upgrade End Response
+ * Send an Unsolicited OTA Upgrade End Response. This command is sent at some point in time
+ * after receiving the Upgrade End Request, which was already responsed to by a Default Response.
+ * This should be the normal way to handle the Upgrade End commands, rather than the Solicated
+ * Upgrade End Response (ZbZclOtaServerUpgradeEndRespSolic).
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param image_definition OTA Header Image Definition structure
- * @param end_response_times Upgrade End Response command structure
+ * @param image_definition OTA Header Image Definition
+ * @param end_response_times Upgrade End Response command
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
-enum ZclStatusCodeT ZbZclOtaServerUpgradeEndResp(struct ZbZclClusterT *cluster,
-    const struct ZbApsAddrT dst, struct ZbZclOtaImageDefinition *image_definition,
-    struct ZbZclOtaEndResponseTimes end_response_times);
+enum ZclStatusCodeT ZbZclOtaServerUpgradeEndRespUnsolic(struct ZbZclClusterT *cluster,
+    const struct ZbApsAddrT *dst, struct ZbZclOtaImageDefinition *image_definition,
+    struct ZbZclOtaEndResponseTimes *end_response_times);
+
+/**
+ * Send a  Solicited OTA Upgrade End Response. This command is sent in response to receiving
+ * the Upgrade End Request.
+ * @param cluster Cluster instance from which to send this command
+ * @param dstInfo ZCL Addressing info, including sequence number for the response.
+ * @param image_definition OTA Header Image Definition
+ * @param end_response_times Upgrade End Response command
+ * @param callback APSDE-DATA.confirm callback indicating status of transmitting this command.
+ * @param arg Callback argument
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclOtaServerUpgradeEndRespSolic(struct ZbZclClusterT *cluster,
+    struct ZbZclAddrInfoT *dstInfo, struct ZbZclOtaImageDefinition *image_definition,
+    struct ZbZclOtaEndResponseTimes *end_response_times,
+    void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /* OTA Upgrade Helper Functions */
 /**

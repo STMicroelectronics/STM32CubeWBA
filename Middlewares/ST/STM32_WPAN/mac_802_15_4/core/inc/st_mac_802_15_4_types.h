@@ -105,23 +105,19 @@ typedef struct{
 /** @brief Define the type used to IEs header. 
     Size in 1 byte and list pointer for all elements */
 typedef struct {
-    /** number of header IEs  */
-    uint8_t hdr_ie_list_count;
-    /** size of header IEs  */
-    uint8_t hdr_ie_list_size;
-    /** tab to header IEs */
-    uint8_t ptr_hdr_ie_list[g_MAX_HDR_IE_SIZE];
+    /** length of header IEs on 7 bits + ElementID + Type of header IEs, Type=0 */
+    uint16_t hdr_ie_length_elementID_Type;
+    /** content of header IEs */
+    uint8_t hdr_ie_content[MAX_HDR_IE_CONTENT]; // MAX IE size is CSL IE=6bytes 
 } ST_MAC_hdr_ie;
 
 /** @brief Define the type used to IEs payload. 
     Size in 1 byte and list pointer for all elements */
 typedef struct {
-    /** number of payload IEs  */
-    uint8_t pyld_ie_list_count;
-    /** size of payload IEs  */
-    uint8_t pyld_ie_list_size;
-    /** tab to payload IEs */
-    uint8_t ptr_pyld_ie_list[g_MAX_PYLD_IE_SIZE];
+    /** length of payload IEs on 10 bits + GroupID + Type of payload IEs Type=1 */
+    uint16_t pyld_ie_length_groupID_Type;
+    /** content of payload IEs */
+    uint8_t pyld_ie_content[MAX_PYLD_IE_CONTENT]; // Size equals to MAX_ZIGBEE_EBR_IE_LEN, LL define
 } ST_MAC_pyld_ie;
 
 
@@ -285,9 +281,9 @@ typedef struct {
     /*! Originator of the key to be used */
     uint8_t a_key_source[8];
     /*! Structure to header IE List*/
-    ST_MAC_hdr_ie hdr_ie_list;
+    ST_MAC_hdr_ie hdr_ie_list[NB_HDR_IES];
     /*! Structure to payload IE List*/
-    ST_MAC_pyld_ie pyld_ie_list;
+    ST_MAC_pyld_ie pyld_ie_list[NB_PYLD_IES];
     /*! Set to TRUE if the sequence number is suppressed in the frame */
     uint8_t scan_seq_sup;
     /*! Mode used to identify the key to be used */
@@ -351,9 +347,9 @@ typedef struct {
     /*! Originator of the key to be used */
     uint8_t a_beacon_key_source[8];
     /*!< structure to header IE List*/
-    ST_MAC_hdr_ie hdr_ie_list; 
+    ST_MAC_hdr_ie hdr_ie_list[NB_HDR_IES]; 
     /*!< structure to payload IE List*/
-    ST_MAC_pyld_ie pyld_ie_list;   
+    ST_MAC_pyld_ie pyld_ie_list[NB_PYLD_IES];   
     /*! Byte Stuffing to keep 32 bit alignment*/
     uint8_t a_stuffing[1];
 } ST_MAC_startReq_t;
@@ -524,9 +520,9 @@ typedef struct {
   /*! Length of the active portion of the superframe */
   uint8_t superframe_order;
   /*!< structure to header IE List*/
-  ST_MAC_hdr_ie hdr_ie_list; 
+  ST_MAC_hdr_ie hdr_ie_list[NB_HDR_IES]; 
   /*!< structure to payload IE List*/
-  ST_MAC_pyld_ie pyld_ie_list;   
+  ST_MAC_pyld_ie pyld_ie_list[NB_PYLD_IES];   
   /*! The beacon security level to be used */
   uint8_t beacon_security_level;
   /*! The mode used to identify the beacon key to be used */
@@ -941,9 +937,9 @@ typedef struct {
     /*! The beacon type NormalBeacon=0, EnhancedBeacon=1 */
     uint8_t beacon_type;
     /** header IEs  */
-    ST_MAC_hdr_ie hdr_ie_list;
+    ST_MAC_hdr_ie hdr_ie_list[NB_HDR_IES];
     /** Payload IEs */
-    ST_MAC_pyld_ie pyld_ie_list;
+    ST_MAC_pyld_ie pyld_ie_list[NB_PYLD_IES];
     /*! Number of octets contained in the beacon payload of the beacon frame */
     uint8_t sdu_length;
     /*! The set of octets comprising the beacon payload to be transferred
@@ -1136,9 +1132,9 @@ typedef struct {
   /*! Source address */
   uint8_t src_address[8];
   /*! header IEs from beacon request frame */
-  ST_MAC_hdr_ie hdr_ie_list;
+  ST_MAC_hdr_ie hdr_ie_list[NB_HDR_IES];
   /*! Payload IEs from beacon request frame */
-  ST_MAC_pyld_ie pyld_ie_list;
+  ST_MAC_pyld_ie pyld_ie_list[NB_PYLD_IES];
   /*!  Source PAN ID*/
   uint8_t a_device_PAN_id[2];
   /*! Type of beacon frame */

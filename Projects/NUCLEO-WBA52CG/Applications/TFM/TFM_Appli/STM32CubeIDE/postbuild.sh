@@ -63,7 +63,7 @@ external_flash_enable=
 ns_code_start=
 encrypted=
 over_write=
-
+flash_area_scratch_size=
 # end of updated field
 
 current_directory=`pwd`
@@ -71,8 +71,8 @@ echo $current_directory
 cd $projectdir"/../../TFM_SBSFU_Boot/Src"
 tfm_key_dir=`pwd`
 cd $current_directory
-cd $projectdir"/../../../../../../Middlewares/Third_Party/mcuboot"
-mcuboot_dir=`pwd`
+cd $projectdir/../../
+envdir=`pwd`
 cd $current_directory
 #Make sure we have a Binary sub-folder in UserApp folder
 if [ ! -e $userAppBinary ]; then
@@ -85,18 +85,17 @@ exit 0
 fi
 fi
 
-imgtool=$mcuboot_dir"/scripts/dist/imgtool/imgtool.exe"
-uname | grep -i -e windows -e mingw
-if [ $? == 0 ] && [ -e "$imgtool" ]; then
-#line for window executable
-echo Postbuild with windows executable
-python=
-else
-#line for python
-echo Postbuild with python script
-imgtool=$mcuboot_dir"/scripts/imgtool/main.py"
-python="python "
-python3 --version >& /dev/null && python="python3 "
+source $envdir/env.sh
+
+if [ ! -e "$imgtool" ];then
+  echo ""
+  echo "!!! WARNING : imgtool has not been found on your installation."
+  echo ""
+  echo "  Install CubeProgrammer on your machine in default path : ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer"
+  echo "  or "
+  echo "  Update your $envdir/env.sh with the proper path."
+  echo ""
+  exit 0
 fi
 
 #sign mode
@@ -155,9 +154,9 @@ echo $signing" "$mode" "$option" app_image_number="$app_image_number
 
 if [ $app_image_number == 1 ]; then
 echo assemble image
-command_ass=$python$imgtool" ass -f "$tfm_s" -o "$image_s_size" -i 0x0 "$tfm_ns" "$tfm
-echo $command_ass
-$command_ass >> $projectdir"/output.txt"
+command_ass=" ass -f "$tfm_s" -o "$image_s_size" -i 0x0 "$tfm_ns" "$tfm
+echo "$imgtool" $command_ass
+"$imgtool" $command_ass >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
@@ -172,24 +171,35 @@ tfm_s_sign=$tfm_sign
 tfm_s_enc_sign=$tfm_enc_sign
 fi
 
+#nb sectors in image areas
+if [ $over_write == "1" ]; then
+    image_ns_sectors=""
+    image_s_sectors=""
+    flag=""
+else
+    let image_ns_sectors="((($image_ns_size+1) / $flash_area_scratch_size)+1)"
+    let image_s_sectors="((($image_s_size+1) / $flash_area_scratch_size)+1)"
+    flag="-M"
+fi
+
 echo $signing signing
 if [ "$signing" == "nonsecure" ]; then
-command_init=$python$imgtool" sign -k "$key_ns" "$encrypt" -S "$image_ns_size" "$option" -v "$version" --confirm --pad "$tfm_ns" "$tfm_ns_init
+command_init=" sign -k "$key_ns" "$encrypt" -S "$image_ns_size" "$flag" "$image_ns_sectors" "$option" -v "$version" --confirm --pad "$tfm_ns" "$tfm_ns_init
 else
-command_init=$python$imgtool" sign -k "$key_s" "$encrypt" -S "$image_s_size" "$option" -v "$version" --confirm --pad "$tfm_s" "$tfm_s_init
+command_init=" sign -k "$key_s" "$encrypt" -S "$image_s_size" "$flag" "$image_s_sectors" "$option" -v "$version" --confirm --pad "$tfm_s" "$tfm_s_init
 fi
-$command_init >> $projectdir"/output.txt"
+"$imgtool" $command_init >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
 exit 1
 fi
 if [ "$signing" == "nonsecure" ]; then
-command_sign=$python$imgtool" sign -k "$key_ns" -S "$image_ns_size" "$option" -v "$version" "$tfm_ns" "$tfm_ns_sign
+command_sign=" sign -k "$key_ns" -S "$image_ns_size" "$flag" "$image_ns_sectors" "$option" -v "$version" "$tfm_ns" "$tfm_ns_sign
 else
-command_sign=$python$imgtool" sign -k "$key_s" -S "$image_s_size" "$option" -v "$version" "$tfm_s" "$tfm_s_sign
+command_sign=" sign -k "$key_s" -S "$image_s_size" "$flag" "$image_s_sectors" "$option" -v "$version" "$tfm_s" "$tfm_s_sign
 fi
-$command_sign >> $projectdir"/output.txt"
+"$imgtool" $command_sign >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"
@@ -197,11 +207,11 @@ exit 1
 fi
 echo $signing encrypting
 if [ "$signing" == "nonsecure" ]; then
-command_enc=$python$imgtool" sign -k "$key_ns" -E "$key_enc_pub" -S "$image_ns_size" "$option" -v "$version" "$tfm_ns" "$tfm_ns_enc_sign
+command_enc=" sign -k "$key_ns" -E "$key_enc_pub" -S "$image_ns_size" "$flag" "$image_ns_sectors" "$option" -v "$version" "$tfm_ns" "$tfm_ns_enc_sign
 else
-command_enc=$python$imgtool" sign -k "$key_s" -E "$key_enc_pub" -S "$image_s_size" "$option" -v "$version" "$tfm_s" "$tfm_s_enc_sign
+command_enc=" sign -k "$key_s" -E "$key_enc_pub" -S "$image_s_size" "$flag" "$image_s_sectors" "$option" -v "$version" "$tfm_s" "$tfm_s_enc_sign
 fi
-$command_enc >> $projectdir"/output.txt"
+"$imgtool" $command_enc >> $projectdir"/output.txt"
 ret=$?
 if [ $ret != 0 ]; then
 echo "postbuild.sh failed"

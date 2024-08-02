@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -35,6 +36,10 @@
 #include "simple_nvm_arbiter.h"
 #include "hids.h"
 #include "hids_app.h"
+#include "dis.h"
+#include "dis_app.h"
+#include "bas.h"
+#include "bas_app.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wba55g_discovery.h"
@@ -170,15 +175,15 @@ static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
   0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
 /* Encryption root key used to derive LTK(Legacy) and CSRK */
 static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ER;
 static BleApplicationContext_t bleAppContext;
-
 HIDS_APP_ConnHandleNotEvt_t HIDSHandleNotification;
+DIS_APP_ConnHandleNotEvt_t DISHandleNotification;
+BAS_APP_ConnHandleNotEvt_t BASHandleNotification;
 
 static char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' }; /* Gap Device Name */
 
@@ -241,6 +246,7 @@ void APP_BLE_Init(void)
 
   LST_init_head(&BleAsynchEventQueue);
 
+  /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
@@ -287,6 +293,8 @@ void APP_BLE_Init(void)
     LOG_INFO_APP("\n");
     LOG_INFO_APP("Services and Characteristics creation\n");
     HIDS_APP_Init();
+    DIS_APP_Init();
+    BAS_APP_Init();
     LOG_INFO_APP("End of Services and Characteristics creation\n");
     LOG_INFO_APP("\n");
 
@@ -351,8 +359,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       HIDSHandleNotification.EvtOpcode = HIDS_DISCON_HANDLE_EVT;
+      DISHandleNotification.EvtOpcode = DIS_DISCON_HANDLE_EVT;
+      BASHandleNotification.EvtOpcode = BAS_DISCON_HANDLE_EVT;
       HIDSHandleNotification.ConnectionHandle = p_disconnection_complete_event->Connection_Handle;
+      DISHandleNotification.ConnectionHandle = p_disconnection_complete_event->Connection_Handle;
+      BASHandleNotification.ConnectionHandle = p_disconnection_complete_event->Connection_Handle;
       HIDS_APP_EvtRx(&HIDSHandleNotification);
+      DIS_APP_EvtRx(&DISHandleNotification);
+      BAS_APP_EvtRx(&BASHandleNotification);
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE */
 #if (CFG_LCD_SUPPORTED == 1)
       char BdAddress[20];
@@ -396,6 +410,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                        (conn_interval_us%1000) / 10,
                        p_conn_update_complete->Conn_Latency,
                        p_conn_update_complete->Supervision_Timeout*10);
+          UNUSED(conn_interval_us);
           UNUSED(p_conn_update_complete);
 
           /* USER CODE BEGIN EVT_LE_CONN_UPDATE_COMPLETE */
@@ -436,6 +451,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Conn_Latency,
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -450,8 +466,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           bleAppContext.BleApplicationContext_legacy.connectionHandle = p_enhanced_conn_complete->Connection_Handle;
 
           HIDSHandleNotification.EvtOpcode = HIDS_CONN_HANDLE_EVT;
+          DISHandleNotification.EvtOpcode = DIS_CONN_HANDLE_EVT;
+          BASHandleNotification.EvtOpcode = BAS_CONN_HANDLE_EVT;
           HIDSHandleNotification.ConnectionHandle = p_enhanced_conn_complete->Connection_Handle;
+          DISHandleNotification.ConnectionHandle = p_enhanced_conn_complete->Connection_Handle;
+          BASHandleNotification.ConnectionHandle = p_enhanced_conn_complete->Connection_Handle;
           HIDS_APP_EvtRx(&HIDSHandleNotification);
+          DIS_APP_EvtRx(&DISHandleNotification);
+          BAS_APP_EvtRx(&BASHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
 
           /* USER CODE END HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
@@ -477,6 +499,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Conn_Latency,
                       p_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -491,8 +514,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           bleAppContext.BleApplicationContext_legacy.connectionHandle = p_conn_complete->Connection_Handle;
 
           HIDSHandleNotification.EvtOpcode = HIDS_CONN_HANDLE_EVT;
+          DISHandleNotification.EvtOpcode = DIS_CONN_HANDLE_EVT;
+          BASHandleNotification.EvtOpcode = BAS_CONN_HANDLE_EVT;
           HIDSHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
+          DISHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
+          BASHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
           HIDS_APP_EvtRx(&HIDSHandleNotification);
+          DIS_APP_EvtRx(&DISHandleNotification);
+          BAS_APP_EvtRx(&BASHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
           UTIL_TIMER_Stop(&(bleAppContext.TimerAdvLowPower_Id));
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
@@ -1227,7 +1256,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin,
-                                               CFG_BD_ADDRESS_TYPE);
+                                               CFG_BD_ADDRESS_DEVICE);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : aci_gap_set_authentication_requirement command, result: 0x%02X\n", ret);
@@ -1250,6 +1279,10 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
     }
   }
+
+  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2*/
+
+  /* USER CODE END Ble_Hci_Gap_Gatt_Init_2*/
 
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");
 
@@ -1279,7 +1312,7 @@ static void Ble_UserEvtRx( void)
     UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
   }
 
-  /* set the BG_BleStack_Process task for scheduling */
+  /* Trigger BLE Host stack to process */
   UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
 }
@@ -1454,7 +1487,7 @@ static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p
         p_adv_data[i+2] = ST_MANUF_ID;
         p_adv_data[i+3] = 0x00;
         p_adv_data[i+4] = BLUESTSDK_V2; /* blueST SDK version */
-        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA; /* Board ID */
+        p_adv_data[i+5] = BOARD_ID_DK_WBA5X; /* Board ID */
         p_adv_data[i+6] = FW_ID_HID; /* FW ID */
         p_adv_data[i+7] = 0x00; /* FW data 1 */
         p_adv_data[i+8] = 0x00; /* FW data 2 */

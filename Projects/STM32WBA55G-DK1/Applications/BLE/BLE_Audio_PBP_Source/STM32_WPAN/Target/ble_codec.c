@@ -21,6 +21,8 @@
 
 #include "codec_mngr.h"
 
+#include "log_module.h"
+
 #define BLE_PLAT_NUM_CIS             (2u)
 #define BLE_PLAT_NUM_BIS             (2u)
 
@@ -410,9 +412,9 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
       /* the CIS can be re-established without a new call to Set_CIG_Parameters */
       p_cis_conf->CIS_Conn_Handle = iso_con_handle[0];
         
-        LOG_INFO_APP("==>> AUDIO_RegisterGroup()\n");
-        uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
-        uint32_t transport_latency_p2c = transport_latency_P_to_C[0] + (transport_latency_P_to_C[1]<<8) + (transport_latency_P_to_C[2]<<16);
+      LOG_INFO_APP("==>> AUDIO_RegisterGroup()\n");
+      uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
+      uint32_t transport_latency_p2c = transport_latency_P_to_C[0] + (transport_latency_P_to_C[1]<<8) + (transport_latency_P_to_C[2]<<16);
 
       AUDIO_RegisterGroup(type,
                           p_cis_conf->CIG_ID,

@@ -3,7 +3,7 @@
  * @heading ZDO Layer
  * @brief Zigbee ZDO header file
  * @author Exegin Technologies Limited
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  *
  * This file provides the declaration of all the public API's and macros used by the ZDO layer.
  */
@@ -410,19 +410,8 @@ struct ZbZdoIeeeAddrReqT {
 #endif
 };
 
-/** IEEE_addr_rsp */
-struct ZbZdoIeeeAddrRspT {
-    enum ZbStatusCodeT status; /**< Status */
-    uint64_t extAddr; /**< IEEEAddrRemoteDev */
-    uint16_t nwkAddr; /**< NWKAddrRemoteDev */
-    uint8_t deviceCount; /**< NumAssocDev */
-    uint8_t startIndex; /**< StartIndex */
-    uint16_t deviceList[ZB_ZDO_ADDRRSP_DEVLIST_MAX]; /**< NWKAddrAssocDevList */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
-};
+/** IEEE_addr_rsp (Same as NWK_addr_rsp) */
+#define ZbZdoIeeeAddrRspT ZbZdoNwkAddrRspT
 
 /** Node_Desc_req */
 struct ZbZdoNodeDescReqT {

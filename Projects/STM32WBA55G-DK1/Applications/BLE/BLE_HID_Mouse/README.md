@@ -21,6 +21,10 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HID_Mouse/STM32_WPAN/App/ble_dbg_conf.h                                     Debug configuration file for BLE Middleware
   - BLE_HID_Mouse/STM32_WPAN/App/hids.h                                             Header for service1.c 
   - BLE_HID_Mouse/STM32_WPAN/App/hids_app.h                                         Header for service1_app.c 
+  - BLE_HID_Mouse/STM32_WPAN/App/dis.h                                              Header for service2.c 
+  - BLE_HID_Mouse/STM32_WPAN/App/dis_app.h                                          Header for service2_app.c 
+  - BLE_HID_Mouse/STM32_WPAN/App/bas.h                                              Header for service3.c 
+  - BLE_HID_Mouse/STM32_WPAN/App/bas_app.h                                          Header for service3_app.c 
   - BLE_HID_Mouse/STM32_WPAN/Target/bpka.h                                          This file contains the interface of the BLE PKA module
   - BLE_HID_Mouse/STM32_WPAN/Target/host_stack_if.h                                 This file contains the interface for the stack tasks 
   - BLE_HID_Mouse/STM32_WPAN/Target/ll_sys_if.h                                     Header file for ll_sys_if.c
@@ -68,6 +72,10 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
   - BLE_HID_Mouse/STM32_WPAN/App/app_ble.c                                          BLE Application 
   - BLE_HID_Mouse/STM32_WPAN/App/hids.c                                             service1 definition
   - BLE_HID_Mouse/STM32_WPAN/App/hids_app.c                                         service1_app application definition
+  - BLE_HID_Mouse/STM32_WPAN/App/dis.c                                              service2 definition
+  - BLE_HID_Mouse/STM32_WPAN/App/dis_app.c                                          service2_app application definition
+  - BLE_HID_Mouse/STM32_WPAN/App/bas.c                                              service3 definition
+  - BLE_HID_Mouse/STM32_WPAN/App/bas_app.c                                          service3_app application definition
   - BLE_HID_Mouse/STM32_WPAN/Target/bleplat.c                                       This file implements the platform functions for BLE stack library
   - BLE_HID_Mouse/STM32_WPAN/Target/bpka.c                                          This file implements the BLE PKA module
   - BLE_HID_Mouse/STM32_WPAN/Target/host_stack_if.c                                 Source file for the stack tasks 

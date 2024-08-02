@@ -325,5 +325,43 @@ tBleStatus aci_hal_continuous_tx_start( uint8_t RF_Channel,
                                         uint8_t PHY,
                                         uint8_t Pattern );
 
+/**
+ * @brief ACI_HAL_EAD_ENCRYPT_DECRYPT
+ * This command encrypts or decrypts data following the Encrypted Advertising
+ * Data scheme.
+ * When encryption mode is selected, In_Data shall only contain the Payload
+ * field to encrypt. The command adds the Randomizer and MIC fields in the
+ * result. The result data length (Out_Data_Length) is equal to the input
+ * length plus 9.
+ * When decryption mode is selected, In_Data shall contain the full Encrypted
+ * Data (Randomizer + Payload + MIC). The result data length (Out_Data_Length)
+ * is equal to the input length minus 9.
+ * If the decryption fails, the returned status is BLE_STATUS_FAILED, otherwise
+ * it is BLE_STATUS_SUCCESS.
+ * Note: on STM32WB, the In_Data_Length value must not exceed
+ * (BLE_CMD_MAX_PARAM_LEN - 27) i.e. 228 for BLE_CMD_MAX_PARAM_LEN default
+ * value.
+ * 
+ * @param Mode EAD operation mode: encryption or decryption.
+ *        Values:
+ *        - 0x00: Encryption
+ *        - 0x01: Decryption
+ * @param Key Session key used for EAD operation (in Little Endian format).
+ * @param IV Initialization vector used for EAD operation (in Little Endian
+ *        format).
+ * @param In_Data_Length Length of input data
+ * @param In_Data Input data
+ * @param[out] Out_Data_Length Length of result data
+ * @param[out] Out_Data Result data
+ * @return Value indicating success or error code.
+ */
+tBleStatus aci_hal_ead_encrypt_decrypt( uint8_t Mode,
+                                        const uint8_t* Key,
+                                        const uint8_t* IV,
+                                        uint16_t In_Data_Length,
+                                        const uint8_t* In_Data,
+                                        uint16_t* Out_Data_Length,
+                                        uint8_t* Out_Data );
+
 
 #endif /* BLE_HAL_ACI_H__ */

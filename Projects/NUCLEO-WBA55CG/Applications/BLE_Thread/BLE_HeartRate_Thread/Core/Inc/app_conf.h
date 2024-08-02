@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -246,6 +245,7 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_PKA,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -326,6 +326,7 @@ extern UART_HandleTypeDef           hlpuart1;
 typedef enum
 {
   CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
+  CFG_TASK_HW_PKA,
   CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
   CFG_TASK_HCI_ASYNCH_EVT_ID,
   CFG_TASK_LINK_LAYER_TEMP_MEAS,
@@ -376,6 +377,7 @@ typedef enum
 typedef enum
 {
   CFG_IDLEEVT_PROC_GAP_COMPLETE,
+  CFG_IDLEEVT_PKA_END_OF_OPERATION,
   /* USER CODE BEGIN CFG_IdleEvt_Id_t */
 
   /* USER CODE END CFG_IdleEvt_Id_t */
@@ -383,6 +385,7 @@ typedef enum
 
 /* Sequencer priorities by default  */
 #define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
+#define CFG_TASK_PRIO_HW_PKA                CFG_SEQ_PRIO_0             
 #define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
 #define CFG_TASK_PRIO_ALARM                 CFG_SEQ_PRIO_1
 #define CFG_TASK_PRIO_US_ALARM              CFG_TASK_PRIO_ALARM
@@ -486,6 +489,12 @@ typedef enum
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
+
+/* Custom LSE sleep clock accuracy to use if both conditions are met: 
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 

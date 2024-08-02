@@ -46,7 +46,7 @@ typedef enum
   APP_ZIGBEE_ERROR    = 0x01u,
 } APP_ZIGBEE_StatusTypeDef;
 
-/* --- Zigbee Application Informations --- */
+/* --- Zigbee Application Information --- */
 typedef struct ZigbeeAppInfoT
 {
   bool                  bHasInit;

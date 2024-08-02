@@ -441,7 +441,7 @@ tBleStatus CCP_CLIENT_AnswerIncomingCall(uint16_t ConnHandle,uint8_t ContentCont
 
 /**
   * @brief  End an active, alerting (outgoing), dialing (outgoing), incoming, or held (locally or remotely)
-  *         call  on the Call Control Server..
+  *         call on the Call Control Server.
   * @note   The CCP_CLT_OPERATION_TRANSMITTED_EVT event will be notified once the operation is
   *         transmitted to the Call Control Server.
   * @note   The CCP_CLT_RESPONSE_EVT event will be notified once the response of the Operation is

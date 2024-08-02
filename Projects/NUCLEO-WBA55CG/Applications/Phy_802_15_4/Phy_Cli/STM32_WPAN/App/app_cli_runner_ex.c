@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "app_conf.h"
+#include "stm32_seq.h"
 
 #include "st_mac_802_15_4_raw_svc.h"
 #include "app_cli_runner.h"
@@ -84,11 +85,13 @@ typedef struct {
 /* Maximum number of frame to hold at the same time */
 app_cli_single_RX_t frame_to_print_array[RX_FRAME_MAX_NUM];
 /* Number of frames waiting to be printed (range from 0..RX_FRAME_MAX_NUM), 0 if none */
-uint8_t frame_to_print_nb = 0;
-/* Index of most recent frame (range from 0..RX_FRAME_MAX_NUM-1), -1 if none */
-int8_t frame_to_print_idx = -1;
+int8_t frame_to_print_nb = 0;
 
 /* Private functions ---------------------------------------------------------*/
+/* Dynamic frame printing */
+static void app_cli_ex_schedule_frame_printing(void);
+static void app_cli_ex_print_frame(void);
+
 /* Service end notification callback */
 static void app_cli_ex_Notif_callback(MAC_RAW_State_t state);
 static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * p_RX_evt);
@@ -142,27 +145,27 @@ static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * 
   }
 
   /* Update recent frame index and number */
-  if (save_payload == TRUE)
+  if ((save_payload == TRUE) && (frame_to_print_nb < RX_FRAME_MAX_NUM) )
   {
-    frame_to_print_nb++;
-    frame_to_print_nb = MIN(frame_to_print_nb, RX_FRAME_MAX_NUM);
-    frame_to_print_idx++;
-    frame_to_print_idx %= RX_FRAME_MAX_NUM;
-
-    ble_memcpy(&frame_to_print_array[frame_to_print_idx].payload[0],
+    ble_memcpy(&frame_to_print_array[frame_to_print_nb].payload[0],
            p_RX_evt->payload_ptr, p_RX_evt->payload_len);
 
-    frame_to_print_array[frame_to_print_idx].payload_len = p_RX_evt->payload_len;
-    frame_to_print_array[frame_to_print_idx].rssi = p_RX_evt->rssi;
-    frame_to_print_array[frame_to_print_idx].lqi = p_RX_evt->lqi;
+    frame_to_print_nb = MIN(frame_to_print_nb, RX_FRAME_MAX_NUM);
+    frame_to_print_array[frame_to_print_nb].payload_len = p_RX_evt->payload_len;
+    frame_to_print_array[frame_to_print_nb].rssi = p_RX_evt->rssi;
+    frame_to_print_array[frame_to_print_nb].lqi = p_RX_evt->lqi;
+    frame_to_print_nb++;
+  }
+
+  if (cli_full_ctx.rx_frame_printing == 1)
+  {
+    app_cli_ex_schedule_frame_printing();
   }
 
   cli_full_ctx.last_lqi = p_RX_evt->lqi;
   cli_full_ctx.lqi_valid = 1;
   cli_full_ctx.last_rssi = p_RX_evt->rssi;
 
-  //app_cli_print("Received frame length %d, RSSI %d, LQI %d\r\n", p_RX_evt->payload_len, p_RX_evt->rssi, p_RX_evt->lqi);
-  
   return;
 }
 
@@ -204,17 +207,14 @@ static void app_cli_ex_get_tx_results(void)
 static void app_cli_ex_get_rx_results(void)
 {
   app_cli_single_RX_t * lst_frame = NULL;
-  if ( (frame_to_print_idx != -1) && (frame_to_print_nb > 0) )
+  if (frame_to_print_nb > 0)
   {
-    //lst_frame_length = frame_to_print_array[frame_to_print_idx].payload_size;
-    //lst_frame_rssi = frame_to_print_array[frame_to_print_idx].rssi;
-    lst_frame = &frame_to_print_array[frame_to_print_idx];
+    lst_frame = &frame_to_print_array[frame_to_print_nb-1];
   }
 
-  /* Print last frame received, clear the array */
+  /* Print last frame received, clear the array (only if dynamic frame printing is disabled) */
   app_cli_print_rx_results(cli_rx_result.packets_received, cli_rx_result.packets_rejected,
                            lst_frame);
-  frame_to_print_idx = -1;
   frame_to_print_nb = 0;
   
   memset(&cli_rx_result, 0, sizeof(app_cli_RX_result_t));
@@ -226,6 +226,23 @@ static void app_cli_ex_get_ed_results(void)
   MAC_Status_t status = ST_MAC_raw_EDscan_get_result(NULL, &RawEDReq);
   LL_UNUSED(status);
   app_cli_print_ed_cb(RawEDReq.ed);
+}
+
+static void app_cli_ex_schedule_frame_printing(void)
+{
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_PHY_CLI_RX_PRINT, CFG_SCH_PHY_CLI_PROCESS);
+}
+
+static void app_cli_ex_print_frame(void)
+{
+  if (frame_to_print_nb > 0)
+  {
+    frame_to_print_nb--;
+    app_cli_print_payload(&frame_to_print_array[frame_to_print_nb]);
+
+    if (frame_to_print_nb > 0)
+      app_cli_ex_schedule_frame_printing();
+  }
 }
 
 void app_cli_ex_init(void)
@@ -254,9 +271,16 @@ void app_cli_ex_init(void)
   cli_full_ctx.last_lqi = LQI_DEFAULT_VALUE;
   cli_full_ctx.lqi_valid = 0;
   cli_full_ctx.last_rssi = RSSI_DEFAULT_VALUE;
+
+  /* Dynamic frame printing */
   cli_full_ctx.rx_frame_printing = 0;
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_PHY_CLI_RX_PRINT, UTIL_SEQ_RFU, app_cli_ex_print_frame);  
 
   app_cli_ex_set_power(st_mac_caps.max_tx_power);
+#if (FULL_CERTIFICATION_CAPABLE==1)
+  /* Force SMPS enable in case of PHY certification */
+  app_cli_ex_set_smps(1);
+#endif
 
   for (uint8_t i = 0; i < RX_FRAME_MAX_NUM; i++)
   {
@@ -292,6 +316,26 @@ uint8_t app_cli_ex_set_power(const int8_t power)
   } else {
     return 1;
   }
+}
+
+uint8_t app_cli_ex_set_smps(const int8_t enable)
+{
+#if (CFG_SMPS_SUPPORTED == 1)
+  uint8_t rslt;
+  uint32_t supplymode = (enable == 1) ? PWR_SMPS_SUPPLY : PWR_LDO_SUPPLY;
+  if (HAL_PWREx_ConfigSupply(supplymode) != HAL_OK)
+  {
+    rslt = 1;
+  }
+  else
+  {
+    rslt = 0;
+  }
+  return rslt;
+#else
+  LL_UNUSED(enable);
+  return 1;
+#endif /* CFG_SMPS_SUPPORTED */
 }
 
 uint8_t app_cli_ex_tx_continuous_start(void)

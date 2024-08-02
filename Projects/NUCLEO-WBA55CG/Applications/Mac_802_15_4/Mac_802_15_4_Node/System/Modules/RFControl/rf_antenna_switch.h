@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,9 +22,9 @@
 
 #include "stm32wbaxx.h"
 
-#define RF_ANTSW0  {GPIOA, GPIO_PIN_12, GPIO_AF11_RF_ANTSW0}
-#define RF_ANTSW1  {GPIOA, GPIO_PIN_11, GPIO_AF11_RF_ANTSW1}
-#define RF_ANTSW2  {GPIOB, GPIO_PIN_2, GPIO_AF11_RF_ANTSW2}
+#define RF_ANTSW0  {GPIOA, GPIO_PIN_12, GPIO_AF11_RF}
+#define RF_ANTSW1  {GPIOA, GPIO_PIN_11, GPIO_AF11_RF}
+#define RF_ANTSW2  {GPIOB, GPIO_PIN_2, GPIO_AF11_RF}
 
 typedef struct {
   GPIO_TypeDef* GPIO_port;

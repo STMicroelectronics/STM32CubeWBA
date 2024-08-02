@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "log_module.h"
 #include "common_blesvc.h"
 #include "dt_serv.h"
 
@@ -530,7 +531,7 @@ void DT_SERV_Init(void)
 /**
  * @brief  Characteristic update
  * @param  CharOpcode: Characteristic identifier
- * @param  Service_Instance: Instance of the service to which the characteristic belongs
+ * @param  pData: Structure holding data to update
  *
  */
 tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *pData)

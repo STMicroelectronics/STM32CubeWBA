@@ -2,7 +2,7 @@
 <project>
     <fileVersion>3</fileVersion>
     <configuration>
-        <name>Mac_802_15_4_Coordinator_Export</name>
+        <name>Mac_802_15_4_Coordinator</name>
         <toolchain>
             <name>ARM</name>
         </toolchain>
@@ -16,19 +16,19 @@
                 <debug>1</debug>
                 <option>
                     <name>BrowseInfoPath</name>
-                    <state>Mac_802_15_4_Coordinator_Export\BrowseInfo</state>
+                    <state>Mac_802_15_4_Coordinator\BrowseInfo</state>
                 </option>
                 <option>
                     <name>ExePath</name>
-                    <state>Mac_802_15_4_Coordinator_Export\Exe</state>
+                    <state>Mac_802_15_4_Coordinator\Exe</state>
                 </option>
                 <option>
                     <name>ObjPath</name>
-                    <state>Mac_802_15_4_Coordinator_Export\Obj</state>
+                    <state>Mac_802_15_4_Coordinator\Obj</state>
                 </option>
                 <option>
                     <name>ListPath</name>
-                    <state>Mac_802_15_4_Coordinator_Export\List</state>
+                    <state>Mac_802_15_4_Coordinator\List</state>
                 </option>
                 <option>
                     <name>GEndianMode</name>
@@ -201,7 +201,7 @@
                 </option>
                 <option>
                     <name>BuildFilesPath</name>
-                    <state>Mac_802_15_4_Coordinator_Export\</state>
+                    <state>Mac_802_15_4_Coordinator\</state>
                 </option>
             </data>
         </settings>
@@ -316,7 +316,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>
@@ -692,7 +692,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>1</hasPrio>
+                <hasPrio>80</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -1350,7 +1350,7 @@
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hash_ex.c</name>
                 <excluded>
-                    <configuration>Mac_802_15_4_Coordinator_Export</configuration>
+                    <configuration>Mac_802_15_4_Coordinator</configuration>
                 </excluded>
             </file>
             <file>
@@ -1377,7 +1377,7 @@
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_msp_template.c</name>
                 <excluded>
-                    <configuration>Mac_802_15_4_Coordinator_Export</configuration>
+                    <configuration>Mac_802_15_4_Coordinator</configuration>
                 </excluded>
             </file>
             <file>
@@ -1443,13 +1443,13 @@
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_timebase_rtc_alarm_template.c</name>
                 <excluded>
-                    <configuration>Mac_802_15_4_Coordinator_Export</configuration>
+                    <configuration>Mac_802_15_4_Coordinator</configuration>
                 </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_timebase_rtc_wakeup_template.c</name>
                 <excluded>
-                    <configuration>Mac_802_15_4_Coordinator_Export</configuration>
+                    <configuration>Mac_802_15_4_Coordinator</configuration>
                 </excluded>
             </file>
             <file>

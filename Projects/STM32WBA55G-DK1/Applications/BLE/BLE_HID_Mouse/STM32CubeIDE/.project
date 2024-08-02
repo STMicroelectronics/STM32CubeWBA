@@ -329,6 +329,26 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/STM32_WPAN/App/bas.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/bas.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/bas_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/bas_app.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/dis.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/dis_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis_app.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/STM32_WPAN/App/hids.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hids.c</locationURI>
@@ -439,9 +459,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
@@ -532,6 +552,11 @@
 			<name>Application/User/System/Modules/baes/baes_cmac.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_cmac.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ccm.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/baes/baes_ecb.c</name>

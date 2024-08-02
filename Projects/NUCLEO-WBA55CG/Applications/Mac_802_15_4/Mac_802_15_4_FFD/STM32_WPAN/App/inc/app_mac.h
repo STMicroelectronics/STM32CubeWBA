@@ -44,4 +44,8 @@
 void APP_MAC_Init(void);
 void APP_FFD_MAC_802_15_4_SetupTask(void);
 
+void APPE_Button1Action(void);
+void APPE_Button2Action(void);
+void APPE_Button3Action(void);
+
 #endif /* APP_MAC_USER_H */

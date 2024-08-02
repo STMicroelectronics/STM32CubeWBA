@@ -37,4 +37,8 @@ void APP_MAC_Init(void);
 void APP_RFD_MAC_802_15_4_SetupTask(void);
 void APP_RFD_MAC_802_15_4_SendData(const char *);
 
+void APPE_Button1Action(void);
+void APPE_Button2Action(void);
+void APPE_Button3Action(void);
+
 #endif /* APP_MAC_USER_H */

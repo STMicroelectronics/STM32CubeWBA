@@ -29,6 +29,7 @@
 #include "st_mac_802_15_4_types.h"
 #include "st_mac_802_15_4_sap.h"
 #include "radio.h"
+#include "log_module.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -50,6 +51,7 @@ static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 static void SendTimerCallback(void *arg);
 static void Prepare_MLME_Set_Req(uint8_t PIB_attribute_indice, uint8_t * PIB_attribute_value);
 
+void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl; // Instance MAC 
 ST_MAC_callbacks_t macCallback; // Structure with all callbacks
@@ -321,7 +323,7 @@ void APP_RFD_MAC_802_15_4_SendData_broacast(const char * data)
   memcpy(DataReq.dst_address.a_short_addr, &g_BroacastShortAddr, 0x02); // Address destination 
 
   DataReq.msdu_handle = g_dataHandle++; // The handle associated with the MSDU
-  DataReq.ack_Tx = FALSE; // Request ACK = TRUE, overwise FALSE
+  DataReq.ack_Tx = FALSE; // Request ACK = TRUE, otherwise FALSE
   DataReq.GTS_Tx = FALSE; // Always this value in 802.15.4 non-beacon enabled
   memcpy(&rfBuffer, data, strlen(data));
   

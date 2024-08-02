@@ -21,8 +21,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "dbg_trace.h"
@@ -90,7 +91,6 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t   iDeviceShortAddress;
 
 /* USER CODE BEGIN PV */
 static uint16_t   iUserId, iPinCodeLength;
@@ -148,11 +148,12 @@ void APP_ZIGBEE_ApplicationStart( void )
 
   /* Read Short Address */
   iShortAddress = ZbShortAddress( stZigbeeAppInfo.pstZigbee );
-  LOG_INFO_APP( "Use Short Address : 0x%04X", iShortAddress );
 
   /* Start DoorLock Client */
   APP_ZIGBEE_DoorLockClientStart( iShortAddress );
 
+  /* Display Informations */
+  LOG_INFO_APP( "Use Short Address : 0x%04X", iShortAddress );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
   /* USER CODE END APP_ZIGBEE_ApplicationStart */
@@ -173,7 +174,9 @@ void APP_ZIGBEE_ApplicationStart( void )
  */
 void APP_ZIGBEE_PersistenceStartup(void)
 {
-  /* Not used */
+  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
+
+  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
 /**
@@ -273,8 +276,7 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
 {
-  iDeviceShortAddress = iShortAddress;
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( 0x%016" PRIX64 " ) and Short ( 0x%04" PRIX16 " ) Address.", cCapability, dlExtendedAddress, iDeviceShortAddress );
+  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 

@@ -39,11 +39,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Thread_Skeleton.ioc</locationURI>
 		</link>
 		<link>
-			<name>Doc/README.md</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
-		</link>
-		<link>
 			<name>Utilities/stm32_adv_trace.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/trace/adv_trace/stm32_adv_trace.c</locationURI>
@@ -82,6 +77,26 @@
 			<name>Utilities/stm32_tiny_vsnprintf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/misc/stm32_tiny_vsnprintf.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/app_entry.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_entry.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/main.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/main.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/stm32wbaxx_hal_msp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/stm32wbaxx_it.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/CMSIS/system_stm32wbaxx.c</name>
@@ -139,26 +154,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gtzc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_hsem.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</locationURI>
-		</link>
-		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_icache.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</locationURI>
@@ -207,6 +202,16 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_rtc_ex.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_uart.c</name>
@@ -279,34 +284,19 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/system.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/STM32_WPAN/threadplat_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/threadplat_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/STM32_WPAN/uart.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/uart.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/app_entry.c</name>
+			<name>Middlewares/STM32_WPAN/uart_rcp.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_entry.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/Core/main.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/main.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/Core/stm32wbaxx_hal_msp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/Core/stm32wbaxx_it.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/uart_rcp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/linklayer_plat.c</name>
@@ -329,9 +319,19 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_aes.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Interfaces/hw_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_rng.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Interfaces/pka_p256.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/pka_p256.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
@@ -374,9 +374,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
@@ -404,16 +404,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/user_low_power_config.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/MemoryManager/memory_manager.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/MemoryManager/memory_manager.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Modules/MemoryManager/stm32_mm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/MemoryManager/stm32_mm.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/System/Modules/RFControl/rf_antenna_switch.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RFControl/rf_antenna_switch.c</locationURI>
@@ -432,6 +422,11 @@
 			<name>Application/User/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ccm.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/baes/baes_cmac.c</name>

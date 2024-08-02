@@ -24,6 +24,7 @@
 #include "main.h"
 #include "platform_wba.h"
 #include "uart.h"
+#include "log_module.h"
 
 /* Extern variables  ---------------------------------------------------------*/
 #ifndef OT_RCP_UART_HANDLER
@@ -50,6 +51,9 @@ UART_HandleTypeDef *OtRcpHuart = &OT_RCP_UART_HANDLER;
 uint8_t otUartRX = 0;
 
 bool hdlc_frame_ongoing = FALSE;
+
+char spineldbgout[32];
+char spineldbgin[32];
 
 /*
  * UART used for commands input/output
@@ -84,6 +88,7 @@ otError otPlatUartDisable(void)
   return OT_ERROR_NOT_IMPLEMENTED;
 }
 
+
 otError otPlatUartSend(const uint8_t *aBuf, uint16_t aBufLength)
 {
   if (aBufLength > 0)
@@ -93,6 +98,11 @@ otError otPlatUartSend(const uint8_t *aBuf, uint16_t aBufLength)
     /* aBuf will not be written by OT stack while otPlatUartSendDone() is not called */
     HAL_UART_Transmit_DMA(OtRcpHuart, aBuf, aBufLength);
     APP_DBG("[RCP] Tx tid %d cmd %d prop 0x%x size %d\r\n", aBuf[1]&(0x0f), aBuf[2], aBuf[3], aBufLength);
+    if (aBuf[3] == 0x71) //Raw frame
+    {
+      sprintf(spineldbgout, "%02x, %02x, %02x, %02x, %02x",aBuf[4], aBuf[5], aBuf[6], aBuf[7], aBuf[8]);
+      APP_DBG(spineldbgout);
+    }
   }
 
   return OT_ERROR_NONE;
@@ -123,6 +133,11 @@ static void otUart_RxCpltCallback(UART_HandleTypeDef *huart)
       hdlc_frame_ongoing = FALSE;
       otPlatUartReceived(Rx_buffer, Rx_Buff_idx);
       APP_DBG("[RCP] Rx tid %d cmd %d prop 0x%x size %d\r\n", Rx_buffer[1]&(0x0f),Rx_buffer[2], Rx_buffer[3], Rx_Buff_idx);
+      if (Rx_buffer[3] == 0x71)
+      {
+        sprintf(spineldbgout, "%02x, %02x, %02x, %02x, %02x",Rx_buffer[4], Rx_buffer[5], Rx_buffer[6], Rx_buffer[7], Rx_buffer[8]);
+        APP_DBG(spineldbgout);
+      }
       memset(Rx_buffer, 0x0, Rx_Buff_idx);
       Rx_Buff_idx = 0;
     }

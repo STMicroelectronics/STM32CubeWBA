@@ -25,7 +25,7 @@
 #include "codec_mngr.h"
 #include "ltv_utils.h"
 #include "pbp.h"
-
+#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -66,7 +66,7 @@
                                     0u,0u)
 
 #define BAP_PACS_SRV_DYN_ALLOC_SIZE \
-        BAP_PACS_SRV_TOTAL_BUFFER_SIZE(MAX_NUM_PAC_SNK_RECORDS,MAX_NUM_PAC_SRC_RECORDS)
+        BAP_PACS_SRV_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_PAC_SNK_RECORDS,MAX_NUM_PAC_SRC_RECORDS)
 
 /* Memory required to allocate resource for Broadcast Audio Scan for Scan Delegator*/
 #define BAP_BASS_SRV_DYN_ALLOC_SIZE  \
@@ -848,9 +848,9 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
 {
   switch (pNotification->EvtOpcode)
   {
-    case CAP_CODEC_CONFIGURED_EVT:
+    case CAP_AUDIO_CLOCK_REQ_EVT:
       {
-        LOG_INFO_APP(">>== CAP_CODEC_CONFIGURED_EVT\n");
+        LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
         Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
         LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
         LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);

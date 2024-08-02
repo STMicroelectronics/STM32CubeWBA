@@ -24,8 +24,7 @@
 #include "app_conf.h"
 #include "app_mac_802_15_4_process.h"
 #include "stm32_seq.h"
-
-
+#include "log_module.h"
 /* Global define -------------------------------------------------------------*/
 /* Global variables ----------------------------------------------------------*/
 extern ST_MAC_associateInd_t g_MAC_associateInd;

@@ -1,6 +1,6 @@
 /**
  * @file zcl.key.h
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  * @heading Key Exchange (CBKE)
  * @brief ZCL Key Exchange Cluster
  *
@@ -90,8 +90,12 @@ enum ZbZclKeyStatusT {
     ZCL_KEY_STATUS_NO_RESOURCES = 0x04,
     ZCL_KEY_STATUS_UNSUPPORTED_SUITE = 0x05,
     ZCL_KEY_STATUS_INVALID_CERTIFICATE = 0x06, /* SE 1.2 */
-    ZCL_KEY_STATUS_TIMEOUT = 0x07, /* Exegin extension */
-    ZCL_KEY_STATUS_MATCH_DESC_FAILED = 0x08 /* Exegin extension */
+    /* Exegin extensions */
+    ZCL_KEY_STATUS_NOT_STARTED = 0xf0, /* Initial status */
+    ZCL_KEY_STATUS_TIMEOUT = 0xf1,
+    ZCL_KEY_STATUS_MATCH_DESC_FAILED = 0xf2,
+    /* discontinuity */
+    ZCL_KEY_STATUS_UNKNOWN = 0xff
 };
 
 /* Callback functions types */

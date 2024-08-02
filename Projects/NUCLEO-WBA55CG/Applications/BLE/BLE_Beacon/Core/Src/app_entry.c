@@ -20,27 +20,26 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
-#include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "app_ble.h"
+#include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
 #include "bpka.h"
-#include "ll_sys.h"
-#include "advanced_memory_manager.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
@@ -49,6 +48,9 @@
 #include "adc_ctrl.h"
 #include "temp_measurement.h"
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,6 +64,7 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -86,30 +89,6 @@ static bool system_startup_done = FALSE;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-/* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
-static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
-{
-  /* Virtual Memory #1 */
-  {
-    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
-  },
-  /* Virtual Memory #2 */
-  {
-    .Id = CFG_AMM_VIRTUAL_APP_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
-  },
-};
-
-static AMM_InitParameters_t ammInitConfig =
-{
-  .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
-  .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
-  .p_VirtualMemoryConfigList = vmConfig
-};
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -120,38 +99,14 @@ static AMM_InitParameters_t ammInitConfig =
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
 
-/**
- * @brief Wrapper for init function of the MM for the AMM
- *
- * @param p_PoolAddr: Address of the pool to use - Not use -
- * @param PoolSize: Size of the pool - Not use -
- *
- * @return None
- */
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static void APPE_FLASH_MANAGER_Init( void );
 
-/**
- * @brief Wrapper for allocate function of the MM for the AMM
- *
- * @param BufferSize
- *
- * @return Allocated buffer
- */
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
-
-/**
- * @brief Wrapper for free function of the MM for the AMM
- *
- * @param p_BufferAddr
- *
- * @return None
- */
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
+static void APPE_BPKA_Init( void );
 
 /* USER CODE BEGIN PFP */
 
@@ -165,7 +120,7 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -174,7 +129,7 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -193,25 +148,11 @@ uint32_t MX_APPE_Init(void *p_param)
   TEMPMEAS_Init ();
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
-  /* Initialize the Advance Memory Manager */
-  AMM_Init (&ammInitConfig);
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
-  /* Register the AMM background task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
-  /* Initialize the Simple NVM Arbiter */
-  SNVMA_Init ((uint32_t *)CFG_SNVMA_START_ADDRESS);
-
-  /* Register the flash manager task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, UTIL_SEQ_RFU, FM_BackgroundProcess);
-
-  /* USER CODE BEGIN APPE_Init_1 */
-
-  /* USER CODE END APPE_Init_1 */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
-
-  BPKA_Reset( );
-
-  RNG_Init();
+  /* Initialize the Flash Manager module */
+  APPE_FLASH_MANAGER_Init();
 
   /* Disable flash before any use - RFTS */
   FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
@@ -219,6 +160,19 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
   /* Enable flash system flag */
   FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
+  /* USER CODE BEGIN APPE_Init_1 */
+
+  /* USER CODE END APPE_Init_1 */
+
+  /* Initialize the Ble Public Key Accelerator module */
+  APPE_BPKA_Init();
+
+  /* Initialize the Simple Non Volatile Memory Arbiter */
+  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
+  {
+    Error_Handler();
+  }
 
   APP_BLE_Init();
 
@@ -228,8 +182,21 @@ uint32_t MX_APPE_Init(void *p_param)
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
+}
+
+void MX_APPE_Process(void)
+{
+  /* USER CODE BEGIN MX_APPE_Process_1 */
+
+  /* USER CODE END MX_APPE_Process_1 */
+  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+  /* USER CODE BEGIN MX_APPE_Process_2 */
+
+  /* USER CODE END MX_APPE_Process_2 */
 }
 
 /* USER CODE BEGIN FD */
@@ -286,6 +253,12 @@ static void System_Init( void )
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init ();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
@@ -348,26 +321,30 @@ static void SystemPower_Config(void)
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
   HW_RNG_Start();
 
+  /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
 
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+/**
+ * @brief Initialize Flash Manager module
+ */
+static void APPE_FLASH_MANAGER_Init(void)
 {
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
+  /* Register Flash Manager task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
 }
 
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+/**
+ * @brief Initialize Ble Public Key Accelerator module
+ */
+static void APPE_BPKA_Init(void)
 {
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
+  /* Register Ble Public Key Accelerator task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -379,16 +356,6 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
  * WRAP FUNCTIONS
  *
  *************************************************************/
-void MX_APPE_Process(void)
-{
-  /* USER CODE BEGIN MX_APPE_Process_1 */
-
-  /* USER CODE END MX_APPE_Process_1 */
-  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-  /* USER CODE BEGIN MX_APPE_Process_2 */
-
-  /* USER CODE END MX_APPE_Process_2 */
-}
 
 void UTIL_SEQ_Idle( void )
 {
@@ -438,6 +405,7 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   ll_sys_dp_slp_exit();
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -451,31 +419,17 @@ void BPKACB_Process( void )
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
 }
 
-void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
+void FM_ProcessRequest(void)
 {
-  /* Fulfill the function handle */
-  p_BasicMemoryManagerFunctions->Init = AMM_WrapperInit;
-  p_BasicMemoryManagerFunctions->Allocate = AMM_WrapperAllocate;
-  p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
-}
-
-void AMM_ProcessRequest (void)
-{
-  /* Ask for AMM background task scheduling */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SEQ_PRIO_0);
-}
-
-void FM_ProcessRequest (void)
-{
-  /* Schedule the background process */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SEQ_PRIO_0);
+  /* Trigger to call Flash Manager process function */
+  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER, CFG_SEQ_PRIO_0);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))

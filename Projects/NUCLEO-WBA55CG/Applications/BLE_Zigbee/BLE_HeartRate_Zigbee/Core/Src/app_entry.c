@@ -22,6 +22,7 @@
 #include "app_common.h"
 #include "app_conf.h"
 #include "main.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "stm32_seq.h"

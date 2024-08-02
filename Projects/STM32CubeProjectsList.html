@@ -2251,7 +2251,7 @@ the STM32WBAxx UART HAL and LL API, the LL API being used for performance improv
         <td>12</td>
       </tr>
       <tr align=center>
-        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=95><p id="Applications">Applications</p></td>
+        <td style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" rowspan=104><p id="Applications">Applications</p></td>
         <td align=left rowspan=3><p id="-">-</p></td>
         <td align=left><p id="OpenBootloader">OpenBootloader</p></td>
         <td align=left>
@@ -2286,13 +2286,31 @@ application but can be used by the non-secure application at run-time.
         <td><font size="5" color=green>X</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=27><p id="BLE">BLE</p></td>
+        <td align=left rowspan=30><p id="BLE">BLE</p></td>
         <td align=left><p id="BLE_ApplicationInstallManager">BLE_ApplicationInstallManager</p></td>
         <td align=left>
 The BLE_ApplicationInstallManager application, associated to a BLE application embedding OTA service, manages the firmware update over the air of a BLE application. 
 </td>
         <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_HAP_Central">BLE_Audio_HAP_Central</p></td>
+        <td align=left>
+How to use the Hearing Access Profile in Unicast Client role (Hearing Aid Unicast Client / Hearing Aid Remote Controller / Immediate Alert Client) as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="BLE_Audio_HAP_Peripheral">BLE_Audio_HAP_Peripheral</p></td>
+        <td align=left>
+How to use the Hearing Access Profile in Unicast Server role (Hearing Aid role) as specified by the Bluetooth SIG.
+</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2314,18 +2332,19 @@ How to use the Public Broadcast profile in Source role as specified by the Bluet
         <td>-</td>
       </tr>
       <tr align=center>
-        <td align=left><p id="BLE_Audio_TMAP_Unicast_Client">BLE_Audio_TMAP_Unicast_Client</p></td>
+        <td align=left><p id="BLE_Audio_TMAP_Central">BLE_Audio_TMAP_Central</p></td>
         <td align=left>
-How to use the Telephony and Media Profile profile in Unicast Client role (Call Gateway and/or Unicast Media Sender) as specified by the Bluetooth SIG.
+How to use the Telephony and Media Profile profile in Unicast Client role (Call Gateway and/or Unicast Media Sender) and Broadcast Source role (Broadcast Media Sender) as specified by the Bluetooth SIG.
 </td>
         <td><font size="5" color=red>New</font></td>
         <td>-</td>
         <td>-</td>
       </tr>
       <tr align=center>
-        <td align=left><p id="BLE_Audio_TMAP_Unicast_Server">BLE_Audio_TMAP_Unicast_Server</p></td>
+        <td align=left><p id="BLE_Audio_TMAP_Peripheral">BLE_Audio_TMAP_Peripheral</p></td>
         <td align=left>
-How to use the Telephony and Media Profile profile in Unicast Server role (Call Terminal and/or Unicast Media Receiver) as specified by the Bluetooth SIG.
+How to use the Telephony and Media Profile profile in Unicast Server role (Call Terminal and/or Unicast Media Receiver) and Broadcast Sink role (Broadcast Media Received)
+as specified by the Bluetooth SIG.
 </td>
         <td><font size="5" color=red>New</font></td>
         <td>-</td>
@@ -2512,6 +2531,15 @@ Demonstrate STM32WBA using BLE stack full version to use several extended advert
         <td>-</td>
       </tr>
       <tr align=center>
+        <td align=left><p id="BLE_p2pServer_Simplest">BLE_p2pServer_Simplest</p></td>
+        <td align=left>
+How to demonstrate Point-to-Point communication using BLE as simple as possible.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="BLE_p2pServer_TZ">BLE_p2pServer_TZ</p></td>
         <td align=left>
 This example is similar to BLE_p2pServer with the TrustZone being activated and the Blue LED being connected to the Secure side of the MCU.
@@ -2598,12 +2626,12 @@ How to use MAC 802.15.4 Association and Data exchange.
         <td>-</td>
       </tr>
       <tr align=center>
-        <td align=left><p id="Mac_802_15_4_LPM_Periodic_Transmit">Mac_802_15_4_LPM_Periodic_Transmit</p></td>
+        <td align=left><p id="Mac_802_15_4_LPM_Periodic_Tx">Mac_802_15_4_LPM_Periodic_Tx</p></td>
         <td align=left>
 How to use MAC 802.15.4 data transmission with STOP1/Standby low power mode enabled.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=red>New</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2705,7 +2733,7 @@ How to build Thread application based on Coap messages.
 How to build Thread application based on Coap messages.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2714,7 +2742,7 @@ How to build Thread application based on Coap messages.
 How to build Thread sleepy end device application based on Coap messages.
 </td>
         <td>-</td>
-        <td><font size="5" color=green>X</font></td>
+        <td><font size="5" color=green>CubeMx</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -2800,7 +2828,7 @@ This application provides an example of Azure RTOS ThreadX stack usage, it shows
         <td><font size="5" color=green>CubeMx</font></td>
       </tr>
       <tr align=center>
-        <td align=left rowspan=35><p id="Zigbee">Zigbee</p></td>
+        <td align=left rowspan=41><p id="Zigbee">Zigbee</p></td>
         <td align=left><p id="Zigbee_APS_Coord">Zigbee_APS_Coord</p></td>
         <td align=left>
 How to use the APS layer in an application acting as a Zigbee Coordinator within a centralized network.  
@@ -2937,6 +2965,24 @@ How to use the Meter Identification cluster on a device acting as a Server withi
         <td>-</td>
       </tr>
       <tr align=center>
+        <td align=left><p id="Zigbee_OTA_Client_Router">Zigbee_OTA_Client_Router</p></td>
+        <td align=left>
+How to use the OTA cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OTA_Server_Coord">Zigbee_OTA_Server_Coord</p></td>
+        <td align=left>
+How to use the OTA cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="Zigbee_OccupSensing_Client_Coord">Zigbee_OccupSensing_Client_Coord</p></td>
         <td align=left>
 How to use the Occupancy Sensing on a device acting as a Client within a Centralized Zigbee network.
@@ -2991,6 +3037,15 @@ How to use the OnOff cluster on a device acting as a Client within a Centralized
         <td>-</td>
       </tr>
       <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Client_Router_OTA">Zigbee_OnOff_Client_Router_OTA</p></td>
+        <td align=left>
+How to use the OTA cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="Zigbee_OnOff_Client_Router_ThreadX">Zigbee_OnOff_Client_Router_ThreadX</p></td>
         <td align=left>
 How to use the OnOff cluster on a device acting as a Client within a Centralized Zigbee network.
@@ -3006,6 +3061,24 @@ How to use the OnOff cluster on a device acting as a ED Client within a Centrali
 </td>
         <td>-</td>
         <td><font size="5" color=green>CubeMx</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Nvm_Client_Router">Zigbee_OnOff_Nvm_Client_Router</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Client within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
+        <td align=left><p id="Zigbee_OnOff_Nvm_Server_Coord">Zigbee_OnOff_Nvm_Server_Coord</p></td>
+        <td align=left>
+How to use the OnOff cluster on a device acting as a Server within a Centralized Zigbee network.
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
         <td>-</td>
       </tr>
       <tr align=center>
@@ -3099,6 +3172,15 @@ How to use the Temperature Measurement cluster on a device acting as a Server wi
         <td>-</td>
       </tr>
       <tr align=center>
+        <td align=left><p id="Zigbee_TempMeas_Server_SED">Zigbee_TempMeas_Server_SED</p></td>
+        <td align=left>
+How to use the Temperature Measurement cluster on a device acting as a Server within a Centralized Zigbee network.  
+</td>
+        <td>-</td>
+        <td><font size="5" color=red>New</font></td>
+        <td>-</td>
+      </tr>
+      <tr align=center>
         <td align=left><p id="Zigbee_Thermostat_Client_Coord">Zigbee_Thermostat_Client_Coord</p></td>
         <td align=left>
 How to use the Thermostat cluster on a device acting as a Server within a Centralized Zigbee network.  
@@ -3117,15 +3199,15 @@ How to use the Thermostat cluster on a device acting as a Server within a Centra
         <td>-</td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-        <td colspan="3"><b>Total number of applications: 97</b></td>
-        <td>8</td>
-        <td>71</td>
+        <td colspan="3"><b>Total number of applications: 106</b></td>
+        <td>10</td>
+        <td>78</td>
         <td>18</td>
       </tr>
       <tr style="background-repeat: no-repeat;background-position: right center;background-color: #39A9DC;color: #FFF;" align=center>
-      	<td colspan="4"><b>Total number of projects: 500</b></td>
-      	<td>35</td>
-      	<td>256</td>
+      	<td colspan="4"><b>Total number of projects: 509</b></td>
+      	<td>37</td>
+      	<td>263</td>
       	<td>209</td>
       </tr>
     </table>

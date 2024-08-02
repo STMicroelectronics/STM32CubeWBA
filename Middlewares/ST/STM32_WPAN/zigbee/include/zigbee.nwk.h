@@ -3,7 +3,7 @@
  * @heading NWK Layer
  * @brief NWK header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_NWK_H
@@ -145,7 +145,7 @@ enum ZbNwkNibAttrIdT {
     /**< (type: uint64_t, reset: yes, persist: yes) */
     /* ZigBee 2007+ Attributes */
     ZB_NWK_NIB_ID_RouteRecordTable = 0x9c,
-    /**< Read-only (type: struct ZbNwkRouteRecordT, reset: yes, persist: yes) */
+    /**< Not accessible by application. (type: struct ZbNwkRouteRecordT, reset: yes, persist: yes) */
     ZB_NWK_NIB_ID_IsConcentrator = 0x9d,
     /**< (type: uint8_t, reset: yes, persist: yes) */
     ZB_NWK_NIB_ID_ConcentratorRadius = 0x9e,
@@ -171,6 +171,7 @@ enum ZbNwkNibAttrIdT {
     /* nwkUniqueAddr has been deprecated, assumed to be false (0xa8) */
     ZB_NWK_NIB_ID_AddressMap = 0xa9,
     /**< (type: struct ZbNwkAddrMapEntryT, reset: yes, persist: yes) */
+
     /* ...continued in zigbee.aps.h with ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET... */
 
     /* R23+ attributes */
@@ -519,6 +520,15 @@ struct ZbNwkNeighborT {
     uint8_t interval; /* R21 draft. */
     ZbUptimeT timeout; /* R21 draft. End-device keep-alive timeout. Disabled if zero. */
     uint8_t ifc_index; /* R22 - set to ZB_NWK_NEIGHBOR_IFINDEX_UNKNOWN if not known (e.g. after persistence) */
+};
+
+/*
+ * Network Address Map Entry (ZB_NWK_NIB_ID_AddressMap)
+ */
+struct ZbNwkAddrMapEntryT {
+    uint64_t extAddr;
+    uint16_t nwkAddr;
+    ZbUptimeT lastUsed;
 };
 
 /*
@@ -933,66 +943,199 @@ struct ZbNwkCommissioningInfo {
  */
 bool ZbNwkCommissioningConfig(struct ZigBeeT *zb, struct ZbNwkCommissioningInfo *commission_info);
 
-/* NLME-GET.request */
+/**
+ * NLME-GET.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param getReqPtr Pointer to NLME-GET.request data structure
+ * @param getConfPtr Pointer to NLME-GET.confirm data structure
+ */
 void ZbNlmeGetReq(struct ZigBeeT *zb, struct ZbNlmeGetReqT *getReqPtr, struct ZbNlmeGetConfT *getConfPtr);
 
-/* NLME-SET.request */
+/**
+ * NLME-SET.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param setReqPtr Pointer to NLME-SET.request data structure
+ * @param setConfPtr Pointer to NLME-SET.confirm data structure
+ */
 void ZbNlmeSetReq(struct ZigBeeT *zb, struct ZbNlmeSetReqT *setReqPtr, struct ZbNlmeSetConfT *setConfPtr);
 
-/* NLME-RESET.request */
+/**
+ * NLME-RESET.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param resetReqPtr Pointer to NLME-RESET.request data structure
+ * @param resetConfPtr Pointer to NLME-RESET.confirm data structure
+ */
 void ZbNlmeResetReq(struct ZigBeeT *zb, struct ZbNlmeResetReqT *resetReqPtr, struct ZbNlmeResetConfT *resetConfPtr);
 
-/* NLME-SYNC.request */
+/**
+ * NLME-SYNC.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param syncReqPtr Pointer to NLME-SYNC.request data structure
+ * @param callback Callback function
+ * @param arg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeSyncReq(struct ZigBeeT *zb, struct ZbNlmeSyncReqT *syncReqPtr,
     void (*callback)(struct ZbNlmeSyncConfT *syncConfPtr, void *arg), void *arg);
 
-/* NLME-NETWORK-DISCOVERY.request */
+/**
+ * NLME-NETWORK-DISCOVERY.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-NETWORK-DISCOVERY.request data structure
+ * @param callback Callback function
+ * @param cbarg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeNetDiscReq(struct ZigBeeT *zb, struct ZbNlmeNetDiscReqT *req,
     void (*callback)(struct ZbNlmeNetDiscConfT *conf, void *cbarg), void *cbarg);
 
-/* NLME-NETWORK-FORMATION.request */
+/**
+ * NLME-NETWORK-FORMATION.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-NETWORK-FORMATION.request data structure
+ * @param callback Callback function
+ * @param cbarg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeNetFormReq(struct ZigBeeT *zb, struct ZbNlmeNetFormReqT *req,
     void (*callback)(struct ZbNlmeNetFormConfT *formConf, void *arg), void *cbarg);
 
-/* NLME-PERMIT-JOIN.request */
+/**
+ * NLME-PERMIT-JOIN.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param permitReq Pointer to NLME-PERMIT-JOIN.request data structure
+ * @param permitConf Pointer to NLME-PERMIT-JOIN.request data structure
+ */
 void ZbNlmePermitJoinReq(struct ZigBeeT *zb, struct ZbNlmePermitJoinReqT *permitReq, struct ZbNlmePermitJoinConfT *permitConf);
 
 /* Exegin Custom API to manage the IEEE Joining List in the NWK layer.
  * Let the NWK layer manage configuring the individual MACs. */
+
+/**
+ * Get the value of ZB_NWK_NIB_ID_JoiningPolicy
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns joining policy enumeration value
+ */
 enum WpanJoinPolicyT ZbNlmeJoiningPolicyGet(struct ZigBeeT *zb);
+
+/**
+ * External API to configure the Joining Policy and IEEE Joining List.
+ * Should only be called by the Coordinator application. Router and
+ * End Devices applications should not be calling this, but rather
+ * obtain these parameters from the Coordinator through ZDP commands.
+ * @param zb Pointer to Zigbee stack instance
+ * @param policy New policy value
+ * @param extAddrList Pointer to extended address list
+ * @param numExtAddr Extended address index
+ * @param updateIdOverride Optional update ID to override old value
+ * intead of incrementing
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNlmeJoiningPolicyConfigure(struct ZigBeeT *zb, enum WpanJoinPolicyT policy, uint64_t *extAddrList,
     unsigned int numExtAddr, uint8_t *updateIdOverride);
+
+/**
+ * Refresh join policy timer
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbNlmeJoinPolicyTimeoutRefresh(struct ZigBeeT *zb);
+
+/**
+ * Clear IEEE joining list
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbNlmeIeeeJoiningListClear(struct ZigBeeT *zb);
+
+/**
+ * Remove extended address from IEEE joining list
+ * @param zb Pointer to Zigbee stack instance
+ * @param extAddr Extended address to remove
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNlmeIeeeJoiningListRemove(struct ZigBeeT *zb, uint64_t extAddr);
+
+/**
+ * Check if join policy is set to WPAN_JOIN_POLICY_IEEELIST
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkIeeeJoiningListEnabled(struct ZigBeeT *zb);
 
-/* NLME-JOIN.request */
+/**
+ * NLME-JOIN.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param joinReqPtr Pointer to NLME-JOIN.request data structure
+ * @param callback Callback function
+ * @param cbarg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeJoinReq(struct ZigBeeT *zb, struct ZbNlmeJoinReqT *joinReqPtr,
     void (*callback)(struct ZbNlmeJoinConfT *joinConf, void *arg), void *cbarg);
 
-/* NLME-DIRECT-JOIN.request */
+/**
+ * NLME-DIRECT-JOIN.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param directJoinReqPtr Pointer to NLME-DIRECT-JOIN.request data structure
+ * @param directJoinConfPtr Pointer to NLME-DIRECT-JOIN.request data structure
+ */
 void ZbNlmeDirectJoinReq(struct ZigBeeT *zb, struct ZbNlmeDirectJoinReqT *directJoinReqPtr, struct ZbNlmeDirectJoinConfT
     *directJoinConfPtr);
 
-/* NLME-START-ROUTER.request */
+/**
+ * NLME-START-ROUTER.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-START-ROUTER.request data structure
+ * @param conf Pointer to NLME-START-ROUTER.request data structure
+ */
 void ZbNlmeStartRouterReq(struct ZigBeeT *zb, struct ZbNlmeStartRouterReqT *req, struct ZbNlmeStartRouterConfT *conf);
 
-/* NLME-ED-SCAN.request */
+/**
+ * NLME-ED-SCAN.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-ED-SCAN.request data structure
+ * @param callback Callback function
+ * @param cbarg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeEdScanReq(struct ZigBeeT *zb, struct ZbNlmeEdScanReqT *req,
     void (*callback)(struct ZbNlmeEdScanConfT *scanConf, void *arg), void *cbarg);
 
-/* NLME-LEAVE.request. */
+/**
+ * NLME-LEAVE.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param leaveReqPtr Pointer to NLME-LEAVE.request data structure
+ * @param callback Callback function
+ * @param cbarg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeLeaveReq(struct ZigBeeT *zb, struct ZbNlmeLeaveReqT *leaveReqPtr,
     void (*callback)(struct ZbNlmeLeaveConfT *leaveConfPtr, void *arg), void *cbarg);
 
-/* NLME-ROUTE-DISCOVERY.request */
+/**
+ * NLME-ROUTE-DISCOVERY.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param routeDiscReqPtr Pointer to NLME-ROUTE-DISCOVERY.request data structure
+ * @param callback Callback function
+ * @param arg Callback function argument
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbNlmeRouteDiscReq(struct ZigBeeT *zb, struct ZbNlmeRouteDiscReqT *routeDiscReqPtr,
     void (*callback)(struct ZbNlmeRouteDiscConfT *discConf, void *cbarg), void *arg);
 
-/* NLME-SET-INTERFACE.request */
+/**
+ * NLME-SET-INTERFACE.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-SET-INTERFACE.request data structure
+ * @param conf Pointer to NLME-SET-INTERFACE.request data structure
+ */
 void ZbNlmeSetInterface(struct ZigBeeT *zb, struct ZbNlmeSetInterfaceReqT *req, struct ZbNlmeSetInterfaceConfT *conf);
-/* NLME-GET-INTERFACE.request */
+
+/**
+ * NLME-GET-INTERFACE.request
+ * @param zb Pointer to Zigbee stack instance
+ * @param req Pointer to NLME-GET-INTERFACE.request data structure
+ * @param conf Pointer to NLME-GET-INTERFACE.request data structure
+ */
 void ZbNlmeGetInterface(struct ZigBeeT *zb, struct ZbNlmeGetInterfaceReqT *req, struct ZbNlmeGetInterfaceConfT *conf);
 
 /**
@@ -1014,14 +1157,34 @@ enum ZbStatusCodeT ZbNlmeBcnSurveyReq(struct ZigBeeT *zb, struct ZbNlmeBcnSurvey
  */
 void ZbNlmePanIdUpdateReq(struct ZigBeeT *zb, struct ZbNlmePanIdUpdateReqT *req, struct ZbNlmePanIdUpdateConfT *conf);
 
+/**
+ * Sets the transmit power of an interface.
+ * @param zb ZigBee stack structure
+ * @param name Name of the interface
+ * @param tx_power New tx power value
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkIfSetTxPower(struct ZigBeeT *zb, const char *name, int8_t tx_power);
+
+/**
+ * Gets the transmit power of an interface.
+ * @param zb ZigBee stack structure
+ * @param name Name of the interface
+ * @param tx_power Pointer to hold returned tx power value
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkIfGetTxPower(struct ZigBeeT *zb, const char *name, int8_t *tx_power);
 
-/* ZbNwkToggleDutyCycle - Enable or disable Duty Cycle management in the MAC.
+/**
+ * ZbNwkToggleDutyCycle - Enable or disable Duty Cycle management in the MAC.
  * Disabling duty cycle will also clear the duty cycle history and set the status to
  * MCP_DUTYCYCLE_STATUS_NORMAL.
  * This function would typically be used in conjunction with ZB_NWK_NIB_ID_TxPowerMgmtSupported,
- * which configures TX Power Control in the NWK and MAC. */
+ * which configures TX Power Control in the NWK and MAC.
+ * @param zb ZigBee stack structure
+ * @param enable New duty cycle setting
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkToggleDutyCycle(struct ZigBeeT *zb, bool enable);
 
 /**
@@ -1041,8 +1204,18 @@ bool ZbNwkToggleDutyCycle(struct ZigBeeT *zb, bool enable);
 bool ZbNwkSendEdkaReq(struct ZigBeeT *zb,
     void (*callback)(enum ZbStatusCodeT status, void *arg), void *arg);
 
-/* Network Link power delta request & notify commands. */
+/**
+ * Network Link power delta request.
+ * @param zb ZigBee stack structure
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkSendLinkPowerDeltaReq(struct ZigBeeT *zb);
+
+/**
+ * Network Link power delta notify.
+ * @param zb ZigBee stack structure
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkSendLinkPowerDeltaNotify(struct ZigBeeT *zb);
 
 /*---------------------------------------------------------------
@@ -1074,12 +1247,40 @@ enum ZbStatusCodeT ZbNwkGet(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId,
 enum ZbStatusCodeT ZbNwkGetArray(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId,
     void *attrPtr, unsigned int *attrSz);
 
+/**
+ * Performs an NLME-SET.request for an attribute.
+ * @param zb Zigbee instance
+ * @param attrId NWK Attribute Id to set
+ * @param attrPtr Pointer to new attribute data
+ * @param attrSz Size of new attribute data
+ * @return Zigbee Status Code (e.g. ZB_STATUS_SUCCESS or ZB_NWK_STATUS_INVALID_PARAMETER)
+ */
 enum ZbStatusCodeT ZbNwkSet(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId,
     void *attrPtr, unsigned int attrSz);
 
+/**
+ * Performs an NLME-GET.request for an attribute containing an array of values
+ * using an index.
+ * @param zb Zigbee instance
+ * @param attrId NWK Attribute Id to set
+ * @param attrPtr Pointer to memory to write attribute data
+ * @param attrSz Size of attrPtr
+ * @param attrIndex Index of value
+ * @return Zigbee Status Code (e.g. ZB_STATUS_SUCCESS or ZB_NWK_STATUS_INVALID_PARAMETER)
+ */
 enum ZbStatusCodeT ZbNwkGetIndex(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId,
     void *attrPtr, unsigned int attrSz, unsigned int attrIndex);
 
+/**
+ * Performs an NLME-SET.request for an attribute containing an array of values
+ * using an index.
+ * @param zb Zigbee instance
+ * @param attrId NWK Attribute Id to set
+ * @param attrPtr Pointer to new attribute data
+ * @param attrSz Size of new attribute data
+ * @param attrIndex Index of value to modify
+ * @return Zigbee Status Code (e.g. ZB_STATUS_SUCCESS or ZB_NWK_STATUS_INVALID_PARAMETER)
+ */
 enum ZbStatusCodeT ZbNwkSetIndex(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId,
     void *attrPtr, unsigned int attrSz, unsigned int attrIndex);
 
@@ -1087,23 +1288,114 @@ enum ZbStatusCodeT ZbNwkSetIndex(struct ZigBeeT *zb, enum ZbNwkNibAttrIdT attrId
  * NIB Attribute Helper Functions
  *---------------------------------------------------------------
  */
+
+/**
+ * Store new address mapping
+ * @param zb Zigbee instance
+ * @param nwkAddr New network address
+ * @param extAddr New extended address
+ * @param resolve_now Boolean that determines if address conflict resolution should
+ * be done now or after a delay
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkAddrStoreMap(struct ZigBeeT *zb, uint16_t nwkAddr, uint64_t extAddr, bool resolve_now);
 
 /* Returns the network address that corresponds to the extended address
  * if known, otherwise returns ZB_NWK_ADDR_UNDEFINED. */
+
+/**
+ * Look up network address from extended address
+ * @param zb Zigbee instance
+ * @param extAddr Extended address
+ * @return Returns network address that corresponds to the extended address
+ * if known, otherwise returns ZB_NWK_ADDR_UNDEFINED.
+ */
 uint16_t ZbNwkAddrLookupNwk(struct ZigBeeT *zb, uint64_t extAddr);
 
-/* Returns the extended address that corresponds to the network address
- * if known, otherwise returns 0. */
+/**
+ * Look up extended address from network address
+ * @param zb Zigbee instance
+ * @param nwkAddr Network address
+ * @return Returns extended address that corresponds to the network address
+ * if known, otherwise returns 0.
+ */
 uint64_t ZbNwkAddrLookupExt(struct ZigBeeT *zb, uint16_t nwkAddr);
 
 /* Required for DUT certification. */
+
+/**
+ * Set network address of next child to known value rather than
+ * stochastically assigned address.
+ * @param zb Zigbee instance
+ * @param nextChildAddr Network address for next child to join network
+ */
 void ZbNwkAddrSetNextChildAddr(struct ZigBeeT *zb, uint16_t nextChildAddr);
 
+/**
+ * Gets a network key for a given sequence number. Will also
+ * return the frame counter if requested.
+
+ * If extAddr is 0, then the outgoing frame counter will be
+ * written to frameCounterPtr. Otherwise, if extAddr is
+ * non-zero, the incoming frame counter corresponding to
+ * extAddr will be written to frameCounterPtr;
+ * @param zb Zigbee instance
+ * @param keySeqno Sequence number
+ * @param material Pointer to memory to write security material
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkGetSecMaterial(struct ZigBeeT *zb, uint8_t keySeqno, struct ZbNwkSecMaterialT *material);
+
+/**
+ * Inserts or updates a frame counter in a given material
+ * set. If srcAddr is 0, or our local extended address then
+ * this call will update the outgoing frame counter. Otherwise
+ * this call will update (or create) an incoming frame counter.
+
+ * This function will compare the new frame counter against the
+ * existing one (if found). If the new value of the frame counter
+ * is stale then the update will be rejected and this function
+ * will return false. Otherwise, the update will always succeed
+ * (with a possible LRU eviction if the table is full).
+
+ * However, due to some known buggy devices, frame counter resets
+ * have been observed out in the wild. Therefore, stale frame
+ * counters will be accepted into the table subject to rate
+ * limiting and cooldown policies (controlled by the
+ * nwkFrameCounterCooldown NIB attribute).
+ * @param zb Zigbee instance
+ * @param keySeqno Key sequence number
+ * @param srcAddr Extended address
+ * @param newFrameCount New frame counter
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkSetFrameCounter(struct ZigBeeT *zb, uint8_t keySeqno, uint64_t srcAddr, uint32_t newFrameCount);
+
+/**
+ * Searches the nwkSecurityMaterialSet NIB attribute for a
+ * valid entry with a sequence number matching the active key
+ * sequence number. If found, the key will be copied into the
+ * out buffer and out will be returned.
+ * @param zb Zigbee instance
+ * @param active_key Pointer to memory to write security material
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkGetActiveKey(struct ZigBeeT *zb, struct ZbNwkSecMaterialT *active_key);
+
+/**
+ * Perform an APSME-ADD-KEY.request and update the active key
+ * sequence number
+ * @param zb Zigbee instance
+ * @param active_key Security material used for the request
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkSetActiveKey(struct ZigBeeT *zb, struct ZbNwkSecMaterialT *active_key);
+
+/**
+ * Clear the active key sequence number
+ * @param zb Zigbee instance
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkClearActiveKey(struct ZigBeeT *zb);
 
 /*---------------------------------------------------------------
@@ -1206,8 +1498,32 @@ void nwk_mac_filter_debug(struct ZigBeeT *zb);
  * Special Golden Unit Behaviour (not available to all platforms)
  *---------------------------------------------------------------
  */
+
+/* EXEGIN - removed doxygen comment style so this doesn't go into final documentation package.
+ * Send an unknown command.
+ * @param zb Zigbee instance
+ * @param nwkDstAddr Destination address
+ * @param nwkProtoVer Protocal version
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkTestSendUnknownCommand(struct ZigBeeT *zb, uint16_t nwkDstAddr, uint8_t nwkProtoVer);
+
+/* EXEGIN - removed doxygen comment style so this doesn't go into final documentation package.
+ * Report PAN ID conflict
+ *
+ * If all_from_disc_tbl is true, then include all PAN Ids from discovery table,
+ * otherwise only include the current PAN Id the stack is using..
+ * @param zb Zigbee instance
+ * @param all_from_disc_tbl Boolean that determines if all PAN IDs are included
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkReportPanIdConflict(struct ZigBeeT *zb, bool all_from_disc_tbl);
+
+/* EXEGIN - removed doxygen comment style so this doesn't go into final documentation package.
+ * Send unsolicited beacon
+ * @param zb Zigbee instance
+ * @return Returns true on Success, or false otherwise
+ */
 bool ZbNwkSendUnsolicitedBeacon(struct ZigBeeT *zb);
 
 #endif

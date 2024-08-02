@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -62,6 +61,9 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -74,7 +76,10 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
+  CFG_LPM_PKA,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -117,6 +122,9 @@ typedef enum
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (1U)
 
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
+
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
 #define APP_DBG_MSG                 LOG_INFO_APP
@@ -151,20 +159,18 @@ extern UART_HandleTypeDef           huart1;
  */
 typedef enum
 {
-  CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
-  CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
+  CFG_TASK_HW_RNG,
+  CFG_TASK_LINK_LAYER,
   CFG_TASK_OT_UART,
   CFG_TASK_OT_ALARM,
   CFG_TASK_OT_US_ALARM,
-
-  /* APPLI TASKS */
   CFG_TASK_OT_TASKLETS,
   CFG_TASK_SET_THREAD_MODE,
+  CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
   CFG_TASK_BUTTON_SW1,		        /* Task linked to push-button. */
   CFG_TASK_BUTTON_SW2,
   CFG_TASK_BUTTON_SW3,
-
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -187,6 +193,9 @@ typedef enum
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;
 
+/* Sequencer configuration */
+#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
+
 /* Sequencer defines */
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
@@ -197,15 +206,13 @@ typedef enum
 
 /* USER CODE END TASK_ID_Define */
 
-/* Used by Sequencer */
-#define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
-
 /**
  * These are the lists of events id registered to the sequencer
  * Each event id shall be in the range [0:31]
  */
 typedef enum
 {
+  CFG_EVENT_PKA_COMPLETED,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */
@@ -213,6 +220,9 @@ typedef enum
 } CFG_Event_Id_t;
 
 /**< Events defines */
+/* USER CODE BEGIN EVENT_ID_Define */
+
+/* USER CODE END EVENT_ID_Define */
 
 /******************************************************************************
  * Debugger
@@ -249,7 +259,7 @@ typedef enum
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
@@ -266,6 +276,12 @@ typedef enum
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
+
+/* Custom LSE sleep clock accuracy to use if both conditions are met:
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -296,8 +312,8 @@ typedef enum
  * If CFG_LPM_LEVEL at 2, make sure LED are disabled
  */
 #if (CFG_LPM_LEVEL > 1)
-  #undef  CFG_LED_SUPPORTED
-  #define CFG_LED_SUPPORTED         (0)
+//  #undef  CFG_LED_SUPPORTED
+//  #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
 
 #if ( CFG_LED_SUPPORTED == 1 )

@@ -139,7 +139,7 @@ uint8_t* buffMgmt_getBufferPointer ( Buffer_Id_t buffer_id );
 /** @brief This function shall be called by application to get the number of
  *          buffers. The number of small free buffer is returned if size is less
  *          than or equal to c_small_buffer_size else the number of free large
- *          buffers is returnd. The function is meant only for debug purpose.
+ *          buffers is returned. The function is meant only for debug purpose.
  *
  * @param size: The size of the buffer, whose availability is getting checked
  *

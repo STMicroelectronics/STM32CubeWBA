@@ -18,6 +18,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "log_module.h"
 #include "app_common.h"
 #include "dbg_trace.h"
 #include "ble.h"

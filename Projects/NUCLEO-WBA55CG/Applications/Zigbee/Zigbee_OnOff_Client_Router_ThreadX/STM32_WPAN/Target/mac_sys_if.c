@@ -18,8 +18,10 @@
   */
 /* USER CODE END Header */
 
-#include "app_conf.h"
 #include "main.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "stm32_rtos.h"
 
 extern void mac_baremetal_run(void);
@@ -83,11 +85,11 @@ void MacSys_Init(void)
   }
 
   /* Create the Mac Layer Thread and this Stack */
-  lThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_MAC_LAYER_STACK_SIZE, TX_NO_WAIT);
+  lThreadXStatus = tx_byte_allocate( pBytePool, (void **)&pStack, TASK_STACK_SIZE_MAC_LAYER, TX_NO_WAIT);
   if ( lThreadXStatus == TX_SUCCESS )
   {
     lThreadXStatus = tx_thread_create( &stMacLayerThread, "MacLayerTaskId", MacSys_Process, 0, pStack,
-                                        TASK_MAC_LAYER_STACK_SIZE, CFG_TASK_PRIO_MAC_LAYER, CFG_TASK_PREEMP_MAC_LAYER,
+                                        TASK_STACK_SIZE_MAC_LAYER, TASK_PRIO_MAC_LAYER, TASK_PREEMP_MAC_LAYER,
                                         TX_NO_TIME_SLICE, TX_AUTO_START);
   }
   if ( lThreadXStatus != TX_SUCCESS )

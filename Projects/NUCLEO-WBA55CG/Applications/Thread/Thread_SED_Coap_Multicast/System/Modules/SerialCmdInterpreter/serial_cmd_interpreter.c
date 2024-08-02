@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,12 +19,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "log_module.h"
 #include "app_conf.h"
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN PI */
+#include "stm32wbaxx_nucleo.h"
 
 /* USER CODE END PI */
 
@@ -147,6 +149,30 @@ static void Uart_Cmd_Execute(void)
   */
 
   /* USER CODE BEGIN Uart_Cmd_Execute */
+  Button_TypeDef      eButton;
+
+  /* Parse received frame */
+  if ( strcmp((char const*)RxBuffer, "SW1") == 0 )
+  {
+    eButton = B1;
+  }
+  else if ( strcmp( (char const*)RxBuffer, "SW2" ) == 0 )
+  {
+    eButton = B2;
+  }
+  else if ( strcmp( (char const*)RxBuffer, "SW3" ) == 0 )
+  {
+    eButton = B3;
+  }
+  else
+  {
+    LOG_ERROR_APP( "ERROR : NOT RECOGNIZED COMMAND : %s\n", RxBuffer );
+    return;
+  }
+
+  /* Launch SW Command */
+  LOG_INFO_APP( "%s pressed by Command.", RxBuffer );
+  BSP_PB_Callback( eButton );
 
   /* USER CODE END Uart_Cmd_Execute */
 }

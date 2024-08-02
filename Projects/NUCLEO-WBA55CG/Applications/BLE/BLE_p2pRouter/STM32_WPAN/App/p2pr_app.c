@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
@@ -60,6 +61,7 @@ typedef struct
   uint8_t P2PR_device_status[P2P_DEVICE_COUNT_MAX * 2];
   uint8_t P2PR_device_connHdl[P2P_DEVICE_COUNT_MAX * 2];
   uint8_t a_P2PR_device_bd_addr[P2P_DEVICE_COUNT_MAX * 2][BD_ADDR_SIZE];
+  uint8_t a_P2PR_device_bd_addr_type[P2P_DEVICE_COUNT_MAX * 2];
   uint8_t a_P2PR_device_char_write_level[P2P_DEVICE_COUNT_MAX * 2];
   uint8_t a_P2PR_device_char_notif_level[P2P_DEVICE_COUNT_MAX * 2];
   uint8_t a_P2PR_device_name[P2P_DEVICE_COUNT_MAX * 2][32];
@@ -360,6 +362,7 @@ uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report)
   uint8_t bd_addr[BD_ADDR_SIZE];
   
   found_status = 0;
+  dev_idx = UINT8_MAX;
   memset(&adv_name[0], 0x00, sizeof(adv_name));
   adv_name_len = 0;
   memset(&bd_addr[0], 0x00, sizeof(bd_addr));
@@ -416,6 +419,7 @@ uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report)
               if (P2PR_APP_Context.P2PR_device_status[j] == P2PR_DEV_NONE)
               {
                 dev_idx = j;
+                P2PR_APP_Context.a_P2PR_device_bd_addr_type[j] = p_adv_report->Advertising_Report[0].Address_Type;
                 break;
               }
             }
@@ -432,7 +436,8 @@ uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report)
                 if (P2PR_APP_Context.P2PR_device_status[j] == P2PR_DEV_LOST)
                 {
                   /* already registered, we connect again so we use same index */
-                  dev_idx = j;                  
+                  dev_idx = j; 
+                  P2PR_APP_Context.a_P2PR_device_bd_addr_type[j] = p_adv_report->Advertising_Report[0].Address_Type;
                 }
                 else
                 {
@@ -585,9 +590,9 @@ static void P2PR_Connect_Request(void)
       P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTING;
       
       result = aci_gap_create_connection(SCAN_INT_MS(500u), SCAN_WIN_MS(500u),
-                                         GAP_PUBLIC_ADDR, 
+                                         P2PR_APP_Context.a_P2PR_device_bd_addr_type[device_index], 
                                          &P2PR_APP_Context.a_P2PR_device_bd_addr[device_index][0],
-                                         GAP_PUBLIC_ADDR,
+                                         CFG_BD_ADDRESS_TYPE,
                                          CONN_INT_MS(200u), CONN_INT_MS(300u),
                                          0u,
                                          CONN_SUP_TIMEOUT_MS(5000u),

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>readme</title>
+  <title>Readme</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -17,6 +17,8 @@
   <![endif]-->
 </head>
 <body>
+<div class="row">
+<div class="col-sm-12 col-lg-8">
 <h2 id="zigbee_powerconfig_server_sed-application-description"><strong>Zigbee_PowerConfig_Server_SED Application Description</strong></h2>
 <p>How to use the Power Config cluster on a device acting as a SED within a Centralized Zigbee network.</p>
 <p>The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the Power Config cluster. Once the Zigbee mesh network is created, the Server sends regularly the Battery availability in Percent to Client.</p>
@@ -50,21 +52,21 @@
            |             |                                                                    |             |                                       
            | PowerConfig |                                                                    | PowerConfig |
            |   Client    |                                                                    |   Server    |  - PowerConfig Server during Init 
-           |             | Blue LED toggling (at report rx - 60 seconds)                      |             |    launch a 30 s Periodic Timer
+           |             |                                                                    |             |    launch a 30 s Periodic Timer
            |             |                                                                    |             |  
            |             |                                                                    |             |  - Every 30 s
-           |             |                                                                    |             |    * Read the battery (if exist - it does not)
+           |             |                                                                    |             |    * Read the battery (if exist)
            |             |                                                                    |             |      or simulate it with RNG.
            |             |                                                                    |             |    * &lt;= ZbZclAttrIntegerWrite(ZCL_POWER_CONFIG_ATTR_BATTERY_PCT) 
-           |             |  After a Router was connected :                                    |             |
+           |             |  After a SED was connected :                                       |             |
            |             |  ZbZclAttrReportConfigReq(ZCL_POWER_CONFIG_ATTR_BATTERY_PCT, 60sec)|             |    Green LED toggling (if CFG_FULL_LOW_POWER=2)
            |             | -----------------------------------------------------------------&gt; |             |
            |             | &lt;----------------------------------------------------------------- |             |
            |             |                                                                    |             |
            |             | &lt;-------------- Report (every 60 seconds) -------------------------|             |
-           |             |                                                                    |             |               
+           |             |                                                                    |             | &lt;= PushB SW1 : Start/Restart 30 s Periodic Timer.               
            |             |                                                                    |             |        
-           |             |                                                                    |             |           
+           |             |                                                                    |             | &lt;= PushB SW2 : Stop 30 s Periodic Timer.           
            |             |                                                                    |             |    
            |             |                                                                    |             |            
            +-------------+                                                                    +-------------+
@@ -82,7 +84,7 @@
 → At this stage, the Zigbee network is automatically created, and traces on coordinator indicate that new device is added.<br />
 if you want to have the Led Blue on on SED side when attached to the network, you can modify the <strong>CFG_FULL_LOW_POWER</strong> to the value <strong>2</strong>.<br />
 </li>
-<li><p>On Client side, every 60 s, the battery voltage is reported from the Server and the Blue led is toggling.</p></li>
+<li><p>On Client side, every 60 s, the battery voltage is reported from the Server. To stop battery voltage evolution on Server, push SW2 push button, and to restart it push SW1.</p></li>
 </ol></li>
 </ul>
 <p><strong>Note:</strong> When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.</p>
@@ -99,8 +101,7 @@ if you want to have the Led Blue on on SED side when attached to the network, yo
 <li><p>The UART must be configured as follows:<br />
 <br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1 bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the Line” : &lt;LF&gt;</p></li>
 </ul>
-<h3 id="traces"><strong>Note</strong></h3>
-<p>By default, this application runs with Zigbee PRO stack R23. Switching to R22 is not working for this application.<br />
-</p>
+</div>
+</div>
 </body>
 </html>

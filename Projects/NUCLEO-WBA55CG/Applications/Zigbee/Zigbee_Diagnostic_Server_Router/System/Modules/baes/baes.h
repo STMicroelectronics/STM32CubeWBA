@@ -58,4 +58,18 @@ extern void BAES_CmacCompute( const uint8_t* input,
                               uint32_t size,
                               uint8_t* output );
 
+/* AES CCM interface */
+
+extern int BAES_CcmCrypt( uint8_t mode,
+                          const uint8_t* key,
+                          uint8_t iv_length,
+                          const uint8_t* iv,
+                          uint16_t add_length,
+                          const uint8_t* add,
+                          uint16_t input_length,
+                          const uint8_t* input,
+                          uint8_t tag_length,
+                          uint8_t* tag,
+                          uint8_t* output );
+
 #endif /* BAES_H__ */

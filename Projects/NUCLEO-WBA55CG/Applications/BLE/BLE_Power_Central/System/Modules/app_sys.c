@@ -50,5 +50,10 @@ void APP_SYS_BLE_EnterDeepSleep(void)
       /* No event in a "near" futur */
       (void)ll_sys_dp_slp_enter(radio_remaining_time - RADIO_DEEPSLEEP_WAKEUP_TIME_US);
     }
+    else
+    {
+      UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_DISABLE);
+    }
+
   }
 }

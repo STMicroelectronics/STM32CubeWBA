@@ -24,7 +24,9 @@
 #include "app_conf.h"
 #include "app_common.h"
 #include "app_entry.h"
+#include "log_module.h"
 #include "app_thread.h"
+#include "threadplat_pka.h"
 #include "dbg_trace.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
@@ -86,6 +88,8 @@
 static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext);
 static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
+
+static void ProcessPka(void);
 
 #if (OT_CLI_USE == 1)
 static void APP_THREAD_CliInit(otInstance *aInstance);
@@ -186,6 +190,8 @@ void Thread_Init(void)
   otDispatch_tbl_init(PtOpenThreadInstance);
 
   /* Register tasks */
+  UTIL_SEQ_RegTask(1 << CFG_TASK_HW_PKA, UTIL_SEQ_RFU, ProcessPka);
+  
 #if (OT_CLI_USE == 1)
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_UART, UTIL_SEQ_RFU, APP_THREAD_ProcessUart);
 #endif
@@ -217,6 +223,11 @@ void Thread_Init(void)
                     &APP_THREAD_TransmitRequest,
                     0);
 #endif
+}
+
+static void ProcessPka(void)
+{
+  otPlatPkaProccessLoop();
 }
 
 void ProcessAlarm(void)
@@ -351,6 +362,25 @@ void APP_THREAD_Init( void )
 
   APP_THREAD_DeviceConfig();
 }
+
+void APP_THREAD_SchedulePka(void)
+{
+  /* Schedule otPlatPkaProccessLoop() */
+  UTIL_SEQ_SetTask(1 << CFG_TASK_HW_PKA, CFG_TASK_PRIO_HW_PKA);
+}
+
+void APP_THREAD_WaitPkaEndOfOperation(void)
+{
+  /* Wait for event CFG_IDLEEVT_PKA_END_OF_OPERATION */
+  UTIL_SEQ_WaitEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
+}
+
+void APP_THREAD_PostPkaEndOfOperation(void)
+{
+  /* Pka operation ended, set CFG_IDLEEVT_PKA_END_OF_OPERATION event */
+  UTIL_SEQ_SetEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
+}
+
 
 /**
  * @brief  Warn the user that an error has occurred.

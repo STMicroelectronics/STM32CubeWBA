@@ -75,12 +75,6 @@ void RT_DEBUG_GPIO_Init(void)
     }
   }
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */
-
-#if(CFG_RT_DEBUG_DTB == 1)
-  /* DTB initialization and configuration */
-  RT_DEBUG_DTBInit();
-  RT_DEBUG_DTBConfig();
-#endif /* CFG_RT_DEBUG_DTB */
 }
 
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)

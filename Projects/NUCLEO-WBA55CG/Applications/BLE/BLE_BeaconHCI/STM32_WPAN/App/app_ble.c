@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -152,7 +153,6 @@ static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
   0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
@@ -204,6 +204,7 @@ void APP_BLE_Init(void)
 
   LST_init_head(&BleAsynchEventQueue);
 
+  /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
@@ -567,7 +568,7 @@ static void Ble_UserEvtRx( void)
     UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
   }
 
-  /* set the BG_BleStack_Process task for scheduling */
+  /* Trigger BLE Host stack to process */
   UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
 }
@@ -715,7 +716,7 @@ tBleStatus BLECB_Indication( const uint8_t* data,
       phcievt->evtserial.type = HCI_EVENT_PKT_TYPE;
       phcievt->evtserial.evt.evtcode = data[1];
       phcievt->evtserial.evt.plen  = data[2];
-      MEMCPY( (void*)&phcievt->evtserial.evt.payload, &data[3], data[2]);
+      memcpy( (void*)&phcievt->evtserial.evt.payload, &data[3], data[2]);
       LST_insert_tail(&BleAsynchEventQueue, (tListNode *)phcievt);
       UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
       status = BLE_STATUS_SUCCESS;

@@ -20,27 +20,28 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#include "advanced_memory_manager.h"
 #include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "app_ble.h"
+#include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
 #include "bpka.h"
-#include "ll_sys.h"
-#include "advanced_memory_manager.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
@@ -68,6 +69,7 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -118,7 +120,8 @@ static AMM_InitParameters_t ammInitConfig =
 
 /* USER CODE BEGIN PV */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-static JOYPin_TypeDef Joystick_Event;
+static int32_t Joystick_Event;
+static UTIL_TIMER_Object_t JOYSTICK_TimerObj;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 #if (CFG_LCD_SUPPORTED == 1)
 static uint8_t mute;
@@ -135,44 +138,23 @@ static uint8_t Play_Req_Pause = 0;
 /* USER CODE BEGIN GV */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 uint8_t JOY_StandbyExitFlag = 0;
-uint32_t ADC_High_Threshold;
-uint32_t ADC_Low_Threshold;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
 
-/**
- * @brief Wrapper for init function of the MM for the AMM
- *
- * @param p_PoolAddr: Address of the pool to use - Not use -
- * @param PoolSize: Size of the pool - Not use -
- *
- * @return None
- */
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static void APPE_AMM_Init(void);
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
+static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
-/**
- * @brief Wrapper for allocate function of the MM for the AMM
- *
- * @param BufferSize
- *
- * @return Allocated buffer
- */
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
+static void APPE_FLASH_MANAGER_Init( void );
 
-/**
- * @brief Wrapper for free function of the MM for the AMM
- *
- * @param p_BufferAddr
- *
- * @return None
- */
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
+static void APPE_BPKA_Init( void );
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -180,6 +162,7 @@ static void Led_Init(void);
 #endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 static void Joystick_Init( uint8_t wkup_mode );
+static void Joystick_TimerCallback(void *arg);
 static void Joystick_ActionHandle(void);
 #endif /* CFG_JOYSTICK_SUPPORTED */
 #if (CFG_LCD_SUPPORTED == 1)
@@ -202,7 +185,7 @@ static void PLL_Ready_Task(void);
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -211,7 +194,7 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -225,16 +208,21 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-  /* Initialize the Advance Memory Manager */
-  AMM_Init (&ammInitConfig);
+  /* Initialize the Advance Memory Manager module */
+  APPE_AMM_Init();
 
-  /* Register the AMM background task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
-  /* Initialize the Simple NVM Arbiter */
-  SNVMA_Init ((uint32_t *)CFG_SNVMA_START_ADDRESS);
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
-  /* Register the flash manager task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, UTIL_SEQ_RFU, FM_BackgroundProcess);
+  /* Initialize the Flash Manager module */
+  APPE_FLASH_MANAGER_Init();
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
 
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)
@@ -250,18 +238,15 @@ uint32_t MX_APPE_Init(void *p_param)
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_PLL_READY_ID, UTIL_SEQ_RFU, PLL_Ready_Task);
   /* USER CODE END APPE_Init_1 */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
 
-  BPKA_Reset( );
+  /* Initialize the Ble Public Key Accelerator module */
+  APPE_BPKA_Init();
 
-  RNG_Init();
-
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+  /* Initialize the Simple Non Volatile Memory Arbiter */
+  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
+  {
+    Error_Handler();
+  }
 
   APP_BLE_Init();
 
@@ -272,10 +257,31 @@ uint32_t MX_APPE_Init(void *p_param)
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   /* Register Button Tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_JOYSTICK_ID, UTIL_SEQ_RFU, Joystick_ActionHandle);
+
+  /* Create periodic timer for joystick position reading */
+  UTIL_TIMER_Create(&JOYSTICK_TimerObj, 100, UTIL_TIMER_PERIODIC, &Joystick_TimerCallback, 0);
+  UTIL_TIMER_Start(&JOYSTICK_TimerObj);
 #endif /* CFG_JOYSTICK_SUPPORTED */
+
+  /* Indicate to the low power manager that the Stop mode isn't allow : Sleep mode will be used in low power mode*/
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
+}
+
+void MX_APPE_Process(void)
+{
+  /* USER CODE BEGIN MX_APPE_Process_1 */
+
+  /* USER CODE END MX_APPE_Process_1 */
+  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+  /* USER CODE BEGIN MX_APPE_Process_2 */
+
+  /* USER CODE END MX_APPE_Process_2 */
 }
 
 /* USER CODE BEGIN FD */
@@ -334,6 +340,12 @@ static void System_Init( void )
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
+
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
@@ -396,19 +408,50 @@ static void SystemPower_Config(void)
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
   HW_RNG_Start();
 
+  /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
 
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+/**
+ * @brief Initialize Flash Manager module
+ */
+static void APPE_FLASH_MANAGER_Init(void)
+{
+  /* Register Flash Manager task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
+}
+
+/**
+ * @brief Initialize Ble Public Key Accelerator module
+ */
+static void APPE_BPKA_Init(void)
+{
+  /* Register Ble Public Key Accelerator task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
+}
+
+static void APPE_AMM_Init(void)
+{
+  /* Initialize the Advance Memory Manager */
+  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
+  {
+    Error_Handler();
+  }
+
+  /* Register Advance Memory Manager task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
+}
+
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
 {
   UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
 }
 
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
 {
   return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
 }
@@ -448,18 +491,27 @@ static void Joystick_Init( uint8_t wkup_mode )
   }
   else
   {
-    BSP_JOY_Init(JOY1, JOY_MODE_IT, JOY_ALL);
+    BSP_JOY_Init(JOY1, JOY_MODE_POLLING, JOY_ALL);
     /* reconfiguration of the ADC4 interrupt priority */
     HAL_NVIC_DisableIRQ(ADC4_IRQn);
     HAL_NVIC_SetPriority(ADC4_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(ADC4_IRQn);
-
-    /* remove end of conversion interrupt */
-    LL_ADC_REG_StopConversion(hjoy_adc[JOY1].Instance);
-    while(LL_ADC_REG_IsConversionOngoing(hjoy_adc[JOY1].Instance) != 0);
-    __HAL_ADC_DISABLE_IT(&hjoy_adc[JOY1], ADC_IT_EOC);
-    LL_ADC_REG_StartConversion(hjoy_adc[JOY1].Instance);
   }
+}
+
+static void Joystick_TimerCallback(void *arg)
+{
+  /* this process takes less than 80us */
+  Joystick_Init(0);
+
+  int32_t state = BSP_JOY_GetState(JOY1);
+  if (state != JOY_NONE && state != Joystick_Event)
+  {
+    BSP_JOY_Callback(JOY1, (JOYPin_TypeDef)state);
+  }
+  Joystick_Event = state;
+
+  BSP_JOY_DeInit(JOY1, JOY_ALL);
 }
 
 static void Joystick_ActionHandle(void)
@@ -650,6 +702,7 @@ void AudioClock_Init(uint32_t audio_frequency_type)
   if ( target_freq !=  PLL_Target_Clock_Freq )
   {
     scm_pll_config_t pll_config;
+    LOG_INFO_APP("Audio Clock Initialization\n");
 
     pll_config.pll_mode = PLL_FRACTIONAL_MODE;
     pll_config.PLLM = 6;
@@ -685,6 +738,10 @@ void AudioClock_Init(uint32_t audio_frequency_type)
 
     PLL_Target_Clock_Freq = target_freq;
   }
+  else
+  {
+    LOG_INFO_APP("Audio Clock already configured\n");
+  }
 }
 
 void PLL_Ready_ProcessIT(void)
@@ -708,6 +765,21 @@ void PLL_Ready_Task(void)
   corrector_pll_config.VCOInputFreq = (32000000.0f / 6.0f); /* HSE / PLL_M */
   corrector_pll_config.PLLOutputDiv = 4; /* PLL_P */
   AUDIO_InitializeClockCorrector(&corrector_pll_config, 500, 4000);
+
+  /* I2C init takes a long time, it is better to do it before CIS establishement */
+  BSP_I2C3_Init();
+}
+
+void PLL_Exit(void)
+{
+  if (PLL_Target_Clock_Freq != 0)
+  {
+    scm_setsystemclock(SCM_USER_APP, NO_CLOCK_CONFIG);
+
+    PLL_Target_Clock_Freq = 0;
+
+    UTIL_LPM_SetStopMode(1 << CFG_LPM_AUDIO, UTIL_LPM_ENABLE);
+  }
 }
 
 
@@ -720,13 +792,9 @@ static void AudioClock_Deinit( void )
   event_time.schdling_time = DEFAULT_SCHDL_TIME;
   ll_intf_config_schdling_time(&event_time);
 
+  LOG_INFO_APP("Audio Clock Deinitialization\n");
+
   AUDIO_DeinitializeClockCorrector();
-
-  scm_setsystemclock(SCM_USER_APP, NO_CLOCK_CONFIG);
-
-  PLL_Target_Clock_Freq = 0;
-
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_AUDIO, UTIL_LPM_ENABLE);
 }
 
 HAL_StatusTypeDef MX_SAI1_ClockConfig(SAI_HandleTypeDef *hsai, uint32_t SampleRate)
@@ -959,20 +1027,21 @@ void BSP_AUDIO_OUT_TransferComplete_CallBack(uint32_t instance)
 
 void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
 {
-  if (Play_Req_Pause == 1)
+  if (MxAudioInit_Flag == 1)
   {
-    __HAL_RCC_I2C3_CLK_ENABLE();
-    /* Pause the DMA that as run one frame only and wait the codec trigger to re run*/
-    if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
+    if (Play_Req_Pause == 1)
     {
-      Error_Handler();
+      __HAL_RCC_I2C3_CLK_ENABLE();
+      /* Pause the DMA that as run one frame only and wait the codec trigger to re run*/
+      if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
+      {
+        Error_Handler();
+      }
+      __HAL_RCC_I2C3_CLK_DISABLE();
+      Play_Req_Pause = 0;
     }
-    __HAL_RCC_I2C3_CLK_DISABLE();
-    Play_Req_Pause = 0;
-  }
-  else
-  {
-  APP_NotifyTxAudioHalfCplt();
+
+    APP_NotifyTxAudioHalfCplt();
   }
 }
 
@@ -1011,19 +1080,20 @@ void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t instance)
 
 void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
 {
-  if (Record_Req_Pause == 1)
+  if (MxAudioInit_Flag == 1)
   {
-    __HAL_RCC_I2C3_CLK_ENABLE();
-    if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
+    if (Record_Req_Pause == 1)
     {
-      Error_Handler();
+      __HAL_RCC_I2C3_CLK_ENABLE();
+      if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
+      {
+        Error_Handler();
+      }
+      __HAL_RCC_I2C3_CLK_DISABLE();
+      Record_Req_Pause = 0;
     }
-    __HAL_RCC_I2C3_CLK_DISABLE();
-    Record_Req_Pause = 0;
-  }
-  else
-  {
-  APP_NotifyRxAudioHalfCplt();
+
+    APP_NotifyRxAudioHalfCplt();
   }
 }
 /* USER CODE END FD_LOCAL_FUNCTIONS */
@@ -1033,16 +1103,6 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
  * WRAP FUNCTIONS
  *
  *************************************************************/
-void MX_APPE_Process(void)
-{
-  /* USER CODE BEGIN MX_APPE_Process_1 */
-
-  /* USER CODE END MX_APPE_Process_1 */
-  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-  /* USER CODE BEGIN MX_APPE_Process_2 */
-
-  /* USER CODE END MX_APPE_Process_2 */
-}
 
 void UTIL_SEQ_Idle( void )
 {
@@ -1079,12 +1139,7 @@ void UTIL_SEQ_PreIdle( void )
 #endif /* STM32WBAXX_SI_CUT1_0 */
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PreIdle_2 */
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  ADC_Low_Threshold = LL_ADC_GetAnalogWDThresholds(ADC4, LL_ADC_AWD1, LL_ADC_AWD_THRESHOLD_LOW);
-  ADC_High_Threshold = LL_ADC_GetAnalogWDThresholds(ADC4, LL_ADC_AWD1, LL_ADC_AWD_THRESHOLD_HIGH);
-#endif /* CFG_JOYSTICK_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+
   /* USER CODE END UTIL_SEQ_PreIdle_2 */
   return;
 }
@@ -1097,16 +1152,13 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   ll_sys_dp_slp_exit();
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   if(JOY_StandbyExitFlag == 1){
-    BSP_JOY_DeInit(JOY1, JOY_ALL);
-    Joystick_Init(0);
-
-    /* re set threshold */
-    LL_ADC_ConfigAnalogWDThresholds(ADC4, LL_ADC_AWD1, ADC_High_Threshold, ADC_Low_Threshold);
+    /* could reconfigure Joystick here */
     JOY_StandbyExitFlag = 0;
   }
 #endif /* CFG_JOYSTICK_SUPPORTED */
@@ -1121,11 +1173,11 @@ void BPKACB_Process( void )
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
 }
 
 void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
@@ -1136,16 +1188,16 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
   p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
 }
 
-void AMM_ProcessRequest (void)
+void AMM_ProcessRequest(void)
 {
-  /* Ask for AMM background task scheduling */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SEQ_PRIO_0);
+  /* Trigger to call Advance Memory Manager process function */
+  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
 }
 
-void FM_ProcessRequest (void)
+void FM_ProcessRequest(void)
 {
-  /* Schedule the background process */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER_BCKGND, CFG_SEQ_PRIO_0);
+  /* Trigger to call Flash Manager process function */
+  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER, CFG_SEQ_PRIO_0);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))

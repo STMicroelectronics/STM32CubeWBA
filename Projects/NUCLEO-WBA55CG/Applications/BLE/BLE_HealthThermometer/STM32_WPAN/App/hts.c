@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "log_module.h"
 #include "common_blesvc.h"
 #include "hts.h"
 
@@ -629,7 +630,7 @@ void HTS_Init(void)
 /**
  * @brief  Characteristic update
  * @param  CharOpcode: Characteristic identifier
- * @param  Service_Instance: Instance of the service to which the characteristic belongs
+ * @param  pData: Structure holding data to update
  *
  */
 tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)

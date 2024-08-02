@@ -243,7 +243,7 @@ static void SwitchHse32toHse16(void)
   /* Switch to HSE 16 */
   SwitchHsePre(HSEPRE_ENABLE);
   
-#ifdef HSE_16_REGU_VOLTAGE_SCALE_2 //Issue eratic with thread, disabled it for moment
+#ifdef HSE_16_REGU_VOLTAGE_SCALE_2 //Issue erratic with thread, disabled it for moment
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
 #endif
 }

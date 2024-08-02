@@ -29,67 +29,10 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_hal.h"
 #include "cap.h"
+#include "pbp_app_conf.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-#define BAP_BROADCAST_SOURCE_ID                 0x000001 /* 3 Bytes Source ID */
-
-/*Audio Profiles Roles configuration*/
-#define APP_BAP_ROLE_UNICAST_SERVER_SUPPORT                     (0u)
-#define APP_BAP_ROLE_UNICAST_CLIENT_SUPPORT                     (0u)
-#define APP_BAP_ROLE_BROADCAST_SOURCE_SUPPORT                   (1u)
-#define APP_BAP_ROLE_BROADCAST_SINK_SUPPORT                     (0u)
-#define APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT                     (0u)
-#define APP_BAP_ROLE_BROADCAST_ASSISTANT_SUPPORT                (0u)
-
-
-#define APP_CCP_ROLE_SERVER_SUPPORT                             (0u)
-#define APP_CCP_ROLE_CLIENT_SUPPORT                             (0u)
-
-#define APP_MCP_ROLE_SERVER_SUPPORT                             (0u)
-#define APP_MCP_ROLE_CLIENT_SUPPORT                             (0u)
-
-#define APP_VCP_ROLE_CONTROLLER_SUPPORT                         (0u)
-#define APP_VCP_ROLE_RENDERER_SUPPORT                           (0u)
-
-#define APP_MICP_ROLE_CONTROLLER_SUPPORT                        (0u)
-#define APP_MICP_ROLE_DEVICE_SUPPORT                            (0u)
-
-#define APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT                   (0u)
-#define APP_CSIP_ROLE_SET_MEMBER_SUPPORT                        (0u)
-
-/*BAP Configuration Settings*/
-#define MAX_NUM_UCL_SNK_ASE                     (0u)
-#define MAX_NUM_UCL_SRC_ASE                     (0u)
-#define MAX_NUM_USR_SNK_ASE                     (0u)
-#define MAX_NUM_USR_SRC_ASE                     (0u)
-#define MAX_NUM_CIG                             (0u)    /* Maximum number of CIGes */
-#define MAX_NUM_CIS_PER_CIG                     (0u)    /* Maximum number of CISes per CIG */
-#define MAX_NUM_BIG                             (1u)    /* Maximum number of BIGes */
-#define MAX_NUM_BIS_PER_BIG                     (2u)    /* Maximum number of BISes per BIG */
-#define PBP_MAX_BIS                             (2u)
-#define MAX_METADATA_LEN                        (50u)
-
-
-/* These delays refers to the time at which the audio signal passes through an
- * audio interface (such an electroacoustic transducer ) to or from
- * the Codec interface.
- * These delays are a subpart of the Presentation Delay as described in chapter 7
- * of the Basic Audio Profile specification
- * The delay unit is us
- */
-#define APP_DELAY_SRC_MIN                       (100)                           /* DMA delay for transmitting to
-                                                                                 * SAI peripheral (for more precision,
-                                                                                 * should add ADC delay)
-                                                                                 */
-#define APP_DELAY_SRC_MAX                       (APP_DELAY_SRC_MIN + 0u)        /* No extra buffering of audio data*/
-
-#define APP_DELAY_SNK_MIN                       (100)                           /* DMA delay for transmitting to
-                                                                                 * SAI peripheral (for more precision,
-                                                                                 * should add DAC delay)
-                                                                                 */
-#define APP_DELAY_SNK_MAX                       (APP_DELAY_SNK_MIN + 0u)        /* No extra buffering of audio data*/
-
 #define NUM_LC3_CODEC_CONFIG    16
 #define LC3_8_1                 0
 #define LC3_8_2                 1
@@ -148,9 +91,9 @@ typedef struct
   BAP_Role_t                    bap_role;
   BAP_BASE_Group_t              base_group;
   BAP_BASE_Subgroup_t           base_subgroups[1];
-  BAP_BASE_BIS_t                base_bis[2];
-  uint8_t                       codec_specific_config_bis[2][0x06];
-  uint8_t                       codec_specific_config_subgroup[2][0x13];
+  BAP_BASE_BIS_t                base_bis[PBP_MAX_BIS];
+  uint8_t                       codec_specific_config_bis[PBP_MAX_BIS][0x06];
+  uint8_t                       codec_specific_config_subgroup[PBP_MAX_BIS][0x13];
   uint8_t                       RTN;
   uint16_t                      max_transport_latency;
   uint8_t                       subgroup_metadata[1][MAX_METADATA_LEN];

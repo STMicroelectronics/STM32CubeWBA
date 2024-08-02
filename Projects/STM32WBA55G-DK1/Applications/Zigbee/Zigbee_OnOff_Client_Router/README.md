@@ -45,7 +45,7 @@ Do the same for the other boards if applicable.
 &rarr; At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.  
 
 	4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode by pressing on the SW1 push button. 
-You must see the Rer LED toggling on the Server side.  
+You must see the Red LED toggling on the Server side.  
 
 **Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
 

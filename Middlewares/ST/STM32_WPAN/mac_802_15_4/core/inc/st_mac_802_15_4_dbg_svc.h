@@ -21,61 +21,137 @@
 #ifndef _ST_MAC_802_15_4_DBG_H_
 #define _ST_MAC_802_15_4_DBG_H_
 
-/* DBG Gpio Plan - MB1801A*/
 
-/* DBG_GPIO2 : GPIOA, GPIO_PIN_9  : GPIO39 -> CN4.19 - D12 */
-/* DBG_GPIO1 : GPIOA, GPIO_PIN_10 : GPIO55 -> CN4.37 - D11 */
-/* DBG_GPIO3 : GPIOB, GPIO_PIN_5  : GPIO54 -> CN4.35 - D10 */
-/* DBG_GPIO4 : GPIOB, GPIO_PIN_7  : GPIO52 -> CN4.33 - D09 */
-/* DBG_GPIO5 : GPIOB, GPIO_PIN_13 : GPIO49 -> CN4.29 - D08 */
+#include <stdint.h>
+#include <stdbool.h>
 
-#define TRACE_DBG_INACTIVE
-   
-#define TRACE_DBG_GPIO1_SET             ST_setDbgGpio_1()
-#define TRACE_DBG_GPIO1_RESET           ST_resetDbgGpio_1()
+typedef struct {
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mcps-data.Request.*/
+  uint32_t macDataReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mcps-data.Confirm.*/
+  uint32_t macDataCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mcps-data.Indication.*/
+  uint32_t macDataIndCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mcps-purge.Request.*/
+  uint32_t macPurgeReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mcps-purge.Confirm.*/
+  uint32_t macPurgeCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-scan.Request.*/
+  uint32_t macScanReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-scan.Confirm.*/
+  uint32_t macScanCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-associate.Request.*/
+  uint32_t macAssociationReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Confirm.*/
+  uint32_t macAssociationCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Indication.*/
+  uint32_t macAssociationIndCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Response.*/
+  uint32_t macAssociationResCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-poll.Request.*/
+  uint32_t macPollReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-poll.Confirm.*/
+  uint32_t macPollCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-poll.Indication.*/
+  uint32_t macPollIndCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-beaconNotify.Indication.*/
+  uint32_t macBeaconNotifyIndCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-Disassociate.Request.*/
+  uint32_t macDisassociationReqCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-Disassociation.Confirm.*/
+  uint32_t macDisassociationCnfCounter;
+  /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-Disassociation.Indication.*/
+  uint32_t macDisassociationIndCounter;
+  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xE9.*/
+  uint32_t macDataCnfNoACK;
+  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xE1.*/
+  uint32_t macDataCnfCCAFailure;
+  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xF1.*/
+  uint32_t macDataCnfTransactionOverFlow;
+  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast.*/
+  uint32_t macDataCnfFail;
+  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast.*/
+  uint8_t macDataCnfLastFail;
+  /** @brief A counter that is incremented each time the Queue fails*/
+  uint32_t macQueueFail;
+  /** @brief A counter that is incremented each time the Enqueue fails*/
+  uint32_t macEnqueueFail;
+  /** @brief A counter that is incremented each time no buffer is allocated*/
+  uint32_t macQueueNoBuffer;
+  /** @brief A counter that is incremented each time the buffer allocate fail*/
+  uint32_t macQueueBufferAllocateFailure;
+} mac_ext_diagnostics_t;
 
-#define TRACE_DBG_GPIO2_SET             ST_setDbgGpio_2()
-#define TRACE_DBG_GPIO2_RESET           ST_resetDbgGpio_2()
 
-#define TRACE_DBG_GPIO3_SET             ST_setDbgGpio_3()
-#define TRACE_DBG_GPIO3_RESET           ST_resetDbgGpio_3() 
+/** diagnostics function */
+void ST_init_mac_diagnostics(void);
+void ST_get_mac_diagnostics(mac_ext_diagnostics_t * mac_ext_diagnostics);
 
-#define TRACE_DBG_GPIO4_SET             ST_setDbgGpio_4()
-#define TRACE_DBG_GPIO4_RESET           ST_resetDbgGpio_4()
+/** MCPS function */
+void set_mac_ext_macDataReqCounterHandler(void);
+uint32_t get_mac_ext_macDataReqCounterHandler(void);
+void set_mac_ext_macDataCnfCounterHandler(void);
+uint32_t get_mac_ext_macDataCnfCounterHandler(void);
+void set_mac_ext_macDataIndCounterHandler(void);
+uint32_t get_mac_ext_macDataIndCounterHandler(void);
 
-#define TRACE_DBG_GPIO5_SET             ST_setDbgGpio_5()
-#define TRACE_DBG_GPIO5_RESET           ST_resetDbgGpio_5()
+void set_mac_ext_macPurgeReqCounterHandler(void);
+uint32_t get_mac_ext_macPurgeReqCounterHandler(void);
+void set_mac_ext_macPurgeCnfCounterHandler(void);
+uint32_t get_mac_ext_macPurgeCnfCounterHandler(void);
 
-   
-#define TRACE_RADIO_IRQ_SET     TRACE_DBG_GPIO2_SET
-#define TRACE_RADIO_IRQ_RESET   TRACE_DBG_GPIO2_RESET
+/** MLME function */
+void set_mac_ext_macScanReqCounterHandler(void);
+uint32_t get_mac_ext_macScanReqCounterHandler(void);
+void set_mac_ext_macScanCnfCounterHandler(void);
+uint32_t get_mac_ext_macScanCnfCounterHandler(void);
 
-#define TRACE_FRAME_TX_SET     TRACE_DBG_INACTIVE
-#define TRACE_FRAME_TX_RESET   TRACE_DBG_INACTIVE
+void set_mac_ext_macAssociationReqCounterHandler(void);
+uint32_t get_mac_ext_macAssociationReqCounterHandler(void);
+void set_mac_ext_macAssociationCnfCounterHandler(void);
+uint32_t get_mac_ext_macAssociationCnfCounterHandler(void);
+void set_mac_ext_macAssociationIndCounterHandler(void);
+uint32_t get_mac_ext_macAssociationIndCounterHandler(void);
+void set_mac_ext_macAssociationResCounterHandler(void);
+uint32_t get_mac_ext_macAssociationResCounterHandler(void);
 
-#define TRACE_RADIO_PRDC_CALIB_SET     TRACE_DBG_INACTIVE
-#define TRACE_RADIO_PRDC_CALIB_RESET   TRACE_DBG_INACTIVE
+void set_mac_ext_macPollReqCounterHandler(void);
+uint32_t get_mac_ext_macPollReqCounterHandler(void);
+void set_mac_ext_macPollCnfCounterHandler(void);
+uint32_t get_mac_ext_macPollCnfCounterHandler(void);
+void set_mac_ext_macPollIndCounterHandler(void);
+uint32_t get_mac_ext_macPollIndCounterHandler(void);
 
-#define TRACE_TX_START_SET     TRACE_DBG_GPIO4_SET
-#define TRACE_TX_START_RESET   TRACE_DBG_GPIO4_RESET
+void set_mac_ext_macBeaconNotifyIndCounterHandler(void);
+uint32_t get_mac_ext_macBeaconNotifyIndCounterHandler(void);
 
-#define TRACE_CSMA_SET     TRACE_DBG_GPIO5_SET
-#define TRACE_CSMA_RESET   TRACE_DBG_GPIO5_RESET
+void set_mac_ext_macDisassociationReqCounterHandler(void);
+uint32_t get_mac_ext_macDisassociationReqCounterHandler(void);
+void set_mac_ext_macDisassociationCnfCounterHandler(void);
+uint32_t get_mac_ext_macDisassociationCnfCounterHandler(void);
+void set_mac_ext_macDisassociationIndCounterHandler(void);
+uint32_t get_mac_ext_macDisassociationIndCounterHandler(void);
 
+/** Data.Confirm Fails*/
+void set_mac_ext_macDataCnfNoACKCounterHandler(void);
+uint32_t get_mac_ext_macDataCnfNoACKCounterHandler(void);
+void set_mac_ext_macDataCnfCCAFailureCounterHandler(void);
+uint32_t get_mac_ext_macDataCnfCCAFailureCounterHandler(void);
+void set_mac_ext_macDataCnfTransactionOverFlowCounterHandler(void);
+uint32_t get_mac_ext_macDataCnfTransactionOverFlowCounterHandler(void);
+void set_mac_ext_macDataCnfFailCounterHandler(void);
+uint32_t get_mac_ext_macDataCnfFailCounterHandler(void);
+void set_mac_ext_macDataCnfLastFailHandler(uint8_t status);
+uint8_t get_mac_ext_macDataCnfLastFailHandler(void);
 
-#define TRACE_MAC_PERSIST_TIMER_SET     TRACE_DBG_GPIO1_SET
-#define TRACE_MAC_PERSIST_TIMER_RESET   TRACE_DBG_GPIO1_RESET
-
-   
-void ST_setDbgGpio_1();
-void ST_resetDbgGpio_1();
-void ST_setDbgGpio_2();
-void ST_resetDbgGpio_2();
-void ST_setDbgGpio_3();
-void ST_resetDbgGpio_3();
-void ST_setDbgGpio_4();
-void ST_resetDbgGpio_4();
-void ST_setDbgGpio_5();
-void ST_resetDbgGpio_5();
+/** Queue function */
+void set_mac_ext_macQueueFailHandler(void);
+uint8_t get_mac_ext_macQueueFailHandler(void);
+void set_mac_ext_macEnqueueFailHandler(void);
+uint8_t get_mac_ext_macEnqueueFailHandler(void);
+void set_mac_ext_macQueueNoBufferHandler(void);
+uint8_t get_mac_ext_macQueueNoBufferHandler(void);
+void set_mac_ext_macQueueBufferAllocateFailureHandler(void);
+uint8_t get_mac_ext_macQueueBufferAllocateFailureHandler(void);
 
 #endif /* _ST_MAC_802_15_4_DBG_H_ */

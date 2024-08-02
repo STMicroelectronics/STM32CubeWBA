@@ -71,8 +71,10 @@
 <ul>
 <li><em>stm32wba_ble_stack_full.a</em>: <strong>full host stack</strong> + <strong>ST LL controller</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
 <li><em>stm32wba_ble_stack_basic.a</em>: <strong>basic host stack</strong> + <strong>ST LL controller (basic features)</strong>, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
+<li><em>stm32wba_ble_stack_basic_plus.a</em>: <strong>basic host stack</strong> + ST LL controller (basic features + additional features as Advertising Extension feature), requires LinkLayer_BLE_Basic_Plus_lib.a to work.</li>
 <li><em>stm32wba_ble_stack_llo.a</em>: <strong>ST LL controller only</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
 <li><em>stm32wba_ble_stack_llobasic.a</em>: <strong>ST LL controller (basic features)</strong> only, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
+<li><em>stm32wba_ble_stack_po.a</em>: <strong>basic host stack</strong> + ST LL controller (basic features but supports only peripheral role), requires LinkLayer_BLE_Peripheral_Only_lib.a to work.</li>
 </ul>
 <p>The <strong>BLE audio</strong> feature introduces the following libraries:</p>
 <ul>
@@ -169,9 +171,118 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section4" checked aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
+<input type="checkbox" id="collapse-section6" checked aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>BLE:
+<ul>
+<li>Two new BLE stack configurations added:
+<ul>
+<li>Basic Plus stack(<em>stm32wba_ble_stack_basic_plus.a</em>) includes the LE Controller and the Host Stack, both with the basic features along with additional features as Extended Advertising/Scanning, LE Power Control and Connection Subrating, Enhanced ATT, L2CAP connection oriented channels and GATT caching features.</li>
+<li>Peripheral Only stack(<em>stm32wba_ble_stack_po.a</em>) includes the LE Controller and the Host Stack, both with the basic features but only for peripheral role.</li>
+</ul></li>
+<li>BLE wrapper added : pre and post command handling</li>
+<li>Encrypted Advertising Data feature added.</li>
+<li>Issues fixed:
+<ul>
+<li>ID 175965: Slave Latency is not applied correctly on FULL configuration</li>
+<li>ID 162754: Scheduling issue while having an ongoing CIS may lead to non-handling of LLCP in time causing a Disconnection with “Instant passed” </li>
+<li>ID 168123: MIC failure when initiating an LE Power Control request during an encryption procedure.</li>
+<li>ID 172235: RSSI miscalculation in CIG Event.</li>
+<li>ID 175620: “Pairing Not Supported” reception cause upcoming pairing to fail</li>
+<li>ID 175680: Wrong pairing failed reason in case the Security Request cannot be handled</li>
+<li>ID 175796: Remove limitation of the number of pairing procedures in parallel</li>
+</ul></li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>The event CAP_CODEC_CONFIGURED_EVT is renamed CAP_AUDIO_CLOCK_REQ_EVT</li>
+<li>Audio Stack process change to allow to respond asynchronously to an ASCS Enable Request operation from a remote CAP Initiator:<br />
+</li>
+<li>New event CAP_UNICAST_SERVER_ENABLE_REQ_EVT definition.<br />
+</li>
+<li>New structure BAP_ASE_Enable_Req_Params_t defined in bap_types.h associated to an Enable Operation request Event</li>
+<li>New function CAP_Unicast_EnableOpRsp() used to respond to an Enable Request operation for a specified Audio Stream Endpoint</li>
+<li>New function CAP_UpdateAvailableAudioContexts() used to update available audio context for reception and transmission associated to the specified remote CAP Acceptor</li>
+<li>Add num_ble_links parameter in BAP_PACS_SRV_TOTAL_BUFFER_SIZE macro in bap_bufsize.h</li>
+<li>Define new BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES constant in bap_bufsize.h</li>
+<li>Issues fixed:
+<ul>
+<li>In case of disconnection occurs while the CAP Unicast Audio Start, invalid pointer access.</li>
+<li>Broadcast sink Process locked in infinite loop during scanning because index used to parse data packet is a 8 bits instead of 16bits.</li>
+<li>Audio data path done 2 times when peripheral goes to Streaming state before CIS establishment.</li>
+<li>Hardfault in case of CIS Establisment event is received in BAP Unicast Client layer with a failure status.</li>
+<li>Number of remote Audio Stream Endpoints are not reset by CAP initiator between successive CAP linkup.</li>
+</ul></li>
+</ul></li>
+<li>802.15.4:
+<ul>
+<li>Long term robustness improvement for MAC applications.</li>
+<li>Stability improved on noisy channels environment.</li>
+</ul></li>
+<li>BLE_Zigbee:
+<ul>
+<li>Use of a new library (<em>wba_mac_concurrent.a</em>) dedicated to Concurrent BLE_Zigbee applications.</li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>MbedTLS 2.28.7 update</li>
+<li>ID 172831: RCP CSL instability fixed</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>Stack:
+<ul>
+<li>Enhancement of the CBKE mechanism. Adding of a status code named ZB_BDB_KE_Status updated during startup.</li>
+<li>Removal of the MAC data Pool keep alive mechanism for security reasons.</li>
+</ul></li>
+<li>Clusters:
+<ul>
+<li>OTA cluster enhancements (Writing to File Version attribute at end of OTA upgrade, Improve OTA robustness and transfer error management, etc.. )</li>
+<li>ZCL library enhancement especially for Colour and Level clusters (MISRA rules compliancy update)</li>
+</ul></li>
+</ul></li>
+<li><strong>Known limitations</strong>:
+<ul>
+<li>BLE:
+<ul>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 178561 : White list not updated when advertising in privacy mode.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).</li>
+<li>ID 135240 : Long synchronization time in Broadcast due to scheduling conflict between extended advertising and BIG event.</li>
+<li>ID 165710 : Audio Latency may not be respected with high transport latency.</li>
+</ul></li>
+<li>Common 802.15.4 (MAC / Thread / Zigbee):
+<ul>
+<li>ID 182045 : [BLE_Thread_SED] issue with data polling / device crash</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ID 182978 In color cluster, wrong parsing for enhanced move to hue command.</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 182781 : During association, the capable information with receiver On When Idle doesn’t work</li>
+<li>ID 182904 : Not received MLME-Sync-Loss.ind for associate device to a PAN coordinator</li>
+</ul></li>
+<li>PHY 802.15.4:
+<ul>
+<li>ID 160933 : API for continuous wave not yet supported</li>
+<li>ID 160930 : API for continuous modulation not yet supported</li>
+<li>ID 164825 : RSSI reading incorrect : around 6dbm loss from –90 to -30dbm</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <ul>
 <li><p>Productive RF-PHY settings.</p></li>
 <li>Zigbee:
@@ -241,7 +352,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="false">V2.3.0 / 05-Feb-2024</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li><p>Adding support of BLE-Thread and BLE-Zigbee Dynamic Concurrent Modes.</p></li>
 <li><p>All libraries are now compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
@@ -355,7 +466,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 22-Sept-2023</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -425,7 +536,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -453,7 +564,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

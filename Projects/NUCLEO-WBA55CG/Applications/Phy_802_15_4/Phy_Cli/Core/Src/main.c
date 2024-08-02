@@ -506,7 +506,11 @@ void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
+#if (FULL_CERTIFICATION_CAPABLE == 1)
+  huart1.Init.BaudRate = 576000;
+#else
   huart1.Init.BaudRate = 115200;
+#endif
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

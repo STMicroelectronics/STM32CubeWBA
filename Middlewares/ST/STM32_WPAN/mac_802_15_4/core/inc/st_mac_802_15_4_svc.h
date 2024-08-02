@@ -74,33 +74,34 @@ void ST_MAC_handle_MLMEResetCnf(void* mac_cntx_ptr, uint8_t status);
 void ST_MAC_handle_MLMESetCnf(void* mac_cntx_ptr, uint8_t status, uint8_t pib_attr_id, uint8_t pib_attr_indx);
 void ST_MAC_handle_MLMEScanCnf(void* mac_cntx_ptr,mlme_scn_cmf_param_st* mlme_scan_cmf_params);
 void ST_MAC_handle_MLMEAssociationCnf(void* mac_cntx_ptr, uint8_t status, uint16_t short_addr, prim_sec_param_st* ptr_sec_params);
-void ST_MAC_handle_MLMEBeaconNotifyInd(void* mac_cntx_ptr, mlme_bcon_notfy_params_st* ptr_bcon_notify_params);
 void ST_MAC_handle_MLMEStartCnf (void* mac_cntx_ptr, uint8_t status);
 void ST_MAC_handle_MLMEAssociationCnf(void* mac_cntx_ptr, uint8_t status, uint16_t short_addr, prim_sec_param_st* ptr_sec_params);
-#if (FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP)
-void ST_MAC_handle_MLMEAssociationInd(void* mac_cntx_ptr, mlme_assoc_ind_param_st *ptr_mlme_assoc_ind_params);
-#endif
 void ST_MAC_handle_MLMEGetCnf(void* mac_cntx_ptr, uint8_t status, uint8_t pib_attr_id, uint8_t pib_attr_indx ,attr_val_t* pib_attr_val);
+void ST_MAC_handle_MLMERxEnableCnf(void* mac_cntx_ptr, uint8_t status);
+void ST_MAC_handle_MLMEBeaconCnf(void* mac_cntx_ptr, uint8_t status);
+void ST_MAC_handle_MLMEGetPwrInfoTableCnf(void* mac_cntx_ptr, uint8_t status, uint16_t short_addrs, uint8_t  *ptr_ext_addrs, int8_t tx_pwr_level, int8_t  last_rssi_level, uint8_t nwk_negotiated);
+void ST_MAC_handle_MLMESetPwrInfoTableCnf(void* mac_cntx_ptr, uint8_t status);
 #if (FFD_DEVICE_CONFIG || RFD_SUPPORT_ORPHAN_IND_RSP)
 void ST_MAC_handle_MLMEOrphanInd(void* mac_cntx_ptr, mlme_orphan_ind_st_t *ptr_mlme_orphan_ind_params);
 #endif
-void ST_MAC_handle_MLMEComStatusInd(void* mac_cntx_ptr,mlme_comm_status_st_t *ptr_mlme_comm_status);
 void ST_MAC_handle_MLMEDataPollCnf(void* ptr_mac_cntx, uint8_t status);
-void ST_MAC_handle_MLMEDataPollInd(void* mac_cntx_ptr, uint8_t addr_mode, uint8_t* dev_addr);
-void ST_MAC_handle_MLMESyncLossInd(void* mac_cntx_ptr, mlme_sync_loss_params_st_t* ptr_st_mlme_sync_loss);
 void ST_MAC_handle_MLMEDisassociationCnf(void* mac_cntx_ptr, mlme_disassoc_cfm_params_st *ptr_mlme_disassoc_cfm_params);
-void ST_MAC_handle_MLMEDisassociationInd(void* mac_cntx_ptr, mlme_disassoc_ind_st* ptr_mlme_disassoc_ind_params);
 #if (FFD_DEVICE_CONFIG || RFD_SUPPORT_SEND_BEACON)
 void ST_MAC_handle_MLMEBeaconReqInd (void* mac_cntx_ptr, mlme_bcon_req_ind_params_st *ptr_bcon_req_ind_params);
 #endif
-void ST_MAC_handle_MLMERxEnableCnf(void* mac_cntx_ptr, uint8_t status);
-void ST_MAC_handle_MLMEBeaconCnf(void* mac_cntx_ptr, uint8_t status);
-void ST_MAC_handle_MLMEGetPwrInfoTableCnf(void* mac_cntx_ptr, uint8_t status, uint16_t short_addrs, uint8_t  *ptr_ext_addrs,
-			                            int8_t tx_pwr_level, int8_t  last_rssi_level, uint8_t nwk_negotiated);
-void ST_MAC_handle_MLMESetPwrInfoTableCnf(void* mac_cntx_ptr, uint8_t status);
-
-void ST_MAC_handle_MCPSDataInd(void* mac_cntx_ptr, mcps_indicate_params_st_t* ptr_mcps_data_ind);
 void ST_MAC_handle_MCPSDataCnf(void* mac_cntx_ptr, mcps_data_cfm_params_st_t* ptr_mcps_data_cnf);
 void ST_MAC_handle_MCPSDataPurgeCnf(void* mac_cntx_ptr, uint8_t msdu_hndl, uint8_t status);
-     
+
+/* Indication */
+void ST_MAC_handle_MLMEBeaconNotifyInd(void* mac_cntx_ptr, mlme_bcon_notfy_params_st* ptr_bcon_notify_params);
+void ST_MAC_handle_MLMEComStatusInd(void* mac_cntx_ptr,mlme_comm_status_st_t *ptr_mlme_comm_status);
+void ST_MAC_handle_MLMEDataPollInd(void* mac_cntx_ptr, uint8_t addr_mode, uint8_t* dev_addr);
+void ST_MAC_handle_MLMESyncLossInd(void* mac_cntx_ptr, mlme_sync_loss_params_st_t* ptr_st_mlme_sync_loss);
+void ST_MAC_handle_MLMEDisassociationInd(void* mac_cntx_ptr, mlme_disassoc_ind_st* ptr_mlme_disassoc_ind_params);
+#if (FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP)
+void ST_MAC_handle_MLMEAssociationInd(void* mac_cntx_ptr, mlme_assoc_ind_param_st *ptr_mlme_assoc_ind_params);
+#endif
+
+void ST_MAC_handle_MCPSDataInd(void* mac_cntx_ptr, mcps_indicate_params_st_t* ptr_mcps_data_ind);
+
 #endif /* _802_15_4_MAC_SVC_H_ */

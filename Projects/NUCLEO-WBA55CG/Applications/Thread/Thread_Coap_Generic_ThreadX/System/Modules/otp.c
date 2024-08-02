@@ -47,7 +47,7 @@ HAL_StatusTypeDef OTP_Read(uint8_t index, OTP_Data_s** otp_ptr)
   return HAL_OK;
 }
 
-HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8_t hsetune, uint8_t index) 
+HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8_t hsetune, uint8_t index)
 {
   HAL_StatusTypeDef err = HAL_ERROR;
   OTP_Data_s otp_data;
@@ -71,7 +71,7 @@ HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8
   uint32_t free_address = FLASH_OTP_BASE;
   while ( ( *(uint64_t*)(free_address) != 0xFFFFFFFFFFFFFFFFUL ) &&
           ( *(uint64_t*)(free_address + 8) != 0xFFFFFFFFFFFFFFFFUL ) &&
-          ( (free_address + 16) != FLASH_OTP_BASE + FLASH_OTP_SIZE ) ) 
+          ( (free_address + 16) != FLASH_OTP_BASE + FLASH_OTP_SIZE ) )
   {
     free_address += 16;
   }
@@ -81,7 +81,7 @@ HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8
   {
    /* Store OTP structure in OTP area */
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
- 
+
    err = HAL_FLASH_Unlock();
    err |= HAL_FLASH_Program(FLASH_NSCR1_PG, free_address, (uint32_t) &otp_data);
    err |= HAL_FLASH_Lock();

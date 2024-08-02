@@ -104,7 +104,9 @@ static uint16_t calc_crc(const uint8_t *data, size_t len)
 static bool is_valid(const struct nv_counters_t *nv_counters)
 {
     return ((nv_counters->init_value == NV_COUNTERS_INITIALIZED) &&
-            (!calc_crc((uint8_t*)&nv_counters->crc, sizeof(*nv_counters))));
+            (nv_counters->crc == calc_crc((uint8_t*)&nv_counters->init_value,
+                                 sizeof(*nv_counters)
+                                  - sizeof(nv_counters->crc))));
 }
 
 static void set_crc(struct nv_counters_t *nv_counters)

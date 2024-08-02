@@ -914,8 +914,8 @@ static TestStatus do_test(uint32_t test_idx)
 static TestStatus dma_m2m(void *to, void *from, size_t n)
 {
 
-    DMA_HandleTypeDef DMAHandle;
-    DMA_QListTypeDef  Queue;
+    DMA_HandleTypeDef DMAHandle = {0};
+    DMA_QListTypeDef  Queue = {0};
     __HAL_RCC_GPDMA1_CLK_ENABLE();
 #if  defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
     DMAHandle.Instance                    = GPDMA1_Channel0;

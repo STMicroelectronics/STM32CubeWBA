@@ -217,9 +217,9 @@
                     <state>USE_FULL_LL_DRIVER</state>
                     <state>BLE</state>
                     <state>MAC</state>
-                    <state>OPENTHREAD_FTD</state>
-                    <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
-                    <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
+                    <state>OPENTHREAD_MTD</state>
+                    <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;</state>
+                    <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;</state>
                     <state>USE_HAL_DRIVER</state>
                     <state>STM32WBA55xx</state>
                 </option>
@@ -387,6 +387,8 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include\openthread</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\config</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\examples\platforms</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\third_party\mbedtls\repo\include</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1257,6 +1259,9 @@
                     <group>
                         <name>baes</name>
                         <file>
+                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
                         </file>
                         <file>
@@ -1494,13 +1499,16 @@
                             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\system.c</name>
                         </file>
                         <file>
+                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\threadplat_pka.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart.c</name>
                         </file>
                     </group>
                     <group>
                         <name>stack_lib</name>
                         <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_ot_ftd_lib.a</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_ot_mtd_lib.a</name>
                         </file>
                     </group>
                 </group>

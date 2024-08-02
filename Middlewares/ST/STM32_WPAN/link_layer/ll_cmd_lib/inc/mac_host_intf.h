@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/mac_host_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/mac_host_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    mac_host_intf.h
@@ -41,6 +41,7 @@
 #define INCLUDE_MAC_HOST_INTF_H_
 #include "ll_fw_config.h"
 #include "rfd_dev_config.h"
+#include "common_types.h"
 #include "error.h"
 #include  "stdint.h"
 /*====================================   MACROS   =======================================*/
@@ -497,12 +498,12 @@ typedef struct {
 #endif
 } mcps_indicate_params_st_t;
 
-#if (FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP)
 /* MLME Association Status */
 typedef enum mlme_assoc_status_enum {
 	ASSOCIATION_SUCCESS = 0x00, AT_CAPACITY = 0x01, ACCESS_DENIED = 0x02,
 } mlme_assoc_status_enum_t;
 
+#if (FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP)
 /**
  * @brief structure represents parameters for MLME-ASSOCIATE.indication
  **/
@@ -887,6 +888,48 @@ struct mac_dispatch_tbl {
 	 * @retval None.
 	 */
 	void (*mlme_get_cca_threshold_cfm)(void* mac_cntx_ptr, uint8_t status, int8_t cca_thresold);
+#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+	/**
+	 * @brief  MLME-SET-ANT-DIV-PARAMS.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		: [in] indicate the used mac context
+	 * @param  status			: [in] indicates the status of reset operation
+	 * @param cca_thresold		: [in] indicates currently used cca threshold
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_set_ant_div_params_cfm)(void* mac_cntx_ptr, uint8_t status, antenna_diversity_st* ptr_ant_div_params);
+	/**
+	 * @brief  MLME-SET-ANT-DIV-EN.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		: [in] indicate the used mac context
+	 * @param  status			: [in] indicates the status of reset operation
+	 * @param enable		    : [in] enable/disable antenna diversity
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_set_ant_div_en_cfm)(void* mac_cntx_ptr, uint8_t status, uint8_t enable);
+	/**
+	 * @brief  MLME-SET-ANT-DIV-EN.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		: [in] indicate the used mac context
+	 * @param  status			: [in] indicates the status of reset operation
+	 * @param default_ant_id	: [in] indicates the antenna id to be used as default
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_set_default_ant_id_cfm)(void* mac_cntx_ptr, uint8_t status, uint8_t default_ant_id);
+	/**
+	 * @brief  MLME-SET-ANT-DIV-EN.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		: [in] indicate the used mac context
+	 * @param  status			: [in] indicates the status of reset operation
+	 * @param rssi_threshold	: [in] indicates good quality rssi threshold
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_set_ant_div_rssi_threshold_cfm)(void* mac_cntx_ptr, uint8_t status, int8_t rssi_threshold);
+#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
 #if SUPPORT_SEC
 	/*===== Get key table Confirm Callback =====*/
 	/**
@@ -1000,7 +1043,7 @@ struct mac_dispatch_tbl {
 	 */
 	void (*mcps_data_cfm)(void* mac_cntx_ptr,
 			mcps_data_cfm_params_st_t* ptr_mcps_data_ind);
-#if	(FFD_DEVICE_CONFIG)
+#if	(FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP)
 	/*===== MLME Poll Indication Callback =====*/
 	/**
 	 * @brief  MLME-POLL.indication primitive callback
@@ -1013,7 +1056,7 @@ struct mac_dispatch_tbl {
 	 */
 	void (*mlme_poll_ind)(void* mac_cntx_ptr, uint8_t addr_mode,
 			uint8_t* dev_addr);
-#endif
+#endif /* (FFD_DEVICE_CONFIG || RFD_SUPPORT_ASSOCIATION_IND_RSP) */
 	/* MLME Comm Status Indication */
 	/**
 	 * @brief  MLME-COMM-STATUS.Indication primitive callback
@@ -1532,6 +1575,68 @@ mac_status_enum_t mac_set_cca_threshold(uint32_t mac_hndl, int8_t cca_thresold);
  * @retval mac_status_enum_t .
  */
 mac_status_enum_t mac_get_cca_threshold(uint32_t mac_hndl, int8_t * cca_thresold);
+
+#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+/**
+ * @fn mac_set_ant_div_params
+ *
+ * @brief   set antenna diversity parameters
+ *
+ * @param   mac_hndl	   : [in] the MAC instance handle
+ * @param   ptr_ant_div_params : [in] pointer to antenna diversity params structure
+ *
+ * @retval mac_status_enum_t .
+ */
+mac_status_enum_t mac_set_ant_div_params(uint32_t mac_hndl, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ * @fn mac_get_ant_div_params
+ *
+ * @brief   get antenna diversity parameters
+ *
+ * @param   mac_hndl	   : [in] the MAC instance handle
+ * @param   ptr_ant_div_params : [out] pointer to antenna diversity params structure
+ *
+ * @retval None .
+ */
+void mac_get_ant_div_params(uint32_t mac_hndl, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ * @fn mac_set_default_ant_id
+ *
+ * @brief   set the default antenna id to be used for transmission and reception
+ *
+ * @param   mac_hndl	    : [in] the MAC instance handle
+ * @param   default_ant_id  : [in] the antenna id to be used as default
+ *
+ * @retval mac_status_enum_t .
+ */
+mac_status_enum_t mac_set_ant_div_enable(uint32_t mac_hndl, uint8_t enable);
+
+/**
+ * @fn mac_set_default_ant_id
+ *
+ * @brief   enable/disable antenna diversity
+ *
+ * @param   mac_hndl	: [in] the MAC instance handle
+ * @param   enable      : [in] enable:1 / disable:0
+ *
+ * @retval mac_status_enum_t .
+ */
+mac_status_enum_t mac_set_default_ant_id(uint32_t mac_hndl, uint8_t enable);
+
+/**
+ * @fn mac_set_ant_div_rssi_threshold
+ *
+ * @brief   set antenna diversity rssi threshold
+ *
+ * @param   mac_hndl	     : [in] the MAC instance handle
+ * @param   rssi_threshold   : [in] rssi threshold to compare with during antenna diversity measurements
+ *
+ * @retval mac_status_enum_t .
+ */
+mac_status_enum_t mac_set_ant_div_rssi_threshold(uint32_t mac_hndl, int8_t rssi_threshold);
+#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
 #endif /* INCLUDE_MAC_HOST_INTF_H_ */
 /**
  * @}

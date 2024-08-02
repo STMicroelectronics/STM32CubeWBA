@@ -22,6 +22,7 @@
 #include "main.h"
 #include "platform_wba.h"
 #include "stdio.h"
+#include "log_module.h"
 
 #ifndef OPENTHREAD_RCP /* RCP cannot be used with CLI at same time */
 #if (OT_CLI_USE == 1)

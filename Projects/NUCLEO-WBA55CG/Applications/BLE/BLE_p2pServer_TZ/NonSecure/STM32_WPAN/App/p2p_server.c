@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "log_module.h"
 #include "common_blesvc.h"
 #include "p2p_server.h"
 
@@ -423,7 +424,7 @@ void P2P_SERVER_Init(void)
 /**
  * @brief  Characteristic update
  * @param  CharOpcode: Characteristic identifier
- * @param  Service_Instance: Instance of the service to which the characteristic belongs
+ * @param  pData: Structure holding data to update
  *
  */
 tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER_Data_t *pData)

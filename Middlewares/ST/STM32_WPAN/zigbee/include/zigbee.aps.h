@@ -3,7 +3,7 @@
  * @heading APS Layer
  * @brief APS header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_APS_H
@@ -133,12 +133,12 @@ enum ZbApsCmdIdT {
     /* ZB_APS_CMD_EA_RESP_CHLNG = 0x0b, deprecated as of R21 */
     /* ZB_APS_CMD_EA_INIT_DATA = 0x0c, deprecated as of R21 */
     /* ZB_APS_CMD_EA_RESP_DATA = 0x0d, deprecated as of R21 */
-    ZB_APS_CMD_TUNNEL = 0x0e,
-    ZB_APS_CMD_VERIFY_KEY = 0x0f,
-    ZB_APS_CMD_CONFIRM_KEY = 0x10,
+    ZB_APS_CMD_TUNNEL = 0x0e, /**< Tunnel */
+    ZB_APS_CMD_VERIFY_KEY = 0x0f, /**< Verify Key */
+    ZB_APS_CMD_CONFIRM_KEY = 0x10, /**< Confirm Key */
 #if (CONFIG_ZB_REV >= 23)
-    ZB_APS_CMD_RELAY_DOWNSTREAM = 0x11,
-    ZB_APS_CMD_RELAY_UPSTREAM = 0x12
+    ZB_APS_CMD_RELAY_DOWNSTREAM = 0x11, /**< Relay Downstream */
+    ZB_APS_CMD_RELAY_UPSTREAM = 0x12 /**< Relay Upstream */
 #endif
 };
 
@@ -467,8 +467,11 @@ enum ZbApsmeIbAttrIdT {
     ZB_APS_IB_ID_DEVICE_INTERVIEW_TIMEOUT_PERIOD = 0xb4,
     /**< apsDeviceInterviewTimeoutPeriod (R23), seconds
      * (type: uint8_t, reset: no, persist: no).
-     * NOTE: Instead of this APS IB ZSDK stack uses apsSecurityTimeOutPeriod
-     * (ZB_APS_IB_ID_SECURITY_TIMEOUT_PERIOD) for device interview timeout. */
+     * NOTE: On the Coordinator, the ZSDK stack uses apsSecurityTimeOutPeriod
+     * (ZB_APS_IB_ID_SECURITY_TIMEOUT_PERIOD) instead of this APS IB
+     * for device interview timeout. The joining device undergoing Device Interview
+     * will use this APS IB to refresh its Interview Timeout upon each received
+     * APS Downstream Relay */
 
     /* Exegin extensions (0x0500 to 0x05ff reserved for custom AIBs) */
     ZB_APS_IB_ID_SCAN_COUNT = 0x0500,

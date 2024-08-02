@@ -72,7 +72,7 @@ extern "C" {
 /*
  * MICP_CTLR_MEM_PER_CONN_SIZE_BYTES: memory size used per link in MICP Controller role
  */
-#define MICP_CTLR_MEM_PER_CONN_SIZE_BYTES                        (48u)
+#define MICP_CTLR_MEM_PER_CONN_SIZE_BYTES                        (44u)
 
 /*
  * MICP_CTLR_MEM_PER_CONN_SIZE_BYTES: memory size used per Audio Input Control Instance in MICP Controller role

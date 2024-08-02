@@ -39,9 +39,9 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                    CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_MAC_LAYER                 CFG_SEQ_PRIO_1
+#define TASK_PRIO_RNG                           CFG_SEQ_PRIO_0
+#define TASK_PRIO_LINK_LAYER                    CFG_SEQ_PRIO_0
+#define TASK_PRIO_MAC_LAYER                     CFG_SEQ_PRIO_1
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define CFG_TASK_PRIO_BUTTON_SWx                CFG_SEQ_PRIO_1

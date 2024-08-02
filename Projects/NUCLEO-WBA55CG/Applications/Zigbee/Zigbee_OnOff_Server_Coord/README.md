@@ -45,7 +45,7 @@ Do the same for the other boards if applicable.
 &rarr; At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.    
 
 	4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode by pressing on the SW1 push button. 
-You must see the Rer LED toggling on the Server side.  
+You must see the Red LED toggling on the Server side.  
 
 **Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
 
@@ -79,10 +79,4 @@ Stop Bit       = 1 bit</br>
 Parity         = none</br>
 Flow control   = none</br>
 Terminal   "Go to the Line" : &lt;LF&gt;  
-
-### __Note__
-By default, this application runs with Zigbee PRO stack R23.
-
-If you want to run this application using Zigbee PRO stack R22, you should replace ZigBeeProR23_FFD.a by ZigBeeProR22_FFD.a and ZigBeeProR23_RFD.a by ZigBeeProR22_RFD.a and ZigBeeClusters.a by ZigBeeClustersR22.a in the build environment.
-
-Also, set in the project setup compilation flag CONFIG_ZB_REV=22. 
+ 

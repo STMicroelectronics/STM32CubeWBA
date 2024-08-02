@@ -136,7 +136,9 @@ enum
 **/
 enum
 {
-  BOARD_ID_NUCLEO_WBA =  0x8B
+  BOARD_ID_NUCLEO_WBA5X =  0x8B,
+  BOARD_ID_DK_WBA5X     =  0x8C,
+  BOARD_ID_NUCLEO_WBA6X =  0x8E
 };
 
 /** 
@@ -144,13 +146,13 @@ enum
 **/
 enum
 {
-  FW_ID_P2P_SERVER =  0x83,
-  FW_ID_P2P_ROUTER =  0x85,
-  FW_ID_DT_SERVER  =  0x88,
-  FW_ID_COC_PERIPH =  0x87,
-  FW_ID_HEART_RATE =  0x89,
-  FW_ID_HEALTH_THERMO = 0x8A,
-  FW_ID_HID        =  0x8B
+  FW_ID_P2P_SERVER    =  0x83,
+  FW_ID_P2P_ROUTER    =  0x85,
+  FW_ID_DT_SERVER     =  0x88,
+  FW_ID_COC_PERIPH    =  0x87,
+  FW_ID_HEART_RATE    =  0x89,
+  FW_ID_HEALTH_THERMO =  0x8A,
+  FW_ID_HID           =  0x8B
 };
 /* USER CODE END EC */
 
@@ -166,6 +168,12 @@ enum
 #define CONN_INT_MS(x) ((uint16_t)((x)/1.25f))
 #define CONN_SUP_TIMEOUT_MS(x) ((uint16_t)((x)/10.0f))
 #define CONN_CE_LENGTH_MS(x) ((uint16_t)((x)/0.625f))
+
+#define HCI_LE_ADVERTISING_REPORT_RSSI(p) \
+        (*(int8_t*)((&((hci_le_advertising_report_event_rp0*)(p))-> \
+                      Advertising_Report[0].Length_Data) + 1 + \
+                    ((hci_le_advertising_report_event_rp0*)(p))-> \
+                    Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

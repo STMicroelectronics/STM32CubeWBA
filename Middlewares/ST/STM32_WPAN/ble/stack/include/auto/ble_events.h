@@ -2860,19 +2860,12 @@ tBleStatus aci_hal_sync_event( uint8_t Group_Id,
                                uint32_t Time_Stamp,
                                uint32_t Next_Sdu_Delivery_Timeout );
 
-/* HCI ACL Data events */
+/* Wrapper interface */
 
-/**
- * @brief HCI_RX_ACL_DATA_EVENT
- * This event is generated in "LL only" mode when an ACL data packet is
- * received.
- * 
- * @return Value indicating success or error code.
+/*
+ * HCI/ACI events processing function
  */
-tBleStatus hci_rx_acl_data_event( uint16_t Connection_Handle,
-                                  uint8_t  PB_Flag,
-                                  uint16_t  Data_Length,
-                                  uint8_t*  Data );
+tBleStatus BLE_EventProcess( const uint8_t* buffer );
 
 
 #endif /* BLE_EVENTS_H__ */

@@ -40,53 +40,54 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* ThreadX priorities by default  */
-#define CFG_TASK_PRIO_MAC_LAYER                 5u
-#define CFG_TASK_PREEMP_MAC_LAYER               0u
+#define TASK_PRIO_LINK_LAYER                    (7u)
+#define TASK_PREEMP_LINK_LAYER                  (0u)
 
-#define CFG_TASK_PRIO_LINK_LAYER                7u
-#define CFG_TASK_PREEMP_LINK_LAYER              0u
+#define TASK_PRIO_TEMP_MEAS_LL                  (7u)
+#define TASK_PREEMP_TEMP_MEAS_LL                (0u)
 
-#define CFG_TASK_PRIO_LINK_LAYER_TEMP           7u
-#define CFG_TASK_PREEMP_LINK_LAYER_TEMP         0u
+#define TASK_PRIO_AMM                           (15u)
+#define TASK_PREEMP_AMM                         (0u)
 
-#define CFG_TASK_PRIO_ZIGBEE_LAYER              9u
-#define CFG_TASK_PREEMP_ZIGBEE_LAYER            0u
+#define TASK_PRIO_RNG                           (11u)
+#define TASK_PREEMP_RNG                         (0u)
 
-#define CFG_TASK_PRIO_HW_RNG                    11u
-#define CFG_TASK_PREEMP_HW_RNG                  0u
+#define TASK_PRIO_MAC_LAYER                     (5u)
+#define TASK_PREEMP_MAC_LAYER                   (0u)
 
-#define CFG_TASK_PRIO_AMM_BCKGND                15u
-#define CFG_TASK_PREEMP_AMM_BCKGND              0u
+#define TASK_PRIO_ZIGBEE_LAYER                  (9u)
+#define TASK_PREEMP_ZIGBEE_LAYER                (0u)
 
-#define CFG_TASK_PRIO_ZIGBEE_NETWORK_FORM       16u
-#define CFG_TASK_PREEMP_ZIGBEE_NETWORK_FORM     0u
+#define TASK_PRIO_ZIGBEE_NETWORK_FORM           (16u)
+#define TASK_PREEMP_ZIGBEE_NETWORK_FORM         (0u)
 
-#define CFG_TASK_PRIO_ZIGBEE_APP_START          17u
-#define CFG_TASK_PREEMP_ZIGBEE_APP_START        0u
+#define TASK_PRIO_ZIGBEE_APP_START              (17u)
+#define TASK_PREEMP_ZIGBEE_APP_START            (0u)
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define CFG_TASK_PRIO_BUTTON_SWx                13u
-#define CFG_TASK_PREEMP_BUTTON_SWx              13u
+#define TASK_PRIO_BUTTON_SWx                    (13u)
+#define TASK_PREEMP_BUTTON_SWx                  (13u)
 
 /* USER CODE END TASK_Priority_Define */
 
-#define RTOS_MAX_THREAD                         20u
+#define RTOS_MAX_THREAD                         (20u)
 
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
-#define RTOS_STACK_SIZE_ENHANCED                ( 1024u * 2u )
+#define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
 #define RTOS_STACK_SIZE_REDUCED                 ( 512u )
-#define RTOS_STACK_SIZE_SMALL                   ( 384u )
+#define RTOS_STACK_SIZE_SMALL                   ( 256u )
+#define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_LINK_LAYER_STACK_SIZE              RTOS_STACK_SIZE_LARGE
-#define TASK_LINK_LAYER_TEMP_STACK_SIZE         RTOS_STACK_SIZE_REDUCED
-#define TASK_MAC_LAYER_STACK_SIZE               RTOS_STACK_SIZE_ENHANCED
-#define TASK_ZIGBEE_LAYER_STACK_SIZE            RTOS_STACK_SIZE_LARGE
-#define TASK_HW_RNG_STACK_SIZE                  RTOS_STACK_SIZE_REDUCED
-#define TASK_ZIGBEE_NETWORK_FORM_STACK_SIZE     RTOS_STACK_SIZE_LARGE
-#define TASK_ZIGBEE_APP_START_STACK_SIZE        RTOS_STACK_SIZE_NORMAL
-#define TASK_AMM_BCKGND_STACK_SIZE              RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_MAC_LAYER               RTOS_STACK_SIZE_MODERATE
+#define TASK_STACK_SIZE_ZIGBEE_LAYER            RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_ZIGBEE_NETWORK_FORM     RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_ZIGBEE_APP_START        RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
 
@@ -102,6 +103,8 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported variables --------------------------------------------------------*/
+extern TX_BYTE_POOL       *pBytePool;   /* ThreadX byte pool pointer for whole WPAN middleware */
+
 /* USER CODE BEGIN EV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */

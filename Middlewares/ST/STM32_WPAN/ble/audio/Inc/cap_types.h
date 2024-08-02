@@ -98,7 +98,7 @@ extern "C" {
 /*
  * CAP_MEM_PER_CONNECTION_SIZE_BYTES: memory size used per connection by CAP
  */
-#define CAP_MEM_PER_CONNECTION_SIZE_BYTES                       (104u)
+#define CAP_MEM_PER_CONNECTION_SIZE_BYTES                       (108u)
 
 
 /* CAP_MEM_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the
@@ -212,9 +212,8 @@ typedef enum
    ############################################################################# */
 
   CAP_LINKUP_COMPLETE_EVT,                      /* Event notified once CAP Linkup is complete */
-  CAP_CODEC_CONFIGURED_EVT,                     /* This event is called by Unicast Server, Unicast Client, Broadcast
-                                                 * Source or Broadcast Sink when the codec configuration for the current
-                                                 * process has been set up
+  CAP_AUDIO_CLOCK_REQ_EVT,                      /* This event is called when audio clock subsystem should be updated
+                                                 * to support submitted audio sample frequency
                                                  */
   CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT,          /* This event is notified when a remote CAP acceptor Sink capability
                                                  * has been discovered
@@ -309,12 +308,22 @@ typedef enum
                                                  * The pInfo field indicates the state of the ASE and the associated
                                                  * information through the BAP_ASE_State_Params_t type.
                                                  */
+  CAP_UNICAST_SERVER_ENABLE_REQ_EVT,            /* This event is notified when local CAP Acceptor receives an
+                                                 * Enable Operation request from the remote CAP Initiator.
+                                                 * The response of the request shall be transmit thanks to the
+                                                 * CAP_Unicast_EnableOpRsp() function.
+                                                 * The response should be transmitted as soon as possible because
+                                                 * after a minimum time period recommended by Basic Audio Profile of
+                                                 * 1 second, the remote CAP Initiator could consider the Enable
+                                                 * Operation Request as expired.
+                                                 * The pInfo field indicates the Audio Stream Endpoint Identifier and
+                                                 * the associated metadata associated to the operation through the
+                                                 * BAP_ASE_Enable_Req_Params_t*/
   CAP_UNICAST_ASE_METADATA_UPDATED_EVT,         /* Event notified when a metadata associated to an Audio Stream Endpoint
                                                  * is updated but Audio Stream Endpoint State doesn't change.
                                                  * The pInfo field indicates the state of the ASE and the associated
                                                  * information through the BAP_ASE_State_Params_t type.
                                                  */
-
 /* #############################################################################
    #                              BROADCAST Events                             #
    ############################################################################# */

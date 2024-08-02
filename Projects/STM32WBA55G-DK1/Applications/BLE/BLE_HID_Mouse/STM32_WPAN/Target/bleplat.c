@@ -24,6 +24,8 @@
 #include "baes.h"
 #include "bpka.h"
 #include "ble_timer.h"
+#include "blestack.h"
+#include "ble_wrap.c"
 
 /*****************************************************************************/
 
@@ -108,6 +110,24 @@ void BLEPLAT_AesCmacCompute( const uint8_t* input,
 
 /*****************************************************************************/
 
+int BLEPLAT_AesCcmCrypt( uint8_t mode,
+                         const uint8_t* key,
+                         uint8_t iv_length,
+                         const uint8_t* iv,
+                         uint16_t add_length,
+                         const uint8_t* add,
+                         uint32_t input_length,
+                         const uint8_t* input,
+                         uint8_t tag_length,
+                         uint8_t* tag,
+                         uint8_t* output )
+{
+  return BAES_CcmCrypt( mode, key, iv_length, iv, add_length, add,
+                        input_length, input, tag_length, tag, output );
+}
+
+/*****************************************************************************/
+
 int BLEPLAT_PkaStartP256Key( const uint32_t* local_private_key )
 {
   return BPKA_StartP256Key( local_private_key );
@@ -148,14 +168,14 @@ void BPKACB_Complete( void )
 uint8_t BLEPLAT_TimerStart( uint16_t layer,
                             uint32_t timeout )
 {
-  return BLE_TIMER_Start( (uint16_t)layer, timeout );
+  return BLE_TIMER_Start( layer, timeout );
 }
 
 /*****************************************************************************/
 
 void BLEPLAT_TimerStop( uint16_t layer )
 {
-  BLE_TIMER_Stop( (uint16_t)layer );
+  BLE_TIMER_Stop( layer );
 }
 
 /*****************************************************************************/

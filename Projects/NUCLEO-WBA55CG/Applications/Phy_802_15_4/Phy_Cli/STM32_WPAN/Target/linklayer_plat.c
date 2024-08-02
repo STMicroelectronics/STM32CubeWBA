@@ -489,3 +489,23 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
 void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
 }
+
+/**
+  * @brief  Get the ST company ID.
+  * @param  None
+  * @retval Company ID
+  */
+uint32_t LINKLAYER_PLAT_GetSTCompanyID(void)
+{
+  return LL_FLASH_GetSTCompanyID();
+}
+
+/**
+  * @brief  Get the Unique Device Number (UDN).
+  * @param  None
+  * @retval UDN
+  */
+uint32_t LINKLAYER_PLAT_GetUDN(void)
+{
+  return LL_FLASH_GetUDN();
+}

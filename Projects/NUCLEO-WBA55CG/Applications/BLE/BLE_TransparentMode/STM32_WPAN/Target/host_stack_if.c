@@ -23,11 +23,20 @@
 #include "app_conf.h"
 #include "ll_sys.h"
 #include "app_ble.h"
+#include "auto/ble_raw_api.h"
 #include "stm32_seq.h"
+/* External variables --------------------------------------------------------*/
+/**
+  * @brief  Missed HCI event flag
+  */
+extern uint8_t missed_hci_event_flag;
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
 
 /* External function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN EFP */
-extern volatile uint8_t uart_tx_buffer_full;
+
 /* USER CODE END EFP */
 
 /**
@@ -57,13 +66,17 @@ void HostStack_Process(void)
 void BleStackCB_Process(void)
 {
   /* USER CODE BEGIN BleStackCB_Process 0 */
-  if (uart_tx_buffer_full == 0)
-  {
+
   /* USER CODE END BleStackCB_Process 0 */
+  if (missed_hci_event_flag)
+  {
+    missed_hci_event_flag = 0;
+    HCI_HARDWARE_ERROR_EVENT(0x03);
+  }
   /* BLE Host stack processing through background task */
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
   /* USER CODE BEGIN BleStackCB_Process 1 */
-  }
+
   /* USER CODE END BleStackCB_Process 1 */
 }

@@ -3,11 +3,11 @@
 How to use the Power Config cluster on a device acting as a SED within a Centralized Zigbee network.  
     
 The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the Power Config cluster. 
-Once the Zigbee mesh network is created, the Server sends regularly the Battery availability in Percent to Client. 
+Once the Zigbee mesh network is created, the Server sends regularly the Battery availability in Percent to Client.
 
 ### __Keywords__
 
-Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, Power config cluster
+Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, Power config cluster  
      
 ### __Hardware Requirements__
 
@@ -36,10 +36,10 @@ For this application it is requested to have:
            |             |                                                                    |             |                                       
            | PowerConfig |                                                                    | PowerConfig |
            |   Client    |                                                                    |   Server    |  - PowerConfig Server during Init 
-           |             | Blue LED toggling (at report rx - 60 seconds)                      |             |    launch a 30 s Periodic Timer
+           |             |                                                                    |             |    launch a 30 s Periodic Timer
            |             |                                                                    |             |  
            |             |                                                                    |             |  - Every 30 s
-           |             |                                                                    |             |    * Read the battery (if exist - it does not)
+           |             |                                                                    |             |    * Read the battery (if exist)
            |             |                                                                    |             |      or simulate it with RNG.
            |             |                                                                    |             |    * <= ZbZclAttrIntegerWrite(ZCL_POWER_CONFIG_ATTR_BATTERY_PCT) 
            |             |  After a Router was connected :                                    |             |
@@ -48,9 +48,9 @@ For this application it is requested to have:
            |             | <----------------------------------------------------------------- |             |
            |             |                                                                    |             |
            |             | <-------------- Report (every 60 seconds) -------------------------|             |
-           |             |                                                                    |             | 	          
+           |             |                                                                    |             | <= PushB SW1 : Start/Restart 30 s Periodic Timer.		          
            |             |                                                                    |             | 		 
-           |             |                                                                    |             | 		 
+           |             |                                                                    |             | <= PushB SW2 : Stop 30 s Periodic Timer.			 
            |             |                                                                    |             | 	 
            |             |                                                                    |             |			 
            +-------------+                                                                    +-------------+
@@ -70,7 +70,8 @@ For this application it is requested to have:
 	Do the same for the other boards if applicable.    
 &rarr; At this stage, the Zigbee network is automatically created, and traces on coordinator indicate that new device is added.       
 if you want to have the Led Blue on on SED side when attached to the network, you can modify the **CFG_FULL_LOW_POWER** to the value **2**.  	 
-	4. On Client side, every 60 s, the battery voltage is reported from the Server and the Blue led is toggling. 
+	4. On Client side, every 60 s, the battery voltage is reported from the Server. 
+	To stop battery voltage evolution on Server, push SW2 push button, and to restart it push SW1.
 			
 **Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
 
@@ -104,6 +105,3 @@ Stop Bit       = 1 bit</br>
 Parity         = none</br>
 Flow control   = none</br>
 Terminal   "Go to the Line" : &lt;LF&gt;  
-
-### __Note__
-By default, this application runs with Zigbee PRO stack R23. Switching to R22 is not working for this application.

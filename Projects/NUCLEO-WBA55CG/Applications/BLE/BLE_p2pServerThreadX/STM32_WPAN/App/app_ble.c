@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "app_threadx.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -152,22 +153,12 @@ typedef struct
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
 
-/* BLE_HOST_TASK related defines */
-#define BLE_HOST_TASK_STACK_SIZE          (2048)
-#define BLE_HOST_TASK_PRIO                (15)
-#define BLE_HOST_TASK_PREEM_TRES          (0)
-
-/* HCI_ASYNCH_EVT_TASK related defines */
-#define HCI_ASYNCH_EVT_TASK_STACK_SIZE    (1024)
-#define HCI_ASYNCH_EVT_TASK_PRIO          (15)
-#define HCI_ASYNCH_EVT_TASK_PREEM_TRES    (0)
-
 /* USER CODE BEGIN PD */
 #define LED_ON_TIMEOUT_MS              (5)
 #define ADV_TIMEOUT_MS                 (60 * 1000)
 
 /* ADV_CANCEL_TASK related defines */
-#define ADV_CANCEL_TASK_STACK_SIZE    (256)
+#define ADV_CANCEL_TASK_STACK_SIZE    (1024)
 #define ADV_CANCEL_TASK_PRIO          (15)
 #define ADV_CANCEL_TASK_PREEM_TRES    (0)
 
@@ -186,14 +177,12 @@ static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
   0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
 /* Encryption root key used to derive LTK(Legacy) and CSRK */
 static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ER;
 static BleApplicationContext_t bleAppContext;
-
 P2P_SERVER_APP_ConnHandleNotEvt_t P2P_SERVERHandleNotification;
 
 static char a_GapDeviceName[] = {  'P', 'e', 'e', 'r', ' ', 't', 'o', ' ', 'P', 'e', 'e', 'r', ' ', 'S', 'e', 'r', 'v', 'e', 'r' }; /* Gap Device Name */
@@ -213,24 +202,18 @@ static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
 
-/* BLE_HOST_TASK related resources */
-TX_THREAD BLE_HOST_Thread;
+static TX_THREAD        BleHostTaskHandle;
 
-/* HCI_ASYNCH_EVT_TASK related resources */
-TX_THREAD HCI_ASYNCH_EVT_Thread;
-TX_SEMAPHORE HCI_ASYNCH_EVT_Thread_Sem;
+static TX_THREAD        HciAsyncEvtTaskHandle;
+static TX_SEMAPHORE     HciAsyncEvtSemaphore;
 
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
-/* BLE_HOST_TASK related resources */
-TX_SEMAPHORE BLE_HOST_Thread_Sem;
-
-/* PROC_GAP_COMPLETE related resources */
-TX_SEMAPHORE PROC_GAP_COMPLETE_Sem;
+TX_SEMAPHORE          BleHostSemaphore;
+TX_SEMAPHORE          GapProcCompleteSemaphore;
 
 /* USER CODE BEGIN GV */
 TX_THREAD ADV_CANCEL_Thread;
@@ -247,8 +230,8 @@ static void gap_cmd_resp_wait(void);
 static void gap_cmd_resp_release(void);
 static void BLE_NvmCallback (SNVMA_Callback_Status_t);
 static uint8_t HOST_BLE_Init(void);
-static void Ble_UserEvtRx_Entry(unsigned long thread_input);
-static void BleStack_Process_BG_Entry(unsigned long thread_input);
+static void BLE_HOST_Task_Entry(ULONG lArgument);
+static void HciAsyncEvt_Task_Entry(ULONG lArgument);
 /* USER CODE BEGIN PFP */
 static void Adv_Cancel_Req(void *arg);
 static void Adv_Cancel(void);
@@ -272,37 +255,52 @@ void APP_BLE_Init(void)
 
   LST_init_head(&BleAsynchEventQueue);
 
-  CHAR * pStack;
+  UINT TXstatus;
+  CHAR *pStack;
 
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, BLE_HOST_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
+  /* Create BLE Host ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_BLE_HOST, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    Error_Handler();
+    TXstatus = tx_thread_create(&BleHostTaskHandle, "BLE Host Task", BLE_HOST_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_BLE_HOST,
+                                 TASK_PRIO_BLE_HOST, TASK_PREEMP_BLE_HOST,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&BleHostSemaphore, "BLE Host Semaphore", 0);
   }
-  if (tx_semaphore_create(&BLE_HOST_Thread_Sem, "BLE_HOST_Thread_Sem", 0) != TX_SUCCESS )
+
+  if( TXstatus != TX_SUCCESS )
   {
-    Error_Handler();
-  }
-  if (tx_thread_create(&BLE_HOST_Thread, "BLE_HOST_Thread", BleStack_Process_BG_Entry, 0,
-                         pStack, BLE_HOST_TASK_STACK_SIZE,
-                         BLE_HOST_TASK_PRIO, BLE_HOST_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
+    LOG_ERROR_APP( "BLE Host ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
 
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, HCI_ASYNCH_EVT_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_HCI_ASYNC_EVENT, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
+    TXstatus = tx_thread_create(&HciAsyncEvtTaskHandle, "HCI Async Event Task", HciAsyncEvt_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_HCI_ASYNC_EVENT,
+                                 TASK_PRIO_HCI_ASYNC_EVENT, TASK_PREEMP_HCI_ASYNC_EVENT,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&HciAsyncEvtSemaphore, "HCI Async Event Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "HCI Async Event ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
-  if (tx_semaphore_create(&HCI_ASYNCH_EVT_Thread_Sem, "HCI_ASYNCH_EVT_Thread_Sem", 0) != TX_SUCCESS )
+
+  TXstatus = tx_semaphore_create(&GapProcCompleteSemaphore, "GAP Procedure Completed Semaphore", 0);
+
+  if( TXstatus != TX_SUCCESS )
   {
-    Error_Handler();
-  }
-  if (tx_thread_create(&HCI_ASYNCH_EVT_Thread, "HCI_ASYNCH_EVT_Thread", Ble_UserEvtRx_Entry, 0,
-                         pStack, HCI_ASYNCH_EVT_TASK_STACK_SIZE,
-                         HCI_ASYNCH_EVT_TASK_PRIO, HCI_ASYNCH_EVT_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
+    LOG_ERROR_APP( "GAP Procedure Completed ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
 
@@ -473,6 +471,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                        (conn_interval_us%1000) / 10,
                        p_conn_update_complete->Conn_Latency,
                        p_conn_update_complete->Supervision_Timeout*10);
+          UNUSED(conn_interval_us);
           UNUSED(p_conn_update_complete);
 
           /* USER CODE BEGIN EVT_LE_CONN_UPDATE_COMPLETE */
@@ -513,6 +512,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Conn_Latency,
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -555,6 +555,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Conn_Latency,
                       p_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -1299,7 +1300,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin,
-                                               CFG_BD_ADDRESS_TYPE);
+                                               CFG_BD_ADDRESS_DEVICE);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : aci_gap_set_authentication_requirement command, result: 0x%02X\n", ret);
@@ -1322,6 +1323,10 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
     }
   }
+
+  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2*/
+
+  /* USER CODE END Ble_Hci_Gap_Gatt_Init_2*/
 
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");
 
@@ -1348,11 +1353,11 @@ static void Ble_UserEvtRx( void)
 
   if ((LST_is_empty(&BleAsynchEventQueue) == FALSE) && (svctl_return_status != SVCCTL_UserEvtFlowDisable) )
   {
-    tx_semaphore_put(&HCI_ASYNCH_EVT_Thread_Sem);
+    tx_semaphore_put(&HciAsyncEvtSemaphore);
   }
 
-  /* set the BG_BleStack_Process task for scheduling */
-  tx_semaphore_put(&BLE_HOST_Thread_Sem);
+  /* Trigger BLE Host stack to process */
+  tx_semaphore_put(&BleHostSemaphore);
 
 }
 
@@ -1444,13 +1449,13 @@ static void BleStack_Process_BG(void)
 
 static void gap_cmd_resp_release(void)
 {
-  tx_semaphore_put(&PROC_GAP_COMPLETE_Sem);
+  tx_semaphore_put(&GapProcCompleteSemaphore);
   return;
 }
 
 static void gap_cmd_resp_wait(void)
 {
-  tx_semaphore_get(&PROC_GAP_COMPLETE_Sem, TX_WAIT_FOREVER);
+  tx_semaphore_get(&GapProcCompleteSemaphore, TX_WAIT_FOREVER);
   return;
 }
 
@@ -1564,7 +1569,7 @@ static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p
         p_adv_data[i+2] = ST_MANUF_ID;
         p_adv_data[i+3] = 0x00;
         p_adv_data[i+4] = BLUESTSDK_V2; /* blueST SDK version */
-        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA; /* Board ID */
+        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA5X; /* Board ID */
         p_adv_data[i+6] = FW_ID_P2P_SERVER; /* FW ID */
         p_adv_data[i+7] = 0x00; /* FW data 1 */
         p_adv_data[i+8] = 0x00; /* FW data 2 */
@@ -1620,7 +1625,7 @@ tBleStatus BLECB_Indication( const uint8_t* data,
       phcievt->evtserial.evt.plen  = data[2];
       memcpy( (void*)&phcievt->evtserial.evt.payload, &data[3], data[2]);
       LST_insert_tail(&BleAsynchEventQueue, (tListNode *)phcievt);
-      tx_semaphore_put(&HCI_ASYNCH_EVT_Thread_Sem);
+      tx_semaphore_put(&HciAsyncEvtSemaphore);
       status = BLE_STATUS_SUCCESS;
     }
   }
@@ -1630,29 +1635,28 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   }
   return status;
 }
-
-static void Ble_UserEvtRx_Entry(unsigned long thread_input)
+static void BLE_HOST_Task_Entry(ULONG lArgument)
 {
-  UNUSED(thread_input);
+  UNUSED(lArgument);
 
   while(1)
   {
-    tx_semaphore_get(&HCI_ASYNCH_EVT_Thread_Sem, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    Ble_UserEvtRx();
-    tx_mutex_put(&LinkLayerMutex);
+    tx_semaphore_get(&BleHostSemaphore, TX_WAIT_FOREVER);
+    BleStack_Process_BG();
     tx_thread_relinquish();
   }
 }
 
-static void BleStack_Process_BG_Entry(unsigned long thread_input)
+static void HciAsyncEvt_Task_Entry(ULONG lArgument)
 {
-  UNUSED(thread_input);
+  UNUSED(lArgument);
 
   while(1)
   {
-    tx_semaphore_get(&BLE_HOST_Thread_Sem, TX_WAIT_FOREVER);
-    BleStack_Process_BG();
+    tx_semaphore_get(&HciAsyncEvtSemaphore, TX_WAIT_FOREVER);
+    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+    Ble_UserEvtRx();
+    tx_mutex_put(&LinkLayerMutex);
     tx_thread_relinquish();
   }
 }

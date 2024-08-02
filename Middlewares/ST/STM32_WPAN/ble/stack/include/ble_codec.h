@@ -1,8 +1,8 @@
 /*****************************************************************************
  * @file    ble_codec.h
- * @author  MDG
+ *
  * @brief   This file contains the interface of the BLE stack regarding audio
-            codec.
+ *          codec.
  *****************************************************************************
  * @attention
  *

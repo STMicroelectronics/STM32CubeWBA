@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,14 +18,15 @@
   */
 /* USER CODE END Header */
 
-#include "app_common.h"
 #include "main.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
+#include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "temp_measurement.h"
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
+#include "stm32_rtos.h"
+#include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -44,7 +45,6 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,13 +56,8 @@
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-extern void llhwc_cmn_sys_configure_ll_ctx(uint8_t b_allow_low_isr, uint8_t b_run_post_evnt_frm_isr);
-extern uint8_t  llhwc_cmn_set_temperature_value(uint16_t temperature);
-extern void llhwc_cmn_set_temperature_sensor_state(void);
-extern uint8_t ll_tx_pwr_if_select_tx_power_mode(uint8_t tx_power_table_id);
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-static void ll_sys_bg_temperature_measurement_init(void);
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+static void ll_sys_sleep_clock_source_selection(void);
+void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -83,8 +78,8 @@ static void ll_sys_bg_temperature_measurement_init(void);
   */
 void ll_sys_bg_process_init(void)
 {
-  /* Tasks creation */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
+  /* Register Link Layer task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
 }
 
 /**
@@ -94,7 +89,7 @@ void ll_sys_bg_process_init(void)
   */
 void ll_sys_schedule_bg_process(void)
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_TASK_PRIO_LINK_LAYER);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, TASK_PRIO_LINK_LAYER);
 }
 
 /**
@@ -104,7 +99,7 @@ void ll_sys_schedule_bg_process(void)
   */
 void ll_sys_schedule_bg_process_isr(void)
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_TASK_PRIO_LINK_LAYER);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, TASK_PRIO_LINK_LAYER);
 }
 
 /**
@@ -118,42 +113,58 @@ void ll_sys_config_params(void)
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
    */
-  llhwc_cmn_sys_configure_ll_ctx(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  ll_intf_cmn_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  /* Initialize link layer temperature measurement background task */
-  ll_sys_bg_temperature_measurement_init();
-
-  /* Link layer IP uses temperature based calibration instead of periodic one */
-  llhwc_cmn_set_temperature_sensor_state();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-  
   /* Link Layer power table */
-  ll_tx_pwr_if_select_tx_power_mode(CFG_RF_TX_POWER_TABLE_ID);
+  ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
 }
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-/**
-  * @brief  Link Layer temperature request background process initialization
-  * @param  None
-  * @retval None
-  */
-void ll_sys_bg_temperature_measurement_init(void)
+void ll_sys_sleep_clock_source_selection(void)
 {
-  /* Tasks creation */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, UTIL_SEQ_RFU, TEMPMEAS_RequestTemperatureMeasurement);
+  uint16_t freq_value = 0;
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  switch(linklayer_slp_clk_src)
+  {
+    case LL_RCC_RADIOSLEEPSOURCE_LSE:
+      linklayer_slp_clk_src = RTC_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_LSI:
+      linklayer_slp_clk_src = RCO_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_HSE_DIV1000:
+      linklayer_slp_clk_src = CRYSTAL_OSCILLATOR_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_NONE:
+      /* No Link Layer sleep clock source selected */
+      assert_param(0);
+      break;
+  }
+  ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 }
 
-/**
-  * @brief  Request backroud task processing for temperature measurement
-  * @param  None
-  * @retval None
-  */
-void ll_sys_bg_temperature_measurement(void)
+void ll_sys_reset(void)
 {
-  //UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, CFG_SEQ_PRIO_0);
-  TEMPMEAS_RequestTemperatureMeasurement();
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+  uint8_t bsca = 0;
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
+
+  /* Configure the link layer sleep clock accuracy if different from the default one */
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
+  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
+#else
+  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
+  {
+    ll_intf_le_set_sleep_clock_accuracy(bsca);
+  }
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 }
-
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-

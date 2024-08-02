@@ -68,14 +68,8 @@ extern void (*low_isr_callback)(void);
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
-#ifdef APPLICATION_USE_OTCLI
-extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
-#endif // APPLICATION_USE_OTCLI
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-#ifdef APPLICATION_USE_OTCLI
-extern UART_HandleTypeDef hlpuart1;
-#endif // APPLICATION_USE_OTCLI
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim2;
 
@@ -207,12 +201,16 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    scm_hserdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_hserdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    scm_pllrdy_isr();
+    #if (CFG_SCM_SUPPORTED == 1)
+      scm_pllrdy_isr();
+    #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -247,22 +245,6 @@ void GPDMA1_Channel1_IRQHandler(void)
   /* USER CODE END GPDMA1_Channel1_IRQn 1 */
 }
 
-#ifdef APPLICATION_USE_OTCLI
-/**
-  * @brief This function handles GPDMA1 Channel 2 global interrupt.
-  */
-void GPDMA1_Channel2_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel2_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel2);
-  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel2_IRQn 1 */
-}
-
-#endif // APPLICATION_USE_OTCLI
 /**
   * @brief This function handles TIM2 global interrupt.
   */
@@ -291,22 +273,6 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
-#ifdef APPLICATION_USE_OTCLI
-/**
-  * @brief This function handles LPUART1 global interrupt.
-  */
-void LPUART1_IRQHandler(void)
-{
-  /* USER CODE BEGIN LPUART1_IRQn 0 */
-
-  /* USER CODE END LPUART1_IRQn 0 */
-  HAL_UART_IRQHandler(&hlpuart1);
-  /* USER CODE BEGIN LPUART1_IRQn 1 */
-
-  /* USER CODE END LPUART1_IRQn 1 */
-}
-
-#endif // APPLICATION_USE_OTCLI
 /**
   * @brief This function handles RNG global interrupt.
   */

@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "log_module.h"
 #include "app_common.h"
 #include "ble.h"
 #include "app_ble.h"

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/ral.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ral.h#1 $*/
 /**
  ********************************************************************************
  * @file    ral.h
@@ -127,6 +127,9 @@ typedef enum ral_error_enum {
 	RAL_ERROR_LINK_METRICS_NOT_FOUND,
 	RAL_ERROR_LINK_METRICS_NO_BUF,
 #endif /* SUPPORT_ENH_ACK_LINK_METRICS_PROBING_OT_1_2 */
+#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+	RAL_ERROR_AD_NOT_IN_CONFIG_STATE,
+#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
     RAL_ERROR_GENERIC = 255
 } ral_error_enum_t;
 
@@ -187,6 +190,7 @@ typedef struct _ral_pkt_st {
 	ral_time_st time_stamp;					/* exact time in which the packet transmitted/received */
 	uint16_t pyld_len;						/* packet length */
 	uint8_t channel;						/* channel at which the packet will be transmitted */
+	uint8_t rxchannelaftertxdone;			/* The RX channel after frame TX is done (after all frame retries - ack received, or timeout, or abort).*/
     union
     {
         struct
@@ -245,7 +249,6 @@ typedef struct _ral_evnt_info_st{
 	uint8_t rx_pta_counter;								/* Either the PTA Tx or Rx reject counter depending on the packet type */
 #endif /* SUPPORT_PTA */
 } ral_evnt_info_st;
-
 
 /**
  * @struct ral_mac_fltr_confg_st
@@ -316,7 +319,7 @@ typedef struct _ral_auto_ack_confg_st {
  *  */
 typedef struct _ral_coex_info_st {
 	void * evnt_hndl;				/* pointer to RAL event handle given from event scheduler after registration */
-	uint32_t grant_end_time;		/* end time in sleep timer steps of grant given from event scheduler */
+	ble_time_t grant_end_time;		/* end time in sleep timer steps of grant given from event scheduler */
 } ral_coex_info_st;
 
 #if SUPPORT_ENH_ACK_LINK_METRICS_PROBING_OT_1_2 || CONFIG_MAC_CSL_RECEIVER_ENABLE
@@ -641,6 +644,69 @@ ral_power_state_enum_t ral_get_power_state(ral_instance_t ral_instance);
  * @retval current event state RX, TX, ED, IDLE
  */
 ral_event_state_enum_t ral_get_current_event_state(ral_instance_t * curr_ral_instance, uint8_t * curr_event_channel);
+
+#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+/**
+ * @fn ral_set_ant_div_params
+ *
+ * @brief	set antenna diversity feature parameters
+ *
+ * @param   ral_instance       : [in] used ral instance
+ * @param   ptr_ant_div_params : [in] pointer to antenna diversity parameters structure
+ *
+ * @retval RAL_ERROR_NONE if antenna diversity parameters are set correctly
+ */
+ral_error_enum_t ral_set_ant_div_params(ral_instance_t ral_instance, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ * @fn ral_get_ant_div_params
+ *
+ * @brief	get antenna diversity feature parameters
+ *
+ * @param   ral_instance       : [in] used ral instance
+ * @param   ptr_ant_div_params : [out] pointer to antenna diversity parameters structure
+ *
+ * @retval None
+ */
+void ral_get_ant_div_params(ral_instance_t ral_instance, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ * @fn ral_set_ant_div_enable
+ *
+ * @brief	enable/disable antenna diversity
+ *
+ * @param   ral_instance   : [in] used ral instance
+ * @param   enable         : [in] enable:1 / disable:0
+ *
+ * @retval RAL_ERROR_NONE if antenna diversity is enabled/disabled correctly
+ */
+ral_error_enum_t ral_set_ant_div_enable(ral_instance_t ral_instance, uint8_t enable);
+
+/**
+ * @fn ral_set_default_ant_id
+ *
+ * @brief	set the default antenna id to be used for transmission and reception
+ *
+ * @param   ral_instance    : [in] used ral instance
+ * @param   default_ant_id  : [in] the antenna id to be used as default
+ *
+ * @retval RAL_ERROR_NONE if default antenna ID is set correctly
+ */
+ral_error_enum_t ral_set_default_ant_id(ral_instance_t ral_instance, uint8_t default_ant_id);
+
+/**
+ * @fn ral_set_ant_div_rssi_threshold
+ *
+ * @brief	set antenna diversity rssi threshold
+ *
+ * @param   ral_instance     : [in] used ral instance
+ * @param   rssi_threshold   : [in] rssi threshold to compare with during antenna diversity measurements
+ *
+ * @retval RAL_ERROR_NONE if antenna diversity RSSI threshold is set correctly
+ */
+ral_error_enum_t ral_set_ant_div_rssi_threshold(ral_instance_t ral_instance, int8_t rssi_threshold);
+#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+
 /**
  * @}
  */
@@ -671,6 +737,16 @@ void ral_exec_phy_prdc_clbr(void);
  * @retval RAL_ERROR_NONE if phy rate changed successfully
  */
 ral_error_enum_t ral_set_rate(ral_instance_t ral_instance, ral_phy_rate_enum_t phy_rate);
+/**
+ *
+ * @brief	set minimum interframe spacing between successive transmission/reception
+ *
+ * @param   ral_instance : [in] used ral instance
+ * @param   min_ifs : [in] new minimum interframe spacing in microsecond
+ *
+ * @retval None.
+ */
+void ral_set_min_ifs(ral_instance_t ral_instance, uint16_t min_ifs);
 #endif
 
 
@@ -1318,9 +1394,9 @@ void radio_csma_error_cbk(uint32_t error);
  */
 void ral_set_csma_time(
 #if ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY
-					uint32_t rx_timeout, 
+		ble_time_t rx_timeout,
 #endif /*end of ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY*/
-					uint32_t max_csma_delay);
+					ble_time_t max_csma_delay);
 #endif /*end of (RADIO_CSMA) &&(!SUPPORT_COEXISTENCE)*/
 /**
  * @brief	flag indication used to handle frame pending bit in ACK of all packets (set to true) or for ACK of data request command only (set to false)
@@ -1426,6 +1502,28 @@ void ral_set_implicitbroadcast(ral_instance_t ral_instance, uint8_t ImplicitBroa
  * @retval void
  */
 void ed_timer_hndl(void* ptr_info);
+
+#if defined(PHY_40nm_3_00_a) && SUPPORT_MAC_PHY_CONT_TESTING_CMDS
+/**
+ *
+ * @brief set the phy continuous modulation and continuous wave modes
+ * 	upon enable, if the selected mode is already enabled and likewise
+ * 	in disabling, the change will take no effect
+ *
+ * @param   ral_instance : [in] ral instance
+ *
+ * @param	type[in]		: the type of the modulation (0: modulation, 1: wave)
+ *
+ * @param	enable_mode[in]	: if true then enable the selected mode otherwise disable it
+ *
+ * @param	chnl_num[in]	: channel number to be used in modulation (range: 0 to 15)
+ *
+ * @param   tx_pwr[in]         : The used power in dBm.
+ *
+ * @retval Status
+ */
+void ral_phy_set_zigbee_phy_cont_test_mode(ral_instance_t instance, uint8_t type, uint8_t enable_mode, uint8_t chnl_num, int8_t tx_pwr);
+#endif /*end of PHY_40nm_3_00_a && SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
 
 #endif /* INCLUDE_RAL_H_ */
 /**

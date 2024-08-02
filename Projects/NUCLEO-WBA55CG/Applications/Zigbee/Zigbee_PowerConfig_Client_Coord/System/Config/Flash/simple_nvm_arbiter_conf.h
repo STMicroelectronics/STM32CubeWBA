@@ -47,12 +47,6 @@ extern "C" {
  */
 #define SNVMA_NVM_NUMBER                1u
 
-/**
- * @brief Polynomial value for CRC16
- *
- */
-#define SNVMA_POLY_CRC16                0x1DB7u
-
 /* Check that NVM number does not exceed limitations */
 #if SNVMA_NVM_NUMBER > SNVMA_MAX_NUMBER_NVM
 #error Number of NVM to manage is to high
@@ -106,14 +100,13 @@ extern "C" {
  */
 typedef enum SNVMA_BufferId
 {
-  APP_BLE_NvmBuffer,
   SNVMA_BufferId_1,
-  SNVMA_BufferId_2,
-  SNVMA_BufferId_3,
   SNVMA_BufferId_Max  /* End of the enumeration */
 }SNVMA_BufferId_t;
 
 /* Exported variables --------------------------------------------------------*/
+extern SNVMA_NvmElt_t SNVMA_NvmConfiguration [SNVMA_NVM_NUMBER];
+
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 

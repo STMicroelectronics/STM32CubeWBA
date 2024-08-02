@@ -44,6 +44,7 @@
  */
 //#include "stm32wbaxx_hal.h"
 #include "app_conf.h"
+#include "log_module.h"
 #include "utilities_conf.h"
 
 #include <ctype.h>

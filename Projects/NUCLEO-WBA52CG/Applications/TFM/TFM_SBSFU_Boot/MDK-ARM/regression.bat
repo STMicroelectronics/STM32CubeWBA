@@ -1,8 +1,9 @@
 echo regression script started
-set stm32programmercli="C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\STM32_Programmer_CLI.exe"
+call ..\..\env.bat
 set secbootadd0=
 set flashsectnbr=
 set connect=-c port=SWD mode=UR ap=1 --hardRst
+set connect_no_hwrst=-c port=SWD mode=UR ap=1
 set connect_no_reset=-c port=SWD ap=1 mode=HotPlug
 set rdp_0=-ob RDP=0xAA TZEN=1 UNLOCK_A=1 UNLOCK_B=1
 set remove_bank1_protect=-ob SECWM_PSTRT=%flashsectnbr% SECWM_PEND=0 WRPA_PSTRT=%flashsectnbr% WRPA_PEND=0 WRPB_PSTRT=%flashsectnbr% WRPB_PEND=0
@@ -13,13 +14,13 @@ set oem_passwd2=0xFACEB00C 0xDEADBABE
 set oem_lock2=-lockRDP2 %oem_passwd2%
 echo Regression to RDP 0, enable tz
 %stm32programmercli% %connect_no_reset% %rdp_0%
-IF %errorlevel% NEQ 0 %stm32programmercli% %connect% %rdp_0%
+IF %errorlevel% NEQ 0 %stm32programmercli% %connect_no_hwrst% %rdp_0%
 IF %errorlevel% NEQ 0 goto :error
 echo Provision default OEM2 key
-%stm32programmercli% %connect% %oem_lock2%
+%stm32programmercli% %connect_no_hwrst% %oem_lock2%
 IF %errorlevel% NEQ 0 goto :error
 echo Remove bank1 protection
-%stm32programmercli% %connect% %remove_bank1_protect%
+%stm32programmercli% %connect_no_hwrst% %remove_bank1_protect%
 IF %errorlevel% NEQ 0 goto :error
 echo Remove bank2 protection and erase all
 %stm32programmercli% %connect_no_reset% %remove_bank2_protect% %erase_all%

@@ -55,7 +55,7 @@ SECTIONS
         . = ALIGN(4);
     } > FLASH
 
-    .copy.table : ALIGN(4)
+    .copy.table (READONLY) : ALIGN(4)  /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
     {
         __copy_table_start__ = .;
         LONG (LOADADDR(.TFM_DATA))
@@ -148,7 +148,7 @@ SECTIONS
         __copy_table_end__ = .;
     } > FLASH
 
-    .zero.table : ALIGN(4)
+    .zero.table (READONLY): ALIGN(4) /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
     {
         __zero_table_start__ = .;
         LONG (ADDR(.TFM_BSS))
@@ -514,13 +514,13 @@ SECTIONS
     . = ALIGN(32);
     Image$$PT_RO_END$$Base = .;
 
-    .ARM.extab :
+    .ARM.extab (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
     } > FLASH
 
     __exidx_start = .;
-    .ARM.exidx :
+    .ARM.exidx (READONLY) : /* The READONLY keyword is only supported in GCC11 and later, remove it if using GCC10 or earlier. */
     {
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     } > FLASH

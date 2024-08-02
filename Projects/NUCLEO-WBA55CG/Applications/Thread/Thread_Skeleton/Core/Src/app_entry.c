@@ -20,10 +20,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
+#include "app_sys.h"
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
@@ -33,7 +36,6 @@
 #endif /* CFG_LOG_SUPPORTED */
 #include "otp.h"
 #include "scm.h"
-#include "stm32_rtos.h"
 #include "ll_sys.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -48,6 +50,7 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -82,10 +85,10 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -97,7 +100,7 @@ static void SystemPower_Config( void );
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -106,7 +109,7 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -120,29 +123,34 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
+
   /* USER CODE BEGIN APPE_Init_1 */
 
   /* USER CODE END APPE_Init_1 */
 
-  RNG_Init();
-
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
 }
 
+void MX_APPE_Process(void)
+{
+  /* USER CODE BEGIN MX_APPE_Process_1 */
+
+  /* USER CODE END MX_APPE_Process_1 */
+  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+  /* USER CODE BEGIN MX_APPE_Process_2 */
+
+  /* USER CODE END MX_APPE_Process_2 */
+}
+
 /* USER CODE BEGIN FD */
-
-/* stubs for alarm.c (OpenThread platform abstraction) */
-void APP_THREAD_ScheduleAlarm(void)
-{
-}
-
-void APP_THREAD_ScheduleUsAlarm(void)
-{
-}
 
 /* USER CODE END FD */
 
@@ -194,6 +202,12 @@ static void System_Init( void )
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
+
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
@@ -258,13 +272,13 @@ static void SystemPower_Config(void)
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
   HW_RNG_Start();
 
+  /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
-
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -275,16 +289,6 @@ static void RNG_Init(void)
  * WRAP FUNCTIONS
  *
  *************************************************************/
-void MX_APPE_Process(void)
-{
-  /* USER CODE BEGIN MX_APPE_Process_1 */
-
-  /* USER CODE END MX_APPE_Process_1 */
-  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-  /* USER CODE BEGIN MX_APPE_Process_2 */
-
-  /* USER CODE END MX_APPE_Process_2 */
-}
 
 void UTIL_SEQ_EvtIdle( UTIL_SEQ_bm_t task_id_bm, UTIL_SEQ_bm_t evt_waited_bm )
 {
@@ -349,11 +353,11 @@ void UTIL_SEQ_PostIdle( void )
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
@@ -404,6 +408,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
 }
+
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /**

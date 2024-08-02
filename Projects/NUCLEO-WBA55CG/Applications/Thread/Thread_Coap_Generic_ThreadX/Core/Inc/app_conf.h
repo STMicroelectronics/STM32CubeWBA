@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -62,6 +61,9 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -74,7 +76,10 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
+  CFG_LPM_PKA,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -117,6 +122,9 @@ typedef enum
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (1U)
 
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
+
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
 #define APP_DBG_MSG                 LOG_INFO_APP
@@ -133,18 +141,6 @@ typedef enum
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
-
-/******************************************************************************
- * Configure Serial Link used for Thread Command Line
- ******************************************************************************/
-#ifdef APPLICATION_USE_OTCLI
-#define OT_CLI_USE                  (1U)
-
-extern UART_HandleTypeDef           hlpuart1;
-#define OT_CLI_UART_HANDLER         hlpuart1
-#else // APPLICATION_USE_OTCLI
-#define OT_CLI_USE                  (0U)
-#endif // APPLICATION_USE_OTCLI
 
 /******************************************************************************
  * Debugger
@@ -199,6 +195,12 @@ extern UART_HandleTypeDef           hlpuart1;
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
+/* Custom LSE sleep clock accuracy to use if both conditions are met:
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */
@@ -214,7 +216,6 @@ extern UART_HandleTypeDef           hlpuart1;
 
 /* USER CODE END HW_RNG_Configuration */
 
-                                                    
 /* USER CODE BEGIN Defines */
 /**
  * User interaction
@@ -229,8 +230,8 @@ extern UART_HandleTypeDef           hlpuart1;
  * If CFG_LPM_LEVEL at 2, make sure LED are disabled
  */
 #if (CFG_LPM_LEVEL > 1)
-  #undef  CFG_LED_SUPPORTED
-  #define CFG_LED_SUPPORTED         (0)
+//  #undef  CFG_LED_SUPPORTED
+//  #define CFG_LED_SUPPORTED         (0)
 #endif /* CFG_FULL_LOW_POWER */
 
 #if ( CFG_LED_SUPPORTED == 1 )

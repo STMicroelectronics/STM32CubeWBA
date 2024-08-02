@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,6 +22,7 @@
 #include "app_conf.h"
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
+#include "log_module.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN PI */
@@ -69,7 +70,6 @@ static void Uart_Cmd_Execute(void);
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-extern EXTI_HandleTypeDef hpb_exti[BUTTONn];
 
 /* USER CODE END EV */
 
@@ -166,12 +166,12 @@ static void Uart_Cmd_Execute(void)
   }
   else
   {
-    LOG_INFO_APP( "NOT RECOGNIZED COMMAND : %s\r\n", RxBuffer );
+    LOG_ERROR_APP( "ERROR : NOT RECOGNIZED COMMAND : %s\n", RxBuffer );
     return;
   }
 
   /* Launch SW Command */
-  LOG_INFO_APP( "%s pressed by Command.\r\n", RxBuffer );
+  LOG_INFO_APP( "%s pressed by Command.", RxBuffer );
   BSP_PB_Callback( eButton );
 
   /* USER CODE END Uart_Cmd_Execute */

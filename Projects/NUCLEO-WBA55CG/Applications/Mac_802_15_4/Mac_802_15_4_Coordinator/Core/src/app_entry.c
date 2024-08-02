@@ -23,6 +23,7 @@
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
+#include "log_module.h"
 #include "app_mac.h"
 #include "ll_sys_startup.h"
 #include "stm32_seq.h"
@@ -94,7 +95,7 @@ static bool system_startup_done = FALSE;
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = LOG_VERBOSE_ALL_LOGS, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = LOG_VERBOSE_ALL_LOGS, .region = LOG_REGION_APP };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN PV */
@@ -129,7 +130,6 @@ static void Button_TriggerActions(void *arg);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -157,19 +157,16 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  /* Initialize the Temperature measurement */
-  TEMPMEAS_Init ();
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
+#if (CFG_LED_SUPPORTED == 1)  
   Led_Init();
-#endif
+#endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_BUTTON_SUPPORTED == 1)
   Button_Init();
-#endif
-/* USER CODE END APPE_Init_1 */
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
+  /* USER CODE END APPE_Init_1 */
 
   RNG_Init();
 
@@ -187,24 +184,21 @@ uint32_t MX_APPE_Init(void *p_param)
 }
 
 /* USER CODE BEGIN FD */
-#if (CFG_BUTTON_SUPPORTED == 1)
+#if ( CFG_BUTTON_SUPPORTED == 1 ) 
+
 /**
  * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
  *
  * @param   btnIdx    Button to test, listed in enum Button_TypeDef
  * @return  '1' if pressed during a 'long time', else '0'.
  */
-uint8_t APPE_ButtonIsLongPressed(uint16_t btnIdx)
+uint8_t APPE_ButtonIsLongPressed( uint16_t btnIdx )
 {
-  uint8_t pressStatus;
+  uint8_t pressStatus = 0;
 
   if ( btnIdx < BUTTON_NB_MAX )
   {
     pressStatus = buttonDesc[btnIdx].longPressed;
-  }
-  else
-  {
-    pressStatus = 0;
   }
 
   return pressStatus;
@@ -215,7 +209,7 @@ uint8_t APPE_ButtonIsLongPressed(uint16_t btnIdx)
  * @param  None
  * @retval None
  */
-__WEAK void APPE_Button1Action(void)
+__WEAK void APPE_Button1Action( void )
 {
 }
 
@@ -224,7 +218,7 @@ __WEAK void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-__WEAK void APPE_Button2Action(void)
+__WEAK void APPE_Button2Action( void )
 {
 }
 
@@ -233,10 +227,11 @@ __WEAK void APPE_Button2Action(void)
  * @param  None
  * @retval None
  */
-__WEAK void APPE_Button3Action(void)
+__WEAK void APPE_Button3Action( void )
 {
 }
-#endif
+
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END FD */
 
@@ -294,10 +289,6 @@ static void System_Init( void )
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  ADCCTRL_Init ();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
-
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
@@ -335,11 +326,13 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
 
@@ -363,6 +356,10 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
 /**
@@ -378,7 +375,8 @@ static void RNG_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
+#if ( CFG_LED_SUPPORTED == 1 )
+
 static void Led_Init( void )
 {
   /* Leds Initialization */
@@ -445,7 +443,8 @@ static void Button_TriggerActions(void *arg)
   return;
 }
 
-#endif
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
 /*************************************************************

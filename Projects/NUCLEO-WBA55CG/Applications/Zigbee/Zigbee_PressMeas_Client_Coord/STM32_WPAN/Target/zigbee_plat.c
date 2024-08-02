@@ -19,10 +19,12 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
+
 #include "app_common.h"
 #include "hw.h"
 #include "baes.h"
-#include "advanced_memory_manager.h"
+#include "stm32_mm.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -35,6 +37,7 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+#define C_SYS_MEMORY_HEAP_SIZE_BYTES          CFG_MM_POOL_SIZE
 
 /* USER CODE BEGIN PD */
 
@@ -54,6 +57,7 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
+static uint8_t        SYS_MEMORY_HEAP[C_SYS_MEMORY_HEAP_SIZE_BYTES];
 
 /* USER CODE BEGIN PV */
 
@@ -176,6 +180,14 @@ void ZIGBEE_PLAT_AesCmacCompute( const uint8_t * pInput, uint32_t lInputLength, 
  */
 bool ZIGBEE_PLAT_ZbHeapInit( void )
 {
+  static bool  bHeapAlreadyDone = false;
+
+  /* Initialize System Heap used by Zigbee Stack */
+  if ( bHeapAlreadyDone == false )
+  {
+    UTIL_MM_Init( SYS_MEMORY_HEAP, C_SYS_MEMORY_HEAP_SIZE_BYTES );
+    bHeapAlreadyDone = true;
+  }
 
   return true;
 }
@@ -185,18 +197,9 @@ bool ZIGBEE_PLAT_ZbHeapInit( void )
  */
 void * ZIGBEE_PLAT_ZbHeapMalloc( uint32_t iSize )
 {
-  void  *ptr = NULL;
+  void  *ptr;
 
-  /* Fix a problem with AMM if iSize is null */
-  if ( iSize == 0u )
-  {
-    iSize = 1;
-  }
-
-  if ( AMM_Alloc( CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT, BYTES_TO_WORD32(iSize), (uint32_t**)&ptr, NULL ) != AMM_ERROR_OK )
-  {
-    ptr = NULL;
-  }
+  ptr = UTIL_MM_GetBuffer( iSize );
 
   return ptr;
 }
@@ -208,7 +211,7 @@ void ZIGBEE_PLAT_ZbHeapFree( void * ptr )
 {
   if ( ptr != NULL )
   {
-    AMM_Free( ptr );
+    UTIL_MM_ReleaseBuffer( ptr );
   }
   else
   {
@@ -231,7 +234,7 @@ unsigned int ZIGBEE_PLAT_ZbHeapMallocCurrentSize()
  */
 bool ZIGBEE_PLAT_HeapInit( void )
 {
-  return true;
+  return ZIGBEE_PLAT_ZbHeapInit();
 }
 
 /**
@@ -239,18 +242,9 @@ bool ZIGBEE_PLAT_HeapInit( void )
  */
 void * ZIGBEE_PLAT_HeapMalloc( uint32_t iSize )
 {
-  void  *ptr = NULL;
+  void  *ptr;
 
-  /* Fix a problem with AMM if iSize is null */
-  if ( iSize == 0u )
-  {
-    iSize = 1;
-  }
-
-  if ( AMM_Alloc( CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP, BYTES_TO_WORD32(iSize), (uint32_t**)&ptr, NULL ) != AMM_ERROR_OK )
-  {
-    ptr = NULL;
-  }
+  ptr = UTIL_MM_GetBuffer( iSize );
 
   return ptr;
 }
@@ -262,7 +256,7 @@ void ZIGBEE_PLAT_HeapFree( void * ptr )
 {
   if ( ptr != NULL )
   {
-    AMM_Free( ptr );
+    UTIL_MM_ReleaseBuffer( ptr );
   }
   else
   {

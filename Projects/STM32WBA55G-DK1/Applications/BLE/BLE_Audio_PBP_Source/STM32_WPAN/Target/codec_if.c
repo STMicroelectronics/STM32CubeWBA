@@ -22,6 +22,7 @@
 #include "app_common.h"
 #include "main.h"
 #include "app_conf.h"
+#include "log_module.h"
 
 #if CODEC_LC3_NUM_ENCODER_CHANNEL == 0
 #include "LC3_encoder.h"
@@ -116,7 +117,8 @@ static void TIMAudio_Init(void);
   */
 void CODEC_ProcessInit(void)
 {
-
+  HAL_NVIC_SetPriority(CODEC_MNGR_INTR_NUM, 15, 0);
+  NVIC_EnableIRQ(CODEC_MNGR_INTR_NUM);
 }
 
 /**

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/ll_error.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ll_error.h#1 $*/
 /**
  ********************************************************************************
  * @file    error.h
@@ -118,7 +118,7 @@
 #define		PACKET_TOO_LONG																	0x45
 #define 	TOO_LATE																		0x46
 
-
+#if SUPPORT_BLE
 
 #if ((MAX_NUM_CNCRT_STAT_MCHNS > 1) && !((SUPPORT_MASTER_CONNECTION) || (SUPPORT_SLAVE_CONNECTION)||(SUPPORT_LE_EXTENDED_ADVERTISING)))
 #error define at least either master or slave role
@@ -175,13 +175,12 @@
 
 
 
-
 /* Exported macros ------------------------------------------------------------*/
 
 /* Exported types -------------------------------------------------------------*/
 
 /* Exported functions ---------------------------------------------------------*/
-
+#endif /* SUPPORT_BLE */
 #endif /* ERROR_H_ */
 
-/******************* (C) (C) COPYRIGHT 2023 SYNOPSYS, INC. *****END OF FILE****/
+/******************* (C) (C) COPYRIGHT 2024 SYNOPSYS, INC. *****END OF FILE****/

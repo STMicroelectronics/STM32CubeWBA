@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -167,6 +166,9 @@
 #define CFG_LPM_LEVEL            (1)
 #define CFG_LPM_STDBY_SUPPORTED  (1)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -179,6 +181,8 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_BLE,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -222,6 +226,9 @@ typedef enum
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
 
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
+
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
 #define APP_DBG_MSG                 LOG_INFO_APP
@@ -249,18 +256,19 @@ typedef enum
  */
 typedef enum
 {
-  CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
-  CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
+  CFG_TASK_HW_RNG,
+  CFG_TASK_LINK_LAYER,
   CFG_TASK_BLE_HCI_CMD_ID,
   CFG_TASK_SYS_HCI_CMD_ID,
   CFG_TASK_HCI_ACL_DATA_ID,
   CFG_TASK_SYS_LOCAL_CMD_ID,
   CFG_TASK_TX_TO_HOST_ID,
-  CFG_TASK_LINK_LAYER_TEMP_MEAS,
+  CFG_TASK_NOTIFY_EVENT_ID,
+  CFG_TASK_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
+  CFG_TASK_AMM,
   CFG_TASK_BPKA,
-  CFG_TASK_AMM_BCKGND,
-  CFG_TASK_FLASH_MANAGER_BCKGND,
+  CFG_TASK_FLASH_MANAGER,
   CFG_TASK_BLE_TIMER_BCKGND,
   /* USER CODE BEGIN CFG_Task_Id_t */
   TASK_BUTTON_1,
@@ -288,14 +296,7 @@ typedef enum
   CFG_SEQ_PRIO_NBR /* Shall be LAST in the list */
 } CFG_SEQ_Prio_Id_t;
 
-/* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
-/* USER CODE BEGIN TASK_Priority_Define */
-
-/* USER CODE END TASK_Priority_Define */
-
-/* Used by Sequencer */
+/* Sequencer configuration */
 #define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
 
 /**
@@ -311,6 +312,9 @@ typedef enum
 } CFG_Event_Id_t;
 
 /**< Events defines */
+/* USER CODE BEGIN EVENT_ID_Define */
+
+/* USER CODE END EVENT_ID_Define */
 
 /******************************************************************************
  * NVM configuration
@@ -389,6 +393,12 @@ typedef enum
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
+
+/* Custom LSE sleep clock accuracy to use if both conditions are met:
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 

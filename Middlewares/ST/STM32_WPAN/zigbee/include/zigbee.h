@@ -3,7 +3,7 @@
  * @heading Zigbee Utilities
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  *
  * This file groups global/external definitions from all the layer specific header files
  * e.g, aps, nwk, zdo etc... into a single place, so that one can just include zigbee.h for
@@ -205,10 +205,10 @@ enum ZbStatusCodeT {
 /* Trust Center Swap Out status codes */
 enum ZbTcsoStatusT {
     ZB_TCSO_STATUS_SUCCESS = 0x00, /* Successfully performed TCSO with new TC */
-    ZB_TCSO_STATUS_DISCOVERY_UNDERWAY, /* ZCL Keepalive has initiated TCSO, because of three consecutive failures. */
-    ZB_TCSO_STATUS_REJOIN_PREV, /* Found previous TC and rejoined to it. */
-    ZB_TCSO_STATUS_NOT_FOUND, /* Didn't find new or old TC, or process was aborted, resumed previous operation. */
-    ZB_TCSO_STATUS_FATAL /* TCSO failed and unable to restore previous operation. */
+    ZB_TCSO_STATUS_DISCOVERY_UNDERWAY = 0x01, /* ZCL Keepalive has initiated TCSO, because of three consecutive failures. */
+    ZB_TCSO_STATUS_REJOIN_PREV = 0x02, /* Found previous TC and rejoined to it. */
+    ZB_TCSO_STATUS_NOT_FOUND = 0x03, /* Didn't find new or old TC, or process was aborted, resumed previous operation. */
+    ZB_TCSO_STATUS_FATAL = 0x04 /* TCSO failed and unable to restore previous operation. */
 };
 
 /* Zigbee defines of the scan type. These map directly to the MCP defines,

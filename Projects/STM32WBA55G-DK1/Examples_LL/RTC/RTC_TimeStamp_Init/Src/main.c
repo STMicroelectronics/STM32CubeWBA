@@ -163,6 +163,8 @@ void SystemClock_Config(void)
   {
   }
 
+   /* Enable Backup domain write access */
+  LL_PWR_EnableBkUpAccess();
   LL_RCC_LSI1_SetPrescaler(LL_RCC_LSI_DIV_1);
   LL_RCC_LSI1_Enable();
 
@@ -171,7 +173,6 @@ void SystemClock_Config(void)
   {
   }
 
-  LL_PWR_EnableBkUpAccess();
   LL_RCC_PLL1_ConfigDomain_SYS(LL_RCC_PLL1SOURCE_HSE, 4, 25, 2);
   LL_RCC_PLL1_EnableDomain_PLL1R();
   LL_RCC_PLL1_SetVCOInputRange(LL_RCC_PLLINPUTRANGE_8_16);

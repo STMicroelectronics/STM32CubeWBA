@@ -22,7 +22,6 @@
 #include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
-
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -45,14 +44,20 @@ extern RNG_HandleTypeDef hrng;
   */
 void MX_StandbyExit_PeripharalInit(void)
 {
+  HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
   /* Re-Initialize Tick with new clock source */
-  HAL_InitTick(TICK_INT_PRIORITY);
+  hal_status = HAL_InitTick(TICK_INT_PRIORITY);
+  if (hal_status != HAL_OK)
+  {
+    assert_param(0);
+  }
 
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));

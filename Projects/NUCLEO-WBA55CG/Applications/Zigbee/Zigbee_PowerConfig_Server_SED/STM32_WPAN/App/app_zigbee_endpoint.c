@@ -21,8 +21,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "dbg_trace.h"
@@ -98,7 +99,6 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t   iDeviceShortAddress;
 
 /* USER CODE BEGIN PV */
 static uint16_t             iBatteryVoltage;
@@ -152,12 +152,8 @@ void APP_ZIGBEE_ApplicationInit(void)
 void APP_ZIGBEE_ApplicationStart( void )
 {
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
-  uint16_t  iShortAddress;
-
   /* Display Short Address */
-  iShortAddress = ZbShortAddress( stZigbeeAppInfo.pstZigbee );
-  LOG_INFO_APP( "Use Short Address : 0x%04X", iShortAddress );
-
+  LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
   /* Update default Battery Voltage */
@@ -187,7 +183,9 @@ void APP_ZIGBEE_ApplicationStart( void )
  */
 void APP_ZIGBEE_PersistenceStartup(void)
 {
-  /* Not used */
+  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
+
+  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
 /**
@@ -279,8 +277,7 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
 {
-  iDeviceShortAddress = iShortAddress;
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( 0x%016" PRIX64 " ) and Short ( 0x%04" PRIX16 " ) Address.", cCapability, dlExtendedAddress, iDeviceShortAddress );
+  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
@@ -369,7 +366,10 @@ static void APP_ZIGBEE_TimerUpdateCallback( void * arg )
  */
 static void APP_ZIGBEE_AttributeBatteryUpdate( void )
 {
-  uint8_t             cBatteryVariation, cBatteryPctInt, cBatteryPctDiv;
+  uint8_t             cBatteryVariation;
+#if (CFG_LOG_SUPPORTED != 0)
+  uint8_t             cBatteryPctInt, cBatteryPctDiv;
+#endif /* (CFG_LOG_SUPPORTED != 0) */
   uint16_t            iBatteryPercent; 
   enum ZclStatusCodeT eStatus;
   
@@ -400,11 +400,12 @@ static void APP_ZIGBEE_AttributeBatteryUpdate( void )
     
   /* Calc also Battery percent */
   iBatteryPercent = ( iBatteryVoltage * 100u * BATTERY_PERCENT_RESOL ) / BATTERY_VOLTAGE_MAX;
+#if (CFG_LOG_SUPPORTED != 0)  
   cBatteryPctInt = (uint8_t)( ( iBatteryPercent * 10u / BATTERY_PERCENT_RESOL ) / 10u );
   cBatteryPctDiv = (uint8_t)( ( iBatteryPercent * 10u / BATTERY_PERCENT_RESOL ) % 10u );
   
   LOG_INFO_APP( "[POWER CONFIG] Update Battery Voltage ( %d mV ) and Percent ( %d.%d %% )", iBatteryVoltage, cBatteryPctInt, cBatteryPctDiv );
-  
+#endif /* (CFG_LOG_SUPPORTED != 0) */
   
   /*  Update Voltage Attribute */
   eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.PowerConfigServer, ZCL_POWER_CONFIG_ATTR_BATTERY_VOLTAGE, (uint8_t)( iBatteryVoltage / BATTERY_VOLTAGE_RESOL ) );

@@ -21,8 +21,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "dbg_trace.h"
@@ -61,7 +62,7 @@
 
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME
-#define APP_ZIGBEE_APPLICATION_OS_NAME    "."
+#define APP_ZIGBEE_APPLICATION_OS_NAME    ""
 
 #define APP_ZIGBEE_TOGGLE_PERIOD          (uint32_t)( 1000u ) /* Toggle OnOff every seconds 1s */
 
@@ -81,9 +82,8 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t   iDeviceShortAddress;
-
 /* USER CODE BEGIN PV */
+
 static UTIL_TIMER_Object_t      stTimerToggle;
 
 /* USER CODE END PV */
@@ -134,15 +134,12 @@ void APP_ZIGBEE_ApplicationInit(void)
 void APP_ZIGBEE_ApplicationStart( void )
 {
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
-  uint16_t  iShortAddress;
 
   /* Start OnOff Client */
   APP_ZIGBEE_OnOffClientStart();
 
   /* Display Short Address */
-  iShortAddress = ZbShortAddress( stZigbeeAppInfo.pstZigbee );
-  LOG_INFO_APP( "Use Short Address : 0x%04X", iShortAddress );
-
+  LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
   /* USER CODE END APP_ZIGBEE_ApplicationStart */
@@ -163,7 +160,9 @@ void APP_ZIGBEE_ApplicationStart( void )
  */
 void APP_ZIGBEE_PersistenceStartup(void)
 {
-  /* Not used */
+  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
+
+  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
 /**
@@ -255,8 +254,7 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
 {
-  iDeviceShortAddress = iShortAddress;
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( 0x%016" PRIX64 " ) and Short ( 0x%04" PRIX16 " ) Address.", cCapability, dlExtendedAddress, iDeviceShortAddress );
+  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
@@ -274,7 +272,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   LOG_INFO_APP( "Network config : CENTRALIZED END DEVICE" );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
-  LOG_INFO_APP( "Application Flashed : Zigbee %s %s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
+  LOG_INFO_APP( "Application Flashed : Zigbee %s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
@@ -313,8 +311,10 @@ static void APP_ZIGBEE_OnOffClientStart(void)
 {
   
 #if ( CFG_LPM_STDBY_SUPPORTED == 1)
-  /* Enable wakeup out of standby from B1 */
+  /* Enable wakeup out of standby from B1 (PC13), B2 (PB6) & B3 (PB7) on Nucleo WBA55 */
   HAL_PWR_EnableWakeUpPin( PWR_WAKEUP_PIN2_LOW_1 );
+  HAL_PWR_EnableWakeUpPin( PWR_WAKEUP_PIN3_LOW_2 );
+  HAL_PWR_EnableWakeUpPin( PWR_WAKEUP_PIN5_LOW_2 );
 #endif /* ( CFG_LPM_STDBY_SUPPORTED == 1) */
 
 }
@@ -357,6 +357,33 @@ void APPE_Button1Action(void)
 static void APP_ZIGBEE_TimerToggleCallback( void * arg )
 {
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
+}
+
+/**
+ * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
+ * @param  None
+ * @retval None
+ */
+void APPE_Button3Action(void)
+{
+  static  uint8_t   cToggleOn = 0;
+  
+  /* First, verify if Appli has already Join a Network  */ 
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    if ( cToggleOn == 0u )
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Start automatic On/Off." );
+      UTIL_TIMER_Start( &stTimerToggle );
+      cToggleOn = 1;
+    }
+    else
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Stop automatic On/Off." );
+      UTIL_TIMER_Stop( &stTimerToggle ); 
+      cToggleOn = 0;
+    }
+  }
 }
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

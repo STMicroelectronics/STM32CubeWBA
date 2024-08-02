@@ -1,14 +1,5 @@
 <?xml version="1.0" ?><project>
     <fileVersion>3</fileVersion>
-    
-    
-    
-    
-    
-    
-    
-    
-    
     <configuration>
         <name>Zigbee_OnOff_Server_Coord_ThreadX</name>
         <toolchain>
@@ -230,37 +221,17 @@
                     <state>USE_FULL_ASSERT</state>
                     <state>USE_FULL_LL_DRIVER</state>
                     <state>PHY_2_10_a</state>
-                    <state>PHY_40nm_2_30_a_A1</state>
+                    <state>PHY_40nm_3_00_a</state>
                     <state>LOGGER_ENABLE=0</state>
                     <state>LOGUARTENABLED</state>
-                    
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                     <state>APPLICATION_USE_THREADX</state>
                     <state>TX_INCLUDE_USER_DEFINE_FILE</state>
                     <state>TX_SINGLE_MODE_NON_SECURE</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
-                    
+                    <state>APPLICATION_USE_AMM</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -393,7 +364,6 @@
                     <state>$PROJ_DIR$\..\System\Interfaces</state>
                     <state>$PROJ_DIR$\..\System\Modules</state>
                     <state>$PROJ_DIR$\..\System\Modules\baes</state>
-                    
                     <state>$PROJ_DIR$\..\System\Modules\MemoryManager</state>
                     <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
                     <state>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter</state>
@@ -413,7 +383,6 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\ieee_15_4_basic</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
-                    
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\conf</state>
@@ -421,16 +390,6 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\tim_serv</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\trace\adv_trace</state>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\utility\low_power</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\common\inc</state>
@@ -605,7 +564,6 @@
                 </option>
                 <option>
                     <name>ADefines</name>
-                    <state>TX_INCLUDE_USER_DEFINE_FILE</state>
                     <state>TX_SINGLE_MODE_NON_SECURE</state>
                 </option>
                 <option>
@@ -1159,11 +1117,6 @@
             <data/>
         </settings>
     </configuration>
-    
-    
-    
-    
-    
     <group>
         <name>Application</name>
         <group>
@@ -1188,7 +1141,6 @@
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\app_entry.c</name>
                 </file>
-                
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\app_threadx.c</name>
                 </file>
@@ -1215,19 +1167,9 @@
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee.c</name>
                     </file>
-                    
-                    
-                    
-                    
-                    
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_endpoint.c</name>
-                        
                     </file>
-                    
-                    
-                    
-                    
                 </group>
                 <group>
                     <name>Target</name>
@@ -1361,7 +1303,7 @@
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                     </file>
                 </group>
             </group>
@@ -1551,76 +1493,30 @@
         <name>Middlewares</name>
         <group>
             <name>STM32_WPAN</name>
-            <group>
-                <name>link_layer</name>
-                <group>
-                    <name>ll_cmd_lib</name>
-                    <group>
-                        <name>lib</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
-                            
-                        </file>
-                    </group>
-                    
-                    
-                </group>
-                <group>
-                    <name>ll_sys</name>
-                    <group>
-                        <name>src</name>
-                        
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
-                        </file>
-                    </group>
-                </group>
-            </group>
-            <group>
-                <name>mac_802_15_4</name>
-                
-                <group>
-                    <name>lib</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
-                        
-                    </file>
-                </group>
-                
-            </group>
-            <group>
-                <name>Zigbee</name>
-                <group>
-                    <name>clusters</name>
-                    
-                    
-                    
-                    
-                    
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
-                        
-                    </file>
-                </group>
-                <group>
-                    <name>lib</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
-                        
-                    </file>
-                    
-                </group>
-                
-            </group>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
+            </file>
         </group>
         <group>
             <name>ThreadX</name>
@@ -1825,31 +1721,31 @@
                                 <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_iar.c</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_restore.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_restore.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_save.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_context_save.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_control.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_control.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_disable.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_disable.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_restore.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_interrupt_restore.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_schedule.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_schedule.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_stack_build.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_stack_build.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_system_return.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_thread_system_return.s</name>
                             </file>
                             <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_timer_interrupt.S</name>
+                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\threadx\ports\cortex_m33\iar\src\tx_timer_interrupt.s</name>
                             </file>
                         </group>
                     </group>

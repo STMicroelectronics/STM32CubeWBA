@@ -188,7 +188,7 @@
  * BAP_ASCS_SRV_INST_MEM_PER_CONN_SIZE_BYTES: memory size used to allocate ASCS Server Context
  *                                            per Unicast Server Connection Instance
  */
-#define BAP_ASCS_SRV_INST_MEM_PER_CONN_SIZE_BYTES       (20u)
+#define BAP_ASCS_SRV_INST_MEM_PER_CONN_SIZE_BYTES       (32u)
 
 /*
  * BAP_ASCS_SRV_MEM_CONTEXT_SIZE_BYTES: memory size used by Unicast Server for ACSC Server Context Allocation
@@ -204,7 +204,7 @@
  * BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES: memory size used to allocate ASCS Client Context
  *                                            per Unicast Client Connection Instance
  */
-#define BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       364u
+#define BAP_ASCS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (360u)
 
 /*
  * BAP_ASCS_CLT_MEM_CONTEXT_SIZE_BYTES: memory size used per Unicast Client for ACSC Client Context Allocation
@@ -231,6 +231,12 @@
  *                                      by Unicast Client and Broadcast Assistant
  */
 #define BAP_PACS_CLT_MEM_CONTEXT_SIZE_BYTES             (28u)
+
+/*
+ * BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES: memory size used per Connection PACS Server Instance by Unicast Server
+ *                                            and Scan Delegator
+ */
+#define BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES       (8u)
 
 /*
  * BAP_NVM_INST_PER_CONN_SIZE_BYTES: memory size used for Non-Volatile Memory Management and BAP Services restoration
@@ -374,15 +380,19 @@
 
 /*
  * BAP_PACS_SRV_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the
- * Published Audio Capabilities Server Context whose size depends on the number of supported Sink PAC records and
- * the number of supported Source PAC records.
+ * Published Audio Capabilities Server Context whose size depends on the the number of supported LE links,
+ * number of supported Sink PAC records and the number of supported Source PAC records.
+ *
+ * @param num_ble_links: Maximum number of supported Ble connection
+ *
  *
  * @param max_num_snk_pac_records: Maximum number of Sink PAC records
  *
  * @param max_num_src_pac_records: Maximum number of Source PAC records
  */
-#define BAP_PACS_SRV_TOTAL_BUFFER_SIZE(max_num_snk_pac_records,max_num_src_pac_records) \
-          (DIVC(((max_num_snk_pac_records+max_num_src_pac_records) * BAP_SRV_MEM_PER_PAC_RECORD_SIZE_BYTES),4u) * 4u)
+#define BAP_PACS_SRV_TOTAL_BUFFER_SIZE(num_ble_links,max_num_snk_pac_records,max_num_src_pac_records) \
+          ((BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES * num_ble_links) \
+           + DIVC(((max_num_snk_pac_records+max_num_src_pac_records) * BAP_SRV_MEM_PER_PAC_RECORD_SIZE_BYTES),4u) * 4u)
 
 /*
  * BAP_PACS_CLT_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the

@@ -4,7 +4,7 @@
  * @brief ZCL Metering cluster header
  * ZCL 7 section 10.4
  * ZCL 8 section 10.4
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 /* EXEGIN - removed '@'PICS escape sequence, since these are not the
@@ -1210,6 +1210,9 @@ struct ZbZclMeterClientMirrorReportAttrRspT {
  *-----------------------------------------------------------------------------
  */
 
+extern const struct ZbZclAttrT zcl_metering_server_mandatory_attr_list[];
+extern const unsigned int zcl_metering_server_mandatory_attr_list_len;
+
 /**< Metering Server callbacks configuration */
 struct ZbZclMeterServerCallbacksT {
     enum ZclStatusCodeT (*get_profile)(struct ZbZclClusterT *cluster, void *arg,
@@ -1542,13 +1545,6 @@ struct ZbZclMeterClientCallbacksT {
         struct ZbZclAddrInfoT *srcInfo, void *arg);
     /**< Callback to handle a "Configure Mirror" Command (ZCL_METER_SVR_CMD_CONFIGURE_MIRROR). */
 
-    void (*mirror_created)(struct ZbZclClusterT *cluster, struct ZbZclClusterT *mirror,
-        uint64_t bomd_ext_addr, uint8_t bomd_ep, void *arg);
-    /**< Callback for when the Mirror Cluster is created after a Request Mirror command.
-     * This callback provides the pointer to the Mirror Cluster and BOMD extended address, endpoint
-     * which is required for other clusters to perform mirroring. All mirroring, including with
-     * other clusters, is handled by the Meter Server Mirror. */
-
     bool (*config_notif_scheme)(struct ZbZclClusterT *cluster, struct ZbZclMeterServerConfigNotifSchemeT *req,
         struct ZbZclAddrInfoT *srcInfo, void *arg);
     /**< Callback to handle a "Configure Notification Scheme" Command
@@ -1591,6 +1587,18 @@ struct ZbZclMeterClientCallbacksT {
  */
 struct ZbZclClusterT * ZbZclMeterClientAlloc(struct ZigBeeT *zb, uint8_t endpoint,
     struct ZbZclMeterClientCallbacksT *callbacks, void *arg);
+
+/**
+ * Attach the Meter Mirror Server to the Meter Client. Configures the Client to manage the
+ * Mirror Server, and handle reports from the remote Meter and update the Mirror Server attributes.
+ * @param cluster EXEGIN
+ * @param mirror_server Pointer to the Mirror Server cluster.
+ * @param rmt_addr EUI64 address of the remote Meter Server.
+ * @param rmt_endpoint Endpoint on the remote Meter Server.
+ * @return True if the Mirror Server could be attached, false otherwise.
+ */
+bool ZbZclMeterClientAttachMirror(struct ZbZclClusterT *cluster, struct ZbZclClusterT *mirror_server,
+    uint64_t rmt_addr, uint8_t rmt_endpoint);
 
 /**
  * Set the Metering Client notification flag(s).
@@ -1779,6 +1787,22 @@ enum ZclStatusCodeT ZbZclMeterClientCommandSetSupplyStatusReq(struct ZbZclCluste
 enum ZclStatusCodeT ZbZclMeterClientCommandSetUnctrlFlowThreshReq(struct ZbZclClusterT *cluster,
     const struct ZbApsAddrT *dst, struct ZbZclMeterClientSetUnctrlFlowThreshReqT *cmd_req,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/*-----------------------------------------------------------------------------
+ * Metering Mirror
+ *-----------------------------------------------------------------------------
+ */
+/**
+ * Allocate a Meter Server used for Mirroring.
+ * @param zb
+ * @param client Meter Client being used to manage this Mirror Server
+ * @param endpoint
+ * @param meter_extaddr The EUI64 of the remote Meter Server
+ * @param meter_endpoint The endpoint on the remote Meter Server
+ * @return
+ */
+struct ZbZclClusterT * ZbZclMeterMirrorAlloc(struct ZigBeeT *zb, struct ZbZclClusterT *client,
+    uint8_t endpoint, uint64_t meter_extaddr, uint8_t meter_endpoint);
 
 /**
  * Sends a One-Way Mirror ZCL Read Request to the BOMD. The request is queued

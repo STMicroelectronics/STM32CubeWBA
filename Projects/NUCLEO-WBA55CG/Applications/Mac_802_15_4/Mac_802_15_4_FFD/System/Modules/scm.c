@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,7 +32,7 @@ __weak void SCM_HSI_CLK_ON(void)
 
 __weak void SCM_HSI_CLK_OFF(void)
 {
-  LL_RCC_HSI_Disable();
+
 }
 
 /* Private typedef -----------------------------------------------------------*/

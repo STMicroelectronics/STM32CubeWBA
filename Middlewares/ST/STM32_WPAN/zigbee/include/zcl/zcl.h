@@ -1,4 +1,4 @@
-/* Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved. */
 
 #ifndef ZCL_H
 # define ZCL_H
@@ -28,9 +28,10 @@ extern void ZbLogPrintf(struct ZigBeeT *zb, uint32_t mask, const char *hdr, cons
 #endif
 
 /* Used with ZCL_LOG_PRINTF for fine grain control in ZCL code */
-#define ZCL_LOG_MASK_DEBUG                  0x01 /* General debug */
-#define ZCL_LOG_MASK_ATTR                   0x02 /* ZCL attributes */
-#define ZCL_LOG_MASK_REPORTS                0x04 /* ZCL reporting */
+#define ZCL_LOG_MASK_INFO                   0x01 /* General debug and error information */
+#define ZCL_LOG_MASK_DEBUG                  0x02 /* General debug (more verbose than INFO) */
+#define ZCL_LOG_MASK_ATTR                   0x04 /* ZCL attributes */
+#define ZCL_LOG_MASK_REPORTS                0x08 /* ZCL reporting */
 
 /*lint -emacro(506,ZCL_LOG_PRINTF) "Constant value boolean [MISRA Rule 2.1 (REQUIRED)]" */
 /*lint -emacro(774,ZCL_LOG_PRINTF) [ LINT Boolean within 'if' always evaluates to False ] */
@@ -138,7 +139,7 @@ enum ZclStatusCodeT ZbZclCommandReq(struct ZigBeeT *zb, struct ZbZclCommandReqT 
 /*** Reporting Intervals ***/
 /* If max interval == 0xffff, then reporting is disabled */
 #define ZCL_ATTR_REPORT_MAX_INTVL_DISABLE   0xffffU
-#define ZCL_ATTR_REPORT_MIN_INTVL_DISABLE   0x0000U /* doesn't really matter what this is */
+#define ZCL_ATTR_REPORT_MIN_INTVL_DISABLE   0x0000U /* ignored, refer to ZCL_ATTR_REPORT_MAX_INTVL_DISABLE */
 
 /* If max interval == 0x0000, then reporting is enabled, but only when attribute changes, no timer. */
 #define ZCL_ATTR_REPORT_MAX_INTVL_CHANGE    0x0000U
@@ -150,6 +151,24 @@ enum ZclStatusCodeT ZbZclCommandReq(struct ZigBeeT *zb, struct ZbZclCommandReqT 
 /* If max interval == 0x0000 and min interval == 0xffff, then reset reporting back to default. */
 #define ZCL_ATTR_REPORT_MAX_INTVL_DEFAULT   0x0000U
 #define ZCL_ATTR_REPORT_MIN_INTVL_DEFAULT   0xffffU
+
+/* Default reporting intervals that satisfy the BDB requirements. From BDB 3.0.1:
+ *
+ * Section 6.7 Default reporting configuration
+ * A default report configuration (with a maximum reporting interval either of 0x0000 or in the
+ * range 0x003d to 0xfffe) SHALL exist for every implemented attribute that is specified as mandatory
+ * and reportable in either the ZCL [R2] or the corresponding device description in the ZDL [R8].
+ * The default reporting configuration is such that if a binding is created on the node to a given
+ * cluster the node SHALL send reports to that binding without any additional reporting configuration
+ * needing to be set. The default reporting configuration for an attribute MAY be overwritten at any
+ * time. In this case, the updated reporting configuration SHALL be used.
+ *
+ * NOTE: There is no consensus on what these default intervals should be, and the application
+ * is responsible for fine-tuning the reporting configuration for its attributes. Let's set
+ * something to give a reasonable "out of the box" user experience.
+ */
+#define BDB_REPORT_MIN_INTVL_DEFAULT        60U /* 1 minute. */
+#define BDB_REPORT_MAX_INTVL_DEFAULT        300U /* 5 minutes. Must be greater than 60 seconds (if not zero) */
 
 /*---------------------------------------------------------------
  * Cluster Attributes
@@ -388,6 +407,12 @@ struct ZbZclClusterT {
      * to the application (e.g. custom attribute read/write). */
     void *app_cb_arg;
 
+    /* Callback to handle a Profile-Wide (ZCL_FRAMETYPE_PROFILE) command.
+     * Return value is a ZCL_STATUS_ code. If not ZCL_STATUS_SUCCESS, a default
+     * response with the status code is sent to the originator of the command. */
+    void (*profile_cb)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
+        struct ZbApsdeDataIndT *dataIndPtr);
+
     /* Callback to handle a Cluster-Specific (ZCL_FRAMETYPE_CLUSTER) command.
      * Return value is a ZCL_STATUS_ code. If not ZCL_STATUS_SUCCESS, a default
      * response with the status code is sent to the originator of the command. */
@@ -442,7 +467,7 @@ struct ZbZclClusterT {
  */
 /* Helper to create a ZCL endpoint. Calls ZbApsmeAddEndpoint to create the endpoint. Sets up a
  * filter to catch any ZCL commands for a cluster that doesn't exist on the endpoint, and
- * returns ZCL_STATUS_UNSUPPORTED_CLUSTER. Sets up filter bindings for the Basic Server
+ * returns ZCL_STATUS_UNSUPP_CLUSTER. Sets up filter bindings for the Basic Server
  * cluster (global stack clusters) and register's their cluster IDs with the endpoint
  * (e.g. for ZDO Match_Desc_req)  */
 void ZbZclAddEndpoint(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req, struct ZbApsmeAddEndpointConfT *conf);
@@ -880,7 +905,8 @@ enum ZclStatusCodeT ZbZclClusterCommandRsp(struct ZbZclClusterT *cluster, struct
     uint8_t cmdId, struct ZbApsBufT *payloads, uint8_t numPayloads);
 
 enum ZclStatusCodeT ZbZclClusterCommandRspWithCb(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dstInfo,
-    uint8_t cmdId, struct ZbApsBufT *payloads, uint8_t numPayloads, void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
+    uint8_t cmdId, struct ZbApsBufT *payloads, uint8_t numPayloads,
+    void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
 /* ZbZclSendClusterStatusResponse is a wrapper to ZbZclClusterCommandRsp. The parameters
  * zclPayload and zclPaylen must be populated and the first byte must represent a status
@@ -927,7 +953,6 @@ void ZbZclDeviceLogClear(struct ZigBeeT *zb);
  * Helper Functions
  *---------------------------------------------------------------
  */
-/* Get the current uptime from ZB_APS_IB_ID_CHANNEL_TIMER (ZbUptime) */
 ZbUptimeT ZbZclUptime(struct ZigBeeT *zb);
 
 /* Get the next ZCL sequence number to use in a request/notify message. */
@@ -1041,6 +1066,10 @@ uint32_t zcl_get_bomd_req_wait_timeout_ms(struct ZigBeeT *zb);
  * @return ZbZclUptime() plus the ZB_BDB_ZclBomdReqQueueTimeoutMs value.
  */
 ZbUptimeT zcl_get_bomd_req_queue_timeout_abs(struct ZigBeeT *zb);
+
+/* Handles Profile-Wide commands (e.g. ZCL Read Request) */
+void zcl_handle_profile_command(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
+    struct ZbApsdeDataIndT *ind);
 
 #ifdef __cplusplus
 }

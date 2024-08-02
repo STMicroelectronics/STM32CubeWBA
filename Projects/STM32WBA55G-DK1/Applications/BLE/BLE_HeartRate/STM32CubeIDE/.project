@@ -548,6 +548,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_cmac.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ccm.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Modules/baes/baes_ecb.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ecb.c</locationURI>

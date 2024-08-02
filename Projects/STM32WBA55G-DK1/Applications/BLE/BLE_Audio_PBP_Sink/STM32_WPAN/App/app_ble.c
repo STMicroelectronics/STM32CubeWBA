@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -152,7 +153,6 @@ static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
   0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
@@ -208,6 +208,7 @@ void APP_BLE_Init(void)
 
   LST_init_head(&BleAsynchEventQueue);
 
+  /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
@@ -632,7 +633,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin,
-                                               CFG_BD_ADDRESS_TYPE);
+                                               CFG_BD_ADDRESS_DEVICE);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : aci_gap_set_authentication_requirement command, result: 0x%02X\n", ret);
@@ -655,6 +656,10 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
     }
   }
+
+  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2*/
+
+  /* USER CODE END Ble_Hci_Gap_Gatt_Init_2*/
 
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");
 
@@ -684,7 +689,7 @@ static void Ble_UserEvtRx( void)
     UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
   }
 
-  /* set the BG_BleStack_Process task for scheduling */
+  /* Trigger BLE Host stack to process */
   UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
 }

@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -193,7 +192,12 @@ typedef enum
  ******************************************************************************/
 
 #define CFG_RT_DEBUG_GPIO_MODULE         (0)
+
+#if (FULL_CERTIFICATION_CAPABLE == 1)
+#define CFG_RT_DEBUG_DTB                 (1)
+#else
 #define CFG_RT_DEBUG_DTB                 (0)
+#endif /* FULL_CERTIFICATION_CAPABLE */
 
 /******************************************************************************
  * System Clock Manager module configuration

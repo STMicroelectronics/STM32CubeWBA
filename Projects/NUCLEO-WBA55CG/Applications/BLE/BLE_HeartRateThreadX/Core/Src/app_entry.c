@@ -20,27 +20,28 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
-#include "app_threadx.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#include "advanced_memory_manager.h"
 #include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "app_ble.h"
+#include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
 #include "bpka.h"
-#include "ll_sys.h"
-#include "advanced_memory_manager.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
@@ -49,6 +50,9 @@
 #include "adc_ctrl.h"
 #include "temp_measurement.h"
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -71,25 +75,6 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-/* AMM_BCKGND_TASK related defines */
-#define AMM_BCKGND_TASK_STACK_SIZE              (256)
-#define AMM_BCKGND_TASK_PRIO                    (15)
-#define AMM_BCKGND_TASK_PREEM_TRES              (0)
-
-/* BPKA_TASK related defines */
-#define BPKA_TASK_STACK_SIZE                    (256)
-#define BPKA_TASK_PRIO                          (15)
-#define BPKA_TASK_PREEM_TRES                    (0)
-
-/* HW_RNG_TASK related defines */
-#define HW_RNG_TASK_STACK_SIZE                  (256)
-#define HW_RNG_TASK_PRIO                        (15)
-#define HW_RNG_TASK_PREEM_TRES                  (0)
-
-/* FLASH_MANAGER_BCKGND_TASK related defines */
-#define FLASH_MANAGER_BCKGND_TASK_STACK_SIZE    (1024)
-#define FLASH_MANAGER_BCKGND_TASK_PRIO          (15)
-#define FLASH_MANAGER_BCKGND_TASK_PREEM_TRES    (0)
 
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -98,7 +83,7 @@ typedef struct
 #endif
 
 /* PB1_BUTTON_PUSHED_TASK related defines */
-#define PB1_BUTTON_PUSHED_TASK_STACK_SIZE    (256)
+#define PB1_BUTTON_PUSHED_TASK_STACK_SIZE    (1024)
 #define PB1_BUTTON_PUSHED_TASK_PRIO          (15)
 #define PB1_BUTTON_PUSHED_TASK_PREEM_TRES    (0)
 
@@ -155,21 +140,19 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-/* AMM_BCKGND_TASK related resources */
-TX_THREAD AMM_BCKGND_Thread;
-TX_SEMAPHORE AMM_BCKGND_Thread_Sem;
+/* ThreadX objects declaration */
 
-/* BPKA_TASK related resources */
-TX_THREAD BPKA_Thread;
-TX_SEMAPHORE BPKA_Thread_Sem;
+static TX_THREAD      AmmTaskHandle;
+static TX_SEMAPHORE   AmmSemaphore;
 
-/* HW_RNG_TASK related resources */
-TX_THREAD HW_RNG_Thread;
-TX_SEMAPHORE HW_RNG_Thread_Sem;
+static TX_THREAD      RngTaskHandle;
+static TX_SEMAPHORE   RngSemaphore;
 
-/* FLASH_MANAGER_BCKGND_TASK related resources */
-TX_THREAD FLASH_MANAGER_BCKGND_Thread;
-TX_SEMAPHORE FLASH_MANAGER_BCKGND_Thread_Sem;
+static TX_THREAD      FlashManagerTaskHandle;
+static TX_SEMAPHORE   FlashManagerSemaphore;
+
+static TX_THREAD      BpkaTaskHandle;
+static TX_SEMAPHORE   BpkaSemaphore;
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -201,10 +184,24 @@ CHAR          * pStack;
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
+
+static void APPE_AMM_Init(void);
+static void AMM_Task_Entry(ULONG lArgument);
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
+static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
+
+static void RNG_Task_Entry(ULONG lArgument);
+
+static void APPE_FLASH_MANAGER_Init( void );
+static void FLASH_Manager_Task_Entry(ULONG lArgument);
+
+static void APPE_BPKA_Init( void );
+static void BPKA_Task_Entry(ULONG lArgument);
 
 #ifndef TX_LOW_POWER_USER_ENTER
 void ThreadXLowPowerUserEnter( void );
@@ -212,38 +209,6 @@ void ThreadXLowPowerUserEnter( void );
 #ifndef TX_LOW_POWER_USER_EXIT
 void ThreadXLowPowerUserExit( void );
 #endif
-
-/**
- * @brief Wrapper for init function of the MM for the AMM
- *
- * @param p_PoolAddr: Address of the pool to use - Not use -
- * @param PoolSize: Size of the pool - Not use -
- *
- * @return None
- */
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
-
-/**
- * @brief Wrapper for allocate function of the MM for the AMM
- *
- * @param BufferSize
- *
- * @return Allocated buffer
- */
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
-
-/**
- * @brief Wrapper for free function of the MM for the AMM
- *
- * @param p_BufferAddr
- *
- * @return None
- */
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
-
-static void BPKA_BackgroundProcess_Entry(unsigned long thread_input);
-static void AMM_BackgroundProcess_Entry(unsigned long thread_input);
-static void FM_BackgroundProcess_Entry(unsigned long thread_input);
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -266,7 +231,7 @@ static void APPE_Button3Action_Entry(unsigned long thread_input);
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -275,7 +240,7 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -295,44 +260,21 @@ uint32_t MX_APPE_Init(void *p_param)
   TEMPMEAS_Init ();
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
-  /* Initialize the Advance Memory Manager */
-  AMM_Init (&ammInitConfig);
+  /* Initialize the Advance Memory Manager module */
+  APPE_AMM_Init();
 
-  /* Register the AMM background task */
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, AMM_BCKGND_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&AMM_BCKGND_Thread_Sem, "AMM_BCKGND_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&AMM_BCKGND_Thread, "AMM_BCKGND Thread", AMM_BackgroundProcess_Entry, 0,
-                         pStack, AMM_BCKGND_TASK_STACK_SIZE,
-                         AMM_BCKGND_TASK_PRIO, AMM_BCKGND_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  /* Initialize the Simple NVM Arbiter */
-  SNVMA_Init ((uint32_t *)CFG_SNVMA_START_ADDRESS);
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
-  /* Register the flash manager task */
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, FLASH_MANAGER_BCKGND_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&FLASH_MANAGER_BCKGND_Thread_Sem, "FLASH_MANAGER_BCKGND_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&FLASH_MANAGER_BCKGND_Thread, "FLASH_MANAGER_BCKGND Thread", FM_BackgroundProcess_Entry, 0,
-                         pStack, FLASH_MANAGER_BCKGND_TASK_STACK_SIZE,
-                         FLASH_MANAGER_BCKGND_TASK_PRIO, FLASH_MANAGER_BCKGND_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
+  /* Initialize the Flash Manager module */
+  APPE_FLASH_MANAGER_Init();
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
 
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)
@@ -343,37 +285,16 @@ uint32_t MX_APPE_Init(void *p_param)
 #endif
 
   /* USER CODE END APPE_Init_1 */
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, BPKA_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&BPKA_Thread_Sem, "BPKA_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&BPKA_Thread, "BPKA Thread", BPKA_BackgroundProcess_Entry, 0,
-                         pStack, BPKA_TASK_STACK_SIZE,
-                         BPKA_TASK_PRIO, BPKA_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+
+  /* Initialize the Ble Public Key Accelerator module */
+  APPE_BPKA_Init();
+
+  /* Initialize the Simple Non Volatile Memory Arbiter */
+  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
   {
     Error_Handler();
   }
 
-  BPKA_Reset( );
-
-  RNG_Init();
-
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
-  if (tx_semaphore_create(&PROC_GAP_COMPLETE_Sem, "PROC_GAP_COMPLETE_Sem", 0) != TX_SUCCESS )
-  {
-    Error_Handler();
-  }
   APP_BLE_Init();
 
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
@@ -382,7 +303,9 @@ uint32_t MX_APPE_Init(void *p_param)
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
 }
 
@@ -491,6 +414,12 @@ static void System_Init( void )
   ADCCTRL_Init ();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
+
   return;
 }
 
@@ -545,16 +474,14 @@ static void SystemPower_Config(void)
   /* USER CODE END SystemPower_Config */
 }
 
-static void HW_RNG_Process_Task( ULONG lArgument )
+static void RNG_Task_Entry(ULONG lArgument)
 {
-  UNUSED( lArgument );
+  UNUSED(lArgument);
 
   for(;;)
   {
-    tx_semaphore_get(&HW_RNG_Thread_Sem, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+    tx_semaphore_get( &RngSemaphore, TX_WAIT_FOREVER );
     HW_RNG_Process();
-    tx_mutex_put(&LinkLayerMutex);
     tx_thread_relinquish();
   }
 }
@@ -562,35 +489,130 @@ static void HW_RNG_Process_Task( ULONG lArgument )
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
+  UINT TXstatus;
+  CHAR *pStack;
+
   HW_RNG_Start();
 
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, HW_RNG_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
+  /* Create Random Number Generator ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_RNG, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&HW_RNG_Thread_Sem, "HW_RNG_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&HW_RNG_Thread, "HW_RNG Thread", HW_RNG_Process_Task, 0,
-                         pStack, HW_RNG_TASK_STACK_SIZE,
-                         HW_RNG_TASK_PRIO, HW_RNG_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    Error_Handler();
+    TXstatus = tx_thread_create(&RngTaskHandle, "RNG Task", RNG_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_RNG,
+                                 TASK_PRIO_RNG, TASK_PREEMP_RNG,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&RngSemaphore, "RNG Semaphore", 0);
   }
 
-  return;
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "RNG ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
 }
 
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+/**
+ * @brief Initialize Flash Manager module
+ */
+static void APPE_FLASH_MANAGER_Init(void)
+{
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Create Flash Manager ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_FLASH_MANAGER, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&FlashManagerTaskHandle, "FLASH Manager Task", FLASH_Manager_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_FLASH_MANAGER,
+                                 TASK_PRIO_FLASH_MANAGER, TASK_PREEMP_FLASH_MANAGER,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&FlashManagerSemaphore, "FLASH Manager Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "FLASH ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+/**
+ * @brief Initialize Ble Public Key Accelerator module
+ */
+static void APPE_BPKA_Init(void)
+{
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Create Ble Public Key Accelerator ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_BPKA, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&BpkaTaskHandle, "BPKA Task", BPKA_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_BPKA,
+                                 TASK_PRIO_BPKA, TASK_PREEMP_BPKA,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&BpkaSemaphore, "BPKA Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "BPKA ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+static void APPE_AMM_Init(void)
+{
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Initialize the Advance Memory Manager */
+  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
+  {
+    Error_Handler();
+  }
+
+  /* Create Advance Memory Manager ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_AMM, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&AmmTaskHandle, "AMM Task", AMM_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_AMM,
+                                 TASK_PRIO_AMM, TASK_PREEMP_AMM,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&AmmSemaphore, "AMM Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "AMM ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+}
+
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
 {
   UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
 }
 
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
 {
   return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
 }
@@ -598,6 +620,42 @@ static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
 static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
 {
   UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
+}
+
+static void AMM_Task_Entry(ULONG lArgument)
+{
+  UNUSED(lArgument);
+
+  for(;;)
+  {
+    tx_semaphore_get(&AmmSemaphore, TX_WAIT_FOREVER);
+    AMM_BackgroundProcess();
+    tx_thread_relinquish();
+  }
+}
+
+static void FLASH_Manager_Task_Entry(ULONG lArgument)
+{
+  UNUSED(lArgument);
+
+  for(;;)
+  {
+    tx_semaphore_get(&FlashManagerSemaphore, TX_WAIT_FOREVER);
+    FM_BackgroundProcess();
+    tx_thread_relinquish();
+  }
+}
+
+static void BPKA_Task_Entry(ULONG lArgument)
+{
+  UNUSED(lArgument);
+
+  for(;;)
+  {
+    tx_semaphore_get(&BpkaSemaphore, TX_WAIT_FOREVER);
+    BPKA_BG_Process();
+    tx_thread_relinquish();
+  }
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -760,31 +818,18 @@ static void APPE_Button3Action_Entry(unsigned long thread_input)
  * WRAP FUNCTIONS
  *
  *************************************************************/
+
 void BPKACB_Process( void )
 {
-  tx_semaphore_put(&BPKA_Thread_Sem);
-}
-
-void BPKA_BackgroundProcess_Entry(unsigned long thread_input)
-{
-  (void)(thread_input);
-
-  while(1)
-  {
-    tx_semaphore_get(&BPKA_Thread_Sem, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    BPKA_BG_Process();
-    tx_mutex_put(&LinkLayerMutex);
-    tx_thread_relinquish();
-  }
+  tx_semaphore_put(&BpkaSemaphore);
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  tx_semaphore_put(&HW_RNG_Thread_Sem);
+  tx_semaphore_put(&RngSemaphore);
 }
 
 void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
@@ -795,44 +840,16 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
   p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
 }
 
-void AMM_ProcessRequest (void)
+void AMM_ProcessRequest(void)
 {
-  /* Ask for AMM background task scheduling */
-  tx_semaphore_put(&AMM_BCKGND_Thread_Sem);
+  /* Trigger to call Advance Memory Manager process function */
+  tx_semaphore_put(&AmmSemaphore);
 }
 
-static void AMM_BackgroundProcess_Entry(unsigned long thread_input)
+void FM_ProcessRequest(void)
 {
-  UNUSED(thread_input);
-
-  while(1)
-  {
-    tx_semaphore_get(&AMM_BCKGND_Thread_Sem, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    AMM_BackgroundProcess();
-    tx_mutex_put(&LinkLayerMutex);
-    tx_thread_relinquish();
-  }
-}
-
-void FM_ProcessRequest (void)
-{
-  /* Schedule the background process */
-  tx_semaphore_put(&FLASH_MANAGER_BCKGND_Thread_Sem);
-}
-
-static void FM_BackgroundProcess_Entry(unsigned long thread_input)
-{
-  UNUSED(thread_input);
-
-  while(1)
-  {
-    tx_semaphore_get(&FLASH_MANAGER_BCKGND_Thread_Sem, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
-    FM_BackgroundProcess();
-    tx_mutex_put(&LinkLayerMutex);
-    tx_thread_relinquish();
-  }
+  /* Trigger to call Flash Manager process function */
+  tx_semaphore_put(&FlashManagerSemaphore);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
@@ -935,6 +952,7 @@ void ThreadXLowPowerUserExit( void )
   SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
   ll_sys_dp_slp_exit();
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */

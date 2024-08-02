@@ -19,16 +19,18 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "app_common.h"
+#include "log_module.h"
 #include "stm32wbaxx.h"
 #include "blestack.h"
 #include "stm32_timer.h"
 #include "bleplat.h"
 #include "stm_list.h"
 #include "ble_timer.h"
-#include "advanced_memory_manager.h"
 #include "app_conf.h"
 #include "ll_sys.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -41,11 +43,11 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-tListNode BLE_TIMER_List;
-static BLE_TIMER_t* BLE_TIMER_timer;
+tListNode               BLE_TIMER_List;
+static BLE_TIMER_t      *BLE_TIMER_timer;
 
 /* Private functions prototype------------------------------------------------*/
-void BLE_TIMER_Background(void);
+static void BLE_TIMER_Background(void);
 static void BLE_TIMER_Callback(void* arg);
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id);
 
@@ -54,11 +56,11 @@ void BLE_TIMER_Init(void)
   /* This function initializes the timer Queue */
   LST_init_head(&BLE_TIMER_List);
 
-  /* Register Timer background task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
-
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+  /* Register BLE Timer task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
 }
 
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
@@ -68,11 +70,8 @@ uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 
   /* Create a new timer instance and add it to the list */
   BLE_TIMER_t *timer = NULL;
-
-  if(AMM_ERROR_OK != AMM_Alloc (CFG_AMM_VIRTUAL_STACK_BLE,
-                                DIVC(sizeof(BLE_TIMER_t), sizeof(uint32_t)),
-                                (uint32_t **)&timer,
-                                NULL))
+  timer = (BLE_TIMER_t *)malloc(sizeof(BLE_TIMER_t));
+  if(timer == NULL)
   {
     return BLE_STATUS_INSUFFICIENT_RESOURCES;
   }
@@ -83,14 +82,14 @@ uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
   if(UTIL_TIMER_Create(&timer->timerObject, timeout, UTIL_TIMER_ONESHOT, &BLE_TIMER_Callback, timer) != UTIL_TIMER_OK)
   {
     LST_remove_node ((tListNode *)timer);
-    (void)AMM_Free((uint32_t *)timer);
+    free(timer);
     return BLE_STATUS_FAILED;
   }
 
   if(UTIL_TIMER_Start(&timer->timerObject) != UTIL_TIMER_OK)
   {
     LST_remove_node ((tListNode *)timer);
-    (void)AMM_Free((uint32_t *)timer);
+    free(timer);
     return BLE_STATUS_FAILED;
   }
 
@@ -107,11 +106,11 @@ void BLE_TIMER_Stop(uint16_t id){
     UTIL_TIMER_Stop(&timer->timerObject);
     LST_remove_node((tListNode *)timer);
 
-    (void)AMM_Free((uint32_t *)timer);
+    free(timer);
   }
 }
 
-void BLE_TIMER_Background(void)
+static void BLE_TIMER_Background(void)
 {
   BLEPLATCB_TimerExpiry( (uint16_t)BLE_TIMER_timer->id);
   HostStack_Process( );
@@ -119,7 +118,7 @@ void BLE_TIMER_Background(void)
   /* Delete the BLE_TIMER_timer from the list */
   LST_remove_node((tListNode *)BLE_TIMER_timer);
 
-  (void)AMM_Free((uint32_t *)BLE_TIMER_timer);
+  free(BLE_TIMER_timer);
 }
 
 static void BLE_TIMER_Callback(void* arg)

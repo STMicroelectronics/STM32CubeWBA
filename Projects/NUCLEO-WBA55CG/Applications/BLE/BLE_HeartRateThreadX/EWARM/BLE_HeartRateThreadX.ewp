@@ -218,8 +218,8 @@
           <state>BLE</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA55xx</state>
-          <state>TX_INCLUDE_USER_DEFINE_FILE</state>
           <state>TX_SINGLE_MODE_NON_SECURE=1</state>
+          <state>TX_INCLUDE_USER_DEFINE_FILE</state>
           <state>TX_LOW_POWER</state>
         </option>
         <option>
@@ -1203,6 +1203,18 @@
         <group>
           <name>Config</name>
           <group>
+            <name>ADC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Config\ADC_Ctrl\adc_ctrl_conf.c</name>
+            </file>
+          </group>
+          <group>
+            <name>CRC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
+            </file>
+          </group>
+          <group>
             <name>Debug_GPIO</name>
             <file>
               <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
@@ -1215,30 +1227,18 @@
             </file>
           </group>
           <group>
+            <name>Log</name>
+            <file>
+              <name>$PROJ_DIR$\..\System\Config\Log\log_module.c</name>
+            </file>
+          </group>
+          <group>
             <name>LowPower</name>
             <file>
               <name>$PROJ_DIR$\..\System\Config\LowPower\user_low_power_config.c</name>
             </file>
             <file>
-              <name>$PROJ_DIR$/../System/Config/LowPower/peripheral_init.c</name>
-            </file>
-          </group>
-          <group>
-            <name>Log</name>
-            <file>
-              <name>$PROJ_DIR$/../System/Config/Log/log_module.c</name>
-            </file>
-          </group>
-          <group>
-            <name>CRC_Ctrl</name>
-            <file>
-              <name>$PROJ_DIR$/../System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
-            </file>
-          </group>
-          <group>
-            <name>ADC_Ctrl</name>
-            <file>
-              <name>$PROJ_DIR$/../System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
+              <name>$PROJ_DIR$\..\System\Config\LowPower\peripheral_init.c</name>
             </file>
           </group>
         </group>
@@ -1278,6 +1278,9 @@
             </file>
             <file>
               <name>$PROJ_DIR$\..\System\Modules\baes\baes_ecb.c</name>
+            </file>
+            <file>
+              <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
             </file>
           </group>
           <group>
@@ -1334,7 +1337,7 @@
           <group>
             <name>SerialCmdInterpreter</name>
             <file>
-              <name>$PROJ_DIR$/../System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
+              <name>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
             </file>
           </group>
           <file>
@@ -1347,7 +1350,7 @@
             <name>$PROJ_DIR$\..\System\Modules\ble_timer.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$/../System/Modules/crc_ctrl.c</name>
+            <name>$PROJ_DIR$\..\System\Modules\crc_ctrl.c</name>
           </file>
           <file>
             <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
@@ -1359,17 +1362,23 @@
             <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
           </file>
           <file>
-            <name>$PROJ_DIR$/../System/Modules/temp_measurement.c</name>
+            <name>$PROJ_DIR$\..\System\Modules\temp_measurement.c</name>
           </file>
         </group>
         <group>
           <name>Startup</name>
           <file>
-            <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+            <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
           </file>
         </group>
       </group>
     </group>
+  </group>
+  <group>
+    <name>Doc</name>
+    <file>
+      <name>$PROJ_DIR$\..\README.md</name>
+    </file>
   </group>
   <group>
     <name>Drivers</name>
@@ -1406,12 +1415,6 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc.c</name>
       </file>
       <file>
@@ -1439,19 +1442,13 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gtzc.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hsem.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_ramcfg.c</name>
@@ -2041,12 +2038,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</name>
-    </file>
-  </group>
-  <group>
-    <name>Doc</name>
-    <file>
-      <name>$PROJ_DIR$/../README.md</name>
     </file>
   </group>
 </project>

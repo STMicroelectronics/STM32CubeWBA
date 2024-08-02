@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "main.h"
+#include "log_module.h"
 #include "app_common.h"
 #include "dbg_trace.h"
 #include "ble.h"
@@ -99,7 +100,6 @@ typedef struct
   uint16_t ServiceChangedCharDescHdl;
   uint16_t ServiceChangedCharEndHdl;
   uint8_t ServiceChangedCharProperties;
-
   /* USER CODE BEGIN BleClientAppContext_t */
 
 /* USER CODE END BleClientAppContext_t */
@@ -377,6 +377,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         }
       }
       break; /* PROC_GATT_PROPERTIES_ENABLE_ALL */
+
     default:
       break;
     }
@@ -497,6 +498,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         break;
+
         default:
           break;
       }/* end switch (p_blecore_evt->ecode) */
@@ -849,6 +851,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
         {
           LOG_INFO_APP("\n");
         }
+        UNUSED(gattCharStartHdl);
       }
       else
       {
@@ -889,7 +892,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
 
 static void gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
 {
-  LOG_INFO_APP("ACI_GATT_NOTIFICATION_VSEVT_CODE - ConnHdl=0x%04X, Attribute_Handle=0x%04X\n",
+  LOG_DEBUG_APP("ACI_GATT_NOTIFICATION_VSEVT_CODE - ConnHdl=0x%04X, Attribute_Handle=0x%04X\n",
                 p_evt->Connection_Handle,
                 p_evt->Attribute_Handle);
 /* USER CODE BEGIN gatt_parse_notification_1 */

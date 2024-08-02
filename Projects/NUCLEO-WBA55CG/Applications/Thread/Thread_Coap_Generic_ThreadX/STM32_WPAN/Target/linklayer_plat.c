@@ -18,16 +18,19 @@
   */
 /* USER CODE END Header */
 
-#include "app_common.h"
 #include "stm32wbaxx_hal.h"
-#include "linklayer_plat.h"
 #include "stm32wbaxx_hal_conf.h"
 #include "stm32wbaxx_ll_rcc.h"
+
+#include "app_common.h"
 #include "app_conf.h"
+#include "linklayer_plat.h"
 #include "scm.h"
+#include "log_module.h"
 
+#if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
-
+#endif /* (CFG_LPM_LEVEL != 0) */
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -419,11 +422,11 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
 #if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ); 
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
 #endif /* CFG_SCM_SUPPORTED */
 }
@@ -438,11 +441,11 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
 #if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
 #if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
-  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ); 
+  scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
 #endif /* CFG_SCM_SUPPORTED */
 }
@@ -483,4 +486,31 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
  */
 void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
+  /* USER CODE BEGIN LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT_0 */
+
+  /* USER CODE END LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT_0 */
 }
+
+/**
+  * @brief  Get the ST company ID.
+  * @param  None
+  * @retval Company ID
+  */
+uint32_t LINKLAYER_PLAT_GetSTCompanyID(void)
+{
+  return LL_FLASH_GetSTCompanyID();
+}
+
+/**
+  * @brief  Get the Unique Device Number (UDN).
+  * @param  None
+  * @retval UDN
+  */
+uint32_t LINKLAYER_PLAT_GetUDN(void)
+{
+  return LL_FLASH_GetUDN();
+}
+
+/* USER CODE BEGIN LINKLAYER_PLAT 0 */
+
+/* USER CODE END LINKLAYER_PLAT 0 */

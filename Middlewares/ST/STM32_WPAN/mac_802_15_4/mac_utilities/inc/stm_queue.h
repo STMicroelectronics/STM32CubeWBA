@@ -24,7 +24,30 @@
 #define __STM_QUEUE_H
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
 /* Exported define -----------------------------------------------------------*/
+/* Basic definitions */
+#undef NULL
+#define NULL                    0
+
+#undef FALSE
+#define FALSE                   0
+
+#undef TRUE
+#define TRUE                    (!0)
+
+/* Some useful macro definitions */
+#undef MAX
+#define MAX( x, y )          (((x)>(y))?(x):(y))
+
+#undef MIN
+#define MIN( x, y )          (((x)<(y))?(x):(y))
+
 /* Options flags */
 #define CIRCULAR_QUEUE_NO_FLAG 0
 #define CIRCULAR_QUEUE_NO_WRAP_FLAG 1
@@ -35,7 +58,7 @@
 typedef struct {
    uint8_t* qBuff;        /* queue buffer, , provided by init fct */
    uint32_t queueMaxSize;   /* size of the queue, provided by init fct (in bytes)*/
-   uint16_t elementSize;    /* -1 variable. If variable elemenet size the size is stored in the 4 first of the queue element */
+   uint16_t elementSize;    /* -1 variable. If variable element size the size is stored in the 4 first of the queue element */
    uint32_t first;          /* position of first element */
    uint32_t last;           /* position of last element */
    uint32_t byteCount;      /* number of bytes in the queue */

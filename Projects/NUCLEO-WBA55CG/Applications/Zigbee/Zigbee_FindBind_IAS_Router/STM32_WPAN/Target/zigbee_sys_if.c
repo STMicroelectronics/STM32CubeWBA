@@ -18,8 +18,10 @@
   */
 /* USER CODE END Header */
 
-#include "app_conf.h"
 #include "main.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "app_zigbee.h"
 #include "stm32_rtos.h"
 
@@ -64,7 +66,7 @@ void ZigbeeSys_Init(void)
 {
   /* Register tasks */
   UTIL_SEQ_RegTask( TASK_ZIGBEE_LAYER, UTIL_SEQ_RFU, ZigbeeSys_Process);
-  UTIL_SEQ_SetTask( TASK_ZIGBEE_LAYER, CFG_TASK_PRIO_ZIGBEE_LAYER );
+  UTIL_SEQ_SetTask( TASK_ZIGBEE_LAYER, TASK_PRIO_ZIGBEE_LAYER );
 
   /* Register Event is not needed */
 }
@@ -86,7 +88,7 @@ void ZigbeeSys_Resume(void)
   */
 void ZigbeeSys_SemaphoreSet(void)
 {
-  UTIL_SEQ_SetTask( TASK_ZIGBEE_LAYER, CFG_TASK_PRIO_ZIGBEE_LAYER );
+  UTIL_SEQ_SetTask( TASK_ZIGBEE_LAYER, TASK_PRIO_ZIGBEE_LAYER );
 }
 
 /**

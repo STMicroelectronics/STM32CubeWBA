@@ -124,9 +124,12 @@ tBleStatus CAP_Unlink(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t N
 tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
 
 /**
-  * @brief  Set available audio context for reception and transmission.
+  * @brief  Set available audio context for reception and transmission which will be used for BAP Announcement and for
+  *         future connections.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @note   This function is applicable only for Unicast Server role and Broadcast Sink role
+  * @note   This function doesn't set Available Audio Contexts for connected device (the CAP_UpdateAvailableAudioContexts()
+  *         function shall be used).
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
   *                      (0x0000 : device not available to receive audio for any Context Type)
   * @param  SrcContexts: bitmap of Audio Data Contexts values available for transmission.
@@ -134,6 +137,20 @@ tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Conte
   * @retval status of the operation
   */
 tBleStatus CAP_SetAvailableAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
+
+/**
+  * @brief  Update available audio context for reception and transmission associated to the specified remote PACS Client
+  * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
+  * @param  connHandle: connection handle of the PACS Client to notify update
+  * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
+  *                      (0x0000 : device not available to receive audio for any Context Type)
+  * @param  SrcContexts: bitmap of Audio Data Contexts values available for transmission.
+  *                      (0x0000 : device not available to transmit audio for any Context Type)
+  * @retval status of the operation
+  */
+tBleStatus CAP_UpdateAvailableAudioContexts(uint16_t ConnHandle,
+                                           Audio_Context_t SnkContexts,
+                                           Audio_Context_t SrcContexts);
 
 /**
   * @brief  Set the supported Sink Audio Locations.
@@ -340,6 +357,17 @@ tBleStatus CAP_Unicast_SetupAudioDataPath(uint16_t CIS_ConnHandle,
                                           uint32_t ControllerDelay,
                                           uint8_t VendorSpecificConfigLength,
                                           const uint8_t* pVendorSpecificConfig);
+
+/**
+  * @brief  CAP Acceptor responds to an Enable Request operation for a specified Audio Stream Endpoint
+  * @param  ConnHandle: connection handle
+  * @param  ASE_ID: Audio Stream Endpoint ID
+  * @param  Rsp: Operation Response
+  * @param  Reason: Reason of Operation if Response is not ASE_OP_RESP_SUCCESS
+  * @retval status of the operation
+  */
+tBleStatus CAP_Unicast_EnableOpRsp(uint16_t ConnHandle,uint8_t ASE_ID,ASE_Op_Resp_t Rsp,ASE_Op_Resp_Reason_t Reason);
+
 /* #############################################################################
    #                               BROADCAST APIs                              #
    ############################################################################# */

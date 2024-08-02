@@ -1253,6 +1253,9 @@
                     <group>
                         <name>baes</name>
                         <file>
+                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
                         </file>
                         <file>
@@ -1458,7 +1461,7 @@
                 <group>
                     <name>lib</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_concurrent_lib.a</name>
                     </file>
                 </group>
             </group>
@@ -1473,10 +1476,10 @@
                 <group>
                     <name>stack</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigbeeProR23_FFD.a</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigbeeProR23_RFD.a</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_RFD.a</name>
                         <excluded>
                             <configuration>BLE_HeartRate_Zigbee</configuration>
                         </excluded>

@@ -23,6 +23,7 @@
 
 #include "app_conf.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
 #include "dbg_trace.h"

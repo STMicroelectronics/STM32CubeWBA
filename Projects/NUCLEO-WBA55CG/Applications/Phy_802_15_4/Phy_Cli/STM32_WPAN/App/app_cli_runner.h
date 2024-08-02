@@ -88,7 +88,12 @@ typedef struct {
 /* Exported constants --------------------------------------------------------*/
 #define CLI_PROMPT              "802.15.4 valid cli >"
 #define CLI_NAME                "(STM32WBA5xx) PHY CLI\r\n"
-#define CLI_APP_VERSION         "v1.3.0"
+
+#if (FULL_CERTIFICATION_CAPABLE == 1)
+#define CLI_APP_VERSION         "v1.4.0 " __DATE__
+#else
+#define CLI_APP_VERSION         "v1.4.0"
+#endif
 
 #if defined(STM32WBA52xx)
 #define CLI_FW_TARGET           "WBA52"
@@ -105,6 +110,7 @@ typedef struct {
 /* Exported functions ------------------------------------------------------- */
 void APP_PHY_CLI_Init(void);
 void app_cli_print(const char *aFormat, ...);
+void app_cli_print_payload(const app_cli_single_RX_t *frame);
 void app_cli_print_tx_results(const uint32_t frm_success, const uint32_t frm_failed,
                               const uint32_t frm_nack, const uint32_t frm_ack);
 void app_cli_print_rx_results(const uint16_t packets_received, const uint16_t packets_rejected,
@@ -117,6 +123,7 @@ uint8_t app_cli_ex_get_version(void);
 uint8_t app_cli_ex_get_info(void);
 uint8_t app_cli_ex_set_channel(const uint8_t channel);
 uint8_t app_cli_ex_set_power(const int8_t power);
+uint8_t app_cli_ex_set_smps(const int8_t enable);
 uint8_t app_cli_ex_tx_continuous_start(void);
 uint8_t app_cli_ex_tx_continuous_stop(void);
 uint8_t app_cli_ex_cw_start(const uint8_t channel);
@@ -132,6 +139,7 @@ uint8_t app_cli_ex_get_cca(uint8_t *channel_is_clear);
 uint8_t app_cli_ex_start_ed_scan(void);
 uint8_t app_cli_ex_get_lqi(uint8_t *lqi);
 uint8_t app_cli_ex_get_rssi(int8_t *rssi);
+uint32_t app_phy_cli_strtoul(char *s);
 
 #endif /* APP_CLI_RUNNER_H */
 

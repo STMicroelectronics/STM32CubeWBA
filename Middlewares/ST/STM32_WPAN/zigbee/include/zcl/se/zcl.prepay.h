@@ -3,7 +3,7 @@
  * @heading Prepayment
  * @brief ZCL Prepayment cluster header
  * ZCL 8 section 10.8
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_PREPAY_H
@@ -1029,11 +1029,11 @@ enum ZclStatusCodeT ZbZclPrepayClientSetOverallDebtCapReq(struct ZbZclClusterT *
  * @param endpoint Endpoint on which to create the mirror cluster
  * @param meter_mirror Pointer to Metering Mirror cluster. This is used to queue
  *  any commands that need to be forwarded to the BOMD when it wakes up.
- * @param bomd_ext_addr Extended address of the BOMD device being mirrored.
- * @param bomd_ep Endpoint of the BOMD device being mirrored.
+ * @param rmt_addr Extended address of the remote Metering device being mirrored.
+ * @param rmt_endpoint Endpoint on the remote Metering device being mirrored.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclPrepayClientCreateMirror(struct ZbZclClusterT *cluster, uint8_t endpoint,
-    struct ZbZclClusterT *meter_mirror, uint64_t bomd_ext_addr, uint8_t bomd_ep);
+    struct ZbZclClusterT *meter_mirror, uint64_t rmt_addr, uint8_t rmt_endpoint);
 
 #endif

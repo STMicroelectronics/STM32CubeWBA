@@ -200,7 +200,7 @@ void CODEC_ManagerProcess( void );
 
 /*---------------- local interfaces for audio triggering and data providing -----------------*/
 /**
-  * @brief  Register a function that is called once for triggering audio interface in order to respect a controller delay
+  * @brief Register a function that is called once for triggering audio interface in order to respect a controller delay
   * @note At source, the trigger happen one controller delay plus one media packet before an anchor point
   * @note At sink, the trigger happen one controller delay after the SDU reference timing
   * @param path_id : path id
@@ -211,7 +211,7 @@ void CODEC_ManagerProcess( void );
 codec_status_t CODEC_RegisterTriggerClbk(uint8_t path_id, uint8_t direction, void clbk_function(void));
 
 /**
-  * @brief  Notify the codec manager that new data is available on a given data path
+  * @brief Notify the codec manager that new data is available on a given data path
   * @param iso_con_hdl : isochronous connection handle
   * @param path_id : path id
   * @param pdata : pointer to the data, format should be coherent with the configured data path
@@ -220,7 +220,7 @@ codec_status_t CODEC_RegisterTriggerClbk(uint8_t path_id, uint8_t direction, voi
 void CODEC_SendData(uint16_t iso_con_hdl, uint8_t path_id, void* pdata);
 
 /**
-  * @brief  Notify the codec manager that new data is needed on a given data path
+  * @brief Notify the codec manager that new data is needed on a given data path
   * @param iso_con_hdl : isochronous connection handle
   * @param path_id : path id
   * @param pdata : pointer to the buffer to be filled, format should be coherent with the configured data path

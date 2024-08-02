@@ -32,6 +32,7 @@
 
 /* Link layer interfaces */
 #include "ll_intf.h"
+#include "ll_intf_cmn.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -84,7 +85,7 @@ void TEMPMEAS_RequestTemperatureMeasurement (void)
   ADCCTRL_RequestIpState(&LLTempRequest_Handle, ADC_OFF);
 
   /* Give the temperature information to the link layer */
-  ll_intf_set_temperature_value(temperature_value);
+  ll_intf_cmn_set_temperature_value(temperature_value);
 
   /* Exit limited critical section */
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();

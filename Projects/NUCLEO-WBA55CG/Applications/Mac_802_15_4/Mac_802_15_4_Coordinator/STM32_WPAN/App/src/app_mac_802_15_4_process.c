@@ -26,6 +26,7 @@
 #include "stm32_seq.h"
 #include "stm32_timer.h"
 #include "mac_host_intf.h"
+#include "log_module.h"
 
 /* Global define -------------------------------------------------------------*/
 
@@ -37,7 +38,7 @@ extern uint8_t idAssociationList; // Number of devices associated
 extern uint8_t indDeviceSendData; // Which device to send data
 extern uint8_t status_check_device; // Return device status when BT2 is pushed
 extern UTIL_TIMER_Object_t LEDTimer; // LED timer
-extern uint16_t tab_panId_already_use[MAX_TAB_PAN_ID]; // Table with all PAN ID already use in the local environement
+extern uint16_t tab_panId_already_use[MAX_TAB_PAN_ID]; // Table with all PAN ID already use in the local environment
 /* Private defines -----------------------------------------------------------*/
 
 /* Private macros ------------------------------------------------------------*/

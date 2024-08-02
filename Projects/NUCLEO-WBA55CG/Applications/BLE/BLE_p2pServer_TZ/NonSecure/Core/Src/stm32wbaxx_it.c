@@ -297,7 +297,7 @@ void RNG_IRQHandler(void)
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-  /* WORKAROUND : when using PLL, force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
+  /* WORKAROUND : Force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
   uint32_t mul,div;
   ll_intf_get_aligned_us_now(&mul, &div);
   /* USER CODE END RADIO_IRQn 0 */

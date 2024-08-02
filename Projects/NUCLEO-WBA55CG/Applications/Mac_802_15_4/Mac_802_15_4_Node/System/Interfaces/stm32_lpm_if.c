@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -98,7 +98,7 @@ static uint32_t boot_after_standby;
 /* USER CODE END EM */
 
 /* Private function prototypes -----------------------------------------------*/
-static void Standby_Restore_GPIO(void);
+void Standby_Restore_GPIO(void);
 static void Enter_Stop_Standby_Mode(void);
 static void Exit_Stop_Standby_Mode(void);
 /* USER CODE BEGIN PFP */
@@ -110,7 +110,7 @@ static void Exit_Stop_Standby_Mode(void);
 
 /* USER CODE END 0 */
 
-static void Standby_Restore_GPIO(void)
+__WEAK void Standby_Restore_GPIO(void)
 {
   uint32_t temp;
 
@@ -198,10 +198,8 @@ static void Enter_Stop_Standby_Mode(void)
 
 static void Exit_Stop_Standby_Mode(void)
 {
-#if defined(STM32WBAXX_SI_CUT1_0)
   LL_ICACHE_Enable();
   while(LL_ICACHE_IsEnabled() == 0U);
-#endif /* STM32WBAXX_SI_CUT1_0 */
 #if (CFG_SCM_SUPPORTED == 1)
   if (LL_PWR_IsActiveFlag_STOP() == 1U)
   {

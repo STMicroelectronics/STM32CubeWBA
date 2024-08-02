@@ -116,12 +116,12 @@ extern void HW_AES_Crypt( const uint32_t* input,
                           uint32_t* output );
 
 /*
- * HW_AES_Crypt
+ * HW_AES_Crypt8
  *
  * Encrypts/decrypts the 16-byte input data ("input").
  * Result is written in the 16-byte buffer ("output") allocated by the user.
  *
- * Note : input & ouput are 8 bits aligned.
+ * Note : input & output are 8 bits aligned.
  */
 extern void HW_AES_Crypt8( const uint8_t * pInput, uint8_t * pOutput );
 
@@ -131,6 +131,36 @@ extern void HW_AES_Crypt8( const uint8_t * pInput, uint8_t * pOutput );
  * Disables the AES hardware block.
  */
 extern void HW_AES_Disable( void );
+
+/*
+ * HW_AES_InitCcm
+ *
+ * Initilaizes AES for CCM encryption (decrypt = 0) or decryption (decrypt = 1)
+ * Note: B0 and B1 4-word blocks must be provided by user.
+ *
+ */
+extern void HW_AES_InitCcm( uint8_t decrypt,
+                            const uint8_t* key,
+                            const uint32_t* b0,
+                            const uint32_t* b1 );
+
+/*
+ * HW_AES_EndCcm
+ *
+ * Completes CCM processing by computing the authentication tag
+ *
+ */
+extern void HW_AES_EndCcm( uint8_t tag_length,
+                           uint8_t* tag );
+
+/*
+ * HW_AES_SetLast
+ *
+ * Function used in CCM processing to indicate the last block of data in
+ * case of decryption
+ *
+ */
+extern void HW_AES_SetLast( uint8_t left_length );
 
 /* ---------------------------------------------------------------------------
  *                                 PKA
@@ -351,7 +381,8 @@ void RNG_KERNEL_CLK_ON(void);
 
 /* RNG_KERNEL_CLK_OFF
  *
- * Disable RNG kernel clock.
+ * Called when RNG kernel clock may be disabled.
+ * Weak function to be implemented by user.
  */
 void RNG_KERNEL_CLK_OFF(void);
 

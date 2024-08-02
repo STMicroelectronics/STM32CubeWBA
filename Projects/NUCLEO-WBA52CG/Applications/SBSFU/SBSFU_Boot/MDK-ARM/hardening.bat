@@ -6,8 +6,8 @@ set wrp_bank2_start=
 set wrp_bank2_end=
 set nsbootadd=
 echo hardening script started
-set stm32programmercli="C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\STM32_Programmer_CLI.exe"
-set connect=-c port=SWD mode=UR ap=1 --hardRst
+call ..\..\env.bat
+set connect=-c port=SWD mode=UR ap=1
 set wrp_sbsfu=WRPA_PSTRT=%wrp_start% WRPA_PEND=%wrp_end%
 set wrp_loader=WRPB_PSTRT=%wrp_bank2_start% WRPB_PEND=%wrp_bank2_end%
 set nsboot_add_set=NSBOOTADD0=%nsbootadd% NSBOOTADD1=%nsbootadd%

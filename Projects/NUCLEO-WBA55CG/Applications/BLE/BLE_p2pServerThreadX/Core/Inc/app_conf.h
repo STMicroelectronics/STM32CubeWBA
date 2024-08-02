@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -50,7 +49,7 @@
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
  */
-#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_DEVICE             (GAP_PUBLIC_ADDR)
 
 /**
  * Define privacy: PRIVACY_DISABLED or PRIVACY_ENABLED
@@ -63,7 +62,7 @@
  * if CFG_PRIVACY equals PRIVACY_DISABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_PUBLIC_ADDR or GAP_STATIC_RANDOM_ADDR
  * if CFG_PRIVACY equals PRIVACY_ENABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_RESOLVABLE_PRIVATE_ADDR or GAP_NON_RESOLVABLE_PRIVATE_ADDR
  */
-#define CFG_BLE_ADDRESS_TYPE              (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
 #define ADV_INTERVAL_MIN                  (0x0080)
 #define ADV_INTERVAL_MAX                  (0x00A0)
@@ -75,31 +74,31 @@
 /**
  * Define IO Authentication
  */
-#define CFG_BONDING_MODE                 (1)
-#define CFG_USED_FIXED_PIN               (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
-#define CFG_FIXED_PIN                    (111111)
-#define CFG_ENCRYPTION_KEY_SIZE_MAX      (16)
-#define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
+#define CFG_BONDING_MODE                  (1)
+#define CFG_USED_FIXED_PIN                (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
+#define CFG_FIXED_PIN                     (111111)
+#define CFG_ENCRYPTION_KEY_SIZE_MAX       (16)
+#define CFG_ENCRYPTION_KEY_SIZE_MIN       (8)
 
 /**
  * Define Input Output capabilities
  */
-#define CFG_IO_CAPABILITY                (IO_CAP_DISPLAY_YES_NO)
+#define CFG_IO_CAPABILITY                 (IO_CAP_DISPLAY_YES_NO)
 
 /**
  * Define Man In The Middle modes
  */
-#define CFG_MITM_PROTECTION              (MITM_PROTECTION_REQUIRED)
+#define CFG_MITM_PROTECTION               (MITM_PROTECTION_REQUIRED)
 
 /**
  * Define Secure Connections Support
  */
-#define CFG_SC_SUPPORT                   (SC_PAIRING_OPTIONAL)
+#define CFG_SC_SUPPORT                    (SC_PAIRING_OPTIONAL)
 
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
@@ -232,6 +231,9 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -244,6 +246,8 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -285,6 +289,9 @@ typedef enum
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
+
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
 
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
@@ -380,6 +387,12 @@ typedef enum
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
+
+/* Custom LSE sleep clock accuracy to use if both conditions are met:
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 

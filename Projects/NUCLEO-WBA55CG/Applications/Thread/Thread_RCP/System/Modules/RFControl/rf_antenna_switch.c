@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -61,7 +61,7 @@ static void RF_CONTROL_AntennaSwitch_Disable(void)
 
 void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
 {
-  ble_stat_t status = GENERAL_FAILURE;
+  ble_stat_t status;
 
   if(state == RF_ANTSW_ENABLE)
   {

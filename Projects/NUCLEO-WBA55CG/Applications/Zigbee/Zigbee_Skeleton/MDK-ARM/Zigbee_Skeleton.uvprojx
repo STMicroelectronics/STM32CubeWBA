@@ -374,8 +374,7 @@
             <ScatterFile>stm32wba55xx_flash.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--diag_suppress L6314W
---diag_suppress 1296</Misc>
+            <Misc></Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -421,9 +420,9 @@
           <GroupName>Application/User/System/Startup</GroupName>
           <Files>
             <File>
-              <FileName>stm32wbaxx_ResetHandler.S</FileName>
+              <FileName>stm32wbaxx_ResetHandler_MDK-ARM.S</FileName>
               <FileType>2</FileType>
-              <FilePath>../System/Startup/stm32wbaxx_ResetHandler.S</FilePath>
+              <FilePath>../System/Startup/stm32wbaxx_ResetHandler_MDK-ARM.S</FilePath>
             </File>
           </Files>
         </Group>

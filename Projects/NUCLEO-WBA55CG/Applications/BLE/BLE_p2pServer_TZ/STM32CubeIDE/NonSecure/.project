@@ -408,9 +408,9 @@
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Modules/temp_measurement.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>

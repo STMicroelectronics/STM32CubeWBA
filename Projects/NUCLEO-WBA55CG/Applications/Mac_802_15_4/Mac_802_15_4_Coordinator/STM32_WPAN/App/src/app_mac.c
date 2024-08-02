@@ -32,6 +32,7 @@
 #include "st_mac_802_15_4_sap.h"
 #include "radio.h"
 #include "stm32_timer.h"
+#include "log_module.h"
 
 /* Global define -------------------------------------------------------------*/
 
@@ -53,6 +54,8 @@ static uint8_t g_channel_page = 0x00;
 static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 static void Prepare_MLME_Set_Req(uint8_t PIB_attribute_indice, uint8_t * PIB_attribute_value);
 static void Prepare_MLME_Scan_Req(uint8_t scan_type, uint8_t scan_duration, uint8_t * select_channel);
+
+void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl; // Instance MAC 
 ST_MAC_callbacks_t macCallback; // Structure with all callbacks
@@ -62,7 +65,7 @@ uint16_t shortAssociationAddrList[MAX_DEVICES_ASSO]; // Tab with all address ass
 uint8_t idAssociationList = 0; // Number of elements in the tab
 uint8_t indDeviceSendData = 0; // Indice to check if the device still connected
 uint8_t status_check_device = 0; // Return device status when BT2 is pushed
-uint16_t tab_panId_already_use[MAX_TAB_PAN_ID]; //tab with all PAN ID already use in the local environement
+uint16_t tab_panId_already_use[MAX_TAB_PAN_ID]; //tab with all PAN ID already use in the local environment
 
 /* All variables for configuration and set data, define in app_conf.h */
 uint8_t extAddr[8]                           = {0xAC,0xDE,0x48,00,0x00,0x00,0x00,0x01};
@@ -378,7 +381,7 @@ void APP_FFD_MAC_802_15_4_SendData(void)
     memcpy(DataReq.dst_address.a_short_addr, &tmp_dst_a_short_addr, 0x02); // Address destination 
 
     DataReq.msdu_handle = g_dataHandle++; // The handle associated with the MSDU
-    DataReq.ack_Tx = TRUE; // Request ACK = TRUE, overwise FALSE
+    DataReq.ack_Tx = TRUE; // Request ACK = TRUE, otherwise FALSE
     DataReq.GTS_Tx = FALSE; // Always this value in 802.15.4 non-beacon enabled
     memcpy(&rfBuffer, Data, strlen(Data));
     

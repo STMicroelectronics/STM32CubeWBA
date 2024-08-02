@@ -103,7 +103,7 @@
                 <option>
                     <name>GBECoreSlave</name>
                     <version>31</version>
-                    <state>0</state>
+                    <state>59</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -635,7 +635,7 @@
                 </option>
                 <option>
                     <name>AOutputFile</name>
-                    <state></state>
+                    <state>$FILE_BNAME$.o</state>
                 </option>
                 <option>
                     <name>ALimitErrorsCheck</name>
@@ -681,7 +681,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -689,7 +689,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>BLE_Audio_PBP_Source.bin</state>
+                    <state>BLE_Audio_PBP_Source.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -707,7 +707,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>208</hasPrio>
+                <hasPrio>1</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -1033,7 +1033,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state></state>
+                    <state>BLE_Audio_PBP_Source_import_lib.o</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1264,6 +1264,9 @@
                     <group>
                         <name>baes</name>
                         <file>
+                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
                         </file>
                         <file>
@@ -1346,7 +1349,7 @@
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                     </file>
                 </group>
             </group>
@@ -1427,12 +1430,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gtzc.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hsem.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</name>

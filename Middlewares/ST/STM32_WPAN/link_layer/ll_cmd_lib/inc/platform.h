@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.30a-SOW05Patchv6_2/firmware/public_inc/platform.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/platform.h#1 $*/
 /**
  ********************************************************************************
  * @file    platform.h
@@ -472,21 +472,71 @@ void radio_run_phy_clbr_on_temp_change(void);
  */
 otError radio_set_dp_slp_mode(dpslp_state_e dp_slp_mode);
 #endif /*end of (!SUPPORT_COEXISTENCE)*/
-
-#ifdef PHY_40nm_3_00_a
+#if defined(PHY_40nm_3_00_a) && SUPPORT_MAC_PHY_CONT_TESTING_CMDS
 /**
  *
- * @brief set the phy continuous modulation and continuous wave modes
- * 	upon enable, if the selected mode is already enabled and likewise
- * 	in disabling, the change will take no effect
+ * @brief set the phy continuous modulation and continuous wave modes upon enable
  *
  * @param	type[in]		: the type of the modulation (0: modulation, 1: wave)
  * @param	enable_mode[in]	: if true then enable the selected mode otherwise disable it
  * @param	chnl_num[in]	: channel number to be used in modulation (range: 0 to 15)
+ * @param   pwr[in]         : The used power in dBm.
  * @retval Status
  */
-otError platform_zigbee_set_phy_cont_modul_mode(uint8_t type, uint8_t enable_mode, uint8_t chnl_num);
-#endif /* PHY_40nm_3_00_a */
+otError platform_zigbee_set_phy_cont_modul_mode(uint8_t type, uint8_t enable_mode, uint8_t chnl_num, int8_t pwr);
+#endif /*end of PHY_40nm_3_00_a && SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
+#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+/**
+ *
+ * @brief set antenna diversity parameters
+ *
+ * @param	aInstance[in]	    : radio instance
+ * @param	ptr_ant_div_params[in]	: pointer to antenna diversity params structure
+ * @retval Status
+ */
+otError radio_set_ant_div_params(otInstance *aInstance, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ *
+ * @brief get antenna diversity parameters
+ *
+ * @param	aInstance[in]	    : radio instance
+ * @param	ptr_ant_div_params[out]	: pointer to antenna diversity params structure
+ * @retval None
+ */
+void radio_get_ant_div_params(otInstance *aInstance, antenna_diversity_st* ptr_ant_div_params);
+
+/**
+ *
+ * @brief enable/disable antenna diversity
+ *
+ * @param	aInstance[in]	: radio instance
+ * @param	enable[in]	    : enable:1 / disable:0
+ * @retval Status
+ */
+otError radio_set_ant_div_enable(otInstance *aInstance, uint8_t enable);
+
+/**
+ *
+ * @brief set the default antenna id to be used for transmission and reception
+ *
+ * @param	aInstance[in]	    : radio instance
+ * @param	default_ant_id[in]	: default antenna id
+ * @retval Status
+ */
+otError radio_set_default_ant_id(otInstance *aInstance, uint8_t default_ant_id);
+
+/**
+ *
+ * @brief set antenna diversity rssi threshold
+ *
+ * @param	aInstance[in]	    : radio instance
+ * @param	rssi_threshold[in]	: rssi threshold to compare with during antenna diversity measurements
+ * @retval Status
+ */
+otError radio_set_ant_div_rssi_threshold(otInstance *aInstance, int8_t rssi_threshold);
+#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+
 
 #endif /* INCLUDE_PLATFORM_H_ */
 /**

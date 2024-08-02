@@ -45,11 +45,11 @@ The Cli (Command Line Interface) commands are sent via an UART from an HyperTerm
   |          |USART2          |                      |     HyperTerminal 2 (Optional)       |
   |          |                |                      |=> Used to display traces             |   
   |          |                |                      |                                      |
-  |          |CN4 (Pin37) TX  |______________________|RX                                    | 
+  |          |CN4 (Pin37) RX  |______________________|TX                                    | 
   |          |                |                      |                                      |
   |          |                |     RS232 Cable      |                                      |             
   |          |                |                      |                                      |
-  |          |CN4 (Pin45 )RX  |______________________|TX                                    |          
+  |          |CN4 (Pin35) TX  |______________________|RX                                    |          
   |          |                |                      |                                      |           
   |          |________________|                      |______________________________________|          
   |                           |                                                

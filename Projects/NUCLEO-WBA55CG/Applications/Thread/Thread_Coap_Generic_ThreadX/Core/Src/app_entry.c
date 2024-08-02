@@ -20,24 +20,24 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
-#include "app_thread.h"
 #include "app_entry.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "app_sys.h"
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
-#include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
+#include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
-#include "stm32_rtos.h"
-#include "stm32wbaxx_ll_rcc.h"
+#include "ll_sys.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,6 +62,7 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
@@ -96,15 +97,16 @@ typedef struct
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
+
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+/* ThreadX objects declaration */
 
-TX_SEMAPHORE          HwRngSemaphore;
-TX_THREAD             AppliStartThread, HwRngThread;
-
+static TX_THREAD      RngTaskHandle;
+static TX_SEMAPHORE   RngSemaphore;
 
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -126,10 +128,12 @@ CHAR          * pStack;
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
+
+static void RNG_Task_Entry(ULONG lArgument);
 
 #ifndef TX_LOW_POWER_USER_ENTER
 void ThreadXLowPowerUserEnter( void );
@@ -137,7 +141,6 @@ void ThreadXLowPowerUserEnter( void );
 #ifndef TX_LOW_POWER_USER_EXIT
 void ThreadXLowPowerUserExit( void );
 #endif
-
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -157,7 +160,7 @@ static void Button_TriggerActions         ( void * arg );
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -166,10 +169,10 @@ void MX_APPE_Config(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
-{ 
+{
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
 
   /* Save ThreadX byte pool for whole WPAN middleware */
@@ -180,6 +183,9 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Configure the system Power Mode */
   SystemPower_Config();
+
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
   /* Initialize Peripherals */
@@ -192,8 +198,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE END APPE_Init_1 */
 
-  RNG_Init();
-
   /* Thread Initialisation */
   APP_THREAD_Init();
   ll_sys_config_params();
@@ -201,7 +205,9 @@ uint32_t MX_APPE_Init(void *p_param)
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
 }
 
@@ -301,10 +307,16 @@ static void System_Init( void )
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
   Log_Module_Add_Region( LOG_REGION_THREAD );
-  
+
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
+
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
 
   return;
 }
@@ -330,18 +342,15 @@ static void SystemPower_Config(void)
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-#if (CFG_SCM_SUPPORTED == 1)
-  /* Set the HSE clock to 32MHz */
-  scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
-#endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -359,15 +368,19 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0)  */
+
+  /* USER CODE BEGIN SystemPower_Config */
+
+  /* USER CODE END SystemPower_Config */
 }
 
-static void HW_RNG_Process_Task( ULONG lArgument )
+static void RNG_Task_Entry(ULONG lArgument)
 {
-  UNUSED( lArgument );
+  UNUSED(lArgument);
 
   for(;;)
   {
-    tx_semaphore_get( &HwRngSemaphore, TX_WAIT_FOREVER );
+    tx_semaphore_get( &RngSemaphore, TX_WAIT_FOREVER );
     HW_RNG_Process();
     tx_thread_relinquish();
   }
@@ -376,36 +389,33 @@ static void HW_RNG_Process_Task( ULONG lArgument )
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
-  UINT        ThreadXStatus;
+  UINT TXstatus;
+  CHAR *pStack;
 
   HW_RNG_Start();
 
-  /* Register Semaphore to launch the Random Process */
-  ThreadXStatus = tx_semaphore_create( &HwRngSemaphore, "RandomProcess Semaphore", 0 );
+  /* Create Random Number Generator ThreadX objects */
 
-  /* Create the Random Process Thread and this Stack */
-  if ( ThreadXStatus == TX_SUCCESS )
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_RNG, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_HW_RNG_STACK_SIZE, TX_NO_WAIT);
-  }
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus |= tx_thread_create( &HwRngThread, "RandomProcess Thread", HW_RNG_Process_Task, 0, pStack,
-                                       TASK_HW_RNG_STACK_SIZE, CFG_TASK_PRIO_HW_RNG, CFG_TASK_PREEMP_HW_RNG,
-                                       TX_NO_TIME_SLICE, TX_AUTO_START);
+    TXstatus = tx_thread_create(&RngTaskHandle, "RNG Task", RNG_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_RNG,
+                                 TASK_PRIO_RNG, TASK_PREEMP_RNG,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&RngSemaphore, "RNG Semaphore", 0);
   }
 
-  /* Verify if it's OK */
-  if ( ThreadXStatus != TX_SUCCESS )
+  if( TXstatus != TX_SUCCESS )
   {
-    APP_DBG( "ERROR THREADX : RANDOM PROCESS THREAD CREATION FAILED (%d)", ThreadXStatus );
-    while(1);
+    LOG_ERROR_APP( "RNG ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
   }
 }
-
-
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 #if ( CFG_LED_SUPPORTED == 1 )
@@ -563,7 +573,7 @@ static void Button_Init( void )
   /* Button timers initialisation (one for each button) */
   for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
   { 
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, (UTIL_TIMER_Mode_t)hw_ts_Repeated, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
+    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
   }
 }
 
@@ -619,41 +629,45 @@ static void Button_TriggerActions( void * arg )
  * WRAP FUNCTIONS
  *
  *************************************************************/
+
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  if (HwRngSemaphore.tx_semaphore_count == 0)
+  if (RngSemaphore.tx_semaphore_count == 0)
   {
-    tx_semaphore_put(&HwRngSemaphore);
+    tx_semaphore_put(&RngSemaphore);
   }
 }
 
-
-
-#if (CFG_LOG_SUPPORTED != 0)
-/**
- *
- */
+#if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
+/* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
 {
-  /* RNG module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_1 */
 
-  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN RNG_KERNEL_CLK_OFF_2 */
 
-  /* USER CODE END RNG_KERNEL_CLK_OFF */
+  /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+/* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
-  /* SCM module may not switch off HSI clock when traces are used */
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_1 */
 
-  /* USER CODE BEGIN SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_1 */
+  LL_RCC_HSI_Disable();
+  /* USER CODE BEGIN SCM_HSI_CLK_OFF_2 */
 
-  /* USER CODE END SCM_HSI_CLK_OFF */
+  /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
+#if (CFG_LOG_SUPPORTED != 0)
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
@@ -733,6 +747,14 @@ void ThreadXLowPowerUserExit( void )
 
   /* USER CODE END ThreadXLowPowerUserExit_2 */
   return;
+}
+
+/**
+ * @brief Function Assert AEABI in case of not described on 'libc' libraries.
+ */
+__WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
+{
+  Error_Handler();
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

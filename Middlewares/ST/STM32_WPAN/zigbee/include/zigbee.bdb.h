@@ -3,7 +3,7 @@
  * @heading BDB Layer
  * @brief BDB header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_BDB_H
@@ -153,9 +153,7 @@ enum ZbBdbTouchlinkKeyIndexT {
  * an End-Device. */
 #define ZB_BDB_FLAG_ALLOW_ROUTER_LEAVE_REJOIN           0x00000010U
 
-/* ZDO Binding, ignore check if endpoint and cluster exist */
-/* NOTE: removed. Checking was added as Z3.0, but since removed due to CCB 2126 */
-/* #define ZB_BDB_FLAG_ZDO_BIND_IGNORE_CHECKS              0x00000020U */
+/* Deprecated flag - 0x00000020U */
 
 /* Disable the reception and processing of APS InterPAN messages */
 #define ZB_BDB_FLAG_APS_INTERPAN_DISABLE                0x00000040U
@@ -177,12 +175,21 @@ enum ZbBdbTouchlinkKeyIndexT {
  * request from the initiator with NOT_AUTHORIZED error response. */
 #define ZB_BDB_FLAG_DLK_NOT_ALLOWED                     0x00000200U
 
-#define ZB_BDB_FLAG_CBKE_SINGLE_SESSION                 0x00000400U
 /* If set, concurrent CBKE sessions with different intitiators are disabled.
  * This is required test functionality for SE 1.4 test case 15.22 */
+#define ZB_BDB_FLAG_CBKE_SINGLE_SESSION                 0x00000400U
 
 /* Sets mcp_macMaxFrameRetries for testing */
 #define ZB_BDB_FLAG_MAC_FRM_RETRIES_ZERO                0x00000800U
+
+/* If set, forcibly set Disable Default Response bit to 0 in the ZCL header.
+ * This is used in SE test cases ie. 11.48-11.49 to ensure that, upon receiving a
+ * Read/Write Attributes Request, a device will omitsending a Default Response
+ * as per the second criteria of 07-5123-08 Zigbee Cluster Library section
+ * "2.5.12.2 When Generated...
+ * "No other command is sent in response to the received command,
+ * using the same Transaction sequence number as the received command." */
+#define ZB_BDB_FLAG_ZCL_CLEAR_DEFAULT_RESPONSE_BIT      0x00001000U
 
 /** BDB IB Attributes */
 enum ZbBdbAttrIdT {
@@ -330,6 +337,15 @@ enum ZbBdbAttrIdT {
      * The default timeout is 10 minutes minus 10 seconds (slightly less than
      * ZB_BDB_ZclBomdReqWaitTimeoutMs).
      * (type: uint32_t, reset: no, persist: no) */
+    ZB_BDB_ZclSequenceNumber = 0x1127,
+    /**< API to get/set the ZCL Sequence number provided by the stack.
+     * (type: uint8_t, reset: no, persist: no) */
+    ZB_BDB_KE_Status = 0x1128,
+    /**< Key Establishment status code from CBKE during ZbStartup.
+     * The initial value is set to ZCL_KEY_STATUS_NOT_STARTED (Exegin extension to the status codes)
+     * at the beginning of ZbStartup. It will be set to the status code returned by the KE process.
+     * It's a uint8_t type, but it's based on the 'enum ZbZclKeyStatusT' values.
+     * (type: uint8_t, reset: no, persist: no) */
 
     /* Constants which are accessible through a BDB GET IB request. */
     ZB_BDBC_MaxSameNetworkRetryAttempts = 0x1200,
@@ -422,22 +438,78 @@ void ZbBdbGetReq(struct ZigBeeT *zb, struct ZbBdbGetReqT *getReqPtr, struct ZbBd
 void ZbBdbSetReq(struct ZigBeeT *zb, struct ZbBdbSetReqT *setReqPtr, struct ZbBdbSetConfT *setConfPtr);
 
 /* Helpers for ZB_BDB_CommissioningMode bits */
-/* ZbBdbCommissionModeBitSupported - Check if a BDB_COMMISSION_MODE_ bit or mask is
- * supported by bdbNodeCommissioningCapability. */
+
+/**
+ * Check if a BDB_COMMISSION_MODE bit or mask is supported by bdbNodeCommissioningCapability
+ * @param zb Zigbee instance
+ * @param new_mode_bit BDB_COMMISSION_MODE_ bit or mask
+ * @return Returns true on success, false otherwise
+ */
 bool ZbBdbCommissionModeBitSupported(struct ZigBeeT *zb, uint8_t new_mode_bit);
+
+/**
+ * Set ZB_BDB_CommissioningMode bits
+ * @param zb Zigbee instance
+ * @param new_mode_bit ZB_BDB_CommissioningMode bit or mask
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZbBdbCommissionModeBitSet(struct ZigBeeT *zb, uint8_t new_mode_bit);
+
+/**
+ * Clear ZB_BDB_CommissioningMode bits
+ * @param zb Zigbee instance
+ * @param new_mode_bit ZB_BDB_CommissioningMode bit or mask
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZbBdbCommissionModeBitClear(struct ZigBeeT *zb, uint8_t new_mode_bit);
 
 /* Helpers for ZB_BDB_Flags bits */
+
+/**
+ * Set ZB_BDB_Flags bits
+ * @param zb Zigbee instance
+ * @param mask ZB_BDB_Flags bit or mask
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZbBdbFlagBitSet(struct ZigBeeT *zb, uint32_t mask);
+
+/**
+ * Clear ZB_BDB_Flags bits
+ * @param zb Zigbee instance
+ * @param mask ZB_BDB_Flags bit or mask
+ * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
+ */
 enum ZbStatusCodeT ZbBdbFlagBitClear(struct ZigBeeT *zb, uint32_t mask);
+
+/**
+ * Check if ZB_BDB_Flags bits are set
+ * @param zb Zigbee instance
+ * @param mask ZB_BDB_Flags bit or mask
+ * @return Returns true on success, false otherwise
+ */
 bool ZbBdbFlagBitCheck(struct ZigBeeT *zb, uint32_t mask);
 
+/**
+ * Convertes a zigbee status code to the closest BDB status code
+ * @param status Zigbee status code
+ * @return Returns BDB status code
+ */
 enum ZbBdbCommissioningStatusT ZbBdbNwkStatusToBdbStatus(enum ZbStatusCodeT status);
+
+/**
+ * Convertes a BDB status code to the closest zigbee status code
+ * @param status BDB status code
+ * @return Returns Zigbee status code
+ */
 enum ZbStatusCodeT ZbBdbStatusToNwkStatus(enum ZbBdbCommissioningStatusT status);
 
-/* Returns the commissioning status for the given endpoint (same for all endpoints?).
- * If endpoint = ZB_ENDPOINT_BCAST, returns the status for the first endpoint found. */
+/**
+ * Get commissioning status for the given endpoint (same for all endpoints?).
+ * If endpoint = ZB_ENDPOINT_BCAST, returns the status for the first endpoint found.
+ * @param zb Zigbee instance
+ * @param endpoint Endpoint identifier
+ * @return Returns ZB_BDB_COMMISS_STATUS_SUCCESS on success, other BDB status code on failure
+ */
 enum ZbBdbCommissioningStatusT ZbBdbGetEndpointStatus(struct ZigBeeT *zb, uint8_t endpoint);
 
 /* Configures the endpoint with the given commissioning status. Mostly for internal use only. */

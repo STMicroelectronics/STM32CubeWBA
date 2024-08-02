@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -114,6 +114,16 @@ extern void HW_AES_SetKey( uint32_t mode,
  */
 extern void HW_AES_Crypt( const uint32_t* input,
                           uint32_t* output );
+
+/*
+ * HW_AES_Crypt
+ *
+ * Encrypts/decrypts the 16-byte input data ("input").
+ * Result is written in the 16-byte buffer ("output") allocated by the user.
+ *
+ * Note : input & output are 8 bits aligned.
+ */
+extern void HW_AES_Crypt8( const uint8_t* input, uint8_t* output );
 
 /*
  * HW_AES_Disable
@@ -341,7 +351,8 @@ void RNG_KERNEL_CLK_ON(void);
 
 /* RNG_KERNEL_CLK_OFF
  *
- * Disable RNG kernel clock.
+ * Called when RNG kernel clock may be disabled.
+ * Weak function to be implemented by user.
  */
 void RNG_KERNEL_CLK_OFF(void);
 

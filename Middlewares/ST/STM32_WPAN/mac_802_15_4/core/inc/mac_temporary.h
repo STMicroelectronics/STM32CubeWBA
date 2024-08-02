@@ -7,6 +7,7 @@
 
 #include "string.h"
 #include "bsp.h"
+#include "log_module.h" // MAC log
 
 #ifndef ASSERT
 /*
@@ -27,15 +28,13 @@
 #define ST_MAC_HANDLE_INCOMING_MAC_CMD 0x00
 #define ST_MAC_HANDLE_OUTGOING_MAC_MSG 0x01
 
-#define MAC_WRAPPER_LOG 0x00
-
 /* Maybe we need to change this for WBA2 */
 #if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
 #define MAC_MEMSET  ble_memset
 #define MAC_MEMCPY  ble_memcpy
 #else
-#define MAC_MEMCPY  memcpy
 #define MAC_MEMSET  memset
+#define MAC_MEMCPY  memcpy
 #endif
 
 // MUST BE REMOVED WHEN FULL INTEGRATION IS SCHEDULED
@@ -76,4 +75,30 @@
                 ((uint8_t *)pckt)[pos + 3] = (uint8_t) ((var) >> 24);\
 	} while(0)
     
+          
+/* LOG_REGION_MAC */
+#ifdef CFG_LOG_SUPPORTED
+	#define LOG_INFO_MAC(...)         Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_MAC, __VA_ARGS__)
+	#define LOG_ERROR_MAC(...)        Log_Module_Print( LOG_VERBOSE_ERROR, LOG_REGION_MAC, __VA_ARGS__)
+	#define LOG_WARNING_MAC(...)      Log_Module_Print( LOG_VERBOSE_WARNING, LOG_REGION_MAC, __VA_ARGS__)
+	#define LOG_DEBUG_MAC(...)        Log_Module_Print( LOG_VERBOSE_DEBUG, LOG_REGION_MAC, __VA_ARGS__)
+#else
+	#define LOG_INFO_MAC(...)
+	#define LOG_ERROR_MAC(...)
+	#define LOG_WARNING_MAC(...)
+	#define LOG_DEBUG_MAC(...)
+#endif
+
+/* USER CODE BEGIN LOG_REGION_MAC */
+/**
+ * Add inside this user section your defines to match the new verbose levels you
+ * created into Log_Verbose_Level_t.
+ * Example :
+ * #define LOG_CUSTOM_MAC(...)         Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_APP, __VA_ARGS__);
+ *
+ * You don't need to update all regions with your custom values.
+ * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM
+ * for a System region.
+ */
+          
 #endif /* MAC_TEMPORARY_H */

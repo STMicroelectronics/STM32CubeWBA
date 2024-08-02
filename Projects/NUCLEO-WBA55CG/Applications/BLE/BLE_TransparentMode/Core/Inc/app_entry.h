@@ -56,7 +56,7 @@ extern "C" {
 #define CFG_FW_BUILD              (0)
 #define CFG_FW_BRANCH             (0)
 #define CFG_FW_SUBVERSION         (0)
-#define CFG_FW_MINOR_VERSION      (3)
+#define CFG_FW_MINOR_VERSION      (4)
 #define CFG_FW_MAJOR_VERSION      (1)
 
 /* USER CODE BEGIN EC */

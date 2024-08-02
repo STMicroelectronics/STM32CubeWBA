@@ -9,7 +9,6 @@
 
   <project>
     <PathAndName>.\thread_ftd_keil_config\thread_ftd_keil_config.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
   </project>
 
   <project>
@@ -18,6 +17,7 @@
 
   <project>
     <PathAndName>.\thread_rcp_keil_config\thread_rcp_keil_config.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
   </project>
 
 </ProjectWorkspace>

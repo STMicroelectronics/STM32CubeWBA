@@ -1,3 +1,11 @@
+
+---
+pagetitle: Readme
+lang: en
+---
+::: {.row}
+::: {.col-sm-12 .col-lg-8}
+
 ## __Phy_Cli Application Description__
  
 A dedicated application allows the control and the test of the 802_15_4 radio via a command line interface or STM32CubeMonitorRF.
@@ -93,7 +101,7 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
 #### __STM32CubeMonitorRF__
 
   - Please refer to the STM32CubeMonitorRF user guide
-  
+
 ### __Standalone binary__
 
   - The commands are sent via an CLI UART (USART1) from an HyperTerminal to the STM32WB55A_Nucleo Board.
@@ -106,6 +114,17 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
       - Stop Bit = 1 bit
       - Parity = none
       - Flow control = none
+
+#### __Full PHY certification and dynamic RX printing__
+
+  - In order to perform a fully exhaustive PHY certification, it may be necessary to enable the "dynamic RX printing" using the *rx_start 1* command.
+    This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed
+    using default baudrate of 115200.
+  - By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
+    - the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.
+    - SMPS is enabled at init (ensure the board used is SMPS compatible)
+    - The *tx_on* signal is readable at the PA1 GPIO, required for turnaround times certification tests.
+  - Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.
 
 ### __Examples of commands__
 
@@ -120,5 +139,9 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
   - TX_stop 																	*Stop an ongoing transmission*
   - TX_start 0x0C,0x21,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7             *Send a frame with ACK request (requires another CLI with Rx_start)*
   - RX_start 																	*Start a reception*
+  - RX_start 1																	*Start a reception, prints paylaod of frames as they arrive*
   - RX_stop																		*Stop a reception*
   
+:::
+:::
+

@@ -69,12 +69,6 @@ void MX_ThreadX_Init(void);
 /* USER CODE END EFP */
 
 /* USER CODE BEGIN 1 */
-/* Declaration of all ThreadX global resources used by the application */
-/* pointer to ThreadX byte pool allocated in app_azure_rtos.c  */
-extern TX_BYTE_POOL *pBytePool;
-
-/* Generic ThreadX stack pointer */
-extern CHAR * pStack;
 
 /* USER CODE END 1 */
 

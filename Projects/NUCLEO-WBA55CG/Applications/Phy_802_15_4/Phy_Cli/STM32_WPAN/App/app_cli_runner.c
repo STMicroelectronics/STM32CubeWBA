@@ -210,6 +210,15 @@ static void uartRxCpltCallback(UART_HandleTypeDef *huart)
   UNUSED(huart);
   HAL_UART_Receive_IT(cli_uart, &cliUartRX, 1);
 
+  /*
+   * If UART is plugged after the board is powered, spurious character are "received".
+   * Detect and remove these
+   */
+  if ( (cliUartRX == 0) && (uartRxBuffer_length == 0) )
+  {
+    return;
+  }
+
   /* If ENTER, forward the command if non-empty*/
   if ( ((cliUartRX == '\r') || (cliUartRX == '\n')) &&
      (uartRxBuffer_length != 0) )
@@ -435,7 +444,7 @@ static void app_cli_uartTransmit(uint8_t *pData, uint16_t size )
 static char payload_str[RX_BUFFER_MAX_SIZE_STR];
 static char payload_str_buffer[10];
 
-static void app_cli_print_payload(const app_cli_single_RX_t *frame)
+void app_cli_print_payload(const app_cli_single_RX_t *frame)
 {
   sprintf(payload_str, "\r\n[");
   for (uint16_t i = 0U; i< frame->payload_len; i++)

@@ -5,9 +5,9 @@
   * @author  MCD Application Team
   * @brief   Configuration Header for crc_ctrl.c module
   ******************************************************************************
-  * @attention
+   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,10 +42,6 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
-/**
- * @brief Handle used by the Simple NVM Arbiter to access the CRC functions
- */
-extern CRCCTRL_Handle_t SNVMA_Handle;
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions prototypes ---------------------------------------------*/

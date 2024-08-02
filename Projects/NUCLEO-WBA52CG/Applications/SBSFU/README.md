@@ -67,7 +67,7 @@ that can be downloaded from https://osdn.net/projects/ttssh2/).
 ## <b>Known limitations</b>
 
   - IAR build not working if cube package is installed on a path with a space, or a long path.
-  - KEIL not supported.
+
   - STM32CubeIDE: Only Release configuration is supported due to flash mapping constraint.
     To allow debugging in Release configuration, the debug level is -g3.
 

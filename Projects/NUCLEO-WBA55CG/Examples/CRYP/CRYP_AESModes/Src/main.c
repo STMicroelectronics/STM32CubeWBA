@@ -149,7 +149,6 @@ static void Display_PlainData_CTR(uint32_t datalength);
 static void Display_CypherData(uint32_t datalength);
 static void Display_EncryptedData(uint8_t mode, uint16_t keysize, uint32_t datalength);
 static void Display_DecryptedData(uint8_t mode, uint16_t keysize, uint32_t datalength);
-void SystemClock_Config(void);
 void data_cmp(uint32_t *EncryptedText, uint32_t *RefText, uint8_t Size);
 /* Private functions ---------------------------------------------------------*/
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
@@ -656,6 +655,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Supply configuration update enable
+  */
+  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */

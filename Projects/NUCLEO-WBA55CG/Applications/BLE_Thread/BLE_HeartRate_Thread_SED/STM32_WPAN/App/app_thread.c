@@ -51,6 +51,7 @@
 #include "ll_sys_startup.h"
 
 #include "app_thread.h"
+#include "threadplat_pka.h"
 #include "common_types.h"
 #include "stm32_lpm.h"
 #include "stm32_timer.h"
@@ -90,7 +91,7 @@ static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext);
 static void APP_THREAD_Child_Role_Handler(void);
 
-
+static void ProcessPka(void);
 
 static void APP_THREAD_CoapRequestHandler(void                * pContext,
     otMessage           * pMessage,
@@ -148,6 +149,8 @@ void Thread_Init(void)
 
 
   /* Register tasks */
+  UTIL_SEQ_RegTask(1 << CFG_TASK_HW_PKA, UTIL_SEQ_RFU, ProcessPka);
+  
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_ALARM, UTIL_SEQ_RFU, ProcessAlarm);
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_US_ALARM, UTIL_SEQ_RFU, ProcessUsAlarm);
   
@@ -159,6 +162,11 @@ void Thread_Init(void)
 
   /* Run first time */
   UTIL_SEQ_SetTask(1U<<CFG_TASK_OT_ALARM, CFG_TASK_PRIO_ALARM);
+}
+
+static void ProcessPka(void)
+{
+  otPlatPkaProccessLoop();
 }
 
 void ProcessAlarm(void)
@@ -224,6 +232,24 @@ void APP_THREAD_Init( void )
     APP_THREAD_TraceError("ERROR : COAP TIMER init failed", -1);
 
   APP_THREAD_DeviceConfig();
+}
+
+void APP_THREAD_SchedulePka(void)
+{
+  /* Schedule otPlatPkaProccessLoop() */
+  UTIL_SEQ_SetTask(1 << CFG_TASK_HW_PKA, CFG_TASK_PRIO_HW_PKA);
+}
+
+void APP_THREAD_WaitPkaEndOfOperation(void)
+{
+  /* Wait for event CFG_IDLEEVT_PKA_END_OF_OPERATION */
+  UTIL_SEQ_WaitEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
+}
+
+void APP_THREAD_PostPkaEndOfOperation(void)
+{
+  /* Pka operation ended, set CFG_IDLEEVT_PKA_END_OF_OPERATION event */
+  UTIL_SEQ_SetEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
 }
 
 /**

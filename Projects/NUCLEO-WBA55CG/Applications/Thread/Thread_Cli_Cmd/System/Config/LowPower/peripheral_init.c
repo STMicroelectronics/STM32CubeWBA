@@ -48,14 +48,20 @@ extern RNG_HandleTypeDef hrng;
   */
 void MX_StandbyExit_PeripharalInit(void)
 {
+  HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* Select SysTick source clock */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK_DIV8);
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
   /* Re-Initialize Tick with new clock source */
-  HAL_InitTick(TICK_INT_PRIORITY);
+  hal_status = HAL_InitTick(TICK_INT_PRIORITY);
+  if (hal_status != HAL_OK)
+  {
+    assert_param(0);
+  }
 
   memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
   memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));

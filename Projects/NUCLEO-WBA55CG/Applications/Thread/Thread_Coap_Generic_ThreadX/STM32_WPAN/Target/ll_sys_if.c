@@ -16,29 +16,27 @@
   *
   ******************************************************************************
   */
+
+#include "log_module.h"
 /* USER CODE END Header */
 
-#include "app_common.h"
 #include "main.h"
-#include "ll_intf.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
+#include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "stm32_rtos.h"
+#include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
-
-/* Redefine access to Low Level API to maintain compatibility */
-extern uint32_t llhwc_cmn_sys_configure_ll_ctx          (uint8_t param1, uint8_t param2);
-extern uint8_t  ll_tx_pwr_if_select_tx_power_mode       (uint8_t param1);
-
-#define ll_intf_config_ll_ctx_params(A, B)              llhwc_cmn_sys_configure_ll_ctx(A, B)
-#define ll_intf_select_tx_power_table(A)                ll_tx_pwr_if_select_tx_power_mode(A)
-
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
@@ -49,20 +47,24 @@ extern uint8_t  ll_tx_pwr_if_select_tx_power_mode       (uint8_t param1);
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-/* Link Layer Task related resources */
+/* ThreadX objects declaration */
+
+static TX_THREAD        LinkLayerTaskHandle;
 static TX_SEMAPHORE     LinkLayerSemaphore;
-static TX_THREAD        LinkLayerThread;
 
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
+static void ll_sys_sleep_clock_source_selection(void);
+void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -75,15 +77,14 @@ static TX_THREAD        LinkLayerThread;
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
-
 /**
  * @brief  Link Layer Task for ThreadX
- * @param  None
+ * @param  ULONG lArgument
  * @retval None
  */
-static void ll_sys_bg_process_task( ULONG thread_input )
+static void LinkLayer_Task_Entry( ULONG lArgument )
 {
-  UNUSED( thread_input );
+  UNUSED(lArgument);
 
   for(;;)
   {
@@ -100,29 +101,26 @@ static void ll_sys_bg_process_task( ULONG thread_input )
   */
 void ll_sys_bg_process_init(void)
 {
-  UINT  ThreadXStatus;
-  CHAR  * pStack = TX_NULL;
+  UINT TXstatus;
+  CHAR *pStack;
 
-  /* Register LinkLayer Semaphore */
-  ThreadXStatus = tx_semaphore_create( &LinkLayerSemaphore, "LinkLayerSem", 0 );
-  if ( ThreadXStatus != TX_SUCCESS )
+  /* Create Link Layer ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_LINK_LAYER, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
   {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER SEMAPHORE CREATION FAILED (%d)", ThreadXStatus );
-    Error_Handler();
+    TXstatus = tx_thread_create(&LinkLayerTaskHandle, "Link Layer  Task", LinkLayer_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_LINK_LAYER,
+                                 TASK_PRIO_LINK_LAYER, TASK_PREEMP_LINK_LAYER,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&LinkLayerSemaphore, "Link Layer Semaphore", 0);
   }
-  
-  
-  /* Thread associated with LinkLayer Task */
-  ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_LINK_LAYER_STACK_SIZE, TX_NO_WAIT );
-  if ( ThreadXStatus == TX_SUCCESS )
+
+  if( TXstatus != TX_SUCCESS )
   {
-    ThreadXStatus = tx_thread_create( &LinkLayerThread, "LinkLayerThread", ll_sys_bg_process_task, 0, pStack,
-                                      TASK_LINK_LAYER_STACK_SIZE, CFG_TASK_PRIO_LINK_LAYER, CFG_TASK_PREEMP_LINK_LAYER,
-                                      TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  if ( ThreadXStatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "ERROR THREADX : LINK LAYER THREAD CREATION FAILED (%d)", ThreadXStatus );
+    LOG_ERROR_APP( "Link Layer ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
 }
@@ -164,9 +162,58 @@ void ll_sys_config_params(void)
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
    */
-  ll_intf_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  ll_intf_cmn_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
 
   /* Link Layer power table */
-  ll_intf_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+  ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
 }
 
+void ll_sys_sleep_clock_source_selection(void)
+{
+  uint16_t freq_value = 0;
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  switch(linklayer_slp_clk_src)
+  {
+    case LL_RCC_RADIOSLEEPSOURCE_LSE:
+      linklayer_slp_clk_src = RTC_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_LSI:
+      linklayer_slp_clk_src = RCO_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_HSE_DIV1000:
+      linklayer_slp_clk_src = CRYSTAL_OSCILLATOR_SLPTMR;
+      break;
+
+    case LL_RCC_RADIOSLEEPSOURCE_NONE:
+      /* No Link Layer sleep clock source selected */
+      assert_param(0);
+      break;
+  }
+  ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
+}
+
+void ll_sys_reset(void)
+{
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+  uint8_t bsca = 0;
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
+  /* Apply the selected link layer sleep timer source */
+  ll_sys_sleep_clock_source_selection();
+
+  /* Configure the link layer sleep clock accuracy if different from the default one */
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
+  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
+#else
+  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
+  {
+    ll_intf_le_set_sleep_clock_accuracy(bsca);
+  }
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+}

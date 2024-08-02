@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -17,12 +17,12 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
 
 #include "app_sys.h"
 #include "app_conf.h"
 #include "timer_if.h"
 #include "stm32_lpm.h"
-#include "stm32_seq.h"
 #include "ll_intf.h"
 #include "ll_sys.h"
 
@@ -64,19 +64,20 @@ void APP_SYS_LPM_EnterLowPowerMode(void)
   uint64_t next_radio_evt;
 
   /* Ensure there are no radio events (implement bsp function like bsp_is_radio_idle() ) */
-  ral_event_state_enum_t radio_state = ral_get_current_event_state(&radio_instance, &channel);
+  ral_event_state_enum_t radio_state = ral_get_current_event_state( &radio_instance, &channel );
   LL_UNUSED(radio_instance);
   LL_UNUSED(channel);
   if (radio_state != RAL_IDLE)
     return;
 
   next_radio_evt = os_timer_get_earliest_time();
-  if (llhwc_cmn_is_dp_slp_enabled() == 0)
+  if ( llhwc_cmn_is_dp_slp_enabled() == 0 )
   {
-    if (next_radio_evt > RADIO_DEEPSLEEP_WAKEUP_TIME_US)
+    if ( next_radio_evt > RADIO_DEEPSLEEP_WAKEUP_TIME_US )
     {
       /* No event in a "near" futur */
-      ll_sys_dp_slp_enter(next_radio_evt - RADIO_DEEPSLEEP_WAKEUP_TIME_US);
+      ll_sys_dp_slp_enter( next_radio_evt - RADIO_DEEPSLEEP_WAKEUP_TIME_US );
     }
   }
 }
+

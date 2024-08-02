@@ -19,8 +19,9 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "app_common.h"
 #include "main.h"
+#include "app_common.h"
+#include "log_module.h"
 #include "stm32wbaxx.h"
 #include "blestack.h"
 #include "stm32_timer.h"
@@ -30,7 +31,7 @@
 #include "advanced_memory_manager.h"
 #include "app_conf.h"
 #include "ll_sys.h"
-#include "app_threadx.h"
+#include "stm32_rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -41,51 +42,52 @@ typedef struct
 }BLE_TIMER_t;
 
 /* Private defines -----------------------------------------------------------*/
-/* BLE_TIMER_TASK related defines */
-#define BLE_TIMER_TASK_STACK_SIZE    (256)
-#define BLE_TIMER_TASK_PRIO          (15)
-#define BLE_TIMER_TASK_PREEM_TRES    (0)
 
 /* Private variables ---------------------------------------------------------*/
-tListNode BLE_TIMER_List;
-static BLE_TIMER_t* BLE_TIMER_timer;
+tListNode               BLE_TIMER_List;
+static BLE_TIMER_t      *BLE_TIMER_timer;
 
-/* BLE_TIMER_TASK related resources */
-TX_THREAD BLE_TIMER_Thread;
-TX_SEMAPHORE BLE_TIMER_Thread_Sem;
+/* ThreadX objects declaration */
+
+static TX_THREAD        BleTimerTaskHandle;
+static TX_SEMAPHORE     BleTimerSemaphore;
 
 /* Private functions prototype------------------------------------------------*/
-void BLE_TIMER_Background(void);
+static void BLE_TIMER_Background(void);
 static void BLE_TIMER_Callback(void* arg);
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id);
-static void BLE_TIMER_Background_Entry(unsigned long thread_input);
+static void BLE_TIMER_Task_Entry(ULONG lArgument);
 
 void BLE_TIMER_Init(void)
 {
   /* This function initializes the timer Queue */
   LST_init_head(&BLE_TIMER_List);
 
-  /* Register Timer background task */
-  CHAR * pStack;
-
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, BLE_TIMER_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&BLE_TIMER_Thread_Sem, "BLE_TIMER_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&BLE_TIMER_Thread, "BLE_TIMER_Thread", BLE_TIMER_Background_Entry, 0,
-                         pStack, BLE_TIMER_TASK_STACK_SIZE,
-                         BLE_TIMER_TASK_PRIO, BLE_TIMER_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+  UINT TXstatus;
+  CHAR *pStack;
+
+  /* Create BLE Timer ThreadX objects */
+
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_BLE_TIMER, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&BleTimerTaskHandle, "BLE Timer Task", BLE_TIMER_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_BLE_TIMER,
+                                 TASK_PRIO_BLE_TIMER, TASK_PREEMP_BLE_TIMER,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_semaphore_create(&BleTimerSemaphore, "BLE Timer Semaphore", 0);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "BLE Timer ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
 }
 
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
@@ -95,7 +97,6 @@ uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 
   /* Create a new timer instance and add it to the list */
   BLE_TIMER_t *timer = NULL;
-
   if(AMM_ERROR_OK != AMM_Alloc (CFG_AMM_VIRTUAL_STACK_BLE,
                                 DIVC(sizeof(BLE_TIMER_t), sizeof(uint32_t)),
                                 (uint32_t **)&timer,
@@ -138,7 +139,7 @@ void BLE_TIMER_Stop(uint16_t id){
   }
 }
 
-void BLE_TIMER_Background(void)
+static void BLE_TIMER_Background(void)
 {
   BLEPLATCB_TimerExpiry( (uint16_t)BLE_TIMER_timer->id);
   HostStack_Process( );
@@ -149,13 +150,13 @@ void BLE_TIMER_Background(void)
   (void)AMM_Free((uint32_t *)BLE_TIMER_timer);
 }
 
-static void BLE_TIMER_Background_Entry(unsigned long thread_input)
+static void BLE_TIMER_Task_Entry(ULONG lArgument)
 {
-  (void)(thread_input);
+  UNUSED(lArgument);
 
-  while(1)
+  for(;;)
   {
-    tx_semaphore_get(&BLE_TIMER_Thread_Sem, TX_WAIT_FOREVER);
+    tx_semaphore_get(&BleTimerSemaphore, TX_WAIT_FOREVER);
     BLE_TIMER_Background();
     tx_thread_relinquish();
   }
@@ -165,7 +166,7 @@ static void BLE_TIMER_Callback(void* arg)
 {
   BLE_TIMER_timer = (BLE_TIMER_t*)arg;
 
-  tx_semaphore_put(&BLE_TIMER_Thread_Sem);
+  tx_semaphore_put(&BleTimerSemaphore);
 }
 
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id)

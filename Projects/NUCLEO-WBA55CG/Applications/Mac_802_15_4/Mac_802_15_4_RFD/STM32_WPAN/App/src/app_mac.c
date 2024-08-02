@@ -27,7 +27,7 @@
 #include "app_mac_802_15_4_process.h"
 #include "st_mac_802_15_4_types.h"
 #include "st_mac_802_15_4_sap.h"
-
+#include "log_module.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -50,6 +50,7 @@ static uint8_t      g_channel_page      = 0x00;
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 
+void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl;
 ST_MAC_callbacks_t macCallback;

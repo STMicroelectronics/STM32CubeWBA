@@ -218,6 +218,7 @@
                     <state>USE_FULL_ASSERT</state>
                     <state>USE_FULL_LL_DRIVER</state>
                     <state>LOGGER_ENABLE=0</state>
+                    <state>FULL_CERTIFICATION_CAPABLE=0</state>
                     <state>OS_BAREMETAL</state>
                     <state>MAC</state>
                 </option>
@@ -312,7 +313,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>

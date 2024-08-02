@@ -31,7 +31,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
 /* USER CODE BEGIN Includes */
-
+#include "pbp_app.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -76,6 +76,7 @@ void Stop_TxAudio(void);
 void Start_RxAudio(void);
 void Stop_RxAudio(void);
 void AudioClock_Init(uint32_t frequency);
+void PLL_Exit(void);
 void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize);
 void APP_NotifyRxAudioHalfCplt(void);
 void APP_NotifyTxAudioCplt(uint16_t AudioFrameSize);

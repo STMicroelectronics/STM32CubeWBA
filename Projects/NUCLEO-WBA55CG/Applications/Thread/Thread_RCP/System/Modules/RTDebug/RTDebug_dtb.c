@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -62,10 +62,8 @@ void RT_DEBUG_DTBInit(void)
 */
 
   /** long_range_iq_vld PA6 DTB[6] on TL_9 **/
-/*
   LL_GPIO_SetPinMode(GPIOA,LL_GPIO_PIN_6,LL_GPIO_MODE_ALTERNATE);
   LL_GPIO_SetAFPin_0_7(GPIOA,LL_GPIO_PIN_6,LL_GPIO_AF_15);
-*/
 
   /** tx_data PA5 DTB[5] on TL_8 **/
 /*
@@ -133,6 +131,7 @@ void RT_DEBUG_DTBConfig(void)
  * A10 o PC1 o_pm_act_com_sw
  **/
 
+  RT_DEBUG_SetDTBMode(6, 3) ; /* Radio IRQ */
   RT_DEBUG_SetDTBMode(1, 1); /* tx_on */
 
   //RT_DEBUG_SetDTBMode(0, 1); /* rx_on */

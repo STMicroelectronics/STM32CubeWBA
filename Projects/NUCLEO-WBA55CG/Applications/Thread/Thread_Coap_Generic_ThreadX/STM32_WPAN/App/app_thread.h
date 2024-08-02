@@ -42,6 +42,8 @@ typedef enum
   ERR_THREAD_START,
   ERR_THREAD_ERASE_PERSISTENT_INFO,
   ERR_THREAD_SET_NETWORK_KEY,
+  ERR_THREAD_LINK_MODE,
+  ERR_THREAD_POLL_MODE,
   /* USER CODE BEGIN ERROR_APPLI_ENUM */
   ERR_THREAD_COAP_START,
   ERR_THREAD_COAP_ADD_RESSOURCE,
@@ -52,7 +54,6 @@ typedef enum
   ERR_THREAD_COAP_SEND_REQUEST,
   ERR_THREAD_COAP_DATA_RESPONSE,
   ERR_THREAD_SETUP,
-  ERR_THREAD_LINK_MODE,
   ERR_TIMER_INIT,
   ERR_TIMER_START,
   ERR_THREAD_MSG_COMPARE_FAILED,
@@ -64,23 +65,23 @@ typedef enum
 
 /* USER CODE BEGIN ET */
 
-/* USER CODE BEGIN ET */
+/* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 #define APP_READ32_REG(base_addr)           (*(volatile uint32_t *)(base_addr))
 #define APP_WRITE32_REG(base_addr, data)    (*(volatile uint32_t *)(base_addr) = (data))
+
+/* ipv6-addressing defines        */
+/* Key Point: A major difference between FTDs and MTDs are that FTDs subscribe to the ff03::2 multicast address.
+ * MTDs do not. */
+#define MULTICAST_FTD_MED             "ff03::1"
+#define MULTICAST_FTD_BORDER_ROUTER   "ff03::2"
 
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Thread_Init(void);
-void ProcessLinkLayer(void);
-void ProcessTasklets(void);
-void ProcessAlarm(void);
-void ProcessUsAlarm(void);
-void ProcessOpenThreadTasklets(void);
 
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);

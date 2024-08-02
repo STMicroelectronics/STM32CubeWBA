@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -107,6 +107,22 @@ void BAES_CmacSetKey( const uint8_t* key )
 
   /* set IV to zero */
   av->iv[0] = av->iv[1] = av->iv[2] = av->iv[3] = 0;
+}
+
+/*
+ * Initialization for AES-CMAC for Authentication TAG Generation.
+ * Must be called each time a new CMAC has to be computed.
+ */
+
+void BAES_CmacSetVector( const uint8_t * pIV )
+{
+    BAES_CMAC_t  * av = &BAES_CMAC_var;
+
+    // -- Update IV if exist else set to zero --
+    if ( pIV != NULL )
+      { memcpy( av->iv, pIV, AES_BLOCK_SIZE_BYTE ); }
+    else
+      { memset( av->iv, 0x00, AES_BLOCK_SIZE_BYTE ); }
 }
 
 /*****************************************************************************/

@@ -181,7 +181,7 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
   if ( pLogTimeStampFunc != NULL )
   {
      iTempSize = UTIL_ADV_TRACE_TMP_BUF_SIZE - iBuffSize;
-     pLogTimeStampFunc( &szFullText[iBuffSize], &iTempSize );
+     pLogTimeStampFunc( &szFullText[iBuffSize], iTempSize, &iTempSize );
      iBuffSize += iTempSize;
   }
 #endif /* LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE */
@@ -196,7 +196,7 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 
 #if ( LOG_INSERT_EOL_INSIDE_THE_TRACE != 0 )
   /* Add End Of Line if needed */
-  if ( iBuffSize > 1 ) 
+  if ( iBuffSize > 1 )
   {
     if ( ( szFullText[iBuffSize - 1] != ENDOFLINE_CHAR ) && ( szFullText[iBuffSize - 2] != ENDOFLINE_CHAR ) )
     {

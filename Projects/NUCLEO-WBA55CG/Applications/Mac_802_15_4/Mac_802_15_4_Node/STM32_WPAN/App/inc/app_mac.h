@@ -42,4 +42,8 @@ void APP_RFD_MAC_802_15_4_Disassociation(void);
 void APP_RFD_MAC_802_15_4_poll(void);
 void APP_RFD_MAC_802_15_4_Association(void);
 
+void APPE_Button1Action(void);
+void APPE_Button2Action(void);
+void APPE_Button3Action(void);
+
 #endif /* APP_MAC_USER_H */

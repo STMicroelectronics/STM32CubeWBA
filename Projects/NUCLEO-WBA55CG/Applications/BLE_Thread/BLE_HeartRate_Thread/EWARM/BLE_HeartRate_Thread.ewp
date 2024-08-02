@@ -386,6 +386,8 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include\openthread</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\config</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\third_party\mbedtls\repo\include</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1256,6 +1258,9 @@
                     <group>
                         <name>baes</name>
                         <file>
+                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
                         </file>
                         <file>
@@ -1494,6 +1499,9 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\system.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\threadplat_pka.c</name>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart.c</name>

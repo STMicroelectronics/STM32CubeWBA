@@ -18,7 +18,7 @@ define symbol __region_DOWNLOAD_end__      = 0x080FA000;
 define symbol __region_FLASH_start__       = 0x08006000;
 define symbol __region_FLASH_end__         = 0x0807FFFF;
 
-define symbol __region_SRAM1_start__       = 0x20002000;
+define symbol __region_SRAM1_start__       = 0x20000020;
 define symbol __region_SRAM1_end__         = 0x2000FFFF;
 define symbol __region_SRAM2_start__       = 0x20010000;
 define symbol __region_SRAM2_end__         = 0x2001FFFF;
@@ -49,6 +49,7 @@ do not initialize  { section .noinit };
 
 /*-Sections placements-*/
 place at address mem:__intvec_start__ { readonly section .intvec };
+place at address mem:__region_SRAM1_start__ { block CSTACK };
 
 place in NVM_region         { };
 place in DATA_region        { };
@@ -58,6 +59,6 @@ keep                        { section TAG_OTA_END };
 place in OTA_TAG_region     { section TAG_OTA_START };
 place in FLASH_region       { readonly, last section TAG_OTA_END  };
 
-place in SRAM1_region       { block HEAP, block CSTACK };
+place in SRAM1_region       { block HEAP };
 place in SRAM2_region       { };
 place in SRAM_region        { readwrite };

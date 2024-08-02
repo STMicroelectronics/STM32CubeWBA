@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -30,25 +30,6 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-/**
- * @brief CRC Handle configuration for SNVMA use
- */
-CRCCTRL_Handle_t SNVMA_Handle =
-{
-  .Uid = 0x00,
-  .PreviousComputedValue = 0x00,
-  .State = HANDLE_NOT_REG,
-  .Configuration =
-  {
-    .DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE,
-    .DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE,
-    .GeneratingPolynomial = 7607,
-    .CRCLength = CRC_POLYLENGTH_16B,
-    .InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE,
-    .OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE,
-    .InputDataFormat = CRC_INPUTDATA_FORMAT_WORDS,
-  },
-};
 
 /* USER CODE BEGIN User CRC configurations */
 

@@ -30,6 +30,7 @@ extern "C" {
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "app_conf.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -135,7 +136,7 @@ typedef enum
 typedef enum
 {
   LOG_COLOR_NONE          = 0,     // Initialization.
-  LOG_COLOR_CODE_DEFAULT  = 37,    // Blanck
+  LOG_COLOR_CODE_DEFAULT  = 37,    // White
   LOG_COLOR_CODE_RED      = 91,
   LOG_COLOR_CODE_GREEN    = 92,
   LOG_COLOR_CODE_YELLOW   = 93,
@@ -158,9 +159,10 @@ typedef struct
  * @brief Callback function to insert Time Stamp.
  *
  * @param  pData    The location where insert the new TimeStamp
- * @param  piSize   The size of the TimeStamp insert.
+ * @param  iSizeMax The maximum size for the TimeStamp insert.
+ * @param  piSize   Pointer on the size of the TimeStamp insert.
  */
-typedef void CallBack_TimeStamp( uint8_t * pData, uint16_t * piSize );
+typedef void CallBack_TimeStamp( char * pData, uint16_t iSizeMax, uint16_t * piSize );
 
 /* USER CODE BEGIN ET */
 
@@ -287,19 +289,31 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 /* USER CODE END EFP */
 
 /* Exported macro ------------------------------------------------------------*/
+/* Display 64 bits number for all compiler. */
+/* Example : LOG_INFO_APP( "New Device : " LOG_DISPLAY64() " installed in %d seconds", LOG_NUMBER64( dlDevice ), iTime ); */
+#define LOG_DISPLAY64()             "0x%08X%08X"
+#define LOG_NUMBER64( number )      (uint32_t)( number >> 32u ), (uint32_t)( number )
+
 /* Module API - Log macros for each region */
 /* LOG_REGION_BLE */
+#if (CFG_LOG_SUPPORTED != 0)
 #define LOG_INFO_BLE(...)         Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_BLE, __VA_ARGS__)
 #define LOG_ERROR_BLE(...)        Log_Module_Print( LOG_VERBOSE_ERROR, LOG_REGION_BLE, __VA_ARGS__)
 #define LOG_WARNING_BLE(...)      Log_Module_Print( LOG_VERBOSE_WARNING, LOG_REGION_BLE, __VA_ARGS__)
 #define LOG_DEBUG_BLE(...)        Log_Module_Print( LOG_VERBOSE_DEBUG, LOG_REGION_BLE, __VA_ARGS__)
+#else /* (CFG_LOG_SUPPORTED != 0) */
+#define LOG_INFO_BLE(...)         do {} while(0)
+#define LOG_ERROR_BLE(...)        do {} while(0)
+#define LOG_WARNING_BLE(...)      do {} while(0)
+#define LOG_DEBUG_BLE(...)        do {} while(0)
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN LOG_REGION_BLE */
 /**
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_BLE(...)      { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_CUSTOM, .region = LOG_REGION_BLE }; _Log(_tmp, __VA_ARGS__);         }
+ * #define LOG_CUSTOM_BLE(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_BLE, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM
@@ -309,17 +323,24 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 /* USER CODE END LOG_REGION_BLE */
 
 /* LOG_REGION_SYSTEM */
+#if (CFG_LOG_SUPPORTED != 0)
 #define LOG_INFO_SYSTEM(...)      Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_SYSTEM, __VA_ARGS__)
 #define LOG_ERROR_SYSTEM(...)     Log_Module_Print( LOG_VERBOSE_ERROR, LOG_REGION_SYSTEM, __VA_ARGS__)
 #define LOG_WARNING_SYSTEM(...)   Log_Module_Print( LOG_VERBOSE_WARNING, LOG_REGION_SYSTEM, __VA_ARGS__)
 #define LOG_DEBUG_SYSTEM(...)     Log_Module_Print( LOG_VERBOSE_DEBUG, LOG_REGION_SYSTEM, __VA_ARGS__)
+#else /* (CFG_LOG_SUPPORTED != 0) */
+#define LOG_INFO_SYSTEM(...)      do {} while(0)
+#define LOG_ERROR_SYSTEM(...)     do {} while(0)
+#define LOG_WARNING_SYSTEM(...)   do {} while(0)
+#define LOG_DEBUG_SYSTEM(...)     do {} while(0)
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN LOG_REGION_SYSTEM */
 /**
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_SYSTEM(...)      { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_CUSTOM, .region = LOG_REGION_SYSTEM }; _Log(_tmp, __VA_ARGS__);         }
+ * #define LOG_CUSTOM_SYSTEM(...)      Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_SYSTEM, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM
@@ -329,17 +350,24 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
 /* USER CODE END LOG_REGION_SYSTEM */
 
 /* LOG_REGION_APP */
+#if (CFG_LOG_SUPPORTED != 0)
 #define LOG_INFO_APP(...)       Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_APP, __VA_ARGS__)
 #define LOG_ERROR_APP(...)      Log_Module_Print( LOG_VERBOSE_ERROR, LOG_REGION_APP, __VA_ARGS__)
 #define LOG_WARNING_APP(...)    Log_Module_Print( LOG_VERBOSE_WARNING, LOG_REGION_APP, __VA_ARGS__)
 #define LOG_DEBUG_APP(...)      Log_Module_Print( LOG_VERBOSE_DEBUG, LOG_REGION_APP, __VA_ARGS__)
+#else /* (CFG_LOG_SUPPORTED != 0) */
+#define LOG_INFO_APP(...)       do {} while(0)
+#define LOG_ERROR_APP(...)      do {} while(0)
+#define LOG_WARNING_APP(...)    do {} while(0)
+#define LOG_DEBUG_APP(...)      do {} while(0)
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* USER CODE BEGIN LOG_REGION_APP */
 /**
  * Add inside this user section your defines to match the new verbose levels you
  * created into Log_Verbose_Level_t.
  * Example :
- * #define LOG_CUSTOM_APP(...)      { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_CUSTOM, .region = LOG_REGION_APP }; _Log(_tmp, __VA_ARGS__);         }
+ * #define LOG_CUSTOM_APP(...)         Log_Module_Print( LOG_VERBOSE_CUSTOM, LOG_REGION_APP, __VA_ARGS__);
  *
  * You don't need to update all regions with your custom values.
  * Do it accordingly to your needs. E.g you might not need LOG_VERBOSE_CUSTOM
@@ -353,10 +381,17 @@ void Log_Module_PrintWithArg( Log_Verbose_Level_t eVerboseLevel, Log_Region_t eR
  * Add inside this user section your defines to match the new regions you
  * created into Log_Region_t.
  * Example :
- * #define LOG_INFO_CUSTOM(...)       { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_INFO, .region = LOG_REGION_CUSTOM }; _Log(_tmp, __VA_ARGS__);          }
- * #define LOG_ERROR_CUSTOM(...)      { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_ERROR, .region = LOG_REGION_CUSTOM }; _Log(_tmp, __VA_ARGS__);         }
- * #define LOG_WARNING_CUSTOM(...)    { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_WARNING, .region = LOG_REGION_CUSTOM }; _Log(_tmp, __VA_ARGS__);       }
- * #define LOG_DEBUG_CUSTOM(...)      { Log_Module_t _tmp = { .verbose_level = LOG_VERBOSE_DEBUG, .region = LOG_REGION_CUSTOM }; _Log(_tmp, __VA_ARGS__);         }
+ * #if (CFG_LOG_SUPPORTED != 0)
+ * #define LOG_INFO_CUSTOM(...)       Log_Module_Print( LOG_VERBOSE_INFO, LOG_REGION_CUSTOM, __VA_ARGS__)
+ * #define LOG_ERROR_CUSTOM(...)      Log_Module_Print( LOG_VERBOSE_ERROR, LOG_REGION_CUSTOM, __VA_ARGS__)
+ * #define LOG_WARNING_CUSTOM(...)    Log_Module_Print( LOG_VERBOSE_WARNING, LOG_REGION_CUSTOM, __VA_ARGS__)
+ * #define LOG_DEBUG_CUSTOM(...)      Log_Module_Print( LOG_VERBOSE_DEBUG, LOG_REGION_CUSTOM, __VA_ARGS__)
+ * #else
+ * #define LOG_INFO_CUSTOM(...)       do {} while(0)
+ * #define LOG_ERROR_CUSTOM(...)      do {} while(0)
+ * #define LOG_WARNING_CUSTOM(...)    do {} while(0)
+ * #define LOG_DEBUG_CUSTOM(...)      do {} while(0)
+ * #endif
  */
 
 /* USER CODE END APP_LOG_USER_DEFINES */

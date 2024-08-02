@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32wbaxx_ll_pwr.h"
+#include "partition_stm32wbaxx.h"  /* Trustzone-M core secure attributes */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,7 +92,7 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-/* Configure the peripherals common clocks */
+  /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
   /* GTZC initialisation */
   MX_GTZC_S_Init();
@@ -368,7 +369,26 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void RestoreFromStandby(){
 
+  /* Ensure this is a return from Standby, and not a reset */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  if( (LL_PWR_IsActiveFlag_SB() == 1UL ) &&
+     (READ_REG(RCC->CSR) == 0U)
+       )
+  {
+    TZ_SAU_Setup();
+  /* FPU settings ------------------------------------------------------------*/
+#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+    SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
+#endif
+  
+    MX_GPIO_Init();
+    MX_GTZC_S_Init();
+    
+    NonSecure_Init();
+  }
+}
 /* USER CODE END 4 */
 
 /**

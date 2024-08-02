@@ -18,8 +18,10 @@
   */
 /* USER CODE END Header */
 
-#include "app_conf.h"
 #include "main.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
 #include "stm32_rtos.h"
 
 extern void mac_baremetal_run(void);
@@ -74,7 +76,7 @@ void MacSys_Resume(void)
   */
 void MacSys_SemaphoreSet(void)
 {
-  UTIL_SEQ_SetTask( TASK_MAC_LAYER, CFG_TASK_PRIO_MAC_LAYER );
+  UTIL_SEQ_SetTask( TASK_MAC_LAYER, TASK_PRIO_MAC_LAYER );
 }
 
 /**

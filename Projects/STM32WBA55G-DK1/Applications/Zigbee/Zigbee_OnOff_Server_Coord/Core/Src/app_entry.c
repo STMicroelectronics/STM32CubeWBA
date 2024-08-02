@@ -20,16 +20,18 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "log_module.h"
 #include "app_conf.h"
 #include "main.h"
 #include "app_zigbee.h"
 #include "app_entry.h"
-#include "advanced_memory_manager.h"
+#include "stm32_rtos.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "app_sys.h"
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
+#include "advanced_memory_manager.h"
 #include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
@@ -37,7 +39,6 @@
 #endif /* CFG_LOG_SUPPORTED */
 #include "otp.h"
 #include "scm.h"
-#include "stm32_rtos.h"
 #include "stm32wbaxx_ll_rcc.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -69,6 +70,7 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+
 /* USER CODE BEGIN PD */
 #if (CFG_BUTTON_SUPPORTED == 1)
 #define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
@@ -122,6 +124,7 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
+
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
@@ -138,38 +141,16 @@ static uint8_t        alwaysPressJoyPin = false;
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
-static void Config_HSE(void);
-static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+static void Config_HSE(void);
+static void APPE_RNG_Init( void );
 
-/**
- * @brief Wrapper for init function of the MM for the AMM
- *
- * @param p_PoolAddr: Address of the pool to use - Not use -
- * @param PoolSize: Size of the pool - Not use -
- *
- * @return None
- */
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static void APPE_AMM_Init(void);
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
+static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
-/**
- * @brief Wrapper for allocate function of the MM for the AMM
- *
- * @param BufferSize
- *
- * @return Allocated buffer
- */
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
-
-/**
- * @brief Wrapper for free function of the MM for the AMM
- *
- * @param p_BufferAddr
- *
- * @return None
- */
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -192,7 +173,7 @@ static void Button_TriggerActions         ( void * arg );
 
 /* Functions Definition ------------------------------------------------------*/
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network configuration.
  */
 void MX_APPE_Config(void)
 {
@@ -211,7 +192,7 @@ void MX_APPE_LinkLayerInit(void)
 }
 
 /**
- * @brief   System Initialisation.
+ * @brief   Wireless Private Area Network initialisation.
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
@@ -225,11 +206,11 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Configure the system Power Mode */
   SystemPower_Config();
 
-  /* Initialize the Advance Memory Manager */
-  AMM_Init(&ammInitConfig);
+  /* Initialize the Advance Memory Manager module */
+  APPE_AMM_Init();
 
-  /* Register the AMM background task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM_BCKGND, UTIL_SEQ_RFU, AMM_BackgroundProcess);
+  /* Initialize the Random Number Generator module */
+  APPE_RNG_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)  
@@ -244,8 +225,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE END APPE_Init_1 */
 
-  RNG_Init();
-
   /* Initialization of the low level : link layer and MAC */
   MX_APPE_LinkLayerInit();
 
@@ -255,8 +234,21 @@ uint32_t MX_APPE_Init(void *p_param)
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
+
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
+
   return WPAN_SUCCESS;
+}
+
+void MX_APPE_Process(void)
+{
+  /* USER CODE BEGIN MX_APPE_Process_1 */
+
+  /* USER CODE END MX_APPE_Process_1 */
+  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
+  /* USER CODE BEGIN MX_APPE_Process_2 */
+
+  /* USER CODE END MX_APPE_Process_2 */
 }
 
 /* USER CODE BEGIN FD */
@@ -355,6 +347,12 @@ static void System_Init( void )
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
+#if(CFG_RT_DEBUG_DTB == 1)
+  /* DTB initialization and configuration */
+  RT_DEBUG_DTBInit();
+  RT_DEBUG_DTBConfig();
+#endif /* CFG_RT_DEBUG_DTB */
+
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
@@ -423,19 +421,32 @@ static void SystemPower_Config(void)
 /**
  * @brief Initialize Random Number Generator module
  */
-static void RNG_Init(void)
+static void APPE_RNG_Init(void)
 {
   HW_RNG_Start();
 
+  /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
 
-static void AMM_WrapperInit (uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+static void APPE_AMM_Init(void)
+{
+  /* Initialize the Advance Memory Manager */
+  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
+  {
+    Error_Handler();
+  }
+
+  /* Register Advance Memory Manager task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
+}
+
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
 {
   UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
 }
 
-static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize)
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
 {
   return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
 }
@@ -571,16 +582,6 @@ static void Button_TriggerActions( void * arg )
  * WRAP FUNCTIONS
  *
  *************************************************************/
-void MX_APPE_Process(void)
-{
-  /* USER CODE BEGIN MX_APPE_Process_1 */
-
-  /* USER CODE END MX_APPE_Process_1 */
-  UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
-  /* USER CODE BEGIN MX_APPE_Process_2 */
-
-  /* USER CODE END MX_APPE_Process_2 */
-}
 
 void UTIL_SEQ_Idle( void )
 {
@@ -641,11 +642,11 @@ void UTIL_SEQ_PostIdle( void )
 }
 
 /**
- * @brief Callback used by 'Random Generator' to launch Task to generate Random Numbers
+ * @brief Callback used by Random Number Generator to launch Task to generate Random Numbers
  */
 void HWCB_RNG_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, CFG_TASK_PRIO_HW_RNG);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
 }
 
 void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
@@ -656,10 +657,10 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
   p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
 }
 
-void AMM_ProcessRequest (void)
+void AMM_ProcessRequest(void)
 {
-  /* Ask for AMM background task scheduling */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM_BCKGND, CFG_SEQ_PRIO_0);
+  /* Trigger to call Advance Memory Manager process function */
+  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))

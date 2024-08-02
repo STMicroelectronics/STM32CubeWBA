@@ -10,6 +10,7 @@
 :: arg6 is to force python execution
 :: "python" : execute with python script
 set "projectdir=%~dp0"
+call "%projectdir%\..\..\env.bat"
 set "version=%2"
 set "signing=%~3"
 set "userAppBinary=%projectdir%\..\Binary"
@@ -61,13 +62,12 @@ set external_flash_enable=
 set ns_code_start=
 set encrypted=
 set over_write=
+set flash_area_scratch_size=
 :: end of updated field
 pushd %projectdir%\..\..\SBSFU_Boot\Src
 set sbsfu_key_dir=%cd%
 popd
-pushd %projectdir%\..\..\..\..\..\..\Middlewares\Third_Party\mcuboot
-set mcuboot_dir=%cd%
-popd
+
 ::Make sure we have a Binary sub-folder in UserApp folder
 if not exist "%userAppBinary%" (
 mkdir "%userAppBinary%"
@@ -82,23 +82,21 @@ if  "%app_image_number%" == "1" (
 exit 0
 )
 :start
-IF [%~6] NEQ [python] (
-goto exe:
-)
-goto py:
-:exe
 ::line for window executable
-set "imgtool=%mcuboot_dir%\scripts\dist\imgtool\imgtool.exe"
-set "python="
 if exist %imgtool% (
 echo Postbuild with windows executable
 goto postbuild
+) else (
+  echo ""
+  echo "!!! WARNING : imgtool has not been found on your installation."
+  echo ""
+  echo "  Install CubeProgrammer on your machine in default path : C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer"
+  echo "  or "
+  echo "  Update your %projectdir%\..\..\env.bat with the proper path."
+  echo ""
+  exit 0
 )
-:py
-::line for python
-echo Postbuild with python script
-set "imgtool=%mcuboot_dir%\scripts\imgtool\main.py"
-set "python=python "
+
 :postbuild
 
 
@@ -144,13 +142,13 @@ set "option=%option% --overwrite-only"
 set "encrypt="
 )
 :signing
-echo %signing% %mode% %option% app_image_number=%app_image_number% > %projectdir%\output.txt 2>&1
+echo %signing% %mode% %option% app_image_number=%app_image_number% > %projectdir%\output.txt 2>>&1
 
 if "%app_image_number%" == "2" (
 goto continue
 )
-echo "assemble image" >> %projectdir%\output.txt 2>&1
-set "command_ass=%python%%imgtool% ass -f %sbsfu_s% -o %image_s_size%  -i 0x0 %sbsfu_ns% %sbsfu% >> %projectdir%\output.txt 2>&1"
+echo "assemble image" >> %projectdir%\output.txt 2>>&1
+set "command_ass=%imgtool% ass -f %sbsfu_s% -o %image_s_size%  -i 0x0 %sbsfu_ns% %sbsfu% >> %projectdir%\output.txt 2>>&1"
 %command_ass%
 IF %ERRORLEVEL% NEQ 0 goto :error_ass
 :: sign assemble binary as secure image, slot size is image_ns_size
@@ -165,25 +163,32 @@ set "sbsfu_s_enc_sign=%sbsfu_enc_sign%"
 set "val=16"
 
 ::nb sectors in image areas
-set /A image_ns_sectors=%image_ns_size% / 0x2000
-set /A image_s_sectors=%image_s_size% / 0x2000
+IF "%over_write%" == "1" (
+set "image_ns_sectors="
+set "image_s_sectors="
+set "flag="
+) ELSE (
+set /A "image_ns_sectors=(((%image_ns_size%+1) / %flash_area_scratch_size%)+1)"
+set /A "image_s_sectors=(((%image_s_size%+1) / %flash_area_scratch_size%)+1)"
+set "flag=-M"
+)
 
-echo "%signing% init image signing" >> %projectdir%\output.txt 2>&1
+echo "%signing% init image signing" >> %projectdir%\output.txt 2>>&1
 IF "%signing%" == "nonsecure" (
-set "command_init=%python%%imgtool% sign -k %key_ns% %encrypt% -e little -S %image_ns_size% -M %image_ns_sectors% -H 0x400 --pad-header %option% -v %version% --confirm --pad -s auto --align %val% %sbsfu_ns% %sbsfu_ns_init% >> %projectdir%\output.txt 2>&1"
+set "command_init=%imgtool% sign -k %key_ns% %encrypt% -e little -S %image_ns_size% %flag% %image_ns_sectors% -H 0x400 --pad-header %option% -v %version% --confirm --pad -s auto --align %val% %sbsfu_ns% %sbsfu_ns_init% >> %projectdir%\output.txt 2>>&1"
 goto :docommand_init
 )
-set "command_init=%python%%imgtool% sign -k %key_s% %encrypt% -e little -S %image_s_size% -M %image_s_sectors% -H 0x400 --pad-header %option% -v %version% --confirm --pad -s auto --align %val% %sbsfu_s% %sbsfu_s_init% >> %projectdir%\output.txt 2>&1"
+set "command_init=%imgtool% sign -k %key_s% %encrypt% -e little -S %image_s_size% %flag% %image_s_sectors% -H 0x400 --pad-header %option% -v %version% --confirm --pad -s auto --align %val% %sbsfu_s% %sbsfu_s_init% >> %projectdir%\output.txt 2>>&1"
 :docommand_init
 %command_init%
 IF %ERRORLEVEL% NEQ 0 goto :error_init
 
-echo "%signing% clear image signing" >> %projectdir%\output.txt 2>&1
+echo "%signing% clear image signing" >> %projectdir%\output.txt 2>>&1
 IF "%signing%" == "nonsecure" (
-set "command_clear=%python%%imgtool% sign -k %key_ns% -e little -S %image_ns_size% -M %image_ns_sectors% -H 0x400 --pad-header %option% -v %version% -s auto --align %val% %sbsfu_ns% %sbsfu_ns_sign% >> %projectdir%\output.txt 2>&1"
+set "command_clear=%imgtool% sign -k %key_ns% -e little -S %image_ns_size% %flag% %image_ns_sectors% -H 0x400 --pad-header %option% -v %version% -s auto --align %val% %sbsfu_ns% %sbsfu_ns_sign% >> %projectdir%\output.txt 2>>&1"
 goto :docommand_clear
 )
-set "command_clear=%python%%imgtool% sign -k %key_s% -e little -S %image_s_size% -M %image_s_sectors% -H 0x400 --pad-header %option% -v %version% -s auto --align %val% %sbsfu_s% %sbsfu_s_sign% >> %projectdir%\output.txt 2>&1"
+set "command_clear=%imgtool% sign -k %key_s% -e little -S %image_s_size% %flag% %image_s_sectors% -H 0x400 --pad-header %option% -v %version% -s auto --align %val% %sbsfu_s% %sbsfu_s_sign% >> %projectdir%\output.txt 2>>&1"
 :docommand_clear
 %command_clear%
 IF %ERRORLEVEL% NEQ 0 goto :error_clear
@@ -191,12 +196,12 @@ IF %ERRORLEVEL% NEQ 0 goto :error_clear
 if "%encrypted%" == "0" (
 exit 0
 )
-echo "%signing% enc image encrypting and signing" >> %projectdir%\output.txt 2>&1
+echo "%signing% enc image encrypting and signing" >> %projectdir%\output.txt 2>>&1
 IF "%signing%" == "nonsecure" (
-set "command_enc=%python%%imgtool% sign -k %key_ns% -E %key_enc_pub% -e little -S %image_ns_size% -M %image_ns_sectors% -H 0x400 --pad-header %option% -v %version%  -s auto --align %val% %sbsfu_ns% %sbsfu_ns_enc_sign% >> %projectdir%\output.txt 2>&1"
+set "command_enc=%imgtool% sign -k %key_ns% -E %key_enc_pub% -e little -S %image_ns_size% %flag% %image_ns_sectors% -H 0x400 --pad-header %option% -v %version%  -s auto --align %val% %sbsfu_ns% %sbsfu_ns_enc_sign% >> %projectdir%\output.txt 2>>&1"
 goto :docommand_enc
 )
-set "command_enc=%python%%imgtool% sign -k %key_s% -E %key_enc_pub% -e little -S %image_s_size% -M %image_s_sectors% -H 0x400 --pad-header %option% -v %version%  -s auto --align %val% %sbsfu_s% %sbsfu_s_enc_sign% >> %projectdir%\output.txt 2>&1"
+set "command_enc=%imgtool% sign -k %key_s% -E %key_enc_pub% -e little -S %image_s_size% %flag% %image_s_sectors% -H 0x400 --pad-header %option% -v %version%  -s auto --align %val% %sbsfu_s% %sbsfu_s_enc_sign% >> %projectdir%\output.txt 2>>&1"
 :docommand_enc
 %command_enc%
 IF %ERRORLEVEL% NEQ 0 goto :error_enc
@@ -204,6 +209,11 @@ IF %ERRORLEVEL% NEQ 0 goto :error_enc
 exit 0
 :error_init
 echo "%command_init% : failed" >> %projectdir%\\output.txt
+echo "===============================================================" >> %projectdir%\\output.txt
+echo " Which version of tool is used :" >> %projectdir%\\output.txt
+%imgtool% version -b >> %projectdir%\\output.txt
+echo "===============================================================" >> %projectdir%\\output.txt
+echo "" >> %projectdir%\\output.txt
 exit 1
 :error_clear
 echo "%command_clear% : failed" >> %projectdir%\\output.txt

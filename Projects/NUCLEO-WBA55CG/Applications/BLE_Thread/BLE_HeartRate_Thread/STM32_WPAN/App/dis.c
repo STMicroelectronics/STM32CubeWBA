@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "common_blesvc.h"
 #include "dis.h"
+#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 

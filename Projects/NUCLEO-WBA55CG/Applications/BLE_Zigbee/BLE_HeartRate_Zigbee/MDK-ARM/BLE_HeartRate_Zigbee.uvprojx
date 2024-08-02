@@ -374,8 +374,7 @@
             <ScatterFile>stm32wba55xx_flash.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
-            <Misc>--diag_suppress L6314W
---diag_suppress 1296</Misc>
+            <Misc></Misc>
             <LinkerInputFile></LinkerInputFile>
             <DisabledWarnings></DisabledWarnings>
           </LDads>
@@ -512,6 +511,11 @@
               <FileName>baes_ecb.c</FileName>
               <FileType>1</FileType>
               <FilePath>../System/Modules/baes/baes_ecb.c</FilePath>
+            </File>
+            <File>
+              <FileName>baes_ccm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Modules\baes\baes_ccm.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1060,9 +1064,9 @@
           <GroupName>Middlewares/STM32_WPAN/mac_802_15_4/lib</GroupName>
           <Files>
             <File>
-              <FileName>wba_mac_lib.a</FileName>
+              <FileName>wba_mac_concurrent_lib.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_concurrent_lib.a</FilePath>
             </File>
           </Files>
         </Group>

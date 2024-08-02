@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -136,6 +137,7 @@ typedef struct
   APP_BLE_ConnStatus_t Device_Connection_Status;
   /* USER CODE BEGIN PTD_1*/
   uint8_t deviceServerFound;
+  uint8_t a_deviceServerBdAddrType;
   uint8_t a_deviceServerBdAddr[BD_ADDR_SIZE];
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
@@ -172,14 +174,12 @@ static const uint8_t a_BdAddrDefault[BD_ADDR_SIZE] =
 {
   0x65, 0x43, 0x21, 0x1E, 0x08, 0x00
 };
-
 /* Identity root key used to derive IRK and DHK(Legacy) */
 static const uint8_t a_BLE_CfgIrValue[16] = CFG_BLE_IR;
 
 /* Encryption root key used to derive LTK(Legacy) and CSRK */
 static const uint8_t a_BLE_CfgErValue[16] = CFG_BLE_ER;
 static BleApplicationContext_t bleAppContext;
-
 GATT_CLIENT_APP_ConnHandle_Notif_evt_t clientHandleNotification;
 
 static char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' }; /* Gap Device Name */
@@ -234,6 +234,7 @@ void APP_BLE_Init(void)
 
   LST_init_head(&BleAsynchEventQueue);
 
+  /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
@@ -284,6 +285,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
   hci_event_pckt    *p_event_pckt;
   evt_le_meta_event *p_meta_evt;
   evt_blecore_aci   *p_blecore_evt;
+  int8_t rssi;
 
   p_event_pckt = (hci_event_pckt*) ((hci_uart_pckt *) p_Pckt)->data;
   UNUSED(ret);
@@ -338,6 +340,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                        (conn_interval_us%1000) / 10,
                        p_conn_update_complete->Conn_Latency,
                        p_conn_update_complete->Supervision_Timeout*10);
+          UNUSED(conn_interval_us);
           UNUSED(p_conn_update_complete);
 
           /* USER CODE BEGIN EVT_LE_CONN_UPDATE_COMPLETE */
@@ -378,6 +381,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Conn_Latency,
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -420,6 +424,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Conn_Latency,
                       p_conn_complete->Supervision_Timeout * 10
                      );
+          UNUSED(conn_interval_us);
 
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -456,6 +461,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           hci_le_advertising_report_event_rp0 *p_adv_report;
           p_adv_report = (hci_le_advertising_report_event_rp0 *) p_meta_evt->data;
           UNUSED(p_adv_report);
+
+          rssi = HCI_LE_ADVERTISING_REPORT_RSSI(p_meta_evt->data);
+          UNUSED(rssi);
+
           /* USER CODE BEGIN HCI_EVT_LE_ADVERTISING_REPORT */
 
           uint8_t found_status;
@@ -744,7 +753,7 @@ void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId)
   {
     case PROC_GAP_CENTRAL_SCAN_START:
     {
-      status = aci_gap_start_general_discovery_proc(paramA, paramB, GAP_PUBLIC_ADDR, 0);
+      status = aci_gap_start_general_discovery_proc(paramA, paramB, CFG_BD_ADDRESS_TYPE, 0);
 
       if (status != BLE_STATUS_SUCCESS)
       {
@@ -1004,7 +1013,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.encryptionKeySizeMax,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Use_Fixed_Pin,
                                                bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin,
-                                               CFG_BD_ADDRESS_TYPE);
+                                               CFG_BD_ADDRESS_DEVICE);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : aci_gap_set_authentication_requirement command, result: 0x%02X\n", ret);
@@ -1027,6 +1036,10 @@ static void Ble_Hci_Gap_Gatt_Init(void)
       LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
     }
   }
+
+  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2*/
+
+  /* USER CODE END Ble_Hci_Gap_Gatt_Init_2*/
 
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");
 
@@ -1056,7 +1069,7 @@ static void Ble_UserEvtRx( void)
     UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
   }
 
-  /* set the BG_BleStack_Process task for scheduling */
+  /* Trigger BLE Host stack to process */
   UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
 
 }
@@ -1225,6 +1238,7 @@ static uint8_t analyse_adv_report(hci_le_advertising_report_event_rp0 *p_adv_rep
           }
           if(manufBlueST != UINT8_MAX)
           {
+            bleAppContext.a_deviceServerBdAddrType = p_adv_report->Advertising_Report[0].Address_Type;
             bleAppContext.a_deviceServerBdAddr[0] = p_adv_report->Advertising_Report[0].Address[0];
             bleAppContext.a_deviceServerBdAddr[1] = p_adv_report->Advertising_Report[0].Address[1];
             bleAppContext.a_deviceServerBdAddr[2] = p_adv_report->Advertising_Report[0].Address[2];
@@ -1271,9 +1285,9 @@ static void Connect_Request(void)
     LOG_INFO_APP("Create connection to P2Pserver\n");
 
     result = aci_gap_create_connection(SCAN_INT_MS(500u), SCAN_WIN_MS(500u),
-                                       GAP_PUBLIC_ADDR,
+                                       bleAppContext.a_deviceServerBdAddrType,
                                        &bleAppContext.a_deviceServerBdAddr[0],
-                                       GAP_PUBLIC_ADDR,
+                                       CFG_BD_ADDRESS_TYPE,
                                        CONN_INT_MS(50u), CONN_INT_MS(100u),
                                        0u,
                                        CONN_SUP_TIMEOUT_MS(5000u),

@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "scm.h"
 #include "RTDebug.h"
+#include "utilities_common.h"
 
 #if (CFG_SCM_SUPPORTED == 1)
 
@@ -71,7 +72,7 @@ static void SwitchHse32toHse16(void);
 static void SwitchPlltoHse32(void);
 
 /* Private functions ---------------------------------------------------------*/
-static scm_clockconfig_t scm_getmaxfreq(void)
+OPTIMIZED static scm_clockconfig_t scm_getmaxfreq(void)
 {
   uint8_t idx = 0;
   scm_clockconfig_t max = NO_CLOCK_CONFIG;
@@ -87,7 +88,7 @@ static scm_clockconfig_t scm_getmaxfreq(void)
   return max;
 }
 
-static void scm_systemclockconfig(void)
+OPTIMIZED static void scm_systemclockconfig(void)
 {
   SYSTEM_DEBUG_SIGNAL_SET(SCM_SYSTEM_CLOCK_CONFIG);
 
@@ -169,7 +170,7 @@ static void scm_systemclockconfig(void)
   SYSTEM_DEBUG_SIGNAL_RESET(SCM_SYSTEM_CLOCK_CONFIG);
 }
 
-static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
+OPTIMIZED static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
 {
   /* Start HSI */
   SCM_HSI_CLK_ON();
@@ -200,7 +201,7 @@ static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
   SCM_HSI_CLK_OFF();
 }
 
-static void SwitchHse16toHse32(void)
+OPTIMIZED static void SwitchHse16toHse32(void)
 {
   /**
     * Switch from HSE_16MHz to HSE_32MHz
@@ -224,7 +225,7 @@ static void SwitchHse16toHse32(void)
   LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
 }
 
-static void SwitchHse32toHse16(void)
+OPTIMIZED static void SwitchHse32toHse16(void)
 {
   /**
     * Switch from HSE_16MHz to HSE_32MHz
@@ -246,7 +247,7 @@ static void SwitchHse32toHse16(void)
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
 }
 
-static void SwitchPlltoHse32(void)
+OPTIMIZED static void SwitchPlltoHse32(void)
 {
   /**
     * Switch from PLL to HSE_32MHz
@@ -266,7 +267,7 @@ static void SwitchPlltoHse32(void)
   scm_setwaitstates(HSE32);
 }
 
-static void ConfigStartPll(void)
+OPTIMIZED static void ConfigStartPll(void)
 {
   /* Enable PLL1 output for SYSCLK (PLL1R) */
   LL_RCC_PLL1_EnableDomain_PLL1R();
@@ -331,7 +332,7 @@ static void ConfigHwPll(scm_pll_config_t *p_hw_config)
   * @param  None
   * @retval None
   */
-void scm_init()
+OPTIMIZED void scm_init()
 {
   /* init scm_system_clock_config with LP config
    * scm_system_clock_config SHALL BE UPDATED BY READING HW CONFIG FROM HAL APIs
@@ -422,7 +423,7 @@ void scm_init()
   * @param  None
   * @retval None
   */
-void scm_setup(void)
+OPTIMIZED void scm_setup(void)
 {
   SYSTEM_DEBUG_SIGNAL_SET(SCM_SETUP);
 
@@ -488,7 +489,7 @@ void scm_setup(void)
   * @retval None
   * @note   scm_pll_setconfig to be called before PLL activation (PLL set as system core clock)
   */
-void scm_pll_setconfig(const scm_pll_config_t *p_pll_config)
+OPTIMIZED void scm_pll_setconfig(const scm_pll_config_t *p_pll_config)
 {
   /* Initial PLL configuration */
   scm_system_clock_config.pll.PLLM = p_pll_config->PLLM;
@@ -511,7 +512,7 @@ void scm_pll_setconfig(const scm_pll_config_t *p_pll_config)
   *         running on the PLL with a different configuration that the
   *         one required
   */
-void scm_pll_fractional_update(uint32_t pll_frac)
+OPTIMIZED void scm_pll_fractional_update(uint32_t pll_frac)
 {
   /* PLL1FRACEN set to 0 */
   LL_RCC_PLL1FRACN_Disable();
@@ -537,7 +538,7 @@ void scm_pll_fractional_update(uint32_t pll_frac)
   *         @arg SYS_PLL
   * @retval None
   */
-void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t sysclockconfig)
+OPTIMIZED void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t sysclockconfig)
 {
   scm_clockconfig_t max_freq_requested;
 
@@ -648,7 +649,7 @@ __WEAK void scm_pllready(void)
   *         @arg PLL
   * @retval None
   */
-void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
+OPTIMIZED void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
 {
   /* Configure flash and SRAMs */
   switch (ws_lp_config) {
@@ -708,7 +709,7 @@ void scm_setwaitstates(const scm_ws_lp_t ws_lp_config)
   * @param  None
   * @retval None
   */
-void scm_hserdy_isr(void)
+OPTIMIZED void scm_hserdy_isr(void)
 {
   SYSTEM_DEBUG_SIGNAL_SET(SCM_HSERDY_ISR);
 
@@ -774,7 +775,7 @@ void scm_hserdy_isr(void)
   * @param  None
   * @retval None
   */
-void scm_pllrdy_isr(void)
+OPTIMIZED void scm_pllrdy_isr(void)
 {
   if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
   {
@@ -812,7 +813,7 @@ void scm_pllrdy_isr(void)
   *         @arg SCM_RADIO_NOT_ACTIVE
   * @retval None
   */
-void scm_notifyradiostate(const scm_radio_state_t radio_state)
+OPTIMIZED void scm_notifyradiostate(const scm_radio_state_t radio_state)
 {
   if(radio_state != SCM_RADIO_NOT_ACTIVE)
   {
@@ -831,7 +832,7 @@ void scm_notifyradiostate(const scm_radio_state_t radio_state)
   * @param  None
   * @retval None
   */
-void scm_standbyexit(void)
+OPTIMIZED void scm_standbyexit(void)
 {
   if(scm_system_clock_config.pll.are_pll_params_initialized == 1)
   {

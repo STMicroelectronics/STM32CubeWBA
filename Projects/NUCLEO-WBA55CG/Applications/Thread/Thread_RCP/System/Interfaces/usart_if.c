@@ -22,7 +22,7 @@
 #include "main.h"
 #include "stm32_adv_trace.h"
 #include "usart_if.h"
-#include "app_conf.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -34,14 +34,16 @@
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+#define IRQ_BADIRQ       ((IRQn_Type)(-666))
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
-
-/* Check if we need UsartIf */
-#if (IF_USART_USE == 1)
+/**
+  * @brief LPUART1 handle
+  */
+extern UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN EV */
 
@@ -69,12 +71,9 @@ const UTIL_ADV_TRACE_Driver_s UTIL_TraceDriver =
 
 /* USER CODE BEGIN EC */
 
-
 /* USER CODE END EC */
 
 /* Private variables ---------------------------------------------------------*/
-static Ifhuart_s sIfhuart;
-
 uint8_t receive_after_transmit = 0; /* Whether the UART should be in RX after a Transmit */
 
 /**
@@ -98,112 +97,117 @@ uint8_t charRx;
   */
 static void (*TxCpltCallback)(void *);
 static void (*RxCpltCallback)(uint8_t *pdata, uint16_t size, uint8_t error);
+
+static void LPUART1_DMA_MspDeInit(void);
+
 static void UsartIf_TxCpltCallback(UART_HandleTypeDef *huart);
 static void UsartIf_RxCpltCallback(UART_HandleTypeDef *huart);
+static IRQn_Type get_IRQn_Type_from_DMA_HandleTypeDef(DMA_HandleTypeDef * dma_handler);
 
-/* USER CODE END Private_Function_Prototypes */
-/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PFP */
 
-/* USER CODE BEGIN Private_Typedef */
+/* USER CODE END PFP */
 
-/* USER CODE END Private_Typedef */
-/* Private define ------------------------------------------------------------*/
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
-
-/* USER CODE END Private_Define */
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN Private_Macro */
-
-/* USER CODE END Private_Macro */
-/* Private variables ---------------------------------------------------------*/
-/**
-  * @brief buffer to receive 1 character
-  */
-uint8_t charRx;
-/* USER CODE BEGIN Private_Variables */
-
-/* USER CODE END Private_Variables */
-
-void UartIf_Init(Ifhuart_s sUartIf)
-{
-  sIfhuart.IfhuartTx = sUartIf.IfhuartTx;
-  sIfhuart.IfhuartRx = sUartIf.IfhuartRx;
-}
+/* USER CODE END 0 */
 
 UTIL_ADV_TRACE_Status_t UART_Init(  void (*cb)(void *))
 {
-  /*
-   * It is assumed that UART1 MSP Init is done by
-   * CubeMX layer. As such, no need to call
-   * MX_USART1_UART_Init & HAL_UART_MspInit.
-   */
+  /* USER CODE BEGIN UART_Init 1 */
+
+  /* USER CODE END UART_Init 1 */
+
+  MX_LPUART1_UART_Init();
+
+  /* USER CODE BEGIN UART_Init 2 */
+
+  /* USER CODE END UART_Init 2 */
 
   /* Two layer callbacks: perhaps smarter way to do it? */
   TxCpltCallback = cb;
-  sIfhuart.IfhuartTx->TxCpltCallback = UsartIf_TxCpltCallback;
+
+  hlpuart1.TxCpltCallback = UsartIf_TxCpltCallback;
+
+  /* USER CODE BEGIN UART_Init 3 */
+
+  /* USER CODE END UART_Init 3 */
+
+  /* USER CODE BEGIN UART_Init 4 */
+
+  /* USER CODE END UART_Init 4 */
 
   return UTIL_ADV_TRACE_OK;
-}
-
-UTIL_ADV_TRACE_Status_t UART_TransmitDMA ( uint8_t *pdata, uint16_t size )
-{
-  /* USER CODE BEGIN UART_TransmitDMA 1 */
-
-  /* USER CODE END UART_TransmitDMA 1 */
-
-  UTIL_ADV_TRACE_Status_t status = UTIL_ADV_TRACE_OK;
-
-  /* USER CODE BEGIN UART_TransmitDMA 2 */
-
-  /* USER CODE END UART_TransmitDMA 2 */
-
-  HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(sIfhuart.IfhuartTx, pdata, size);
-
-  if (result != HAL_OK)
-    status = UTIL_ADV_TRACE_HW_ERROR;
-
-  /* Check whether the UART should return in Receiver mode */
-  if(receive_after_transmit)
-  {
-    HAL_UART_Receive_IT(sIfhuart.IfhuartTx, &charRx, 1);
-  }
-
-  /* USER CODE BEGIN UART_TransmitDMA 3 */
-
-  /* USER CODE END UART_TransmitDMA 3 */
-
-  return status;
-
-  /* USER CODE BEGIN UART_TransmitDMA 4 */
-
-  /* USER CODE END UART_TransmitDMA 4 */
 }
 
 UTIL_ADV_TRACE_Status_t UART_DeInit( void )
 {
+  IRQn_Type use_dma;
   HAL_StatusTypeDef result;
 
-  result = HAL_UART_DeInit(sIfhuart.IfhuartTx);
+  /* USER CODE BEGIN UART_DeInit 1 */
+
+  /* USER CODE END UART_DeInit 1 */
+
+  LPUART1_DMA_MspDeInit();
+
+  /* USER CODE BEGIN UART_DeInit 2 */
+
+  /* USER CODE END UART_DeInit 2 */
+
+  result = HAL_UART_DeInit(&hlpuart1);
   if (result != HAL_OK)
   {
-    sIfhuart.IfhuartTx->TxCpltCallback = NULL;
+    hlpuart1.TxCpltCallback = NULL;
     return UTIL_ADV_TRACE_UNKNOWN_ERROR;
   }
 
-  result = HAL_DMA_DeInit(sIfhuart.IfhuartTx->hdmatx);
-  if (result != HAL_OK)
+  /* USER CODE BEGIN UART_DeInit 3 */
+
+  /* USER CODE END UART_DeInit 3 */
+
+  use_dma = get_IRQn_Type_from_DMA_HandleTypeDef(hlpuart1.hdmatx);
+
+  if (use_dma == GPDMA1_Channel0_IRQn || use_dma == GPDMA1_Channel1_IRQn
+      || use_dma == GPDMA1_Channel2_IRQn || use_dma == GPDMA1_Channel3_IRQn
+      || use_dma == GPDMA1_Channel4_IRQn || use_dma == GPDMA1_Channel5_IRQn
+      || use_dma == GPDMA1_Channel6_IRQn || use_dma == GPDMA1_Channel7_IRQn)
   {
-    return UTIL_ADV_TRACE_UNKNOWN_ERROR;
+    result = HAL_DMA_DeInit(hlpuart1.hdmatx);
+    if (result != HAL_OK)
+    {
+      return UTIL_ADV_TRACE_UNKNOWN_ERROR;
+    }
   }
-  
-  result = HAL_UART_DeInit(sIfhuart.IfhuartRx);
-  if (result != HAL_OK)
+
+  /* USER CODE BEGIN UART_DeInit 4 */
+
+  /* USER CODE END UART_DeInit 4 */
+
+  use_dma = get_IRQn_Type_from_DMA_HandleTypeDef(hlpuart1.hdmarx);
+
+  if (use_dma == GPDMA1_Channel0_IRQn || use_dma == GPDMA1_Channel1_IRQn
+      || use_dma == GPDMA1_Channel2_IRQn || use_dma == GPDMA1_Channel3_IRQn
+      || use_dma == GPDMA1_Channel4_IRQn || use_dma == GPDMA1_Channel5_IRQn
+      || use_dma == GPDMA1_Channel6_IRQn || use_dma == GPDMA1_Channel7_IRQn)
   {
-    return UTIL_ADV_TRACE_UNKNOWN_ERROR;
+    result = HAL_DMA_DeInit(hlpuart1.hdmarx);
+    if (result != HAL_OK)
+    {
+      return UTIL_ADV_TRACE_UNKNOWN_ERROR;
+    }
   }
+
+  /* USER CODE BEGIN UART_DeInit 5 */
+
+  /* USER CODE END UART_DeInit 5 */
+
+  /* USER CODE BEGIN UART_DeInit 6 */
+
+  /* USER CODE END UART_DeInit 6 */
 
   return UTIL_ADV_TRACE_OK;
-
 }
 
 UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, uint8_t error))
@@ -213,8 +217,8 @@ UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, u
   /* USER CODE END UART_StartRx 1 */
 
   /* Configure UART1 in Receive mode */
-  HAL_UART_Receive_IT(sIfhuart.IfhuartRx, &charRx, 1);
-  sIfhuart.IfhuartRx->RxCpltCallback = &UsartIf_RxCpltCallback;
+  HAL_UART_Receive_IT(&hlpuart1, &charRx, 1);
+  hlpuart1.RxCpltCallback = &UsartIf_RxCpltCallback;
 
   if (cb != NULL)
   {
@@ -225,74 +229,144 @@ UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, u
 
   /* USER CODE END UART_StartRx 2 */
 
-  return UTIL_ADV_TRACE_OK;
-
   /* USER CODE BEGIN UART_StartRx 3 */
 
   /* USER CODE END UART_StartRx 3 */
-}
 
-
-static void UsartIf_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* ADV Trace callback */
-  TxCpltCallback(NULL);
-}
-
-static void UsartIf_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-   RxCpltCallback(&charRx, 1, 0);
-   HAL_UART_Receive_IT(sIfhuart.IfhuartRx, &charRx, 1);
-}
-
-/* USER CODE END Private_Functions */
-
-#else /* (IF_USART_USE != 1), initialize with empty function to avoid error */
-
-
-/**
- *  @brief  trace tracer definition.
- *
- *  list all the driver interface used by the trace application.
- */
-const UTIL_ADV_TRACE_Driver_s UTIL_TraceDriver =
-{
-  UART_Init,
-  UART_DeInit,
-  UART_StartRx,
-  UART_TransmitDMA
-};
-
-
-void UartIf_Init(Ifhuart_s sUartIf)
-{
-  (void)sUartIf;
-  return;
-}
-
-UTIL_ADV_TRACE_Status_t UART_Init(  void (*cb)(void *))
-{
-  (void)cb;
-  return UTIL_ADV_TRACE_INVALID_PARAM;
+  return UTIL_ADV_TRACE_OK;
 }
 
 UTIL_ADV_TRACE_Status_t UART_TransmitDMA ( uint8_t *pdata, uint16_t size )
 {
-  (void)pdata;
-  (void)size;
-  return UTIL_ADV_TRACE_INVALID_PARAM;
+  HAL_StatusTypeDef result;
+  IRQn_Type use_dma_tx;
+  UTIL_ADV_TRACE_Status_t status = UTIL_ADV_TRACE_OK;
+
+  /* USER CODE BEGIN UART_TransmitDMA 1 */
+
+  /* USER CODE END UART_TransmitDMA 1 */
+
+  /* USER CODE BEGIN UART_TransmitDMA 2 */
+
+  /* USER CODE END UART_TransmitDMA 2 */
+
+  use_dma_tx = get_IRQn_Type_from_DMA_HandleTypeDef(hlpuart1.hdmatx);
+
+  if ( (use_dma_tx == GPDMA1_Channel0_IRQn ) || ( use_dma_tx == GPDMA1_Channel1_IRQn )
+      || ( use_dma_tx == GPDMA1_Channel2_IRQn ) || ( use_dma_tx == GPDMA1_Channel3_IRQn )
+      || ( use_dma_tx == GPDMA1_Channel4_IRQn ) || ( use_dma_tx == GPDMA1_Channel5_IRQn )
+      || ( use_dma_tx == GPDMA1_Channel6_IRQn ) || ( use_dma_tx == GPDMA1_Channel7_IRQn ) )
+  {
+    result = HAL_UART_Transmit_DMA(&hlpuart1, pdata, size);
+  }
+  else
+  {
+    result = HAL_UART_Transmit_IT(&hlpuart1, pdata, size);
+  }
+
+  if (result != HAL_OK)
+  {
+    status = UTIL_ADV_TRACE_HW_ERROR;
+  }
+
+  /* Check whether the UART should return in Receiver mode */
+  if(receive_after_transmit)
+  {
+    HAL_UART_Receive_IT(&hlpuart1, &charRx, 1);
+  }
+
+  /* USER CODE BEGIN UART_TransmitDMA 3 */
+
+  /* USER CODE END UART_TransmitDMA 3 */
+
+  /* USER CODE BEGIN UART_TransmitDMA 4 */
+
+  /* USER CODE END UART_TransmitDMA 4 */
+
+  return status;
 }
 
-UTIL_ADV_TRACE_Status_t UART_DeInit( void )
+static void LPUART1_DMA_MspDeInit(void)
 {
-  return UTIL_ADV_TRACE_INVALID_PARAM;
+  IRQn_Type use_dma_tx;
+
+  /* USER CODE BEGIN LPUART1_DMA_MspDeInit 1 */
+
+  /* USER CODE END LPUART1_DMA_MspDeInit 1 */
+
+  /* Disable LPUART1 clock */
+  __HAL_RCC_LPUART1_CLK_DISABLE();
+
+  /* Disable interrupts for LPUART1 */
+  HAL_NVIC_DisableIRQ(LPUART1_IRQn);
+
+  /* GPDMA1 controller clock disable */
+  __HAL_RCC_GPDMA1_CLK_DISABLE();
+
+  /* DMA interrupt init */
+  use_dma_tx = get_IRQn_Type_from_DMA_HandleTypeDef(hlpuart1.hdmatx);
+
+  if ( use_dma_tx != IRQ_BADIRQ )
+  {
+    HAL_NVIC_DisableIRQ(use_dma_tx);
+  }
+
+  /* USER CODE BEGIN LPUART1_DMA_MspDeInit 2 */
+
+  /* USER CODE END LPUART1_DMA_MspDeInit 2 */
 }
 
-
-UTIL_ADV_TRACE_Status_t UART_StartRx(void (*cb)(uint8_t *pdata, uint16_t size, uint8_t error))
+static void UsartIf_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-  (void)cb;
-  return UTIL_ADV_TRACE_INVALID_PARAM;
+  /* USER CODE BEGIN UsartIf_TxCpltCallback 1 */
+
+  /* USER CODE END UsartIf_TxCpltCallback 1 */
+
+  /* ADV Trace callback */
+  TxCpltCallback(NULL);
+
+  /* USER CODE BEGIN UsartIf_TxCpltCallback 2 */
+
+  /* USER CODE END UsartIf_TxCpltCallback 2 */
 }
 
-#endif /* (IF_USART_USE == 1) */
+static void UsartIf_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* USER CODE BEGIN UsartIf_RxCpltCallback 1 */
+
+  /* USER CODE END UsartIf_RxCpltCallback 1 */
+
+  RxCpltCallback(&charRx, 1, 0);
+  HAL_UART_Receive_IT(&hlpuart1, &charRx, 1);
+
+  /* USER CODE BEGIN UsartIf_RxCpltCallback 2 */
+
+  /* USER CODE END UsartIf_RxCpltCallback 2 */
+}
+
+/**
+  * The purpose of this function is to match a DMA_HandleTypeDef as key with the corresponding IRQn_Type as value.
+  *
+  * TAKE CARE : in case of an invalid parameter or e.g. an usart/lpuart not initialized, this will lead to hard fault.
+  *             it is up to the user to ensure the serial link is in a valid state.
+  */
+static IRQn_Type get_IRQn_Type_from_DMA_HandleTypeDef(DMA_HandleTypeDef * dma_handler)
+{
+  if (dma_handler->Instance == GPDMA1_Channel0) { return GPDMA1_Channel0_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel1) { return GPDMA1_Channel1_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel2) { return GPDMA1_Channel2_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel3) { return GPDMA1_Channel3_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel4) { return GPDMA1_Channel4_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel5) { return GPDMA1_Channel5_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel6) { return GPDMA1_Channel6_IRQn; }
+  if (dma_handler->Instance == GPDMA1_Channel7) { return GPDMA1_Channel7_IRQn; }
+
+  /* Values from (-1) to (-15) are already in used. This value isn't used so it should be safe.
+     So, if you see this value, it means you used an invalid DMA handler as input. */
+  return IRQ_BADIRQ;
+}
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */

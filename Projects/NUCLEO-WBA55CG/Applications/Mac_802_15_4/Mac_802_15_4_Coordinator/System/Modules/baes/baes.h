@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -51,6 +51,8 @@ extern void BAES_EcbCrypt( const uint8_t* key,
 /* AES CMAC interface */
 
 extern void BAES_CmacSetKey( const uint8_t* key );
+
+extern void BAES_CmacSetVector( const uint8_t * pIV );
 
 extern void BAES_CmacCompute( const uint8_t* input,
                               uint32_t size,

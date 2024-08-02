@@ -40,13 +40,12 @@ extern "C" {
 /* USER CODE END ED */
 
 /* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
 struct ApsInfoT
 {
   struct ZbApsFilterT   *pstApsFilter;
   uint32_t              lAsduHandle;
 };
-
-/* USER CODE BEGIN ET */
 
 /* USER CODE END ET */
 

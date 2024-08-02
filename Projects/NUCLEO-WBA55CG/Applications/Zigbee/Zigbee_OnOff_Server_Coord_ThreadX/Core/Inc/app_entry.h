@@ -61,6 +61,7 @@ extern TX_BYTE_POOL *pBytePool; /* ThreadX byte pool pointer for whole WPAN midd
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_LinkLayerInit(void);
 
 /* USER CODE BEGIN EFP */
 #if ( CFG_BUTTON_SUPPORTED == 1 ) 

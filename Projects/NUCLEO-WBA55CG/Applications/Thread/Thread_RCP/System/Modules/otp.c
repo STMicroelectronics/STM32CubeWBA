@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -47,7 +47,8 @@ HAL_StatusTypeDef OTP_Read(uint8_t index, OTP_Data_s** otp_ptr)
   return HAL_OK;
 }
 
-HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8_t hsetune, uint8_t index) {
+HAL_StatusTypeDef OTP_Write(uint8_t* additional_data, uint8_t* bd_address, uint8_t hsetune, uint8_t index)
+{
   HAL_StatusTypeDef err = HAL_ERROR;
   OTP_Data_s otp_data;
   int i;

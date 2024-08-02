@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -205,7 +205,7 @@ void scm_pllrdy_isr(void);
 extern void SCM_HSI_CLK_ON(void);
 
 /**
-  * @brief  SCM HSI clock disable
+  * @brief  SCM HSI clock may be disabled when this function is called
   * @details A weak version is implemented in the module sources.
   * @details It can be overridden by user.
   * @param  None

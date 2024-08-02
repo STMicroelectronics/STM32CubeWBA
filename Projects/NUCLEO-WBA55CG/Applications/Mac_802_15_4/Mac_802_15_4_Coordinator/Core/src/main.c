@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -94,6 +95,7 @@ void PeriphCommonClock_Config(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -411,6 +413,7 @@ void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 1 */
   /* No retention for ICACHE in stop mode */
   LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
+
   /* USER CODE END ICACHE_Init 1 */
 
   /** Enable instruction cache in 1-way (direct mapped cache)
@@ -467,7 +470,7 @@ void MX_RNG_Init(void)
 {
 
   /* USER CODE BEGIN RNG_Init 0 */
-  //memset(&hrng, 0, sizeof(hrng));
+
   /* USER CODE END RNG_Init 0 */
 
   /* USER CODE BEGIN RNG_Init 1 */
@@ -483,9 +486,7 @@ void MX_RNG_Init(void)
   {
     Error_Handler();
   }
-
   /* USER CODE BEGIN RNG_Init 2 */
-
   /* Disable RNG peripheral and its RCC clock */
   //HW_RNG_Disable( );
 
@@ -630,7 +631,6 @@ void MX_GPIO_Init(void)
   RT_DEBUG_GPIO_Init();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-
 /* USER CODE END MX_GPIO_Init_2 */
 }
 

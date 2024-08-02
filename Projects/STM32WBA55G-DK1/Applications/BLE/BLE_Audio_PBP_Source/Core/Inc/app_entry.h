@@ -31,7 +31,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
 /* USER CODE BEGIN Includes */
-
+#include "pbp_app.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 #ifndef APP_SYS_H
 #define APP_SYS_H
+
+#include "main.h"
 
 /* Exported constants --------------------------------------------------------*/
 /*
@@ -35,6 +37,7 @@
 /* Exported functions prototypes ---------------------------------------------*/
 
 void APP_SYS_LPM_EnterLowPowerMode(void);
+void APP_SYS_LinkLayer_BackgroundProcessInit(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

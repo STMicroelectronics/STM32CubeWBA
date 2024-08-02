@@ -23,6 +23,7 @@
 #include "app_common.h"
 #include "ble.h"
 #include "dbg_trace.h"
+#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

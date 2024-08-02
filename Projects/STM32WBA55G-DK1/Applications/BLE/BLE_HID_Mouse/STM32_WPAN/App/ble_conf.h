@@ -34,10 +34,10 @@
  * There is one handler per BLE service
  * Note: There is no handler for the Device Information Service
  */
-#define BLE_CFG_SVC_MAX_NBR_CB                    (1)
+#define BLE_CFG_SVC_MAX_NBR_CB                    (7)
 #define BLE_CFG_CLT_MAX_NBR_CB                    (0)
 
-#define BLE_CFG_MAX_NBR_CB                        (1)
+#define BLE_CFG_MAX_NBR_CB                        (0)
 
 /* USER CODE BEGIN ble_conf_1 */
 

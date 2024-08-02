@@ -27,6 +27,7 @@
 #include "app_mac_802_15_4_process.h"
 #include "st_mac_802_15_4_types.h"
 #include "st_mac_802_15_4_sap.h"
+#include "log_module.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -35,6 +36,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
+
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl;
 ST_MAC_callbacks_t macCallback;

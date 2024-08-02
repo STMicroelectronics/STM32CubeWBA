@@ -205,7 +205,7 @@ void scm_pllrdy_isr(void);
 extern void SCM_HSI_CLK_ON(void);
 
 /**
-  * @brief  SCM HSI clock disable
+  * @brief  SCM HSI clock may be disabled when this function is called
   * @details A weak version is implemented in the module sources.
   * @details It can be overridden by user.
   * @param  None

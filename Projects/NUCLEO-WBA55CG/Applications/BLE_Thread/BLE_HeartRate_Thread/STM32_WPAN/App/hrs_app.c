@@ -28,6 +28,7 @@
 #include "hrs_app.h"
 #include "hrs.h"
 #include "stm32_seq.h"
+#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

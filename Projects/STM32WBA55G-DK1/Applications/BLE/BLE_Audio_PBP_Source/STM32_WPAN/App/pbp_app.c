@@ -25,7 +25,7 @@
 #include "codec_mngr.h"
 #include "ltv_utils.h"
 #include "pbp.h"
-
+#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -379,11 +379,11 @@ uint8_t PBPAPP_StartSource(void)
 {
   uint8_t ret;
   uint8_t a_additional_adv_data[6+16] = {5u,
-                                                   AD_TYPE_COMPLETE_LOCAL_NAME,
-                                                   (uint8_t) 'P',
-                                                   (uint8_t) 'B',
-                                                   (uint8_t) 'P',
-                                                   (uint8_t) '1'};
+                                         AD_TYPE_COMPLETE_LOCAL_NAME,
+                                         (uint8_t) 'P',
+                                         (uint8_t) 'B',
+                                         (uint8_t) 'P',
+                                         (uint8_t) '1'};
   PBP_PBS_BroadcastAudioStart_Params_t pbp_audio_start_params;
   CAP_Broadcast_AudioStart_Params_t cap_audio_start_params;
 
@@ -514,9 +514,9 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
 
   switch (pNotification->EvtOpcode)
   {
-    case CAP_CODEC_CONFIGURED_EVT:
+    case CAP_AUDIO_CLOCK_REQ_EVT:
       {
-        LOG_INFO_APP(">>== CAP_CODEC_CONFIGURED_EVT\n");
+        LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
         Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
         LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
         LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
@@ -802,7 +802,7 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
                                                  &controller_delay_max);
 
       /* choice of implementation : we try to use as much as possible the controller RAM for delaying before the application RAM*/
-      controller_delay = PBPAPP_Context.base_group.PresentationDelay - APP_DELAY_SNK_MIN;
+      controller_delay = PBPAPP_Context.base_group.PresentationDelay - APP_DELAY_SRC_MIN;
 
       /* check that we don't exceed the maximum value */
       if ( controller_delay > controller_delay_max)
@@ -818,7 +818,7 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
       /* compute the application delay */
       LOG_INFO_APP("Expecting application to respect the delay of %d us\n",
                   (PBPAPP_Context.base_group.PresentationDelay - controller_delay));
-      if ((PBPAPP_Context.base_group.PresentationDelay - controller_delay) > APP_DELAY_SNK_MAX)
+      if ((PBPAPP_Context.base_group.PresentationDelay - controller_delay) > APP_DELAY_SRC_MAX)
       {
         LOG_INFO_APP("Warning, could not respect the presentation delay value");
       }

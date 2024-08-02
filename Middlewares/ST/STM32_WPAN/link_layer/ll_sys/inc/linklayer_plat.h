@@ -194,4 +194,18 @@ extern void LINKLAYER_PLAT_DisableOSContextSwitch(void);
  */
 extern void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing);
 
+/**
+  * @brief  Get the ST company ID.
+  * @param  None
+  * @retval Company ID
+  */
+extern uint32_t LINKLAYER_PLAT_GetSTCompanyID(void);
+
+/**
+  * @brief  Get the Unique Device Number (UDN).
+  * @param  None
+  * @retval UDN
+  */
+extern uint32_t LINKLAYER_PLAT_GetUDN(void);
+
 #endif /* LINKLAYER_PLAT_H */

@@ -24,6 +24,7 @@
 #include "main.h"
 #include "app_entry.h"
 #include "stm32_seq.h"
+#include "log_module.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */

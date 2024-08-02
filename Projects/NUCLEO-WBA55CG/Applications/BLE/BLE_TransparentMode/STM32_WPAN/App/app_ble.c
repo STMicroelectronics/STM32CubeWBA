@@ -21,11 +21,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "ble.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 #include "otp.h"
 #include "stm32_timer.h"
 #include "stm_list.h"
@@ -119,9 +120,6 @@ tListNode UART_RX_List;
 tListNode UART_TX_Pool;
 tListNode UART_TX_List;
 
-uint8_t app_busy = 0;
-volatile uint8_t uart_tx_buffer_full = 0;
-
 UART_node *ongoing_TX_node;
 HciTransport_var_t HCI_var;
 
@@ -148,6 +146,7 @@ static void BleStack_Process_BG(void);
 static void TM_Init(void);
 static void TM_SysLocalCmd(uint8_t *data);
 static void TM_TxToHost(void);
+static void TM_EventNotify(void);
 static void TM_UART_TxComplete(uint8_t *buffer);
 static void TM_UART_RxComplete(uint8_t *buffer);
 
@@ -178,6 +177,7 @@ void APP_BLE_Init(void)
   
   /* USER CODE END APP_BLE_Init_1 */
 
+  /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
 
   /* NVM emulation in RAM initialization */
@@ -260,8 +260,6 @@ static void TM_Init(void)
   HCI_var.rx_state = HCI_RX_STATE_WAIT_TYPE;
   HCI_var.rxReceivedState = 0;
 
-  uart_tx_buffer_full = 0;
-
   LST_init_head(&UART_RX_Pool);
   LST_init_head(&UART_RX_List);
   LST_init_head(&UART_TX_Pool);
@@ -287,6 +285,7 @@ static void TM_Init(void)
 
   os_enable_isr();
   UTIL_SEQ_RegTask(1U << CFG_TASK_TX_TO_HOST_ID, UTIL_SEQ_RFU, TM_TxToHost);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_NOTIFY_EVENT_ID, UTIL_SEQ_RFU, TM_EventNotify);
 
 }
 
@@ -382,12 +381,19 @@ static void TM_TxToHost(void)
   {}
 }
 
+static void TM_EventNotify(void)
+{
+  change_state_options_t event_options;
+
+  /* Notify LL that Host is ready */
+  event_options.combined_value = 0x0F;
+  ll_intf_chng_evnt_hndlr_state(event_options);
+}
+
 static void TM_UART_TxComplete(uint8_t *buffer)
 {
   memset(ongoing_TX_node->buf, 0, HCI_DATA_MAX_SIZE);
   LST_insert_tail(&UART_TX_Pool,(tListNode*) ongoing_TX_node);
-
-  uart_tx_buffer_full = 0;
 
   if ( LST_get_size(&UART_TX_List) == 0)
   {
@@ -731,8 +737,7 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   }
   else
   {
-    app_busy = 1;
-    uart_tx_buffer_full = 1;
+    UTIL_SEQ_SetTask(1U << CFG_TASK_NOTIFY_EVENT_ID, CFG_SEQ_PRIO_0);
   }
   return status;
 }

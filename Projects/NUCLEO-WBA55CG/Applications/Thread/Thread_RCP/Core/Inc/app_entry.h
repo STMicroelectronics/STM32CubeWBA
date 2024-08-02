@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -56,14 +56,21 @@ extern "C" {
 
 /* USER CODE END EM */
 
-/* Exported functions ---------------------------------------------*/
+/* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_LinkLayerInit(void);
 void MX_APPE_Process(void);
 
-/* USER CODE BEGIN EF */
+/* USER CODE BEGIN EFP */
+#if ( CFG_BUTTON_SUPPORTED == 1 ) 
+uint8_t   APPE_ButtonIsLongPressed    ( uint16_t btnIdx );
+void      APPE_Button1Action          ( void );
+void      APPE_Button2Action          ( void );
+void      APPE_Button3Action          ( void );
+#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
-/* USER CODE END EF */
+/* USER CODE END EFP */
 
 #ifdef __cplusplus
 } /* extern "C" */

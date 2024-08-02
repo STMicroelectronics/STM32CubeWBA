@@ -26,8 +26,9 @@
 #include "mac_temporary.h"
 #include "mem_intf.h"
 
+#define EXT_TX_US_FEATURE 0 //Feature not supported for moment
 
-/** First byte by provided by user must be one of folowwing :
+/** First byte by provided by user must be one of following :
   0x01(data) or 0x03(command) or 0x07(extended) 
   0x21(dataAckreq) or 0x23(commandAckreq) or 0x27(extendedAckreq)
 -> MANDATORY for radio (other FCF is possible but not yet tested) 
@@ -116,6 +117,21 @@ typedef enum {
   EXT_ACK_DISABLE
 }ST_MAC_ExtAckMode_t;
 
+#if (EXT_TX_US_FEATURE == 1)
+/**
+ * @brief Extended Clear channel access mode
+ * used to measure RF noise on current channel before transmission
+ * EXT_NO_CCA : no CCA, Radio will always Tx
+ * EXT_CCA    : One CCA done before, Tx if CCA measure < CCA threshold 
+ * EXT_CSMACA : refer to 15.4 standard, multiple CCA done at random interval
+ */
+typedef enum {
+  EXT_NO_CCA,
+  EXT_CCA,
+  EXT_CSMACA
+}ST_MAC_ExtCCAMode_t;
+#endif
+
 /**
  * @brief Extended Ack config of the device Exammple : 
  * DEFAULT_ACK_CONFIG
@@ -159,7 +175,8 @@ typedef enum {
   EXT_IDLE,
   EXT_TX,
   EXT_RX,
-  EXT_ED
+  EXT_ED,
+  EXT_TX_US
 }ST_MAC_ExtState;
 
 /**
@@ -196,7 +213,7 @@ typedef struct  {
 void* ST_MAC_ParseRxFrame(uint8_t* InFrame, uint8_t InLen, int8_t rssi, uint8_t lqi);
 
 /**
- * @brief (weak) ST_MAC_ExtRxFilter defined as weak can be overidden by user to filter frame at ext service layer
+ * @brief (weak) ST_MAC_ExtRxFilter defined as weak can be overridden by user to filter frame at ext service layer
  * if ST_MAC_ParseRxFrame has been defined by user InFrameStruct has same type else : ST_MAC_ExtRxFrame_s*
  *
  * @param InFrameStruct* : Frame Parsed to filter
@@ -209,7 +226,7 @@ uint8_t ST_MAC_ExtRxFilter(void* InFrameStruct);
  * By default weak function is defined as IEEE Ack 15.4
  * ACK_MEMCPY must be used to copy payload (avoid hardfault because of unaligned access)
  *
- * @param Ack : Ack Frame to fullfill (CRC added automatically by the HW radio)
+ * @param Ack : Ack Frame to fulfill (CRC added automatically by the HW radio)
  *        AckLen : Size of Ack Frame (CRC length will be added automatically)
  *        Rxframe : Frame has just received (sequence number can be retrieved from Rxframe for ex)
  */
@@ -311,7 +328,7 @@ MAC_Status_t ST_MAC_ExtStartStopAck(ST_MAC_ExtAckMode_t eAckMode);
  *          eAck     : [in] ST_MAC_ExtAckMode_t Frame must be acknowledge by DRx or not
  * @retval MAC_Status_t
  */
-MAC_Status_t ST_MAC_ExtPushTxFIFO(uint8_t* TxFrame, uint8_t Len, ST_MAC_ExtAckMode_t eAck);
+MAC_Status_t ST_MAC_ExtPushTxFIFO(uint8_t* Payload, uint8_t Len, ST_MAC_ExtAckMode_t eAck);
 
 /**
  * @fn ST_MAC_ExtStartTx
@@ -324,6 +341,26 @@ MAC_Status_t ST_MAC_ExtPushTxFIFO(uint8_t* TxFrame, uint8_t Len, ST_MAC_ExtAckMo
  */
 MAC_Status_t ST_MAC_ExtStartTx(void);
 
+
+#if (EXT_TX_US_FEATURE == 1)
+
+/**
+ * @fn ST_MAC_ExtStartTxUs
+ *
+ * @brief Use to start transmission with us accuracy delay (relative to call of this API) 
+ * TxDelayUs corresponds to the time between call of this API & hardware first byte Transmission
+ *
+ * @param   *Payload : [in] Payload to send 
+ *          Len      : [in] Size of the payloas
+ *          eAck     : [in] ST_MAC_ExtAckMode_t Frame must be acknowledge by DRx or not
+ *          eCcaMode : [in] Choose CCA mode (do not use -> feature not released)
+ *          TxDelayUs: [in] Delay in microsec
+ * @retval MAC_Status_t
+ */
+MAC_Status_t ST_MAC_ExtStartTxUs(uint8_t* Payload, uint8_t Len, ST_MAC_ExtAckMode_t eAck, 
+                                  ST_MAC_ExtCCAMode_t eCcaMode, uint32_t TxDelayUs);
+
+#endif
 /**
  * @fn ST_MAC_ExtStartRx
  *

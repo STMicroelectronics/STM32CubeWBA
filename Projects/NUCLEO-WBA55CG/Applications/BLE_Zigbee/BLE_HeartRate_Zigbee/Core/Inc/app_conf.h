@@ -25,7 +25,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
 #include "utilities_conf.h"
-#include "log_module.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -527,6 +526,12 @@ typedef enum
  *   1 -> RF TX output level from -20 dBm to +3 dBm
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
+
+/* Custom LSE sleep clock accuracy to use if both conditions are met: 
+ * - LSE is selected as Link Layer sleep clock source
+ * - the LSE used is different from the default one.
+ */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
 /* USER CODE BEGIN Radio_Configuration */
 

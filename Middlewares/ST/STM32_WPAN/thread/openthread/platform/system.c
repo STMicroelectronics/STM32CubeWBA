@@ -139,34 +139,6 @@ void otSysProcessDrivers(otInstance *aInstance)
 }
 
 
-void otPlatRadioGetIeeeEui64(otInstance *aInstance, uint8_t *aIeeeEui64)
-{
-      uint32_t company_id = LL_FLASH_GetSTCompanyID();
-      uint32_t device_uid = LL_FLASH_GetUDN();
-
-      //check if data correctly saved in ROM during factory process
-      if (company_id == 0xffffffff)
-      {
-        company_id = 0x0080E1; //ST company ID
-      }
-
-      //check if data correctly saved in ROM during factory process
-      if (device_uid == 0xffffffff)
-      {
-        device_uid = 0x2A; //WBA default device ID
-        /* Need to add random in this case ? */
-      }
-
-      aIeeeEui64[0] = (company_id>>16)&0xff;
-      aIeeeEui64[1] = (company_id>>8)&0xff;
-      aIeeeEui64[2] = (company_id>>0)&0xff;
-      aIeeeEui64[3] = 0xFF;
-      aIeeeEui64[4] = 0xFE;
-      aIeeeEui64[5] = (device_uid>>16)&0xff;
-      aIeeeEui64[6] = (device_uid>>8)&0xff;
-      aIeeeEui64[7] = (device_uid>>0)&0xff;
-}
-
 /**
  * __2snprintf symbol missing in aeabi OT libs, add it on platform 
  *

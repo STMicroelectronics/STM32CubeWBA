@@ -224,32 +224,12 @@
                     <state>PHY_40nm_2_30_a_A1</state>
                     <state>LOGGER_ENABLE=0</state>
                     <state>LOGUARTENABLED</state>
-                    
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                     <state>APPLICATION_USE_BAREMETAL</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
-                    
+                    <state>APPLICATION_USE_AMM</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -382,7 +362,7 @@
                     <state>$PROJ_DIR$\..\System\Interfaces</state>
                     <state>$PROJ_DIR$\..\System\Modules</state>
                     <state>$PROJ_DIR$\..\System\Modules\baes</state>
-                    
+                    <state>$PROJ_DIR$\..\System\Modules\Flash</state>
                     <state>$PROJ_DIR$\..\System\Modules\MemoryManager</state>
                     <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
                     <state>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter</state>
@@ -401,26 +381,14 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\ieee_15_4_basic</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
-                    
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\conf</state>
-                    
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\lpm\tiny_lpm</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\misc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\sequencer</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\tim_serv</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Utilities\trace\adv_trace</state>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1145,32 +1113,6 @@
             <data/>
         </settings>
     </configuration>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     <group>
         <name>Application</name>
         <group>
@@ -1186,7 +1128,6 @@
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\app_entry.c</name>
                 </file>
-                
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\main.c</name>
                 </file>
@@ -1206,22 +1147,7 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_endpoint.c</name>
-                        
                     </file>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
                 </group>
                 <group>
                     <name>Target</name>
@@ -1251,6 +1177,9 @@
                     <name>Config</name>
                     <group>
                         <name>CRC_Ctrl</name>
+                        <excluded>
+                            <configuration>Zigbee_OccupSensing_Client_Coord</configuration>
+                        </excluded>
                         <file>
                             <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
                         </file>
@@ -1259,6 +1188,15 @@
                         <name>Debug_GPIO</name>
                         <file>
                             <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
+                        </file>
+                    </group>
+                    <group>
+                        <name>Flash</name>
+                        <excluded>
+                            <configuration>Zigbee_OccupSensing_Client_Coord</configuration>
+                        </excluded>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Config\Flash\simple_nvm_arbiter_conf.c</name>
                         </file>
                     </group>
                     <group>
@@ -1300,10 +1238,31 @@
                     <group>
                         <name>baes</name>
                         <file>
+                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
+                        </file>
+                        <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\System\Modules\baes\baes_ecb.c</name>
+                        </file>
+                    </group>
+                    <group>
+                        <name>Flash</name>
+                        <excluded>
+                            <configuration>Zigbee_OccupSensing_Client_Coord</configuration>
+                        </excluded>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Modules\Flash\flash_driver.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Modules\Flash\flash_manager.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Modules\Flash\rf_timing_synchro.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\System\Modules\Flash\simple_nvm_arbiter.c</name>
                         </file>
                     </group>
                     <group>
@@ -1355,7 +1314,7 @@
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                     </file>
                 </group>
             </group>
@@ -1545,98 +1504,30 @@
         <name>Middlewares</name>
         <group>
             <name>STM32_WPAN</name>
-            <group>
-                <name>link_layer</name>
-                
-                <group>
-                    <name>ll_cmd_lib</name>
-                    <group>
-                        <name>lib</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
-                            
-                        </file>
-                    </group>
-                    
-                    
-                </group>
-                <group>
-                    <name>ll_sys</name>
-                    <group>
-                        <name>src</name>
-                        
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
-                        </file>
-                    </group>
-                </group>
-            </group>
-            <group>
-                <name>mac_802_15_4</name>
-                
-                <group>
-                    <name>lib</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
-                        
-                    </file>
-                </group>
-                
-            </group>
-            <group>
-                <name>Zigbee</name>
-                <group>
-                    <name>clusters</name>
-                    
-                    
-                    
-                    
-                    
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
-                        
-                    </file>
-                </group>
-                <group>
-                    <name>stack</name>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
-                        
-                    </file>
-                    
-                </group>
-            </group>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
+            </file>
         </group>
     </group>
     <group>

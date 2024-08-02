@@ -19,7 +19,9 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<h2 id="phy-cli-application-description"><strong>PHY CLI Application Description</strong></h2>
+<div class="row">
+<div class="col-sm-12 col-lg-8">
+<h2 id="phy_cli-application-description"><strong>Phy_Cli Application Description</strong></h2>
 <p>A dedicated application allows the control and the test of the 802_15_4 radio via a command line interface or STM32CubeMonitorRF.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, 802.15.4, Commands</p>
@@ -122,6 +124,17 @@
 <li>Flow control = none</li>
 </ul></li>
 </ul>
+<h4 id="full-phy-certification-and-dynamic-rx-printing"><strong>Full PHY certification and dynamic RX printing</strong></h4>
+<ul>
+<li>In order to perform a fully exhaustive PHY certification, it may be necessary to enable the “dynamic RX printing” using the <em>rx_start 1</em> command. This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed using default baudrate of 115200.</li>
+<li>By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
+<ul>
+<li>the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.</li>
+<li>SMPS is enabled at init (ensure the board used is SMPS compatible)</li>
+<li>The <em>tx_on</em> signal is readable at the PA1 GPIO, required for turnaround times certification tests.</li>
+</ul></li>
+<li>Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.</li>
+</ul>
 <h3 id="examples-of-commands"><strong>Examples of commands</strong></h3>
 <ul>
 <li>Help</li>
@@ -133,10 +146,13 @@
 <li>TX_start 0x0C,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 <strong><number></strong> <strong><delay></strong> <em>Send a frame <strong>number</strong> time with <strong>delay</strong> in ms between each packet</em></li>
 <li>TX_start 0x0C,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 0 <em>Send the frame infinitely until TX_stop is called</em></li>
 <li>TX_stop <em>Stop an ongoing transmission</em></li>
-<li>TX_start 0x0C,0x<strong>2</strong>1,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 <em>Send a frame with ACK request (requires another CLI with Rx_start)</em></li>
+<li>TX_start 0x0C,0x21,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 <em>Send a frame with ACK request (requires another CLI with Rx_start)</em></li>
 <li>RX_start <em>Start a reception</em></li>
+<li>RX_start 1 <em>Start a reception, prints paylaod of frames as they arrive</em></li>
 <li>RX_stop <em>Stop a reception</em></li>
 </ul>
+</div>
+</div>
 </div>
 </div>
 </body>

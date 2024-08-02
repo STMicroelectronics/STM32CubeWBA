@@ -39,12 +39,13 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                    CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_LINK_LAYER                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_ALARM                     CFG_SEQ_PRIO_1
-#define CFG_TASK_PRIO_US_ALARM                  CFG_TASK_PRIO_ALARM
-#define CFG_TASK_PRIO_TASKLETS                  CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_UART                      CFG_SEQ_PRIO_1
+#define TASK_PRIO_RNG                           CFG_SEQ_PRIO_0
+#define TASK_PRIO_LINK_LAYER                    CFG_SEQ_PRIO_0
+#define TASK_PRIO_ALARM                         CFG_SEQ_PRIO_1
+#define TASK_PRIO_US_ALARM                      TASK_PRIO_ALARM
+#define TASK_PRIO_TASKLETS                      CFG_SEQ_PRIO_0
+#define TASK_PRIO_UART                          CFG_SEQ_PRIO_1
+#define TASK_PRIO_PKA							CFG_SEQ_PRIO_1
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define CFG_TASK_PRIO_BUTTON_SWx                CFG_SEQ_PRIO_1

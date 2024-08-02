@@ -32,8 +32,8 @@
 #include "stm32wbaxx_hal.h"
 
 /* Needed modules */
+#include "flash_driver.h"
 #include "flash_manager.h"
-#include "stm32wbaxx_hal_flash_ex.h"
 #include "crc_ctrl.h"
 #include "crc_ctrl_conf.h"
 
@@ -1729,31 +1729,32 @@ uint8_t EraseSector (const uint32_t SectorId, const uint32_t SectorNumber)
 {
   uint8_t error = FALSE;
 
-  uint32_t pageError = 0x00;
+  uint32_t sectorIdx = 0x00;
 
-  FLASH_EraseInitTypeDef eraseInit =
+  FD_FlashOp_Status_t funcError = FD_FLASHOP_SUCCESS;
+
+  if (0u != SectorNumber)
   {
-    .TypeErase = FLASH_TYPEERASE_PAGES,
-    .Page = SectorId,
-    .NbPages = SectorNumber,
-  };
+    /* Setup erase index */
+    sectorIdx = (SectorNumber - 1u);
 
-  HAL_FLASH_Unlock();
+    while ((SectorNumber > sectorIdx) && (FD_FLASHOP_SUCCESS == funcError))
+    {
+      funcError = FD_EraseSectors ((SectorId + sectorIdx));
 
-  if (HAL_FLASHEx_Erase(&eraseInit, &pageError) != HAL_OK)
-  {
-    error = FALSE;
+      if (FD_FLASHOP_SUCCESS == funcError)
+      {
+        sectorIdx++;
+      }
+    }
+
+    /* Check if operation OK */
+    if ((SectorNumber <= sectorIdx) &&
+        (FD_FLASHOP_SUCCESS == funcError))
+    {
+      error = TRUE;
+    }
   }
-  else if (pageError != 0xFFFFFFFFu)
-  {
-    error = FALSE;
-  }
-  else
-  {
-    error = TRUE;
-  }
-
-  HAL_FLASH_Lock();
 
   return error;
 }

@@ -219,10 +219,10 @@ void SystemInit(void)
   /* Note: Approximative computation and timeout execution not taking into
            account processing CPU cycles */
   timeout_cpu_cycles = 2;
-  while (READ_BIT(ADC4->ISR, ADC_ISR_ADRDY) == 0)
+  while (READ_BIT(ADC4->ISR, ADC_ISR_ADRDY) == 0U)
   {
     timeout_cpu_cycles--;
-    if(timeout_cpu_cycles == 0)
+    if(timeout_cpu_cycles == 0U)
     {
       break;
     }
@@ -236,10 +236,10 @@ void SystemInit(void)
   /* Note: Approximative computation and timeout execution not taking into
            account processing CPU cycles */
   timeout_cpu_cycles = 6;
-  while (READ_BIT(ADC4->CR, ADC_CR_ADEN) != 0)
+  while (READ_BIT(ADC4->CR, ADC_CR_ADEN) != 0U)
   {
     timeout_cpu_cycles--;
-    if(timeout_cpu_cycles == 0)
+    if(timeout_cpu_cycles == 0U)
     {
       break;
     }
@@ -322,11 +322,11 @@ void SystemCoreClockUpdate(void)
       /* Check if fractional part is enable */
       if ((tmp1 & RCC_PLL1CFGR_PLL1FRACEN) != 0x00u)
       {
-        fracn = ((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos);
+        fracn = (float_t)((uint32_t)((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos));
       }
       else
       {
-        fracn = 0;
+        fracn = (float_t)0U;
       }
 
       /* determine PLL source */
@@ -349,8 +349,8 @@ void SystemCoreClockUpdate(void)
       }
 
       /* Compute VCO output frequency */
-      pllvco = ((float) tmp1 / (float)pllm) * (((float)plln + (float)(fracn / 0x2000u)));
-      SystemCoreClock = (uint32_t)((float_t) pllvco /(float_t) pllr);
+      pllvco = ((float_t) tmp1 / (float_t)pllm) * (((float_t)plln + (float_t)(fracn / (float_t)0x2000U)));
+      SystemCoreClock = (uint32_t)((float_t)(pllvco / (float_t)pllr));
       break;
 
     case 0x00u:  /* HSI used as system clock source */

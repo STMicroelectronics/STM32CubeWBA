@@ -17,6 +17,11 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+/* For GCC need to optimize all the files*/
+#if defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC optimize ("Ofast")
+#endif
 
 #include "app_common.h"
 #include "main.h"
@@ -24,6 +29,7 @@
 #include "ll_sys.h"
 #include "ll_sys_if.h"
 #include "stm32_seq.h"
+#include "utilities_common.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "temp_measurement.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
@@ -64,7 +70,9 @@ static void ll_sys_bg_temperature_measurement_init(void);
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
 /* USER CODE BEGIN PFP */
-
+#if defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -80,7 +88,7 @@ static void ll_sys_bg_temperature_measurement_init(void);
   * @param  None
   * @retval None
   */
-void ll_sys_bg_process_init(void)
+OPTIMIZED void ll_sys_bg_process_init(void)
 {
   /* Tasks creation */
   UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER, UTIL_SEQ_RFU, ll_sys_bg_process);
@@ -91,7 +99,7 @@ void ll_sys_bg_process_init(void)
   * @param  None
   * @retval None
   */
-void ll_sys_schedule_bg_process(void)
+OPTIMIZED void ll_sys_schedule_bg_process(void)
 {
   UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_TASK_PRIO_LINK_LAYER);
 }
@@ -101,7 +109,7 @@ void ll_sys_schedule_bg_process(void)
   * @param  None
   * @retval None
   */
-void ll_sys_schedule_bg_process_isr(void)
+OPTIMIZED void ll_sys_schedule_bg_process_isr(void)
 {
   UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER, CFG_TASK_PRIO_LINK_LAYER);
 }
@@ -111,7 +119,7 @@ void ll_sys_schedule_bg_process_isr(void)
   * @param  None
   * @retval None
   */
-void ll_sys_config_params(void)
+OPTIMIZED void ll_sys_config_params(void)
 {
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
@@ -137,7 +145,7 @@ void ll_sys_config_params(void)
   * @param  None
   * @retval None
   */
-void ll_sys_bg_temperature_measurement_init(void)
+OPTIMIZED void ll_sys_bg_temperature_measurement_init(void)
 {
   /* Tasks creation */
   UTIL_SEQ_RegTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, UTIL_SEQ_RFU, TEMPMEAS_RequestTemperatureMeasurement);
@@ -148,7 +156,7 @@ void ll_sys_bg_temperature_measurement_init(void)
   * @param  None
   * @retval None
   */
-void ll_sys_bg_temperature_measurement(void)
+OPTIMIZED void ll_sys_bg_temperature_measurement(void)
 {
   UTIL_SEQ_SetTask(1U << CFG_TASK_LINK_LAYER_TEMP_MEAS, CFG_SEQ_PRIO_0);
 }

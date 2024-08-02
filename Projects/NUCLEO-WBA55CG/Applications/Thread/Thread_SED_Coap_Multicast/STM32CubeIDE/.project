@@ -23,7 +23,8 @@
 		<nature>org.eclipse.cdt.core.cnature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUCubeIdeServicesRevAev2ProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUNonUnderRootProjectNature</nature>
-		<nature>com.st.stm32cube.ide.mcu.MCUCubeExampleProjectNature</nature>
+		<nature>com.st.stm32cube.ide.mcu.MCUCubeProjectNature</nature>
+		<nature>com.st.stm32cube.ide.mcu.MCUAdvancedStructureProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUEndUserDisabledTrustZoneProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUNonSecureProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUSingleCpuProjectNature</nature>
@@ -32,6 +33,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
 	<linkedResources>
+		<link>
+			<name>Thread_SED_Coap_Multicast.ioc</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Thread_SED_Coap_Multicast.ioc</locationURI>
+		</link>
 		<link>
 			<name>Doc/README.md</name>
 			<type>1</type>
@@ -78,6 +84,26 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/misc/stm32_tiny_vsnprintf.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/app_entry.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_entry.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/main.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/main.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/stm32wbaxx_hal_msp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/stm32wbaxx_it.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/CMSIS/system_stm32wbaxx.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/system_stm32wbaxx.c</locationURI>
@@ -86,16 +112,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_adc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_adc_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cortex.c</name>
@@ -141,26 +157,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gpio.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gtzc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_hsem.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_icache.c</name>
@@ -233,6 +229,26 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/STM32_WPAN/alarm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/alarm.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/diag.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/diag.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/entropy_renamed.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/entropy_renamed.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/flash.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/flash.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/STM32_WPAN/ll_sys_cs.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
@@ -253,24 +269,39 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/app_entry.c</name>
+			<name>Middlewares/STM32_WPAN/logging_stm32wba.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_entry.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/logging_stm32wba.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/main.c</name>
+			<name>Middlewares/STM32_WPAN/misc.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/main.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/misc.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/stm32wbaxx_hal_msp.c</name>
+			<name>Middlewares/STM32_WPAN/spi-stubs.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/spi-stubs.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/stm32wbaxx_it.c</name>
+			<name>Middlewares/STM32_WPAN/system.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/system.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/threadplat_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/threadplat_pka.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/uart.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/uart.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/uart_rcp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/uart_rcp.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
@@ -298,9 +329,24 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/power_table.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Interfaces/hw_aes.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_aes.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Interfaces/hw_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_rng.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Interfaces/pka_p256.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/pka_p256.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
@@ -318,14 +364,14 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/usart_if.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/adc_ctrl.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/adc_ctrl.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/System/Modules/app_sys.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/app_sys.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/crc_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/crc_ctrl.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/otp.c</name>
@@ -338,54 +384,19 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/scm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Modules/temp_measurement.c</name>
+			<name>Application/User/System/Modules/stm_list.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/temp_measurement.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/alarm.c</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/alarm.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/diag.c</name>
+			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/diag.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/entropy_renamed.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/entropy_renamed.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/flash.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/flash.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/logging_stm32wba.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/logging_stm32wba.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/misc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/misc.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/spi-stubs.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/spi-stubs.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/system.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/system.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/STM32_WPAN/openthread/platform/uart.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/uart.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/CRC_Ctrl/crc_ctrl_conf.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/Debug_GPIO/app_debug.c</name>
@@ -426,6 +437,21 @@
 			<name>Application/User/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/baes/baes_cmac.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_cmac.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/baes/baes_ecb.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ecb.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ccm.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

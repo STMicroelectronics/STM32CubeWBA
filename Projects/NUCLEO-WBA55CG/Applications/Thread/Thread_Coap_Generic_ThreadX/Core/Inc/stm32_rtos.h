@@ -40,23 +40,31 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* ThreadX priorities by default  */
-#define CFG_TASK_PRIO_HW_RNG                    6u
-#define CFG_TASK_PREEMP_HW_RNG                  6u
-  
-#define CFG_TASK_PRIO_ALARM                     6u
-#define CFG_TASK_PREEMP_ALARM                   6u
-  
-#define CFG_TASK_PRIO_US_ALARM                  CFG_TASK_PRIO_ALARM
-#define CFG_TASK_PREEMP_US_ALARM                CFG_TASK_PRIO_ALARM
-  
-#define CFG_TASK_PRIO_TASKLETS                  7u
-#define CFG_TASK_PREEMP_TASKLETS                7u
+#define TASK_PRIO_LINK_LAYER                    (7u)
+#define TASK_PREEMP_LINK_LAYER                  (0u)
 
-#define CFG_TASK_PRIO_LINK_LAYER                8u
-#define CFG_TASK_PREEMP_LINK_LAYER              8u
-  
-#define CFG_TASK_PRIO_CLI_UART                  12u
-#define CFG_TASK_PREEMP_CLI_UART                12u  
+#define TASK_PRIO_TEMP_MEAS_LL                  (7u)
+#define TASK_PREEMP_TEMP_MEAS_LL                (0u)
+
+#define TASK_PRIO_RNG                           (11u)
+#define TASK_PREEMP_RNG                         (0u)
+#define TASK_PRIO_ALARM                         (6u)
+#define TASK_PREEMP_ALARM                       (6u)
+
+#define TASK_PRIO_US_ALARM                      TASK_PRIO_ALARM
+#define TASK_PREEMP_US_ALARM                    TASK_PRIO_ALARM
+
+#define TASK_PRIO_TASKLETS                      (7u)
+#define TASK_PREEMP_TASKLETS                    (7u)
+
+#define TASK_PRIO_PKA                           (10u)
+#define TASK_PREEMP_PRIO_PKA                    (10u)
+
+#define TASK_PRIO_CLI_UART                      (12u)
+#define TASK_PREEMP_CLI_UART                    (12u)
+
+#define TASK_PRIO_SEND                          (13u)
+#define TASK_PREEMP_PRIO_SEND                   (13u)
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define CFG_TASK_PRIO_BUTTON_SWx                13u
@@ -64,21 +72,25 @@ extern "C" {
 
 /* USER CODE END TASK_Priority_Define */
 
-#define RTOS_MAX_THREAD                         20u
+#define RTOS_MAX_THREAD                         (20u)
 
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
-#define RTOS_STACK_SIZE_ENHANCED                ( 1024u * 2u )
+#define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
 #define RTOS_STACK_SIZE_REDUCED                 ( 512u )
-#define RTOS_STACK_SIZE_SMALL                   ( 384u )
+#define RTOS_STACK_SIZE_SMALL                   ( 256u )
+#define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_LINK_LAYER_STACK_SIZE              RTOS_STACK_SIZE_LARGE
-#define TASK_HW_RNG_STACK_SIZE                  RTOS_STACK_SIZE_REDUCED
-#define TASK_ALARM_STACK_SIZE                   RTOS_STACK_SIZE_ENHANCED
-#define TASK_ALARM_US_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
-#define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
-#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_ALARM                   RTOS_STACK_SIZE_MODERATE
+#define TASK_STACK_SIZE_ALARM_US                RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_TASKLETS                RTOS_STACK_SIZE_LARGE
+#define TASK_STACK_SIZE_CLI_UART                RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_SEND                    RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_PKA                     RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
 
@@ -94,7 +106,13 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported variables --------------------------------------------------------*/
+extern TX_BYTE_POOL       *pBytePool;   /* ThreadX byte pool pointer for whole WPAN middleware */
+
 /* USER CODE BEGIN EV */
+#if (CFG_BUTTON_SUPPORTED == 1)
+/* Button management */
+extern TX_SEMAPHORE       ButtonSw1Semaphore, ButtonSw2Semaphore, ButtonSw3Semaphore;
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END EV */
 

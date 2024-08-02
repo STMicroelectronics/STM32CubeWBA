@@ -45,9 +45,9 @@ typedef void (*fct_t)(void);
 #define CFG_OTA_NBR_OF_SECTOR_VAL_MSG       (*(uint8_t*)(SRAM1_BASE+2))
 
 /* Size in Page of Download and Active slots */
-#define DOWNLOAD_ACTIVE_NB_SECTORS          (FLASH_PAGE_NB - CFG_NVM_NB_SECTORS - CFG_USER_DATA_NB_SECTORS)
+#define DOWNLOAD_ACTIVE_NB_SECTORS          ((FLASH_SIZE / FLASH_PAGE_SIZE) - CFG_NVM_NB_SECTORS - CFG_USER_DATA_NB_SECTORS)
 /* Start address where the User Data shall be located */
-#define USER_CFG_SLOT_START_SECTOR_INDEX    (FLASH_PAGE_NB - CFG_NVM_NB_SECTORS - CFG_USER_DATA_NB_SECTORS)
+#define USER_CFG_SLOT_START_SECTOR_INDEX    ((FLASH_SIZE / FLASH_PAGE_SIZE) - CFG_NVM_NB_SECTORS - CFG_USER_DATA_NB_SECTORS)
 /* Size in Page of Download or active slot */
 #define APP_SLOT_PAGE_SIZE                  ((DOWNLOAD_ACTIVE_NB_SECTORS - CFG_ACTIVE_SLOT_START_SECTOR_INDEX) / 2)
 /* Define the start address where the NEW application shall be downloaded */
@@ -74,7 +74,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 static void BootModeCheck( void );
 static uint8_t CheckFwAppValidity( uint8_t page_idx );
-static void JumpFwApp( void );
+void JumpFwApp( void );
 static void DeleteSlot( uint8_t page_idx );
 static void MoveToActiveSlot( uint8_t page_idx );
 static void JumpSelectionOnPowerUp( void );
@@ -214,7 +214,7 @@ static void BootModeCheck( void )
     {
       uint8_t download_slot_start_sector = CFG_OTA_START_SECTOR_IDX_VAL_MSG;
       
-      if((download_slot_start_sector >= FLASH_PAGE_NB) || 
+      if((download_slot_start_sector >= (FLASH_SIZE / FLASH_PAGE_SIZE)) || 
          ((download_slot_start_sector < CFG_ACTIVE_SLOT_START_SECTOR_INDEX)))
       {
         /* CFG_OTA_START_SECTOR_IDX_VAL_MSG not correctly initialized */
@@ -333,7 +333,7 @@ static uint8_t CheckFwAppValidity( uint8_t page_idx )
  * Jump to existing FW App in flash
  * It never returns
  */
-static void JumpFwApp( void )
+void JumpFwApp( void )
 {
   fct_t app_reset_handler;
 
@@ -389,7 +389,18 @@ static void DeleteSlot( uint8_t page_idx )
 
   p_erase_init.TypeErase = FLASH_TYPEERASE_PAGES;
   p_erase_init.NbPages = NbrOfPageToBeErased;
-  p_erase_init.Page = (uint32_t)page_idx;
+  p_erase_init.Page = (uint32_t)(page_idx & (FLASH_PAGE_NB - 1u));
+
+#if defined(FLASH_DBANK_SUPPORT)
+  if ((FLASH_PAGE_NB & page_idx) ^ (1u & READ_BIT (FLASH->OPTR, FLASH_OPTR_SWAP_BANK_Msk)))
+  {
+    p_erase_init.Banks = FLASH_BANK_2;
+  }
+  else
+  {
+    p_erase_init.Banks = FLASH_BANK_1;
+  } 
+#endif
 
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
   

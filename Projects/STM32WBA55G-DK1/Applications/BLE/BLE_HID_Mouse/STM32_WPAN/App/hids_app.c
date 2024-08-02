@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
@@ -270,7 +271,8 @@ void HIDS_APP_EvtRx(HIDS_APP_ConnHandleNotEvt_t *p_Notification)
     case HIDS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
       UTIL_TIMER_StartWithPeriod(&(HIDS_APP_Context.TimerUpdate_Id), (uint32_t)(1000 / (HIDS_APP_Context.SampleFrequency)));
-      /* ---- Display SMALL HEART ---- */
+#if (CFG_LCD_SUPPORTED == 1)
+      /* ---- Display MOUSE ---- */
       BSP_LCD_Clear(0,LCD_COLOR_BLACK);
       BSP_LCD_Refresh(0);
       LCD_DrawIcon(0, 0 , 64, 64, (uint8_t *)mouse, TRUE);
@@ -279,6 +281,7 @@ void HIDS_APP_EvtRx(HIDS_APP_ConnHandleNotEvt_t *p_Notification)
       UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"HID Mouse", RIGHT_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"CONNECTED", RIGHT_MODE);
       BSP_LCD_Refresh(0);
+#endif
       /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
 
@@ -412,6 +415,7 @@ static void HIDS_APP_UpdateReport(void)
   HIDS_CharOpcode_t report_type = HIDS_INPUTREP;
   JOYPin_TypeDef Joystick_state = (JOYPin_TypeDef)BSP_JOY_GetState(JOY1);
   
+  /* Joystick directions according LCD screen displays */
   if(Joystick_state != JOY_NONE)
   {
     switch(Joystick_state)
@@ -424,25 +428,25 @@ static void HIDS_APP_UpdateReport(void)
 
       case(JOY_UP):
         {
-          mouse_report.x = 1 * MOUSE_SPEED; 
+          mouse_report.y = -1 * MOUSE_SPEED; 
         }
         break;
       
       case(JOY_DOWN):
         {
-          mouse_report.x = -1 * MOUSE_SPEED; 
+          mouse_report.y = 1 * MOUSE_SPEED; 
         }
         break;
 
       case(JOY_LEFT):
         {
-          mouse_report.y = -1 * MOUSE_SPEED; 
+          mouse_report.x = -1 * MOUSE_SPEED; 
         }
         break;
 
       case(JOY_RIGHT):
         {
-          mouse_report.y = 1 * MOUSE_SPEED; 
+          mouse_report.x = 1 * MOUSE_SPEED; 
         }
         break;
     

@@ -61,7 +61,7 @@ static void RF_CONTROL_AntennaSwitch_Disable(void)
 
 void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
 {
-  ble_stat_t status = GENERAL_FAILURE;
+  ble_stat_t status;
 
   if(state == RF_ANTSW_ENABLE)
   {

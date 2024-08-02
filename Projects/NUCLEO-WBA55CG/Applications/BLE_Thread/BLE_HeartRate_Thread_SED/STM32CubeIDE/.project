@@ -508,6 +508,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_ccm.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Modules/baes/baes_cmac.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/baes/baes_cmac.c</locationURI>
@@ -556,6 +561,11 @@
 			<name>Middlewares/STM32_WPAN/thread/openthread/platform/system.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/system.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/STM32_WPAN/thread/openthread/platform/threadplat_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/thread/openthread/platform/threadplat_pka.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/STM32_WPAN/thread/openthread/platform/uart.c</name>

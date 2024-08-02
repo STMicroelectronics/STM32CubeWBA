@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,12 +26,15 @@
 __weak void RNG_KERNEL_CLK_ON(void)
 {
   LL_RCC_HSI_Enable();
-  while(LL_RCC_HSI_IsReady() == 0);
+  while(LL_RCC_HSI_IsReady() == 0)
+  {
+    LL_RCC_HSI_Enable();
+  }
 }
 
 __weak void RNG_KERNEL_CLK_OFF(void)
 {
-  LL_RCC_HSI_Disable();
+
 }
 
 /*****************************************************************************/

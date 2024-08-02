@@ -5,7 +5,7 @@
   * @author  MCD Application Team
   * @brief   Configuration Header for crc_ctrl.c module
   ******************************************************************************
-   * @attention
+  * @attention
   *
   * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
