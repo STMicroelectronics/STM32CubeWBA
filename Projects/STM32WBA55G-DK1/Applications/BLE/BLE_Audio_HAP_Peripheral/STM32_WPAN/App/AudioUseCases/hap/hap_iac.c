@@ -313,8 +313,6 @@ tBleStatus HAP_IAC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t M
           pData[(*len)+4] = (uint8_t) ((ALERT_LEVEL_CHARACTERISTIC_UUID >> 8 ));
           /*value length*/
           pData[(*len)+5] = 0;
-
-          remain -= 6u;
           *len += 6u;
         }
         else

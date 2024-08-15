@@ -117,7 +117,7 @@ static void TIMAudio_Init(void);
   */
 void CODEC_ProcessInit(void)
 {
-  HAL_NVIC_SetPriority(CODEC_MNGR_INTR_NUM, 15, 0);
+  HAL_NVIC_SetPriority(CODEC_MNGR_INTR_NUM, CODEC_MNGR_INTR_PRIO, 0);
   NVIC_EnableIRQ(CODEC_MNGR_INTR_NUM);
 }
 

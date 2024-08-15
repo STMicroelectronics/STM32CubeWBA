@@ -137,6 +137,8 @@ typedef struct
   uint8_t          RemoteAddressType;
   uint8_t          aRemoteAddress[6u];
   GattService_t    GattService;
+  uint16_t         GapServiceHandle;
+  uint16_t         GapAppearanceCharHandle;
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
 
@@ -301,7 +303,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       LOG_INFO_APP("     - Connection Handle:   0x%02X\n     - Reason:    0x%02X\n",
                   p_disconnection_complete_event->Connection_Handle,
                   p_disconnection_complete_event->Reason);
-      TMAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle);
+      TMAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle,
+                               p_disconnection_complete_event->Reason);
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -676,12 +679,15 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           }
 
           ret = aci_gatt_confirm_indication(p_indication->Connection_Handle);
-          LOG_INFO_APP(">>== aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
-
           if (ret != BLE_STATUS_SUCCESS)
           {
             /* Impossible to confirm indication due to GATT process ongoing. Notify tmap_app */
             TMAPAPP_ConfirmIndicationRequired(p_indication->Connection_Handle);
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
           }
           break;
         }
@@ -881,7 +887,19 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 }
 
 /* USER CODE BEGIN FD*/
+tBleStatus SetGapAppearance(uint16_t Appearance)
+{
+  tBleStatus ret;
 
+  ret = aci_gatt_update_char_value(bleAppContext.GapServiceHandle,
+                                   bleAppContext.GapAppearanceCharHandle,
+                                   0,
+                                   2,
+                                   (uint8_t *)&Appearance);
+  LOG_INFO_APP("Set Apperance %04X in Gap Database with status %d\n", Appearance, ret);
+
+  return ret;
+}
 /* USER CODE END FD*/
 
 /*************************************************************
@@ -1098,7 +1116,8 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   bleAppContext.BleApplicationContext_legacy.bleSecurityParam.Fixed_Pin             = CFG_FIXED_PIN;
   bleAppContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode          = CFG_BONDING_MODE;
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_1*/
-
+  bleAppContext.GapServiceHandle = gap_service_handle;
+  bleAppContext.GapAppearanceCharHandle = gap_appearance_char_handle;
   /* USER CODE END Ble_Hci_Gap_Gatt_Init_1*/
 
   ret = aci_gap_set_authentication_requirement(bleAppContext.BleApplicationContext_legacy.bleSecurityParam.bonding_mode,
@@ -1364,7 +1383,11 @@ static void GATTService_StoreDatabase(void)
   ((uint8_t*)(hdr + 1))[3] = 0xFFU;
 
   hdr[2] = GATTSERVICE_GATT_DATABASE_SIZE;
-  status = NVM_Add( GATTSERVICE_NVM_TYPE, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN, temp_database,
+
+#if (CFG_LOG_SUPPORTED != 0)
+  status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+  NVM_Add( GATTSERVICE_NVM_TYPE, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN, temp_database,
                    GATTSERVICE_GATT_DATABASE_SIZE );
   LOG_INFO_APP("Added Gatt Service NVM record with status 0x%02X\n", status);
 }

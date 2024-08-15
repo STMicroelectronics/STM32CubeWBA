@@ -338,6 +338,14 @@ void Menu_SetStartupPage(void)
 }
 
 /**
+ * @brief Set the Config Page as active
+ */
+void Menu_SetConfigPage(void)
+{
+  Menu_SetActivePage(p_config_menu);
+}
+
+/**
  * @brief Add a scanned unicast server to the device list
  */
 void Menu_AddUnicastServer(uint8_t *pAddress, uint8_t AddressType, char *pDeviceName)

@@ -527,6 +527,13 @@ typedef enum
 #define CODEC_LC3_NUM_DECODER_CHANNEL           (2u)
 
 #define CODEC_MNGR_INTR_NUM                     COMP_IRQn      /* Vector used for codec execution */
+#define CODEC_MNGR_INTR_PRIO                    (15)
+
+/* Maximum duration in us of interruption of the codec manager over a frame duration */
+#define CODEC_PROC_MARGIN_US                    (2000u)
+
+/* Extra audio latency due to maximum radio preparation time */
+#define CODEC_RF_SETUP_US                       (1600u)
 
 /******************************************************************************
  * Power Table
@@ -567,11 +574,11 @@ typedef enum
 
 /* When the PLL is switched on for audio, Link layer execution is faster and its timings margin can be reduced
    These values have been qualified for LE audio use case and should not be changed by the user */
-#define DEFAULT_DRIFT_TIME                      (15)
-#define ISO_PLL_DRIFT_TIME                      (13)
+#define DEFAULT_DRIFT_TIME                      (14)
+#define ISO_PLL_DRIFT_TIME                      (8)
 
-#define DEFAULT_EXEC_TIME                       (22)
-#define ISO_PLL_EXEC_TIME                       (13)
+#define DEFAULT_EXEC_TIME                       (14)
+#define ISO_PLL_EXEC_TIME                       (10)
 
 #define DEFAULT_SCHDL_TIME                      (20)
 #define ISO_PLL_SCHDL_TIME                      (20)

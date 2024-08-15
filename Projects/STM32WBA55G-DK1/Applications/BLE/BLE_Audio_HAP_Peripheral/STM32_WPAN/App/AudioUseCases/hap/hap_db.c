@@ -253,8 +253,8 @@ uint8_t HAP_HA_DB_IsPresent(uint8_t Peer_Address_Type,const uint8_t Peer_Address
   */
 tBleStatus HAP_HA_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6])
 {
-  tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
 #if (BLE_CFG_HAP_HA_ROLE == 1u)
+  tBleStatus status;
   uint8_t cl_addr[6u] = {0};
   uint32_t dataLen = 0u;
 
@@ -278,8 +278,10 @@ tBleStatus HAP_HA_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const 
     BLE_DBG_HAP_DB_MSG("Peer Device has not HAP HA information in NVM\n");
     status = BLE_STATUS_DEV_NOT_BONDED;
   }
-#endif /* (BLE_CFG_HAP_HA_ROLE == 1u) */
   return status;
+#else /* (BLE_CFG_HAP_HA_ROLE == 0u) */
+  return HCI_COMMAND_DISALLOWED_ERR_CODE
+#endif /* (BLE_CFG_HAP_HA_ROLE == 1u) */
 }
 
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
@@ -399,8 +401,8 @@ uint8_t HAP_HARC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addr
   */
 tBleStatus HAP_HARC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6])
 {
-  tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
+  tBleStatus status;
   uint8_t cl_addr[6u] = {0};
   uint32_t dataLen = 0u;
 
@@ -424,8 +426,10 @@ tBleStatus HAP_HARC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,cons
     BLE_DBG_HAP_DB_MSG("Peer Device has not HAP HARC information in NVM\n");
     status = BLE_STATUS_DEV_NOT_BONDED;
   }
-#endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */
   return status;
+#else /*(BLE_CFG_HAP_HARC_ROLE == 0u)*/
+  return HCI_COMMAND_DISALLOWED_ERR_CODE;
+#endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */
 }
 
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)

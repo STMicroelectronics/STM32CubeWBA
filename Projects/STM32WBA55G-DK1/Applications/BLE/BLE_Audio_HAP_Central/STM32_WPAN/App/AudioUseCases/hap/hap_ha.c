@@ -31,12 +31,13 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
-#define ATT_ERR_INVALID_OPCODE            (0x80u)
-#define ATT_ERR_WRITE_NAME_NOT_ALLOWED    (0x81u)
-#define ATT_ERR_PRESET_SYNC_NOT_SUPPORTED (0x82u)
-#define ATT_ERR_PRESET_OP_NOT_POSSIBLE    (0x83u)
-#define ATT_ERR_INVALID_PARAMETERS_LENGTH (0x84u)
-#define ATT_ERR_VALUE_OUT_OF_RANGE        (0xFFu)
+#define ATT_ERR_INVALID_OPCODE                              (0x80u)
+#define ATT_ERR_WRITE_NAME_NOT_ALLOWED                      (0x81u)
+#define ATT_ERR_PRESET_SYNC_NOT_SUPPORTED                   (0x82u)
+#define ATT_ERR_PRESET_OP_NOT_POSSIBLE                      (0x83u)
+#define ATT_ERR_INVALID_PARAMETERS_LENGTH                   (0x84u)
+#define ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED (0xFDu)
+#define ATT_ERR_VALUE_OUT_OF_RANGE                          (0xFFu)
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
@@ -68,6 +69,12 @@ tBleStatus HAP_HA_Init(void)
     HAP_Context.HA.RestoreContext[i].ParseIndex = 0;
     HAP_Context.HA.RestoreContext[i].pPreset = 0;
     HAP_Context.HA.RestoreContext[i].PrevIndex = 0;
+  }
+
+  for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+  {
+    HAP_Context.HA.CtrlPointDescContext[i].ConnHandle = 0xFFFF;
+    HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue = 0;
   }
 
   status = HAS_InitService(&HAP_Context.HA.HASSvc);
@@ -429,12 +436,27 @@ tBleStatus HAP_HA_StoreDatabase(uint16_t ConnHandle, uint8_t *pData,uint16_t Max
 
   if (MaxDataLen >= 2)
   {
+    uint8_t i;
     BLE_DBG_HAP_HA_MSG("Store server generic info (conn handle 0x%04X)\n", ConnHandle);
 
     /* Store server info:
+     * - 1 byte for Control Point Descriptor Value
      * - 1 byte for HA Features
      * - 1 byte for Active Preset
      */
+
+    for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+    {
+      if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
+      {
+        pData[data_len++] = HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue;
+
+        /* Reset Context */
+        HAP_Context.HA.CtrlPointDescContext[i].ConnHandle = 0xFFFF;
+        break;
+      }
+    }
+
     pData[data_len++] = HAP_Context.HA.Features;
     pData[data_len++] = HAP_Context.HA.ActivePreset;
 
@@ -506,10 +528,25 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
     return status;
   }
 
+  if (p_restore_context->State == HAP_HA_RESTORE_STATE_CTRL_POINT_DESC_VALUE)
+  {
+    uint8_t i;
+
+    for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+    {
+      if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
+      {
+        HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue = pData[0];
+        break;
+      }
+    }
+    p_restore_context->State = HAP_HA_RESTORE_STATE_HA_FEATURES;
+  }
+
   if (p_restore_context->State == HAP_HA_RESTORE_STATE_HA_FEATURES)
   {
     /* Check HA Features */
-    if (pData[0] != HAP_Context.HA.Features)
+    if (pData[1] != HAP_Context.HA.Features)
     {
       /* Notify new HA Features */
       BLE_DBG_HAP_HA_MSG("Hearing Aid Features value has changed\n");
@@ -533,7 +570,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
   if (p_restore_context->State == HAP_HA_RESTORE_STATE_ACTIVE_PRESET_INDEX)
   {
     /* Check Active Preset */
-    if (pData[1] != HAP_Context.HA.ActivePreset)
+    if (pData[2] != HAP_Context.HA.ActivePreset)
     {
       /* Notify new Active Preset */
       BLE_DBG_HAP_HA_MSG("Active Preset Index value has changed since last connection with ConnHandle 0x%02X\n",
@@ -553,7 +590,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
     }
     p_restore_context->State = HAP_HA_RESTORE_STATE_PRESET_LIST;
     LST_get_next_node((tListNode *)&HAP_Context.HA.PresetList, (tListNode **)&p_restore_context->pPreset) ;
-    p_restore_context->ParseIndex = 2;
+    p_restore_context->ParseIndex = 3;
     p_restore_context->PrevIndex = 0;
   }
 
@@ -590,6 +627,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
           break;
         }
       }
+
       else if ((tListNode *) p_restore_context->pPreset == &HAP_Context.HA.PresetList
                || pData[p_restore_context->ParseIndex] < p_restore_context->pPreset->Index)
       {
@@ -611,6 +649,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
           break;
         }
       }
+
       else if (pData[p_restore_context->ParseIndex] == p_restore_context->pPreset->Index)
       {
         /* Compare properties and Name */
@@ -915,6 +954,20 @@ void HAS_Notification(HAS_NotificationEvt_t const *pNotification)
       break;
     }
 
+    case HAS_CONTROL_POINT_DESC_EVT:
+    {
+      uint8_t i;
+
+      for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+      {
+        if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == pNotification->ConnHandle)
+        {
+          HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue = pNotification->pData[0];
+        }
+      }
+      break;
+    }
+
     default:
       break;
   }
@@ -930,59 +983,91 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
     {
       case HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST:
       {
-        /* Check if descriptor is configured for indication */
-        //TODO
+        uint8_t i;
 
-        /* Check if DataLen is valid */
-        if (DataLen != 3)
+        /* Check if descriptor is configured for indication */
+        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
         {
-          BLE_DBG_HAP_HA_MSG("Read Presets Request with invalid parameters length\n");
-          err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
+          {
+            if (HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue == 0)
+            {
+              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
+              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
+            }
+            break;
+          }
         }
-        else if ((pData[1] == 0)
-              || (pData[2] == 0)
-                || (LST_is_empty(&HAP_Context.HA.PresetList))
-                  || (((HAP_Preset_t*)HAP_Context.HA.PresetList.prev)->Index < pData[1]))
+
+        if (err_code == 0x00)
         {
-          BLE_DBG_HAP_HA_MSG("Read Presets Request parameters out of range\n");
-          err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+          /* Check if DataLen is valid */
+          if (DataLen != 3)
+          {
+            BLE_DBG_HAP_HA_MSG("Read Presets Request with invalid parameters length\n");
+            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          }
+          else if ((pData[1] == 0)
+                || (pData[2] == 0)
+                  || (LST_is_empty(&HAP_Context.HA.PresetList))
+                    || (((HAP_Preset_t*)HAP_Context.HA.PresetList.prev)->Index < pData[1]))
+          {
+            BLE_DBG_HAP_HA_MSG("Read Presets Request parameters out of range\n");
+            err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+          }
         }
         break;
       }
 
       case HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME:
       {
+        uint8_t i;
+
         /* Check if descriptor is configured for indication */
-        //TODO
-
-        if (DataLen < 3 || DataLen > 42)
+        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
         {
-          BLE_DBG_HAP_HA_MSG("Write Preset Name with invalid parameters length\n");
-          err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
-        }
-        else if ((HAP_Context.HA.Features & HAP_WRITABLE_PRESETS_SUPPORTED) == 0)
-        {
-          BLE_DBG_HAP_HA_MSG("Writable Presets records are not supported\n");
-          err_code = ATT_ERR_INVALID_OPCODE;
-        }
-        else
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
+          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
           {
-            if ((p_preset->Properties & HAP_PRESET_PROPERTIES_WRITABLE) == 0)
+            if ((HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue & GATT_CHAR_UPDATE_SEND_INDICATION) == 0)
             {
-              BLE_DBG_HAP_HA_MSG("Write Preset Name on preset index %d not allowed\n", pData[1]);
-              err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
+              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
+              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
             }
+            break;
+          }
+        }
+
+        if (err_code == 0x00)
+        {
+          if (DataLen < 3 || DataLen > 42)
+          {
+            BLE_DBG_HAP_HA_MSG("Write Preset Name with invalid parameters length\n");
+            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          }
+          else if ((HAP_Context.HA.Features & HAP_WRITABLE_PRESETS_SUPPORTED) == 0)
+          {
+            BLE_DBG_HAP_HA_MSG("Writable Presets records are not supported\n");
+            err_code = ATT_ERR_INVALID_OPCODE;
           }
           else
           {
-            BLE_DBG_HAP_HA_MSG("Write Preset Name index %d out of range\n", pData[1]);
-            err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
+
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              if ((p_preset->Properties & HAP_PRESET_PROPERTIES_WRITABLE) == 0)
+              {
+                BLE_DBG_HAP_HA_MSG("Write Preset Name on preset index %d not allowed\n", pData[1]);
+                err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
+              }
+            }
+            else
+            {
+              BLE_DBG_HAP_HA_MSG("Write Preset Name index %d out of range\n", pData[1]);
+              err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+            }
           }
         }
 
@@ -992,62 +1077,77 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
       case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET:
       case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC:
       {
+        uint8_t i;
+
         /* Check if descriptor is configured for indication */
-        //TODO
-
-        if (DataLen != 2)
+        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
         {
-          BLE_DBG_HAP_HA_MSG("Set Active Preset with invalid parameters length\n");
-          err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
-        }
-        else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC)
-                 && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
-        {
-          BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
-          err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
-        }
-        else
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
+          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
           {
-            if (p_preset->Properties & HAP_PRESET_PROPERTIES_IS_AVAILABLE)
+            if ((HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue & GATT_CHAR_UPDATE_SEND_INDICATION) == 0)
             {
-              HAP_Notification_Evt_t notif;
-              HAP_ActivePresetChangeReq_Info_t info;
-              HAP_SetActivePreset_Resp_t resp = 0;
+              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
+              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
+            }
+            break;
+          }
+        }
 
-              info.pPreset = p_preset;
-              info.pResp = &resp;
+        if (err_code == 0x00)
+        {
+          if (DataLen != 2)
+          {
+            BLE_DBG_HAP_HA_MSG("Set Active Preset with invalid parameters length\n");
+            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          }
+          else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC)
+                   && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
+          {
+            BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
+            err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
+          }
+          else
+          {
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
 
-              notif.ConnHandle = ConnHandle;
-              notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
-              notif.pInfo = (uint8_t*) &info;
-              notif.Status = BLE_STATUS_SUCCESS;
-              HAP_Notification(&notif);
-
-              if(resp != 0)
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              if (p_preset->Properties & HAP_PRESET_PROPERTIES_IS_AVAILABLE)
               {
-                BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d denied\n", pData[1]);
+                HAP_Notification_Evt_t notif;
+                HAP_ActivePresetChangeReq_Info_t info;
+                HAP_SetActivePreset_Resp_t resp = 0;
+
+                info.pPreset = p_preset;
+                info.pResp = &resp;
+
+                notif.ConnHandle = ConnHandle;
+                notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
+                notif.pInfo = (uint8_t*) &info;
+                notif.Status = BLE_STATUS_SUCCESS;
+                HAP_Notification(&notif);
+
+                if(resp != 0)
+                {
+                  BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d denied\n", pData[1]);
+                  err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
+                }
+              }
+              else
+              {
+                BLE_DBG_HAP_HA_MSG("Preset with index %d is not available\n", pData[1]);
                 err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
               }
             }
             else
             {
-              BLE_DBG_HAP_HA_MSG("Preset with index %d is not available\n", pData[1]);
-              err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
+              BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d out of range\n", pData[1]);
+              err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
             }
           }
-          else
-          {
-            BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d out of range\n", pData[1]);
-            err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
-          }
         }
-
         break;
       }
 
@@ -1226,7 +1326,19 @@ SVCCTL_EvtAckStatus_t HAS_HandleCtrlPointIndicateComplete(uint16_t ConnHandle)
   */
 void HAP_HA_LinkEncrypted(uint16_t ConnHandle)
 {
+  uint8_t i;
   const UseCaseConnInfo_t *p_conn_info;
+
+  /* Allocate Ctrl Point Descriptor Context */
+  for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+  {
+    if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == 0xFFFF)
+    {
+      HAP_Context.HA.CtrlPointDescContext[i].ConnHandle = ConnHandle;
+      break;
+    }
+  }
+
   if ((USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &p_conn_info) == BLE_STATUS_SUCCESS)
       && (p_conn_info->MTU >= 49u)
         && (p_conn_info->LinkEncrypted == 1u))
@@ -1237,7 +1349,7 @@ void HAP_HA_LinkEncrypted(uint16_t ConnHandle)
       if (HAP_Context.HA.RestoreContext[i].ConnHandle == 0xFFFF)
       {
         HAP_Context.HA.RestoreContext[i].ConnHandle = p_conn_info->Connection_Handle;
-        HAP_Context.HA.RestoreContext[i].State = HAP_HA_RESTORE_STATE_HA_FEATURES;
+        HAP_Context.HA.RestoreContext[i].State = HAP_HA_RESTORE_STATE_CTRL_POINT_DESC_VALUE;
         HAP_DB_CheckDatabaseChange(p_conn_info);
         break;
       }
@@ -1281,7 +1393,7 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
               if (HAP_Context.HA.RestoreContext[i].ConnHandle == 0xFFFF)
               {
                 HAP_Context.HA.RestoreContext[i].ConnHandle = p_conn_info->Connection_Handle;
-                HAP_Context.HA.RestoreContext[i].State = HAP_HA_RESTORE_STATE_HA_FEATURES;
+                HAP_Context.HA.RestoreContext[i].State = HAP_HA_RESTORE_STATE_CTRL_POINT_DESC_VALUE;
                 HAP_DB_CheckDatabaseChange(p_conn_info);
                 break;
               }

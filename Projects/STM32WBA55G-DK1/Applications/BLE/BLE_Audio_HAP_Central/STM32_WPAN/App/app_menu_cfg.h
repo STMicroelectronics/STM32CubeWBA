@@ -69,6 +69,11 @@ void Menu_SetStreamingPage(char* pSamplerateText, Audio_Role_t AudioRole);
 void Menu_SetScanningPage(void);
 
 /**
+ * @brief Set the Config Page as active
+ */
+void Menu_SetConfigPage(void);
+
+/**
  * @brief Set the Startup Page as active
  */
 void Menu_SetStartupPage(void);

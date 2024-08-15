@@ -227,7 +227,7 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
                              uint8_t NumBIS,
                              uint8_t BAPConfID,
                              uint32_t *pChannelAllocation,
-                             uint8_t *pFrameBlockPerSDU);
+                             uint8_t FrameBlockPerSDU);
 static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
 static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen);
@@ -313,7 +313,6 @@ uint8_t PBPAPP_InitSource(void)
 {
   uint8_t ret = 0;
   uint32_t a_channel_allocation[2] = {BROADCAST_SOURCE_CHANNEL_ALLOC_1, BROADCAST_SOURCE_CHANNEL_ALLOC_2};
-  uint8_t a_frame_block_per_sdu[2] = {BROADCAST_SOURCE_FRAME_BLOCK_PER_SDU, BROADCAST_SOURCE_FRAME_BLOCK_PER_SDU};
   uint8_t metadata_len = 4;
   uint8_t a_metadata[4] = {0x03, METADATA_STREAMING_AUDIO_CONTEXTS,
                            STREAMING_AUDIO_CONTEXT & 0xFF,
@@ -359,7 +358,7 @@ uint8_t PBPAPP_InitSource(void)
                    BROADCAST_SOURCE_NUM_BIS,
                    BROADCAST_SOURCE_BAP_CONFIG,
                    a_channel_allocation,
-                   a_frame_block_per_sdu);
+                   BROADCAST_SOURCE_FRAME_BLOCK_PER_SDU);
 
   if (aPBPAPP_CodecConf[BROADCAST_SOURCE_BAP_CONFIG%16].Freq == SAMPLE_FREQ_48000_HZ
      && (BROADCAST_SOURCE_NUM_BIS == 2
@@ -630,8 +629,8 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
       CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100u,
-                        1700u,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
     }
   }
@@ -645,7 +644,7 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
                              uint8_t NumBIS,
                              uint8_t BAPConfID,
                              uint32_t *pChannelAllocation,
-                             uint8_t *pFrameBlockPerSDU)
+                             uint8_t FrameBlockPerSDU)
 {
   uint8_t i;
 
@@ -681,15 +680,6 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
 
   PBPAPP_Context.RTN = 1u;
   uint8_t subgroup_i = 0;
-  uint8_t same_fbpsdu_conf = 1u;
-
-  for (i = 1; i < NumBIS; i++)
-  {
-    if (pFrameBlockPerSDU[i-1] != pFrameBlockPerSDU[i])
-    {
-      same_fbpsdu_conf = 0;
-    }
-  }
 
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength = 0;
   PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x02;
@@ -705,14 +695,11 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
 
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 10;
 
-  if (same_fbpsdu_conf == 1u)
-  {
-    PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x02;
-    PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = CODEC_FRAMES_BLOCKS_PER_SDU;
-    PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = pFrameBlockPerSDU[0];
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = 0x02;
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = CODEC_FRAMES_BLOCKS_PER_SDU;
+  PBPAPP_Context.codec_specific_config_subgroup[0][subgroup_i++] = FrameBlockPerSDU;
 
-    PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 3;
-  }
+  PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 3;
 
 
   for (i = 0; i < NumBIS; i++)
@@ -726,15 +713,6 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
                                                       aPBPAPP_BroadcastQoSConf[BAPConfID].PresentationDelay);
 
     PBPAPP_Context.base_group.pSubgroups[0].pBIS[i].CodecSpecificConfLength = 0;
-
-    if (same_fbpsdu_conf == 0u)
-    {
-      PBPAPP_Context.codec_specific_config_bis[i][bis_i++] = 0x02;
-      PBPAPP_Context.codec_specific_config_bis[i][bis_i++] = CODEC_FRAMES_BLOCKS_PER_SDU;
-      PBPAPP_Context.codec_specific_config_bis[i][bis_i++] = pFrameBlockPerSDU[i];
-
-      PBPAPP_Context.base_group.pSubgroups[0].pBIS[i].CodecSpecificConfLength += 3;
-    }
 
     PBPAPP_Context.codec_specific_config_bis[i][bis_i++] = 0x05;
     PBPAPP_Context.codec_specific_config_bis[i][bis_i++] = CODEC_AUDIO_CHNL_ALLOCATION;

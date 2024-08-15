@@ -153,9 +153,8 @@ SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent)
 /**
   * @brief Indicate that connection with specified device is down
   * @param  ConnHandle: connection handle
-  * @param  Reason: disconnection reason
   */
-void HAP_AclDisconnection(uint16_t ConnHandle,uint8_t Reason)
+void HAP_AclDisconnection(uint16_t ConnHandle)
 {
 #if ((BLE_CFG_HAP_HA_ROLE == 1u) || (BLE_CFG_HAP_HARC_ROLE == 1u) || (BLE_CFG_HAP_IAC_ROLE == 1u))
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID

@@ -515,7 +515,7 @@ tBleStatus HAPAPP_TerminateCall(void);
 uint8_t HAPAPP_Disconnect(void);
 void HAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void HAPAPP_CISConnected(uint16_t Conn_Handle);
-void HAPAPP_LinkDisconnected(uint16_t Conn_Handle);
+void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void HAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void HAPAPP_BondLost(uint16_t Conn_Handle);
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)

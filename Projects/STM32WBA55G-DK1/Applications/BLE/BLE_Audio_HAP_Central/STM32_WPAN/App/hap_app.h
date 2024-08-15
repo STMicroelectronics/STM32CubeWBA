@@ -347,6 +347,7 @@ typedef struct
 
   BAP_Unicast_Server_Info_t UnicastServerInfo;
   APP_ASEs_t            *pASEs;
+  uint8_t               active_preset;
 
 }APP_ACL_Conn_t;
 
@@ -441,7 +442,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
-void HAPAPP_Init();
+void HAPAPP_Init(void);
 tBleStatus HAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t HAPAPP_StartScanning(void);
 uint8_t HAPAPP_StopScanning(void);
@@ -456,6 +457,7 @@ void HAPAPP_LocalToggleMute(void);
 uint8_t HAPAPP_RemoteToggleMicMute(void);
 tBleStatus HAPAPP_NextPreset(void);
 tBleStatus HAPAPP_PreviousPreset(void);
+tBleStatus HAPAPP_SetActivePreset(uint16_t ConnHandle, uint8_t Index);
 tBleStatus HAPAPP_AnswerCall(void);
 tBleStatus HAPAPP_TerminateCall(void);
 tBleStatus HAPAPP_IncomingCall(void);
@@ -464,7 +466,7 @@ uint8_t HAPAPP_StartTelephonyStream(void);
 uint8_t HAPAPP_StopStream(void);
 void HAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void HAPAPP_CISConnected(uint16_t Conn_Handle);
-void HAPAPP_LinkDisconnected(uint16_t Conn_Handle);
+void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void HAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void HAPAPP_BondLost(uint16_t Conn_Handle);
 #ifdef __cplusplus

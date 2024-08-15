@@ -613,6 +613,10 @@ static uint8_t Menu_ExecuteAction(Menu_Action_t Action)
   {
     ((Menu_Page_t *) Action.pPage)->pReturnPage = (struct Menu_Page_t *)pCurrentPage;
     pCurrentPage = (Menu_Page_t *) Action.pPage;
+    if (pCurrentPage->MenuType == MENU_TYPE_LIST)
+    {
+      pCurrentPage->SelectedEntry = 0;
+    }
     Menu_Print();
     ret = 1;
   }

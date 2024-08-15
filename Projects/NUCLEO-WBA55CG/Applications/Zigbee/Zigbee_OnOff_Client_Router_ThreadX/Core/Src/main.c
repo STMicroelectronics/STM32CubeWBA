@@ -258,7 +258,7 @@ void MX_ICACHE_Init(void)
 
   /* USER CODE BEGIN ICACHE_Init 1 */
   /* No retention for ICACHE in stop mode */
-  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_NO_RETENTION);
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
 
   /* USER CODE END ICACHE_Init 1 */
 

@@ -170,8 +170,8 @@ typedef enum
   * @param media_packet_pool_size : size in bytes of the provided pool
   * @param media_packet_pool : pointer to the provided pool
   * @param codecRAMConfig : pointer to the RAM dedicated to the LC3 codec
-  * @param margin_processing_us : margin is microseconds added to the controller delay
-  *                               for including higher priority interrupt latency
+  * @param margin_processing_us :  extra latency in microseconds added to the controller delay
+  *                               for including higher priority processing over a codec frame interval
   * @param rf_max_setup_time_us : maximum timing in microseconds measured from the radio interrupt to the beginning of
   *                               the corresponding ISO event (radio preparation). Added as an extra latency at source
   * @param codec_mode : configuration of the codec manager behavior, see CODEC_Mode_t

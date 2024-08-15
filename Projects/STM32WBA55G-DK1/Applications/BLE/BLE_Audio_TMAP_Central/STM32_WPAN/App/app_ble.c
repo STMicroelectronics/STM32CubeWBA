@@ -279,8 +279,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       LOG_INFO_APP("     - Connection Handle:   0x%02X\n     - Reason:    0x%02X\n",
                   p_disconnection_complete_event->Connection_Handle,
                   p_disconnection_complete_event->Reason);
-      TMAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle);
-
+      TMAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle,
+                               p_disconnection_complete_event->Reason);
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
     }

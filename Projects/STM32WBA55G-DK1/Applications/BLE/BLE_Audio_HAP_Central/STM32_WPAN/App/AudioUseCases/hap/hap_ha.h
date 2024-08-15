@@ -40,9 +40,10 @@ extern "C" {
 
 typedef uint8_t HAP_HA_Restore_State_t;
 #define HAP_HA_RESTORE_STATE_IDLE (0x00)
-#define HAP_HA_RESTORE_STATE_HA_FEATURES (0x01)
-#define HAP_HA_RESTORE_STATE_ACTIVE_PRESET_INDEX (0x02)
-#define HAP_HA_RESTORE_STATE_PRESET_LIST (0x03)
+#define HAP_HA_RESTORE_STATE_CTRL_POINT_DESC_VALUE (0x01)
+#define HAP_HA_RESTORE_STATE_HA_FEATURES (0x02)
+#define HAP_HA_RESTORE_STATE_ACTIVE_PRESET_INDEX (0x03)
+#define HAP_HA_RESTORE_STATE_PRESET_LIST (0x04)
 
 typedef struct
 {
@@ -62,15 +63,22 @@ typedef struct
 
 typedef struct
 {
-  HAS_ServiceContext_t         HASSvc;
-  uint8_t                      ActivePreset;
-  HAP_Preset_t                 PresetPool[HAP_MAX_PRESET_NUM];
-  tListNode                    PresetPoolList;
-  tListNode                    PresetList;
-  HAP_HA_Features_t            Features;
-  HAP_HA_CtrlPoint_Operation_t CtrlPointOp;
+  uint16_t                  ConnHandle;
+  uint8_t                   CtrlPointDescValue;
+} HAP_HA_CtrlPointDesc_Context_t;
 
-  HAP_HA_Restore_Context_t     RestoreContext[USECASE_DEV_MGMT_MAX_CONNECTION];
+typedef struct
+{
+  HAS_ServiceContext_t           HASSvc;
+  uint8_t                        ActivePreset;
+  HAP_Preset_t                   PresetPool[HAP_MAX_PRESET_NUM];
+  tListNode                      PresetPoolList;
+  tListNode                      PresetList;
+  HAP_HA_Features_t              Features;
+  HAP_HA_CtrlPoint_Operation_t   CtrlPointOp;
+
+  HAP_HA_Restore_Context_t       RestoreContext[USECASE_DEV_MGMT_MAX_CONNECTION];
+  HAP_HA_CtrlPointDesc_Context_t CtrlPointDescContext[USECASE_DEV_MGMT_MAX_CONNECTION];
 } HAP_HA_Context_t;
 
 /**

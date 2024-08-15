@@ -606,8 +606,12 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
             {
               /* Start scanning */
               TMAPAPP_StartScanning();
+              ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle);
+              LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
+                           pNotification->ConnHandle,
+                           ret);
               /* perform discovery to another potential Coordinated Set Member*/
-              if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle) == BLE_STATUS_SUCCESS)
+              if ( ret == BLE_STATUS_SUCCESS)
               {
                 return;
               }
@@ -659,6 +663,7 @@ uint8_t TMAPAPP_StartScanning(void)
                                    &scan_param_phy);
   LOG_INFO_APP("aci_gap_ext_start_scan() returns status 0x%02X\n",status);
 
+  LOG_INFO_APP("TMAPAPP_StartScanning() returns status 0x%02X\n",status);
   return status;
 }
 
@@ -693,10 +698,18 @@ uint8_t TMAPAPP_CreateConnection(uint8_t *pAddress, uint8_t AddressType)
 
 uint8_t TMAPAPP_Disconnect(void)
 {
-  uint8_t status;
-
-  status = hci_disconnect(0x01, HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE);
-  LOG_INFO_APP("hci_disconnect() returns status 0x%02X\n",status);
+  uint8_t status = BLE_STATUS_FAILED;
+  for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
+  {
+    if ( TMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
+    {
+      status = hci_disconnect(TMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
+                              HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE);
+      LOG_INFO_APP("hci_disconnect() of ConnHandle 0x%04X returns status 0x%02X\n",
+                   TMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
+                   status);
+    }
+  }
 
   return status;
 }
@@ -986,37 +999,12 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
         pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
         pCodecConf->CodecSpecificConfParams.FrameBlockPerSdu = 1;
         pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
-        if (num_acceptors == MAX_UNICAST_ACCEPTORS)
-        {
-          if ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)
-          {
-            pCodecConf->AudioChannelAllocation = 0;
-          }
-          else
-          {
-            if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
-            {
-              pCodecConf->AudioChannelAllocation = FRONT_LEFT;
-            }
-            else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
-            {
-              pCodecConf->AudioChannelAllocation = FRONT_RIGHT;
-            }
-            else
-            {
-              pCodecConf->AudioChannelAllocation = 0;
-            }
-          }
-          num_chnls = 1u;
-          pCodecConf->ChannelPerCIS = 1u;
-        }
-        else
-        {
-          /* Set Mono channel for telephony as microphone IN is mono */
-          pCodecConf->AudioChannelAllocation = 0;
-          pCodecConf->ChannelPerCIS = 1u;
-          num_chnls = 1u;
-        }
+
+        /* Set Mono channel for telephony as microphone IN is mono */
+        pCodecConf->AudioChannelAllocation = 0;
+        pCodecConf->ChannelPerCIS = 1u;
+        num_chnls = 1u;
+
         pQoS_Conf->SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
         pQoS_Conf->Framing = APP_QoSConf[qos_conf_id].framing;
         pQoS_Conf->MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
@@ -1331,7 +1319,7 @@ tBleStatus TMAPAPP_NextTrack(void)
                 p_mediaplayer->GroupID,
                 status);
   status = MCP_SERVER_NotifyTrackChanged(TMAPAPP_Context.GenericMediaPlayer.CCID);
-  LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",TMAPAPP_Context.GenericMediaPlayer.CCID);
+  LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",TMAPAPP_Context.GenericMediaPlayer.CCID,status);
 
   return status;
 #else /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
@@ -1400,23 +1388,28 @@ tBleStatus TMAPAPP_PlayPause(void)
 #if (APP_MCP_ROLE_SERVER_SUPPORT == 1u)
   tBleStatus status = BLE_STATUS_SUCCESS;
   TMAPAPP_MediaPlayer_t *p_mediaplayer = TMAPAPP_GetMediaPlayer(TMAPAPP_Context.GenericMediaPlayer.CCID);
-
+  MCP_MediaState_t state = MCP_MEDIA_STATE_INACTIVE;
   switch (p_mediaplayer->MediaState)
   {
     case MCP_MEDIA_STATE_INACTIVE:
     case MCP_MEDIA_STATE_PAUSED:
     {
-      status = TMAPAPP_SetMediaState(TMAPAPP_Context.GenericMediaPlayer.CCID, MCP_MEDIA_STATE_PLAYING);
+      state = MCP_MEDIA_STATE_PLAYING;
     }
     break;
     case MCP_MEDIA_STATE_PLAYING:
     case MCP_MEDIA_STATE_SEEKING:
     {
-      status = TMAPAPP_SetMediaState(TMAPAPP_Context.GenericMediaPlayer.CCID, MCP_MEDIA_STATE_PAUSED);
+      state = MCP_MEDIA_STATE_PAUSED;
     }
     break;
   }
+  status = TMAPAPP_SetMediaState(TMAPAPP_Context.GenericMediaPlayer.CCID, state);
 
+  LOG_INFO_APP("TMAPAPP_SetMediaState() on CCID %d with Media State 0x%02X returns status 0x%02X\n",
+               TMAPAPP_Context.GenericMediaPlayer.CCID,
+               state,
+               status);
   return status;
 #else /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1600,7 +1593,16 @@ void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)
   {
     if (TMAPAPP_Context.cis_src_handle[i] != 0xFFFFu)
     {
-      CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2 + i);
+      if (TMAPAPP_Context.audio_driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
+      {
+        /* BSP provides microphone data in mono, send the same channel to all CIS */
+        CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2);
+      }
+      else
+      {
+        /* BSP provides line data in stereo, increment pointer to change channel */
+        CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2 + i);
+      }
     }
   }
 
@@ -1618,7 +1620,16 @@ void APP_NotifyRxAudioHalfCplt(void)
   {
     if (TMAPAPP_Context.cis_src_handle[i] != 0xFFFFu)
     {
-      CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]+i);
+      if (TMAPAPP_Context.audio_driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
+      {
+        /* BSP provides microphone data in mono, send the same channel to all CIS */
+        CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]);
+      }
+      else
+      {
+        /* BSP provides line data in stereo, increment pointer to change channel */
+        CODEC_SendData(TMAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]+i);
+      }
     }
   }
 
@@ -1695,7 +1706,7 @@ void TMAPAPP_CISConnected(uint16_t Conn_Handle)
   }
 }
 
-void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle)
+void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 {
   uint8_t i;
   audio_profile_t profile = 0u;
@@ -1738,53 +1749,66 @@ void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle)
 #endif /*(MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u)*/
     p_conn->pASEs->acl_conn_handle = 0xFFFFu;
     p_conn->pASEs = 0;
-
-    if (APP_GetNumActiveACLConnections() == 0u)
+    /* Check if the disconnection is issued to a User action in remote device  or local device */
+    if ((Reason == HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE) \
+        || (Reason == HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE))
     {
-      /* no more active connections, restart scanning */
-      status = TMAPAPP_StartScanning();
-      LOG_INFO_APP("TMAPAPP_StartScanning() returns status 0x%02X\n",status);
+      if (APP_GetNumActiveACLConnections() == 0u)
+      {
+        Menu_SetConfigPage();
+      }
     }
     else
     {
-      if( TMAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
+      if (APP_GetNumActiveACLConnections() == 0u)
       {
-        /* Check if a new Set Member discovery should be started */
-        if ((profile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
+        Menu_SetScanningPage();
+        /* no more active connections, restart scanning */
+        status = TMAPAPP_StartScanning();
+      }
+      else
+      {
+        if( TMAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
         {
-#if (CFG_BLE_NUM_LINK > 0u)
-          for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
+          /* Check if a new Set Member discovery should be started */
+          if ((profile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
           {
-            if (TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFF)
+#if (CFG_BLE_NUM_LINK > 0u)
+            for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
             {
-              if ((TMAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
+              if (TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFF)
               {
-                if ((TMAPAPP_Context.ACL_Conn[i].SIRK_type == p_conn->SIRK_type) \
-                   && (memcmp(&TMAPAPP_Context.ACL_Conn[i].SIRK[0], &p_conn->SIRK[0],16u) == 0u))
+                if ((TMAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
                 {
-                  tBleStatus ret;
-                  /* Start scanning */
-                  TMAPAPP_StartScanning();
-                  /* perform discovery to another potential Coordinated Set Member*/
-                  if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle) == BLE_STATUS_SUCCESS)
+                  if ((TMAPAPP_Context.ACL_Conn[i].SIRK_type == p_conn->SIRK_type) \
+                     && (memcmp(&TMAPAPP_Context.ACL_Conn[i].SIRK[0], &p_conn->SIRK[0],16u) == 0u))
                   {
-                    return;
+                    tBleStatus ret;
+                    /* Start scanning */
+                    TMAPAPP_StartScanning();
+                    ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle) ;
+                    LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
+                                 TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle,
+                                 ret);
+                    /* perform discovery to another potential Coordinated Set Member*/
+                    if (ret == BLE_STATUS_SUCCESS)
+                    {
+                      return;
+                    }
+                    else
+                    {
+                      ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
+                      LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,ret);
+                    }
                   }
-                  else
-                  {
-                    ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-                    LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,ret);
-                  }
-                  UNUSED(ret);
                 }
               }
             }
-          }
 #endif /*(CFG_BLE_NUM_LINK > 0u)*/
+          }
         }
       }
     }
-    Menu_SetScanningPage();
     UNUSED(status);
   }
   else
@@ -2010,8 +2034,8 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100,
-                        1650,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
@@ -2336,15 +2360,21 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   {
                     /* Start scanning */
                     TMAPAPP_StartScanning();
+                    ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle);
+                    LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
+                                 pNotification->ConnHandle,
+                                 ret);
                     /* perform discovery to another potential Coordinated Set Member*/
-                    if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle) == BLE_STATUS_SUCCESS)
+                    if (ret == BLE_STATUS_SUCCESS)
                     {
                       return;
                     }
                     else
                     {
                       ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-                      LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,ret);
+                      LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%02X\n",
+                                   GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
+                                   ret);
                     }
                   }
                 }
@@ -2779,6 +2809,14 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                    pNotification->Status);
       break;
     }
+
+    case CAP_SET_VOLUME_MUTE_STATE_PROCEDURE_COMPLETE_EVT:
+    {
+      LOG_INFO_APP("CAP Set Volume Mute State Procedure is complete with status 0x%02X\n",
+                   pNotification->Status);
+      break;
+    }
+
 
     case CAP_CSI_LINKUP_EVT:
     {

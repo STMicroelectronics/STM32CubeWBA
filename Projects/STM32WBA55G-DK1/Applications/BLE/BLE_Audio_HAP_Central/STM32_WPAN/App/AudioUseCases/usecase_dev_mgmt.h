@@ -54,7 +54,7 @@ typedef struct
   * @brief Use Case Manager initialization.
   * @note  This function shall be called before any Use Case Profile function
   */
-tBleStatus USECASE_DEV_MGMT_Init();
+tBleStatus USECASE_DEV_MGMT_Init(void);
 
 /**
   * @brief  Get the number of connected devices

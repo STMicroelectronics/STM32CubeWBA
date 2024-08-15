@@ -498,7 +498,8 @@ void Menu_Print_Task(void)
         }
         else if (pCurrentPage->ActionDown.pIcon->IconType == MENU_ICON_TYPE_IMAGE)
         {
-          LCD_DrawBitmapArray((uint8_t) SSD1315_LCD_PIXEL_WIDTH / 2 - 8, SSD1315_LCD_PIXEL_HEIGHT - pCurrentPage->ActionDown.pIcon->ImageHeight,
+          LCD_DrawBitmapArray((uint8_t) SSD1315_LCD_PIXEL_WIDTH / 2 - pCurrentPage->ActionDown.pIcon->ImageWidth/2,
+                              SSD1315_LCD_PIXEL_HEIGHT - pCurrentPage->ActionDown.pIcon->ImageHeight,
                               pCurrentPage->ActionDown.pIcon->ImageWidth,
                               pCurrentPage->ActionDown.pIcon->ImageHeight,
                               pCurrentPage->ActionDown.pIcon->pImage);
@@ -514,7 +515,8 @@ void Menu_Print_Task(void)
         }
         else if (pCurrentPage->ActionLeft.pIcon->IconType == MENU_ICON_TYPE_IMAGE)
         {
-          LCD_DrawBitmapArray(0, (uint8_t) (SSD1315_LCD_PIXEL_HEIGHT / 2) - 8, 16, 16,
+          LCD_DrawBitmapArray(0, (uint8_t) (SSD1315_LCD_PIXEL_HEIGHT / 2) - pCurrentPage->ActionLeft.pIcon->ImageHeight/2,
+                              pCurrentPage->ActionLeft.pIcon->ImageWidth, pCurrentPage->ActionLeft.pIcon->ImageHeight,
                               pCurrentPage->ActionLeft.pIcon->pImage);
         }
       }
@@ -611,6 +613,10 @@ static uint8_t Menu_ExecuteAction(Menu_Action_t Action)
   {
     ((Menu_Page_t *) Action.pPage)->pReturnPage = (struct Menu_Page_t *)pCurrentPage;
     pCurrentPage = (Menu_Page_t *) Action.pPage;
+    if (pCurrentPage->MenuType == MENU_TYPE_LIST)
+    {
+      pCurrentPage->SelectedEntry = 0;
+    }
     Menu_Print();
     ret = 1;
   }

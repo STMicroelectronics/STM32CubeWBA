@@ -30,6 +30,7 @@
 #include "usecase_dev_mgmt.h"
 #include "app_menu_cfg.h"
 #include "log_module.h"
+#include "app_ble.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -399,10 +400,20 @@ void TMAPAPP_Init(uint8_t csip_config_id)
     audio_conf_id = USR_AUDIO_CONF_1;
   }
 #else /* ((APP_TMAP_ROLE & TMAP_ROLE_UNICAST_MEDIA_RECEIVER) == 0) */
-return HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
+  return HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
 #endif /* ((APP_TMAP_ROLE & TMAP_ROLE_UNICAST_MEDIA_RECEIVER) == TMAP_ROLE_UNICAST_MEDIA_RECEIVER) */
 
 #endif /* ((APP_TMAP_ROLE & TMAP_ROLE_CALL_TERMINAL) == TMAP_ROLE_CALL_TERMINAL) */
+
+  /* C correct appearance in GAP Database */
+  if (csip_config_id == 0)
+  {
+    status = SetGapAppearance(GAP_APPEARANCE_HEADPHONES);
+  }
+  else
+  {
+    status = SetGapAppearance(GAP_APPEARANCE_EARBUD);
+  }
 
   /* Init CAP Acceptor with Unicast Server */
   status = CAPAPP_Init(APP_AUDIO_ROLE,audio_conf_id,csip_config_id);
@@ -414,6 +425,7 @@ return HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
     /* Initialize the TMAP layer*/
     status = TMAPAPP_TMAPInit(APP_TMAP_ROLE,audio_conf_id);
     LOG_INFO_APP("TMAPAPP_TMAPInit() with role 0x%02X returns status 0x%02X\n",APP_TMAP_ROLE,status);
+    UNUSED(status);
   }
 }
 
@@ -562,7 +574,14 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
         {
           /* Confirm indication now that the GATT is available */
           ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-          LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          if (ret != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+          }
           p_conn->ConfirmIndicationRequired = 0u;
         }
 
@@ -764,7 +783,7 @@ uint8_t TMAPAPP_Disconnect(void)
 uint8_t TMAPAPP_VolumeUp(void)
 {
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
   if (Mute == 1)
   {
@@ -781,9 +800,11 @@ uint8_t TMAPAPP_VolumeUp(void)
     volume = 0xFF;
   }
 
-  status = VCP_RENDER_SetAbsVolume(volume);
-  LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
-
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    status = VCP_RENDER_SetAbsVolume(volume);
+    LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  }
   return status;
 #else /*#if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -793,7 +814,7 @@ uint8_t TMAPAPP_VolumeUp(void)
 uint8_t TMAPAPP_VolumeDown(void)
 {
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
 
   if (Volume > VOLUME_STEP)
@@ -807,9 +828,11 @@ uint8_t TMAPAPP_VolumeDown(void)
     LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute %d returns status 0x%02X\n", Mute, status);
   }
 
-  status = VCP_RENDER_SetAbsVolume(volume);
-  LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
-
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    status = VCP_RENDER_SetAbsVolume(volume);
+    LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  }
   return status;
 #else /*#if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -977,7 +1000,6 @@ tBleStatus TMAPAPP_AnswerCall(void)
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 
   tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
-  tBleStatus ret = HCI_COMMAND_DISALLOWED_ERR_CODE;
   GAF_Profiles_Link_t current_link;
 
   for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
@@ -990,19 +1012,15 @@ tBleStatus TMAPAPP_AnswerCall(void)
         current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
         if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState == CCP_CS_INCOMING))
         {
-          ret = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
+          status = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
                                               p_conn->GenericTelephoneBearerCCID,
                                               p_conn->CurrentCallID);
-          if (ret != BLE_STATUS_SUCCESS)
+          if (status != BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP("  Fail   : CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
                          p_conn->Acl_Conn_Handle,
                          p_conn->GenericTelephoneBearerCCID,
-                         ret);
-            if (status != BLE_STATUS_SUCCESS)
-            {
-              status = ret;
-            }
+                         status);
           }
           else
           {
@@ -1030,7 +1048,6 @@ tBleStatus TMAPAPP_TerminateCall(void)
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 
   tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
-  tBleStatus ret = HCI_COMMAND_DISALLOWED_ERR_CODE;
   GAF_Profiles_Link_t current_link;
 
   for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
@@ -1043,16 +1060,15 @@ tBleStatus TMAPAPP_TerminateCall(void)
         current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
         if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState != CCP_CS_IDLE))
         {
-          ret = CCP_CLIENT_TerminateCall(p_conn->Acl_Conn_Handle,
+          status = CCP_CLIENT_TerminateCall(p_conn->Acl_Conn_Handle,
                                          p_conn->GenericTelephoneBearerCCID,
                                          p_conn->CurrentCallID);
-          if (ret != BLE_STATUS_SUCCESS)
+          if (status != BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP("  Fail   : CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
                          p_conn->Acl_Conn_Handle,
                          p_conn->GenericTelephoneBearerCCID,
-                         ret);
-            status = ret;
+                         status);
           }
           else
           {
@@ -1288,7 +1304,7 @@ void TMAPAPP_CISConnected(uint16_t Conn_Handle)
   }
 }
 
-void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle)
+void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 {
   uint8_t i;
   uint8_t status;
@@ -1359,20 +1375,28 @@ void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle)
     }
     p_conn->pASEs->acl_conn_handle = 0xFFFFu;
     p_conn->pASEs = 0;
-
-    TMAPAPP_StopAdvertising();
-    /* Start Advertising */
-    if (TMAPAPP_Context.CSIPRank > 0)
+    /* Check if the disconnection is issued to a local User action*/
+    if (Reason != HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE)
     {
-      status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_EARBUD);
+      TMAPAPP_StopAdvertising();
+      /* Start Advertising */
+      if (TMAPAPP_Context.CSIPRank > 0)
+      {
+        status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_EARBUD);
+      }
+      else
+      {
+        status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_HEADPHONES);
+      }
+      LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+      Menu_SetWaitConnPage();
     }
     else
     {
-      status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_HEADPHONES);
+      TMAPAPP_StopAdvertising();
+      Menu_SetStartupPage();
     }
-    LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
     UNUSED(status);
-    Menu_SetWaitConnPage();
   }
   else
   {
@@ -1887,8 +1911,8 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100,
-                        1650,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
 
   /*Enable Audio Codec in LE Controller */
@@ -1976,24 +2000,24 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
 
       TMAPAPP_Context.aSnkCap[i][13] = 0x02;
       TMAPAPP_Context.aSnkCap[i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-      TMAPAPP_Context.aSnkCap[i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE;
+      TMAPAPP_Context.aSnkCap[i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
       TMAPAPP_Context.aSnkPACRecord[i].Cap.pSpecificCap = &TMAPAPP_Context.aSnkCap[i][0];
       TMAPAPP_Context.aSnkPACRecord[i].Cap.SpecificCapLength = 16u;
 
       /* metadata in Audio Codec Configuration*/
       TMAPAPP_Context.aSnkPACRecord[i].Cap.MetadataLength = 0x04;
-      TMAPAPP_Context.aSnkMetadata[i][0] = 0x03;
-      TMAPAPP_Context.aSnkMetadata[i][1] = 0x01;
+      TMAPAPP_Context.aSnkMetadata[i][0] = METADATA_PREFERRED_AUDIO_CONTEXTS_LENGTH;
+      TMAPAPP_Context.aSnkMetadata[i][1] = METADATA_PREFERRED_AUDIO_CONTEXTS;
       if (APP_CodecSpecificCap[a_snk_cap_id[i]].Freq == SUPPORTED_SAMPLE_FREQ_16000_HZ)
       {
-        TMAPAPP_Context.aSnkMetadata[i][2] = 0x02;
-        TMAPAPP_Context.aSnkMetadata[i][3] = 0x00;
+        TMAPAPP_Context.aSnkMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL);
+        TMAPAPP_Context.aSnkMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8 );
       }
       else
       {
-        TMAPAPP_Context.aSnkMetadata[i][2] = 0x04;
-        TMAPAPP_Context.aSnkMetadata[i][3] = 0x00;
+        TMAPAPP_Context.aSnkMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_MEDIA);
+        TMAPAPP_Context.aSnkMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8 );
       }
       TMAPAPP_Context.aSnkPACRecord[i].Cap.pMetadata = &TMAPAPP_Context.aSnkMetadata[i][0];
 
@@ -2114,17 +2138,17 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
 
       TMAPAPP_Context.aSrcCap[i][13] = 0x02;
       TMAPAPP_Context.aSrcCap[i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-      TMAPAPP_Context.aSrcCap[i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE;
+      TMAPAPP_Context.aSrcCap[i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
       TMAPAPP_Context.aSrcPACRecord[i].Cap.pSpecificCap = &TMAPAPP_Context.aSrcCap[i][0];
       TMAPAPP_Context.aSrcPACRecord[i].Cap.SpecificCapLength = 16u;
 
       /* metadata in Audio Codec Configuration*/
       TMAPAPP_Context.aSrcPACRecord[i].Cap.MetadataLength = 0x04;
-      TMAPAPP_Context.aSrcMetadata[i][0] = 0x03;
-      TMAPAPP_Context.aSrcMetadata[i][1] = 0x01;
-      TMAPAPP_Context.aSrcMetadata[i][2] = 0x02;
-      TMAPAPP_Context.aSrcMetadata[i][3] = 0x00;
+      TMAPAPP_Context.aSrcMetadata[i][0] = METADATA_PREFERRED_AUDIO_CONTEXTS_LENGTH;
+      TMAPAPP_Context.aSrcMetadata[i][1] = METADATA_PREFERRED_AUDIO_CONTEXTS;
+      TMAPAPP_Context.aSrcMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL);
+      TMAPAPP_Context.aSrcMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8 );
       TMAPAPP_Context.aSrcPACRecord[i].Cap.pMetadata = &TMAPAPP_Context.aSrcMetadata[i][0];
 
       status = CAP_RegisterSrcPACRecord(&TMAPAPP_Context.aSrcPACRecord[i],&TMAPAPP_Context.aSrcPACRecordHandle[i]);
@@ -2355,7 +2379,7 @@ static tBleStatus TMAPAPP_TMAPInit(uint16_t Role,uint8_t AudioConfId)
 
         TMAPAPP_Context.aSnkCap[snk_record_i][13] = 0x02;
         TMAPAPP_Context.aSnkCap[snk_record_i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-        TMAPAPP_Context.aSnkCap[snk_record_i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE;;//0x03;
+        TMAPAPP_Context.aSnkCap[snk_record_i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
         TMAPAPP_Context.aSnkPACRecord[snk_record_i].Cap.pSpecificCap = &TMAPAPP_Context.aSnkCap[snk_record_i][0];
         TMAPAPP_Context.aSnkPACRecord[snk_record_i].Cap.SpecificCapLength = 16u;
@@ -2405,7 +2429,7 @@ static tBleStatus TMAPAPP_TMAPInit(uint16_t Role,uint8_t AudioConfId)
 
         TMAPAPP_Context.aSrcCap[src_record_i][13] = 0x02;
         TMAPAPP_Context.aSrcCap[src_record_i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-        TMAPAPP_Context.aSrcCap[src_record_i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE;;//0x03;
+        TMAPAPP_Context.aSrcCap[src_record_i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
         TMAPAPP_Context.aSrcPACRecord[src_record_i].Cap.pSpecificCap = &TMAPAPP_Context.aSrcCap[src_record_i][0];
         TMAPAPP_Context.aSrcPACRecord[src_record_i].Cap.SpecificCapLength = 16u;
@@ -2457,7 +2481,7 @@ static tBleStatus TMAPAPP_TMAPInit(uint16_t Role,uint8_t AudioConfId)
 
         TMAPAPP_Context.aSnkCap[snk_record_i][13] = 0x02;
         TMAPAPP_Context.aSnkCap[snk_record_i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-        TMAPAPP_Context.aSnkCap[snk_record_i][15] = 0x01;//0x03;
+        TMAPAPP_Context.aSnkCap[snk_record_i][15] =  (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
         TMAPAPP_Context.aSnkPACRecord[snk_record_i].Cap.pSpecificCap = &TMAPAPP_Context.aSnkCap[snk_record_i][0];
         TMAPAPP_Context.aSnkPACRecord[snk_record_i].Cap.SpecificCapLength = 16u;
@@ -2547,7 +2571,14 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             tBleStatus ret;
             GAF_Profiles_Link_t current_link;
             ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-            LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+            if (ret != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
             p_conn->ConfirmIndicationRequired = 0u;
             current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
 #if (APP_MCP_ROLE_CLIENT_SUPPORT == 1)
@@ -2848,10 +2879,19 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                                         p_other_conn->pASEs->aSnkASE[i].ID,
                                         ASE_OP_RESP_SUCCESS,
                                         ASE_OP_RESP_NO_REASON);
-                          LOG_INFO_APP("Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
-                                      status,
-                                      p_other_conn->pASEs->aSnkASE[i].ID,
-                                      pNotification->ConnHandle);
+                          if (status != BLE_STATUS_SUCCESS)
+                          {
+                            LOG_INFO_APP("  Fail   : Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
+                                         status,
+                                         p_other_conn->pASEs->aSnkASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
+                          else
+                          {
+                            LOG_INFO_APP("  Success: Enable Operation Response for ASE ID %d on ConnHandle 0x%04X\n",
+                                         p_other_conn->pASEs->aSnkASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
                         }
                       }
                     }
@@ -2872,10 +2912,19 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                                         p_other_conn->pASEs->aSrcASE[i].ID,
                                         ASE_OP_RESP_SUCCESS,
                                         ASE_OP_RESP_NO_REASON);
-                          LOG_INFO_APP("Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
-                                      status,
-                                      p_other_conn->pASEs->aSrcASE[i].ID,
-                                      pNotification->ConnHandle);
+                          if (status != BLE_STATUS_SUCCESS)
+                          {
+                            LOG_INFO_APP("  Fail   : Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
+                                         status,
+                                         p_other_conn->pASEs->aSrcASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
+                          else
+                          {
+                            LOG_INFO_APP("  Success: Enable Operation Response for ASE ID %d on ConnHandle 0x%04X\n",
+                                         p_other_conn->pASEs->aSrcASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
                         }
                       }
                     }
@@ -2902,6 +2951,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                                  SUPPORTED_SRC_CONTEXTS,
                                  p_other_conn->Acl_Conn_Handle,
                                  status);
+                    UNUSED(status);
                   }
                 }
               }
@@ -3132,6 +3182,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                              AUDIO_CONTEXT_CONVERSATIONAL,
                              p_other_conn->Acl_Conn_Handle,
                              ret);
+                UNUSED(ret);
               }
             }
           }
@@ -3274,6 +3325,50 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
          * same time that the specified ASE
          */
         controller_delay_min = (num_snk_ases * info->SnkControllerDelayMin) + (num_src_ases * info->SrcControllerDelayMin);
+
+        /* Remove extra margins added by the codec manager since they could to be considered only one time but not for each ASE */
+        if ((num_snk_ases + num_src_ases) > 1)
+        {
+          uint32_t controller_delay_margin_src = 0;
+          uint32_t controller_delay_margin_snk = 0;
+          uint32_t max_controller_delay;
+          uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
+          a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
+
+          hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
+                                                     0x02,
+                                                     DATA_PATH_OUTPUT,
+                                                     0,
+                                                     NULL,
+                                                     (uint8_t*)&controller_delay_margin_snk,
+                                                     (uint8_t*)&max_controller_delay);
+
+           hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
+                                                      0x02,
+                                                      DATA_PATH_INPUT,
+                                                      0,
+                                                      NULL,
+                                                      (uint8_t*)&controller_delay_margin_src,
+                                                      (uint8_t*)&max_controller_delay);
+
+          if (num_src_ases > 0)
+          {
+            if (num_src_ases > 1)
+            {
+              controller_delay_min = controller_delay_min - (controller_delay_margin_src * (num_src_ases - 1));
+            }
+            /* if a source is present, processing margin are already included for that frame duration */
+            controller_delay_min = controller_delay_min - (controller_delay_margin_snk * num_snk_ases);
+					}
+          else
+          {
+            if( num_snk_ases > 0)
+            {
+              controller_delay_min = controller_delay_min - (controller_delay_margin_snk * (num_snk_ases - 1));
+            }
+          }
+        }
+
         LOG_INFO_APP("Computed Min Controller Delay with %d Snk ASEs and %d Src ASEs : %d us\n",
             num_snk_ases,
             num_src_ases,
@@ -4008,7 +4103,6 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             memcpy(&TMAPAPP_Context.BSNK.codec_specific_config_subgroup[0],
                    TMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
                    TMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
-            TMAPAPP_Context.BSNK.base_group.PresentationDelay = TMAPAPP_Context.BSNK.base_group.PresentationDelay;
 
             uint32_t freq = LTV_GetConfiguredSamplingFrequency(TMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
                                                                TMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
@@ -4103,6 +4197,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         }
 
         APP_BroadcastSetupAudio(AUDIO_ROLE_SINK);
+        Set_Volume(Volume);
       }
       break;
 
@@ -4430,6 +4525,10 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
                                                    p_ase->params.Codec.CodecConf.SpecificConfLength);
     frame_duration = LTV_GetConfiguredFrameDuration(p_ase->params.Codec.CodecConf.pSpecificConf,
                                                     p_ase->params.Codec.CodecConf.SpecificConfLength);
+    if ((frame_duration != FRAME_DURATION_7_5_MS) && (frame_duration != FRAME_DURATION_10_MS))
+    {
+      return BLE_STATUS_INVALID_PARAMS;
+    }
 
    if (((p_ase->Type == ASE_SOURCE) && (TMAPAPP_Context.bap_role & BAP_ROLE_UNICAST_SERVER)) || \
       ((p_ase->Type == ASE_SINK) && (TMAPAPP_Context.bap_role & BAP_ROLE_UNICAST_CLIENT)))

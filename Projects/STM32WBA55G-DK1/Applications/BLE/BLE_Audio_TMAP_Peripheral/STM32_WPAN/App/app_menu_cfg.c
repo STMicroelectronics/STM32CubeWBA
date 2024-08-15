@@ -562,7 +562,7 @@ static void Menu_CSIP_Conf_Down(void)
  */
 static void Menu_Start_Advertising(void)
 {
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   uint16_t appearance;
   LOG_INFO_APP("[APP_MENU_CONF] Start Advertising\n");
   if (app_initialization_done == 0u)
@@ -590,10 +590,13 @@ static void Menu_Start_Advertising(void)
     {
       appearance = GAP_APPEARANCE_HEADPHONES;
     }
-    app_initialization_done = 1u;
-    /* Remove Action buttons */
-    p_csip_config_menu->ActionDown.ActionType = 0;
-    p_csip_config_menu->ActionUp.ActionType = 0;
+    if (status == BLE_STATUS_SUCCESS)
+    {
+      app_initialization_done = 1u;
+      /* Remove Action buttons */
+      p_csip_config_menu->ActionDown.ActionType = 0;
+      p_csip_config_menu->ActionUp.ActionType = 0;
+    }
   }
   else
   {
@@ -607,12 +610,15 @@ static void Menu_Start_Advertising(void)
     }
   }
 
-  /* Start Advertising */
-  status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, appearance);
-  LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
-  UTIL_TIMER_Create(&Advertising_Timer, ADVERTISING_TIMEOUT, UTIL_TIMER_ONESHOT, &Menu_Advertising_TimerCallback, 0);
-  UTIL_TIMER_Start(&Advertising_Timer);
-  UNUSED(status);
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    /* Start Advertising */
+    status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, appearance);
+    LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+    UTIL_TIMER_Create(&Advertising_Timer, ADVERTISING_TIMEOUT, UTIL_TIMER_ONESHOT, &Menu_Advertising_TimerCallback, 0);
+    UTIL_TIMER_Start(&Advertising_Timer);
+    UNUSED(status);
+  }
 }
 /**
  * @brief Start Advertising Callback
@@ -740,7 +746,7 @@ static void Menu_SelectBroadcast(uint8_t id)
  */
 static void Menu_StartBroadcastScan(void)
 {
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   LOG_INFO_APP("[APP_MENU_CONF] Start Scanning\n");
 
   if (app_initialization_done == 0u)
@@ -763,17 +769,23 @@ static void Menu_StartBroadcastScan(void)
                    status);
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */
     }
-    app_initialization_done = 1u;
-    /* Remove Action buttons */
-    p_csip_config_menu->ActionDown.ActionType = 0;
-    p_csip_config_menu->ActionUp.ActionType = 0;
+    if (status == BLE_STATUS_SUCCESS)
+    {
+      app_initialization_done = 1u;
+      /* Remove Action buttons */
+      p_csip_config_menu->ActionDown.ActionType = 0;
+      p_csip_config_menu->ActionUp.ActionType = 0;
+    }
   }
-  num_broadcast_sources = 0;
-  Menu_ClearList(p_broadcast_list_menu);
-  /* Start Scanning */
-  status = TMAPAPP_StartSink();
-  LOG_INFO_APP("TMAPAPP_StartSink() returns status 0x%02X\n",status);
-  UNUSED(status);
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    num_broadcast_sources = 0;
+    Menu_ClearList(p_broadcast_list_menu);
+    /* Start Scanning */
+    status = TMAPAPP_StartSink();
+    LOG_INFO_APP("TMAPAPP_StartSink() returns status 0x%02X\n",status);
+    UNUSED(status);
+  }
 }
 
 /**

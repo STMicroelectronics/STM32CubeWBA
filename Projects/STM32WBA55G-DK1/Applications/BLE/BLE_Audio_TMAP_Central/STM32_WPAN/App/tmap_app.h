@@ -495,7 +495,7 @@ tBleStatus TMAPAPP_StartBroadcastSource(uint8_t BAPConfID);
 tBleStatus TMAPAPP_StopBroadcastSource(void);
 void TMAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void TMAPAPP_CISConnected(uint16_t Conn_Handle);
-void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle);
+void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void TMAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void TMAPAPP_BondLost(uint16_t Conn_Handle);
 #ifdef __cplusplus

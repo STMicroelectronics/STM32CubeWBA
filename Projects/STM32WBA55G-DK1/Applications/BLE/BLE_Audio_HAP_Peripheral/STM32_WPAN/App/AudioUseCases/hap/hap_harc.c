@@ -519,6 +519,7 @@ tBleStatus HAP_HARC_SetActivePreset(uint16_t ConnHandle, uint8_t Index, uint8_t 
             {
               p_hap_inst->AttProcStarted = 1u;
               HAP_Context.HARC.Op = HAP_HARC_OP_SET_ACTIVE_PRESET;
+              HAP_Context.HARC.OpParams.PresetIndex = Index;
               HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
               HAP_Context.HARC.OpParams.SyncLocally = SyncLocally;
               BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_ACTIVE_PRESET Operation(ConnHandle 0x%04X)\n", ConnHandle);
@@ -1283,10 +1284,12 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                   case HAS_CHAR_HA_FEATURES:
                     evt.EvtOpcode = HARC_HA_FEATURES_EVT;
                     p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
+                    HAP_HARC_Notification(&evt);
                     break;
 
                   case HAS_CHAR_ACTIVE_PRESET_INDEX:
                     evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+                    HAP_HARC_Notification(&evt);
                     break;
                 }
               }
@@ -1294,13 +1297,13 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
               {
                 evt.EvtOpcode = HARC_HA_FEATURES_EVT;
                 p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
+                HAP_HARC_Notification(&evt);
               }
               else if  (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
               {
                 evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+                HAP_HARC_Notification(&evt);
               }
-
-              HAP_HARC_Notification(&evt);
             }
           }
         }
@@ -1372,15 +1375,23 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
             if (pr->Attribute_Handle >= p_hap_inst->HASServiceStartHandle
                 && pr->Attribute_Handle <= p_hap_inst->HASServiceEndHandle)
             {
+              tBleStatus ret;
               return_value = SVCCTL_EvtAckFlowEnable;
-
               if (pr->Attribute_Handle == p_hap_inst->HAPresetControlPointChar.ValueHandle)
               {
                 HAP_HARC_Receive_HAPresetControlPoint(p_hap_inst, &pr->Attribute_Value[0], pr->Attribute_Value_Length);
               }
 
               /* Confirm Indication */
-              aci_gatt_confirm_indication(pr->Connection_Handle);
+              ret = aci_gatt_confirm_indication(pr->Connection_Handle);
+              if (ret != BLE_STATUS_SUCCESS)
+              {
+                BLE_DBG_HAP_HARC_MSG("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+              }
+              else
+              {
+                BLE_DBG_HAP_HARC_MSG("  Success: aci_gatt_confirm_indication command\n");
+              }
             }
           }
         }
@@ -1389,6 +1400,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
         case ACI_GATT_PROC_COMPLETE_VSEVT_CODE:
         {
           aci_gatt_proc_complete_event_rp0 *pr = (void*)p_blecore_evt->data;
+          HAP_HARC_Inst_t *p_csipmember_hap_inst = 0;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
           p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
           if (p_hap_inst != 0)
@@ -1415,6 +1427,15 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
 
             if ((p_hap_inst->DelayDeallocation == 1u) && (p_hap_inst->AttProcStarted == 0u))
             {
+              if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
+              {
+
+                if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
+                    && p_hap_inst->pConnInfo->Size > 1u)
+                {
+                  p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
+                }
+              }
               BLE_DBG_HAP_HARC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
               p_hap_inst->DelayDeallocation = 0u;
               HAP_HARC_InitInstance(p_hap_inst);
@@ -1427,60 +1448,105 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
               tBleStatus status = BLE_STATUS_SUCCESS;
               uint8_t send_proc_complete = 1u;
 
-              if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
-                  && p_hap_inst->pConnInfo->Size > 1u)
+              if ((p_csipmember_hap_inst != 0) \
+                  && (p_csipmember_hap_inst->pConnInfo->Connection_Handle != HAP_Context.HARC.OpParams.ConnHandle))
               {
-                HAP_HARC_Inst_t *p_csipmember_hap_inst;
-                p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
-
-                if (p_csipmember_hap_inst != 0
-                    && p_csipmember_hap_inst->pConnInfo->Connection_Handle != HAP_Context.HARC.OpParams.ConnHandle)
+                /* Start Operation on second set member */
+                BLE_DBG_HAP_HARC_MSG("Start procedure on Set member with Conn Handle 0x%02X\n",
+                                     p_csipmember_hap_inst->pConnInfo->Connection_Handle);
+                switch (HAP_Context.HARC.Op)
                 {
-                  /* Start Operation on second set member */
-                  BLE_DBG_HAP_HARC_MSG("Start procedure on Set member with Conn Handle 0x%02X\n",
-                                       p_csipmember_hap_inst->pConnInfo->Connection_Handle);
-                  switch (HAP_Context.HARC.Op)
+                  case HAP_HARC_OP_READ_HA_FEATURES:
                   {
-                    case HAP_HARC_OP_READ_HA_FEATURES:
+                    status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                      p_csipmember_hap_inst->HAFeaturesChar.ValueHandle);
+                    BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                        p_csipmember_hap_inst->HAFeaturesChar.ValueHandle,
+                                        status);
+                    if (status == BLE_STATUS_SUCCESS)
                     {
-                      status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                        p_csipmember_hap_inst->HAFeaturesChar.ValueHandle);
-                      BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                          p_csipmember_hap_inst->HAFeaturesChar.ValueHandle,
-                                          status);
-                      if (status == BLE_STATUS_SUCCESS)
-                      {
-                        p_csipmember_hap_inst->AttProcStarted = 1u;
-                        send_proc_complete = 0u;
-                      }
-                      break;
+                      p_csipmember_hap_inst->AttProcStarted = 1u;
+                      send_proc_complete = 0u;
                     }
-                    case HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX:
+                    break;
+                  }
+                  case HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX:
+                  {
+                    status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                      p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle);
+                    BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                        p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle,
+                                        status);
+                    if (status == BLE_STATUS_SUCCESS)
                     {
-                      status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                        p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle);
-                      BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                          p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle,
-                                          status);
-                      if (status == BLE_STATUS_SUCCESS)
-                      {
-                        p_csipmember_hap_inst->AttProcStarted = 1u;
-                        send_proc_complete = 0u;
-                      }
-                      break;
+                      p_csipmember_hap_inst->AttProcStarted = 1u;
+                      send_proc_complete = 0u;
                     }
-                    case HAP_HARC_OP_READ_PRESETS_REQUEST:
+                    break;
+                  }
+                  case HAP_HARC_OP_READ_PRESETS_REQUEST:
+                  {
+                    uint8_t a_value[3] = {
+                      HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST,
+                      HAP_Context.HARC.OpParams.PresetIndex,
+                      HAP_Context.HARC.OpParams.NumPreset
+                    };
+                    status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                       p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                       3,
+                                                       &a_value[0]);
+                    BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                        p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                        status);
+                    if (status == BLE_STATUS_SUCCESS)
                     {
-                      uint8_t a_value[3] = {
-                        HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST,
-                        HAP_Context.HARC.OpParams.PresetIndex,
-                        HAP_Context.HARC.OpParams.NumPreset
+                      p_csipmember_hap_inst->AttProcStarted = 1u;
+                      send_proc_complete = 0u;
+                    }
+                    break;
+                  }
+                  case HAP_HARC_OP_WRITE_PRESET_NAME:
+                  {
+                    uint8_t a_value[2 + HAP_MAX_PRESET_NAME_LEN];
+                    a_value[0] = HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME,
+                    a_value[1] = HAP_Context.HARC.OpParams.PresetIndex;
+                    memcpy(&a_value[2], &HAP_Context.HARC.OpParams.PresetName[0], HAP_Context.HARC.OpParams.NameLen);
+
+                    status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                       p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                       2 + HAP_Context.HARC.OpParams.NameLen,
+                                                       &a_value[0]);
+                    BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                        p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                        status);
+                    if (status == BLE_STATUS_SUCCESS)
+                    {
+                      p_csipmember_hap_inst->AttProcStarted = 1u;
+                      send_proc_complete = 0u;
+                    }
+                    break;
+                  }
+                  case HAP_HARC_OP_SET_ACTIVE_PRESET:
+                  {
+                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+                    {
+                      /* Only execute on second device when Local Sync and independant presets are disabled */
+                      uint8_t a_value[2] = {
+                        HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET,
+                        HAP_Context.HARC.OpParams.PresetIndex
                       };
+
+                      BLE_DBG_HAP_HARC_MSG("Preset Index = %d\n", a_value[1]);
+
+
                       status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
                                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                         3,
+                                                         2,
                                                          &a_value[0]);
                       BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
                                           p_csipmember_hap_inst->pConnInfo->Connection_Handle,
@@ -1491,18 +1557,27 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                         p_csipmember_hap_inst->AttProcStarted = 1u;
                         send_proc_complete = 0u;
                       }
-                      break;
                     }
-                    case HAP_HARC_OP_WRITE_PRESET_NAME:
+                    break;
+                  }
+                  case HAP_HARC_OP_SET_NEXT_PRESET:
+                  {
+                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
                     {
-                      uint8_t a_value[2 + HAP_MAX_PRESET_NAME_LEN];
-                      a_value[0] = HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME,
-                      a_value[1] = HAP_Context.HARC.OpParams.PresetIndex;
-                      memcpy(&a_value[2], &HAP_Context.HARC.OpParams.PresetName[0], HAP_Context.HARC.OpParams.NameLen);
+                      /* Only execute on second device when Local Sync and independant presets are disabled */
+                      uint8_t a_value[1] = {
+                        HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET
+                      };
+
+                      if (HAP_Context.HARC.OpParams.SyncLocally == 1)
+                      {
+                        a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC;
+                      }
 
                       status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
                                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                         2 + HAP_Context.HARC.OpParams.NameLen,
+                                                         1,
                                                          &a_value[0]);
                       BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
                                           p_csipmember_hap_inst->pConnInfo->Connection_Handle,
@@ -1513,97 +1588,39 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                         p_csipmember_hap_inst->AttProcStarted = 1u;
                         send_proc_complete = 0u;
                       }
-                      break;
                     }
-                    case HAP_HARC_OP_SET_ACTIVE_PRESET:
+                    break;
+                  }
+                  case HAP_HARC_OP_SET_PREVIOUS_PRESET:
+                  {
+                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
                     {
-                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+                      /* Only execute on second device when Local Sync and independant presets are disabled */
+                      uint8_t a_value[1] = {
+                        HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET
+                      };
+
+                      if (HAP_Context.HARC.OpParams.SyncLocally == 1)
                       {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
-                        uint8_t a_value[2] = {
-                          HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET,
-                          HAP_Context.HARC.OpParams.PresetIndex
-                        };
-
-                        status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                           2,
-                                                           &a_value[0]);
-                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                            p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                            status);
-                        if (status == BLE_STATUS_SUCCESS)
-                        {
-                          p_csipmember_hap_inst->AttProcStarted = 1u;
-                          send_proc_complete = 0u;
-                        }
+                        a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC;
                       }
-                      break;
-                    }
-                    case HAP_HARC_OP_SET_NEXT_PRESET:
-                    {
-                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+
+                      status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                         1,
+                                                         &a_value[0]);
+                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                          status);
+                      if (status == BLE_STATUS_SUCCESS)
                       {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
-                        uint8_t a_value[1] = {
-                          HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET
-                        };
-
-                        if (HAP_Context.HARC.OpParams.SyncLocally == 1)
-                        {
-                          a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC;
-                        }
-
-                        status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                           1,
-                                                           &a_value[0]);
-                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                            p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                            status);
-                        if (status == BLE_STATUS_SUCCESS)
-                        {
-                          p_csipmember_hap_inst->AttProcStarted = 1u;
-                          send_proc_complete = 0u;
-                        }
+                        p_csipmember_hap_inst->AttProcStarted = 1u;
+                        send_proc_complete = 0u;
                       }
-                      break;
                     }
-                    case HAP_HARC_OP_SET_PREVIOUS_PRESET:
-                    {
-                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
-                      {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
-                        uint8_t a_value[1] = {
-                          HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET
-                        };
-
-                        if (HAP_Context.HARC.OpParams.SyncLocally == 1)
-                        {
-                          a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC;
-                        }
-
-                        status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                           1,
-                                                           &a_value[0]);
-                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                            p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                            status);
-                        if (status == BLE_STATUS_SUCCESS)
-                        {
-                          p_csipmember_hap_inst->AttProcStarted = 1u;
-                          send_proc_complete = 0u;
-                        }
-                      }
-                      break;
-                    }
+                    break;
                   }
                 }
               }
@@ -1615,7 +1632,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
 
                 /* Notify Proc complete */
                 evt.pInfo = 0;
-                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+                evt.ConnHandle = pr->Connection_Handle;
                 evt.Status = status;
                 evt.EvtOpcode = HARC_PROC_COMPLETE_EVT;
 
@@ -2117,6 +2134,10 @@ static void HAP_HARC_Receive_HAPresetControlPoint(HAP_HARC_Inst_t *pHARC_Inst, u
                 evt.EvtOpcode = HARC_PRESET_RECORD_UNAVAILABLE_EVT;
                 BLE_DBG_HAP_HARC_MSG("HAP_HARC_PRESET_RECORD_UNAVAILABLE_EVT received from remote HAP Hearing Aid with ConnHandle 0x%x\n",
                                    pHARC_Inst->pConnInfo->Connection_Handle);
+              }
+              else
+              {
+                break;
               }
 
               HAP_HARC_Notification(&evt);

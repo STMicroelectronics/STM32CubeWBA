@@ -90,9 +90,9 @@ typedef struct {
 #define CLI_NAME                "(STM32WBA5xx) PHY CLI\r\n"
 
 #if (FULL_CERTIFICATION_CAPABLE == 1)
-#define CLI_APP_VERSION         "v1.4.0 " __DATE__
+#define CLI_APP_VERSION         "v1.4.1 " __DATE__
 #else
-#define CLI_APP_VERSION         "v1.4.0"
+#define CLI_APP_VERSION         "v1.4.1"
 #endif
 
 #if defined(STM32WBA52xx)

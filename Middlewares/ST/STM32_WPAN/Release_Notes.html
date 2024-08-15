@@ -171,9 +171,67 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section6" checked aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
+<input type="checkbox" id="collapse-section7" checked aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.4.1 / 18-July-2024</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>Productive PHY settings including AoA/AoD support.</li>
+<li><p>ID 181488 : Optimization of RF calibration timing.</p></li>
+<li>BLE Audio:
+<ul>
+<li>Changes :
+<ul>
+<li>Codec : Change ReadLocalSupportedControllerDelay to provide only margin if codec configuration length parameter is null</li>
+</ul></li>
+<li>Issues fixed:
+<ul>
+<li>ID 186241 : 2 successive Volume Setting Updates from one CAP Acceptor are not correctly transmitted to 2nd CAP Acceptor from CAP Initiator</li>
+<li>When ASCS Enable Control Operation includes invalid ASE ID, the “Number of ASEs” value in the Control Operation Response of BAP Unicast Server is invalid</li>
+</ul></li>
+</ul></li>
+<li>PHY 802.15.4:
+<ul>
+<li>Issues fixed:
+<ul>
+<li>ID 160933 : API for continuous wave not yet supported</li>
+<li>ID 160930 : API for continuous modulation not yet supported</li>
+<li>ID 164825 : RSSI reading incorrect : around 6dbm loss from –90 to -30dbm</li>
+</ul></li>
+</ul></li>
+<li><strong>Known limitations</strong>:
+<ul>
+<li>BLE:
+<ul>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 178561 : White list not updated when advertising in privacy mode.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).</li>
+<li>ID 135240 : Long synchronization time in Broadcast due to scheduling conflict between extended advertising and BIG event.</li>
+<li>ID 165710 : Audio Latency may not be respected with high transport latency.</li>
+</ul></li>
+<li>Common 802.15.4 (MAC / Thread / Zigbee):
+<ul>
+<li>ID 182045 : [BLE_Thread_SED] issue with data polling / device crash</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ID 182978 In color cluster, wrong parsing for enhanced move to hue command.</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 182781 : During association, the capable information with receiver On When Idle doesn’t work</li>
+<li>ID 182904 : Not received MLME-Sync-Loss.ind for associate device to a PAN coordinator</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -282,7 +340,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li><p>Productive RF-PHY settings.</p></li>
 <li>Zigbee:
@@ -352,7 +410,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="false">V2.3.0 / 05-Feb-2024</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li><p>Adding support of BLE-Thread and BLE-Zigbee Dynamic Concurrent Modes.</p></li>
 <li><p>All libraries are now compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
@@ -466,7 +524,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 22-Sept-2023</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -536,7 +594,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -564,7 +622,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

@@ -53,6 +53,7 @@ typedef struct
 typedef enum
 {
   HAS_CONTROL_POINT_EVT,                       /* HAS Control Operation received */
+  HAS_CONTROL_POINT_DESC_EVT                   /* Descriptor update of HAS Control Point */
 } HAS_NotCode_t;
 
 typedef struct

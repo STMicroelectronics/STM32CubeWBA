@@ -236,7 +236,11 @@ void Menu_Config(void)
   UTIL_TIMER_Start(&Startup_Timer);
 #else /*(CFG_JOYSTICK_SUPPORTED == 1)*/
   HAPAPP_Init(0);
-  uint8_t status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_HEADPHONES);
+
+#if (CFG_LOG_SUPPORTED != 0)
+  uint8_t status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+  HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_HEADPHONES);
   LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
   Menu_SetActivePage(p_waitcon_menu);
 #endif /*(CFG_JOYSTICK_SUPPORTED == 1)*/
@@ -451,12 +455,10 @@ static void Menu_CSIP_Conf_Down(void)
  */
 static void Menu_Start_Advertising(void)
 {
-  uint8_t status;
-  uint16_t appearance;
+  uint8_t status = BLE_STATUS_SUCCESS;
   LOG_INFO_APP("[APP_MENU_CONF] Start Advertising\n");
   if (app_initialization_done == 0u)
   {
-
     HAPAPP_Init(csip_conf_id);
     if (csip_conf_id > 1)
     {
@@ -474,19 +476,23 @@ static void Menu_Start_Advertising(void)
                    status);
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */
     }
-    appearance = GAP_APPEARANCE_GENERIC_HEARING_AID;
-    app_initialization_done = 1u;
-    /* Remove Action buttons */
-    p_csip_config_menu->ActionDown.ActionType = 0;
-    p_csip_config_menu->ActionUp.ActionType = 0;
+    if(status == BLE_STATUS_SUCCESS)
+    {
+      app_initialization_done = 1u;
+      /* Remove Action buttons */
+      p_csip_config_menu->ActionDown.ActionType = 0;
+      p_csip_config_menu->ActionUp.ActionType = 0;
+    }
   }
-
-  /* Start Advertising */
-  status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, appearance);
-  LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
-  UTIL_TIMER_Create(&Advertising_Timer, ADVERTISING_TIMEOUT, UTIL_TIMER_ONESHOT, &Menu_Advertising_TimerCallback, 0);
-  UTIL_TIMER_Start(&Advertising_Timer);
-  UNUSED(status);
+  if(status == BLE_STATUS_SUCCESS)
+  {
+    /* Start Advertising */
+    status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
+    LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+    UTIL_TIMER_Create(&Advertising_Timer, ADVERTISING_TIMEOUT, UTIL_TIMER_ONESHOT, &Menu_Advertising_TimerCallback, 0);
+    UTIL_TIMER_Start(&Advertising_Timer);
+    UNUSED(status);
+  }
 }
 /**
  * @brief Start Advertising Callback

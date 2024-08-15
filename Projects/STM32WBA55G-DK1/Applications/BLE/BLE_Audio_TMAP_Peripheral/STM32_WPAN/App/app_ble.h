@@ -119,7 +119,7 @@ enum
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
 /* USER CODE BEGIN EFP */
-
+tBleStatus SetGapAppearance(uint16_t Appearance);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

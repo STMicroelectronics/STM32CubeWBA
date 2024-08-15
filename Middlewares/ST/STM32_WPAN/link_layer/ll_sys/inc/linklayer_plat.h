@@ -51,6 +51,24 @@ extern void LINKLAYER_PLAT_Assert(uint8_t condition);
 extern void LINKLAYER_PLAT_AclkCtrl(uint8_t enable);
 
 /**
+  * @brief  Notify the Link Layer platform layer the system will enter in WFI 
+  *         and AHB5 clock may be turned of regarding the 2.4Ghz radio state. 
+  * @param  None
+  * @retval None
+  */
+extern void LINKLAYER_PLAT_NotifyWFIEnter(void);
+
+/**
+  * @brief  Notify the Link Layer platform layer the system exited WFI and AHB5 
+  *         clock may be resynchronized as is may have been turned of during
+  *         low power mode entry.
+  * @param  None
+  * @retval None
+  */
+extern void LINKLAYER_PLAT_NotifyWFIExit(void);
+
+
+/**
   * @brief  Active wait on bus clock readiness.
   * @param  None
   * @retval None

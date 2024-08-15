@@ -12,7 +12,7 @@
 **STM32Cube** covers the overall STM32 products portfolio. It includes a comprehensive embedded software platform (this repo), delivered for each series (such as the STM32CubeWBA for the STM32WBA series).
    * The CMSIS modules (core and device) corresponding to the ARM(tm) core implemented in this STM32 product.
    * The STM32 HAL-LL drivers, an abstraction layer offering a set of APIs ensuring maximized portability across the STM32 portfolio.
-   * The BSP drivers of each evaluation, demonstration or nucleo board provided for this STM32 series.
+   * The BSP drivers of each evaluation, discovery, or nucleo board provided for this STM32 series.
    * A consistent set of middleware libraries such as WPAN, ThreadX, FileX, USBX, NetDuoX, OpenBootloader, trustedfirmware, mbed-crypto, ...
    * A full set of software projects (basic examples, applications, and demonstrations) for each board provided for this STM32 series.
    * A development with three Toolchains and Compilers (IAR Embedded Workbench for ARM (EWARM), RealView Microcontroller Development Kit (MDK-ARM), and STM32CubeIDE).
@@ -69,8 +69,8 @@ git clone --recursive  --depth 1 --branch vX.Y.Z https://github.com/STMicroelect
 
   * STM32WBA
     * [NUCLEO-WBA52CG](https://www.st.com/en/evaluation-tools/nucleo-wba52cg.html)
-    * NUCLEO-WBA55CG *(page not available yet)*
-    * STM32WBA55G-DK1 *(page not available yet)*
+    * [NUCLEO-WBA55CG](https://www.st.com/en/evaluation-tools/nucleo-wba55cg.html)
+    * [STM32WBA55G-DK1](https://www.st.com/en/evaluation-tools/stm32wba55g-dk1.html)
 
 
 ## Troubleshooting

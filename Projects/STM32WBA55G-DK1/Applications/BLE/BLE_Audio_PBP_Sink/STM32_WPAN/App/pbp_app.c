@@ -990,8 +990,8 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
       CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100u,
-                        1700u,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
     }
   }

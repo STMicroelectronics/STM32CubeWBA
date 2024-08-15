@@ -72,7 +72,8 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+extern void LINKLAYER_PLAT_NotifyWFIExit(void);
+extern void LINKLAYER_PLAT_NotifyWFIEnter(void);
 /* USER CODE END 0 */
 
 uint32_t is_boot_from_standby(void)

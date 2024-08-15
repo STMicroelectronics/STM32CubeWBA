@@ -560,7 +560,7 @@ tBleStatus TMAPAPP_TerminateCall(void);
 uint8_t TMAPAPP_Disconnect(void);
 void TMAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void TMAPAPP_CISConnected(uint16_t Conn_Handle);
-void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle);
+void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void TMAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void TMAPAPP_BondLost(uint16_t Conn_Handle);
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)

@@ -359,7 +359,10 @@ void HAPAPP_Init(uint8_t csip_config_id)
   if (status == BLE_STATUS_SUCCESS)
   {
     /* Initialize the HAP layer*/
-    status = HAPAPP_HAPInit(APP_HAP_ROLE, audio_conf_id, csip_config_id);
+#if (CFG_LOG_SUPPORTED != 0)
+  status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+    HAPAPP_HAPInit(APP_HAP_ROLE, audio_conf_id, csip_config_id);
     LOG_INFO_APP("HAPAPP_HAPInit() with role 0x%02X returns status 0x%02X\n", APP_HAP_ROLE,status);
   }
 }
@@ -688,7 +691,7 @@ uint8_t HAPAPP_Disconnect(void)
 uint8_t HAPAPP_VolumeUp(void)
 {
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
   if (Mute == 1)
   {
@@ -704,9 +707,11 @@ uint8_t HAPAPP_VolumeUp(void)
   {
     volume = 0xFF;
   }
-
-  status = VCP_RENDER_SetAbsVolume(volume);
-  LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    status = VCP_RENDER_SetAbsVolume(volume);
+    LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  }
 
   return status;
 #else /*#if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
@@ -717,7 +722,7 @@ uint8_t HAPAPP_VolumeUp(void)
 uint8_t HAPAPP_VolumeDown(void)
 {
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
-  uint8_t status;
+  uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
 
   if (Volume > VOLUME_STEP)
@@ -730,9 +735,11 @@ uint8_t HAPAPP_VolumeDown(void)
     status = VCP_RENDER_SetMuteState(1);
     LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute %d returns status 0x%02X\n", Mute, status);
   }
-
-  status = VCP_RENDER_SetAbsVolume(volume);
-  LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  if (status == BLE_STATUS_SUCCESS)
+  {
+    status = VCP_RENDER_SetAbsVolume(volume);
+    LOG_INFO_APP("VCP_RENDER_SetAbsVolume() with volume %d returns status 0x%02X\n", volume, status);
+  }
 
   return status;
 #else /*#if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
@@ -828,7 +835,6 @@ tBleStatus HAPAPP_AnswerCall(void)
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 
   tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
-  tBleStatus ret = HCI_COMMAND_DISALLOWED_ERR_CODE;
   GAF_Profiles_Link_t current_link;
 
   for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
@@ -836,33 +842,29 @@ tBleStatus HAPAPP_AnswerCall(void)
     if (HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFFu)
     {
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
-      current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
-      if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState == CCP_CS_INCOMING))
+      if (p_conn != 0)
       {
-        ret = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
-                                            p_conn->GenericTelephoneBearerCCID,
-                                            p_conn->CurrentCallID);
-        if (ret != BLE_STATUS_SUCCESS)
+        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        if (((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState == CCP_CS_INCOMING))
         {
-          LOG_INFO_APP("  Fail   : CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
-                       p_conn->Acl_Conn_Handle,
-                       p_conn->GenericTelephoneBearerCCID,
-                       ret);
+          status = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
+                                              p_conn->GenericTelephoneBearerCCID,
+                                              p_conn->CurrentCallID);
           if (status != BLE_STATUS_SUCCESS)
           {
-            status = ret;
+            LOG_INFO_APP("  Fail   : CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
+                         p_conn->Acl_Conn_Handle,
+                         p_conn->GenericTelephoneBearerCCID,
+                         status);
           }
-        }
-        else
-        {
-          if (p_conn != 0)
+          else
           {
             p_conn->CurrentContentCtrlOp = CCP_CLT_OP_ANSWER_INC_CALL;
+            LOG_INFO_APP("  Success: CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d\n",
+                         p_conn->Acl_Conn_Handle,
+                         p_conn->GenericTelephoneBearerCCID);
+            status = BLE_STATUS_SUCCESS;
           }
-          LOG_INFO_APP("  Success: CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d\n",
-                       p_conn->Acl_Conn_Handle,
-                       p_conn->GenericTelephoneBearerCCID);
-          status = BLE_STATUS_SUCCESS;
         }
       }
     }
@@ -878,7 +880,6 @@ tBleStatus HAPAPP_TerminateCall(void)
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 
   tBleStatus status = HCI_COMMAND_DISALLOWED_ERR_CODE;
-  tBleStatus ret = HCI_COMMAND_DISALLOWED_ERR_CODE;
   GAF_Profiles_Link_t current_link;
 
   for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
@@ -886,34 +887,29 @@ tBleStatus HAPAPP_TerminateCall(void)
     if (HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFFu)
     {
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
-      current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
-
-      if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState != CCP_CS_IDLE))
+      if (p_conn != 0)
       {
-        ret = CCP_CLIENT_TerminateCall(p_conn->Acl_Conn_Handle,
-                                       p_conn->GenericTelephoneBearerCCID,
-                                       p_conn->CurrentCallID);
-        if (status != BLE_STATUS_SUCCESS)
+        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+
+        if (((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState != CCP_CS_IDLE))
         {
-          LOG_INFO_APP("  Fail   : CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
-                       p_conn->Acl_Conn_Handle,
-                       p_conn->GenericTelephoneBearerCCID,
-                       ret);
+          status = CCP_CLIENT_TerminateCall(p_conn->Acl_Conn_Handle,
+                                            p_conn->GenericTelephoneBearerCCID,
+                                            p_conn->CurrentCallID);
           if (status != BLE_STATUS_SUCCESS)
           {
-            status = ret;
+            LOG_INFO_APP("  Fail   : CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d - result: 0x%02X\n",
+                         p_conn->Acl_Conn_Handle,
+                         p_conn->GenericTelephoneBearerCCID,
+                         status);
           }
-        }
-        else
-        {
-          if (p_conn != 0)
+          else
           {
             p_conn->CurrentContentCtrlOp = CCP_CLT_OP_TERMINATE_CALL;
+            LOG_INFO_APP("  Success: CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d\n",
+                         p_conn->Acl_Conn_Handle,
+                         p_conn->GenericTelephoneBearerCCID);
           }
-          LOG_INFO_APP("  Success: CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d\n",
-                       p_conn->Acl_Conn_Handle,
-                       p_conn->GenericTelephoneBearerCCID);
-          status = BLE_STATUS_SUCCESS;
         }
       }
     }
@@ -1121,7 +1117,7 @@ void HAPAPP_CISConnected(uint16_t Conn_Handle)
   }
 }
 
-void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
+void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 {
   uint8_t i;
   uint8_t status;
@@ -1165,7 +1161,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
     {
       if (p_conn->pASEs->aSrcASE[i].allocated != 0x00)
       {
-        src_context |= p_conn->pASEs->aSnkASE[i].streaming_audio_context;
+        src_context |= p_conn->pASEs->aSrcASE[i].streaming_audio_context;
         LOG_INFO_APP("Free ASE ID %d on ACL connection handle 0x%04X\n",p_conn->pASEs->aSrcASE[i].ID,Conn_Handle);
         p_conn->pASEs->aSrcASE[i].ID = 0x00;
         p_conn->pASEs->aSrcASE[i].state  = ASE_STATE_IDLE;
@@ -1192,13 +1188,23 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
     }
     p_conn->pASEs->acl_conn_handle = 0xFFFFu;
     p_conn->pASEs = 0;
+    /* Check if the disconnection is issued to a local User action*/
+    if (Reason != HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE)
+    {
 
-    HAPAPP_StopAdvertising();
-    /* Start Advertising */
-    status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
-    LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
-
-    Menu_SetWaitConnPage();
+	    HAPAPP_StopAdvertising();
+	    /* Start Advertising */
+	    status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
+	    LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+	
+	    Menu_SetWaitConnPage();
+	 }
+    else
+    {
+      HAPAPP_StopAdvertising();
+      Menu_SetStartupPage();
+    }
+    UNUSED(status);
   }
   else
   {
@@ -1457,11 +1463,13 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
         aMicAICInst[inst].pDescription = (uint8_t *)"Bluetooth";
         aMicAICInst[inst].DescriptionLength = 9u;
       }
+#if (APP_MICP_DEV_NUM_AIC_INSTANCES > 1u)
       else
       {
         aMicAICInst[inst].pDescription = (uint8_t *)"Line In";
         aMicAICInst[inst].DescriptionLength = 7u;
       }
+#endif /* (APP_MICP_DEV_NUM_AIC_INSTANCES > 1u) */
     }
     APP_MICP_Config.Device.pAICInst = &aMicAICInst[0u];
 #else
@@ -1555,8 +1563,8 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100,
-                        1650,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
 
   /*Enable Audio Codec in LE Controller */
@@ -1644,24 +1652,24 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
 
       HAPAPP_Context.aSnkCap[i][13] = 0x02;
       HAPAPP_Context.aSnkCap[i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-      HAPAPP_Context.aSnkCap[i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE;
+      HAPAPP_Context.aSnkCap[i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSnkASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
       HAPAPP_Context.aSnkPACRecord[i].Cap.pSpecificCap = &HAPAPP_Context.aSnkCap[i][0];
       HAPAPP_Context.aSnkPACRecord[i].Cap.SpecificCapLength = 16u;
 
       /* metadata in Audio Codec Configuration*/
       HAPAPP_Context.aSnkPACRecord[i].Cap.MetadataLength = 0x04;
-      HAPAPP_Context.aSnkMetadata[i][0] = 0x03;
-      HAPAPP_Context.aSnkMetadata[i][1] = 0x01;
+      HAPAPP_Context.aSnkMetadata[i][0] = METADATA_PREFERRED_AUDIO_CONTEXTS_LENGTH;
+      HAPAPP_Context.aSnkMetadata[i][1] = METADATA_PREFERRED_AUDIO_CONTEXTS;
       if (APP_CodecSpecificCap[a_snk_cap_id[i]].Freq == SUPPORTED_SAMPLE_FREQ_16000_HZ)
       {
-        HAPAPP_Context.aSnkMetadata[i][2] = 0x02;
-        HAPAPP_Context.aSnkMetadata[i][3] = 0x00;
+        HAPAPP_Context.aSnkMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL);
+        HAPAPP_Context.aSnkMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8 );
       }
       else
       {
-        HAPAPP_Context.aSnkMetadata[i][2] = 0x04;
-        HAPAPP_Context.aSnkMetadata[i][3] = 0x00;
+        HAPAPP_Context.aSnkMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_MEDIA);
+        HAPAPP_Context.aSnkMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8 );
       }
       HAPAPP_Context.aSnkPACRecord[i].Cap.pMetadata = &HAPAPP_Context.aSnkMetadata[i][0];
 
@@ -1782,17 +1790,17 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
 
       HAPAPP_Context.aSrcCap[i][13] = 0x02;
       HAPAPP_Context.aSrcCap[i][14] = CODEC_CAP_AUDIO_CHNL_COUNTS;
-      HAPAPP_Context.aSrcCap[i][15] = APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE;
+      HAPAPP_Context.aSrcCap[i][15] = (APP_UnicastAudioConf[AudioConfId].NumAudioChnlsPerSrcASE | SUPPORTED_AUDIO_CHNL_COUNT_1);
 
       HAPAPP_Context.aSrcPACRecord[i].Cap.pSpecificCap = &HAPAPP_Context.aSrcCap[i][0];
       HAPAPP_Context.aSrcPACRecord[i].Cap.SpecificCapLength = 16u;
 
       /* metadata in Audio Codec Configuration*/
       HAPAPP_Context.aSrcPACRecord[i].Cap.MetadataLength = 0x04;
-      HAPAPP_Context.aSrcMetadata[i][0] = 0x03;
-      HAPAPP_Context.aSrcMetadata[i][1] = 0x01;
-      HAPAPP_Context.aSrcMetadata[i][2] = 0x02;
-      HAPAPP_Context.aSrcMetadata[i][3] = 0x00;
+      HAPAPP_Context.aSrcMetadata[i][0] = METADATA_PREFERRED_AUDIO_CONTEXTS_LENGTH;
+      HAPAPP_Context.aSrcMetadata[i][1] = METADATA_PREFERRED_AUDIO_CONTEXTS;
+      HAPAPP_Context.aSrcMetadata[i][2] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL);
+      HAPAPP_Context.aSrcMetadata[i][3] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8 );
       HAPAPP_Context.aSrcPACRecord[i].Cap.pMetadata = &HAPAPP_Context.aSrcMetadata[i][0];
 
       status = CAP_RegisterSrcPACRecord(&HAPAPP_Context.aSrcPACRecord[i],&HAPAPP_Context.aSrcPACRecordHandle[i]);
@@ -1938,43 +1946,50 @@ static tBleStatus HAPAPP_HAPInit(HAP_Role_t Role, uint8_t AudioConfId, uint8_t C
 
   status = USECASE_DEV_MGMT_Init();
   LOG_INFO_APP("Init Usecase Dev Management with status 0x%02X\n", status);
-
-  status = HAP_Init(Role);
-  LOG_INFO_APP("Init HAP with status 0x%02X\n", status);
-
   if (status == BLE_STATUS_SUCCESS)
   {
-    uint8_t i;
-    uint8_t pres_index = 0;
+    status = HAP_Init(Role);
+    LOG_INFO_APP("Init HAP with status 0x%02X\n", status);
 
-    switch (CSIPConfId)
+    if (status == BLE_STATUS_SUCCESS)
     {
-      case 0x00:
-        status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_BANDED_HEARING_AID);
-      case 0x01:
-      case 0x02:
-        status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_BINAURAL_HEARING_AID);
-      case 0x03:
-        status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_MONAURAL_HEARING_AID);
+      uint8_t i;
+      uint8_t pres_index = 0;
+
+      switch (CSIPConfId)
+      {
+        case 0x00:
+          status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_BANDED_HEARING_AID);
+          break;
+        case 0x01:
+        case 0x02:
+          status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_BINAURAL_HEARING_AID);
+          break;
+        case 0x03:
+          status = HAP_HA_SetHearingAidFeatures(HAP_HA_TYPE_MONAURAL_HEARING_AID);
+          break;
+      }
+      LOG_INFO_APP("Set HA Features with status 0x%02X\n", status);
+
+
+      for (i = 0; ((i < APP_HAP_NUM_PRESETS) && (status == BLE_STATUS_SUCCESS)); i++)
+      {
+        status = HAP_HA_AddPreset(aPresetRecord[i].Properties, (uint8_t *) &aPresetRecord[i].Name,
+                                  strlen(aPresetRecord[i].Name), &pres_index);
+        LOG_INFO_APP("Added preset %s (ID %d) with status 0x%02X\n", aPresetRecord[i].Name, pres_index, status);
+
+        aPresetRecord[i].Index = pres_index;
+      }
+      if (status == BLE_STATUS_SUCCESS)
+      {
+        status = HAP_HA_SetActivePresetIndex(aPresetRecord[0].Index);
+        LOG_INFO_APP("Set Active Preset Index %d with status 0x%02X\n", aPresetRecord[0].Index, status);
+        ActiveIndex = aPresetRecord[0].Index;
+
+        Menu_SetPresetID(ActiveIndex);
+        Menu_SetPresetName((char *) aPresetRecord[ActiveIndex-1].Name);
+      }
     }
-    LOG_INFO_APP("Set HA Features with status 0x%02X\n", status);
-
-
-    for (i = 0; i < APP_HAP_NUM_PRESETS; i++)
-    {
-      status = HAP_HA_AddPreset(aPresetRecord[i].Properties, (uint8_t *) &aPresetRecord[i].Name,
-                                strlen(aPresetRecord[i].Name), &pres_index);
-      LOG_INFO_APP("Added preset %s (ID %d) with status 0x%02X\n", aPresetRecord[i].Name, pres_index, status);
-
-      aPresetRecord[i].Index = pres_index;
-    }
-
-    status = HAP_HA_SetActivePresetIndex(aPresetRecord[0].Index);
-    LOG_INFO_APP("Set Active Preset Index %d with status 0x%02X\n", aPresetRecord[0].Index, status);
-    ActiveIndex = aPresetRecord[0].Index;
-
-    Menu_SetPresetID(ActiveIndex);
-    Menu_SetPresetName((char *) aPresetRecord[ActiveIndex-1].Name);
   }
 
   return status;
@@ -2022,7 +2037,14 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             tBleStatus ret;
             GAF_Profiles_Link_t current_link;
             ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-            LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+            if (ret != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
             p_conn->ConfirmIndicationRequired = 0u;
             current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
 
@@ -2256,7 +2278,15 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 HAPAPP_StopAdvertising();
                 /* Start Advertising */
                 status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
-                LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+                if (status != BLE_STATUS_SUCCESS)
+                {
+                  LOG_INFO_APP("  Fail   : HAPAPP_StartAdvertising() returns status 0x%02X\n",
+                               status);
+                }
+                else
+                {
+                  LOG_INFO_APP("  Success: HAPAPP_StartAdvertising()\n");
+                }
               }
             }
             /* If no more ASEs are in Enabling/Streaming state, we could check if ASE associated to other CAP Initiator
@@ -2283,13 +2313,22 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                         if (HAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
-                                        p_other_conn->pASEs->aSnkASE[i].ID,
-                                        ASE_OP_RESP_SUCCESS,
-                                        ASE_OP_RESP_NO_REASON);
-                          LOG_INFO_APP("Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
-                                      status,
-                                      p_other_conn->pASEs->aSnkASE[i].ID,
-                                      pNotification->ConnHandle);
+                                                           p_other_conn->pASEs->aSnkASE[i].ID,
+                                                           ASE_OP_RESP_SUCCESS,
+                                                           ASE_OP_RESP_NO_REASON);
+                          if (status != BLE_STATUS_SUCCESS)
+                          {
+                            LOG_INFO_APP("  Fail   : Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
+                                         status,
+                                         p_other_conn->pASEs->aSnkASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
+                          else
+                          {
+                            LOG_INFO_APP("  Success: Enable Operation Response for ASE ID %d on ConnHandle 0x%04X\n",
+                                         p_other_conn->pASEs->aSnkASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
                         }
                       }
                     }
@@ -2310,10 +2349,19 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                                         p_other_conn->pASEs->aSrcASE[i].ID,
                                         ASE_OP_RESP_SUCCESS,
                                         ASE_OP_RESP_NO_REASON);
-                          LOG_INFO_APP("Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
-                                      status,
-                                      p_other_conn->pASEs->aSrcASE[i].ID,
-                                      pNotification->ConnHandle);
+                          if (status != BLE_STATUS_SUCCESS)
+                          {
+                            LOG_INFO_APP("  Fail   : Enable Operation Response returns status 0x%02X for ASE ID %d on ConnHandle 0x%04X\n",
+                                         status,
+                                         p_other_conn->pASEs->aSrcASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
+                          else
+                          {
+                            LOG_INFO_APP("  Success: Enable Operation Response for ASE ID %d on ConnHandle 0x%04X\n",
+                                         p_other_conn->pASEs->aSrcASE[i].ID,
+                                         pNotification->ConnHandle);
+                          }
                         }
                       }
                     }
@@ -2332,9 +2380,12 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   {
                     p_other_conn = &HAPAPP_Context.ACL_Conn[conn];
                     /*update the available audio context of the connected CAP Initiator*/
-                    status = CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
-                                                           SUPPORTED_SNK_CONTEXTS,
-                                                           SUPPORTED_SRC_CONTEXTS);
+#if (CFG_LOG_SUPPORTED != 0)
+                    status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+                    CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
+                                                   SUPPORTED_SNK_CONTEXTS,
+                                                   SUPPORTED_SRC_CONTEXTS);
                     LOG_INFO_APP("Update Available Snk Audio Context 0x%04X and Available Src Audio Context 0x%04X with CAP Initiator on ConnHandle 0x%04X returns status 0x%02X\n",
                                  SUPPORTED_SNK_CONTEXTS,
                                  SUPPORTED_SRC_CONTEXTS,
@@ -2466,7 +2517,10 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             HAPAPP_StopAdvertising();
             /* Start Advertising */
-            status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
+#if (CFG_LOG_SUPPORTED != 0)
+            status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+            HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
             LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
           }
 
@@ -2704,6 +2758,50 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
          * same time that the specified ASE
          */
         controller_delay_min = (num_snk_ases * info->SnkControllerDelayMin) + (num_src_ases * info->SrcControllerDelayMin);
+
+        /* Remove extra margins added by the codec manager since they could be considered only one time but not for each ASE */
+        if ((num_snk_ases + num_src_ases) > 1)
+        {
+          uint32_t controller_delay_margin_src = 0;
+          uint32_t controller_delay_margin_snk = 0;
+          uint32_t max_controller_delay;
+          uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
+          a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
+
+          hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
+                                                     0x02,
+                                                     DATA_PATH_OUTPUT,
+                                                     0,
+                                                     NULL,
+                                                     (uint8_t*)&controller_delay_margin_snk,
+                                                     (uint8_t*)&max_controller_delay);
+
+           hci_read_local_supported_controller_delay((const uint8_t*)&a_codec_id,
+                                                      0x02,
+                                                      DATA_PATH_INPUT,
+                                                      0,
+                                                      NULL,
+                                                      (uint8_t*)&controller_delay_margin_src,
+                                                      (uint8_t*)&max_controller_delay);
+
+          if (num_src_ases > 0)
+          {
+            if (num_src_ases > 1)
+            {
+              controller_delay_min = controller_delay_min - (controller_delay_margin_src * (num_src_ases - 1));
+            }
+            /* if a source is present, processing margin are already included for that frame duration */
+            controller_delay_min = controller_delay_min - (controller_delay_margin_snk * num_snk_ases);
+					}
+          else
+          {
+            if( num_snk_ases > 0)
+            {
+              controller_delay_min = controller_delay_min - (controller_delay_margin_snk * (num_snk_ases - 1));
+            }
+          }
+        } 
+
         LOG_INFO_APP("Computed Min Controller Delay with %d Snk ASEs and %d Src ASEs : %d us\n",
             num_snk_ases,
             num_src_ases,
@@ -3080,7 +3178,10 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
         {
           HAPAPP_StopAdvertising();
           /* Start Advertising */
-          status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
+#if (CFG_LOG_SUPPORTED != 0)
+          status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+          HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
           LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
         }
       }
@@ -3382,8 +3483,11 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
     case CCP_CLT_CALL_STATE_EVT:
     {
       CCP_CLT_Call_State_Params_Evt_t *cs_params = (CCP_CLT_Call_State_Params_Evt_t *)pNotification->pInfo;
-      p_conn->CurrentCallID = cs_params->CallIdx;
-      p_conn->CurrentCallState = cs_params->State;
+      if (p_conn != 0)
+      {
+        p_conn->CurrentCallID = cs_params->CallIdx;
+        p_conn->CurrentCallState = cs_params->State;
+      }
       switch(cs_params->State)
       {
         case CCP_CS_IDLE:

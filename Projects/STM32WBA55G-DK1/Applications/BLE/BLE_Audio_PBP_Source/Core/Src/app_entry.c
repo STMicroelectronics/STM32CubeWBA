@@ -120,7 +120,7 @@ static AMM_InitParameters_t ammInitConfig =
 
 /* USER CODE BEGIN PV */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-static int32_t Joystick_Event;
+static int32_t Joystick_Prev_State;
 static UTIL_TIMER_Object_t JOYSTICK_TimerObj;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 #if (CFG_LCD_SUPPORTED == 1)
@@ -285,13 +285,7 @@ void MX_APPE_Process(void)
 }
 
 /* USER CODE BEGIN FD */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-void BSP_JOY_Callback(JOY_TypeDef JOY, JOYPin_TypeDef JoyPin)
-{
-  Joystick_Event = JoyPin;
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_JOYSTICK_ID, CFG_SEQ_PRIO_0);
-}
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END FD */
 
 /*************************************************************
@@ -501,24 +495,27 @@ static void Joystick_Init( uint8_t wkup_mode )
 
 static void Joystick_TimerCallback(void *arg)
 {
-  /* this process takes less than 80us */
-  Joystick_Init(0);
-
-  int32_t state = BSP_JOY_GetState(JOY1);
-  if (state != JOY_NONE && state != Joystick_Event)
-  {
-    BSP_JOY_Callback(JOY1, (JOYPin_TypeDef)state);
-  }
-  Joystick_Event = state;
-
-  BSP_JOY_DeInit(JOY1, JOY_ALL);
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_JOYSTICK_ID, CFG_SEQ_PRIO_0);
 }
 
 static void Joystick_ActionHandle(void)
 {
-  if(Joystick_Event == JOY_SEL)
+  /* Joystick reinitialization */
+  Joystick_Init(0);
+
+  int32_t state = BSP_JOY_GetState(JOY1);
+
+  BSP_JOY_DeInit(JOY1, JOY_ALL);
+
+  /* process Joystick information */
+  if (state != JOY_NONE && state != Joystick_Prev_State)
   {
+    if(state == JOY_SEL)
+    {
+    }
   }
+
+  Joystick_Prev_State = state;
 }
 #endif  /* CFG_JOYSTICK_SUPPORTED */
 

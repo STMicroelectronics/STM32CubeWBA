@@ -66,7 +66,7 @@
 /* Non-standard features configurations */
 #define NUM_OF_CTSM_EMNGR_HNDLS                     0 /* Number of custom handles in event manager to be used for app specific needs */
 #define SUPPORT_AUGMENTED_BLE_MODE                  0 /* Enable\Disable Augmented BLE Support. Enable:1 - Disable:0 */
-#define SUPPORT_PTA                                 0 /* Enable\Disable PTA Feature. Enable:1 - Disable:0 */
+#define SUPPORT_PTA                                 1 /* Enable\Disable PTA Feature. Enable:1 - Disable:0 */
 
 /*************************** MAC Configuration *************************************/
 /*Configurations of MAC will apply only when MAC is enabled*/

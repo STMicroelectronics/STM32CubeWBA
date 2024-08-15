@@ -126,7 +126,8 @@ static void Exit_Stop_Standby_Mode(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+extern void LINKLAYER_PLAT_NotifyWFIExit(void);
+extern void LINKLAYER_PLAT_NotifyWFIEnter(void);
 /* USER CODE END 0 */
 
 __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
@@ -280,7 +281,10 @@ OPTIMIZED void PWR_EnterOffMode( void )
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ENTER);
 
   /* USER CODE BEGIN PWR_EnterOffMode_1 */
-
+  /* Notify the Link Layer platform layer the system will enter in WFI 
+   * and AHB5 clock may be turned of regarding the 2.4Ghz radio state 
+   */
+  LINKLAYER_PLAT_NotifyWFIEnter();
   /* USER CODE END PWR_EnterOffMode_1 */
 
   /*
@@ -382,7 +386,11 @@ OPTIMIZED void PWR_ExitOffMode( void )
     __HAL_RCC_RADIO_CLK_ENABLE();
 
     /* USER CODE BEGIN PWR_ExitOffMode_2 */
-
+    /* Notify the Link Layer platform layer the system exited WFI 
+     * and AHB5 clock may be resynchronized as is may have been 
+     * turned of during low power mode entry.
+     */
+    LINKLAYER_PLAT_NotifyWFIExit();
     /* USER CODE END PWR_ExitOffMode_2 */
 
     /* Apply Prefetch configuration is enabled */
@@ -458,7 +466,10 @@ OPTIMIZED void PWR_EnterStopMode( void )
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP_MODE_ENTER);
 
   /* USER CODE BEGIN PWR_EnterStopMode_1 */
-
+  /* Notify the Link Layer platform layer the system will enter in WFI 
+   * and AHB5 clock may be turned of regarding the 2.4Ghz radio state 
+   */
+  LINKLAYER_PLAT_NotifyWFIEnter();
   /* USER CODE END PWR_EnterStopMode_1 */
 
   Enter_Stop_Standby_Mode();
@@ -483,7 +494,11 @@ OPTIMIZED void PWR_ExitStopMode( void )
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP_MODE_EXIT);
 
   /* USER CODE BEGIN PWR_ExitStopMode_1 */
-
+  /* Notify the Link Layer platform layer the system exited WFI 
+   * and AHB5 clock may be resynchronized as is may have been 
+   * turned of during low power mode entry.
+   */
+  LINKLAYER_PLAT_NotifyWFIExit();
   /* USER CODE END PWR_ExitStopMode_1 */
 
   Exit_Stop_Standby_Mode();
@@ -498,7 +513,10 @@ OPTIMIZED void PWR_ExitStopMode( void )
 void PWR_EnterSleepMode( void )
 {
   /* USER CODE BEGIN PWR_EnterSleepMode_1 */
-
+  /* Notify the Link Layer platform layer the system will enter in WFI 
+   * and AHB5 clock may be turned of regarding the 2.4Ghz radio state 
+   */
+  LINKLAYER_PLAT_NotifyWFIEnter();
   /* USER CODE END PWR_EnterSleepMode_1 */
 
   LL_LPM_EnableSleep();
@@ -512,7 +530,11 @@ void PWR_EnterSleepMode( void )
 void PWR_ExitSleepMode( void )
 {
   /* USER CODE BEGIN PWR_ExitSleepMode */
-
+  /* Notify the Link Layer platform layer the system exited WFI 
+   * and AHB5 clock may be resynchronized as is may have been 
+   * turned of during low power mode entry.
+   */
+  LINKLAYER_PLAT_NotifyWFIExit();
   /* USER CODE END PWR_ExitSleepMode */
 }
 

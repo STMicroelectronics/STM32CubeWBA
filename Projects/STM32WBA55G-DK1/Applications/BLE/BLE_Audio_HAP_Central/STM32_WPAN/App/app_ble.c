@@ -279,7 +279,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       LOG_INFO_APP("     - Connection Handle:   0x%02X\n     - Reason:    0x%02X\n",
                   p_disconnection_complete_event->Connection_Handle,
                   p_disconnection_complete_event->Reason);
-      HAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle);
+      HAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle,
+                               p_disconnection_complete_event->Reason);
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -617,7 +618,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
             LOG_INFO_APP("Pairing Complete with connection handle 0x%04X\n", p_pairing_complete->Connection_Handle);
 
             Menu_SetLinkupPage(p_pairing_complete->Connection_Handle);
-            HAPAPP_Linkup(p_pairing_complete->Connection_Handle);
+            (void)HAPAPP_Linkup(p_pairing_complete->Connection_Handle);
           }
           else if (p_pairing_complete->Reason == HCI_PIN_OR_KEY_MISSING_ERR_CODE)
           {
@@ -681,7 +682,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           LOG_INFO_APP(">>== Attribute_Value_Length : 0x%02X\n", p_indication->Attribute_Value_Length);
           LOG_INFO_APP(">>== ACI_GATT_INDICATION_VSEVT_CODE\n");
           ret = aci_gatt_confirm_indication(p_indication->Connection_Handle);
-          LOG_INFO_APP(">>== aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          if (ret != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+          }
           if (ret != BLE_STATUS_SUCCESS)
           {
             /* Impossible to confirm indication due to GATT process ongoing. Notify hap_app */

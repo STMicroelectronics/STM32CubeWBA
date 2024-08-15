@@ -160,7 +160,15 @@ typedef struct
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
 
 /* USER CODE BEGIN PD */
-
+/* Device Info Characteristic UUID */
+#define COPY_UUID_128(uuid_struct, uuid_15, uuid_14, uuid_13, uuid_12, uuid_11, uuid_10, uuid_9, uuid_8, uuid_7, uuid_6, uuid_5, uuid_4, uuid_3, uuid_2, uuid_1, uuid_0) \
+do {\
+    uuid_struct[0] = uuid_0; uuid_struct[1] = uuid_1; uuid_struct[2] = uuid_2; uuid_struct[3] = uuid_3; \
+    uuid_struct[4] = uuid_4; uuid_struct[5] = uuid_5; uuid_struct[6] = uuid_6; uuid_struct[7] = uuid_7; \
+    uuid_struct[8] = uuid_8; uuid_struct[9] = uuid_9; uuid_struct[10] = uuid_10; uuid_struct[11] = uuid_11; \
+    uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
+}while(0)          
+#define COPY_DEVINFO_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -202,7 +210,7 @@ static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
 
 /* USER CODE BEGIN PV */
-
+uint8_t a_GATT_DevInfoData[22];
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -1067,7 +1075,20 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   tBleStatus ret;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init*/
-
+/* Add number of record for Device Info Characteristic */
+  static const uint8_t p_additional_svc_record[1] = {0x03};
+  
+  ret = aci_hal_write_config_data(CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET,
+                                  CONFIG_DATA_GAP_ADD_REC_NBR_LEN,
+                                  (uint8_t*) p_additional_svc_record);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET, result: 0x%02X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET\n");
+  }
   /* USER CODE END Ble_Hci_Gap_Gatt_Init*/
 
   LOG_INFO_APP("==>> Start Ble_Hci_Gap_Gatt_Init function\n");
@@ -1262,7 +1283,112 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   }
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2*/
+  /** Device Info Characteristic **/
+  /* Add a new characterisitc */
+  Char_UUID_t  uuid;
+  uint16_t gap_DevInfoChar_handle = 0U;
+  
+  /* Add new characteristic to GAP service */
+  uint16_t SizeDeviceInfoChar = 22;
+  COPY_DEVINFO_UUID(uuid.Char_UUID_128);
 
+  ret = aci_gatt_add_char(gap_service_handle,
+                          UUID_TYPE_128,
+                          (Char_UUID_t *) &uuid,
+                          SizeDeviceInfoChar,
+                          CHAR_PROP_READ,
+                          ATTR_PERMISSION_NONE,
+                          GATT_DONT_NOTIFY_EVENTS,
+                          0x10,
+                          CHAR_VALUE_LEN_CONSTANT,
+                          &gap_DevInfoChar_handle);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("  Fail   : aci_gatt_add_char command : Device Info Char, error code: 0x%2X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("  Success: aci_gatt_add_char command : Device Info Char\n");
+  }
+
+  /**
+  * Initialize Device Info Characteristic
+  */
+  uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
+  
+  LOG_INFO_APP("---------------------------------------------\n");
+  /* Device ID: WBA5x, WBA6x... */
+  a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
+  a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);
+  
+  /* Rev ID: RevA, RevB... */
+  a_GATT_DevInfoData[2] = (uint8_t)(LL_DBGMCU_GetRevisionID() & 0xff);
+  a_GATT_DevInfoData[3] = (uint8_t)((LL_DBGMCU_GetRevisionID() & 0xff00)>>8);
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Revision ID = 0x%02X %02X\n",a_GATT_DevInfoData[3],a_GATT_DevInfoData[2]);
+  
+  /* Board ID: Nucleo WBA, DK1 WBA... */
+  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA5X;
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Board ID = 0x%02X\n",a_GATT_DevInfoData[4]);
+  
+  /* HW Package: QFN32, QFN48... */
+  a_GATT_DevInfoData[5] = (uint8_t)LL_GetPackageType();
+  LOG_INFO_APP("-- DEVICE INFO CHAR : HW Package = 0x%02X\n",a_GATT_DevInfoData[5]);
+    
+  /* FW version: v1.3.0, v1.4.0... */
+  a_GATT_DevInfoData[6] = CFG_FW_MAJOR_VERSION;
+  a_GATT_DevInfoData[7] = CFG_FW_MINOR_VERSION;
+  a_GATT_DevInfoData[8] = CFG_FW_SUBVERSION;
+  a_GATT_DevInfoData[9] = CFG_FW_BRANCH;
+  a_GATT_DevInfoData[10] = CFG_FW_BUILD;
+  LOG_INFO_APP("-- DEVICE INFO CHAR : FW Version = v%d.%d.%d - branch %d - build %d\n",a_GATT_DevInfoData[6],a_GATT_DevInfoData[7],a_GATT_DevInfoData[8],a_GATT_DevInfoData[9],a_GATT_DevInfoData[10]);
+  
+  /* Application ID: p2pServer, HeartRate... */
+  a_GATT_DevInfoData[11] = FW_ID_DT_SERVER;
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Application ID = 0x%02X\n",a_GATT_DevInfoData[11]);
+  
+  /* Host Stack Version: 0.15, 0.16... */
+  uint8_t HCI_Version = 0;
+  uint16_t HCI_Subversion = 0;
+  uint8_t LMP_Version = 0;
+  uint16_t Company_Identifier = 0;
+  uint16_t LMP_Subversion = 0;
+  hci_read_local_version_information(&HCI_Version, &HCI_Subversion, &LMP_Version, &Company_Identifier, &LMP_Subversion);
+  a_GATT_DevInfoData[12] = (uint8_t)((uint16_t)HCI_Subversion & 0xff);
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Host Stack version = 0x%02X\n",a_GATT_DevInfoData[12]);
+  
+  /* Host Stack Type: Full, Basic, Basic Plus... */
+  a_GATT_DevInfoData[13] = (uint8_t)(((uint16_t)HCI_Subversion & 0xff00)>>8);
+  LOG_INFO_APP("-- DEVICE INFO CHAR : Host Stack Type = 0x%02X\n",a_GATT_DevInfoData[13]);
+  
+  /* RESERVED */
+  a_GATT_DevInfoData[14] = 0xFF; /* reserved */
+  a_GATT_DevInfoData[15] = 0xFF; /* reserved */
+  a_GATT_DevInfoData[16] = 0xFF; /* reserved */
+  a_GATT_DevInfoData[17] = 0xFF; /* reserved */
+  
+  /* Audio Lib */
+  a_GATT_DevInfoData[18] = 0xFF; /* NA */
+  a_GATT_DevInfoData[19] = 0xFF; /* NA */
+
+  /* Audio Codec */
+  a_GATT_DevInfoData[20] = 0xFF; /* NA */
+  a_GATT_DevInfoData[21] = 0xFF; /* NA */
+  LOG_INFO_APP("---------------------------------------------\n");
+
+  ret = aci_gatt_update_char_value(gap_service_handle,
+                             gap_DevInfoChar_handle,
+                             0, /* charValOffset */
+                             SizeDeviceInfoChar, /* charValueLen */
+                             p_device_info_payload);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("  Fail   : aci_gatt_update_char_value DEVINFO command, error code: 0x%2X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("  Success: aci_gatt_update_char_value DEVINFO command\n");
+  }
   /* USER CODE END Ble_Hci_Gap_Gatt_Init_2*/
 
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");

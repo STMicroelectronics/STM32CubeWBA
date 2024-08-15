@@ -301,7 +301,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       LOG_INFO_APP("     - Connection Handle:   0x%02X\n     - Reason:    0x%02X\n",
                   p_disconnection_complete_event->Connection_Handle,
                   p_disconnection_complete_event->Reason);
-      HAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle);
+      HAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle,
+                               p_disconnection_complete_event->Reason);
 
       /* USER CODE END EVT_DISCONN_COMPLETE_1 */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -1364,7 +1365,10 @@ static void GATTService_StoreDatabase(void)
   ((uint8_t*)(hdr + 1))[3] = 0xFFU;
 
   hdr[2] = GATTSERVICE_GATT_DATABASE_SIZE;
-  status = NVM_Add( GATTSERVICE_NVM_TYPE, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN, temp_database,
+#if (CFG_LOG_SUPPORTED != 0)
+  status =
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
+    NVM_Add( GATTSERVICE_NVM_TYPE, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN, temp_database,
                    GATTSERVICE_GATT_DATABASE_SIZE );
   LOG_INFO_APP("Added Gatt Service NVM record with status 0x%02X\n", status);
 }

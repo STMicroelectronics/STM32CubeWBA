@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>readme</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+</head>
+<body>
+<h2 id="thread_udp-application-description"><strong>Thread_Udp
+Application Description</strong></h2>
+<p>How to transfer data using UDP.</p>
+<h3 id="keywords"><strong>Keywords</strong></h3>
+<p>Connectivity, 802.15.4 protocol, Thread, UDP.</p>
+<h3 id="hardware-and-software-environment"><strong>Hardware and Software
+environment</strong></h3>
+<ul>
+<li><p>This example runs on STM32WBA55xx devices.</p></li>
+<li><p>This example has been tested with an STMicroelectronics
+STM32WBA55CGA_Nucleo board and can be easily tailored to any other
+supported device and development board.</p></li>
+</ul>
+<h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
+<p>In order to make the program work, you must do the following:</p>
+<ul>
+<li>Connect 2 STM32WBA55xx_Nucleo boards to your PC</li>
+<li>Open your preferred toolchain</li>
+<li>Rebuild all files and load your image into target memory</li>
+<li>Run the application</li>
+</ul>
+<p><strong>Note:</strong> when LED1, LED2 and LED3 are toggling it is
+indicating an error has occurred on application.</p>
+<p>To get the traces in real time, you can connect an HyperTerminal to
+the STLink Virtual Com Port.</p>
+<p>Debug Traces are available on USART1 (STLink Virtual Com Port):</p>
+<pre><code>/**USART1 GPIO Configuration
+PB12     ------&gt; USART1_TX
+PA8     ------&gt; USART1_RX
+*/
+115200 bps, data 8 bit, parity none, stop bit 1, flow control none</code></pre>
+<p>Thread CLI is available on LPUART:</p>
+<pre><code>/**LPUART1 GPIO Configuration    
+PA2     ------&gt; LPUART1_TX
+PA1     ------&gt; LPUART1_RX 
+*/
+115200 bps, data 8 bit, parity none, stop bit 1, flow control none </code></pre>
+<p>It demonstrates the ability to transfer a block of data through
+UDP.</p>
+<p>Nodes are split into two forwarding roles: Router or End Device. The
+Thread Leader is a Router that is responsible for managing the set of
+Routers in a Thread network. An End Device (or child) communicates
+primarily with a single Router.</p>
+<p>In our Application, which uses two devices, one device will act as a
+Leader (Router) and the other one will act as an End Device (child
+mode)</p>
+<p>Test 1: After the reset of the 2 boards, one board will be in Leader
+mode (Green LED2 ON) and the other one will be in Child mode (Red LED3
+ON). Once the child mode is established for one of the devices, the user
+pushes SW2 button to start a UDP sending procedure in multicast mode. If
+the pattern is correctly received on the Leader side Blue LED toggles
+its previous state (ON if it was OFF and OFF if it was ON).</p>
+<p>Test 2: Note: The same test can be performed from Leader to Child by
+pushing SW1 button</p>
+<pre>
+
+-Test 1
+  ___________________________                       ___________________________
+  |  Device 1               |                       | Device 2                |
+  |_________________________|                       |_________________________|  
+  |                         |                       |                         |
+  |                         |                       |  UDP open socket        |
+  |                         |                       |  UDP bind to UDP_PORT   |
+  |                         |                       |                         |
+  |                         |&lt;= Push Sw2            |                         |
+  |                         |                       |                         |
+  |     UDP send()          |======&gt; UDP =========&gt; |-------------            |
+  |                         |UDP_PORT &quot;1234&quot;        |             |           |
+  |                         |Address : ff02::1      |             |           |
+  |                         |Payload: udpBuffer[]   |             |           |
+  |                         |                       |             v           |
+  |                         |                       |        UDP Receive ()   |
+  |                         |                       |             |           |
+  |                         |                       |             |           |
+  |                         |                       |             v           |
+  |                         |                       |        Blue Led TOGGLES |
+  |                         |                       |                         |
+  ---------------------------                       ---------------------------
+  | Role : Child            |                       | Role : Leader           |
+  |                         |                       |                         |
+  | LED : Red               |                       | LED : Green             |
+  |                         |                       |                         |
+  |_________________________|                       |_________________________|
+
+
+-Test 2
+  ___________________________                       ___________________________
+  |  Device 2               |                       | Device 1                |
+  |_________________________|                       |_________________________|  
+  |                         |                       |                         |
+  |                         |                       |  UDP open socket        |
+  |                         |                       |  UDP bind to UDP_PORT   |
+  |                         |                       |                         |
+  |                         |&lt;= Push Sw1            |                         |
+  |                         |                       |                         |
+  |     UDP send()          |======&gt; UDP =========&gt; |-------------            |
+  |                         |UDP_PORT &quot;1234&quot;        |             |           |
+  |                         |Address : ff02::1      |             |           |
+  |                         |Payload: udpBuffer[]   |             |           |
+  |                         |                       |             v           |
+  |                         |                       |        UDP Receive ()   |
+  |                         |                       |             |           |
+  |                         |                       |             |           |
+  |                         |                       |             v           |
+  |                         |                       |        Blue Led TOGGLES |
+  |                         |                       |                         |
+  ---------------------------                       ---------------------------
+  | Role : Leader           |                       | Role : Child            |
+  |                         |                       |                         |
+  | LED : Green             |                       |    LED : Red            |
+  |                         |                       |                         |
+  |_________________________|                       |_________________________|
+  
+</pre>
+<h3 id="traces"><strong>Traces</strong></h3>
+<ul>
+<li><p>To get the traces you need to connect your Board to the
+Hyperterminal (through the STLink Virtual COM Port).</p></li>
+<li><p>The UART must be configured as follows:<br />
+<br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1
+bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the
+Line” : &lt;LF&gt;</p></li>
+</ul>
+</body>
+</html>

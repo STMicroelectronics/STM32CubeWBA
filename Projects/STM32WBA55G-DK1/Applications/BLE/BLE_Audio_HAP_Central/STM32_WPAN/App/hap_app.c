@@ -290,7 +290,7 @@ extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
 
-void HAPAPP_Init()
+void HAPAPP_Init(void)
 {
   tBleStatus status;
   uint8_t i;
@@ -310,6 +310,7 @@ void HAPAPP_Init()
     /* Initialize the HAP layer*/
     status = HAPAPP_HAPInit(APP_HAP_ROLE);
     LOG_INFO_APP("HAPAPP_HAPInit() with role 0x%02X returns status 0x%02X\n", APP_HAP_ROLE, status);
+    UNUSED(status);
   }
 }
 
@@ -474,13 +475,22 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
         }
       }
       Menu_SetNoStreamPage();
-
-      if (p_conn->ConfirmIndicationRequired == 1u)
+      if (p_conn != 0)
       {
-        /* Confirm indication now that the GATT is available */
-        ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-        LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
-        p_conn->ConfirmIndicationRequired = 0u;
+        if (p_conn->ConfirmIndicationRequired == 1u)
+        {
+          /* Confirm indication now that the GATT is available */
+          ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
+          if (ret != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+          }
+          p_conn->ConfirmIndicationRequired = 0u;
+        }
       }
       ret = HAP_HARC_ReadPresetsRequest(pNotification->ConnHandle, 0x01, HAP_MAX_PRESET_NUM);
       LOG_INFO_APP("HAP_HARC_ReadPresetsRequest() returns status 0x%02X\n", ret);
@@ -499,18 +509,36 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
     case HAP_HARC_ACTIVE_PRESET_INDEX_EVT:
     {
       uint8_t active_preset_index = pNotification->pInfo[0];
-      uint8_t i;
+      uint8_t i, j;
       LOG_INFO_APP("HAP Active Preset received: %d\n", active_preset_index);
 
-      ActivePreset = active_preset_index;
-
-      for (i = 0; i < APP_HAP_NUM_PRESETS; i++)
+      if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
-        if (aPresetRecord[i].Index == active_preset_index)
+        ActivePreset = active_preset_index;
+        for (i = 0; i < APP_HAP_NUM_PRESETS; i++)
         {
-          Menu_SetPresetID(active_preset_index);
-          Menu_SetPresetName((char *) aPresetRecord[i].Name);
-          break;
+          if (aPresetRecord[i].Index == active_preset_index)
+          {
+            Menu_SetPresetID(active_preset_index);
+            Menu_SetPresetName((char *) aPresetRecord[i].Name);
+            break;
+          }
+        }
+        for (i = 0; i < CFG_BLE_NUM_LINK; i++)
+        {
+          if (pNotification->ConnHandle == HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle)
+          {
+            HAPAPP_Context.ACL_Conn[i].active_preset = active_preset_index;
+            for (j = 0; j < CFG_BLE_NUM_LINK; j++)
+            {
+              if (HAPAPP_Context.ACL_Conn[j].active_preset != active_preset_index)
+              {
+                HAPAPP_SetActivePreset(HAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle, active_preset_index);
+                break;
+              }
+            }
+            break;
+          }
         }
       }
 
@@ -623,8 +651,8 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
         ret = HAP_HARC_ReadPresetsRequest(pNotification->ConnHandle, 0x01, HAP_MAX_PRESET_NUM);
         LOG_INFO_APP("HAP_HARC_ReadPresetsRequest() returns status 0x%02X\n", ret);
         HAPAPP_Context.InitState = HAP_APP_INIT_STATE_READ_PRESETS;
+        UNUSED(ret);
       }
-
       else if (HAPAPP_Context.InitState == HAP_APP_INIT_STATE_READ_PRESETS)
       {
 #if (CFG_BLE_NUM_LINK > 0u)
@@ -683,7 +711,14 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
                 else
                 {
                   ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-                  LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,ret);
+                  if (ret != BLE_STATUS_SUCCESS)
+                  {
+                    LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc command, result: 0x%02X\n", ret);
+                  }
+                  else
+                  {
+                    LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc command\n");
+                  }
                 }
               }
             }
@@ -695,6 +730,7 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
         Menu_SetRemoteVolume(BASE_VOLUME);
         HAPAPP_Context.InitState = HAP_APP_INIT_STATE_SET_VOLUME;
         HAPAPP_Context.OperationConnHandle = pNotification->ConnHandle;
+        UNUSED(ret);
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
       }
       break;
@@ -758,10 +794,18 @@ uint8_t HAPAPP_CreateConnection(uint8_t *pAddress, uint8_t AddressType)
 
 uint8_t HAPAPP_Disconnect(void)
 {
-  uint8_t status;
-
-  status = hci_disconnect(0x01, HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE);
-  LOG_INFO_APP("hci_disconnect() returns status 0x%02X\n",status);
+  uint8_t status = BLE_STATUS_FAILED;
+  for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
+  {
+    if ( HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
+    {
+      status = hci_disconnect(HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
+                              HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE);
+      LOG_INFO_APP("hci_disconnect() of ConnHandle 0x%04X returns status 0x%02X\n",
+                   HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
+                   status);
+    }
+  }
 
   return status;
 }
@@ -826,75 +870,81 @@ uint8_t HAPAPP_StartMediaStream(void)
     uint8_t num_chnls;
     metadata_snk_len = 0u;
     p_conn = APP_GetACLConn(StartStreamParams[i].ConnHandle);
-    CodecConfSnk[i].TargetLatency = TARGET_LATENCY_LOW;
-    CodecConfSnk[i].TargetPhy = TARGET_LE_2M_PHY;
-    CodecConfSnk[i].CodecID.CodingFormat = 0x06;
-    CodecConfSnk[i].CodecID.CompanyID = 0x0000;
-    CodecConfSnk[i].CodecID.VsCodecID = 0x0000;
-    CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].freq;
-    CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].frame_duration;
-    CodecConfSnk[i].CodecSpecificConfParams.FrameBlockPerSdu = 1;
-    CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].octets_per_codec_frame;
-    if (num_acceptors == MAX_UNICAST_ACCEPTORS)
+    if (p_conn != 0)
     {
-      if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
+      CodecConfSnk[i].TargetLatency = TARGET_LATENCY_LOW;
+      CodecConfSnk[i].TargetPhy = TARGET_LE_2M_PHY;
+      CodecConfSnk[i].CodecID.CodingFormat = 0x06;
+      CodecConfSnk[i].CodecID.CompanyID = 0x0000;
+      CodecConfSnk[i].CodecID.VsCodecID = 0x0000;
+      CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].freq;
+      CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].frame_duration;
+      CodecConfSnk[i].CodecSpecificConfParams.FrameBlockPerSdu = 1;
+      CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[MEDIA_STREAM_QOS_CONFIG%16].octets_per_codec_frame;
+      if (num_acceptors == MAX_UNICAST_ACCEPTORS)
       {
-        CodecConfSnk[i].AudioChannelAllocation = FRONT_LEFT;
-      }
-      else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
-      {
-        CodecConfSnk[i].AudioChannelAllocation = FRONT_RIGHT;
+        if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
+        {
+          CodecConfSnk[i].AudioChannelAllocation = FRONT_LEFT;
+        }
+        else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
+        {
+          CodecConfSnk[i].AudioChannelAllocation = FRONT_RIGHT;
+        }
+        else
+        {
+          CodecConfSnk[i].AudioChannelAllocation = 0;
+        }
+        num_chnls = 1u;
+        CodecConfSnk[i].ChannelPerCIS = 1u;
       }
       else
       {
-        CodecConfSnk[i].AudioChannelAllocation = 0;
+        if (APP_GetBitsAudioChnlAllocations(p_conn->UnicastServerInfo.SnkAudioLocations) > 1u)
+        {
+          CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
+          CodecConfSnk[i].ChannelPerCIS = 1u;
+          num_chnls = 2u;
+        }
+        else
+        {
+          CodecConfSnk[i].AudioChannelAllocation = 0;
+          CodecConfSnk[i].ChannelPerCIS = 1u;
+          num_chnls = 1u;
+        }
       }
-      num_chnls = 1u;
-      CodecConfSnk[i].ChannelPerCIS = 1u;
+      QosConfSnk[i].SDUInterval = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].sdu_interval;
+      QosConfSnk[i].Framing = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].framing;
+      QosConfSnk[i].MaxSDU = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].max_sdu \
+        * MIN(num_chnls, CodecConfSnk[i].ChannelPerCIS);
+      QosConfSnk[i].RetransmissionNumber = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].rtx_num;
+      QosConfSnk[i].MaxTransportLatency = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].max_tp_latency;
+      QosConfSnk[i].PresentationDelay = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].presentation_delay;
+
+      aMetadataSnk[i][metadata_snk_len++] = 0x03;
+      aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
+      aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_MEDIA;
+      aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8);
+
+      StartStreamParams[i].StreamSnk.pCodecConf = &CodecConfSnk[i];
+      StartStreamParams[i].StreamSnk.pQoSConf = &QosConfSnk[i];
+      StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
+      StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
+
+      StartStreamParams[i].StreamSrc.pCodecConf = &CodecConfSrc[i];
+      StartStreamParams[i].StreamSrc.pQoSConf = &QosConfSrc[i];
+      StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
+      StartStreamParams[i].StreamSrc.MetadataLen = 0;
+      LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
+      LOG_INFO_APP("Sink Codec Conf :\n");
+      LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",CodecConfSnk[i].AudioChannelAllocation);
+      LOG_INFO_APP("    Channel Per CIS : %d\n",CodecConfSnk[i].ChannelPerCIS);
+      LOG_INFO_APP("    Sampling Freq : 0x%02X\n",CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency);
     }
     else
     {
-      if (APP_GetBitsAudioChnlAllocations(p_conn->UnicastServerInfo.SnkAudioLocations) > 1u)
-      {
-        CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
-        CodecConfSnk[i].ChannelPerCIS = 1u;
-        //CodecConfSnk[i].ChannelPerCIS = 2u;
-        num_chnls = 2u;
-      }
-      else
-      {
-        CodecConfSnk[i].AudioChannelAllocation = 0;
-        CodecConfSnk[i].ChannelPerCIS = 1u;
-        num_chnls = 1u;
-      }
+      return BLE_STATUS_FAILED;
     }
-    QosConfSnk[i].SDUInterval = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].sdu_interval;
-    QosConfSnk[i].Framing = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].framing;
-    QosConfSnk[i].MaxSDU = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].max_sdu \
-      * MIN(num_chnls, CodecConfSnk[i].ChannelPerCIS);
-    QosConfSnk[i].RetransmissionNumber = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].rtx_num;
-    QosConfSnk[i].MaxTransportLatency = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].max_tp_latency;
-    QosConfSnk[i].PresentationDelay = APP_QoSConf[MEDIA_STREAM_QOS_CONFIG].presentation_delay;
-
-    aMetadataSnk[i][metadata_snk_len++] = 0x03;
-    aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
-    aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_MEDIA;
-    aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8);
-
-    StartStreamParams[i].StreamSnk.pCodecConf = &CodecConfSnk[i];
-    StartStreamParams[i].StreamSnk.pQoSConf = &QosConfSnk[i];
-    StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
-    StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
-
-    StartStreamParams[i].StreamSrc.pCodecConf = &CodecConfSrc[i];
-    StartStreamParams[i].StreamSrc.pQoSConf = &QosConfSrc[i];
-    StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
-    StartStreamParams[i].StreamSrc.MetadataLen = 0;
-    LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
-    LOG_INFO_APP("Sink Codec Conf :\n");
-    LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",CodecConfSnk[i].AudioChannelAllocation);
-    LOG_INFO_APP("    Channel Per CIS : %d\n",CodecConfSnk[i].ChannelPerCIS);
-    LOG_INFO_APP("    Sampling Freq : 0x%02X\n",CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency);
   }
 
   status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
@@ -916,7 +966,6 @@ uint8_t HAPAPP_StartTelephonyStream(void)
   uint8_t conn_ref = 0u;
   uint8_t codec_conf_id = TELEPHONY_STREAM_QOS_CONFIG % 16;
   uint8_t qos_conf_id = TELEPHONY_STREAM_QOS_CONFIG;
-  APP_ACL_Conn_t *p_conn;
   CAP_Set_Acceptors_t set_type = CAP_SET_TYPE_AD_HOC;
   Audio_Role_t cfg_audio_role = 0u;
   HAPAPP_Context.audio_driver_config = AUDIO_DRIVER_CONFIG_HEADSET;
@@ -978,7 +1027,6 @@ uint8_t HAPAPP_StartTelephonyStream(void)
   {
     metadata_snk_len = 0u;
     metadata_src_len = 0u;
-    p_conn = APP_GetACLConn(StartStreamParams[i].ConnHandle);
     LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
     for (Audio_Role_t role = AUDIO_ROLE_SINK; role <= AUDIO_ROLE_SOURCE;role++)
     {
@@ -1007,37 +1055,12 @@ uint8_t HAPAPP_StartTelephonyStream(void)
         pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
         pCodecConf->CodecSpecificConfParams.FrameBlockPerSdu = 1;
         pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
-        if (num_acceptors == MAX_UNICAST_ACCEPTORS)
-        {
-          if ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)
-          {
-            pCodecConf->AudioChannelAllocation = 0;
-          }
-          else
-          {
-            if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
-            {
-              pCodecConf->AudioChannelAllocation = FRONT_LEFT;
-            }
-            else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
-            {
-              pCodecConf->AudioChannelAllocation = FRONT_RIGHT;
-            }
-            else
-            {
-              pCodecConf->AudioChannelAllocation = 0;
-            }
-          }
-          num_chnls = 1u;
-          pCodecConf->ChannelPerCIS = 1u;
-        }
-        else
-        {
-          /* Set Mono channel for telephony as microphone IN is mono */
-          pCodecConf->AudioChannelAllocation = 0;
-          pCodecConf->ChannelPerCIS = 1u;
-          num_chnls = 1u;
-        }
+
+        /* Set Mono channel for telephony as microphone IN is mono */
+        pCodecConf->AudioChannelAllocation = 0;
+        pCodecConf->ChannelPerCIS = 1u;
+        num_chnls = 1u;
+
         pQoS_Conf->SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
         pQoS_Conf->Framing = APP_QoSConf[qos_conf_id].framing;
         pQoS_Conf->MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
@@ -1347,6 +1370,16 @@ tBleStatus HAPAPP_PreviousPreset(void)
   return status;
 }
 
+tBleStatus HAPAPP_SetActivePreset(uint16_t ConnHandle, uint8_t Index)
+{
+  tBleStatus status;
+
+  status = HAP_HARC_SetActivePreset(ConnHandle, Index, 0u);
+  LOG_INFO_APP("HAP_HARC_SetActivePreset() returns status 0x%02X\n", status);
+
+  return status;
+}
+
 tBleStatus HAPAPP_AnswerCall(void)
 {
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
@@ -1462,7 +1495,16 @@ void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)
   {
     if (HAPAPP_Context.cis_src_handle[i] != 0xFFFFu)
     {
-      CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2 + i);
+      if (HAPAPP_Context.audio_driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
+      {
+        /* BSP provides microphone data in mono, send the same channel to all CIS */
+        CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2);
+      }
+      else
+      {
+        /* BSP provides line data in stereo, increment pointer to change channel */
+        CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0] + AudioFrameSize/2 + i);
+      }
     }
   }
 }
@@ -1475,7 +1517,16 @@ void APP_NotifyRxAudioHalfCplt(void)
   {
     if (HAPAPP_Context.cis_src_handle[i] != 0xFFFFu)
     {
-      CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]+i);
+      if (HAPAPP_Context.audio_driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
+      {
+        /* BSP provides microphone data in mono, send the same channel to all CIS */
+        CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]);
+      }
+      else
+      {
+        /* BSP provides line data in stereo, increment pointer to change channel */
+        CODEC_SendData(HAPAPP_Context.cis_src_handle[i], 1, &aSrcBuff[0]+i);
+      }
     }
   }
 }
@@ -1544,7 +1595,7 @@ void HAPAPP_CISConnected(uint16_t Conn_Handle)
   }
 }
 
-void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
+void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 {
   uint8_t i;
   audio_profile_t profile = 0u;
@@ -1588,52 +1639,71 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
     p_conn->pASEs->acl_conn_handle = 0xFFFFu;
     p_conn->pASEs = 0;
 
-    if (APP_GetNumActiveACLConnections() == 0u)
+
+    /* Check if the disconnection is issued to a User action in remote device  or local device */
+    if ((Reason == HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE) \
+        || (Reason == HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE))
     {
-      /* no more active connections, restart scanning */
-      status = HAPAPP_StartScanning();
-      LOG_INFO_APP("HAPAPP_StartScanning() returns status 0x%02X\n",status);
+      if (APP_GetNumActiveACLConnections() == 0u)
+      {
+        Menu_SetConfigPage();
+      }
     }
     else
     {
-      if( HAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
+      if (APP_GetNumActiveACLConnections() == 0u)
       {
-        /* Check if a new Set Member discovery should be started */
-        if ((profile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
+        Menu_SetScanningPage();
+        /* no more active connections, restart scanning */
+        status = HAPAPP_StartScanning();
+        LOG_INFO_APP("HAPAPP_StartScanning() returns status 0x%02X\n",status);
+      }
+      else
+      {
+        if( HAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
         {
-#if (CFG_BLE_NUM_LINK > 0u)
-          for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
+          /* Check if a new Set Member discovery should be started */
+          if ((profile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
           {
-            if (HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFF)
+#if (CFG_BLE_NUM_LINK > 0u)
+            for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
             {
-              if ((HAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
+              if (HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle != 0xFFFF)
               {
-                if ((HAPAPP_Context.ACL_Conn[i].SIRK_type == p_conn->SIRK_type) \
-                   && (memcmp(&HAPAPP_Context.ACL_Conn[i].SIRK[0], &p_conn->SIRK[0],16u) == 0u))
+                if ((HAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
                 {
-                  tBleStatus ret;
-                  /* Start scanning */
-                  HAPAPP_StartScanning();
-                  /* perform discovery to another potential Coordinated Set Member*/
-                  if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle) == BLE_STATUS_SUCCESS)
+                  if ((HAPAPP_Context.ACL_Conn[i].SIRK_type == p_conn->SIRK_type) \
+                     && (memcmp(&HAPAPP_Context.ACL_Conn[i].SIRK[0], &p_conn->SIRK[0],16u) == 0u))
                   {
-                    return;
+                    /* Start scanning */
+                    HAPAPP_StartScanning();
+                    /* perform discovery to another potential Coordinated Set Member*/
+                    if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle) == BLE_STATUS_SUCCESS)
+                    {
+                      return;
+                    }
+                    else
+                    {
+                      tBleStatus ret;
+                      ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
+                      if (ret != BLE_STATUS_SUCCESS)
+                      {
+                        LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc command, result: 0x%02X\n", ret);
+                      }
+                      else
+                      {
+                        LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc command\n");
+                      }
+                    }
                   }
-                  else
-                  {
-                    ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-                    LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,ret);
-                  }
-                  UNUSED(ret);
                 }
               }
             }
-          }
 #endif /*(CFG_BLE_NUM_LINK > 0u)*/
+          }
         }
       }
     }
-    Menu_SetScanningPage();
     UNUSED(status);
   }
   else
@@ -1649,6 +1719,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle)
         {
           LOG_INFO_APP("Deinitialized Audio Peripherals\n");
           MX_AudioDeInit();
+          Menu_SetNoStreamPage();
         }
         break;
       }
@@ -1789,12 +1860,12 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
     return status;
   }
 #if (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1)
-    if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
-    {
+  if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
+  {
 #if (APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)
-      HAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
+    HAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
 #endif /*(APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)*/
-    }
+  }
 #endif /* (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1) */
   for (uint8_t i = 0; i< APP_MAX_NUM_CIS; i++)
   {
@@ -1854,30 +1925,33 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   CODEC_ManagerInit(MAX_PATH_NB*CODEC_POOL_SUB_SIZE,
                         (uint8_t*)aCodecPacketsMemory,
                         &lc3_config,
-                        100,
-                        1650,
+                        CODEC_PROC_MARGIN_US,
+                        CODEC_RF_SETUP_US,
                         CODEC_MODE_DEFAULT);
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 #if (APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)
-    for(uint8_t i = 0u ; i < APP_CCP_NUM_LOCAL_BEARER_INSTANCES ; i++)
-    {
-      HAPAPP_Context.BearerInstance[i].CCID = 0u;
-    }
+  for(uint8_t i = 0u ; i < APP_CCP_NUM_LOCAL_BEARER_INSTANCES ; i++)
+  {
+    HAPAPP_Context.BearerInstance[i].CCID = 0u;
+  }
 #endif /*(APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)*/
 
-      if ((APP_CCP_Config.Role & CCP_ROLE_SERVER) == CCP_ROLE_SERVER)
-      {
-        uint8_t ccid;
-        /*register the Generic Telephony Bearer and the potential Telephony Bearer Instances*/
-        status = HAPAPP_RegisterGenericTelephonyBearer(&ccid);
+  if ((APP_CCP_Config.Role & CCP_ROLE_SERVER) == CCP_ROLE_SERVER)
+  {
+    uint8_t ccid;
+    /*register the Generic Telephony Bearer and the potential Telephony Bearer Instances*/
+    status = HAPAPP_RegisterGenericTelephonyBearer(&ccid);
+    if (status == BLE_STATUS_SUCCESS)
+    {
 #if (APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)
-        for(uint8_t i = 0u ; ((i < APP_CCP_NUM_LOCAL_BEARER_INSTANCES) && (status == BLE_STATUS_SUCCESS)) ; i++)
-        {
-          status = HAPAPP_RegisterTelephonyBearerInstance(&ccid);
-        }
-#endif /*(APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)*/
+      for(uint8_t i = 0u ; ((i < APP_CCP_NUM_LOCAL_BEARER_INSTANCES) && (status == BLE_STATUS_SUCCESS)) ; i++)
+      {
+        status = HAPAPP_RegisterTelephonyBearerInstance(&ccid);
       }
+#endif /*(APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)*/
+    }
+  }
 #endif /*(APP_CCP_ROLE_SERVER_SUPPORT == 1u)*/
 
   /*Enable Audio Codec in LE Controller */
@@ -2093,9 +2167,15 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             /* Confirm indication now that the GATT is available */
             ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-            LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+            if (ret != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
             p_conn->ConfirmIndicationRequired = 0u;
-            UNUSED(ret);
           }
 
           if (pNotification->Status == BLE_STATUS_SUCCESS)
@@ -2295,7 +2375,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       LOG_INFO_APP("    Supported Octets Per Codec Frame: 0x%02X\n",remote_supported_octet_per_codec_frame);
       LOG_INFO_APP("    Supported Max Codec Frame Per SDU: %d\n",remote_supported_max_codec_frame_per_sdu);
       LOG_INFO_APP("    Supported Preferred Audio Contexts: 0x%04X\n",remote_preferred_audio_contexts);
-
+      UNUSED(remote_supported_max_codec_frame_per_sdu);
 
       break;
     }
@@ -2620,7 +2700,14 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (pNotification->Status != BLE_STATUS_SUCCESS)
             {
               hciCmdResult = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-              LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,hciCmdResult);
+              if (hciCmdResult != BLE_STATUS_SUCCESS)
+              {
+                LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc command, result: 0x%02X\n", hciCmdResult);
+              }
+              else
+              {
+                LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc command\n");
+              }
             }
 #if (CFG_BLE_NUM_LINK > 0u)
             /*Check if a CAP Linkup witha discovered Set Member should started*/
@@ -2718,7 +2805,7 @@ static APP_ASE_Info_t * HAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
 #if (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u)
       for( i = 0; i < MAX_NUM_UCL_SRC_ASE_PER_LINK;i++)
       {
-        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSnkASE[i].allocated == 1u))
+        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSrcASE[i].allocated == 1u))
         {
           return &p_conn->pASEs->aSrcASE[i];
         }
@@ -2937,7 +3024,7 @@ static void start_audio_sink(void)
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 static tBleStatus HAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID)
 {
-  tBleStatus ret = HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
+  tBleStatus ret;
   CCP_BearerInit_t BearerInit;
   BearerInit.pProviderName = (uint8_t *)"Orange";
   BearerInit.pUCI = (uint8_t *)"skype";
@@ -2949,11 +3036,10 @@ static tBleStatus HAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID)
   BearerInit.SilentMode = CCP_SILENT_MODE_ON;
   BearerInit.LocalHoldOption = CCP_LOCAL_HOLD_FEATURE_SUPPORTED;
   BearerInit.JoinOption = CCP_JOIN_FEATURE_SUPPORTED;
-
+  HAPAPP_Context.GenericBearer.CCID = APP_CCP_START_CCID;
   ret = CAP_RegisterGenericTelephonyBearer(HAPAPP_Context.GenericBearer.CCID,&BearerInit);
   if (ret == BLE_STATUS_SUCCESS)
   {
-    HAPAPP_Context.GenericBearer.CCID = HAPAPP_Context.GenericBearer.CCID;
     LOG_INFO_APP("Generic Telephony Bearer CCID %d successfully registered\n",HAPAPP_Context.GenericBearer.CCID);
     *pCCID = HAPAPP_Context.GenericBearer.CCID;
   }

@@ -211,7 +211,7 @@ tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext, uint16_t 
 tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle,
                                              HAP_Preset_t* PresetRecord, uint8_t IsLast)
 {
-  tBleStatus hciCmdResult = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
 
   a_value[0u] = HAP_HA_CONTROL_POINT_OP_READ_PRESETS_RESPONSE;
@@ -239,7 +239,7 @@ tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext, uint16_
 tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
                                       uint8_t PrevIndex,HAP_Preset_t* PresetRecord)
 {
-  tBleStatus hciCmdResult = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
 
   a_value[0u] = HAP_HA_CONTROL_POINT_OP_PRESET_CHANGED;
@@ -266,7 +266,7 @@ tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext, uint16_
 tBleStatus HAS_SetPresetRecordDeleted(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
                                       uint8_t Index)
 {
-  tBleStatus hciCmdResult = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
 
   a_value[0u] = HAP_HA_CONTROL_POINT_OP_PRESET_CHANGED;
@@ -290,7 +290,7 @@ tBleStatus HAS_SetPresetRecordDeleted(HAS_ServiceContext_t *pSrvContext, uint16_
 tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
                                         uint8_t Index)
 {
-  tBleStatus hciCmdResult = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
 
   a_value[0u] = HAP_HA_CONTROL_POINT_OP_PRESET_CHANGED;
@@ -314,7 +314,7 @@ tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext, uint1
 tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
                                           uint8_t Index)
 {
-  tBleStatus hciCmdResult = BLE_STATUS_INVALID_PARAMS;
+  tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
 
   a_value[0u] = HAP_HA_CONTROL_POINT_OP_PRESET_CHANGED;
@@ -407,7 +407,18 @@ SVCCTL_EvtAckStatus_t HAS_ATT_Event_Handler(void *pEvent)
 
               if (attribute_modified->Attr_Handle == (p_srv_ctxt->HearingAidPresetControlPointHandle + 1))
               {
+                /* Value modified */
                 notification.EvtOpcode = HAS_CONTROL_POINT_EVT;
+                notification.ConnHandle = attribute_modified->Connection_Handle;
+                notification.pData = attribute_modified->Attr_Data;
+                notification.DataLen = attribute_modified->Attr_Data_Length;
+                HAS_Notification(&notification);
+              }
+
+              if (attribute_modified->Attr_Handle == (p_srv_ctxt->HearingAidPresetControlPointHandle + 2))
+              {
+                /* Descriptor modified */
+                notification.EvtOpcode = HAS_CONTROL_POINT_DESC_EVT;
                 notification.ConnHandle = attribute_modified->Connection_Handle;
                 notification.pData = attribute_modified->Attr_Data;
                 notification.DataLen = attribute_modified->Attr_Data_Length;
