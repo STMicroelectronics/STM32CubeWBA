@@ -436,7 +436,7 @@
 //   <o.16> LPUART1_IRQn          <0=> Secure state
 //   <o.17> LPTIM1_IRQn           <0=> Secure state
 //   <o.18> LPTIM2_IRQn           <0=> Secure state
-//   <o.19> TIM16_IRQn            <0=> Secure state
+//   <o.19> TIM16_IRQn            <1=> Non-Secure state
 //   <o.20> TIM17_IRQn            <0=> Secure state
 //   <o.21> COMP_IRQn             <0=> Secure state
 //   <o.22> I2C3_EV_IRQn          <0=> Secure state
@@ -451,7 +451,7 @@
 //   <o.31> SPI3_IRQn             <0=> Secure state
 */
 
-#define NVIC_INIT_ITNS1_VAL      0x28004000
+#define NVIC_INIT_ITNS1_VAL      0x28084000
 
 /*
 //   </e>

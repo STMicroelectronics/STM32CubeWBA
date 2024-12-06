@@ -9,7 +9,7 @@
  * @brief ZCL Color Control cluster header
  * ZCL 7 Section 5.2
  * ZCL 8 Section 5.2
- * @copyright Copyright [2016 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2016 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_COLOR_H
@@ -664,7 +664,7 @@ struct ZbColorClusterConfig {
  * @param attribute_list List of application defined attributes to be appended, may be NULL
  * @param num_attrs Number of application defined attributes to be added, may be 0 if attribute_list is NULL
  * @param config Configuration containing Color Control capabilities and callbacks for handling requests
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclColorServerAlloc(struct ZigBeeT *zb, uint8_t endpoint, struct ZbZclClusterT *onoff_server,
@@ -688,8 +688,8 @@ struct ZbZclClusterT * ZbZclColorClientAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move to Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToHueReq(struct ZbZclClusterT *clusterPtr,
@@ -701,8 +701,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToHueReq(struct ZbZclClusterT *clusterPt
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveHueReq(struct ZbZclClusterT *clusterPtr,
@@ -714,8 +714,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveHueReq(struct ZbZclClusterT *clusterPtr,
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Step Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStepHueReq(struct ZbZclClusterT *clusterPtr,
@@ -727,8 +727,8 @@ enum ZclStatusCodeT ZbZclColorClientStepHueReq(struct ZbZclClusterT *clusterPtr,
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move to Saturation command command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToSatReq(struct ZbZclClusterT *clusterPtr,
@@ -740,8 +740,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToSatReq(struct ZbZclClusterT *clusterPt
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move Saturation command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveSatReq(struct ZbZclClusterT *clusterPtr,
@@ -753,8 +753,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveSatReq(struct ZbZclClusterT *clusterPtr,
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Step Saturation command command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStepSatReq(struct ZbZclClusterT *clusterPtr,
@@ -766,8 +766,8 @@ enum ZclStatusCodeT ZbZclColorClientStepSatReq(struct ZbZclClusterT *clusterPtr,
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req  Move to Hue and Saturation command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToHueSatReq(struct ZbZclClusterT *clusterPtr,
@@ -779,8 +779,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToHueSatReq(struct ZbZclClusterT *cluste
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move to Color command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToColorXYReq(struct ZbZclClusterT *clusterPtr,
@@ -792,8 +792,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToColorXYReq(struct ZbZclClusterT *clust
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move Color command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveColorXYReq(struct ZbZclClusterT *clusterPtr,
@@ -805,8 +805,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveColorXYReq(struct ZbZclClusterT *cluster
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Step Color command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStepColorXYReq(struct ZbZclClusterT *clusterPtr,
@@ -818,8 +818,8 @@ enum ZclStatusCodeT ZbZclColorClientStepColorXYReq(struct ZbZclClusterT *cluster
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move to Color Temperature command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToColorTempReq(struct ZbZclClusterT *clusterPtr,
@@ -831,8 +831,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToColorTempReq(struct ZbZclClusterT *clu
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Enhanced Move to Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToHueEnhReq(struct ZbZclClusterT *clusterPtr,
@@ -844,8 +844,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToHueEnhReq(struct ZbZclClusterT *cluste
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Enhanced Move Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveHueEnhReq(struct ZbZclClusterT *clusterPtr,
@@ -857,8 +857,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveHueEnhReq(struct ZbZclClusterT *clusterP
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Enhanced Step Hue command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStepHueEnhReq(struct ZbZclClusterT *clusterPtr,
@@ -870,8 +870,8 @@ enum ZclStatusCodeT ZbZclColorClientStepHueEnhReq(struct ZbZclClusterT *clusterP
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Enhanced Move to Hue and Saturation command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveToHueSatEnhReq(struct ZbZclClusterT *clusterPtr,
@@ -883,8 +883,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveToHueSatEnhReq(struct ZbZclClusterT *clu
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Color Loop Set command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientColorLoopSetReq(struct ZbZclClusterT *clusterPtr,
@@ -896,8 +896,8 @@ enum ZclStatusCodeT ZbZclColorClientColorLoopSetReq(struct ZbZclClusterT *cluste
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Stop Move Step command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStopMoveStepReq(struct ZbZclClusterT *clusterPtr,
@@ -909,8 +909,8 @@ enum ZclStatusCodeT ZbZclColorClientStopMoveStepReq(struct ZbZclClusterT *cluste
  * @param clusterPtr Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move Color Temperature command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientMoveColorTempReq(struct ZbZclClusterT *clusterPtr,
@@ -922,8 +922,8 @@ enum ZclStatusCodeT ZbZclColorClientMoveColorTempReq(struct ZbZclClusterT *clust
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Step Color Temperature command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclColorClientStepColorTempReq(struct ZbZclClusterT *clusterPtr,

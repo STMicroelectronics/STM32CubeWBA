@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    usecase_dev_mgmt.h
  * @author  MCD Application Team
- * @brief   BDevice Management Interface for Use Case Profiles
+ * @brief   Device Management Interface for Use Case Profiles
  ******************************************************************************
  * @attention
  *
@@ -27,6 +27,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_compiler.h"
 #include "ble_types.h"
+#include "svc_ctl.h"
 
 /* Defines -----------------------------------------------------------*/
 #define USECASE_DEV_MGMT_MAX_CONNECTION        (2u)
@@ -38,6 +39,15 @@ typedef struct
   uint8_t       Role;                   /*local device role (0x00 : Master ; 0x01 : Slave)*/
   uint8_t       Peer_Address_Type;      /*Peer address type*/
   uint8_t       Peer_Address[6];        /*Peer address*/
+  uint16_t      MTU;                    /* MTU Exchanged */
+  uint8_t       LinkEncrypted;          /* Link Encrypted */
+
+  /* CSIP Information */
+  uint8_t       CSIPDiscovered;                 /* Set to 1 if Set Member has been discovered */
+  uint8_t       SIRK_type;
+  uint8_t       aSIRK[16];
+  uint8_t       Rank;
+  uint8_t       Size;
 } UseCaseConnInfo_t;
 
 /* Functions -----------------------------------------------------------------*/
@@ -45,7 +55,7 @@ typedef struct
   * @brief Use Case Manager initialization.
   * @note  This function shall be called before any Use Case Profile function
   */
-tBleStatus USECASE_DEV_MGMT_Init();
+tBleStatus USECASE_DEV_MGMT_Init(void);
 
 /**
   * @brief  Get the number of connected devices
@@ -62,11 +72,78 @@ uint8_t USECASE_DEV_MGMT_GetNumConnectedDevices(void);
 tBleStatus USECASE_DEV_MGMT_GetConnInfo(uint16_t ConnHandle,const UseCaseConnInfo_t **pConnInfo);
 
 /**
+  * @brief Set CSIP information for ConnHandle
+  * @param ConnHandle: Connection Handle of the set member
+  * @param pSIRK: Pointer to the SIRC of the set
+  * @param SIRKType: Type of SIRC of the set
+  * @param Rank: Rank of the set member
+  * @param SetSize: Size of the set member
+  */
+void USECASE_DEV_MGMT_SetCSIPInfo(uint16_t ConnHandle, uint8_t *pSIRK, uint8_t SIRKType, uint8_t Rank, uint8_t SetSize);
+
+/**
   * @brief  Get Connection Handle corresponding to a specified connection index
   * @param  ConnIndex: connection index
   * @retval Connection Handle (0xFFFF if connection index doesn't correspond to a connected device)
   */
 extern uint16_t USECASE_DEV_MGMT_GetConnHandle(uint8_t ConnIndex);
+
+/** @brief This function is used by the Device in the TMAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent);
+
+/** @brief This function is used by the Device in the HAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent);
+
+/** @brief This function is used by the Device in the GMAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void TMAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void HAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void GMAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void TMAP_LinkEncrypted(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void HAP_LinkEncrypted(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void GMAP_LinkEncrypted(uint16_t ConnHandle);
 
 #ifdef __cplusplus
 }

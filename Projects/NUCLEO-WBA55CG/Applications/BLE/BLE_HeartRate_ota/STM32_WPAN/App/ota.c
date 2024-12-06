@@ -206,7 +206,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
                 /* USER CODE END Service3_Char_2_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (OTA_Context.CONFHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (OTA_Context.Base_AdrCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -221,7 +221,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
             notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
             /* USER CODE END Service3_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             OTA_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (OTA_Context.Base_AdrCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
           else if(p_attribute_modified->Attr_Handle == (OTA_Context.Raw_DataCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
@@ -235,7 +235,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
             notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
             /* USER CODE END Service3_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             OTA_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (OTA_Context.Raw_DataCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -274,7 +274,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
               LOG_INFO_APP("==>> ACI GATT Write response Failed , result: %d \n\r", ret);
             }
             /*USER CODE END Service3_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(p_write_perm_req->Attribute_Handle == (OTA_Context.Raw_DataCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -303,40 +303,34 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
-        /* USER CODE BEGIN BLECORE_EVT */
         case ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE:
-          p_attribute_modified = (aci_gatt_attribute_modified_event_rp0*)p_blecore_evt->data;
+        {
+          aci_gatt_server_confirmation_event_rp0 *p_server_confirmation;
+          p_server_confirmation = (aci_gatt_server_confirmation_event_rp0 *)  p_blecore_evt->data;
+          UNUSED(p_server_confirmation);
+
+          /* USER CODE BEGIN ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
           OTA_Conf_Status = (OTA_Confirmation_Status_t)OTA_APP_GetConfStatus();
           if( OTA_Conf_Status == OTA_Pending)
           {
-            /**
-             * Confirmation Event
-             */
-            OTA_Conf_Status = OTA_No_Pending;
-
-            return_value = SVCCTL_EvtAckFlowEnable;
-
             notification.EvtOpcode = OTA_CONF_EVT;
-            notification.DataTransfered.p_Payload = (uint8_t*)&p_attribute_modified->Attr_Data[0];
-            notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
-            OTA_Notification( &notification );
+            OTA_Conf_Status = OTA_No_Pending;
+            return_value = SVCCTL_EvtAckFlowEnable;
           }
           else if( OTA_Conf_Status == OTA_Ready_Pending)
           {
-            /**
-             * Confirmation Event
-             */
-            OTA_Conf_Status = OTA_No_Pending;
-
-            return_value = SVCCTL_EvtAckFlowEnable;
-
             notification.EvtOpcode = OTA_READY_EVT;
-            notification.DataTransfered.p_Payload = (uint8_t*)&p_attribute_modified->Attr_Data[0];
-            notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
-            OTA_Notification( &notification );
+            OTA_Conf_Status = OTA_No_Pending;
+            return_value = SVCCTL_EvtAckFlowEnable;
           }
+
+          OTA_Notification( &notification );
           break;
-      
+          /* USER CODE END ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
+          break;/* ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
+        }
+        /* USER CODE BEGIN BLECORE_EVT */
+
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
         case ACI_GATT_INDICATION_VSEVT_CODE:
           pr = (void*)p_blecore_evt->data;
@@ -354,19 +348,19 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -551,9 +545,9 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value BASE_ADR command\n");
       }
-      /* USER CODE BEGIN Service3_Char_Value_1*/
+      /* USER CODE BEGIN Service3_Char_Value_1 */
 
-      /* USER CODE END Service3_Char_Value_1*/
+      /* USER CODE END Service3_Char_Value_1 */
       break;
 
     case OTA_CONF:
@@ -570,9 +564,9 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value CONF command\n");
       }
-      /* USER CODE BEGIN Service3_Char_Value_2*/
+      /* USER CODE BEGIN Service3_Char_Value_2 */
 
-      /* USER CODE END Service3_Char_Value_2*/
+      /* USER CODE END Service3_Char_Value_2 */
       break;
 
     case OTA_RAW_DATA:
@@ -589,9 +583,9 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value RAW_DATA command\n");
       }
-      /* USER CODE BEGIN Service3_Char_Value_3*/
+      /* USER CODE BEGIN Service3_Char_Value_3 */
 
-      /* USER CODE END Service3_Char_Value_3*/
+      /* USER CODE END Service3_Char_Value_3 */
       break;
 
     default:

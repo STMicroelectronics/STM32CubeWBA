@@ -3,7 +3,7 @@
  * @heading TLV Utilities
  * @brief ZigBee TLV implementation.
  * @author Exegin Technologies Limited
- * @copyright Copyright [2018 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2018 - 2024] Exegin Technologies Limited. All rights reserved.
  *
  * This file defines all the ZigBee TLV APIs and macros.
  */
@@ -275,20 +275,20 @@ enum zb_tlv_type {
      * Global TLVs (64-255)
      *-----------------------------------------------------
      */
-    ZB_TLV_MFG_SPECIFIC = 64U, /**< Manufacturer specific TLV. */
-    ZB_TLV_SUPP_KEY_NEGO_METHOD = 65U, /**< Supported key negotiation method TLV. */
-    ZB_TLV_PANID_CONFLICT_REPORT = 66U, /**< PANID conflict report global TLV. */
-    ZB_TLV_NEXT_PANID = 67U, /**< Next PAN ID TLV. */
-    ZB_TLV_NEXT_CHANNEL = 68U, /**< Next channel change TLV. */
-    ZB_TLV_PASSPHRASE_128 = 69U, /**< Symmetric passphrase TLV. */
-    ZB_TLV_ROUTER_INFO = 70U, /**< Router Information TLV. */
-    ZB_TLV_FRAG_PARAM = 71U, /**< Fragmentation Parameters TLV. */
-    ZB_TLV_JOINER_ENCAPSULATION = 72U, /**< Joiner Encapsulation TLV. */
-    ZB_TLV_BEACON_APPENDIX_ENCAPSULATION = 73U, /**< Beacon Appendix Encapsulation TLV. */
+    ZB_TLV_MFG_SPECIFIC = 64U, /**< Manufacturer specific TLV (ID 64 / 0x40) */
+    ZB_TLV_SUPP_KEY_NEGO_METHOD = 65U, /**< Supported key negotiation method TLV (ID 65 / 0x41) */
+    ZB_TLV_PANID_CONFLICT_REPORT = 66U, /**< PANID conflict report global TLV (ID 66 / 0x42) */
+    ZB_TLV_NEXT_PANID = 67U, /**< Next PAN ID TLV (ID 67 / 0x43) */
+    ZB_TLV_NEXT_CHANNEL = 68U, /**< Next channel change TLV (ID 68 / 0x44) */
+    ZB_TLV_PASSPHRASE_128 = 69U, /**< Symmetric passphrase TLV (ID 69 / 0x45) */
+    ZB_TLV_ROUTER_INFO = 70U, /**< Router Information TLV (ID 70 / 0x46) */
+    ZB_TLV_FRAG_PARAM = 71U, /**< Fragmentation Parameters TLV (ID 71 / 0x47) */
+    ZB_TLV_JOINER_ENCAPSULATION = 72U, /**< Joiner Encapsulation TLV (ID 72 / 0x48) */
+    ZB_TLV_BEACON_APPENDIX_ENCAPSULATION = 73U, /**< Beacon Appendix Encapsulation TLV (ID 73 / 0x49) */
     /* discontinuity. */
-    ZB_TLV_CONFIG_PARAM = 75U, /**< Configuration params TLV. */
-    ZB_TLV_DEVICE_CAP_EXT_GLOBAL = 76U, /**< Device Capability Extension Global TLV (ID 76) */
-    ZB_TLV_ID_RESERVED = 77U /**< Global TLV ID's >= this ID are reserved. */
+    ZB_TLV_CONFIG_PARAM = 75U, /**< Configuration params TLV (ID 75 / 0x4b) */
+    ZB_TLV_DEVICE_CAP_EXT_GLOBAL = 76U, /**< Device Capability Extension Global TLV (ID 76 / 0x4c) */
+    ZB_TLV_ID_RESERVED = 77U /**< Global TLV ID's >= this ID are reserved (ID 77 / 0x4d) */
 };
 /*lint -restore */
 
@@ -360,7 +360,6 @@ struct zb_tlv {
  * checks on the payload of the encapsulation TLV. It is the responsibility of
  * the caller to decode the payload of encapsulation TLV to verify the validity
  * of the TLVs enclosed.
- *
  * @param buffer (IN) input buffer with TLVs.
  * @param buffer_length (IN) input buffer length.
  * @param tlv_array (IN/OUT) the TLVs that we are looking for.
@@ -375,7 +374,6 @@ int zb_tlv_decode(const uint8_t *buffer, unsigned int buffer_length, struct zb_t
 
 /**
  * Check all mandatory TLVs have non-NULL value fields.
- *
  * @param tlv_array (IN) TLV array.
  * @param tlv_count (IN) depth of input TLV array.
  * @return true if all mandatory TLVs were found false otherwise
@@ -385,7 +383,6 @@ bool zb_tlv_decode_check_mandatory(const struct zb_tlv *tlv_array, const unsigne
 /**
  * Check if the TLV type exists in the input buffer. This API will return
  * failure if the TLV does not exist or is found to be truncated.
- *
  * @param buffer (IN) input buffer for TLV processing.
  * @param buffer_length (IN) input buffer length.
  * @param type (IN/OUT) TLV type ID being searched.
@@ -395,7 +392,6 @@ bool zb_tlv_type_exists(uint8_t *buffer, unsigned int buffer_length, enum zb_tlv
 
 /**
  * Compute the size of buffer required, if the input TLVs were to be encoded.
- *
  * @param tlv_array (IN) input TLV array.
  * @param tlv_count (IN) depth of input TLV array.
  * @return size of buffer required to encode input TLVs.
@@ -404,14 +400,14 @@ int zb_tlv_encode_length(struct zb_tlv *tlv_array, const unsigned int tlv_count)
 
 /**
  * Given a list of TLVs, this API encodes TLV list into input buffer.
- *
- * @param buffer (IN) input buffer with TLVs.
- * @param buffer_length (IN) input buffer length.
- * @param tlv_array (IN) array of TLVs to be encoded.
- * @param tlv_count (IN) depth of TLV array.
- * @return length encoded, negative on error
+ * @param buffer Output buffer to write the TLV data.
+ * @param buffer_length Maximum number of bytes that can be written to buffer.
+ * @param tlv_array Input array of TLVs to be encoded.
+ * @param tlv_count Number of input TLVs to encode
+ * @return Number of bytes written to buffer, or a negative value on error.
+ * See ZB_TLV_STATUS_ return codes.
  */
 int zb_tlv_encode(uint8_t *buffer, unsigned int buffer_length,
     const struct zb_tlv *tlv_array, const unsigned int tlv_count);
 
-#endif /* ZIGBEE_TLV_H */
+#endif

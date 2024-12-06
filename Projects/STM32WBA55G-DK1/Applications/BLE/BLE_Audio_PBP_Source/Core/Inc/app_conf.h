@@ -96,12 +96,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
+#define CFG_BLE_IR      {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
+#define CFG_BLE_ER      {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -225,7 +225,7 @@
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
 /* Defines time to wake up from standby before radio event to meet timings */
-#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -253,9 +253,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -278,6 +275,10 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
+
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
@@ -298,7 +299,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -372,7 +373,7 @@ typedef enum
  * NVM configuration
  ******************************************************************************/
 
-#define CFG_SNVMA_START_SECTOR_ID     (FLASH_PAGE_NB - 2u)
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - 2u)
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
 
@@ -399,20 +400,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (2)
+#define CFG_DEBUGGER_LEVEL                  (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -474,8 +475,8 @@ typedef enum
 #define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
 #define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
-#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -523,7 +524,6 @@ typedef enum
 
 /* Extra audio latency due to maximum radio preparation time */
 #define CODEC_RF_SETUP_US                       (1600u)
-
 /******************************************************************************
  * Power Table
  ******************************************************************************/
@@ -534,6 +534,11 @@ typedef enum
 
 #define CFG_OUTPUT_POWER_TABLE_VERSION  (CFG_OUTPUT_POWER_TABLE_PS0_0x20)
 
+/******************************************************************************
+ * TEST VALIDATION
+ ******************************************************************************/
+/* Enable or disable configuration of project to run validation test : only used for project validation test */
+#define CFG_TEST_VALIDATION                     (0u)
 /* USER CODE END Defines */
 
 /**
@@ -558,6 +563,12 @@ typedef enum
 #endif /* CFG_LPM_STDBY_SUPPORTED */
 
 /* USER CODE BEGIN Defines_2 */
+#if (CFG_TEST_VALIDATION == 1)
+  #undef  CFG_LOG_SUPPORTED
+  #define CFG_LOG_SUPPORTED         (1)
+  #undef  APPLI_CONFIG_LOG_LEVEL
+  #define APPLI_CONFIG_LOG_LEVEL    LOG_VERBOSE_INFO
+#endif /* CFG_TEST_VALIDATION */
 /* When the PLL is switched on for audio, Link layer execution is faster and its timings margin can be reduced
    These values have been qualified for LE audio use case and should not be changed by the user */
 #define DEFAULT_DRIFT_TIME                      (14)

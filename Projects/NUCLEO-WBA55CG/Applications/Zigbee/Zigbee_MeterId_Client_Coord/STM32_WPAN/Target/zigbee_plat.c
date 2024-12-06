@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,6 +24,7 @@
 #include "app_common.h"
 #include "hw.h"
 #include "baes.h"
+#include "zigbee_plat.h"
 #include "advanced_memory_manager.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -291,7 +292,7 @@ unsigned long ZIGBEE_PLAT_HeapAvailable( void )
 /**
  *
  */
-bool ZIGBEE_PLAT_HeapCheckAlloc( unsigned int iSize )
+bool ZIGBEE_PLAT_HeapCheckAlloc( uint32_t iSize )
 {
     /* Just assume we have enough memory in the system heap */
     return true;

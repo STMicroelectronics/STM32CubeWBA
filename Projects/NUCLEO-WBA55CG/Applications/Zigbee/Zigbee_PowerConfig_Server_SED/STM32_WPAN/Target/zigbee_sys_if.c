@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,6 +24,7 @@
 #include "log_module.h"
 #include "app_zigbee.h"
 #include "stm32_rtos.h"
+#include "zigbee.stm32wba.sys.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */

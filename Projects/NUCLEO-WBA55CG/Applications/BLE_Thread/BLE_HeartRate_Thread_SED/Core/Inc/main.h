@@ -33,6 +33,11 @@ extern "C" {
 #include "app_common.h"
 #include "app_debug.h"
 
+#include "stm32wbaxx_ll_icache.h"
+#include "stm32wbaxx_ll_tim.h"
+
+#include "stm32wbaxx_ll_exti.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -63,10 +68,8 @@ void MX_USART1_UART_Init(void);
 void MX_ADC4_Init(void);
 void MX_RNG_Init(void);
 void MX_CRC_Init(void);
-void MX_ICACHE_Init(void);
-
-/* USER CODE BEGIN EFP */
-
+void MX_ICACHE_Init(void);/* USER CODE BEGIN EFP */
+void ConfigureStandbyWakeupPins(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

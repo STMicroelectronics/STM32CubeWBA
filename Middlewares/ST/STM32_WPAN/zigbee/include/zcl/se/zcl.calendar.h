@@ -3,7 +3,7 @@
  * @heading Calendar
  * @brief ZCL Calendar cluster header
  * ZCL 8 Section 10.9
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 /*--------------------------------------------------------------------------
@@ -330,9 +330,6 @@ struct ZbZclCalServerCallbacksT {
  */
 struct ZbZclClusterT * ZbZclCalServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,
     struct ZbZclCalServerCallbacksT *callbacks, void *arg);
-
-/* If publish command is sent in response to corresponding get command, use same sequence number. Otherwise use new sequence number from
- * ZbZclGetNextSeqnum() */
 
 /**
  * Send a Publish Calendar as a response

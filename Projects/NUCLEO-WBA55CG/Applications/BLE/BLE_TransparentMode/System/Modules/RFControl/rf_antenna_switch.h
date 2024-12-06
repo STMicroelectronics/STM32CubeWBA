@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -36,6 +36,13 @@ typedef enum {
   RF_ANTSW_DISABLE = 0,
   RF_ANTSW_ENABLE
 } rf_antenna_switch_state_t;
+
+static const st_gpio_antsw_t rt_antenna_switch_gpio_table[] =
+{
+  RF_ANTSW0,
+  RF_ANTSW1,
+  RF_ANTSW2
+};
 
 void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state);
 

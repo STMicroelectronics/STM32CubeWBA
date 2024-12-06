@@ -129,6 +129,7 @@ int main(void)
   MX_RNG_Init();
   MX_ICACHE_Init();
   MX_USART1_UART_Init();   //Can used in CLI if enabled Uart
+
   MX_LPUART1_UART_Init();  //Trace Uart
   /* USER CODE BEGIN 2 */
 

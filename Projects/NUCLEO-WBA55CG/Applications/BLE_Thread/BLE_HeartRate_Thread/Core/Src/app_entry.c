@@ -55,7 +55,7 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +98,7 @@ static bool system_startup_done = FALSE;
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
@@ -126,10 +126,6 @@ static AMM_InitParameters_t ammInitConfig =
 };
 
 /* USER CODE BEGIN PV */
-#if (CFG_BUTTON_SUPPORTED == 1)
-/* Button management */
-static ButtonDesc_t buttonDesc[BUTTON_NB_MAX];
-#endif
 
 /* USER CODE END PV */
 
@@ -173,13 +169,7 @@ static uint32_t * AMM_WrapperAllocate (const uint32_t BufferSize);
 static void AMM_WrapperFree (uint32_t * const p_BufferAddr);
 
 /* USER CODE BEGIN PFP */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init(void);
-#endif
-#if (CFG_BUTTON_SUPPORTED == 1)
-static void Button_Init(void);
-static void Button_TriggerActions(void *arg);
-#endif
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -231,12 +221,11 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
+  APP_BSP_LedInit();
 #endif
 #if (CFG_BUTTON_SUPPORTED == 1)
-  Button_Init();
-#endif
-  
+  APP_BSP_ButtonInit();
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
   /* USER CODE END APPE_Init_1 */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
 
@@ -267,56 +256,6 @@ uint32_t MX_APPE_Init(void *p_param)
 }
 
 /* USER CODE BEGIN FD */
-#if (CFG_BUTTON_SUPPORTED == 1)
-/**
- * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
- *
- * @param   btnIdx    Button to test, listed in enum Button_TypeDef
- * @return  '1' if pressed during a 'long time', else '0'.
- */
-uint8_t APPE_ButtonIsLongPressed(uint16_t btnIdx)
-{
-  uint8_t pressStatus;
-
-  if ( btnIdx < BUTTON_NB_MAX )
-  {
-    pressStatus = buttonDesc[btnIdx].longPressed;
-  }
-  else
-  {
-    pressStatus = 0;
-  }
-
-  return pressStatus;
-}
-
-/**
- * @brief  Action of button 1 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button1Action(void)
-{
-}
-
-/**
- * @brief  Action of button 2 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button2Action(void)
-{
-}
-
-/**
- * @brief  Action of button 3 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button3Action(void)
-{
-}
-#endif
 
 /* USER CODE END FD */
 
@@ -360,6 +299,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  MX_USART1_UART_Init();
+
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -370,6 +311,7 @@ static void System_Init( void )
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init ();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
@@ -406,12 +348,6 @@ static void SystemPower_Config(void)
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
-
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
@@ -455,76 +391,6 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init( void )
-{
-  /* Leds Initialization */
-  BSP_LED_Init(LED_BLUE);
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-
-  BSP_LED_On(LED_GREEN);
-
-  return;
-}
-#endif
-
-#if (CFG_BUTTON_SUPPORTED == 1)
-static void Button_Init( void )
-{
-  /* Button Initialization */
-  buttonDesc[B1].button = B1;
-  buttonDesc[B2].button = B2;
-  buttonDesc[B3].button = B3;
-  BSP_PB_Init(B1, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B2, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B3, BUTTON_MODE_EXTI);
-
-  /* Register tasks associated to buttons */
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_1, UTIL_SEQ_RFU, APPE_Button1Action);
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_2, UTIL_SEQ_RFU, APPE_Button2Action);
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_3, UTIL_SEQ_RFU, APPE_Button3Action);
-
-  /* Create timers to detect button long press (one for each button) */
-  Button_TypeDef buttonIndex;
-  for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
-  {
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId,
-                       0,
-                       (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
-                       &Button_TriggerActions,
-                       &buttonDesc[buttonIndex] );
-  }
-
-  return;
-}
-
-static void Button_TriggerActions(void *arg)
-{
-  ButtonDesc_t *p_buttonDesc = arg;
-
-  p_buttonDesc->longPressed = BSP_PB_GetState(p_buttonDesc->button);
-
-  LOG_INFO_APP("Button %d pressed\n", (p_buttonDesc->button + 1));
-  switch (p_buttonDesc->button)
-  {
-    case B1:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_1, CFG_SEQ_PRIO_0);
-      break;
-    case B2:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_2, CFG_SEQ_PRIO_0);
-      break;
-    case B3:
-      UTIL_SEQ_SetTask(1U << TASK_BUTTON_3, CFG_SEQ_PRIO_0);
-      break;
-    default:
-      break;
-  }
-
-  return;
-}
-
-#endif
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
@@ -548,6 +414,11 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_StopStabilizationTimer();
+  /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -571,7 +442,13 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -645,6 +522,7 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF */
 }
 
+#if (CFG_SCM_SUPPORTED == 1)
 void SCM_HSI_CLK_OFF(void)
 {
   /* SCM module may not switch off HSI clock when traces are used */
@@ -653,6 +531,7 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF */
 }
+#endif /* CFG_SCM_SUPPORTED */
 
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
@@ -676,17 +555,22 @@ void UTIL_ADV_TRACE_PostSendHook(void)
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
 }
 
+/**
+ * @brief  Treat Serial commands.
+ *
+ * @param  pRxBuffer      Pointer on received data from USART.
+ * @param  iRxBufferSize  Number of received data.
+ * @retval None
+ */
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+  /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* Threat USART Command to simulate button press for instance. */
+  (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
+  
+  /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
+}
+
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-#if (CFG_BUTTON_SUPPORTED == 1)
-void BSP_PB_Callback(Button_TypeDef Button)
-{
-  buttonDesc[Button].longPressed = 0;
-  UTIL_TIMER_StartWithPeriod(&buttonDesc[Button].longTimerId, BUTTON_LONG_PRESS_THRESHOLD_MS);
-
-  return;
-}
-#endif
-
-/* USER CODE END FD_WRAP_FUNCTIONS */

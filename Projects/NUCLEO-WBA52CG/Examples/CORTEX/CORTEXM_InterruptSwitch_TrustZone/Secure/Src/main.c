@@ -71,6 +71,7 @@ static void MX_GTZC_S_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* Enable SecureFault handler (HardFault is default) */
@@ -125,18 +126,19 @@ int main(void)
   /* Switch the EXTI interrupt to non-secure */
   NVIC_SetTargetState(EXTI13_IRQn);
 
+  /* USER CODE END 2 */
+
   /* Secure SysTick should rather be suspended before calling non-secure  */
   /* in order to avoid wake-up from sleep mode entered by non-secure      */
   /* The Secure SysTick shall be resumed on non-secure callable functions */
   HAL_SuspendTick();
-
-  /* USER CODE END 2 */
 
   /*************** Setup and jump to non-secure *******************************/
 
   NonSecure_Init();
 
   /* Non-secure software does not return, this code is not executed */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)

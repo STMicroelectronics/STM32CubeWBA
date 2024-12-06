@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.occupancy.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 #include "stm32wbaxx_ll_adc.h"
 
 /* USER CODE END PI */
@@ -233,9 +233,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -317,7 +314,7 @@ static void APP_ZIGBEE_ApplicationTaskInit( void )
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   cOccupancyState = 1;
   UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_OCCUPANCY_UPDATE, TASK_ZIGBEE_APP_OCCUPANCY_UPDATE_PRIORITY );
@@ -329,7 +326,7 @@ void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   cOccupancyState = 0;
   UTIL_SEQ_SetTask( 1u << CFG_TASK_ZIGBEE_APP_OCCUPANCY_UPDATE, TASK_ZIGBEE_APP_OCCUPANCY_UPDATE_PRIORITY );

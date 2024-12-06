@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,7 @@
 #include "app_conf.h"
 #include "log_module.h"
 #include "stm32_rtos.h"
+#include "st_mac_802_15_4_sys.h"
 
 extern void mac_baremetal_run(void);
 

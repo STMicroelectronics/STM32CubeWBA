@@ -118,8 +118,10 @@ enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 tBleStatus SetGapAppearance(uint16_t Appearance);
+void APP_NotifyToRun( void );
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

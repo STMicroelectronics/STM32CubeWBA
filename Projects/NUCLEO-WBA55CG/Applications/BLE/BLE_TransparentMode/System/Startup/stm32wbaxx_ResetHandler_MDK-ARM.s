@@ -19,14 +19,14 @@
 ; Cortex-M version
 ;
                  PRESERVE8
-			     THUMB
+                THUMB
                  AREA    |.text|, CODE, READONLY
 
 ; Reset_Handler
 Reset_Handler    PROC
                  EXPORT  Reset_Handler
 
-		 IMPORT  SystemInit
+                 IMPORT  SystemInit
                  IMPORT  __main
                  IMPORT  is_boot_from_standby
                  IMPORT  backup_MSP
@@ -47,17 +47,11 @@ Reset_Handler    PROC
         BLX     R0
         LDR     R0, =__main
         BX      R0
-		ENDP
+        ENDP
 
 ; These 2 functions are designed to save and then restore CPU context.
 CPUcontextSave
-        PUSH   { r4 - r7, lr }       ; store R4-R7 and LR (5 words) onto the stack
-        MOV    R3, R8                ; mov thread {r8 - r12} to {r3 - r7}
-        MOV    R4, R9
-        MOV    R5, R10
-        MOV    R6, R11
-        MOV    R7, R12
-        PUSH   {R3-R7}                 ; store R8-R12 (5 words) onto the stack
+        PUSH   { R4 - R12, lr }        ; store R4 to R12 and LR (10 words) onto C stack
         LDR    R4, =backup_MSP         ; load address of backup_MSP into R4
         MOV    R3, SP                  ; load the stack pointer into R3
         STR    R3, [R4]                ; store the MSP into backup_MSP
@@ -72,13 +66,7 @@ CPUcontextRestore
         LDR    R4, =backup_MSP       ; load address of backup_MSP into R4.
         LDR    R4, [R4]              ; load the SP from backup_MSP.
         MOV    SP, R4                ; restore the SP from R4.
-        POP   {R3-R7}                ; load R8-R12 (5 words) from the stack.
-        MOV    R8, R3                ; mov {r3 - r7} to {r8 - r12}
-        MOV    R9, R4
-        MOV    R10, R5
-        MOV    R11, R6
-        MOV    R12, R7
-        POP   { R4 - R7, PC }        ; load R4-R7 and PC (5 words) from the stack.
+        POP   { R4 - R12, PC }       ; load R4-R12 and PC (10 words) from C stack
 ; end of specific code section for standby.
 
 backup_system_register
@@ -87,7 +75,7 @@ backup_system_register
 ; R2 -> register_backup_table array current item value
 
 backup_loop_init
-        LDR    R0, =register_backup_table         ; R0 points to the first array item
+        LDR    R0, =register_backup_table        ; R0 points to the first array item
         LDR    R1, =register_backup_table_size
         LDR    R1, [R1]                          ; R1 contains the number of registers in the array
 
@@ -143,4 +131,3 @@ restore_loop_end
         BX LR                                    ; Return to caller
 
         END
-

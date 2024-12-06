@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.h
+  * @file    dis.h
   * @author  MCD Application Team
-  * @brief   Header for service2.c
+  * @brief   Header for dis.c
   ******************************************************************************
   * @attention
   *
@@ -40,10 +40,6 @@ extern "C" {
 typedef enum
 {
   DIS_MANS,
-  DIS_MNBS,
-  DIS_SNS,
-  DIS_HRS,
-  DIS_FRS,
   /* USER CODE BEGIN Service2_CharOpcode_t */
 
   /* USER CODE END Service2_CharOpcode_t */
@@ -53,10 +49,6 @@ typedef enum
 typedef enum
 {
   DIS_MANS_READ_EVT,
-  DIS_MNBS_READ_EVT,
-  DIS_SNS_READ_EVT,
-  DIS_HRS_READ_EVT,
-  DIS_FRS_READ_EVT,
   /* USER CODE BEGIN Service2_OpcodeEvt_t */
 
   /* USER CODE END Service2_OpcodeEvt_t */

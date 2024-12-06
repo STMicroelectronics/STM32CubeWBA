@@ -70,6 +70,7 @@ static void MX_GTZC_S_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -97,11 +98,17 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Secure SysTick should rather be suspended before calling non-secure  */
+  /* in order to avoid wake-up from sleep mode entered by non-secure      */
+  /* The Secure SysTick shall be resumed on non-secure callable functions */
+  HAL_SuspendTick();
+
   /*************** Setup and jump to non-secure *******************************/
 
   NonSecure_Init();
 
   /* Non-secure software does not return, this code is not executed */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -237,7 +244,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/**
+  * @brief Suspend Tick increment.
+  * @note For the purpose of this example, the Secure SysTick is kept
+  *       running to toggle the secure IO and the function is empty
+  * @retval None
+  */
+void HAL_SuspendTick(void)
+{
+}
 /* USER CODE END 4 */
 
 /**

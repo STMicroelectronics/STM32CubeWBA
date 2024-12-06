@@ -28,11 +28,12 @@
 #include "ble.h"
 #include "p2p_server_app.h"
 #include "p2p_server.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,7 @@
     uint8_t             Device_Button_Selection;
     uint8_t             ButtonStatus;
  }P2P_ButtonCharValue_t;
+
 /* USER CODE END PTD */
 
 typedef enum
@@ -64,6 +66,7 @@ typedef struct
   /* USER CODE BEGIN Service1_APP_Context_t */
   P2P_LedCharValue_t              LedControl;
   P2P_ButtonCharValue_t           ButtonControl;
+
   /* USER CODE END Service1_APP_Context_t */
   uint16_t              ConnectionHandle;
 } P2P_SERVER_APP_Context_t;
@@ -97,6 +100,7 @@ static void P2P_SERVER_Switch_c_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
 static void P2P_SERVER_APP_LED_BUTTON_context_Init(void);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -122,13 +126,13 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       if(p_Notification->DataTransfered.p_Payload[1] == 0x01)
       {
         BSP_LED_On(LED_BLUE);
-        LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 ON\n"); 
+        LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 ON\n");
         P2P_SERVER_APP_Context.LedControl.Led1 = 0x01; /* LED1 ON */
       }
       if(p_Notification->DataTransfered.p_Payload[1] == 0x00)
       {
         BSP_LED_Off(LED_BLUE);
-        LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 OFF\n"); 
+        LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 OFF\n");
         P2P_SERVER_APP_Context.LedControl.Led1 = 0x00; /* LED1 OFF */
       }
       /* USER CODE END Service1Char1_WRITE_NO_RESP_EVT */
@@ -137,7 +141,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
     case P2P_SERVER_SWITCH_C_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_ENABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_ON;
-      LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION ENABLED\n"); 
+      LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION ENABLED\n");
       LOG_INFO_APP(" \n\r");
       /* USER CODE END Service1Char2_NOTIFY_ENABLED_EVT */
       break;
@@ -145,7 +149,7 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
     case P2P_SERVER_SWITCH_C_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char2_NOTIFY_DISABLED_EVT */
       P2P_SERVER_APP_Context.Switch_c_Notification_Status = Switch_c_NOTIFICATION_OFF;
-      LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n"); 
+      LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n");
       LOG_INFO_APP(" \n\r");
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
       break;
@@ -217,16 +221,7 @@ void P2P_SERVER_APP_Init(void)
 }
 
 /* USER CODE BEGIN FD */
-void P2P_SERVER_APP_LED_BUTTON_context_Init(void)
-{  
-  BSP_LED_Off(LED_BLUE);
-  P2P_SERVER_APP_Context.LedControl.Device_Led_Selection=0x01; /* Device1 */
-  P2P_SERVER_APP_Context.LedControl.Led1=0x00; /* led OFF */
-  P2P_SERVER_APP_Context.ButtonControl.Device_Button_Selection=0x01;/* Device1 */
-  P2P_SERVER_APP_Context.ButtonControl.ButtonStatus=0x00;
 
-  return;
-}
 /* USER CODE END FD */
 
 /*************************************************************
@@ -242,12 +237,12 @@ __USED void P2P_SERVER_Switch_c_SendNotification(void) /* Property Notification 
   p2p_server_notification_data.p_Payload = (uint8_t*)a_P2P_SERVER_UpdateCharData;
   p2p_server_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char2_NS_1*/
+  /* USER CODE BEGIN Service1Char2_NS_1 */
 
   if(P2P_SERVER_APP_Context.ButtonControl.ButtonStatus == 0x00)
   {
     P2P_SERVER_APP_Context.ButtonControl.ButtonStatus = 0x01;
-  } 
+  }
   else
   {
     P2P_SERVER_APP_Context.ButtonControl.ButtonStatus = 0x00;
@@ -255,31 +250,41 @@ __USED void P2P_SERVER_Switch_c_SendNotification(void) /* Property Notification 
   a_P2P_SERVER_UpdateCharData[0] = 0x01; /* Device Led selection */
   a_P2P_SERVER_UpdateCharData[1] = P2P_SERVER_APP_Context.ButtonControl.ButtonStatus;
   /* Update notification data length */
-  p2p_server_notification_data.Length = (p2p_server_notification_data.Length) + 2; 
-  
+  p2p_server_notification_data.Length = (p2p_server_notification_data.Length) + 2;
+
   if(P2P_SERVER_APP_Context.Switch_c_Notification_Status == Switch_c_NOTIFICATION_ON)
-  { 
+  {
     LOG_INFO_APP("-- P2P APPLICATION SERVER : INFORM CLIENT BUTTON 1 PUSHED\n");
     notification_on_off = Switch_c_NOTIFICATION_ON;
-  } 
+  }
   else
   {
-    LOG_INFO_APP("-- P2P APPLICATION SERVER : CAN'T INFORM CLIENT - NOTIFICATION DISABLED\n"); 
+    LOG_INFO_APP("-- P2P APPLICATION SERVER : CAN'T INFORM CLIENT - NOTIFICATION DISABLED\n");
   }
-  /* USER CODE END Service1Char2_NS_1*/
+  /* USER CODE END Service1Char2_NS_1 */
 
   if (notification_on_off != Switch_c_NOTIFICATION_OFF)
   {
     P2P_SERVER_UpdateValue(P2P_SERVER_SWITCH_C, &p2p_server_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char2_NS_Last*/
+  /* USER CODE BEGIN Service1Char2_NS_Last */
 
-  /* USER CODE END Service1Char2_NS_Last*/
+  /* USER CODE END Service1Char2_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+static void P2P_SERVER_APP_LED_BUTTON_context_Init(void)
+{
+  BSP_LED_Off(LED_BLUE);
+  P2P_SERVER_APP_Context.LedControl.Device_Led_Selection=0x01;        /* select device 01 */
+  P2P_SERVER_APP_Context.LedControl.Led1=0x00;                        /* led OFF */
+  P2P_SERVER_APP_Context.ButtonControl.Device_Button_Selection=0x01;  /* select device 01 */
+  P2P_SERVER_APP_Context.ButtonControl.ButtonStatus=0x00;
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+  return;
+}
+
+/* USER CODE END FD_LOCAL_FUNCTIONS */

@@ -33,7 +33,19 @@ extern "C" {
 #include "app_common.h"
 #include "app_debug.h"
 
+#include "stm32wbaxx_ll_icache.h"
+#include "stm32wbaxx_ll_tim.h"
+#include "stm32wbaxx_ll_bus.h"
+#include "stm32wbaxx_ll_cortex.h"
+#include "stm32wbaxx_ll_rcc.h"
+#include "stm32wbaxx_ll_system.h"
+#include "stm32wbaxx_ll_utils.h"
+#include "stm32wbaxx_ll_pwr.h"
+#include "stm32wbaxx_ll_gpio.h"
+#include "stm32wbaxx_ll_dma.h"
+
 #include "secure_nsc.h" /* For export Non-secure callable APIs */
+#include "stm32wbaxx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,8 +21,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
 #include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
@@ -41,20 +41,17 @@
 #include "zcl/zcl.h"
 
 /* Private includes -----------------------------------------------------------*/
-// -- TODO : until ExtAddress generation will be good --
-#include "zigbee_plat.h"
-
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
-/* Public variables -----------------------------------------------*/
-ZigbeeAppInfo_t    	              stZigbeeAppInfo;
+/* Public variables -----------------------------------------------------------*/
+ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 
 /* USER CODE BEGIN PV */
 
-/* USER CODE BEGIN PV */
+/* USER CODE END PV */
 
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_STARTUP_FAIL_DELAY               500u        // Time (in ms) between two tentative to Join a Coord/Router.
@@ -63,26 +60,28 @@ ZigbeeAppInfo_t    	              stZigbeeAppInfo;
 /* Defines for Basic Cluster Server */
 #define APP_ZIGBEE_MFR_NAME                         "STMicroelectronics"
 #define APP_ZIGBEE_CHIP_NAME                        "STM32WBA"
-#define APP_ZIGBEE_CHIP_VERSION                     0x10        // Cut 1.0
+#define APP_ZIGBEE_CHIP_VERSION                     0x20        // Cut 2.0
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
-#define APP_ZIGBEE_APP_DATE_CODE                    "20230601"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.0-A1"
-#define APP_ZIGBEE_APP_VERSION                      0x10        // Application Version v1.0
+#define APP_ZIGBEE_APP_DATE_CODE                    "20240915"
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.5"
+#define APP_ZIGBEE_APP_VERSION                      0x15        // Application Version v1.5
 #define APP_ZIGBEE_STACK_VERSION                    0x10        // Stack Version v1.0
 
 /* USER CODE BEGIN PD */
 
-/* USER CODE BEGIN PD */
+/* USER CODE END PD */
 
 /* Private constants ---------------------------------------------------------*/
-/* USER CODE BEGIN PC */
 
 /* USER CODE BEGIN PC */
+
+/* USER CODE END PC */
 
 /* Private function prototypes -----------------------------------------------*/
 static enum ZbStatusCodeT ZbStartupWait       ( struct ZigBeeT * zb, struct ZbStartupT * pstConfig );
 
+static void APP_ZIGBEE_ConfigBasicServer      ( void );
 static void APP_ZIGBEE_TraceError             ( const char * pMess, uint32_t lErrCode );
 static void APP_ZIGBEE_ConfigMeshNetwork      ( void );
 static void APP_ZIGBEE_NwkFormWaitElapsed     ( void * arg );
@@ -93,7 +92,7 @@ static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback   ( struct ZigBeeT *
 
 /* USER CODE BEGIN PFP */
 
-/* USER CODE BEGIN PFP */
+/* USER CODE END PFP */
 
 /* Private variabless -----------------------------------------------*/
 static enum ZbStatusCodeT       eZbStartupWaitStatus;
@@ -101,7 +100,7 @@ static UTIL_TIMER_Object_t      stNwkFormWaitTimer, stNwkFormWaitJoinTimer;
 
 /* USER CODE BEGIN PV */
 
-/* USER CODE BEGIN PV */
+/* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -125,7 +124,7 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
   UTIL_SEQ_RegTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, UTIL_SEQ_RFU, APP_ZIGBEE_NwkFormOrJoin );
 
   /* launch the startup of the mesh network setup */
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, CFG_TASK_PRIO_ZIGBEE_NETWORK_FORM );
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
 }
 
 /**
@@ -133,7 +132,7 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
  * @param  None
  * @retval None
  */
-void APP_ZIGBEE_ConfigBasicServer(void)
+static void APP_ZIGBEE_ConfigBasicServer( void )
 {
   static struct ZbZclBasicServerDefaults   stBasicServerDefaults;
 
@@ -190,7 +189,7 @@ void APP_ZIGBEE_StackLayersInit( void )
   APP_LED_OFF(LED_RED);
   APP_LED_OFF(LED_GREEN);
   APP_LED_OFF(LED_BLUE);
-  
+
   /* USER CODE END APP_ZIGBEE_StackLayersInit1 */
 
   /* Configure the joining parameters */
@@ -214,7 +213,7 @@ void APP_ZIGBEE_StackLayersInit( void )
   else
   {
     /* Start directly Zigbee Application */
-    /* USER CODE END APP_ZIGBEE_StackLayersInit2 */
+    /* USER CODE BEGIN APP_ZIGBEE_StackLayersInit2 */
     APP_LED_OFF(LED_BLUE);
 
     /* USER CODE END APP_ZIGBEE_StackLayersInit2 */
@@ -240,7 +239,7 @@ static void APP_ZIGBEE_NwkFormWaitElapsed( void * arg )
     UTIL_TIMER_Stop( &stNwkFormWaitJoinTimer );
   }
 
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, CFG_TASK_PRIO_ZIGBEE_NETWORK_FORM );
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
 }
 
 /**
@@ -263,7 +262,10 @@ static void APP_ZIGBEE_NwkFormWaitJoinElapsed( void  * arg )
   else
   {
     UTIL_TIMER_Stop( &stNwkFormWaitJoinTimer );
+    /* USER CODE BEGIN APP_ZIGBEE_NwkFormWaitJoinElapsed_2 */
     APP_LED_OFF( LED_BLUE );
+
+    /* USER CODE END APP_ZIGBEE_NwkFormWaitJoinElapsed_2 */
   }
 }
 
@@ -280,6 +282,9 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
   {
     /* Application configure Startup */
     APP_ZIGBEE_GetStartupConfig( &stConfig );
+    
+    /* Using the default HA preconfigured Link Key */
+    memcpy( stConfig.security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
     /* Using ZbStartupWait (blocking) */
     stZigbeeAppInfo.eJoinStatus = ZbStartupWait( stZigbeeAppInfo.pstZigbee, &stConfig );
@@ -332,7 +337,7 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
  */
 static void APP_ZIGBEE_ConfigMeshNetwork(void)
 {
-  bool      bReturn = true;
+  bool      bReturn;
   uint32_t  lBroadcastTimeOut = 3;
 
   stZigbeeAppInfo.bInitAfterJoin = false;
@@ -398,7 +403,10 @@ static enum ZbStatusCodeT ZbStartupWait( struct ZigBeeT * pstZigbee, struct ZbSt
   if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeJoin )
   {
     UTIL_TIMER_Stop( &stNwkFormWaitJoinTimer );
+    /* USER CODE BEGIN ZbStartupWait */
     APP_LED_OFF( LED_BLUE );
+
+    /* USER CODE END ZbStartupWait */
   }
 
   return eZbStartupWaitStatus;
@@ -446,6 +454,48 @@ static enum zb_msg_filter_rc APP_ZIGBEE_DeviceJointCallback( struct ZigBeeT * zb
  *************************************************************/
 
 /**
+ * @brief  Callback that indicate if a 'Permit to Join' the network can be done
+ * @param  None
+ * @retval None
+ */
+static void APP_ZIGBEE_ZbZdoPermitJoinReqCallback( struct ZbZdoPermitJoinRspT * pstJoinResponse, void * arg )
+{
+  UNUSED( arg );
+
+  if ( pstJoinResponse->status != ZB_STATUS_SUCCESS )
+  {
+    LOG_ERROR_APP( "Error, cannot set Permit Join duration (%d)", pstJoinResponse->status );
+  }
+  else
+  {
+    LOG_INFO_APP( "Permit Join duration successfully changed." );
+  }
+}
+
+/**
+ * @brief  Send the request to NWK layer a Permit to Join the network
+ * @param  cPermitJoinDelay   Delay in second during the new Permit to Join is available
+ * @retval None
+ */
+void APP_ZIGBEE_PermitJoin( uint8_t cPermitJoinDelay )
+{
+  struct ZbZdoPermitJoinReqT  stJoinRequest;
+  enum ZbStatusCodeT          eStatus;
+
+  memset( &stJoinRequest, 0, sizeof( stJoinRequest ) );
+  stJoinRequest.destAddr = ZB_NWK_ADDR_UNDEFINED;
+  stJoinRequest.tcSignificance = true;
+  stJoinRequest.duration = cPermitJoinDelay;
+
+  LOG_INFO_APP( "Send command Permit Join during %ds", cPermitJoinDelay );
+  eStatus = ZbZdoPermitJoinReq( stZigbeeAppInfo.pstZigbee, &stJoinRequest, APP_ZIGBEE_ZbZdoPermitJoinReqCallback, NULL);
+  if ( eStatus != ZB_STATUS_SUCCESS )
+  {
+    LOG_ERROR_APP( "Error during command Permit Join (%d)", eStatus );
+  }
+}
+
+/**
  * @brief  Indicate if Application as already join the network
  * @param  None
  * @retval True if Join OK, else False
@@ -465,6 +515,58 @@ bool APP_ZIGBEE_IsAppliJoinNetwork( void )
   }
 
   return( bJoinOk );
+}
+
+/**
+ * @brief   Indicate a Device with Install Code request a Join.
+ *          Add the LinkKey (from Install Code) on List and start a Join during 30s.
+ *
+ * @param   dlExtendedAddress   Device Extended Address
+ * @param   szInstallCode       Device Install Code
+ * @param   cPermitJoinDelay    Time to Device to Join network. If 0, PermitJoin is not called.
+ */
+void APP_ZIGBEE_AddDeviceWithInstallCode( uint64_t dlExtendedAddress, uint8_t * szInstallCode, uint8_t cPermitJoinDelay )
+{
+  uint32_t                  lTcPolicy = 0;
+  struct ZbApsmeAddKeyReqT  stAddKeyReq;
+  struct ZbApsmeAddKeyConfT stAddKeyConf;
+  static  bool              bTrustCenterDone = false;
+
+  if ( bTrustCenterDone == false )
+  {
+    ZbApsGet( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_TRUST_CENTER_POLICY, &lTcPolicy, sizeof(lTcPolicy));
+    lTcPolicy |= (ZB_APSME_POLICY_IC_SUPPORTED | ZB_APSME_POLICY_TCLK_UPDATE_REQUIRED | ZB_APSME_POLICY_TC_POLICY_CHANGE);
+
+    ZbApsSet( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_TRUST_CENTER_POLICY, &lTcPolicy, sizeof(lTcPolicy) );
+    bTrustCenterDone = true;
+  }
+
+  /* Register 'Application Link Key' for the Device */
+  memset( &stAddKeyConf, 0, sizeof( stAddKeyConf ) );
+  memset( &stAddKeyReq, 0, sizeof( stAddKeyReq ) );
+
+  stAddKeyReq.keyType = ZB_SEC_KEYTYPE_TC_LINK;
+  stAddKeyReq.keySeqNumber = 0;
+  stAddKeyReq.partnerAddr = dlExtendedAddress;
+
+  /*Extract Link Key from the Install Code*/
+  ZbAesMmoHash( szInstallCode, ( ZB_SEC_KEYSIZE + 2u ), stAddKeyReq.key );
+
+  /* Add the new Link Key */
+  ZbApsmeAddKeyReq( stZigbeeAppInfo.pstZigbee, &stAddKeyReq, &stAddKeyConf );
+  if ( stAddKeyConf.status != ZB_STATUS_SUCCESS )
+  {
+    LOG_ERROR_APP( "Error Add Link Key (0x%02X)", stAddKeyConf.status );
+  }
+  else
+  {
+    LOG_INFO_APP( "Add of Device Link Key OK." );
+    if ( cPermitJoinDelay != 0 )
+    {
+      APP_ZIGBEE_PermitJoin( cPermitJoinDelay );
+      LOG_INFO_APP( "Device can now Join Network during %d seconds.", cPermitJoinDelay );
+    }
+  }
 }
 
 /**
@@ -520,24 +622,59 @@ bool APP_ZIGBEE_SetTxPower( uint8_t cTxPower )
 }
 
 /**
+ * @brief Display a Security Key or Install Code
+ *
+ * @param szCode  Code to display
+ * @return        String of the Code
+ */
+char * APP_ZIGBEE_GetDisplaySecKey( const uint8_t * szCode, uint16_t iLength, bool bSpace )
+{
+  uint16_t      iIndex;
+  static char   szCodeValue[( ( ZB_SEC_KEYSIZE + 2u ) * 3u ) + 1u];
+
+  /* Initialize & verify parameters */
+  memset( szCodeValue, 0, sizeof(szCodeValue) );
+  if ( iLength > ( ZB_SEC_KEYSIZE + 2u ) )
+  {
+    iLength = ( ZB_SEC_KEYSIZE + 2u );
+  }
+
+  for ( iIndex= 0; iIndex < iLength; iIndex++ )
+  {
+    if ( bSpace != false )
+    {
+      snprintf( &szCodeValue[iIndex * 3u], ( sizeof(szCodeValue) - ( iIndex * 3u ) ), "%02X ", szCode[iIndex] );
+    }
+    else
+    {
+      snprintf( &szCodeValue[iIndex * 2u], ( sizeof(szCodeValue) - ( iIndex * 2u ) ), "%02X", szCode[iIndex] );
+    }
+  }
+
+  return (char *)&szCodeValue;
+}
+
+/**
  * @brief  Print standard application information (channel in use, etc..) common to all Zigbee Application
  * @param  None
  * @retval None
  */
 void APP_ZIGBEE_PrintGenericInfo( void )
 {
-  uint16_t  iIndex;
-  char      szKeyValue[( ZB_SEC_KEYSIZE * 3u ) + 1u];
+  /* Display Application Version. */
+  LOG_INFO_APP( "Application Version : %d.%d", ( APP_ZIGBEE_APP_VERSION >> 4u ), ( APP_ZIGBEE_APP_VERSION & 0x0F ) );
 
-  LOG_INFO_APP( "Link Key: %.16s", sec_key_ha );
+  /* Display Zigbee Stack Info */
+#if ( CONFIG_ZB_ZCL_SE == 1 )
+  LOG_INFO_APP( "Zigbee Stack version : R%02d 'Smart Energy'", CONFIG_ZB_REV );
+#else // ( CONFIG_ZB_ZCL_SE == 1 )
+  LOG_INFO_APP( "Zigbee Stack version : R%02d", CONFIG_ZB_REV );
+#endif // ( CONFIG_ZB_ZCL_SE == 1 )
 
-  for ( iIndex= 0; iIndex < ZB_SEC_KEYSIZE; iIndex++ )
-  {
-    sprintf( &szKeyValue[iIndex * 3u], "%02x ", sec_key_ha[iIndex] );
-  }
+  LOG_INFO_APP( "Zigbee Extended Address : " LOG_DISPLAY64(), LOG_NUMBER64( ZbExtendedAddress( stZigbeeAppInfo.pstZigbee ) ) );
 
-  LOG_INFO_APP( "Link Key value: %s", szKeyValue );
-  LOG_INFO_APP( "Zigbee Extended Address : 0x%016" PRIX64, ZbExtendedAddress( stZigbeeAppInfo.pstZigbee ) );
+  /* Display Link Key */
+  LOG_INFO_APP( "Link Key : %s", APP_ZIGBEE_GetDisplaySecKey( sec_key_ha, ZB_SEC_KEYSIZE, true ) );
 }
 
 /**
@@ -586,7 +723,9 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
 {
   LOG_ERROR_APP( "**** Fatal error = %s (Err = 0x%02X) ****", pMess, ErrCode );
 
-  while (1U == 1U)
+  // Intentional INFINITE_LOOP
+  // coverity[no_escape]
+  while (1)
   {
     /* USER CODE BEGIN APP_ZIGBEE_TraceError */
     APP_LED_TOGGLE( LED_BLUE );

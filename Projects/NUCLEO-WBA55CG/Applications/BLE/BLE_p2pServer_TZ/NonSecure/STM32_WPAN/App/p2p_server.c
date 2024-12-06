@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -194,7 +194,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
                 /* USER CODE END Service1_Char_2_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (P2P_SERVER_Context.Switch_CCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (P2P_SERVER_Context.Led_CCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -207,7 +207,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
             notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
             /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             P2P_SERVER_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (P2P_SERVER_Context.Led_CCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -259,7 +259,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
+        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
@@ -271,9 +271,10 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
             else
             {
               LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
-            }   
+            }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -281,19 +282,19 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -450,9 +451,9 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value LED_C command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_1*/
+      /* USER CODE BEGIN Service1_Char_Value_1 */
 
-      /* USER CODE END Service1_Char_Value_1*/
+      /* USER CODE END Service1_Char_Value_1 */
       break;
 
     case P2P_SERVER_SWITCH_C:
@@ -469,9 +470,9 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value SWITCH_C command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_2*/
+      /* USER CODE BEGIN Service1_Char_Value_2 */
 
-      /* USER CODE END Service1_Char_Value_2*/
+      /* USER CODE END Service1_Char_Value_2 */
       break;
 
     default:

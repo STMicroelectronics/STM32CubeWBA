@@ -24,14 +24,16 @@
 #include "main.h"
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern CRYP_HandleTypeDef hcryp;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern UART_HandleTypeDef hlpuart1;
+extern PKA_HandleTypeDef hpka;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
 
@@ -46,7 +48,7 @@ extern RNG_HandleTypeDef hrng;
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void)
+void MX_StandbyExit_PeripheralInit(void)
 {
   HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
@@ -63,9 +65,11 @@ void MX_StandbyExit_PeripharalInit(void)
     assert_param(0);
   }
 
+  memset(&hcryp, 0, sizeof(hcryp));
   memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
   memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
   memset(&hlpuart1, 0, sizeof(hlpuart1));
+  memset(&hpka, 0, sizeof(hpka));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
 
@@ -90,22 +94,7 @@ void MX_StandbyExit_PeripharalInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-#if (CFG_LED_SUPPORTED == 1)  
-  /* Leds Initialization */
-  BSP_LED_Init(LED_BLUE);
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-
-  APP_LED_ON( LED_BLUE );
-#endif /* (CFG_LED_SUPPORTED == 1) */
-
-#if (CFG_BUTTON_SUPPORTED == 1)
-  /* Buttons HW Initialization */
-  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_StandbyExit();
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

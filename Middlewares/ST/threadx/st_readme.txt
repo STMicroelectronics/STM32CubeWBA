@@ -7,10 +7,6 @@
   ******************************************************************************
   */
 
-### V6.2.1 (15-12-2023) ###
-============================
-- Add STM32U0 series to Azure RTOS licensed hardware list
-
 ### V6.2.1 (14-07-2023) ###
 ============================
 - Upgrade to Azure RTOS ThreadX 6.2.1 with additional following patch

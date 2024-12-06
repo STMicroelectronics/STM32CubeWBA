@@ -141,7 +141,7 @@ static void Prepare_MLME_Scan_Req(uint8_t scan_type, uint8_t scan_duration, uint
   
   memset(&ScanReq, 0x00, sizeof(ST_MAC_scanReq_t));
   ScanReq.scan_type = scan_type;
-  ScanReq.scan_duration = scan_duration; // Max frame duration in µs (16 x 960 × (2^n + 1)) , with n = BASE_SCAN_DURATION
+  ScanReq.scan_duration = scan_duration; // Max frame duration in us (16 * 960 * (2^n + 1)), with n = BASE_SCAN_DURATION
   ScanReq.channel_page = g_channel_page; // Always this value in 802.15.4 non-beacon enabled
   ScanReq.security_level = g_MAC_UNSECURED_MODE_c; // Unsecure frame
   memcpy(&ScanReq.a_scan_channels, select_channel, 0x04);

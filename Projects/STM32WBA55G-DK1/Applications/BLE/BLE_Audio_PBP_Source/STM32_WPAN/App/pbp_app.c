@@ -26,6 +26,7 @@
 #include "ltv_utils.h"
 #include "pbp.h"
 #include "log_module.h"
+#include "app_ble.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -231,8 +232,8 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
 static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
 static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen);
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 /* Exported functions --------------------------------------------------------*/
 extern void APP_NotifyToRun(void);
 
@@ -377,7 +378,7 @@ uint8_t PBPAPP_InitSource(void)
 uint8_t PBPAPP_StartSource(void)
 {
   uint8_t ret;
-  uint8_t a_additional_adv_data[6+16] = {5u,
+  uint8_t a_additional_adv_data[6 +16] = {5u,
                                          AD_TYPE_COMPLETE_LOCAL_NAME,
                                          (uint8_t) 'P',
                                          (uint8_t) 'B',
@@ -701,16 +702,13 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
 
   PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength += 3;
 
+  PBPAPP_Context.RTN = aPBPAPP_BroadcastQoSConf[BAPConfID].RTN;
+  PBPAPP_Context.max_transport_latency = aPBPAPP_BroadcastQoSConf[BAPConfID].MaxTpLatency;
+  PBPAPP_Context.base_group.PresentationDelay = aPBPAPP_BroadcastQoSConf[BAPConfID].PresentationDelay;
 
   for (i = 0; i < NumBIS; i++)
   {
     uint8_t bis_i = 0;
-    /* Take max RTN and transport latency */
-    PBPAPP_Context.RTN = MAX(PBPAPP_Context.RTN, aPBPAPP_BroadcastQoSConf[BAPConfID].RTN);
-    PBPAPP_Context.max_transport_latency = MAX( PBPAPP_Context.max_transport_latency,
-                                               aPBPAPP_BroadcastQoSConf[BAPConfID].MaxTpLatency);
-    PBPAPP_Context.base_group.PresentationDelay = MAX(PBPAPP_Context.base_group.PresentationDelay,
-                                                      aPBPAPP_BroadcastQoSConf[BAPConfID].PresentationDelay);
 
     PBPAPP_Context.base_group.pSubgroups[0].pBIS[i].CodecSpecificConfLength = 0;
 
@@ -855,16 +853,16 @@ static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
 }
 
 
-/*Audio Source */
-static void start_audio_source(void)
+/* Audio Source */
+static int32_t start_audio_source(void)
 {
-  Start_RxAudio();
+  return Start_RxAudio();
 }
 
-/*Audio Sink */
-static void start_audio_sink(void)
+/* Audio Sink */
+static int32_t start_audio_sink(void)
 {
-  Start_TxAudio();
+  return Start_TxAudio();
 }
 
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen)

@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    STM32_WPAN
+  * @file    p2pR.h
   * @author  MCD Application Team
-  * @brief   Header for STM32_WPAN
+  * @brief   Header for p2pR.c
   ******************************************************************************
   * @attention
   *

@@ -502,13 +502,13 @@ void Show_RTC_Calendar(void)
 {
   /* Note: need to convert in decimal value in using __LL_RTC_CONVERT_BCD2BIN helper macro */
   /* Display time Format : hh:mm:ss */
-  sprintf((char *)aShowTime, "%.2d:%.2d:%.2d", __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetHour(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetMinute(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetSecond(RTC)));
+  sprintf((char *)aShowTime, "%.2d:%.2d:%.2d", (__LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetHour(RTC))%24),
+          (__LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetMinute(RTC))%60),
+          (__LL_RTC_CONVERT_BCD2BIN(LL_RTC_TIME_GetSecond(RTC))%60));
   /* Display date Format : mm-dd-yyyy */
-  sprintf((char *)aShowDate, "%.2d-%.2d-%.2d", __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetMonth(RTC)),
-          __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetDay(RTC)),
-          2000 + __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetYear(RTC)));
+  sprintf((char *)aShowDate, "%.2d-%.2d-%.2d", (__LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetMonth(RTC))%12),
+          (__LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetDay(RTC))%31),
+          ((2000 + __LL_RTC_CONVERT_BCD2BIN(LL_RTC_DATE_GetYear(RTC)))%9999));
 }
 
 /**

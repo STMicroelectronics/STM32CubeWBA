@@ -43,7 +43,8 @@
 RNG_HandleTypeDef hrng;
 
 CRYP_HandleTypeDef hcryp;
-uint32_t pInitVectSAES[4] = {0x00000000,0x00000000,0x00000000,0x00000000};
+__ALIGN_BEGIN static const uint32_t pInitVectSAES[4] __ALIGN_END = {
+                            0x00000000,0x00000000,0x00000000,0x00000000};
 
 /* USER CODE BEGIN PV */
 /* The size of the plaintext is in words */
@@ -93,6 +94,7 @@ static void MX_ICACHE_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
   /* STM32WBAxx HAL library initialization:
        - Systick timer is configured by default as source of time base, but user

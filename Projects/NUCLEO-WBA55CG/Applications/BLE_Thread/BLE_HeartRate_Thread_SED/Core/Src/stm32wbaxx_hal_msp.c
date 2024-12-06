@@ -517,6 +517,60 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
 }
 
+
+/**
+* @brief PKA MSP Initialization
+* This function configures the hardware resources used in this example
+* @param hpka: PKA handle pointer
+* @retval None
+*/
+void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    /* USER CODE BEGIN PKA_MspInit 0 */
+
+    /* USER CODE END PKA_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_PKA_CLK_ENABLE();
+    
+    HW_RNG_EnableClock(0x04);
+
+    /* USER CODE BEGIN PKA_MspInit 1 */
+
+    /* USER CODE END PKA_MspInit 1 */
+  }
+
+}
+
+/**
+* @brief PKA MSP De-Initialization
+* This function freeze the hardware resources used in this example
+* @param hpka: PKA handle pointer
+* @retval None
+*/
+void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    /* USER CODE BEGIN PKA_MspDeInit 0 */
+    /* Enable PKA reset state */
+    __HAL_RCC_PKA_FORCE_RESET();
+    /* Release PKA from reset state */
+    __HAL_RCC_PKA_RELEASE_RESET();
+    /* USER CODE END PKA_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_PKA_CLK_DISABLE();
+
+    HW_RNG_DisableClock(0x04);
+
+    /* USER CODE BEGIN PKA_MspDeInit 1 */
+
+    /* USER CODE END PKA_MspDeInit 1 */
+  }
+
+}
+
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

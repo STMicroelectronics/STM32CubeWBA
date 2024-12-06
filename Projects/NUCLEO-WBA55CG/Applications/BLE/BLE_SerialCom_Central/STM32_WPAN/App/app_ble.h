@@ -46,7 +46,7 @@ typedef enum
   APP_BLE_CONNECTED,
   APP_BLE_DISCOVERING_SERVICES,
   APP_BLE_DISCOVERING_CHARACS,
-  /* USER CODE BEGIN APP_BLE_ConnStatus_t*/
+  /* USER CODE BEGIN APP_BLE_ConnStatus_t */
 
   /* USER CODE END APP_BLE_ConnStatus_t */
 } APP_BLE_ConnStatus_t;
@@ -84,7 +84,7 @@ typedef enum
   PROC_GAP_GEN_PHY_TOGGLE,
   PROC_GAP_GEN_CONN_TERMINATE,
   PROC_GATT_EXCHANGE_CONFIG,
-  /* USER CODE BEGIN ProcGapGeneralId_t*/
+  /* USER CODE BEGIN ProcGapGeneralId_t */
 
   /* USER CODE END ProcGapGeneralId_t */
 }ProcGapGeneralId_t;
@@ -171,6 +171,7 @@ void APP_BLE_Init(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_Handle );
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
+const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 void COC_CENTRAL_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification);
 void BLE_SVC_L2CAP_Conn_Update(uint16_t ConnectionHandle, uint16_t conn1, uint16_t conn2);

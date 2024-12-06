@@ -44,6 +44,14 @@ typedef struct {
   uint32_t macAssociationReqCounter;
   /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Confirm.*/
   uint32_t macAssociationCnfCounter;
+  /** @brief    A counter that is incremented each time the MAC layer fails an association.*/
+  uint32_t macAssociationCnfFail;
+  /** @brief A counter that is incremented each time the MAC layer fails an association with the status=0xE9.*/
+  uint32_t macAssociationCnfNoACK;
+  /** @brief    A counter that is incremented each time the MAC layer fails an association with the status=0xE1.*/
+  uint32_t macAssociationCnfCCAFailure;
+  /** @brief    A counter that is incremented each time the MAC layer fails an association with the status=0xEB.*/
+  uint32_t macAssociationCnfNoData;
   /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Indication.*/
   uint32_t macAssociationIndCounter;
   /** @brief   A counter that is incremented each time the MAC layer use the primitive mlme-association.Response.*/
@@ -64,21 +72,23 @@ typedef struct {
   uint32_t macDisassociationIndCounter;
   /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xE9.*/
   uint32_t macDataCnfNoACK;
-  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xE1.*/
+  /** @brief    A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xE1.*/
   uint32_t macDataCnfCCAFailure;
-  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xF1.*/
+  /** @brief    A counter that is incremented each time the MAC layer fails to send a unicast with the status=0xF1.*/
   uint32_t macDataCnfTransactionOverFlow;
-  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast.*/
+  /** @brief    A counter that is incremented each time the MAC layer fails to send a unicast.*/
   uint32_t macDataCnfFail;
-  /** @brief A counter that is incremented each time the MAC layer fails to send a unicast.*/
+  /** @brief    This variable allows you to save the last fail status for Data.cnf.*/
   uint8_t macDataCnfLastFail;
-  /** @brief A counter that is incremented each time the Queue fails*/
+  /** @brief    This variable allows you to save the last status for Data.cnf.*/
+  uint8_t macDataCnfLastStatus;
+  /** @brief    A counter that is incremented each time the Queue fails*/
   uint32_t macQueueFail;
-  /** @brief A counter that is incremented each time the Enqueue fails*/
+  /** @brief    A counter that is incremented each time the Enqueue fails*/
   uint32_t macEnqueueFail;
-  /** @brief A counter that is incremented each time no buffer is allocated*/
+  /** @brief    A counter that is incremented each time no buffer is allocated*/
   uint32_t macQueueNoBuffer;
-  /** @brief A counter that is incremented each time the buffer allocate fail*/
+  /** @brief    A counter that is incremented each time the buffer allocate fail*/
   uint32_t macQueueBufferAllocateFailure;
 } mac_ext_diagnostics_t;
 
@@ -110,6 +120,7 @@ void set_mac_ext_macAssociationReqCounterHandler(void);
 uint32_t get_mac_ext_macAssociationReqCounterHandler(void);
 void set_mac_ext_macAssociationCnfCounterHandler(void);
 uint32_t get_mac_ext_macAssociationCnfCounterHandler(void);
+
 void set_mac_ext_macAssociationIndCounterHandler(void);
 uint32_t get_mac_ext_macAssociationIndCounterHandler(void);
 void set_mac_ext_macAssociationResCounterHandler(void);
@@ -132,6 +143,16 @@ uint32_t get_mac_ext_macDisassociationCnfCounterHandler(void);
 void set_mac_ext_macDisassociationIndCounterHandler(void);
 uint32_t get_mac_ext_macDisassociationIndCounterHandler(void);
 
+/** Associate.Confirm Fails*/
+void set_mac_ext_macAssociationCnfFailCounterHandler(void);
+uint32_t get_mac_ext_macAssociationCnfFailCounterHandler(void);
+void set_mac_ext_macAssociationCnfNoACKCounterHandler(void);
+uint32_t get_mac_ext_macAssociationCnfNoACKCounterHandler(void);
+void set_mac_ext_macAssociationCnfCCAFailureCounterHandler(void);
+uint32_t get_mac_ext_macAssociationCnfCCAFailureCounterHandler(void);
+void set_mac_ext_macAssociationCnfNoDataCounterHandler(void);
+uint32_t get_mac_ext_macAssociationCnfNoDataCounterHandler(void);
+
 /** Data.Confirm Fails*/
 void set_mac_ext_macDataCnfNoACKCounterHandler(void);
 uint32_t get_mac_ext_macDataCnfNoACKCounterHandler(void);
@@ -143,6 +164,8 @@ void set_mac_ext_macDataCnfFailCounterHandler(void);
 uint32_t get_mac_ext_macDataCnfFailCounterHandler(void);
 void set_mac_ext_macDataCnfLastFailHandler(uint8_t status);
 uint8_t get_mac_ext_macDataCnfLastFailHandler(void);
+void set_mac_ext_macDataCnfLastStatusHandler(uint8_t status);
+uint8_t get_mac_ext_macDataCnfLastStatusHandler(void);
 
 /** Queue function */
 void set_mac_ext_macQueueFailHandler(void);

@@ -238,7 +238,7 @@ tBleStatus PBP_PBS_BroadcastAudioStop(uint8_t BigHandle, uint8_t Release);
 /**
   * @brief Perform the Broadcast Audio Update procedure
   * @param AdvHandle: Handle of the periodic advertising of the broadcast source
-  * @param pBASEGroup: Pointer to the BASE Group fo the broadcast source
+  * @param pBASEGroup: Pointer to the BASE Group for the broadcast source
   * @retval status of the operation
   */
 tBleStatus PBP_PBS_BroadcastAudioUpdate(uint8_t AdvHandle, BAP_BASE_Group_t *pBASEGroup);

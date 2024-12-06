@@ -456,7 +456,6 @@ static void Menu_Start_Scanning(void)
   Menu_ClearList(p_devices_list_menu);
   /* Start Scanning */
   status = HAPAPP_StartScanning();
-  LOG_INFO_APP("HAPAPP_StartScanning() returns status 0x%02X\n",status);
   UNUSED(status);
 }
 /**

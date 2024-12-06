@@ -2,7 +2,7 @@
  * @file zcl.enum.h
  * @brief Zigbee ZCL Enumerations header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_ENUM_H
@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <inttypes.h>
 #include <stddef.h> /* NULL */
 #include "pletoh.h" /* Little endian conversion */
 #include "llist.h" /* Link list */
@@ -273,8 +272,8 @@ enum ZclDataTypeT {
 #define ZCL_INVALID_SIGNED_56BIT                (-36028797018963968LL) /* 0x80000000000000 */
 #define ZCL_INVALID_SIGNED_64BIT                0x8000000000000000ULL /* integer constant is so large that it is unsigned  */
 
-#define ZCL_INVALID_ENUMERATION_8BIT            0xffU
-#define ZCL_INVALID_ENUMERATION_16BIT           0xffffU
+#define ZCL_INVALID_ENUMERATION_8BIT            ZCL_INVALID_UNSIGNED_8BIT
+#define ZCL_INVALID_ENUMERATION_16BIT           ZCL_INVALID_UNSIGNED_16BIT
 
 #define ZCL_INVALID_FLOATING                    (0.0 / 0.0)
 /* Note, can't bit-or signed values (MISRA rule 10.1) */

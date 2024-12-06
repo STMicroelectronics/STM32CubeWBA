@@ -16,6 +16,20 @@
   ******************************************************************************
   @endverbatim
 
+### 05-September-2024 ###
+========================
+    + Display OEMuROT version in BootROM format
+
+### 12-July-2024 ###
+========================
+    + Support keys in raw mode
+    + Add OEMIROT_FAST_WAKE_UP feature
+    + Minor fixes
+
+### 12-June-2024 ###
+========================
+    + Enable compatibility with Mbedtls >= v3.0.0
+
 ### 18-March-2024 ###
 ========================
     + Improvement of primary only mode

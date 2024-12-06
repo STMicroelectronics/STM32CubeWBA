@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.c
+  * @file    HTS.c
   * @author  MCD Application Team
-  * @brief   service2 definition.
+  * @brief   HTS definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -123,9 +123,9 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
   aci_gatt_attribute_modified_event_rp0 *p_attribute_modified;
   aci_gatt_write_permit_req_event_rp0   *p_write_perm_req;
   HTS_NotificationEvt_t                 notification;
-  /* USER CODE BEGIN Service2_EventHandler_1 */
+  /* USER CODE BEGIN Service1_EventHandler_1 */
 
-  /* USER CODE END Service2_EventHandler_1 */
+  /* USER CODE END Service1_EventHandler_1 */
 
   return_value = SVCCTL_EvtNotAck;
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)p_Event)->data);
@@ -149,147 +149,147 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           if(p_attribute_modified->Attr_Handle == (HTS_Context.TemmCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN Service2_Char_1 */
+            /* USER CODE BEGIN Service1_Char_1 */
 
-            /* USER CODE END Service2_Char_1 */
+            /* USER CODE END Service1_Char_1 */
 
             switch(p_attribute_modified->Attr_Data[0])
             {
-              /* USER CODE BEGIN Service2_Char_1_attribute_modified */
+              /* USER CODE BEGIN Service1_Char_1_attribute_modified */
 
-              /* USER CODE END Service2_Char_1_attribute_modified */
+              /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Indication management */
               case (!(COMSVC_Indication)):
-                /* USER CODE BEGIN Service2_Char_1_Disabled_BEGIN */
+                /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_TEMM_INDICATE_DISABLED_EVT\n");
-                /* USER CODE END Service2_Char_1_Disabled_BEGIN */
+                /* USER CODE END Service1_Char_1_Disabled_BEGIN */
                 notification.EvtOpcode = HTS_TEMM_INDICATE_DISABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_1_Disabled_END */
+                /* USER CODE BEGIN Service1_Char_1_Disabled_END */
 
-                /* USER CODE END Service2_Char_1_Disabled_END */
+                /* USER CODE END Service1_Char_1_Disabled_END */
                 break;
 
               /* Enabled Indication management */
               case COMSVC_Indication:
-                /* USER CODE BEGIN Service2_Char_1_COMSVC_Indication_BEGIN */
+                /* USER CODE BEGIN Service1_Char_1_COMSVC_Indication_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_TEMM_INDICATE_ENABLED_EVT\n");
-                /* USER CODE END Service2_Char_1_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service1_Char_1_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = HTS_TEMM_INDICATE_ENABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_1_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service1_Char_1_COMSVC_Indication_END */
 
-                /* USER CODE END Service2_Char_1_COMSVC_Indication_END */
+                /* USER CODE END Service1_Char_1_COMSVC_Indication_END */
                 break;
 
               default:
-                /* USER CODE BEGIN Service2_Char_1_default */
+                /* USER CODE BEGIN Service1_Char_1_default */
 
-                /* USER CODE END Service2_Char_1_default */
+                /* USER CODE END Service1_Char_1_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (HTS_Context.TEMMHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (HTS_Context.IntCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN Service2_Char_3 */
+            /* USER CODE BEGIN Service1_Char_3 */
 
-            /* USER CODE END Service2_Char_3 */
+            /* USER CODE END Service1_Char_3 */
             switch(p_attribute_modified->Attr_Data[0])
             {
-              /* USER CODE BEGIN Service2_Char_3_attribute_modified */
+              /* USER CODE BEGIN Service1_Char_3_attribute_modified */
 
-              /* USER CODE END Service2_Char_3_attribute_modified */
+              /* USER CODE END Service1_Char_3_attribute_modified */
 
               /* Disabled Notification management */
               case (!(COMSVC_Notification)):
-                /* USER CODE BEGIN Service2_Char_3_Disabled_BEGIN */
+                /* USER CODE BEGIN Service1_Char_3_Disabled_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_INT_NOTIFY_DISABLED_EVT\n");
-                /* USER CODE END Service2_Char_3_Disabled_BEGIN */
+                /* USER CODE END Service1_Char_3_Disabled_BEGIN */
                 notification.EvtOpcode = HTS_INT_NOTIFY_DISABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_3_Disabled_END */
+                /* USER CODE BEGIN Service1_Char_3_Disabled_END */
 
-                /* USER CODE END Service2_Char_3_Disabled_END */
+                /* USER CODE END Service1_Char_3_Disabled_END */
                 break;
 
               /* Enabled Notification management */
               case COMSVC_Notification:
-                /* USER CODE BEGIN Service2_Char_3_COMSVC_Notification_BEGIN */
-                LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_INT_NOTIFY_ENABLED_EVT\n");                
-                /* USER CODE END Service2_Char_3_COMSVC_Notification_BEGIN */
+                /* USER CODE BEGIN Service1_Char_3_COMSVC_Notification_BEGIN */
+                LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_INT_NOTIFY_ENABLED_EVT\n");
+                /* USER CODE END Service1_Char_3_COMSVC_Notification_BEGIN */
                 notification.EvtOpcode = HTS_INT_NOTIFY_ENABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_3_COMSVC_Notification_END */
+                /* USER CODE BEGIN Service1_Char_3_COMSVC_Notification_END */
 
-                /* USER CODE END Service2_Char_3_COMSVC_Notification_END */
+                /* USER CODE END Service1_Char_3_COMSVC_Notification_END */
                 break;
 
               default:
-                /* USER CODE BEGIN Service2_Char_3_default */
+                /* USER CODE BEGIN Service1_Char_3_default */
 
-                /* USER CODE END Service2_Char_3_default */
+                /* USER CODE END Service1_Char_3_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (HTS_Context.IntCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN Service2_Char_4 */
+            /* USER CODE BEGIN Service1_Char_4 */
 
-            /* USER CODE END Service2_Char_4 */
+            /* USER CODE END Service1_Char_4 */
 
             switch(p_attribute_modified->Attr_Data[0])
             {
-              /* USER CODE BEGIN Service2_Char_4_attribute_modified */
+              /* USER CODE BEGIN Service1_Char_4_attribute_modified */
 
-              /* USER CODE END Service2_Char_4_attribute_modified */
+              /* USER CODE END Service1_Char_4_attribute_modified */
 
               /* Disabled Indication management */
               case (!(COMSVC_Indication)):
-                /* USER CODE BEGIN Service2_Char_4_Disabled_BEGIN */
+                /* USER CODE BEGIN Service1_Char_4_Disabled_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_MEI_INDICATE_DISABLED_EVT\n");
-                /* USER CODE END Service2_Char_4_Disabled_BEGIN */
+                /* USER CODE END Service1_Char_4_Disabled_BEGIN */
                 notification.EvtOpcode = HTS_MEI_INDICATE_DISABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_4_Disabled_END */
+                /* USER CODE BEGIN Service1_Char_4_Disabled_END */
 
-                /* USER CODE END Service2_Char_4_Disabled_END */
+                /* USER CODE END Service1_Char_4_Disabled_END */
                 break;
 
               /* Enabled Indication management */
               case COMSVC_Indication:
-                /* USER CODE BEGIN Service2_Char_4_COMSVC_Indication_BEGIN */
+                /* USER CODE BEGIN Service1_Char_4_COMSVC_Indication_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HTS_MEI_INDICATE_ENABLED_EVT\n");
-                /* USER CODE END Service2_Char_4_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service1_Char_4_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = HTS_MEI_INDICATE_ENABLED_EVT;
                 HTS_Notification(&notification);
-                /* USER CODE BEGIN Service2_Char_4_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service1_Char_4_COMSVC_Indication_END */
 
-                /* USER CODE END Service2_Char_4_COMSVC_Indication_END */
+                /* USER CODE END Service1_Char_4_COMSVC_Indication_END */
                 break;
 
               default:
-                /* USER CODE BEGIN Service2_Char_4_default */
+                /* USER CODE BEGIN Service1_Char_4_default */
 
-                /* USER CODE END Service2_Char_4_default */
+                /* USER CODE END Service1_Char_4_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (HTS_Context.MEIHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
 
             notification.EvtOpcode = HTS_MEI_WRITE_EVT;
-            /* USER CODE BEGIN Service2_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            /* USER CODE BEGIN Service1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
 
-            /* USER CODE END Service2_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            /* USER CODE END Service1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             HTS_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -316,7 +316,7 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           if(p_write_perm_req->Attribute_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
-            /*USER CODE BEGIN Service2_Char_4_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+            /*USER CODE BEGIN Service1_Char_4_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
             uint32_t validrangevalue = (p_write_perm_req->Data[0]) + ((p_write_perm_req->Data[1]) << 8);
             LOG_INFO_APP("p_write_perm_req->Data[0] %d\n", p_write_perm_req->Data[0]);
             LOG_INFO_APP("p_write_perm_req->Data[0] %d\n", p_write_perm_req->Data[0]);
@@ -359,8 +359,8 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
                                   p_write_perm_req->Data_Length,
                                   (uint8_t *)&p_write_perm_req->Data[0]);
             }
-            /*USER CODE END Service2_Char_4_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(p_write_perm_req->Attribute_Handle == (HTS_Context.MeiCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+            /*USER CODE END Service1_Char_4_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -389,6 +389,17 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
+        case ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE:
+        {
+          aci_gatt_server_confirmation_event_rp0 *p_server_confirmation;
+          p_server_confirmation = (aci_gatt_server_confirmation_event_rp0 *)  p_blecore_evt->data;
+          UNUSED(p_server_confirmation);
+
+          /* USER CODE BEGIN ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
+
+          /* USER CODE END ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
+          break;/* ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
+        }
         /* USER CODE BEGIN BLECORE_EVT */
 
         /* USER CODE END BLECORE_EVT */
@@ -398,25 +409,25 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
-  /* USER CODE BEGIN Service2_EventHandler_2 */
+  /* USER CODE BEGIN Service1_EventHandler_2 */
 
-  /* USER CODE END Service2_EventHandler_2 */
+  /* USER CODE END Service1_EventHandler_2 */
 
   return(return_value);
 }/* end HTS_EventHandler */
@@ -434,9 +445,9 @@ void HTS_Init(void)
   tBleStatus ret;
   uint8_t max_attr_record;
 
-  /* USER CODE BEGIN SVCCTL_InitService2Svc_1 */
+  /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */
 
-  /* USER CODE END SVCCTL_InitService2Svc_1 */
+  /* USER CODE END SVCCTL_InitService1Svc_1 */
 
   /**
    *  Register the event handler to the BLE controller
@@ -504,9 +515,9 @@ void HTS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : TEMM\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService2Char1 */
+  /* USER CODE BEGIN SVCCTL_InitService1Char1 */
 
-  /* USER CODE END SVCCTL_InitService2Char1 */
+  /* USER CODE END SVCCTL_InitService1Char1 */
 
   /**
    * MNBS
@@ -531,9 +542,9 @@ void HTS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : MNBS\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService2Char2 */
+  /* USER CODE BEGIN SVCCTL_InitService1Char2 */
 
-  /* USER CODE END SVCCTL_InitService2Char2 */
+  /* USER CODE END SVCCTL_InitService1Char2 */
 
   /**
    * INT
@@ -558,9 +569,9 @@ void HTS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : INT\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService2Char3 */
+  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
 
-  /* USER CODE END SVCCTL_InitService2Char3 */
+  /* USER CODE END SVCCTL_InitService1Char3 */
 
   /**
    * MEI
@@ -585,7 +596,7 @@ void HTS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : MEI\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService2Char4 */
+  /* USER CODE BEGIN SVCCTL_InitService1Char4 */
   /**
    * VALID RANGE descriptor
    */
@@ -618,11 +629,11 @@ void HTS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char_desc command   : VALID RANGE DESC DESC on handle 0x%x\n",
                 HTS_Context.ValidRangeDescHdle);
   }
-  /* USER CODE END SVCCTL_InitService2Char4 */
+  /* USER CODE END SVCCTL_InitService1Char4 */
 
-  /* USER CODE BEGIN SVCCTL_InitService2Svc_2 */
+  /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
 
-  /* USER CODE END SVCCTL_InitService2Svc_2 */
+  /* USER CODE END SVCCTL_InitService1Svc_2 */
 
   return;
 }
@@ -636,9 +647,9 @@ void HTS_Init(void)
 tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
-  /* USER CODE BEGIN Service2_App_Update_Char_1 */
+  /* USER CODE BEGIN Service1_App_Update_Char_1 */
 
-  /* USER CODE END Service2_App_Update_Char_1 */
+  /* USER CODE END Service1_App_Update_Char_1 */
 
   switch(CharOpcode)
   {
@@ -656,9 +667,9 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value TEMM command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_1*/
+      /* USER CODE BEGIN Service1_Char_Value_1 */
 
-      /* USER CODE END Service2_Char_Value_1*/
+      /* USER CODE END Service1_Char_Value_1 */
       break;
 
     case HTS_MNBS:
@@ -675,9 +686,9 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value MNBS command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_2*/
+      /* USER CODE BEGIN Service1_Char_Value_2 */
 
-      /* USER CODE END Service2_Char_Value_2*/
+      /* USER CODE END Service1_Char_Value_2 */
       break;
 
     case HTS_INT:
@@ -694,9 +705,9 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value INT command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_3*/
+      /* USER CODE BEGIN Service1_Char_Value_3 */
 
-      /* USER CODE END Service2_Char_Value_3*/
+      /* USER CODE END Service1_Char_Value_3 */
       break;
 
     case HTS_MEI:
@@ -713,18 +724,18 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value MEI command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_4*/
+      /* USER CODE BEGIN Service1_Char_Value_4 */
 
-      /* USER CODE END Service2_Char_Value_4*/
+      /* USER CODE END Service1_Char_Value_4 */
       break;
 
     default:
       break;
   }
 
-  /* USER CODE BEGIN Service2_App_Update_Char_2 */
+  /* USER CODE BEGIN Service1_App_Update_Char_2 */
 
-  /* USER CODE END Service2_App_Update_Char_2 */
+  /* USER CODE END Service1_App_Update_Char_2 */
 
   return ret;
 }

@@ -28,6 +28,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "tx_api.h"
+#include "tx_initialize.h"
+#include "tx_thread.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -54,11 +56,14 @@ extern "C" {
 #define TASK_PRIO_US_ALARM                      TASK_PRIO_ALARM
 #define TASK_PREEMP_US_ALARM                    TASK_PRIO_ALARM
 
-#define TASK_PRIO_TASKLETS                      (7u)
-#define TASK_PREEMP_TASKLETS                    (7u)
+#define TASK_PRIO_TASKLETS                      (5u)
+#define TASK_PREEMP_TASKLETS                    (5u)
 
 #define TASK_PRIO_PKA                           (10u)
 #define TASK_PREEMP_PRIO_PKA                    (10u)
+
+#define TASK_PRIO_RCP_SPINEL_RX					(11u)
+#define TASK_PREEMP_RCP_SPINEL_RX				(11u)
 
 #define TASK_PRIO_CLI_UART                      (12u)
 #define TASK_PREEMP_CLI_UART                    (12u)
@@ -67,8 +72,8 @@ extern "C" {
 #define TASK_PREEMP_PRIO_SEND                   (13u)
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define CFG_TASK_PRIO_BUTTON_SWx                13u
-#define CFG_TASK_PREEMP_BUTTON_SWx              13u
+#define TASK_PRIO_BUTTON_Bx                     (13u)
+#define TASK_PREEMP_BUTTON_Bx                   (13u)
 
 /* USER CODE END TASK_Priority_Define */
 
@@ -83,7 +88,7 @@ extern "C" {
 
 /* Tasks stack sizes by default  */
 #define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_ALARM                   RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_ALARM_US                RTOS_STACK_SIZE_NORMAL
@@ -91,6 +96,7 @@ extern "C" {
 #define TASK_STACK_SIZE_CLI_UART                RTOS_STACK_SIZE_NORMAL
 #define TASK_STACK_SIZE_SEND                    RTOS_STACK_SIZE_NORMAL
 #define TASK_STACK_SIZE_PKA                     RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_RCP_SPINEL_RX           RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
 

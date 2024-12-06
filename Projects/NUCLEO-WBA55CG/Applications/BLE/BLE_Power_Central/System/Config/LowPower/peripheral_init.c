@@ -46,7 +46,7 @@ extern RNG_HandleTypeDef hrng;
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void)
+void MX_StandbyExit_PeripheralInit(void)
 {
   HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
@@ -93,6 +93,15 @@ void MX_StandbyExit_PeripharalInit(void)
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 #endif
 
+    /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+  /* Re-Initialize Tick with new clock source */
+  hal_status = HAL_InitTick(TICK_INT_PRIORITY);
+  if (hal_status != HAL_OK)
+  {
+    assert_param(0);
+  }
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hrng, 0, sizeof(hrng));
   MX_ICACHE_Init();
@@ -101,18 +110,24 @@ void MX_StandbyExit_PeripharalInit(void)
   MX_GPIO_Init();
 #endif
   MX_RNG_Init();
-
+#if (CFG_SW_HSE_WORKAROUND == 1)
+  MX_TIM16_Init();
+#endif /* CFG_SW_HSE_WORKAROUND */
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

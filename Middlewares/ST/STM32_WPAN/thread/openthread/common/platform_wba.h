@@ -83,10 +83,11 @@ void arcRandomInit(void);
 void arcUartProcess(void);
 
 /**
- * This function initializes the UART driver.
- *
+ * This function performs spinel Reception driver processing.
+ * 
  */
-otError otPlatUartEnable(void);
+void arcRcpSpinelRx(void);
+
 
 /**
  * This function is called by the OT stack to print information from the stack

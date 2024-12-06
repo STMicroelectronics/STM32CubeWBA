@@ -1,9 +1,9 @@
 ; *************************************************************
 ; *** Scatter-Loading Description File                      ***
 ; *************************************************************
- LR_IROM1 0x08000000 0x00100000 {      ; load region size_region
-  ER_IROM1 0x08000000 0x00100000 { ; load address = execution address
-    *.o (RESET, +First)
+LR_IROM1 0x08000000 0x00100000 {
+  ER_IROM1 0x08000000 0x00100000 {
+    *.o(RESET, +First)
     *(InRoot$$Sections)
     .ANY (+RO)
     .ANY (+XO)

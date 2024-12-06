@@ -33,7 +33,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -235,8 +235,8 @@ void * pvPortMalloc( size_t xWantedSize )
 
             if( ( xWantedSize > 0 ) && ( xWantedSize <= xFreeBytesRemaining ) )
             {
-                /* Traverse the list from the start	(lowest address) block until
-                 * one	of adequate size is found. */
+                /* Traverse the list from the start (lowest address) block until
+                 * one of adequate size is found. */
                 pxPreviousBlock = &xStart;
                 pxBlock = xStart.pxNextFreeBlock;
 
@@ -247,7 +247,7 @@ void * pvPortMalloc( size_t xWantedSize )
                 }
 
                 /* If the end marker was reached then a block of adequate size
-                 * was	not found. */
+                 * was not found. */
                 if( pxBlock != pxEnd )
                 {
                     /* Return the memory space pointed to - jumping over the

@@ -50,7 +50,7 @@ void LHCI_C1_Write_Register( BleCmdSerial_t *pcmd )
     __disable_irq();
 
     *(uint8_t *) (p_param->add) = ((*(uint8_t *) (p_param->add)) & (~(p_param->mask)))
-        		      | (p_param->val & p_param->mask);
+                                  | (p_param->val & p_param->mask);
 
     __set_PRIMASK(primask_bit); /**< Restore PRIMASK bit*/
     break;
@@ -59,7 +59,7 @@ void LHCI_C1_Write_Register( BleCmdSerial_t *pcmd )
     __disable_irq();
 
     *(uint16_t *) (p_param->add) = ((*(uint16_t *) (p_param->add)) & (~(p_param->mask)))
-        		      | (p_param->val & p_param->mask);
+                                   | (p_param->val & p_param->mask);
 
     __set_PRIMASK(primask_bit); /**< Restore PRIMASK bit*/
     break;
@@ -68,7 +68,7 @@ void LHCI_C1_Write_Register( BleCmdSerial_t *pcmd )
     __disable_irq();
 
     *(uint32_t *) (p_param->add) = ((*(uint32_t *) (p_param->add)) & (~(p_param->mask)))
-        		      | (p_param->val & p_param->mask);
+                                   | (p_param->val & p_param->mask);
 
     __set_PRIMASK(primask_bit); /**< Restore PRIMASK bit*/
     break;

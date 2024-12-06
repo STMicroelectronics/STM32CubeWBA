@@ -43,7 +43,7 @@
 #endif
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -325,7 +325,7 @@ void APP_BLE_Init(void)
     /* Create timer to handle the Led Switch OFF */
     UTIL_TIMER_Create(&(bleAppContext.SwitchOffLed_timer_Id),
                       0,
-                      (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
+                      UTIL_TIMER_ONESHOT,
                       &Switch_OFF_Led,
                       0);
 #endif
@@ -464,7 +464,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
           UNUSED(conn_interval_us);
-
+          
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
             /* Connection as client */
@@ -509,7 +509,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Supervision_Timeout * 10
                      );
           UNUSED(conn_interval_us);
-
+          
           if (bleAppContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
             /* Connection as client */

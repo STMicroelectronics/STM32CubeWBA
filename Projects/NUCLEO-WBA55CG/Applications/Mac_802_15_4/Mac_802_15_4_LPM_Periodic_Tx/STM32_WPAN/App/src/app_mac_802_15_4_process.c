@@ -19,7 +19,6 @@
   */
 #include "stm32_lpm.h"
 #include "stm32wbaxx_hal.h"
-#include "mac_stack_configuration.h"
 #include "st_mac_802_15_4_sap.h"
 #include "app_conf.h"
 #include "app_mac_802_15_4_process.h"

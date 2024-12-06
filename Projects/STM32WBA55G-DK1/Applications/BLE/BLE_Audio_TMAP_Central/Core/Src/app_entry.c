@@ -61,6 +61,9 @@
 #include "stm32_lpm.h"
 #include "app_menu.h"
 #include "app_menu_cfg.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,7 +95,7 @@ static bool system_startup_done = FALSE;
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
@@ -138,6 +141,8 @@ static uint32_t Current_Volume = 50;
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 uint8_t JOY_StandbyExitFlag = 0;
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+
+extern TMAPAPP_Context_t TMAPAPP_Context;
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -259,8 +264,8 @@ uint32_t MX_APPE_Init(void *p_param)
   UTIL_TIMER_Start(&JOYSTICK_TimerObj);
 #endif /* CFG_JOYSTICK_SUPPORTED */
 
-  /* Indicate to the low power manager that the Stop mode isn't allow : Sleep mode will be used in low power mode*/
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  /* Indicate to the low power manager that the Standby mode isn't allow : Stop mode will be used in low power mode*/
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   /* USER CODE END APPE_Init_2 */
 
@@ -324,6 +329,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  MX_USART1_UART_Init();
+
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -436,21 +443,6 @@ static void APPE_AMM_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 }
 
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
-{
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
-}
-
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
-{
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
-}
-
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 #if (CFG_LED_SUPPORTED == 1)
 static void Led_Init( void )
@@ -502,6 +494,8 @@ static void Joystick_ActionHandle(void)
   int32_t state = BSP_JOY_GetState(JOY1);
 
   BSP_JOY_DeInit(JOY1, JOY_ALL);
+
+
 
   /* process Joystick information */
   if (state != JOY_NONE && state != Joystick_Prev_State)
@@ -660,6 +654,7 @@ void PLL_Exit(void)
   }
 }
 
+
 static void AudioClock_Deinit( void )
 {
   /* back to default timings */
@@ -670,8 +665,8 @@ static void AudioClock_Deinit( void )
   ll_intf_config_schdling_time(&event_time);
 
   LOG_INFO_APP("Audio Clock Deinitialization\n");
-  AUDIO_DeinitializeClockCorrector();
 
+  AUDIO_DeinitializeClockCorrector();
 }
 
 HAL_StatusTypeDef MX_SAI1_ClockConfig(SAI_HandleTypeDef *hsai, uint32_t SampleRate)
@@ -706,12 +701,14 @@ static void BSP_MIC_Gain_Init(const uint8_t mode){
   {
     Error_Handler();
   }
+  else
+  {
+    uint8_t attenuator_gain = Tab_attenuator[mode];
+    uint8_t mic_control = Tab_mic_ctrl[mode];
 
-  uint8_t attenuator_gain = Tab_attenuator[mode];
-  uint8_t mic_control = Tab_mic_ctrl[mode];
-
-  BSP_I2C3_WriteReg(AUDIO_I2C_ADDRESS, CS42L51_ADCA_ATTENUATOR, &attenuator_gain, 0x01);
-  BSP_I2C3_WriteReg(AUDIO_I2C_ADDRESS, CS42L51_MIC_CTRL, &mic_control, 0x01);
+    BSP_I2C3_WriteReg(AUDIO_I2C_ADDRESS, CS42L51_ADCA_ATTENUATOR, &attenuator_gain, 0x01);
+    BSP_I2C3_WriteReg(AUDIO_I2C_ADDRESS, CS42L51_MIC_CTRL, &mic_control, 0x01);
+  }
 }
 
 void MX_AudioInit(Audio_Role_t role,
@@ -760,20 +757,6 @@ void MX_AudioInit(Audio_Role_t role,
       Error_Handler();
       return;
   }
-  switch(frame_duration)
-  {
-    case FRAME_DURATION_7_5_MS:
-      sample_per_frame = audioFrequency * 75 / 10000;
-      break;
-
-    case FRAME_DURATION_10_MS:
-      sample_per_frame = audioFrequency * 100 / 10000;
-      break;
-
-    default:
-      Error_Handler();
-      return;
-  }
 
   if (sampling_frequency == SAMPLE_FREQ_44100_HZ)
   {
@@ -793,8 +776,23 @@ void MX_AudioInit(Audio_Role_t role,
         return;
     }
   }
+  else
+  {
+	switch(frame_duration)
+	{
+      case FRAME_DURATION_7_5_MS:
+        sample_per_frame = audioFrequency * 75 / 10000;
+        break;
 
-  __HAL_RCC_I2C3_CLK_ENABLE();
+      case FRAME_DURATION_10_MS:
+        sample_per_frame = audioFrequency * 100 / 10000;
+        break;
+
+      default:
+        Error_Handler();
+        return;
+	}
+  }
 
   if (driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
   {
@@ -811,7 +809,10 @@ void MX_AudioInit(Audio_Role_t role,
   else
   {
     Error_Handler();
+    return;
   }
+
+  __HAL_RCC_I2C3_CLK_ENABLE();
 
   audio_conf.Volume = 50; /* input volume is not used */
   audio_conf.SampleRate = audioFrequency;
@@ -820,6 +821,9 @@ void MX_AudioInit(Audio_Role_t role,
   if (BSP_AUDIO_IN_Init(0x00, &audio_conf) != BSP_ERROR_NONE)
   {
     Error_Handler();
+    /* Release Bus for power consumption optimisation */
+    __HAL_RCC_I2C3_CLK_DISABLE();
+    return;
   }
 
   audio_conf.Device = AUDIO_OUT_DEVICE_HEADPHONE;
@@ -828,6 +832,9 @@ void MX_AudioInit(Audio_Role_t role,
   if (BSP_AUDIO_OUT_Init(0x00, &audio_conf) != BSP_ERROR_NONE)
   {
     Error_Handler();
+    /* Release Bus for power consumption optimisation */
+    __HAL_RCC_I2C3_CLK_DISABLE();
+    return;
   }
 
   if (driver_config == AUDIO_DRIVER_CONFIG_HEADSET)
@@ -900,19 +907,65 @@ static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pS
   }
 }
 
-void Start_TxAudio(void)
+int32_t Start_TxAudio(void)
 {
-  /* Initialize Bus which bas been released for Power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_ENABLE();
+  int32_t status = 1;
 
-  APP_NotifyTxAudioCplt(Sink_frame_size);
-  if (BSP_AUDIO_OUT_Resume(0) != BSP_ERROR_NONE)
+  /* restart DMA request only if it was on pause */
+  if ((haudio_out_sai.Instance->CR1 & SAI_xCR1_DMAEN) == 0)
   {
-    Error_Handler();
+    SET_BIT(haudio_out_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+    haudio_out_sai.Instance->CR1 |= SAI_xCR1_DMAEN;
+    status = 0;
+
+    APP_NotifyTxAudioCplt(Sink_frame_size);
   }
 
-  /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
+  if ((status == 0) && (TMAPAPP_Context.num_cis_established > 0))
+  {
+    LOG_INFO_APP("START AUDIO SINK (output)\n");
+#if (CFG_LCD_SUPPORTED == 1)
+    switch (TMAPAPP_Context.ConfiguredSampleFrequency)
+    {
+      case SAMPLE_FREQ_8000_HZ:
+      {
+        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_16000_HZ:
+      {
+        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_24000_HZ:
+      {
+        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_32000_HZ:
+      {
+        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_44100_HZ:
+      {
+        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_48000_HZ:
+      {
+        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      default:
+      {
+        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+    }
+#endif /* (CFG_LCD_SUPPORTED == 1) */
+  }
+  return status;
 }
 
 void Stop_TxAudio(void)
@@ -940,13 +993,9 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
   {
     if (Play_Req_Pause == 1)
     {
-      __HAL_RCC_I2C3_CLK_ENABLE();
-      /* Pause the DMA that as run one frame only and wait the codec trigger to re run*/
-      if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
-      {
-        Error_Handler();
-      }
-      __HAL_RCC_I2C3_CLK_DISABLE();
+      /* Pause the DMA aligned on a interrupt and wait the codec trigger to restart it synchronized to BLE */
+      haudio_out_sai.Instance->CR1 &= ~SAI_xCR1_DMAEN;
+
       Play_Req_Pause = 0;
     }
 
@@ -954,18 +1003,64 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
   }
 }
 
-void Start_RxAudio(void)
+int32_t Start_RxAudio(void)
 {
-  /* Initialize Bus which bas been released for Power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_ENABLE();
+  int32_t status = 1;
 
-  if (BSP_AUDIO_IN_Resume(0) != BSP_ERROR_NONE)
+  /* restart DMA request only if it was on pause */
+  if ((haudio_in_sai.Instance->CR1 & SAI_xCR1_DMAEN) == 0)
   {
-    Error_Handler();
+    SET_BIT(haudio_in_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+    haudio_in_sai.Instance->CR1 |= SAI_xCR1_DMAEN;
+    status = 0;
   }
 
-  /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
+  if ((status == 0) && (TMAPAPP_Context.num_cis_established > 0))
+  {
+    LOG_INFO_APP("START AUDIO SOURCE (input)\n");
+
+#if (CFG_LCD_SUPPORTED == 1)
+    switch (TMAPAPP_Context.ConfiguredSampleFrequency)
+    {
+      case SAMPLE_FREQ_8000_HZ:
+      {
+        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_16000_HZ:
+      {
+        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_24000_HZ:
+      {
+        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_32000_HZ:
+      {
+        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_44100_HZ:
+      {
+        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      case SAMPLE_FREQ_48000_HZ:
+      {
+        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+      default:
+      {
+        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
+        break;
+      }
+    }
+#endif /* (CFG_LCD_SUPPORTED == 1) */
+  }
+  return status;
 }
 
 void Stop_RxAudio(void)
@@ -993,12 +1088,9 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
   {
     if (Record_Req_Pause == 1)
     {
-      __HAL_RCC_I2C3_CLK_ENABLE();
-      if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
-      {
-        Error_Handler();
-      }
-      __HAL_RCC_I2C3_CLK_DISABLE();
+      /* Pause the DMA aligned on a interrupt and wait the codec trigger to restart it synchronized to BLE */
+      haudio_in_sai.Instance->CR1 &= ~SAI_xCR1_DMAEN;
+
       Record_Req_Pause = 0;
     }
     APP_NotifyRxAudioHalfCplt();
@@ -1025,6 +1117,11 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_StopStabilizationTimer();
+  /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -1048,7 +1145,13 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -1111,6 +1214,21 @@ void AMM_ProcessRequest(void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
 }
 
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+{
+  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
+}
+
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
+{
+  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
+}
+
+static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
+{
+  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
+}
+
 void FM_ProcessRequest(void)
 {
   /* Trigger to call Flash Manager process function */
@@ -1130,6 +1248,7 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -1141,6 +1260,7 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -1151,7 +1271,11 @@ void UTIL_ADV_TRACE_PreSendHook(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
-
+#if (CFG_TEST_VALIDATION == 1)
+#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
+    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
+#endif /* (CFG_TEST_VALIDATION == 1) */
   /* USER CODE END UTIL_ADV_TRACE_PreSendHook */
 }
 
@@ -1162,8 +1286,26 @@ void UTIL_ADV_TRACE_PostSendHook(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
-
+#if (CFG_TEST_VALIDATION == 1)
+#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
+    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
+#endif /* (CFG_TEST_VALIDATION == 1) */
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
+}
+
+/**
+ * @brief  Treat Serial commands.
+ *
+ * @param  pRxBuffer      Pointer on received data from USART.
+ * @param  iRxBufferSize  Number of received data.
+ * @retval None
+ */
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+  /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */

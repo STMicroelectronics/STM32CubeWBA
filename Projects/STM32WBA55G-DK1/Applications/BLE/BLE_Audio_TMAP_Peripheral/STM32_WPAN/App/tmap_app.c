@@ -316,8 +316,8 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
 static uint8_t APP_BroadcastSetupAudio(Audio_Role_t role);
 static uint8_t APP_StartBroadcastAudio(Audio_Role_t role);
 #endif /*((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)*/
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
 static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                                     uint16_t ConnHandle,
@@ -449,8 +449,9 @@ tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle)
       tBleStatus ret;
       /* Restore the GAF Profiles saved in NVM*/
       ret = CAP_Linkup(ConnHandle,NVMLink,0x00);
-      LOG_INFO_APP("CAP_Linkup() for GAF restoration for ConnHandle 0x%04X returns status 0x%02X\n",
+      LOG_INFO_APP("CAP_Linkup() for GAF restoration on ConnHandle 0x%04x for link mask 0x%02X returns status 0x%02X\n",
                   ConnHandle,
+                  NVMLink,
                   ret);
       p_conn->CAPLinkupState = APP_CAP_LINKUP_STATE_STARTED_RESTORE;
       UNUSED(ret);
@@ -567,6 +568,7 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
       LOG_INFO_APP("TMAP Linkup Complete Event with ConnHandle 0x%04X is received with status 0x%02X\n",
                   pNotification->ConnHandle,
                   pNotification->Status);
+
       p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
@@ -589,6 +591,9 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
         {
           p_conn->AudioProfile |= AUDIO_PROFILE_TMAP;
         }
+
+        /* Request PHY Change to 2M to reduce ACL connection event length */
+        hci_le_set_phy(pNotification->ConnHandle, 0, HCI_TX_PHY_LE_2M, HCI_RX_PHY_LE_2M, 0x00);
 
         current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
 #if (APP_MCP_ROLE_CLIENT_SUPPORT == 1)
@@ -687,18 +692,20 @@ uint8_t TMAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType
   Adv_Data[ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN-2] = Hex_To_Char((Pb_Addr[0] & 0xF0) >> 4);
   Adv_Data[ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN-1] = Hex_To_Char(Pb_Addr[0] & 0x0F);
 
-  Menu_SetIdentifier((char *)&Adv_Data[ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN-4]);
+  Menu_SetIdentifier((char *)&Adv_Data[ADV_AD_FLAGS_LEN+2], 14);
 
   /* Start Fast or Low Power Advertising.*/
   if (TMAPAPP_Context.NumConn == 0u)
   {
     Primary_Adv_Interval_Min = FAST_ADV_INTERVAL_MIN;
     Primary_Adv_Interval_Max = FAST_ADV_INTERVAL_MAX;
+    LOG_INFO_APP("Start Fast Advertising\n");
   }
   else
   {
     Primary_Adv_Interval_Min = SLOW_ADV_INTERVAL_MIN;
     Primary_Adv_Interval_Max = SLOW_ADV_INTERVAL_MAX;
+    LOG_INFO_APP("Start Slow Advertising\n");
   }
   status = aci_gap_adv_set_configuration(ADV_TYPE,
                                          0,
@@ -1492,7 +1499,6 @@ uint8_t TMAPAPP_SyncToPA(uint8_t AdvSID, uint8_t *pAdvAddress, uint8_t AdvAddres
   {
     LOG_INFO_APP("  Success: CAP_Broadcast_StartPASync() function\n");
   }
-
   return status;
 #else /*((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)*/
   return HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
@@ -1708,7 +1714,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUSRLinks = MAX_NUM_USR_LINK;
 
-  /*Published Audio Capabilites of Unicast Server and Broadcast Sink Configuration*/
+  /*Published Audio Capabilities of Unicast Server and Broadcast Sink Configuration*/
   APP_BAP_Config.PACSSrvConfig.MaxNumSnkPACRecords = APP_NUM_SNK_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.MaxNumSrcPACRecords = APP_NUM_SRC_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.pStartRamAddr = (uint8_t *)&aPACSSrvMemBuffer;
@@ -1733,6 +1739,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   APP_BAP_Config.ASCSSrvConfig.MaxNumSrcASEs = MAX_NUM_USR_SRC_ASE;
   APP_BAP_Config.ASCSSrvConfig.MaxCodecConfSize = MAX_USR_CODEC_CONFIG_SIZE;
   APP_BAP_Config.ASCSSrvConfig.MaxMetadataLength = MAX_USR_METADATA_SIZE;
+  APP_BAP_Config.ASCSSrvConfig.CachingEn = 1u;
   APP_BAP_Config.ASCSSrvConfig.pStartRamAddr = (uint8_t *)&aASCSSrvMemBuffer;
   APP_BAP_Config.ASCSSrvConfig.RamSize = BAP_ASCS_SRV_DYN_ALLOC_SIZE;
 
@@ -2520,10 +2527,10 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
   {
     case CAP_LINKUP_COMPLETE_EVT:
     {
-      LOG_INFO_APP("CAP Linkup process on ConnHandle 0x%04X is complete with status 0x%02X\n",
-                        pNotification->ConnHandle,
-                        pNotification->Status);
       GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
+      LOG_INFO_APP("CAP Linkup Complete on Connhandle 0x%04X with status 0x%02X\n",
+                   pNotification->ConnHandle,
+                   pNotification->Status);
 
       LOG_INFO_APP("profiles 0x%02X of the GAF are linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -3310,12 +3317,12 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             info->pPrefQoSConfRsp->MaxTransportLatency = APP_QoSConf[i+offset].max_tp_latency;
           }
         }
-        /*maxmimum simulateous Sink ASEs in streaming is 2 sink ASEs*/
+        /*maximum simulateous Sink ASEs in streaming is 2 sink ASEs*/
         if (num_snk_ases > 2u)
         {
           num_snk_ases = 2u;
         }
-        /*maxmimum simulateous Source ASEs in streaming is 2 source ASEs*/
+        /*maximum simulateous Source ASEs in streaming is 2 source ASEs*/
         if (num_src_ases > 2u)
         {
           num_src_ases = 2u;
@@ -3359,7 +3366,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             }
             /* if a source is present, processing margin are already included for that frame duration */
             controller_delay_min = controller_delay_min - (controller_delay_margin_snk * num_snk_ases);
-					}
+          }
           else
           {
             if( num_snk_ases > 0)
@@ -3511,7 +3518,9 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     case CAP_UNICAST_AUDIO_CONNECTION_UP_EVT:
     {
       BAP_Unicast_Audio_Path_t *info = (BAP_Unicast_Audio_Path_t *)pNotification->pInfo;
-      if (info->AudioPathDirection == BAP_AUDIO_PATH_INPUT){
+
+      if (info->AudioPathDirection == BAP_AUDIO_PATH_INPUT)
+      {
         LOG_INFO_APP("Input Audio Data Path is up with status 0x%02X for CIS Conn handle 0x%04X\n",
                     pNotification->Status,info->CIS_ConnHandle);
         LOG_INFO_APP("Controller Delay : %d us\n", info->ControllerDelay);
@@ -3893,27 +3902,46 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         uint8_t parse_index = 0;
         char name[30] = "Unknown";
+        char bid[12] = "ID:0x\0";
         const uint8_t* name_ptr = 0;
         uint8_t name_len = 0;
 
         while (parse_index + 3 < data->AdvertisingDataLength)
         {
-          if (data->pAdvertisingData[parse_index + 1] == AD_TYPE_COMPLETE_LOCAL_NAME)
+          /* First priority to the Broadcast Name */
+          if (data->pAdvertisingData[parse_index + 1] == 0x30)
           {
             name_ptr = &data->pAdvertisingData[parse_index + 2];
-            name_len = data->pAdvertisingData[parse_index] - 1;
-
+            name_len = MIN(data->pAdvertisingData[parse_index] - 1, 29);
             break;
+          }
+          /* Second priority to the Complete Local Name */
+          else if (data->pAdvertisingData[parse_index + 1] == AD_TYPE_COMPLETE_LOCAL_NAME)
+          {
+            name_ptr = &data->pAdvertisingData[parse_index + 2];
+            name_len = MIN(data->pAdvertisingData[parse_index] - 1, 29);
+          }
+          /* Thrid priority to the Broadcast ID */
+          else if (data->pAdvertisingData[parse_index + 1] == AD_TYPE_SERVICE_DATA &&
+              data->pAdvertisingData[parse_index + 2] == 0x52 &&
+              data->pAdvertisingData[parse_index + 3] == 0x18)
+          {
+            sprintf(&bid[5],"%X", data->pAdvertisingData[parse_index + 6]);
+            sprintf(&bid[7],"%X", data->pAdvertisingData[parse_index + 5]);
+            sprintf(&bid[9],"%X",data->pAdvertisingData[parse_index + 4]);
           }
           parse_index += data->pAdvertisingData[parse_index] + 1;
         }
-
         if (name_ptr != 0)
         {
           UTIL_MEM_cpy_8(&name[0], name_ptr, name_len);
           name[name_len] = '\0';
         }
-
+        else if (bid[5] != '\0')
+        {
+          UTIL_MEM_cpy_8(&name[0], bid, 11);
+          name[11] = '\0';
+        }
         Menu_AddBroadcastSource(data->AdvSID, (uint8_t *) &data->pAdvAddress[0],
                                 data->AdvAddressType, &name[0]);
       }
@@ -4042,6 +4070,8 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               base_data->BasePayloadLength -= index;
               LOG_INFO_APP("      BIS INDEX : 0x%02x\n",TMAPAPP_Context.BSNK.base_bis[j].BIS_Index);
               LOG_INFO_APP("      Codec specific config length : %d bytes\n",TMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
+
+              Audio_Chnl_Allocation_t channel_alloc = 0x00000000;
               if (TMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength > 0u)
               {
                 for (int k = 0;k<TMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength;k++)
@@ -4059,29 +4089,28 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   }
                   k+=TMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k];
                 }
-                Audio_Chnl_Allocation_t channel_alloc;
                 channel_alloc = LTV_GetConfiguredAudioChannelAllocation(TMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf,
                                                                         TMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
-                if(channel_alloc != 0x00000000)
+              }
+              if (channel_alloc == 0x00000000)
+              {
+                /* No channel alloc on BIS level, get channel alloc on subgroup level */
+                channel_alloc = LTV_GetConfiguredAudioChannelAllocation(TMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf,
+                                                                        TMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength);
+              }
+              if(channel_alloc != 0x00000000)
+              {
+                LOG_INFO_APP("      Audio Channels Allocation Configuration : 0x%08X\n",channel_alloc);
+                LOG_INFO_APP("      Number of Audio Channels %d \n",APP_GetBitsAudioChnlAllocations(channel_alloc));
+              }
+              if(TMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
+              {
+                if (TMAPAPP_Context.BSNK.Audio_Location != 0x00000000)
                 {
-                  LOG_INFO_APP("      Audio Channels Allocation Configuration : 0x%08X\n",channel_alloc);
-                  LOG_INFO_APP("      Number of Audio Channels %d \n",APP_GetBitsAudioChnlAllocations(channel_alloc));
-                }
-                if(TMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
-                {
-
-                  if (TMAPAPP_Context.BSNK.Audio_Location != 0x00000000)
+                  /* check if the Channel allocation matches with the Sink Audio Location supported by the Broadcast Sink */
+                  if(channel_alloc != 0x00000000)
                   {
-                    /* check if the Channel allocation matches with the Sink Audio Location supported by the Broadcast Sink */
-                    if(channel_alloc != 0x00000000)
-                    {
-                      if ((TMAPAPP_Context.BSNK.Audio_Location & channel_alloc) != 0x00000000)
-                      {
-                        TMAPAPP_Context.BSNK.sync_bis_index[TMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
-                        TMAPAPP_Context.BSNK.num_sync_bis++;
-                      }
-                    }
-                    else
+                    if ((TMAPAPP_Context.BSNK.Audio_Location & channel_alloc) != 0x00000000)
                     {
                       TMAPAPP_Context.BSNK.sync_bis_index[TMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
                       TMAPAPP_Context.BSNK.num_sync_bis++;
@@ -4092,6 +4121,11 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                     TMAPAPP_Context.BSNK.sync_bis_index[TMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
                     TMAPAPP_Context.BSNK.num_sync_bis++;
                   }
+                }
+                else
+                {
+                  TMAPAPP_Context.BSNK.sync_bis_index[TMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
+                  TMAPAPP_Context.BSNK.num_sync_bis++;
                 }
               }
             }
@@ -4322,7 +4356,7 @@ static uint8_t APP_BroadcastSetupAudio(Audio_Role_t role)
     LOG_INFO_APP("Sampling Frequency in LTV is invalid\n");
     ret = BLE_STATUS_FAILED;
   }
-  LOG_INFO_APP("==>> End PBPAPP_BroadcastSetupAudio function\n");
+  LOG_INFO_APP("==>> End APP_BroadcastSetupAudio function\n");
   return ret;
 }
 
@@ -4695,112 +4729,19 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
 
 
 /*Audio Source */
-static void start_audio_source(void)
+static int32_t start_audio_source(void)
 {
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  Start_RxAudio();
-
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((TMAPAPP_Context.num_cis_established > 0u) && (TMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    switch (TMAPAPP_Context.Audio_Frequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-      {
-        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_16000_HZ:
-      {
-        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_24000_HZ:
-      {
-        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_32000_HZ:
-      {
-        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_44100_HZ:
-      {
-        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_48000_HZ:
-      {
-        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      default:
-      {
-        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-    }
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
+  return Start_RxAudio();
 }
 
 
 /*Audio Sink */
-static void start_audio_sink(void)
+static int32_t start_audio_sink(void)
 {
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  Start_TxAudio();
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((TMAPAPP_Context.num_cis_established > 0u) && (TMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    switch (TMAPAPP_Context.Audio_Frequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-      {
-        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_16000_HZ:
-      {
-        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_24000_HZ:
-      {
-        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_32000_HZ:
-      {
-        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_44100_HZ:
-      {
-        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_48000_HZ:
-      {
-        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      default:
-      {
-        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-    }
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
+  return Start_TxAudio();
 }
 
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
@@ -5151,7 +5092,8 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
 
     case CCP_CLT_NO_CURRENT_CALL_EVT:
     {
-      LOG_INFO_APP("No Call in Progress\n");
+      LOG_INFO_APP("No Call in Progress on Telephone Bearer Instance ID %d on remote CCP Server\n",
+                   pNotification->ContentControlID);
       break;
     }
 

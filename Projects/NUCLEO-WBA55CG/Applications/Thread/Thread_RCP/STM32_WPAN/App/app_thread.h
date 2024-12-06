@@ -86,8 +86,8 @@ void Thread_Init(void);
 void ProcessLinkLayer(void);
 void ProcessTasklets(void);
 void ProcessAlarm(void);
-void ProcessUsAlarm(void);
 void ProcessOpenThreadTasklets(void);
+void ProcessRcpSpinel(void);
 
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);

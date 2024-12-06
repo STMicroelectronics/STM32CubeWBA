@@ -100,7 +100,7 @@ extern "C" {
  */
 typedef enum SNVMA_BufferId
 {
-  APP_BLE_NvmBuffer,
+  SNVMA_BufferId_1,
   SNVMA_BufferId_Max  /* End of the enumeration */
 }SNVMA_BufferId_t;
 

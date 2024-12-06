@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.h
+  * @file    HTS.h
   * @author  MCD Application Team
-  * @brief   Header for service2.c
+  * @brief   Header for HTS.c
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,9 +44,9 @@ typedef enum
   HTS_MNBS,
   HTS_INT,
   HTS_MEI,
-  /* USER CODE BEGIN Service2_CharOpcode_t */
+  /* USER CODE BEGIN Service1_CharOpcode_t */
 
-  /* USER CODE END Service2_CharOpcode_t */
+  /* USER CODE END Service1_CharOpcode_t */
   HTS_CHAROPCODE_LAST
 } HTS_CharOpcode_t;
 
@@ -61,9 +61,9 @@ typedef enum
   HTS_MEI_WRITE_EVT,
   HTS_MEI_INDICATE_ENABLED_EVT,
   HTS_MEI_INDICATE_DISABLED_EVT,
-  /* USER CODE BEGIN Service2_OpcodeEvt_t */
+  /* USER CODE BEGIN Service1_OpcodeEvt_t */
 
-  /* USER CODE END Service2_OpcodeEvt_t */
+  /* USER CODE END Service1_OpcodeEvt_t */
   HTS_BOOT_REQUEST_EVT
 } HTS_OpcodeEvt_t;
 
@@ -72,9 +72,9 @@ typedef struct
   uint8_t *p_Payload;
   uint8_t Length;
 
-  /* USER CODE BEGIN Service2_Data_t */
+  /* USER CODE BEGIN Service1_Data_t */
 
-  /* USER CODE END Service2_Data_t */
+  /* USER CODE END Service1_Data_t */
 } HTS_Data_t;
 
 typedef struct
@@ -84,9 +84,9 @@ typedef struct
   uint16_t                ConnectionHandle;
   uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
-  /* USER CODE BEGIN Service2_NotificationEvt_t */
+  /* USER CODE BEGIN Service1_NotificationEvt_t */
   uint16_t  RangeInterval;
-  /* USER CODE END Service2_NotificationEvt_t */
+  /* USER CODE END Service1_NotificationEvt_t */
 } HTS_NotificationEvt_t;
 
 /* USER CODE BEGIN ET */

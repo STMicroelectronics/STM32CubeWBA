@@ -76,6 +76,7 @@ static void SystemClock_Config(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* Enable SecureFault handler (HardFault is default) */
@@ -129,20 +130,19 @@ int main(void)
 
   /* Leave the GPIO clocks enabled to let non-secure having I/Os control */
 
+  /* USER CODE END 2 */
+
   /* Secure SysTick should rather be suspended before calling non-secure  */
   /* in order to avoid wake-up from sleep mode entered by non-secure      */
   /* The Secure SysTick shall be resumed on non-secure callable functions */
-  /* For the purpose of this example, however the Secure SysTick is kept  */
-  /* running to toggle the secure IO and the following is commented:      */
-  /* HAL_SuspendTick(); */
-
-  /* USER CODE END 2 */
+  HAL_SuspendTick();
 
   /*************** Setup and jump to non-secure *******************************/
 
   NonSecure_Init();
 
   /* Non-secure software does not return, this code is not executed */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -347,6 +347,16 @@ void HAL_SYSTICK_Callback(void)
     HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     SecureTimingDelay = SECURE_IO_TOGGLE_DELAY;
   }
+}
+
+/**
+  * @brief Suspend Tick increment.
+  * @note For the purpose of this example, the Secure SysTick is kept
+  *       running to toggle the secure IO and the function is empty
+  * @retval None
+  */
+void HAL_SuspendTick(void)
+{
 }
 
 /* USER CODE END 4 */

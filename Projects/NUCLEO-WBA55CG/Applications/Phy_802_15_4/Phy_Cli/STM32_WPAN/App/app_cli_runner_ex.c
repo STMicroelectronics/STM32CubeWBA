@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "app_conf.h"
+#include "power_table.h"
 #include "stm32_seq.h"
 
 #include "st_mac_802_15_4_raw_svc.h"
@@ -100,6 +101,7 @@ static void app_cli_ex_single_TX_callback( const ST_MAC_raw_single_TX_event_t * 
 static void app_cli_ex_get_tx_results(void);
 static void app_cli_ex_get_rx_results(void);
 static void app_cli_ex_get_ed_results(void);
+static void app_cli_ex_get_power_range(int8_t* min_tx_power, int8_t* max_tx_power);
 
 static void app_cli_ex_Notif_callback(MAC_RAW_State_t state)
 {
@@ -245,6 +247,20 @@ static void app_cli_ex_print_frame(void)
   }
 }
 
+static void app_cli_ex_get_power_range(int8_t* min_tx_power, int8_t* max_tx_power)
+{
+  power_table_id_t power_table = ll_tx_power_tables[CFG_RF_TX_POWER_TABLE_ID];
+
+  if (min_tx_power != NULL)
+  {
+    *min_tx_power = power_table.ptr_tx_power_table[0].tx_pwr;
+  }
+  if (max_tx_power != NULL)
+  {
+    *max_tx_power = power_table.ptr_tx_power_table[(power_table.tx_power_levels_count-1)].tx_pwr;
+  }
+}
+
 void app_cli_ex_init(void)
 {
   st_mac_cbks.p_Notif = &app_cli_ex_Notif_callback;
@@ -252,7 +268,7 @@ void app_cli_ex_init(void)
   st_mac_cbks.p_TX_Done = &app_cli_ex_single_TX_callback;
   
   /* Radio & MAC Layer init */
-  MAC_Status_t mac_result = ST_MAC_raw_init(&st_mac_cbks);
+  MAC_Status_t mac_result = ST_MAC_raw_init(&st_mac_cbks, RAW_CONFIG);
 
   if (mac_result != MAC_SUCCESS)
     /* abort init */
@@ -276,11 +292,11 @@ void app_cli_ex_init(void)
   cli_full_ctx.rx_frame_printing = 0;
   UTIL_SEQ_RegTask( 1U << CFG_TASK_PHY_CLI_RX_PRINT, UTIL_SEQ_RFU, app_cli_ex_print_frame);  
 
-  app_cli_ex_set_power(st_mac_caps.max_tx_power);
-#if (FULL_CERTIFICATION_CAPABLE==1)
-  /* Force SMPS enable in case of PHY certification */
+  /* TX power ranges */
   app_cli_ex_set_smps(1);
-#endif
+  app_cli_ex_get_power_range(&st_mac_caps.min_tx_power, &st_mac_caps.max_tx_power);
+
+  app_cli_ex_set_power(st_mac_caps.max_tx_power);
 
   for (uint8_t i = 0; i < RX_FRAME_MAX_NUM; i++)
   {

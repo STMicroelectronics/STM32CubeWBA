@@ -71,7 +71,7 @@ void Menu_SetStartupPage(void);
 /**
  * @brief Set the 4 characters Device Identifier
  */
-void Menu_SetIdentifier(char *pId);
+void Menu_SetIdentifier(char *pId, uint8_t len);
 
 /**
  * @brief Set Current volume value

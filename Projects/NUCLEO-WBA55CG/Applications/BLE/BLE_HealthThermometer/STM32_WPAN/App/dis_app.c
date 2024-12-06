@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1_app.c
+  * @file    dis_app.c
   * @author  MCD Application Team
-  * @brief   service1_app application definition.
+  * @brief   DIS application definition.
   ******************************************************************************
   * @attention
   *
@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "dis_app.h"
 #include "dis.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,24 +42,25 @@
 
 typedef enum
 {
-  /* USER CODE BEGIN Service1_APP_SendInformation_t */
+  /* USER CODE BEGIN Service2_APP_SendInformation_t */
 
-  /* USER CODE END Service1_APP_SendInformation_t */
+  /* USER CODE END Service2_APP_SendInformation_t */
   DIS_APP_SENDINFORMATION_LAST
 } DIS_APP_SendInformation_t;
 
 typedef struct
 {
-  /* USER CODE BEGIN Service1_APP_Context_t */
+  /* USER CODE BEGIN Service2_APP_Context_t */
 
-  /* USER CODE END Service1_APP_Context_t */
+  /* USER CODE END Service2_APP_Context_t */
   uint16_t              ConnectionHandle;
 } DIS_APP_Context_t;
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define DISAPP_MANUFACTURER_NAME              "STM"
-#define DISAPP_MODEL_NUMBER                   "4502-1.0"
+#define DISAPP_MODEL_NAME                     "Nucleo"
+
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -90,78 +91,78 @@ uint8_t a_DIS_UpdateCharData[247];
 /* Functions Definition ------------------------------------------------------*/
 void DIS_Notification(DIS_NotificationEvt_t *p_Notification)
 {
-  /* USER CODE BEGIN Service1_Notification_1 */
+  /* USER CODE BEGIN Service2_Notification_1 */
 
-  /* USER CODE END Service1_Notification_1 */
+  /* USER CODE END Service2_Notification_1 */
   switch(p_Notification->EvtOpcode)
   {
-    /* USER CODE BEGIN Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE BEGIN Service2_Notification_Service2_EvtOpcode */
 
-    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
+    /* USER CODE END Service2_Notification_Service2_EvtOpcode */
 
     case DIS_MANS_READ_EVT:
-      /* USER CODE BEGIN Service1Char1_READ_EVT */
+      /* USER CODE BEGIN Service2Char1_READ_EVT */
 
-      /* USER CODE END Service1Char1_READ_EVT */
+      /* USER CODE END Service2Char1_READ_EVT */
       break;
 
     case DIS_MONS_READ_EVT:
-      /* USER CODE BEGIN Service1Char2_READ_EVT */
+      /* USER CODE BEGIN Service2Char2_READ_EVT */
 
-      /* USER CODE END Service1Char2_READ_EVT */
+      /* USER CODE END Service2Char2_READ_EVT */
       break;
 
     case DIS_SYID_READ_EVT:
-      /* USER CODE BEGIN Service1Char3_READ_EVT */
+      /* USER CODE BEGIN Service2Char3_READ_EVT */
 
-      /* USER CODE END Service1Char3_READ_EVT */
+      /* USER CODE END Service2Char3_READ_EVT */
       break;
 
     default:
-      /* USER CODE BEGIN Service1_Notification_default */
+      /* USER CODE BEGIN Service2_Notification_default */
 
-      /* USER CODE END Service1_Notification_default */
+      /* USER CODE END Service2_Notification_default */
       break;
   }
-  /* USER CODE BEGIN Service1_Notification_2 */
+  /* USER CODE BEGIN Service2_Notification_2 */
 
-  /* USER CODE END Service1_Notification_2 */
+  /* USER CODE END Service2_Notification_2 */
   return;
 }
 
 void DIS_APP_EvtRx(DIS_APP_ConnHandleNotEvt_t *p_Notification)
 {
-  /* USER CODE BEGIN Service1_APP_EvtRx_1 */
+  /* USER CODE BEGIN Service2_APP_EvtRx_1 */
 
-  /* USER CODE END Service1_APP_EvtRx_1 */
+  /* USER CODE END Service2_APP_EvtRx_1 */
 
   switch(p_Notification->EvtOpcode)
   {
-    /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
+    /* USER CODE BEGIN Service2_APP_EvtRx_Service2_EvtOpcode */
 
-    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
+    /* USER CODE END Service2_APP_EvtRx_Service2_EvtOpcode */
     case DIS_CONN_HANDLE_EVT :
-      /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
+      /* USER CODE BEGIN Service2_APP_CONN_HANDLE_EVT */
 
-      /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
+      /* USER CODE END Service2_APP_CONN_HANDLE_EVT */
       break;
 
     case DIS_DISCON_HANDLE_EVT :
-      /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
+      /* USER CODE BEGIN Service2_APP_DISCON_HANDLE_EVT */
 
-      /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
+      /* USER CODE END Service2_APP_DISCON_HANDLE_EVT */
       break;
 
     default:
-      /* USER CODE BEGIN Service1_APP_EvtRx_default */
+      /* USER CODE BEGIN Service2_APP_EvtRx_default */
 
-      /* USER CODE END Service1_APP_EvtRx_default */
+      /* USER CODE END Service2_APP_EvtRx_default */
       break;
   }
 
-  /* USER CODE BEGIN Service1_APP_EvtRx_2 */
+  /* USER CODE BEGIN Service2_APP_EvtRx_2 */
 
-  /* USER CODE END Service1_APP_EvtRx_2 */
+  /* USER CODE END Service2_APP_EvtRx_2 */
 
   return;
 }
@@ -171,17 +172,25 @@ void DIS_APP_Init(void)
   UNUSED(DIS_APP_Context);
   DIS_Init();
 
-  /* USER CODE BEGIN Service1_APP_Init */
+  /* USER CODE BEGIN Service2_APP_Init */
   DIS_Data_t dis_information_data;
-  
+  uint32_t dis_sys_ID[2];
+
   dis_information_data.p_Payload = (uint8_t*)DISAPP_MANUFACTURER_NAME;
   dis_information_data.Length = sizeof(DISAPP_MANUFACTURER_NAME);
   DIS_UpdateValue(DIS_MANS, &dis_information_data);
-  
-  dis_information_data.p_Payload = (uint8_t*)DISAPP_MODEL_NUMBER;
-  dis_information_data.Length = sizeof(DISAPP_MODEL_NUMBER);
+
+  dis_information_data.p_Payload = (uint8_t*)DISAPP_MODEL_NAME;
+  dis_information_data.Length = sizeof(DISAPP_MODEL_NAME);
   DIS_UpdateValue(DIS_MONS, &dis_information_data);
-  /* USER CODE END Service1_APP_Init */
+
+  dis_sys_ID[0] = LL_FLASH_GetSTCompanyID();
+  dis_sys_ID[1] = LL_FLASH_GetUDN();
+  dis_information_data.p_Payload = (uint8_t*)&dis_sys_ID[0];
+  dis_information_data.Length = sizeof(dis_sys_ID);
+  DIS_UpdateValue(DIS_SYID, &dis_information_data);
+
+  /* USER CODE END Service2_APP_Init */
   return;
 }
 
@@ -195,6 +204,6 @@ void DIS_APP_Init(void)
  *
  *************************************************************/
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

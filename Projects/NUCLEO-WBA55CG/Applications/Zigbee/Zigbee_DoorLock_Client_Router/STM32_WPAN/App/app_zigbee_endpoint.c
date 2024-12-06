@@ -44,7 +44,7 @@
 #include "zcl/general/zcl.doorlock.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -245,9 +245,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
-
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
@@ -603,7 +600,7 @@ static void APP_ZIGBEE_GenericCommandResponseCallback(struct ZbZclCommandRspT * 
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
@@ -618,7 +615,7 @@ void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
@@ -633,7 +630,7 @@ void APPE_Button2Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button3Action(void)
+void APP_BSP_Button3Action(void)
 {
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )

@@ -4,7 +4,7 @@
  * @brief ZCL Groups cluster header
  * ZCL 7 section 3.6
  * ZCL 8 section 3.6
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_GROUPS_H
@@ -102,8 +102,8 @@ struct ZbZclGroupsClientAddReqT {
  * Send an Add Group command
  * @param cluster Cluster instance from which to send this command
  * @param req Add Group command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientAddReq(struct ZbZclClusterT *cluster, struct ZbZclGroupsClientAddReqT *req,
@@ -118,8 +118,8 @@ struct ZbZclGroupsClientViewReqT {
  * Send a View Group command
  * @param cluster Cluster instance from which to send this command
  * @param req View Group command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientViewReq(struct ZbZclClusterT *cluster, struct ZbZclGroupsClientViewReqT *req,
@@ -135,8 +135,8 @@ struct ZbZclGroupsClientGetMembershipReqT {
  * Send a Get Group Membership command
  * @param cluster Cluster instance from which to send this command
  * @param req Get Group Membership command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientGetMembershipReq(struct ZbZclClusterT *cluster, struct ZbZclGroupsClientGetMembershipReqT *req,
@@ -151,8 +151,8 @@ struct ZbZclGroupsClientRemoveReqT {
  * Send a Remove Group command
  * @param cluster Cluster instance from which to send this command
  * @param req Remove Group command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientRemoveReq(struct ZbZclClusterT *cluster, struct ZbZclGroupsClientRemoveReqT *req,
@@ -162,8 +162,8 @@ enum ZclStatusCodeT ZbZclGroupsClientRemoveReq(struct ZbZclClusterT *cluster, st
  * Send a Remove All Groups command
  * @param cluster Cluster instance from which to send this command
  * @param req Remove All Group command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientRemoveAllReq(struct ZbZclClusterT *cluster, struct ZbApsAddrT *dst,
@@ -178,8 +178,8 @@ struct ZbZclGroupsClientAddIdentifyingReqT {
  * Send an Add Group If Identifying command
  * @param cluster Cluster instance from which to send this command
  * @param req Add Group If Identifying command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclGroupsClientAddIdentifyingReq(struct ZbZclClusterT *cluster,

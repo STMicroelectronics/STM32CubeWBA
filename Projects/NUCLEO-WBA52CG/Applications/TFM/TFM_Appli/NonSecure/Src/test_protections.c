@@ -915,7 +915,6 @@ static TestStatus dma_m2m(void *to, void *from, size_t n)
 {
 
     DMA_HandleTypeDef DMAHandle = {0};
-    DMA_QListTypeDef  Queue = {0};
     __HAL_RCC_GPDMA1_CLK_ENABLE();
 #if  defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
     DMAHandle.Instance                    = GPDMA1_Channel0;
@@ -936,8 +935,12 @@ static TestStatus dma_m2m(void *to, void *from, size_t n)
     DMAHandle.Init.TransferEventMode      = DMA_TCEM_BLOCK_TRANSFER;
     DMAHandle.Init.TransferAllocatedPort  = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT1;
     DMAHandle.Mode                        = DMA_NORMAL;
-    DMAHandle.LinkedListQueue             = &Queue;
 
+    /* DeInitialize the DMA channel */
+    if (HAL_DMA_DeInit(&DMAHandle) != HAL_OK)
+    {
+        return TEST_ERROR;
+    }
     /* Initialize the DMA channel */
     if (HAL_DMA_Init(&DMAHandle) != HAL_OK)
     {
@@ -949,7 +952,14 @@ static TestStatus dma_m2m(void *to, void *from, size_t n)
     {
         return TEST_ERROR;
     }
+#else
+    if (HAL_DMA_ConfigChannelAttributes(&DMAHandle,
+                                        DMA_CHANNEL_NSEC | DMA_CHANNEL_NPRIV | DMA_CHANNEL_SRC_NSEC | DMA_CHANNEL_DEST_NSEC) != HAL_OK)
+    {
+        return TEST_ERROR;
+    }
 #endif/* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
+
     if (HAL_DMA_Start(&DMAHandle, (uint32_t)from, (uint32_t)to, n) != HAL_OK)
     {
         return TEST_ERROR;

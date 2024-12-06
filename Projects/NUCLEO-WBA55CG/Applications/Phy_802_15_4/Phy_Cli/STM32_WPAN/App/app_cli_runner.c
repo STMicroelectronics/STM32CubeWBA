@@ -41,7 +41,6 @@
 #include "ll_sys_startup.h"
 #include "stm32_seq.h"
 #include "stm32wbaxx_hal_uart.h"
-#include "st_mac_802_15_4_raw_svc.h"
 
 uint8_t cli_cmd_process = 0;
 
@@ -64,11 +63,11 @@ enum {
   CMD_GET_RSSI,
   CMD_SET_CCA_THRESHOLD,
   CMD_GET_CCA_THRESHOLD,
+  CMD_SET_SMPS,
   // common to all protocols (even if content changes */
   CMD_HELP,
   CMD_VERSION,
   CMD_INFO,
-  CMD_EXAMPLE,
 };
 
 /* Private define ------------------------------------------------------------*/
@@ -86,12 +85,6 @@ enum {
 #define PHY_CLI_FRAME_BUFFER_SIZE (PHY_CLI_FRAME_BUFFER_NB_FRAME * (PHY_CLI_MAX_FRAME_SIZE + 1))
 #define PHY_CLI_FRAME_BUFFER_INCR_IDX(i) {i = (i == (PHY_CLI_FRAME_BUFFER_SIZE - 1)) ? 0 : i+1 ;}
 
-#define RTT_COLOR_CODE_DEFAULT "\x1b[0m"
-#define RTT_COLOR_CODE_RED     "\x1b[0;91m"
-#define RTT_COLOR_CODE_GREEN   "\x1b[0;92m"
-#define RTT_COLOR_CODE_YELLOW  "\x1b[0;93m"
-#define RTT_COLOR_CODE_CYAN    "\x1b[0;96m"
-
 /* Private macro -------------------------------------------------------------*/
 
 /* External variables --------------------------------------------------------*/
@@ -107,7 +100,6 @@ uint32_t g_phy_cli_frame_idx = 0;      // num of frame since last RX_start
 
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef *cli_uart;
 uint8_t cliUartRX;
 volatile uint8_t is_rx_pending = FALSE;
 volatile uint8_t cliUart_DMA_TX_ongoing = FALSE;
@@ -129,10 +121,10 @@ static cliCmd_t Get_LQI             = { "RX_get_LQI", 0, 0, {{0, "-"}}};
 static cliCmd_t Get_RSSI            = { "RX_get_RSSI", 0, 0, {{0, "-"}}};
 static cliCmd_t Set_CCA_threshold   = { "Set_CCA_threshold", 1, 1, {{0, "-"}}};
 static cliCmd_t Get_CCA_threshold   = { "Get_CCA_threshold", 0, 0, {{0, "-"}}};
+static cliCmd_t Set_SMPS            = { "Set_SMPS", 1, 1, {{0, "-"}}};
 static cliCmd_t Help                = { "Help", 0, 0, {{0, "-"}}};
 static cliCmd_t Version             = { "Version", 0, 0, {{0, "-"}}};
 static cliCmd_t Info                = { "Info", 0, 0, {{0, "-"}}};
-static cliCmd_t Example             = { "Example", 0, 0, {{0, "-"}}};
 
 static const cliCmd_t* const cmdList[] = {
   &SetChannel,
@@ -151,10 +143,10 @@ static const cliCmd_t* const cmdList[] = {
   &Get_RSSI,
   &Set_CCA_threshold,
   &Get_CCA_threshold,
+  &Set_SMPS,
   &Help,
   &Version,
   &Info,
-  &Example
 };
 
 /* Command archives (for debug purpose) */
@@ -208,7 +200,7 @@ uint32_t app_phy_cli_strtoul(char *s) {
 static void uartRxCpltCallback(UART_HandleTypeDef *huart)
 {
   UNUSED(huart);
-  HAL_UART_Receive_IT(cli_uart, &cliUartRX, 1);
+  HAL_UART_Receive_IT(CLI_UART, &cliUartRX, 1);
 
   /*
    * If UART is plugged after the board is powered, spurious character are "received".
@@ -249,14 +241,13 @@ static void APP_PHY_CLI_Uart_Init(void)
    * Note: DMA is not required, but strongly advised to reduce as much CPU occupation
    *       by UART transmission.
    */
-  cli_uart = &huart1;
-
   uartRxBuffer_length = 0U;
+  UART_HandleTypeDef *cli_uart = CLI_UART;
 
   /* register callbacks */
   cli_uart->TxCpltCallback = uartTxCpltCallback;
   cli_uart->RxCpltCallback = uartRxCpltCallback;
-  HAL_UART_Receive_IT(cli_uart, &cliUartRX, 1);
+  HAL_UART_Receive_IT(CLI_UART, &cliUartRX, 1);
 }
 
 /**
@@ -276,18 +267,14 @@ void APP_PHY_CLI_Init()
     cmds_history.archives[i] = 0;
   }
 
-  // register callbacks
-
-  // ED cb is always a direct callback
-
   /* Register tasks */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_PHY_CLI_PROCESS, UTIL_SEQ_RFU, app_cli_Process);
 
   ll_sys_thread_init();
 
-  app_cli_print("=====================\r\n");
+  app_cli_print("====================\r\n");
   app_cli_print(CLI_NAME);
-  app_cli_print("=====================\r\n");
+  app_cli_print("====================\r\n");
   app_cli_printPrompt();
 }
 
@@ -312,92 +299,9 @@ static void app_phy_cli_help(void)
   app_cli_print("    %s\r\n      Stop Radio in RX mode\r\n", RX_stop.cmd);
   app_cli_print("    %s <channel>\r\n      Start a continuous wave for a channel\r\n", CW_start.cmd);
   app_cli_print("    %s\r\n      Stop the continuous wave\r\n", CW_stop.cmd);
-  app_cli_print("    %s\r\n      Print examples\r\n", Example.cmd);
   app_cli_print("    %s\r\n      Get the Clear Channel Assessment on current channel\r\n", Get_CCA.cmd);
   app_cli_print("    %s\r\n      Get the Energy Detection on current channel\r\n", Get_ED.cmd);
-}
-
-static void app_phy_cli_example(void)
-{
-  app_cli_print("Not yet implemented\r\n");
-#if 0
-#define PHY_CLI_PRINT_EXAMPLE(...) PHY_CLI_PRINT(__VA_ARGS__)
-
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To get Version and create Connection with CubeMonitorRF\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s\r\n", Version.cmd);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To set the Channel used in TX and RX between [11:26]\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 11\r\n", SetChannel.cmd);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To set the Power in dbm used in TX [-21:6]r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s -21\r\n", SetPower.cmd);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To start a transmission (TX)\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s <param(s)>\r\n",TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Command transmitting a MAC frame\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("  @param  1 The frame to be transmitted without CRC (automatically calculated)\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("  @param  2 [Optional] The number of time the frame is sent (default = 1)\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("  @param  3 [Optional] The delay between frames in ms (default = 0)\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("  @param  4 [Optional] A boolean to stop transmission when TX result is not 0x00 (default = 0)\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("  @return 0 if command succeed, or error code\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Frame is a comma separated hexadecimal string with the following format:\r\n");
-  PHY_CLI_PRINT_EXAMPLE("- Byte 1:     Frame length CRC included\r\n");
-  PHY_CLI_PRINT_EXAMPLE("- Byte 2-3:   MAC Frame control (FC)\r\n");
-  PHY_CLI_PRINT_EXAMPLE("- Byte 4:     MAC Sequence number (SN)\r\n");
-  PHY_CLI_PRINT_EXAMPLE("- Byte 5-x:   MAC data (including addressing field if used)\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("NO ACK required:\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x00,0x00,0x01,0xd1,0xd2,0xd3,0xd4,0xd5,0xd6\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x01,0x00,0x01,0xFF,0xFF,0xd3,0xd4,0xd5,0xd6 4\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x63,0x98,0x01,0x11,0x22,0xd3,0xd4,0xd5,0xd6 5 10\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0A,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xFF 6 20\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x01,0x80,0x01,0x11,0x22,0xd3,0xd4,0xd5,0xd6 7 30\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Note: a special frame has been defined and the name `STD' can be used instead of the frame byte definition.\r\n" );
-  PHY_CLI_PRINT_EXAMPLE("cli > %s STD\r\n", TX_start.cmd);
-  PHY_CLI_PRINT_EXAMPLE("is equivalent to\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s %s\r\n", TX_start.cmd, CLI_802_15_4_STD_PACKET);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("ACK required:\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x63,0x98,0x01,0x22,0x11,0xBB,0xAA,0xd5,0xd6 5 40\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0A,0x21,0x08,0x01,0x22,0x11,0xFF,0xFF,0xFF 6 50 1\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0x0B,0x21,0x08,0x01,0xFF,0xFF,0xd3,0xd4,0xd5,0xd6 7 60\r\n", TX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Note: a special frame has been defined and the name `RACK' can be used instead of the frame byte definition.\r\n" );
-  PHY_CLI_PRINT_EXAMPLE("cli > %s RACK\r\n", TX_start.cmd);
-  PHY_CLI_PRINT_EXAMPLE("is equivalent to\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s %s\r\n", TX_start.cmd, CLI_802_15_4_RACK_PACKET);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To start a reception (RX)\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s\r\n",RX_start.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Command receiving a MAC frame\r\n");
-  HAL_Delay(1);
-  //PHY_CLI_PRINT_EXAMPLE("- DEFAULT PAN ID :   0x%4x > 0x%2x,0x%2x,\r\n",PHY_CLI_DEFAULT_PANID, PHY_CLI_DEFAULT_PANID&0xFF, PHY_CLI_DEFAULT_PANID>>8);
-  //PHY_CLI_PRINT_EXAMPLE("- DEFAULT ADDRESS:   0x%4x > 0x%2x,0x%2x,\r\n",PHY_CLI_DEFAULT_ADDRESS, PHY_CLI_DEFAULT_ADDRESS&0xFF, PHY_CLI_DEFAULT_ADDRESS>>8);
-  //HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To stop a reception \r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s\r\n",RX_stop.cmd);
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("Command stopping radio and printing received results\r\n");
-  HAL_Delay(1);
-  PHY_CLI_PRINT_EXAMPLE("\n ==> To set the specific TM [0:1] on signal [1:63]\r\n");
-  PHY_CLI_PRINT_EXAMPLE("cli > %s 0 4\r\n", DTB_TM_select.cmd);
-  PHY_CLI_PRINT_EXAMPLE("Command setting the TM 0 on signal 4 (i_zclk)\r\n");
-  HAL_Delay(1);
-#undef PHY_CLI_PRINT_EXAMPLE
-#endif
-  app_cli_printPrompt();
+  app_cli_print("    %s <enable>\r\n     Configure the SMPS (enable if1, disable otherwise) \r\n", Set_SMPS.cmd);
 }
 
 //####################################
@@ -432,22 +336,23 @@ void app_cli_print(const char *aFormat, ...)
  */
 static void app_cli_uartTransmit(uint8_t *pData, uint16_t size )
 {
-  HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(cli_uart, pData, size);
+  HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(CLI_UART, pData, size);
 
   if (result != HAL_OK) {
     /* UART should return in Receiver mode */
-      HAL_UART_Receive_IT(&huart1, &verifRx, 1);
+      HAL_UART_Receive_IT(CLI_UART, &verifRx, 1);
   }
 }
 
-#define RX_BUFFER_MAX_SIZE_STR RX_BUFFER_MAX_SIZE << 2
+#define RX_BUFFER_MAX_SIZE_STR (RX_BUFFER_MAX_SIZE*5) + 3
 static char payload_str[RX_BUFFER_MAX_SIZE_STR];
 static char payload_str_buffer[10];
 
 void app_cli_print_payload(const app_cli_single_RX_t *frame)
 {
   sprintf(payload_str, "\r\n[");
-  for (uint16_t i = 0U; i< frame->payload_len; i++)
+  uint16_t length = MIN(frame->payload_len, RX_BUFFER_MAX_SIZE);
+  for (uint16_t i = 0U; i< length; i++)
   {
 	  sprintf(payload_str_buffer,"0x%02X,", (unsigned int)frame->payload[i]);
 	  strcat(payload_str, payload_str_buffer);
@@ -546,7 +451,7 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
   int  commandNb = 0;
   char * cmdToken, * dataPacket;
   uint8_t res, channel, pkt_size, cca_result, lqi, rx_frame_printing;
-  int8_t power, cca_threshold, rssi;
+  int8_t power, cca_threshold, rssi, smps;
   uint32_t packetNb;
   uint16_t rx_duration, tx_delay, stop_tx;
 
@@ -586,10 +491,6 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
   case CMD_HELP:
     app_phy_cli_help();
     app_cli_printPrompt();
-    break;
-
-  case CMD_EXAMPLE: 
-    app_phy_cli_example();
     break;
 
   case CMD_VERSION:
@@ -727,6 +628,13 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
   case CMD_GET_CCA_THRESHOLD:
     res = app_cli_ex_get_cca_threshold(&cca_threshold);
     app_cli_print("CCA threshold is %d dbm\r\n", cca_threshold);
+    app_cli_print_result(res);
+    app_cli_printPrompt();
+    break;
+
+  case CMD_SET_SMPS:
+    smps = (int8_t)atol(cliCmdArray[1]);
+    res = app_cli_ex_set_smps(smps);
     app_cli_print_result(res);
     app_cli_printPrompt();
     break;

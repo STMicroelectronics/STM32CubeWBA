@@ -181,6 +181,12 @@ void Menu_SetControlContent(Menu_Page_t* pMenuPage, Menu_Content_Text_t *pText, 
 void Menu_SetControlAction(Menu_Page_t* pMenuPage, Menu_Action_Direction_t Direction, Menu_Action_t Action);
 
 /**
+ * @brief Get current active page
+ * @return pMenuPage: A pointer to the current menu page
+ */
+Menu_Page_t* Menu_GetActivePage(void);
+
+/**
  * @brief Set the logo of a Logo Menu page
  * @param pMenuPage: A pointer to the menu page
  * @param pIcon: A pointer to an icon structure to discplay

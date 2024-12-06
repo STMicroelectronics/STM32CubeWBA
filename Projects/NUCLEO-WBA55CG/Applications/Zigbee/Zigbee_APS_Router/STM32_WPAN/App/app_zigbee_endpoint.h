@@ -1,12 +1,12 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * File Name          : app_zigbee_cluster.h
-  * Description        : Header for Zigbee Application and it cluster.
+  * File Name          : app_zigbee_endpoint.h
+  * Description        : Header for Zigbee Application and it endpoint.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -33,7 +33,7 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ------------------------------------------------------------*/
-#define	CLUSTER_NB_MAX                          6u          /* Maximum number of Clusters in this application */
+#define CLUSTER_NB_MAX                          6u          /* Maximum number of Clusters in this application */
 
 /* USER CODE BEGIN ED */
 
@@ -46,6 +46,7 @@ struct ApsInfoT
   struct ZbApsFilterT   *pstApsFilter;
   uint32_t              lAsduHandle;
 };
+
 
 /* USER CODE END ET */
 
@@ -67,7 +68,7 @@ struct ApsInfoT
 /* Exported functions prototypes -------------------------------- */
 extern void       APP_ZIGBEE_ApplicationInit              ( void );
 extern void       APP_ZIGBEE_ApplicationStart             ( void );
-extern void	      APP_ZIGBEE_PersistenceStartup           ( void );
+extern void       APP_ZIGBEE_PersistenceStartup           ( void );
 extern void       APP_ZIGBEE_ConfigEndpoints              ( void );
 extern bool       APP_ZIGBEE_ConfigGroupAddr              ( void );
 

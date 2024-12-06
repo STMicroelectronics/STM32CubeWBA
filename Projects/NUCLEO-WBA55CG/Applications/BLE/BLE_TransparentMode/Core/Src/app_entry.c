@@ -26,6 +26,8 @@
 #include "app_entry.h"
 #include "stm32_rtos.h"
 #include "stm_list.h"
+#include "rf_external_pa.h"
+#include "rf_antenna_switch.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
@@ -105,7 +107,7 @@ static bool system_startup_done = FALSE;
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
@@ -246,6 +248,14 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
+#if (CFG_EXTERNAL_PA_ENABLE == 1)
+  RF_CONTROL_ExternalPA(RF_EPA_ENABLE);
+#endif /* CFG_EXTERNAL_PA_ENABLE */
+
+#if (CFG_BLE_AOA_AOD_ENABLE == 1)
+  RF_CONTROL_AntennaSwitch(RF_ANTSW_ENABLE);
+#endif /* CFG_BLE_AOA_AOD_ENABLE */
+
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
@@ -360,6 +370,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  MX_USART1_UART_Init();
+
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -476,21 +488,6 @@ static void APPE_AMM_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 }
 
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
-{
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
-}
-
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
-{
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
-}
-
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 #if (CFG_LED_SUPPORTED == 1)
 static void Led_Init( void )
@@ -575,6 +572,11 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_StopStabilizationTimer();
+  /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -598,7 +600,13 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -652,6 +660,21 @@ void AMM_ProcessRequest(void)
 {
   /* Trigger to call Advance Memory Manager process function */
   UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
+}
+
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+{
+  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
+}
+
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
+{
+  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
+}
+
+static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
+{
+  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
 }
 
 void FM_ProcessRequest(void)

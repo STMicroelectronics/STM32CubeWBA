@@ -23,7 +23,7 @@
 #define __APP_THREADX_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -65,7 +65,8 @@ UINT App_ThreadX_Init(VOID *memory_ptr);
 void MX_ThreadX_Init(void);
 
 /* USER CODE BEGIN EFP */
-
+void ThreadXLowPowerUserEnter(void);
+void ThreadXLowPowerUserExit(void);
 /* USER CODE END EFP */
 
 /* USER CODE BEGIN 1 */

@@ -32,7 +32,7 @@
 
 /* Private defines -----------------------------------------------------------*/
 
-#define HAP_HA_GATT_DATABASE_SIZE          (2u + HAP_MAX_PRESET_NUM * (3 + HAP_MAX_PRESET_NAME_LEN))
+#define HAP_HA_GATT_DATABASE_SIZE          (3u + HAP_MAX_PRESET_NUM * (3 + HAP_MAX_PRESET_NAME_LEN))
 #define HAP_HARC_GATT_DATABASE_SIZE        (35)
 #define HAP_IAC_GATT_DATABASE_SIZE         (14)
 

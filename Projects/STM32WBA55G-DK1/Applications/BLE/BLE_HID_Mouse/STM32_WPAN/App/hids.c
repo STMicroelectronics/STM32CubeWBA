@@ -188,7 +188,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
                 /* USER CODE END Service1_Char_1_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (HIDS_Context.InputrepCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (HIDS_Context.InputrepCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -199,7 +199,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
 
             /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             HIDS_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (HIDS_Context.InputrepCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
           else if(p_attribute_modified->Attr_Handle == (HIDS_Context.HcpCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
@@ -209,7 +209,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
 
             /* USER CODE END Service1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             HIDS_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (HIDS_Context.HcpCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -244,7 +244,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
                                 p_write_perm_req->Data_Length,
                                 (uint8_t *)&p_write_perm_req->Data[0]);
             /*USER CODE END Service1_Char_1_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(p_write_perm_req->Attribute_Handle == (HIDS_Context.InputrepCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -282,19 +282,19 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -540,9 +540,9 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value INPUTREP command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_1*/
+      /* USER CODE BEGIN Service1_Char_Value_1 */
 
-      /* USER CODE END Service1_Char_Value_1*/
+      /* USER CODE END Service1_Char_Value_1 */
       break;
 
     case HIDS_REM:
@@ -559,9 +559,9 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value REM command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_2*/
+      /* USER CODE BEGIN Service1_Char_Value_2 */
 
-      /* USER CODE END Service1_Char_Value_2*/
+      /* USER CODE END Service1_Char_Value_2 */
       break;
 
     case HIDS_HII:
@@ -578,9 +578,9 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value HII command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_3*/
+      /* USER CODE BEGIN Service1_Char_Value_3 */
 
-      /* USER CODE END Service1_Char_Value_3*/
+      /* USER CODE END Service1_Char_Value_3 */
       break;
 
     case HIDS_HCP:
@@ -597,9 +597,9 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value HCP command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_4*/
+      /* USER CODE BEGIN Service1_Char_Value_4 */
 
-      /* USER CODE END Service1_Char_Value_4*/
+      /* USER CODE END Service1_Char_Value_4 */
       break;
 
     default:

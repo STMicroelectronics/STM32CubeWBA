@@ -26,9 +26,10 @@
 
 /* Exported defines ----------------------------------------------------------*/
 
-/** @brief Max size of payload reception (CRC not included) */
+/** @brief Max size of payload reception (CRC excluded) */
 #define ST_MAC_RAW_RX_PAYLOAD_MAX_SIZE 125
 
+/** @brief Max size of payload reception (CRC included) */
 #define ST_MAC_RAW_RX_FRAME_MAX_SIZE ST_MAC_RAW_RX_PAYLOAD_MAX_SIZE + 2
 
 
@@ -71,6 +72,7 @@ typedef enum {
   TX_SUCCESS = 0,
   TX_ACK_TIMEOUT,
   TX_FAILED,
+  TX_CHANNEL_ACCESS_FAILURE,
 } MAC_RAW_TX_Status_t;
 
 /** @brief TX status
@@ -80,7 +82,19 @@ typedef enum {
   RX_NO_PAYLOAD,
   RX_REJECTED,
   RX_FILTERED,
+  RX_INVALID_FCS,
 } MAC_RAW_RX_Status_t;
+
+/** @brief Initialisation config 
+ */
+typedef enum {
+  /*! 802.15.4 PHY ONLY */
+  RAW_CONFIG = 0,
+  /*! 802.15.4 custom/proprietary */
+  EXT_CONFIG, // NOT YET AVAILABLE
+  /*! 802.15.4 PHY + BLE */
+  CR_CONFIG
+} ST_MAC_Config_Mode;
 
 /* Raw MAC requests */
 /** @brief Defines the structure holding Radio capabilities
@@ -106,25 +120,25 @@ typedef struct {
   MAC_RAW_TX_Type_t tx_type;
   /*! Payload to send (case ST_MAC_STANDARD_TX only) */
   uint8_t payload[ST_MAC_RAW_RX_PAYLOAD_MAX_SIZE];
-  /*! Payload length (CRC excluded) */
+  /*! Payload length (CRC included) */
   uint8_t payload_len;
   /*! Number of frames to send */
-  uint16_t frames_number;  //0: Infinite
+  uint16_t frames_number;  //0: Infinite NOT AVAILABLE IN CONCURRENT
   /*! Delay between each frames (in ms) */
-  uint16_t delay_ms;
+  uint16_t delay_ms; // NOT AVAILABLE IN CONCURRENT
   /*! Stop next TX if current one failed (0: continue, otherwise stop) */
-  uint8_t stopTx_if_failure;
+  uint8_t stopTx_if_failure; // NOT AVAILABLE IN CONCURRENT
 } ST_MAC_raw_TX_start_t;
 
 /** @brief Defines the structure for starting the radio in reception.
  */
 typedef struct {
-  /*! The channel on which to receive trames */
+  /*! The channel on which to receive frames */
   uint8_t channel_number;
   /*! Reception duration in ms */
-  uint32_t period; // 0: infinite
+  uint32_t period; // 0: infinite NOT AVAILABLE IN CONCURRENT
   /*! Max number of frames to receive; once reached stop the reception */
-  uint16_t frames_number; // 0: infinite
+  uint16_t frames_number; // 0: infinite NOT AVAILABLE IN CONCURRENT
 } ST_MAC_raw_RX_start_t;
 
 /** @brief Defines the structure to request a Clear Channel Assessement
@@ -172,7 +186,7 @@ typedef struct {
 typedef struct {
   /*! Status of transmission */
   MAC_RAW_TX_Status_t tx_status;
-  /*! Pointer to ACK if any (NULL otherwise */
+  /*! Pointer to ACK if any (NULL otherwise) */
   uint8_t *ack_ptr;
   /*! Size of ACK (0 if any) */
   uint16_t ack_length;
@@ -185,8 +199,7 @@ typedef void (*ST_MAC_raw_Notif_callback)(MAC_RAW_State_t state);
 typedef void (*ST_MAC_raw_single_RX_cbk) ( const ST_MAC_raw_single_RX_event_t * p_RX_evt);
 typedef void (*ST_MAC_raw_single_TX_cbk) ( const ST_MAC_raw_single_TX_event_t * p_TX_evt);
 
-typedef struct
-{
+typedef struct {
   ST_MAC_raw_Notif_callback  p_Notif;
   ST_MAC_raw_single_RX_cbk   p_RX_Done;
   ST_MAC_raw_single_TX_cbk   p_TX_Done;
@@ -195,24 +208,91 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
-
 /* Exported functions ------------------------------------------------------- */
 
-/* General */
-MAC_Status_t ST_MAC_raw_init(ST_MAC_Raw_event_callbacks_t *p_callback);
+/**
+ * @brief ST_MAC_raw_init allow you to initilize the raw layer. there are 3 modes available. 
+ * RAW_CONFIG allows you to send and received frame in 802.15.4 only. 
+ * EXT_CONFIG not yet implemented. if used always return MAC_INVALID_PARAMETER.
+ * CR_CONFIG allows you to send and received frame in 802.15.4 and have BLE in concurrente.
+ *
+ * @param *p_callback : [in] callback for TX done, RX received, state notify.
+ *        *config : [in] config selected.
+ * @retval MAC_Status_t 
+ */
+MAC_Status_t ST_MAC_raw_init(ST_MAC_Raw_event_callbacks_t *p_callback, ST_MAC_Config_Mode config);
 
-/* Services */
+/**
+ * @brief ST_MAC_raw_get_caps allows you to get infomation: min_cca_threshold, max_cca_threshold, min_tx_power and max_tx_power.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *ST_MAC_raw_caps_t : [in] raw_caps structure allow you to get CCA and TxPower information.
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_get_caps(MAC_handle * st_mac_hndl , ST_MAC_raw_caps_t *pRawCaps );
 
+/**
+ * @brief ST_MAC_raw_start_TX allows you to send frame in 802.15.4.
+ * Depending on initialization mode, can also generate noise on a selected channel.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *pRawTXStartReq : [in] TxFrame to send. Check the structure to have more infomation.
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_start_TX( MAC_handle * st_mac_hndl,  const ST_MAC_raw_TX_start_t * pRawTXStartReq );
+
+/**
+ * @brief ST_MAC_raw_stop_TX allow you to abort frame transmition in 802.15.4.
+ *
+ * @param None
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_stop_TX(void);
 
+/**
+ * @brief ST_MAC_raw_start_RX allows you to received frame in 802.15.4.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *pRawTXStartReq : [in] Enable the radio to receive frames. Check the structure to have more infomation.
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_start_RX(MAC_handle * st_mac_hndl, const ST_MAC_raw_RX_start_t * pRawRXStartReq );
+
+/**
+ * @brief ST_MAC_raw_stop_RX allow you to stop receiving frame in 802.15.4.
+ *
+ * @param None
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_stop_RX(void);
 
+/**
+ * @brief ST_MAC_raw_start_CCA allow you to perform a CCA.
+ * This feature lets you know whether the channel is noisy or not.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *pRawTXStartReq : [in] Channel and threshold. Check the structure to have more infomation.
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_start_CCA(MAC_handle * st_mac_hndl, ST_MAC_raw_CCA_t * pRawCCAStartReq );
 
+/* NOT AVAILABLE IN CONCURRENT */
+/**
+ * @brief ST_MAC_raw_EDscan allow you to perform Energy detector scan on one selected channel.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *pRawEDscanReq : [in] Channel selected.
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_EDscan(MAC_handle * st_mac_hndl, const ST_MAC_raw_EDscan_t * pRawEDscanReq );
+
+/**
+ * @brief ST_MAC_raw_EDscan allow you to get the result for the latest ED scan performed.
+ *
+ * @param *MAC_handle : [in] MAC instance
+ *        *pRawEDscanReq : [in] Energy on the selected channel (busy=255, clear=0).
+ * @retval MAC_Status_t 
+ */
 MAC_Status_t ST_MAC_raw_EDscan_get_result(MAC_handle * st_mac_hndl, const ST_MAC_rw_EDscan_result_t * pRawEDscanReq );
 
 #endif /* _802_15_4_MAC_RAW_SVC_H_ */

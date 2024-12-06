@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include <assert.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include "app_common.h"
 #include "app_conf.h"
@@ -702,6 +703,8 @@ static void APP_ZIGBEE_OTAClientRebootCallback( struct ZbZclClusterT * pstCluste
   /* Start a reboot */
   HAL_Delay( 1000u ); /* Wait for the log to flush */
   * ( uint32_t * ) SRAM1_BASE = CFG_REBOOT_ON_OTA_FW;
+  HAL_Delay( 1000u ); /* Wait for the write to complete */
+  HAL_Delay( 1000u ); /* Wait for the write to complete */
   NVIC_SystemReset();
 
   /* USER CODE END APP_ZIGBEE_OTAClientRebootCallback */

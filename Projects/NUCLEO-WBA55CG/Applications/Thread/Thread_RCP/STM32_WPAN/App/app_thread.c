@@ -45,13 +45,13 @@
 #include "tasklet.h"
 #include "thread.h"
 #include "joiner.h"
+#include "alarm.h"
+#include "uart.h"
 #include OPENTHREAD_CONFIG_FILE
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
-#include "app_thread_data_transfer.h"
-#include "udp.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
@@ -75,9 +75,10 @@
 static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
 
+static void APP_THREAD_RCPInit(otInstance *aInstance);
+
 /* USER CODE BEGIN PFP */
 static void APP_THREAD_AppInit(void);
-static void APP_THREAD_RCPInit(otInstance *aInstance);
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
@@ -91,11 +92,6 @@ static otInstance * PtOpenThreadInstance;
 void ProcessAlarm(void)
 {
   arcAlarmProcess(PtOpenThreadInstance);
-}
-
-void ProcessUsAlarm(void)
-{
-  arcUsAlarmProcess(PtOpenThreadInstance);
 }
 
 void ProcessTasklets(void)
@@ -143,15 +139,9 @@ void APP_THREAD_ScheduleAlarm(void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_OT_ALARM, TASK_PRIO_ALARM);
 }
 
-void APP_THREAD_ScheduleUsAlarm(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_OT_US_ALARM, TASK_PRIO_US_ALARM);
-}
-
 static void APP_THREAD_AlarmsInit(void)
 {
   UTIL_SEQ_RegTask(1U << CFG_TASK_OT_ALARM, UTIL_SEQ_RFU, ProcessAlarm);
-  UTIL_SEQ_RegTask(1U << CFG_TASK_OT_US_ALARM, UTIL_SEQ_RFU, ProcessUsAlarm);
 
   /* Run first time */
   UTIL_SEQ_SetTask(1U << CFG_TASK_OT_ALARM, TASK_PRIO_ALARM);
@@ -225,8 +215,8 @@ static void APP_THREAD_DeviceConfig(void)
 
   otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
 
-  /* USER CODE BEGIN DEVICECONFIG */
   APP_THREAD_RCPInit(PtOpenThreadInstance);
+  /* USER CODE BEGIN DEVICECONFIG */
 
   /* USER CODE END DEVICECONFIG */
 }
@@ -266,13 +256,13 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
     __enable_irq();
   }
   
-  while(1U == 1U)
+  while (1)
   {
-    BSP_LED_Toggle(LD1);
+    APP_LED_TOGGLE(LD1);
     HAL_Delay(500U);
-    BSP_LED_Toggle(LD2);
+    APP_LED_TOGGLE(LD2);
     HAL_Delay(500U);
-    BSP_LED_Toggle(LD3);
+    APP_LED_TOGGLE(LD3);
     HAL_Delay(500U);
   }
 
@@ -325,7 +315,7 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
         APP_THREAD_TraceError("ERROR : ERR_THREAD_CHECK_WIRELESS ",ErrCode);
         break;
 
-	case ERR_THREAD_SET_THRESHOLD:
+    case ERR_THREAD_SET_THRESHOLD:
         APP_THREAD_TraceError("ERROR : ERR_THREAD_SET_THRESHOLD", ErrCode);
         break;
 
@@ -338,22 +328,26 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
   }
 }
 
-void app_logger_write(uint8_t *buffer, uint32_t size)
+void ProcessRcpSpinel(void)
 {
-  //UTIL_ADV_TRACE_COND_Send(VLEVEL_ALWAYS, ~0x0, 0, buffer, (uint16_t)size);
+  arcRcpSpinelRx();
+}
+
+void APP_THREAD_ScheduleRcpSpinelRx(void)
+{
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_OT_RCP_SPINEL_RX, TASK_PRIO_RCP_SPINEL_RX);
+}
+
+static void APP_THREAD_RCPInit(otInstance *aInstance)
+{
+  UTIL_SEQ_RegTask(1U << CFG_TASK_OT_RCP_SPINEL_RX, UTIL_SEQ_RFU, ProcessRcpSpinel);
+  otAppNcpInit(aInstance);
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
 static void APP_THREAD_AppInit(void)
 {
-}
-
-
-
-static void APP_THREAD_RCPInit(otInstance *aInstance)
-{
-  otAppNcpInit(aInstance);
 }
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

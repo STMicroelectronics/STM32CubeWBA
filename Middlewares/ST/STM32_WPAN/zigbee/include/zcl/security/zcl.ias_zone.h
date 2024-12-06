@@ -4,7 +4,7 @@
  * @brief ZCL Security IAS Zone cluster header
  * ZCL 7 section 8.2
  * ZCL 8 section 8.2
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_IAS_ZONE_H
@@ -177,7 +177,7 @@ struct ZbZclIasZoneServerCallbacksT {
      * Return value is a ZCL Status. If status indicates an error,
      * it sent in a Default Response back to the originator. */
     enum ZclStatusCodeT (*mode_change)(struct ZbZclClusterT *cluster,
-        void *arg, /* ZbZclClusterSetCallbackArg */
+        void *arg,
         enum ZbZclIasZoneServerModeT mode,
         struct ZbZclIasZoneClientTestModeReqT *req);
     /**< Callback to application, invoked on receipt of Initiate Normal Operation Mode
@@ -218,7 +218,7 @@ struct ZbZclIasZoneClientCallbacksT {
     /* ZCL_IAS_ZONE_SVR_CMD_ZONE_STATUS_CHANGE_NOTIFY callback */
     void (*zone_status_change)(
         struct ZbZclClusterT *cluster,
-        void *arg, /* ZbZclClusterSetCallbackArg */
+        void *arg,
         struct ZbZclIasZoneServerStatusChangeNotifyT *notify,
         const struct ZbApsAddrT *src);
     /**< Callback to application, invoked on receipt of Zone Status Change Notification command */
@@ -229,7 +229,7 @@ struct ZbZclIasZoneClientCallbacksT {
      * Zone Enroll Response command is sent.*/
     enum ZclStatusCodeT (*zone_enroll_req)(
         struct ZbZclClusterT *cluster,
-        void *arg, /* ZbZclClusterSetCallbackArg */
+        void *arg,
         struct ZbZclIasZoneServerEnrollRequestT *req,
         uint64_t ext_src_addr,
         /* OUT: Enroll response code */

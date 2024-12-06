@@ -31,6 +31,7 @@ typedef struct _CIS_Conf_t
   uint8_t CIG_ID;
   uint16_t CIS_Conn_Handle;
   uint8_t is_peripheral;
+  uint8_t is_cis_active;
 }CIS_Conf_t;
 
 typedef struct _BIS_Conf_t
@@ -53,15 +54,16 @@ uint8_t BLE_CodecInit( void )
 {
   for (int32_t i = 0 ; i < BLE_PLAT_NUM_CIS ; i++)
   {
-    CIS_Conf[i].CIG_ID = 0xFFU;
-    CIS_Conf[i].CIS_Conn_Handle = 0xFFFFU;
+    CIS_Conf[i].CIG_ID = 0xFFu;
+    CIS_Conf[i].CIS_Conn_Handle = 0xFFFFu;
     CIS_Conf[i].is_peripheral = 0;
+    CIS_Conf[i].is_cis_active = 0;
   }
 
   for (int32_t i = 0 ; i < BLE_PLAT_NUM_BIS ; i++)
   {
-    BIS_Conf[i].BIG_Handle = 0xFFU;
-    BIS_Conf[i].BIS_Conn_Handle = 0xFFFFU;
+    BIS_Conf[i].BIG_Handle = 0xFFu;
+    BIS_Conf[i].BIS_Conn_Handle = 0xFFFFu;
   }
   /* reset codec manager */
   CODEC_ManagerReset();
@@ -386,19 +388,24 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
   else if (opcode == 0x2062U) /*HCI_LE_Set_CIG_Parameters*/
   {
     /* HCI_LE_Set_CIG_Parameters (cig_id and ConnectionHandle)*/
-    for (int32_t i = 0 ; i<num_connection_handles ; i++)
+    int32_t i;
+    for (i = 0 ; i<num_connection_handles ; i++)
     {
       APP_DBG_MSG("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n", cig_id, iso_con_handle[i]);
-      if ((BLE_GetExistingCISConfSlot(iso_con_handle[i], &p_cis_conf) == 0u) || (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u))
-      {
-        p_cis_conf->CIS_Conn_Handle = iso_con_handle[i];
-        p_cis_conf->CIG_ID = cig_id;
-        p_cis_conf->is_peripheral = 0;
-      }
-      else
-      {
-        /* should not be reached */
-      }
+
+      CIS_Conf[i].CIS_Conn_Handle = iso_con_handle[i];
+      CIS_Conf[i].CIG_ID = cig_id;
+      CIS_Conf[i].is_peripheral = 0;
+      CIS_Conf[i].is_cis_active = 0;
+    }
+
+    /* clear all others unused slots */
+    for( ; i<BLE_PLAT_NUM_CIS ; i++)
+    {
+      CIS_Conf[i].CIS_Conn_Handle = 0xFFFFu;
+      CIS_Conf[i].CIG_ID = 0xFFu;
+      CIS_Conf[i].is_peripheral = 0;
+      CIS_Conf[i].is_cis_active = 0;
     }
   }
   else if (opcode == 0x0019U)
@@ -406,12 +413,13 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
     /*HCI_LE_CIS_ESTABLISHED_EVENT  (iso_interval and ConnectionHandle)*/
     type = 0;
     LOG_INFO_APP("     - cis_conn_handle:   0x%04X    - iso_interval:   %d\n", iso_con_handle[0], iso_interval);
-	if ((status == 0) &&    
+	if ((status == 0) &&
         ((BLE_GetExistingCISConfSlot(iso_con_handle[0], &p_cis_conf) == 0u) || (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0u)))
     {
       /* the CIS can be re-established without a new call to Set_CIG_Parameters */
       p_cis_conf->CIS_Conn_Handle = iso_con_handle[0];
-        
+      p_cis_conf->is_cis_active = 1;
+
       LOG_INFO_APP("==>> AUDIO_RegisterGroup()\n");
       uint32_t transport_latency_c2p = transport_latency_C_to_P[0] + (transport_latency_C_to_P[1]<<8) + (transport_latency_C_to_P[2]<<16);
       uint32_t transport_latency_p2c = transport_latency_P_to_C[0] + (transport_latency_P_to_C[1]<<8) + (transport_latency_P_to_C[2]<<16);
@@ -485,15 +493,15 @@ static uint8_t BLE_SetFreeCISConfSlot(uint16_t CIS_Conn_Handle, uint8_t *CIG_ID)
   {
     if (CIS_Conf[i].CIS_Conn_Handle == CIS_Conn_Handle)
     {
-      CIS_Conf[i].CIS_Conn_Handle = 0xFFFF;
       cig_id = CIS_Conf[i].CIG_ID;
       CIS_Conf[i].is_peripheral = 0;
+      CIS_Conf[i].is_cis_active = 0;
       /* don't erase CIG ID because it may be reused */
 
       int8_t cnt = 0;
       for (int8_t k = 0; k < BLE_PLAT_NUM_CIS ; k++)
       {
-        if ((CIS_Conf[k].CIG_ID == cig_id) && (CIS_Conf[k].CIS_Conn_Handle != 0xFFFF))
+        if ((CIS_Conf[k].CIG_ID == cig_id) && (CIS_Conf[k].is_cis_active == 1))
         {
           cnt++;
         }

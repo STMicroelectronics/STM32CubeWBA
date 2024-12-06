@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.h
+  * @file    HTS_app.h
   * @author  MCD Application Team
-  * @brief   Header for service2_app.c
+  * @brief   Header for HTS_app.c
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -37,9 +37,9 @@ typedef enum
   HTS_CONN_HANDLE_EVT,
   HTS_DISCON_HANDLE_EVT,
 
-  /* USER CODE BEGIN Service2_OpcodeNotificationEvt_t */
+  /* USER CODE BEGIN Service1_OpcodeNotificationEvt_t */
 
-  /* USER CODE END Service2_OpcodeNotificationEvt_t */
+  /* USER CODE END Service1_OpcodeNotificationEvt_t */
 
   HTS_LAST_EVT,
 } HTS_APP_OpcodeNotificationEvt_t;

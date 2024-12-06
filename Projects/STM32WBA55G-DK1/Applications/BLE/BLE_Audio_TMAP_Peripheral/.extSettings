@@ -9,6 +9,5 @@ Application/User/Core=../Core/Src/image.c;
 Application/User/STM32_WPAN/Target=../STM32_WPAN/Target/ble_audio_plat.c;../STM32_WPAN/Target/ble_audio_if.c;../STM32_WPAN/Target/ble_codec.c;../STM32_WPAN/Target/codec_if.c;
 Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_ble.c;../STM32_WPAN/App/tmap_app.c;../STM32_WPAN/App/app_menu.c;../STM32_WPAN/App/app_menu_cfg.c
 Application/User/STM32_WPAN/App/AudioUseCases=../STM32_WPAN/App/AudioUseCases/usecase_dev_mgmt.c;../STM32_WPAN/App/AudioUseCases/tmap/tmap.c;../STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c;../STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c;../STM32_WPAN/App/AudioUseCases/tmap/tmas.c;
-Application/User/System/Modules=../System/Modules/stm_queue.c;
 Middlewares/STM32_WPAN=../../../../../../Middlewares\ST\STM32_WPAN\ble\audio\lib\ble_audio.a;
 Middlewares/STM32_WPAN/codec=../../../../../../Middlewares\ST\STM32_WPAN\ble\codec\codec_manager\Lib\codec_mngr.a;../../../../../../Middlewares\ST\STM32_WPAN\ble\codec\lc3\Lib\LC3.a;

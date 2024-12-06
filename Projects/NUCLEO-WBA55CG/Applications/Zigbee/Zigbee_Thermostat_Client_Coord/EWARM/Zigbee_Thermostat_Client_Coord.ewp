@@ -85,7 +85,7 @@
                 </option>
                 <option>
                     <name>OGBufferedTerminalOutput</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>GenStdoutInterface</name>
@@ -220,13 +220,10 @@
                     <state>USE_HAL_DRIVER</state>
                     <state>USE_FULL_ASSERT</state>
                     <state>USE_FULL_LL_DRIVER</state>
-                    <state>PHY_2_10_a</state>
-                    <state>PHY_40nm_2_30_a_A1</state>
-                    <state>LOGGER_ENABLE=0</state>
-                    <state>LOGUARTENABLED</state>
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
                     <state>APPLICATION_USE_BAREMETAL</state>
+                    <state>APPLICATION_USE_NUCLEO</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
                     <state>APPLICATION_USE_AMM</state>
@@ -290,7 +287,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>10010100</state>
+                    <state>11111110</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -324,7 +321,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>
@@ -360,12 +357,14 @@
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
                     <state>$PROJ_DIR$\..\System\Config\LowPower</state>
                     <state>$PROJ_DIR$\..\System\Interfaces</state>
-                    <state>$PROJ_DIR$\..\System\Modules</state>
-                    <state>$PROJ_DIR$\..\System\Modules\baes</state>
-                    <state>$PROJ_DIR$\..\System\Modules\Flash</state>
-                    <state>$PROJ_DIR$\..\System\Modules\MemoryManager</state>
-                    <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
-                    <state>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Flash</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc</state>
@@ -404,7 +403,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>2</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -413,7 +412,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>2</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CCPosIndRopi</name>
@@ -1146,6 +1145,9 @@
                 <group>
                     <name>App</name>
                     <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\app_bsp.c</name>
+                    </file>
+                    <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee.c</name>
                     </file>
                     <file>
@@ -1179,33 +1181,9 @@
                 <group>
                     <name>Config</name>
                     <group>
-                        <name>CRC_Ctrl</name>
-                        <excluded>
-                            <configuration>Zigbee_Thermostat_Client_Coord</configuration>
-                        </excluded>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
-                        </file>
-                    </group>
-                    <group>
                         <name>Debug_GPIO</name>
                         <file>
                             <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>Flash</name>
-                        <excluded>
-                            <configuration>Zigbee_Thermostat_Client_Coord</configuration>
-                        </excluded>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Config\Flash\simple_nvm_arbiter_conf.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>Log</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Config\Log\log_module.c</name>
                         </file>
                     </group>
                     <group>
@@ -1221,105 +1199,102 @@
                 <group>
                     <name>Interfaces</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_aes.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_rng.c</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
                     </file>
+                </group>
+            </group>
+        </group>
+    </group>
+    <group>
+        <name>Common</name>
+        <group>
+            <name>WPAN</name>
+            <group>
+                <name>Interfaces</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_rng.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</name>
+                </file>
+            </group>
+            <group>
+                <name>Modules</name>
+                <group>
+                    <name>BasicAES</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\timer_if.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\usart_if.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
                     </file>
                 </group>
                 <group>
-                    <name>Modules</name>
-                    <group>
-                        <name>baes</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ccm.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ecb.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>Flash</name>
-                        <excluded>
-                            <configuration>Zigbee_Thermostat_Client_Coord</configuration>
-                        </excluded>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\Flash\flash_driver.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\Flash\flash_manager.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\Flash\rf_timing_synchro.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\Flash\simple_nvm_arbiter.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>MemoryManager</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\MemoryManager\advanced_memory_manager.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\MemoryManager\stm32_mm.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>RFControl</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RFControl\rf_antenna_switch.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>RTDebug</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug_dtb.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>SerialCmdInterpreter</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
-                        </file>
-                    </group>
+                    <name>Log</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\app_sys.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Modules\crc_ctrl.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Modules\scm.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</name>
                     </file>
                 </group>
                 <group>
-                    <name>Startup</name>
+                    <name>MemoryManager</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
                     </file>
                 </group>
+                <group>
+                    <name>RFControl</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
+                    </file>
+                </group>
+                <group>
+                    <name>RTDebug</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
+                    </file>
+                </group>
+                <group>
+                    <name>SerialCmdInterpreter</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
+                    </file>
+                </group>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\app_sys.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\crc_ctrl.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\otp.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\scm.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\stm_list.c</name>
+                </file>
+            </group>
+            <group>
+                <name>Startup</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+                </file>
             </group>
         </group>
     </group>
@@ -1501,36 +1476,48 @@
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_rcc.c</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</name>
+            </file>
         </group>
     </group>
     <group>
         <name>Middlewares</name>
         <group>
             <name>STM32_WPAN</name>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
-            </file>
+            <group>
+                <name>LinkLayer</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+                </file>
+            </group>
+            <group>
+                <name>Mac_802_15_4</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
+                </file>
+            </group>
+            <group>
+                <name>Zigbee</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigBeeClusters.a</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>
+                </file>
+            </group>
         </group>
     </group>
     <group>

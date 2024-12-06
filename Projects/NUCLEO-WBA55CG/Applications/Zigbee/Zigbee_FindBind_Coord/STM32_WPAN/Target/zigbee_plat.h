@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -68,7 +68,7 @@ extern void           ZIGBEE_PLAT_AesCmacSetVector        ( const uint8_t * pIV 
 extern void           ZIGBEE_PLAT_AesCmacCompute          ( const uint8_t * pInput, uint32_t lInputLength, uint8_t * pOutputTag );
 
 extern bool           ZIGBEE_PLAT_ZbHeapInit              ( void );
-extern void *         ZIGBEE_PLAT_ZbHeapMalloc            ( unsigned int iSize );
+extern void *         ZIGBEE_PLAT_ZbHeapMalloc            ( uint32_t iSize );
 extern void           ZIGBEE_PLAT_ZbHeapFree              ( void *ptr );
 extern unsigned int   ZIGBEE_PLAT_ZbHeapMallocCurrentSize ( void );
 
@@ -77,7 +77,7 @@ extern void *         ZIGBEE_PLAT_HeapMalloc              ( uint32_t iSize );
 extern void           ZIGBEE_PLAT_HeapFree                ( void * ptr );
 extern unsigned int   ZIGBEE_PLAT_HeapMallocCurrentSize   ( void );
 extern unsigned long  ZIGBEE_PLAT_HeapAvailable           ( void );
-extern bool           ZIGBEE_PLAT_HeapCheckAlloc          ( unsigned int iSize );
+extern bool           ZIGBEE_PLAT_HeapCheckAlloc          ( uint32_t iSize );
 extern unsigned long  ZIGBEE_PLAT_HeapUsed                ( void );
 extern unsigned long  ZIGBEE_PLAT_HeapHighWaterMark       ( void );
 

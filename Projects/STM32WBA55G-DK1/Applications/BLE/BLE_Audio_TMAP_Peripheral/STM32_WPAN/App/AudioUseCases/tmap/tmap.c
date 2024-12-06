@@ -25,10 +25,10 @@
 #include "tmap_db.h"
 #include "tmap_config.h"
 #include "cap.h"
-#include "svc_ctl.h"
 #include "ble_gatt_aci.h"
 #include "ble_vs_codes.h"
 #include "ble_common.h"
+#include "usecase_dev_mgmt.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
@@ -40,7 +40,6 @@
 static tBleStatus TMAP_CLT_Linkup_Process(TMAP_CltInst_t *pTMAP_Clt,uint8_t ErrorCode);
 static void TMAP_CLT_Post_Linkup_Event(TMAP_CltInst_t *pTMAP_Clt, tBleStatus const Status);
 tBleStatus TMAP_CLT_Check_TMAS_Service(TMAP_CltInst_t *pTMAP_Clt);
-static SVCCTL_EvtAckStatus_t TMAP_GattEventHandler(void *pEvent);
 static tBleStatus TMAP_CLT_MemAlloc(const TMAP_Config_t *pConfig);
 void* TMAP_MemAssign(uint32_t** base, uint16_t n, uint16_t size);
 static TMAP_CltInst_t *TMAP_CLT_GetAvailableInstance(void);
@@ -74,11 +73,6 @@ tBleStatus TMAP_Init(TMAP_Config_t *pConfig)
     {
       TMAP_CLT_InitInstance(&TMAP_Context.pConnInst[i]);
     }
-
-    /**
-    *	Register the event handler to the BLE Client
-    */
-    SVCCTL_RegisterSvcHandler(TMAP_GattEventHandler);
 
     status = TMAS_InitService(&TMAP_Context.TMASSvc);
     BLE_DBG_TMAP_MSG("TMAS Service Init returns status 0x%04X\n", status);
@@ -168,7 +162,7 @@ tBleStatus TMAP_Linkup(uint16_t ConnHandle, TMAP_LinkupMode_t LinkupMode)
     }
     else
     {
-      BLE_DBG_TMAP_MSG("No ressource to use a TMAP Client Instance\n");
+      BLE_DBG_TMAP_MSG("No resource to use a TMAP Client Instance\n");
       hciCmdResult = BLE_STATUS_FAILED;
     }
   }
@@ -231,7 +225,7 @@ tBleStatus TMAP_ReadRemoteTMAPRole(uint16_t ConnHandle)
     }
     else
     {
-      BLE_DBG_TMAP_MSG("An ATT Proceudure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+      BLE_DBG_TMAP_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
       return BLE_STATUS_BUSY;
     }
   }
@@ -341,7 +335,7 @@ void TMAP_AclDisconnection(uint16_t ConnHandle)
   * @param  Event: Address of the buffer holding the Event
   * @retval Ack: Return whether the Event has been managed or not
   */
-static SVCCTL_EvtAckStatus_t TMAP_GattEventHandler(void *pEvent)
+SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent)
 {
   SVCCTL_EvtAckStatus_t return_value;
   hci_event_pckt *p_event_pckt;
@@ -773,10 +767,10 @@ static void TMAP_CLT_Post_Linkup_Event(TMAP_CltInst_t *pTMAP_Clt, tBleStatus con
   evt.EvtOpcode = (TMAP_NotCode_t) TMAP_LINKUP_COMPLETE_EVT;
   if (evt.Status == BLE_STATUS_SUCCESS)
   {
-    TMAP_AttServiceInfo_Evt_t parms;
-    parms.StartAttHandle = pTMAP_Clt->ServiceStartHandle;
-    parms.EndAttHandle = pTMAP_Clt->ServiceEndHandle;
-    evt.pInfo = (void *) &parms;
+    TMAP_AttServiceInfo_Evt_t params;
+    params.StartAttHandle = pTMAP_Clt->ServiceStartHandle;
+    params.EndAttHandle = pTMAP_Clt->ServiceEndHandle;
+    evt.pInfo = (void *) &params;
   }
   else
   {

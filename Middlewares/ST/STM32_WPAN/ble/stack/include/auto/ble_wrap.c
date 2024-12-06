@@ -1524,6 +1524,16 @@
 #define BLE_WRAP_HCI_LE_SUBRATE_REQUEST_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
+/* HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2 pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_PREPROC
+#define BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2 post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_POSTPROC
+#define BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
 /* ACI_HAL_GET_FW_BUILD_NUMBER pre-processing macro */
 #ifndef BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_PREPROC
 #define BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_PREPROC BLE_WRAP_PREPROC
@@ -2104,6 +2114,16 @@
 #define BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_LIST_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
+/* ACI_GAP_PAIRING_REQUEST_REPLY pre-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_PREPROC
+#define BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_GAP_PAIRING_REQUEST_REPLY post-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_POSTPROC
+#define BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
 /* ACI_GAP_ADV_SET_CONFIGURATION pre-processing macro */
 #ifndef BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_PREPROC
 #define BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_PREPROC BLE_WRAP_PREPROC
@@ -2202,6 +2222,16 @@
 /* ACI_GAP_ADV_SET_PERIODIC_ENABLE post-processing macro */
 #ifndef BLE_WRAP_ACI_GAP_ADV_SET_PERIODIC_ENABLE_POSTPROC
 #define BLE_WRAP_ACI_GAP_ADV_SET_PERIODIC_ENABLE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_GAP_ADV_SET_CONFIGURATION_V2 pre-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_PREPROC
+#define BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_GAP_ADV_SET_CONFIGURATION_V2 post-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_POSTPROC
+#define BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_GAP_EXT_START_SCAN pre-processing macro */
@@ -4811,6 +4841,49 @@ tBleStatus hci_le_subrate_request( uint16_t Connection_Handle,
   return status;
 }
 
+/* HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2 wrapper function */
+tBleStatus hci_le_set_extended_advertising_parameters_v2( uint8_t Advertising_Handle,
+                                                          uint16_t Adv_Event_Properties,
+                                                          const uint8_t* Primary_Adv_Interval_Min,
+                                                          const uint8_t* Primary_Adv_Interval_Max,
+                                                          uint8_t Primary_Adv_Channel_Map,
+                                                          uint8_t Own_Address_Type,
+                                                          uint8_t Peer_Address_Type,
+                                                          const uint8_t* Peer_Address,
+                                                          uint8_t Adv_Filter_Policy,
+                                                          uint8_t Adv_TX_Power,
+                                                          uint8_t Primary_Adv_PHY,
+                                                          uint8_t Secondary_Adv_Max_Skip,
+                                                          uint8_t Secondary_Adv_PHY,
+                                                          uint8_t Adv_SID,
+                                                          uint8_t Scan_Req_Notification_Enable,
+                                                          uint8_t Primary_Adv_PHY_Options,
+                                                          uint8_t Secondary_Adv_PHY_Options,
+                                                          uint8_t* Selected_TX_Power )
+{
+  BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_PREPROC( );
+  tBleStatus status = HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2( Advertising_Handle,
+                                                                     Adv_Event_Properties,
+                                                                     Primary_Adv_Interval_Min,
+                                                                     Primary_Adv_Interval_Max,
+                                                                     Primary_Adv_Channel_Map,
+                                                                     Own_Address_Type,
+                                                                     Peer_Address_Type,
+                                                                     Peer_Address,
+                                                                     Adv_Filter_Policy,
+                                                                     Adv_TX_Power,
+                                                                     Primary_Adv_PHY,
+                                                                     Secondary_Adv_Max_Skip,
+                                                                     Secondary_Adv_PHY,
+                                                                     Adv_SID,
+                                                                     Scan_Req_Notification_Enable,
+                                                                     Primary_Adv_PHY_Options,
+                                                                     Secondary_Adv_PHY_Options,
+                                                                     Selected_TX_Power );
+  BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_POSTPROC( );
+  return status;
+}
+
 /* ACI_HAL_GET_FW_BUILD_NUMBER wrapper function */
 tBleStatus aci_hal_get_fw_build_number( uint16_t* Build_Number )
 {
@@ -5623,6 +5696,17 @@ tBleStatus aci_gap_add_devices_to_list( uint8_t Num_of_List_Entries,
   return status;
 }
 
+/* ACI_GAP_PAIRING_REQUEST_REPLY wrapper function */
+tBleStatus aci_gap_pairing_request_reply( uint16_t Connection_Handle,
+                                          uint8_t Accept )
+{
+  BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_PREPROC( );
+  tBleStatus status = ACI_GAP_PAIRING_REQUEST_REPLY( Connection_Handle,
+                                                     Accept );
+  BLE_WRAP_ACI_GAP_PAIRING_REQUEST_REPLY_POSTPROC( );
+  return status;
+}
+
 /* ACI_GAP_ADV_SET_CONFIGURATION wrapper function */
 tBleStatus aci_gap_adv_set_configuration( uint8_t Adv_Mode,
                                           uint8_t Advertising_Handle,
@@ -5784,6 +5868,49 @@ tBleStatus aci_gap_adv_set_periodic_enable( uint8_t Enable,
   tBleStatus status = ACI_GAP_ADV_SET_PERIODIC_ENABLE( Enable,
                                                        Advertising_Handle );
   BLE_WRAP_ACI_GAP_ADV_SET_PERIODIC_ENABLE_POSTPROC( );
+  return status;
+}
+
+/* ACI_GAP_ADV_SET_CONFIGURATION_V2 wrapper function */
+tBleStatus aci_gap_adv_set_configuration_v2( uint8_t Adv_Mode,
+                                             uint8_t Advertising_Handle,
+                                             uint16_t Adv_Event_Properties,
+                                             uint32_t Primary_Adv_Interval_Min,
+                                             uint32_t Primary_Adv_Interval_Max,
+                                             uint8_t Primary_Adv_Channel_Map,
+                                             uint8_t Own_Address_Type,
+                                             uint8_t Peer_Address_Type,
+                                             const uint8_t* Peer_Address,
+                                             uint8_t Adv_Filter_Policy,
+                                             uint8_t Adv_TX_Power,
+                                             uint8_t Primary_Adv_PHY,
+                                             uint8_t Secondary_Adv_Max_Skip,
+                                             uint8_t Secondary_Adv_PHY,
+                                             uint8_t Adv_SID,
+                                             uint8_t Scan_Req_Notification_Enable,
+                                             uint8_t Primary_Adv_PHY_Options,
+                                             uint8_t Secondary_Adv_PHY_Options )
+{
+  BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_PREPROC( );
+  tBleStatus status = ACI_GAP_ADV_SET_CONFIGURATION_V2( Adv_Mode,
+                                                        Advertising_Handle,
+                                                        Adv_Event_Properties,
+                                                        Primary_Adv_Interval_Min,
+                                                        Primary_Adv_Interval_Max,
+                                                        Primary_Adv_Channel_Map,
+                                                        Own_Address_Type,
+                                                        Peer_Address_Type,
+                                                        Peer_Address,
+                                                        Adv_Filter_Policy,
+                                                        Adv_TX_Power,
+                                                        Primary_Adv_PHY,
+                                                        Secondary_Adv_Max_Skip,
+                                                        Secondary_Adv_PHY,
+                                                        Adv_SID,
+                                                        Scan_Req_Notification_Enable,
+                                                        Primary_Adv_PHY_Options,
+                                                        Secondary_Adv_PHY_Options );
+  BLE_WRAP_ACI_GAP_ADV_SET_CONFIGURATION_V2_POSTPROC( );
   return status;
 }
 
@@ -6741,7 +6868,6 @@ static tBleStatus hci_le_transmit_power_reporting_event_process( const uint8_t* 
 static tBleStatus hci_le_biginfo_advertising_report_event_process( const uint8_t* in );
 static tBleStatus hci_le_subrate_change_event_process( const uint8_t* in );
 static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in );
-static tBleStatus aci_hal_scan_req_report_event_process( const uint8_t* in );
 static tBleStatus aci_hal_fw_error_event_process( const uint8_t* in );
 static tBleStatus aci_hal_sync_event_process( const uint8_t* in );
 static tBleStatus aci_gap_limited_discoverable_event_process( const uint8_t* in );
@@ -6754,6 +6880,7 @@ static tBleStatus aci_gap_proc_complete_event_process( const uint8_t* in );
 static tBleStatus aci_gap_addr_not_resolved_event_process( const uint8_t* in );
 static tBleStatus aci_gap_numeric_comparison_value_event_process( const uint8_t* in );
 static tBleStatus aci_gap_keypress_notification_event_process( const uint8_t* in );
+static tBleStatus aci_gap_pairing_request_event_process( const uint8_t* in );
 static tBleStatus aci_l2cap_connection_update_resp_event_process( const uint8_t* in );
 static tBleStatus aci_l2cap_proc_timeout_event_process( const uint8_t* in );
 static tBleStatus aci_l2cap_connection_update_req_event_process( const uint8_t* in );
@@ -6853,7 +6980,6 @@ static const hci_event_table_t hci_le_event_table[HCI_LE_EVENT_TABLE_SIZE] =
 static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
 {
   { 0x0004U, aci_hal_end_of_radio_activity_event_process },
-  { 0x0005U, aci_hal_scan_req_report_event_process },
   { 0x0006U, aci_hal_fw_error_event_process },
   { 0x0008U, aci_hal_sync_event_process },
   { 0x0400U, aci_gap_limited_discoverable_event_process },
@@ -6866,6 +6992,7 @@ static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
   { 0x0408U, aci_gap_addr_not_resolved_event_process },
   { 0x0409U, aci_gap_numeric_comparison_value_event_process },
   { 0x040AU, aci_gap_keypress_notification_event_process },
+  { 0x040BU, aci_gap_pairing_request_event_process },
   { 0x0800U, aci_l2cap_connection_update_resp_event_process },
   { 0x0801U, aci_l2cap_proc_timeout_event_process },
   { 0x0802U, aci_l2cap_connection_update_req_event_process },
@@ -7075,7 +7202,7 @@ static tBleStatus hci_le_advertising_report_event_process( const uint8_t* in )
   hci_le_advertising_report_event_rp0 *rp0 = (void*)in;
   Advertising_Report_t Advertising_Report[1];
   int i;
-  for ( i = 0; i < rp0->Num_Reports; i++ ) 
+  for ( i = 0; i < rp0->Num_Reports; i++ )
   {
     in += 1;
     memcpy( (void*)&Advertising_Report[0], (const void*)in, 9 );
@@ -7860,23 +7987,6 @@ static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in
                                               rp0->Next_State_Slot );
 }
 
-/* ACI_HAL_SCAN_REQ_REPORT_EVENT callback function */
-__WEAK tBleStatus aci_hal_scan_req_report_event( uint8_t RSSI,
-                                                 uint8_t Peer_Address_Type,
-                                                 const uint8_t* Peer_Address )
-{
-  return HCI_SUCCESS_ERR_CODE;
-}
-
-/* ACI_HAL_SCAN_REQ_REPORT_EVENT process function */
-static tBleStatus aci_hal_scan_req_report_event_process( const uint8_t* in )
-{
-  aci_hal_scan_req_report_event_rp0 *rp0 = (void*)in;
-  return aci_hal_scan_req_report_event( rp0->RSSI,
-                                        rp0->Peer_Address_Type,
-                                        rp0->Peer_Address );
-}
-
 /* ACI_HAL_FW_ERROR_EVENT callback function */
 __WEAK tBleStatus aci_hal_fw_error_event( uint8_t FW_Error_Type,
                                           uint8_t Data_Length,
@@ -8052,6 +8162,23 @@ static tBleStatus aci_gap_keypress_notification_event_process( const uint8_t* in
   aci_gap_keypress_notification_event_rp0 *rp0 = (void*)in;
   return aci_gap_keypress_notification_event( rp0->Connection_Handle,
                                               rp0->Notification_Type );
+}
+
+/* ACI_GAP_PAIRING_REQUEST_EVENT callback function */
+__WEAK tBleStatus aci_gap_pairing_request_event( uint16_t Connection_Handle,
+                                                 uint8_t Bonded,
+                                                 uint8_t Auth_Req )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* ACI_GAP_PAIRING_REQUEST_EVENT process function */
+static tBleStatus aci_gap_pairing_request_event_process( const uint8_t* in )
+{
+  aci_gap_pairing_request_event_rp0 *rp0 = (void*)in;
+  return aci_gap_pairing_request_event( rp0->Connection_Handle,
+                                        rp0->Bonded,
+                                        rp0->Auth_Req );
 }
 
 /* ACI_L2CAP_CONNECTION_UPDATE_RESP_EVENT callback function */

@@ -63,7 +63,7 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Standby_Restore_GPIO(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,10 +100,13 @@ int main(void)
   PeriphCommonClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  #if (CFG_RF_TX_POWER_TABLE_ID == 1)
   if (HAL_PWREx_GetSupplyConfig() == PWR_SMPS_SUPPLY)
   {
     HAL_PWREx_SetREGVDDHPAInputSupply(PWR_RADIO_REG_VDDHPA_VD11);
+    HAL_PWREx_EnableREGVDDHPABypass();
   }
+  #endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -358,16 +361,14 @@ void MX_ICACHE_Init(void)
 
   /* USER CODE END ICACHE_Init 1 */
 
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
+
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_ICACHE_SetMode(LL_ICACHE_1WAY);
+  LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */

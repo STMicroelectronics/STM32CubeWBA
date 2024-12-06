@@ -3,7 +3,7 @@
  * @heading Startup
  * @brief Zigbee startup header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_STARTUP_H
@@ -73,15 +73,15 @@ struct ZbStartupCbkeT {
      * If zero, let the stack choose a default value. */
 
     bool (*tcso_callback)(enum ZbTcsoStatusT status, void *arg);
-    /**< Application callback that is called for any Trust Center Swap Out (TCSO) process
-     * initiated by the Keep Alive Client cluster. This includes when a TCSO has been started
-     * and the final outcome of a TCSO process.
-     * The return value allows the application to stop the TCSO process.
-     * Returning true allows the stack to continue with TCSO. Returning false
-     * prevents the stack from starting or continuing with TCSO; however, the application
-     * should call ZbStartupTcsoStart at its earliest convenience (e.g. after next sleep cycle)
-     * in order to start the TCSO process. */
-
+    /**< Application callback that is called to notify of any Trust Center Swap Out (TCSO)
+     * events initiated by the Keep Alive Client cluster. If the status is set to
+     * ZB_TCSO_STATUS_DISCOVERY_UNDERWAY, the application can return false to this callback
+     * to halt the TCSO process from continuing. This allows the application to dictate when
+     * to start TCSO; for example, during the next wake-cycle if the device is sleepy.
+     * The Keep Alive Client is also halted in this case, but will restart after the application
+     * calls ZbStartupTcsoStart to perform TCSO, or it calls ZbZclKeepAliveClientStart to restart
+     * the Keep Alive mechanism. If the application returns true to this callback, then the
+     * TCSO process will proceed normally. */
     void *tcso_arg; /** Application callback argument for 'tcso_callback' */
 };
 
@@ -222,33 +222,24 @@ struct ZbStartupT {
 
     /* NOTE: The following is for (CONFIG_ZB_REV >= 23), but we prefer to not add
      * conditionals in header files. */
-    bool (*device_interview_cb)(struct ZbApsRelayInfoT *relay_info, uint64_t joiner_eui, void *arg);
-    /**< Device interview callback. Application can do the following as
-     * part of this callback,
-     *
-     * On TC: application can maintain a list of joiner eui's that should
-     * be interviewed, and selectively decide if it wants to perform device
-     * interview with joiners for which the callback was invoked by stack.
-     *
-     * If the callback returns true,
-     * stack will wait for apsSecurityTimeOutPeriod seconds of inactivity
-     * before sending out the APS transport key. And stack extends the timeout
-     * for the joining device by apsSecurityTimeOutPeriod whenever application
-     * generates a downstream request.
-     *
-     * However, if the callback returns false,
-     * stack will send the APS Transport key to allow the joiner on the network
-     * without performing device interview.
-     *
-     * On joiner side: this callback marks the completion of DLK and start of
-     * potential device interview window. And TC decides if it wants to perform
-     * device interview or not. Stack ignores the returned value of this callback
-     * and waits for apsDeviceInterviewTimeoutPeriod seconds of inactivity before
-     * terminating the join procedure on not receiving network key. Joiner extends
-     * authentication timeout by apsDeviceInterviewTimeoutPeriod on every downstream
-     * relay command with a relay payload encrypted with the negotiated TCLK. */
+    uint8_t supp_key_nego_methods;
+    /**< A bitmask of the supported key negotiation methods e.g, ZB_DLK_STATIC_KEY_REQUEST. */
+    uint8_t supp_pre_shared_secrets;
+    /**< A bitmask of the supported pre-shared secrets e.g, ZB_DLK_SUPP_PSK_SYMMETRIC_AUTH_TOKEN. */
+
+    void (*device_interview_cb)(struct ZbApsRelayInfoT *relay_info, uint64_t joiner_eui, void *arg);
+    /**< Device Interview callback. This is called for a device acting as the Trust Center
+     * when the Device Interview process can start with the Joiner. As packets are sent as
+     * Downstream Relays to the Joiner, the security timer is refreshed by the amount given
+     * by apsDeviceInterviewTimeoutPeriod. The 'relay_info' parameter includes the information
+     * about where to send packets for the interview process so the Joiner can receive them.
+     * The 'joiner_eui' parameter is the Extended Address of the Joiner.
+     * Once the TC application is done with the interview
+     * process, it must call ZbStartupDeviceInterviewComplete. Refer to that function's
+     * description for more information.
+     */
     void *device_interview_cb_arg;
-    /**< Argument pointer for device interview callback. */
+    /**< Argument pointer to include in the device interview callback. */
 };
 
 /**
@@ -344,6 +335,8 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbTrustCenterRejoin(struct ZigBeeT *zb,
  * @param plen Length of persistent data
  * @param cbke_config Optional pointer to CBKE configuration data structure.
  * @param callback Application callback to call after persistence is completed.
+ * It is necessary for the application to specify this callback so it knows exactly
+ * when it is safe to start transmitting packets to the Zigbee network.
  * If this function returns an error, then no callback will be generated.
  * @param arg Application callback argument
  * @return Zigbee Status Code
@@ -368,10 +361,15 @@ void ZbStartupConfigGetProDefaults(struct ZbStartupT *configPtr);
 void ZbStartupConfigGetProSeDefaults(struct ZbStartupT *configPtr);
 
 /**
- * The application can call ZbStartupTcsoStart if it thinks it as lost
- * communication with the Trust Center. The Trust Center Swap Out process
- * will be performed. The callback status is set to ZB_STATUS_SUCCESS if
- * the stack is operational.
+ * The Stack with the help of the ZCL Keep Alive cluster will automatically detect
+ * the loss of the Trust Center and start the TCSO process. Before the TCSO process
+ * starts and the 'tcso_callback' callback is provided in the startup configuration,
+ * it is called to check if the application wants to halt the TCSO process from starting
+ * or let it continue. Refer to the description for 'tcso_callback' in the startup
+ * configuration for more info.
+ *
+ * The application can call ZbStartupTcsoStart at any time if it thinks it has lost
+ * communication with the Trust Center and to manually begin the TCSO process.
  * @param zb Zigbee stack instance
  * @param zvd_parent_info Parent information structure in case of ZVD. This parameter
  * shall be set to NULL if not acting as ZVD.
@@ -385,16 +383,22 @@ bool ZB_WARN_UNUSED ZbStartupTcsoStart(struct ZigBeeT *zb,
 
 /**
  * Abort a TCSO, if it's running. This function should not be necessary,
- * but an application may.
+ * but a Sleepy Device application may need it if it wants to go to sleep
+ * before ZbStartupTcsoStart has finished.
  * @param zb Zigbee stack instance
  * @return True if TCSO was aborted, false otherwise (i.e. wasn't running).
  */
 bool ZbStartupTcsoAbort(struct ZigBeeT *zb);
 
 /**
- * The application can call ZbStartupTclkStart if it wants to update the trust enter link key
- * using APS-Request Key method provided the devices are commissionined using 'Provisional
- * link keys' e.g, OOB join in Zigbee Direct.
+ * The application can call ZbStartupTclkStart if it wants to update the trust center link key
+ * post join using APS-Request Key method. This is usually done under following scenarios,
+ *
+ * 1. In case of a Zigbee Direct (ZDD) updating a provisional link key, after it was
+ *    commissioned via out-of-band commissioning mechanism.
+ * 2. To periodically generate a new APS Link Key with the Trust Center. Continual cycling
+ *    of the TC Link Key is a 'Works With All Hubs (WWAHU)' security recommendation.
+ *
  * @param zb Zigbee stack instance
  * @param callback Application callback that is called with the final result
  * of the tclk procedure.
@@ -403,5 +407,19 @@ bool ZbStartupTcsoAbort(struct ZigBeeT *zb);
  */
 enum ZbStatusCodeT ZbStartupTclkStart(struct ZigBeeT *zb,
     void (*callback)(enum ZbStatusCodeT status, void *arg), void *arg);
+
+/**
+ * The application calls this when it is done with the Device Interview process for a
+ * particular Joiner. The Device Interview process starts in the application when the
+ * stack calls the device_interview_cb() callback function defined in the 'struct ZbStartupT'
+ * startup configuration.
+ * @param zb Zigbee stack instance
+ * @param joiner_eui64 The EUI64 address of the Joiner being interviewed.
+ * @param success If true, then the stack will send the Transport Key with the Network
+ * Key to end the Device Interview and Joining process.
+ * @return True if the request was processed successfully (i.e. the Joiner is actively
+ * being tracked by the stack), or false otherwise.
+ */
+bool ZbStartupDeviceInterviewComplete(struct ZigBeeT *zb, uint64_t joiner_eui64, bool success);
 
 #endif

@@ -183,7 +183,7 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
                 /* USER CODE END Service1_Char_2_default */
                 break;
             }
-          }  /* if(p_attribute_modified->Attr_Handle == (PWR_Context.Pwr_RxCharHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+          }
 
           else if(p_attribute_modified->Attr_Handle == (PWR_Context.Pwr_TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -194,7 +194,7 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
 
             /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             PWR_Notification(&notification);
-          } /* if(p_attribute_modified->Attr_Handle == (PWR_Context.Pwr_TxCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
@@ -254,19 +254,19 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -425,9 +425,9 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value PWR_TX command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_1*/
+      /* USER CODE BEGIN Service1_Char_Value_1 */
 
-      /* USER CODE END Service1_Char_Value_1*/
+      /* USER CODE END Service1_Char_Value_1 */
       break;
 
     case PWR_PWR_RX:
@@ -444,9 +444,9 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value PWR_RX command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_2*/
+      /* USER CODE BEGIN Service1_Char_Value_2 */
 
-      /* USER CODE END Service1_Char_Value_2*/
+      /* USER CODE END Service1_Char_Value_2 */
       break;
 
     default:

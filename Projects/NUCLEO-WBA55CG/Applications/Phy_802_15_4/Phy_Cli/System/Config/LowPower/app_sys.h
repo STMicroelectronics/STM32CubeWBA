@@ -21,12 +21,13 @@
 #define APP_SYS_H
 
 /* Exported constants --------------------------------------------------------*/
-/*
- * high ceil for standby exit -> 500us in theory NOTE: Minimum value for UTIL Timer is 1ms
- * high ceil for radio exit deep sleep -> 300us
- * high ceil for radio entry deep ceil -> 50us
+
+/* The RADIO_DEEPSLEEP_WAKEUP_TIME_US macro allows to define when the system
+ * needs to wake up before "handle next event".
+ * This macro is the sum of the durations of standby exit and Link Layer
+ * deep sleep mode exit.
  */
-#define RADIO_DEEPSLEEP_WAKEUP_TIME_US (1500)
+#define RADIO_DEEPSLEEP_WAKEUP_TIME_US (CFG_LPM_STDBY_WAKEUP_TIME)
 
 /* USER CODE BEGIN EC */
 
@@ -34,6 +35,7 @@
 
 /* Exported functions prototypes ---------------------------------------------*/
 
+void APP_SYS_LPM_EnterLowPowerMode(void);
 void APP_SYS_BLE_EnterDeepSleep(void);
 /* USER CODE BEGIN EFP */
 

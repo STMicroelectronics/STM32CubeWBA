@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    adc_client.h
+  * @file    adc_ctrl.c
   * @author  MCD Application Team
-  * @brief   Header for ADC client manager module
+  * @brief   Source file for ADC controller module
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file

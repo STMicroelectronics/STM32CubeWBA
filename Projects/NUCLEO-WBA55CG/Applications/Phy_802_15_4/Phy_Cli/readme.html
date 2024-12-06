@@ -40,10 +40,10 @@
 <li>Phy_802_15_4/Phy_Cli/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes</li>
 <li>Phy_802_15_4/Phy_Cli/Core/Src/stm32wbaxx_it.c This file provides all exceptions handler and peripherals interrupt service routine</li>
 <li>Phy_802_15_4/Phy_Cli/Core/Src/system_stm32wbaxx.c</li>
-<li>Phy_802_15_4/Phy_Cli/STM32_WPAN/App/app_cli_runner.c Entry point for the 802.15.4 CLI</li>
-<li>Phy_802_15_4/Phy_Cli/STM32_WPAN/App/app_cli_runner_ex.c Entry point for the PHY CLI</li>
-<li>Phy_802_15_4/Phy_Cli/STM32_WPAN/App/app_phy_cli.h Header for the 802.15.4 PHY CLI application</li>
-<li>Phy_802_15_4/Phy_Cli/STM32_WPAN/App/app_cli_runner.h Header for the 802.15.4 PHY CLI application</li>
+<li>common_connectivity/Connectivity/App/cli_runner/app_cli_runner.c Entry point for the 802.15.4 CLI</li>
+<li>common_connectivity/Connectivity/App/cli_runner/app_cli_runner_ex.c Entry point for the PHY CLI</li>
+<li>common_connectivity/Connectivity/App/cli_runner/app_phy_cli.h Header for the 802.15.4 PHY CLI application</li>
+<li>common_connectivity/Connectivity/App/cli_runner/app_cli_runner.h Header for the 802.15.4 PHY CLI application</li>
 <li>Phy_802_15_4/Phy_Cli/STM32_WPAN/Target/linklayer_plat.c</li>
 <li>Phy_802_15_4/Phy_Cli/STM32_WPAN/Target/ll_sys_if.c</li>
 <li>Phy_802_15_4/Phy_Cli/STM32_WPAN/Target/ll_sys_if.h</li>
@@ -54,50 +54,45 @@
 <li>Phy_802_15_4/Phy_Cli/System/Config/Debug_GPIO/debug_config.h</li>
 <li>Phy_802_15_4/Phy_Cli/System/Config/Flash/simple_nvm_arbiter_conf.h</li>
 <li>Phy_802_15_4/Phy_Cli/System/Config/LowPower/app_sys.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw_aes.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw_if.h Header of Hardware Interface</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw_otp.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw_pka.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/hw_rng.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/pka_p256.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/stm32_lpm_if.c Source of Low layer function to enter/exit low power modes (stop, sleep)</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/timer_if.c Source file configuration of RTC Alarm, Tick and Calendar manager</li>
-<li>Phy_802_15_4/Phy_Cli/System/Interfaces/timer_if.h Header for configuration of the timer_if.c instances</li>
+<li>common_connectivity/Connectivity/Interfaces/hw.h</li>
+<li>common_connectivity/Connectivity/Interfaces/hw_aes.h</li>
+<li>common_connectivity/Connectivity/Interfaces/hw_if.h Header of Hardware Interface</li>
+<li>common_connectivity/Connectivity/Interfaces/hw_otp.c</li>
+<li>common_connectivity/Connectivity/Interfaces/hw_pka.c</li>
+<li>common_connectivity/Connectivity/Interfaces/hw_rng.c</li>
+<li>common_connectivity/Connectivity/Interfaces/pka_p256.c</li>
+<li>common_connectivity/Connectivity/Interfaces/stm32_lpm_if.c Source of Low layer function to enter/exit low power modes (stop, sleep)</li>
+<li>common_connectivity/Connectivity/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
+<li>common_connectivity/Connectivity/Interfaces/timer_if.c Source file configuration of RTC Alarm, Tick and Calendar manager</li>
+<li>common_connectivity/Connectivity/Interfaces/timer_if.h Header for configuration of the timer_if.c instances</li>
 <li>Phy_802_15_4/Phy_Cli/System/Interfaces/usart_if.c Source file for interfacing the stm32_adv_trace to hardware</li>
 <li>Phy_802_15_4/Phy_Cli/System/Interfaces/usart_if.h Header file for stm32_adv_trace interface file</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/flash_driver.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/flash_driver.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/flash_manager.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/flash_manager.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/rf_timing_synchro.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/rf_timing_synchro.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/simple_nvm_arbiter.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/simple_nvm_arbiter.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/Flash/simple_nvm_arbiter_common.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/debug_signals.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/local_debug_tables.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/RTDebug.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/RTDebug.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/RTDebug_dtb.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/RTDebug/RTDebug_dtb.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/adc_crtl.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/adc_crtl.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/app_sys.c Source of of system and radio low power mode configuration</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/app_sys.h Header of system and radio low power mode configuration</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/dbg_trace.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/otp.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/otp.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/rtc.c</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/rtc.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/scm.c Functions for the System Clock Manager.</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/scm.h Header for scm.c module</li>
-<li>Phy_802_15_4/Phy_Cli/System/Modules/stm32wbaxx_ResetHandler.s</li>
+<li>common_connectivity/Connectivity/Modules/Flash/flash_driver.c</li>
+<li>common_connectivity/Connectivity/Modules/Flash/flash_driver.h</li>
+<li>common_connectivity/Connectivity/Modules/Flash/flash_manager.c</li>
+<li>common_connectivity/Connectivity/Modules/Flash/flash_manager.h</li>
+<li>common_connectivity/Connectivity/Modules/Flash/rf_timing_synchro.c</li>
+<li>common_connectivity/Connectivity/Modules/Flash/rf_timing_synchro.h</li>
+<li>common_connectivity/Connectivity/Modules/Flash/simple_nvm_arbiter.c</li>
+<li>common_connectivity/Connectivity/Modules/Flash/simple_nvm_arbiter.h</li>
+<li>common_connectivity/Connectivity/Modules/Flash/simple_nvm_arbiter_common.h</li>
+<li>common_connectivity/Connectivity/Modules/debug_signals.h</li>
+<li>common_connectivity/Connectivity/Modules/local_debug_tables.h</li>
+<li>common_connectivity/Connectivity/Modules/RTDebug/RTDebug.c</li>
+<li>common_connectivity/Connectivity/Modules/RTDebug/RTDebug.h</li>
+<li>common_connectivity/Connectivity/Modules/RTDebug/RTDebug_dtb.c</li>
+<li>common_connectivity/Connectivity/Modules/RTDebug/RTDebug_dtb.h</li>
+<li>common_connectivity/Connectivity/Modules/adc_crtl.c</li>
+<li>common_connectivity/Connectivity/Modules/adc_crtl.h</li>
+<li>common_connectivity/Connectivity/Modules/app_sys.c Source of of system and radio low power mode configuration</li>
+<li>Phy_802_15_4/Phy_Cli/System/Config/app_sys.h Header of system and radio low power mode configuration</li>
+<li>common_connectivity/Connectivity/Modules/dbg_trace.h</li>
+<li>common_connectivity/Connectivity/Modules/otp.c</li>
+<li>common_connectivity/Connectivity/Modules/otp.h</li>
+<li>common_connectivity/Connectivity/Modules/scm.c Functions for the System Clock Manager.</li>
+<li>common_connectivity/Connectivity/Modules/scm.h Header for scm.c module</li>
+<li>common_connectivity/Connectivity/Startup/stm32wbaxx_ResetHandler.s</li>
 <li>Phy_802_15_4/Phy_Cli/System/Modules/utilities_common.h</li>
-<li>Phy_802_15_4/Phy_Cli/System/Startup/stm32wbaxx_ResetHandler_EWARM.s</li>
-<li>Phy_802_15_4/Phy_Cli/System/Startup/stm32wbaxx_ResetHandler_GCC.s</li>
-<li>Phy_802_15_4/Phy_Cli/System/Startup/stm32wbaxx_ResetHandler_MDK-ARM.s</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <ul>
@@ -127,12 +122,7 @@
 <h4 id="full-phy-certification-and-dynamic-rx-printing"><strong>Full PHY certification and dynamic RX printing</strong></h4>
 <ul>
 <li>In order to perform a fully exhaustive PHY certification, it may be necessary to enable the “dynamic RX printing” using the <em>rx_start 1</em> command. This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed using default baudrate of 115200.</li>
-<li>By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
-<ul>
-<li>the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.</li>
-<li>SMPS is enabled at init (ensure the board used is SMPS compatible)</li>
-<li>The <em>tx_on</em> signal is readable at the PA1 GPIO, required for turnaround times certification tests.</li>
-</ul></li>
+<li>By setting FULL_CERTIFICATION_CAPABLE to 1 the Baud rate of USART1 increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.</li>
 <li>Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.</li>
 </ul>
 <h3 id="examples-of-commands"><strong>Examples of commands</strong></h3>
@@ -141,6 +131,7 @@
 <li>Version</li>
 <li>Set_channel <strong><channel></strong> <em>Select the 15.4 channel</em></li>
 <li>Set_power <strong><power></strong> <em>Select TX </em>power in dbm*</li>
+<li>Set_smps <strong><enable disable></strong> <em>Enable or disable the SMPS</em></li>
 <li>Set_CCA_threshold <strong><threshold></strong> <em>Set CCA threshold in dbm</em></li>
 <li>TX_start 0x0C,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 <em>Send a frame (first byte here 0x0C is the size of the payload + 2 to account for the CRC)</em></li>
 <li>TX_start 0x0C,0x01,0x08,0x01,0x22,0x11,0xFF,0xFF,0xB5,0xB6,0xB7 <strong><number></strong> <strong><delay></strong> <em>Send a frame <strong>number</strong> time with <strong>delay</strong> in ms between each packet</em></li>
@@ -150,6 +141,10 @@
 <li>RX_start <em>Start a reception</em></li>
 <li>RX_start 1 <em>Start a reception, prints paylaod of frames as they arrive</em></li>
 <li>RX_stop <em>Stop a reception</em></li>
+</ul>
+<h3 id="limitations"><strong>Limitations</strong></h3>
+<ul>
+<li>Updating the SMPS configuration through the <em>Set_smps</em> command only works before any radio activity has been started (e.g. any <em>rx_start</em> or <em>tx_start</em>). A reset of the board is required in order to change it.</li>
 </ul>
 </div>
 </div>

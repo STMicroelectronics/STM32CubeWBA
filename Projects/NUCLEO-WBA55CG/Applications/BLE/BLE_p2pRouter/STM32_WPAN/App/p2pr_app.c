@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    STM32_WPAN
+  * @file    p2pR_app.c
   * @author  MCD Application Team
-  * @brief   STM32_WPAN application definition.
+  * @brief   p2pR_app application definition.
   ******************************************************************************
   * @attention
   *
@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "p2pr_app.h"
 #include "p2pr.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -525,7 +525,7 @@ __USED void P2PR_Notiffwd_SendNotification(void) /* Property Notification */
   p2pr_notification_data.p_Payload = (uint8_t*)a_P2PR_UpdateCharData;
   p2pr_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char2_NS_1*/
+  /* USER CODE BEGIN Service1Char2_NS_1 */
   p2pr_notification_data.Length = 2; 
   
   if(P2PR_APP_Context.Notiffwd_Notification_Status == Notiffwd_NOTIFICATION_ON)
@@ -536,16 +536,16 @@ __USED void P2PR_Notiffwd_SendNotification(void) /* Property Notification */
   {
     LOG_INFO_APP("notification are disabled\n"); 
   }
-  /* USER CODE END Service1Char2_NS_1*/
+  /* USER CODE END Service1Char2_NS_1 */
 
   if (notification_on_off != Notiffwd_NOTIFICATION_OFF)
   {
     P2PR_UpdateValue(P2PR_NOTIFFWD, &p2pr_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char2_NS_Last*/
+  /* USER CODE BEGIN Service1Char2_NS_Last */
 
-  /* USER CODE END Service1Char2_NS_Last*/
+  /* USER CODE END Service1Char2_NS_Last */
 
   return;
 }
@@ -558,23 +558,23 @@ __USED void P2PR_Devinfo_SendNotification(void) /* Property Notification */
   p2pr_notification_data.p_Payload = (uint8_t*)a_P2PR_UpdateCharData;
   p2pr_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char3_NS_1*/
+  /* USER CODE BEGIN Service1Char3_NS_1 */
 
-  /* USER CODE END Service1Char3_NS_1*/
+  /* USER CODE END Service1Char3_NS_1 */
 
   if (notification_on_off != Devinfo_NOTIFICATION_OFF)
   {
     P2PR_UpdateValue(P2PR_DEVINFO, &p2pr_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char3_NS_Last*/
+  /* USER CODE BEGIN Service1Char3_NS_Last */
 
-  /* USER CODE END Service1Char3_NS_Last*/
+  /* USER CODE END Service1Char3_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 static void P2PR_Connect_Request(void)
 {
   tBleStatus result;
@@ -665,8 +665,6 @@ static uint8_t P2PR_notifDevInfo(uint8_t dev_idx)
     data.Length = n;
     data.p_Payload = &tab[0];
     P2PR_UpdateValue(P2PR_DEVINFO, &data);
-
-    HostStack_Process();
   }
   else
   {
@@ -690,4 +688,4 @@ static void P2PR_notifDevInfoTable(void)
   return;
 }
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

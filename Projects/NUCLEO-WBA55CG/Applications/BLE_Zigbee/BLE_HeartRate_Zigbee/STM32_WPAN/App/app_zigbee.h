@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -70,8 +70,8 @@ typedef struct ZigbeeAppInfoT
 /* USER CODE END ET */
 
 /* Exported constants ------------------------------------------------------- */
-extern const uint8_t                      sec_key_ha[ZB_SEC_KEYSIZE];
 extern const uint8_t                      sec_key_distrib_uncert[ZB_SEC_KEYSIZE];
+extern const uint8_t                      sec_key_ha[ZB_SEC_KEYSIZE];
 
 /* USER CODE BEGIN EC */
 
@@ -96,14 +96,22 @@ extern void       APP_ZIGBEE_StackLayersInit              ( void );
 extern void       APP_ZIGBEE_NwkFormOrJoinTaskInit        ( void );
 extern void       APP_ZIGBEE_NwkFormOrJoin                ( void );
 
+extern void       APP_ZIGBEE_PermitJoin                   ( uint8_t cPermitJoinDelay );
 extern bool       APP_ZIGBEE_IsAppliJoinNetwork           ( void );
+extern void       APP_ZIGBEE_AddDeviceWithInstallCode     ( uint64_t dlExtendedAddress, uint8_t * szInstallCode, uint8_t cPermitJoinDelay );
 extern bool       APP_ZIGBEE_GetCurrentChannel            ( uint8_t * cCurrentChannel );
 extern bool       APP_ZIGBEE_SetTxPower                   ( uint8_t cTxPower );
+extern char *     APP_ZIGBEE_GetDisplaySecKey             ( const uint8_t * szCode, uint16_t iLength, bool bSpace );
 extern void       APP_ZIGBEE_PrintGenericInfo             ( void );
 extern void       APP_ZIGBEE_PrintApplicationInfo         ( void );
 extern void       APP_ZIGBEE_Error                        ( uint32_t ErrId, uint32_t ErrCode );
 
 /* USER CODE BEGIN EFP */
+/* Exported functions found in app_zigbee_persistence.c */
+extern void       APP_ZIGBEE_Persistence_Init( void );
+extern bool       APP_ZIGBEE_Persistence_StartupNwk( ZigbeeAppInfo_t * pstZigbeeAppInfo, bool bSavePersistence );
+extern void       APP_ZIGBEE_Persistence_Delete ( void );
+
 
 /* USER CODE END EFP */
 

@@ -1,5 +1,6 @@
 [ProjectFiles]
 HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1;..\..\..\..\..\..\Drivers\BSP\Components\Common;..\..\..\..\..\..\Drivers\BSP\Components\cs42l51;..\..\..\..\..\..\Drivers\BSP\Components\ssd1315;../Core/Src/lcd;../../../../../../Utilities/LCD;
+
 [Others]
 
 [Groups]

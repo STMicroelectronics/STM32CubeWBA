@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wba55g_discovery.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -70,10 +71,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-extern uint32_t ADC_High_Threshold;
-extern uint32_t ADC_Low_Threshold;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -88,9 +86,10 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+  while(1)
   {
   }
+
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -105,6 +104,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -120,6 +120,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -135,6 +136,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -150,6 +152,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -240,16 +243,18 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_hserdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    SCM_HSE_StartStabilizationTimer();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    scm_pllrdy_isr();
+#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -296,6 +301,32 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM16 global interrupt.
+  */
+void TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM16_IRQn 0 */
+
+  /* USER CODE END TIM16_IRQn 0 */
+  /* Check whether update interrupt is pending */
+  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+  {
+    /* Clear the update interrupt flag */
+    LL_TIM_ClearFlag_UPDATE(TIM16);
+
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  /* USER CODE BEGIN TIM16_IRQn 1 */
+
+  /* USER CODE END TIM16_IRQn 1 */
 }
 
 /**
@@ -356,13 +387,9 @@ void HASH_IRQHandler(void)
   */
 void ADC4_IRQHandler(void)
 {
-  /* USER CODE BEGIN ADC4_IRQn 0 */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   BSP_JOY_IRQHandler(JOY1,(JOYPin_TypeDef) 0);
 #endif /* CFG_JOYSTICK_SUPPORTED */
-  /* USER CODE END ADC4_IRQn 0 */
-  /* USER CODE BEGIN ADC4_IRQn 1 */
-
-  /* USER CODE END ADC4_IRQn 1 */
 }
+
 /* USER CODE END 1 */

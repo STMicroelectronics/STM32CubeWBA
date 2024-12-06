@@ -1,36 +1,23 @@
-/*
- *  Copyright (c) 2018, The OpenThread Authors.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *  1. Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *  2. Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *  3. Neither the name of the copyright holder nor the
- *     names of its contributors may be used to endorse or promote products
- *     derived from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
-
+/* USER CODE BEGIN Header */
 /**
- * @file
- *   This file implements the OpenThread platform abstraction for the alarm.
- *
- */
+  ******************************************************************************
+  * @file    alarm.c
+  * @author  MCD Application Team
+  * @brief   This file implements the OpenThread platform abstraction for the alarm.
+  *
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
 
 #include OPENTHREAD_PROJECT_CORE_CONFIG_FILE
 #include "openthread/platform/alarm-milli.h"
@@ -38,26 +25,34 @@
 #include "openthread/platform/alarm-micro.h"
 #endif
 #include "platform_wba.h"
-#include "bsp.h"
+#include "alarm.h"
 #include "cmsis_compiler.h"
+#include "instance.h"
+#include "platform/time.h"
+#include "platform/radio.h"
+#include "linklayer_plat.h"
 
 #define OT_INSTANCE_NUMBER                1
 #define OT_ALARM_MILLI_MAX_EVENT          1
 #define OT_ALARM_MICRO_MAX_EVENT          1
 #define NO_STORED_INSTANCE                255
 
-#define FROM_US_TO_MS(ms)   (ms/1000)
-#define FROM_MS_TO_US(us)   (us*1000)
-#define MIN(A, B) (((A) < (B)) ? (A) : (B))
+#define FROM_US_TO_MS(us)        (us/1000)
+#define FROM_MS_TO_US(ms)        (ms*1000)
+#define FROM_MS_TO_SLP_STEP(ms)  (ms*32) /* Current Sleep timer has 31.25 us step */
+
+
+#define MAX_UINT32 0xFFFFFFFF
+#define MILLI_START_THRESHOLD 0  //ms, do not start milli timer if <= MILLI_START_THRESHOLD
+#define MICRO_START_THRESHOLD 100  //us, do not start micro timer if <= MICRO_START_THRESHOLD
 
 extern void ral_set_ot_base_slp_time_value(uint32_t time);
-extern uint64_t ral_cnvert_slp_tim_to_ot_tim(uint32_t time);
 extern uint32_t get_current_time(void);
 
 static void ms_alarm_timer_cbk(void *arg);
+#if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
 static void us_alarm_timer_cbk(void *arg);
-
-uint32_t sCounter_steps = 0;
+#endif
 
 typedef struct ms_alarm_struct
 {
@@ -67,35 +62,36 @@ typedef struct ms_alarm_struct
 
 typedef struct csl_alarm_struct
 {
-  otInstance *aInstance;
   uint32_t expires;
   uint8_t sIsRunning;
 }csl_alarm_struct;
 
-ms_alarm_struct  milli_alarm_struct_st[OT_ALARM_MILLI_MAX_EVENT];
-csl_alarm_struct micro_alarm_struct_st[OT_INSTANCE_NUMBER];
-uint8_t milli_alarm_pending;
-uint8_t micro_alarm_pending;
-
-static os_timer_id csl_timer_id;
+static ms_alarm_struct  milli_alarm_struct_st[OT_ALARM_MILLI_MAX_EVENT];
 static os_timer_id milli_timer_id;
 
+#if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
+static csl_alarm_struct micro_alarm_struct_st[OT_INSTANCE_NUMBER];
+static os_timer_id csl_timer_id;
+#endif
+
+static uint32_t notnull_intance;
 /* stubs for external functions 
    prevent linking errors when not defined in application */
 __WEAK void APP_THREAD_ScheduleAlarm(void)
 {
+  /* Need to be implemented by user (os dependant) */
   while(1);
 }
 
 __WEAK void APP_THREAD_ScheduleUsAlarm(void)
 {
+  /* Need to be implemented by user (os dependant) */
   while(1);
 }
 
 void arcAlarmInit(void)
 {
   uint8_t i;
-  milli_alarm_pending = 0U;
 
   milli_timer_id = os_timer_create((void (*)())ms_alarm_timer_cbk, os_timer_once, NULL);
   for (i = 0U; i < OT_INSTANCE_NUMBER ; i++){
@@ -103,69 +99,104 @@ void arcAlarmInit(void)
   }
 
 #if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
-  micro_alarm_pending = 0;
   csl_timer_id = os_timer_create((void (*)())us_alarm_timer_cbk, os_timer_once, NULL);
   for (i = 0U; i < OT_INSTANCE_NUMBER ; i++){
     micro_alarm_struct_st[i].sIsRunning = 0;
   }
 #endif /* OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE */
 
-  sCounter_steps = get_current_time();
-  ral_set_ot_base_slp_time_value(sCounter_steps);
+  ral_set_ot_base_slp_time_value(get_current_time());
 }
 
 /* Used by RCP for CSL latency transport (UART, SPI etc..) offset calculation */
-uint32_t otPlatTimeGet(void)
+uint64_t otPlatTimeGet(void)
 {
-  return otPlatAlarmMicroGetNow();
+  return otPlatRadioGetNow((otInstance *)&notnull_intance);
 }
 
 uint32_t otPlatAlarmMilliGetNow(void)
 {
-  uint32_t steps = get_current_time();
-  return  (uint32_t)FROM_US_TO_MS(ral_cnvert_slp_tim_to_ot_tim(steps));
+  uint32_t time_ms = (uint32_t)FROM_US_TO_MS(otPlatRadioGetNow((otInstance *)&notnull_intance));
+  return  time_ms;
 }
 
 void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 {
-  uint64_t alarm_time_us = 0;
-  uint64_t ot_base_us = 0;
-  uint32_t curr_time= get_current_time();
+  (void)(aInstance);
+  uint64_t alarm_expire_step = 0;
+  uint32_t curr_time_ms = otPlatAlarmMilliGetNow();
   uint32_t ret = 0;
-    
-  uint32_t alarm_expire_ms = (uint32_t)(aT0 + aDt);
-  
-  os_timer_stop(milli_timer_id); //stop alarm
-  
-  milli_alarm_struct_st[0].expires = alarm_expire_ms;
+  uint32_t alarm_expire_ms;
+
+  milli_alarm_struct_st[0].expires = aT0 + aDt;
   milli_alarm_struct_st[0].sIsRunning = 1;
 
-  /* Schedule Alarm */
-  alarm_time_us = FROM_MS_TO_US((uint64_t)alarm_expire_ms);
-  ot_base_us    = ral_cnvert_slp_tim_to_ot_tim(curr_time);
-  if(alarm_time_us < ot_base_us) //alarm in past
+  /* Stop Alarm */
+  LINKLAYER_PLAT_DisableIRQ();
+
+  os_timer_stop(milli_timer_id);
+
+  LINKLAYER_PLAT_EnableIRQ();
+
+  /* check if Alarm in the Past */
+  if (curr_time_ms > (aT0 + aDt))
   {
-    //schedule alarm right now
+    /* Set alarm_expire_ms to 0 if alarm in the past */
+    alarm_expire_ms = 0;
+  }
+  else
+  {
+    alarm_expire_ms = milli_alarm_struct_st[0].expires - curr_time_ms;
+  }
+
+  /* Check for overflow */
+  if (aT0 > (MAX_UINT32 - aDt))
+  {
+    if (curr_time_ms >= aT0)
+    {
+      /* In this case curr_time_ms has not overflowed  */
+      alarm_expire_ms = aDt - (curr_time_ms - aT0);
+    }
+  }
+
+  /* check if alarm need to be scheduled now */
+  if(alarm_expire_ms <= MILLI_START_THRESHOLD)
+  {
+    /* schedule alarm right now */
     APP_THREAD_ScheduleAlarm();
   }
   else
   {
-    alarm_time_us -= ot_base_us;
-    if (alarm_time_us> 0xFFFFFFFF) // os_timer only deal with uint32_t
+    /* Convert in sleeptimer step */
+    alarm_expire_step = FROM_MS_TO_SLP_STEP((uint64_t)alarm_expire_ms);
+
+    /* check if alarm_expire_step overflows */
+    if (alarm_expire_step > MAX_UINT32)
     {
-      alarm_time_us = 0x00000000FFFFFFFF;
+      // In this case do nothing
+      // It only happens when OT stack asks for alarm in more than 37hours
+      // Ot stack will trigger new alarm before 37hours
+      milli_alarm_struct_st[0].expires = UINT32_MAX;
+      milli_alarm_struct_st[0].sIsRunning = 2;
     }
-    
-    ret = os_timer_start_in_us(milli_timer_id, (uint32_t)alarm_time_us);
-    if (ret != 0)
+    else
     {
-      bsp_assert(0,1);
+      LINKLAYER_PLAT_DisableIRQ();
+      /* Start Sleeptimer to schedule alarm */
+      ret = os_timer_start(milli_timer_id, (uint32_t)alarm_expire_step);
+      LINKLAYER_PLAT_EnableIRQ();
+      if (ret != 0)
+      {
+        /* os_timer_start shouldn't return error */
+        while(1);
+      }
     }
   }
 }
 
 void otPlatAlarmMilliStop(otInstance *aInstance)
 {
+  (void)(aInstance);
   milli_alarm_struct_st[0].sIsRunning = 0;
   os_timer_stop(milli_timer_id);
 }
@@ -175,99 +206,84 @@ void otPlatAlarmMicroStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 {
   (void)(aInstance);
   uint32_t ret = 0;
-  uint32_t curr_time= get_current_time();
-  uint32_t alarm_expire_us = (uint32_t)(aT0 + aDt);
+  uint32_t curr_time_us= 0;
+  uint32_t alarm_expire_us;
 
-  os_timer_stop(csl_timer_id); //stop alarm
-  
   micro_alarm_struct_st[0].sIsRunning = 1;
-  micro_alarm_struct_st[0].expires = alarm_expire_us;
+  micro_alarm_struct_st[0].expires = (uint32_t)(aT0 + aDt);
 
-  /* Schedule Alarm */
-  ret = os_timer_start_in_us(csl_timer_id, alarm_expire_us - ral_cnvert_slp_tim_to_ot_tim(curr_time));
-   if (ret != 0)
+  /* After getting time in us otPlatAlarmMicroStartAt shouldn't be preempted */
+  LINKLAYER_PLAT_DisableIRQ();
+
+  /* Get current time in us */
+  curr_time_us = otPlatAlarmMicroGetNow();
+
+  /* Stop alarm */
+  os_timer_stop(csl_timer_id);
+
+  /* check if Alarm in the Past */
+  if (curr_time_us > (aT0 + aDt))
   {
-    bsp_assert(0,1);
+    /* Set alarm_expire_ms to 0 if alarm in the past */
+    alarm_expire_us = 0;
   }
+  else
+  {
+    alarm_expire_us = micro_alarm_struct_st[0].expires - curr_time_us;
+  }
+
+  /* Check for overflow */
+  if (aT0 > MAX_UINT32 - aDt)
+  {
+    if (curr_time_us >= aT0)
+    {
+      /* In this case curr_time_ms has not overflowed */
+      alarm_expire_us = aDt - (curr_time_us - aT0);
+    }
+  }
+
+  /* check if alarm need to be scheduled now */
+  if(alarm_expire_us <= MICRO_START_THRESHOLD)
+  {
+    /* schedule alarm right now */
+    APP_THREAD_ScheduleUsAlarm();
+  }
+  else
+  {
+    /* Start Sleeptimer to schedule alarm */
+    ret = os_timer_start_in_us(csl_timer_id, alarm_expire_us);
+    if (ret != 0)
+    {
+      /* os_timer_start shouldn't return error */
+      while(1);
+    }
+  }
+
+  LINKLAYER_PLAT_EnableIRQ();
 }
 
 void otPlatAlarmMicroStop(otInstance *aInstance)
 {
+  (void)(aInstance);
   micro_alarm_struct_st[0].sIsRunning = 0;
   os_timer_stop(csl_timer_id);
 }
 
 uint32_t otPlatAlarmMicroGetNow(void)
 {
-  uint32_t steps = get_current_time();
-  return (uint32_t)ral_cnvert_slp_tim_to_ot_tim(steps);
-}
-
-static uint32_t arcMicroAlarmGetRemainingTime(void)
-{
-  uint32_t rem_time;
-
-  if (micro_alarm_struct_st[0].sIsRunning == 1)
-  {
-    uint32_t alarm_time = micro_alarm_struct_st[0].expires;
-    uint32_t curr_time = otPlatAlarmMicroGetNow();
-    rem_time = (alarm_time < curr_time) ? 0 : (alarm_time - curr_time);
-  }
-  else
-  {
-    rem_time = NO_EVT_TIME;
-  }
-  return rem_time;
+  return (uint32_t)otPlatRadioGetNow((otInstance *)&notnull_intance);
 }
 
 #endif /* OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE */
-
-static uint32_t arcMilliAlarmGetRemainingTime(void)
-{
-  uint32_t rem_time;
-
-  if (milli_alarm_struct_st[0].sIsRunning == 1)
-  {
-    uint32_t alarm_time = milli_alarm_struct_st[0].expires;
-    uint32_t curr_time = otPlatAlarmMilliGetNow();
-    rem_time = (alarm_time < curr_time) ? 0 : (alarm_time - curr_time);
-  }
-  else
-  {
-    rem_time = NO_EVT_TIME;
-  }
-  return rem_time;
-}
-
-/**
- * @brief     This function returns the next alarm event in us.
- * @param[in] None
- * @retval    Relative time until next alarm in us. (NO_EVT_TIME if none)
- */
-uint64_t arcAlarmGetRemainingTimeNextEvent(void)
-{
-  uint64_t retval = (uint64_t)arcMilliAlarmGetRemainingTime();
-  /* Convert in us */
-  retval = FROM_MS_TO_US(retval);
-#if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
-  uint64_t alarm_expires_us = (uint64_t)arcMicroAlarmGetRemainingTime();
-  retval = MIN(retval, alarm_expires_us);
-#endif /* #if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE */
-  return retval;
-}
 
 static void ms_alarm_timer_cbk(void *arg)
 {
   APP_THREAD_ScheduleAlarm();
 }
 
-static void us_alarm_timer_cbk(void *arg)
-{
-  APP_THREAD_ScheduleUsAlarm();
-}
-
 void arcAlarmProcess(otInstance *aInstance)
 {
+  (void)(aInstance);
   if (milli_alarm_struct_st[0].sIsRunning == 1)
   {
     milli_alarm_struct_st[0].sIsRunning = 0;
@@ -275,11 +291,20 @@ void arcAlarmProcess(otInstance *aInstance)
   }
 }
 
+#if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
+
+static void us_alarm_timer_cbk(void *arg)
+{
+  APP_THREAD_ScheduleUsAlarm();
+}
+
 void arcUsAlarmProcess(otInstance *aInstance)
 {
+  (void)(aInstance);
   if (micro_alarm_struct_st[0].sIsRunning == 1)
   {
     micro_alarm_struct_st[0].sIsRunning = 0;
     otPlatAlarmMicroFired(aInstance);
   }
 }
+#endif

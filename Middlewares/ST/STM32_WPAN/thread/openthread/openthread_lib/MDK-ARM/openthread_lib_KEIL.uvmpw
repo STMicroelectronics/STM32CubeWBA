@@ -8,6 +8,11 @@
   <WorkspaceName>WorkSpace</WorkspaceName>
 
   <project>
+    <PathAndName>.\thread_ftd_full_keil_config\thread_ftd_full_keil_config.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
+  </project>
+
+  <project>
     <PathAndName>.\thread_ftd_keil_config\thread_ftd_keil_config.uvprojx</PathAndName>
   </project>
 
@@ -17,7 +22,22 @@
 
   <project>
     <PathAndName>.\thread_rcp_keil_config\thread_rcp_keil_config.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
+  </project>
+
+  <project>
+    <PathAndName>.\thread_ftd_matter_keil_config\thread_ftd_matter_keil_config.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\thread_mtd_matter_keil_config\thread_mtd_matter_keil_config.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\thread_ftd_mbedtls_config\thread_ftd_mbedtls_config.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\thread_mtd_mbedtls_config\thread_mtd_mbedtls_config.uvprojx</PathAndName>
   </project>
 
 </ProjectWorkspace>

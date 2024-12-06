@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    peripheral_init.c
   * @author  MCD Application Team
-  * @brief   tbd module
+  * @brief   peripheral init module
   ******************************************************************************
   * @attention
   *
@@ -28,7 +28,7 @@
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
@@ -46,7 +46,7 @@ extern RNG_HandleTypeDef hrng;
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void)
+void MX_StandbyExit_PeripheralInit(void)
 {
   HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
@@ -90,10 +90,7 @@ void MX_StandbyExit_PeripharalInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  BSP_PB_Init(B1, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B2, BUTTON_MODE_EXTI);
-  BSP_PB_Init(B3, BUTTON_MODE_EXTI);
-#endif
+  APP_BSP_StandbyExit();
+
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }

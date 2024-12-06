@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.onoff.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -84,7 +84,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-/* The magic keyword address shall be mapped at TAG_OTA_START (see the linker script) */
+
 /* The magic keyword shall be mapped at TAG_OTA_END (see linker script) */
 PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = FUOTA_MAGIC_KEYWORD_M33_APP;
 PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = ( uint32_t )&MagicKeywordValue;
@@ -232,9 +232,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -280,7 +277,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   LOG_INFO_APP( "Network config : CENTRALIZED ROUTER" );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
-  LOG_INFO_APP( "Application Flashed : Zigbee %s%s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME, APP_ZIGBEE_APPLICATION_OTA_NAME );
+  LOG_INFO_APP( "Application Flashed : Zigbee %s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
@@ -326,7 +323,7 @@ static void APP_ZIGBEE_OnOffClientStart(void)
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   struct ZbApsAddrT     stDest;
   enum ZclStatusCodeT   eStatus;
@@ -351,48 +348,22 @@ void APPE_Button1Action(void)
 
 
 /**
- * @brief  Management of the SW2 button : Erase Persistence Data & ReStart
- * @param  None
- * @retval None
- */
-void APPE_Button2Action(void)
-{
-  /* First, verify if Appli has already Join a Network  */ 
-  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
-  {
-    /* Reboot only if B2 is 'long pressed' */
-    if ( APPE_ButtonIsLongPressed( B2 ) != 0u )
-    {
-      LOG_INFO_APP( "**********************************************************" );
-      LOG_INFO_APP( "[OTA] Rebooting." );
-      LOG_INFO_APP( "**********************************************************" );
-
-      /* Start a reboot */
-      HAL_Delay( 1000u ); /* Wait for the log to flush */
-      
-      * ( uint32_t * ) SRAM1_BASE = FUOTA_MAGIC_KEYWORD_RESET_OTA; // Reboot with OTA.
-      NVIC_SystemReset();
-    }
-  }
-}
-
-
-/**
  * @brief  Management of the toggle OnOff (via Button SW1) with the Timer
  * @param  None
  * @retval None
  */
 static void APP_ZIGBEE_TimerToggleCallback( void * arg )
 {
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_B1, CFG_TASK_PRIO_BUTTON_Bx );
 }
+
 
 /**
  * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
  * @param  None
  * @retval None
  */
-void APPE_Button3Action(void)
+void APP_BSP_Button3Action(void)
 {
   static  uint8_t   cToggleOn = 0;
   

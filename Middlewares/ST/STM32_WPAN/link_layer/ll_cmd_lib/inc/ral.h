@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ral.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ral.h#3 $*/
 /**
  ********************************************************************************
  * @file    ral.h
@@ -127,9 +127,9 @@ typedef enum ral_error_enum {
 	RAL_ERROR_LINK_METRICS_NOT_FOUND,
 	RAL_ERROR_LINK_METRICS_NO_BUF,
 #endif /* SUPPORT_ENH_ACK_LINK_METRICS_PROBING_OT_1_2 */
-#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+#if SUPPORT_ANT_DIV
 	RAL_ERROR_AD_NOT_IN_CONFIG_STATE,
-#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+#endif /* SUPPORT_ANT_DIV */
     RAL_ERROR_GENERIC = 255
 } ral_error_enum_t;
 
@@ -476,11 +476,8 @@ enum error_flags_shift{
 	ACK_OK_SHIFT,			 /* bit location for Acknowledgment received correctly flag */
 	ACK_ERR_SHIFT,			 /* bit location for Acknowledgment received with errors flag */
 	CRC_ERR_SHIFT,			 /* bit location for CRC error indicator flag*/
-	DSTADDR_ERR_SHIFT		 /* bit location for Destination Address reception error. Available only when mac_prmiscmode=0 */
-#if SUPPORT_RADIO_SECURITY_OT_1_2
-	,
+	DSTADDR_ERR_SHIFT,		 /* bit location for Destination Address reception error. Available only when mac_prmiscmode=0 */
 	SEC_ERR_SHIFT = 30		 /* bit location for security processing error occurred in case of secured Enhanced Ack  */
-#endif
 };
 
 
@@ -645,7 +642,7 @@ ral_power_state_enum_t ral_get_power_state(ral_instance_t ral_instance);
  */
 ral_event_state_enum_t ral_get_current_event_state(ral_instance_t * curr_ral_instance, uint8_t * curr_event_channel);
 
-#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+#if SUPPORT_ANT_DIV
 /**
  * @fn ral_set_ant_div_params
  *
@@ -705,7 +702,7 @@ ral_error_enum_t ral_set_default_ant_id(ral_instance_t ral_instance, uint8_t def
  * @retval RAL_ERROR_NONE if antenna diversity RSSI threshold is set correctly
  */
 ral_error_enum_t ral_set_ant_div_rssi_threshold(ral_instance_t ral_instance, int8_t rssi_threshold);
-#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+#endif /* SUPPORT_ANT_DIV */
 
 /**
  * @}
@@ -1273,10 +1270,10 @@ void ral_set_ot_base_slp_time_value(uint32_t time);
 /**
  * @brief  get the value of the openthread base time, the value nay be set through @ref ral_set_ot_base_slp_time_value
  * @param  None
- * @retval uint32_t. base time value
+ * @retval uint64_t. base time value
  */
 
-uint32_t ral_get_ot_base_slp_time_value(void);
+uint64_t ral_get_ot_base_slp_time_value(void);
 /**
  * @brief  Convert the value of sleep timer to openthread time
  * @param  time [in]      : sleep timer value to be converted to openthread time
@@ -1371,7 +1368,7 @@ otError ral_set_cca_ed_threshold(int8_t threshold);
  *
  */
 int8_t ral_get_cca_ed_threshold(void);
-#if (RADIO_CSMA) && (SUPPORT_COEXISTENCE)
+#if (SUPPORT_COEXISTENCE)
 /**
  * @brief	radio csma error callback.
  *
@@ -1380,8 +1377,8 @@ int8_t ral_get_cca_ed_threshold(void);
  * @retval None
  *
  */
-void radio_csma_error_cbk(uint32_t error);
-#endif /*end of RADIO_CSMA) && (SUPPORT_COEXISTENCE)*/
+void radio_coex_tx_error_cbk(uint32_t error);
+#endif /*end of (SUPPORT_COEXISTENCE)*/
 #if (RADIO_CSMA) &&(!SUPPORT_COEXISTENCE)
 /**
  * @brief	set maximum time to start csma
@@ -1503,7 +1500,7 @@ void ral_set_implicitbroadcast(ral_instance_t ral_instance, uint8_t ImplicitBroa
  */
 void ed_timer_hndl(void* ptr_info);
 
-#if defined(PHY_40nm_3_00_a) && SUPPORT_MAC_PHY_CONT_TESTING_CMDS
+#if SUPPORT_MAC_PHY_CONT_TESTING_CMDS
 /**
  *
  * @brief set the phy continuous modulation and continuous wave modes
@@ -1523,7 +1520,7 @@ void ed_timer_hndl(void* ptr_info);
  * @retval Status
  */
 void ral_phy_set_zigbee_phy_cont_test_mode(ral_instance_t instance, uint8_t type, uint8_t enable_mode, uint8_t chnl_num, int8_t tx_pwr);
-#endif /*end of PHY_40nm_3_00_a && SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
+#endif /*end of SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
 
 #endif /* INCLUDE_RAL_H_ */
 /**

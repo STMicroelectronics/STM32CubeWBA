@@ -28,12 +28,12 @@
 #include "ble.h"
 #include "dt_serv_app.h"
 #include "dt_serv.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 #include "host_stack_if.h"
 /* USER CODE END Includes */
 
@@ -282,7 +282,7 @@ void DT_SERV_APP_Init(void)
 /* USER CODE BEGIN FD */
 void DTS_Button1TriggerReceived( void )
 {
-  if  (APPE_ButtonIsLongPressed(B1))
+  if(APP_BSP_ButtonIsLongPressed(B1))
   {
     LOG_INFO_APP("  Long Press B1 \n");
     if (debug == 0)
@@ -375,18 +375,18 @@ __USED void DT_SERV_Tx_char_SendNotification(void) /* Property Notification */
   dt_serv_notification_data.p_Payload = (uint8_t*)a_DT_SERV_UpdateCharData;
   dt_serv_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char1_NS_1*/
+  /* USER CODE BEGIN Service1Char1_NS_1 */
 
-  /* USER CODE END Service1Char1_NS_1*/
+  /* USER CODE END Service1Char1_NS_1 */
 
   if (notification_on_off != Tx_char_NOTIFICATION_OFF)
   {
     DT_SERV_UpdateValue(DT_SERV_TX_CHAR, &dt_serv_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char1_NS_Last*/
+  /* USER CODE BEGIN Service1Char1_NS_Last */
 
-  /* USER CODE END Service1Char1_NS_Last*/
+  /* USER CODE END Service1Char1_NS_Last */
 
   return;
 }
@@ -399,23 +399,23 @@ __USED void DT_SERV_Through_char_SendNotification(void) /* Property Notification
   dt_serv_notification_data.p_Payload = (uint8_t*)a_DT_SERV_UpdateCharData;
   dt_serv_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char3_NS_1*/
+  /* USER CODE BEGIN Service1Char3_NS_1 */
 
-  /* USER CODE END Service1Char3_NS_1*/
+  /* USER CODE END Service1Char3_NS_1 */
 
   if (notification_on_off != Through_char_NOTIFICATION_OFF)
   {
     DT_SERV_UpdateValue(DT_SERV_THROUGH_CHAR, &dt_serv_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char3_NS_Last*/
+  /* USER CODE BEGIN Service1Char3_NS_Last */
 
-  /* USER CODE END Service1Char3_NS_Last*/
+  /* USER CODE END Service1Char3_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 static void BLE_App_Delay_DataThroughput(void)
 {
   uint32_t DataThroughput;
@@ -480,4 +480,4 @@ void Resume_Notification(void)
   DTS_Context.DtFlowStatus = DTS_APP_FLOW_ON;
   UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
 }
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

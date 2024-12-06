@@ -31,8 +31,8 @@ extern "C" {
 #include "app_conf.h"
 #include "app_entry.h"
 #include "app_common.h"
-#include "app_debug.h"
 
+#include "stm32wbaxx_ll_icache.h"
 #include "stm32wbaxx_ll_system.h"
 #include "stm32wbaxx_ll_gpio.h"
 #include "stm32wbaxx_ll_exti.h"

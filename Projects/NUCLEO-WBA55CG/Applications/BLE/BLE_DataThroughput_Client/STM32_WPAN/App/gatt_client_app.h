@@ -46,7 +46,7 @@ typedef enum
   GATT_CLIENT_APP_DISCOVER_NOTIFICATION_CHAR_DESC,
   GATT_CLIENT_APP_ENABLE_NOTIFICATION_DESC,
   GATT_CLIENT_APP_DISABLE_NOTIFICATION_DESC,
-  /* USER CODE BEGIN GATT_CLIENT_APP_State_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_State_t */
 
   /* USER CODE END GATT_CLIENT_APP_State_t */
 }GATT_CLIENT_APP_State_t;
@@ -55,7 +55,7 @@ typedef enum
 {
   PEER_CONN_HANDLE_EVT,
   PEER_DISCON_HANDLE_EVT,
-  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t */
 
   /* USER CODE END GATT_CLIENT_APP_Conn_Opcode_t */
 }GATT_CLIENT_APP_Conn_Opcode_t;
@@ -66,7 +66,7 @@ typedef enum
   PROC_GATT_DISC_ALL_CHARS,
   PROC_GATT_DISC_ALL_DESCS,
   PROC_GATT_PROPERTIES_ENABLE_ALL,
-  /* USER CODE BEGIN ProcGattId_t*/
+  /* USER CODE BEGIN ProcGattId_t */
 
   /* USER CODE END ProcGattId_t */
 }ProcGattId_t;
@@ -111,18 +111,14 @@ typedef struct
   DTC_STM_Payload_t       DataTransfered;
   uint16_t                ConnectionHandle;
   uint8_t                 ServiceInstance;
-
-  /* USER CODE BEGIN Service1_NotificationEvt_t */
-
-  /* USER CODE END Service1_NotificationEvt_t */
-
 } DT_CLI_NotificationEvt_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 typedef enum
-{  
+{
   DTC_UNINITIALIZED                                 = 0,
   DTC_INITIALIZED                                   = 1,
   DTC_IDLE                                          = 2,
@@ -140,6 +136,7 @@ typedef enum
   DTC_CONNECTED                                     = 14,
   DTC_CONNECTED_ADVERTISING                         = 15,
 }  DTC_SVC_ProfileState;
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -163,6 +160,7 @@ void GATT_CLIENT_APP_Discover_services(uint8_t index);
 void DTC_Button1TriggerReceived( void );
 void DTC_Button2TriggerReceived( void );
 void DTC_Button3TriggerReceived( void );
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

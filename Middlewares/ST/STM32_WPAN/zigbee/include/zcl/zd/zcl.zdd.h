@@ -3,7 +3,7 @@
  * @heading Zigbee Direct Configuration Cluster
  * @brief ZCL Zigbee Direct Configuration Cluster header
  * Zigbee Direct Specification 20-27688-030
- * @copyright Copyright [2021 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2021 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_ZDD_H
@@ -87,8 +87,8 @@ bool ZbZclZddServerIsAnonJoinTimerActive(struct ZbZclClusterT *cluster);
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for response, including sequence number and tx options
  * @param req Zigbee Direct configure anonymous join timeout request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclZddClientConfigIfcReq(struct ZbZclClusterT *cluster,
@@ -100,8 +100,8 @@ enum ZclStatusCodeT ZbZclZddClientConfigIfcReq(struct ZbZclClusterT *cluster,
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for response, including sequence number and tx options
  * @param req Zigbee Direct configure anonymous join timeout request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclZddClientConfigAnonJoinTimeoutReq(struct ZbZclClusterT *cluster,

@@ -145,6 +145,7 @@ __vector_table
         DCD     HSEM_IRQHandler                  ; HSEM non-secure global interrupt
         DCD     HSEM_S_IRQHandler                ; HSEM secure global interrupt
         DCD     WKUP_S_IRQHandler                ; PWR secure global WKUP pin interrupt
+        DCD     RCC_AUDIOSYNC_IRQHandler         ; RCC audio synchronization interrupt
 
 __Vectors_End
 
@@ -568,5 +569,10 @@ HSEM_S_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
 WKUP_S_IRQHandler
         B WKUP_S_IRQHandler
+
+        PUBWEAK RCC_AUDIOSYNC_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1)
+RCC_AUDIOSYNC_IRQHandler
+        B RCC_AUDIOSYNC_IRQHandler
 
         END

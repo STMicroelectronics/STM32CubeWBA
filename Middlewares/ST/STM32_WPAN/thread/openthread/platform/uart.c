@@ -23,20 +23,10 @@
 #include "platform_wba.h"
 #include "stdio.h"
 #include "log_module.h"
-
+#include "uart.h"
+    
 #ifndef OPENTHREAD_RCP /* RCP cannot be used with CLI at same time */
 #if (OT_CLI_USE == 1)
-
-/**
- * The UART driver calls this method to notify OpenThread that bytes have been received.
- *
- * @param[in]  aBuf        A pointer to the received bytes.
- * @param[in]  aBufLength  The number of bytes received.
- *
- */
-extern void otPlatUartReceived(const uint8_t *aBuf, uint16_t aBufLength);
-
-extern void APP_THREAD_ScheduleUART(void);
 
 /* Extern variables  ---------------------------------------------------------*/
 #ifndef OT_CLI_UART_HANDLER
@@ -44,6 +34,8 @@ extern UART_HandleTypeDef huart1;
 #define OT_CLI_UART_HANDLER huart1
 #endif
 
+#define FACTORYRESET_CMD "factoryreset\r"
+#define RESET_CMD        "reset\r"
 
 /* Private function prototypes -----------------------------------------------*/
 static void otUart_TxCpltCallback(UART_HandleTypeDef *huart);
@@ -54,8 +46,8 @@ static void processReceive(void);
 
 
 /* Private define ------------------------------------------------------------*/
-#define BUFFER_SIZE   1024  /* Data size to read (in bytes) */
-#define CLI_BUFFER_NB 3
+#define BUFFER_SIZE   1536  /* Data size to read (in bytes) */
+#define CLI_BUFFER_NB 2
 
 #define CLI_ECHO /* command echo on UART, comment to disable */
 
@@ -83,14 +75,21 @@ cli_payload_t cli_cmd_buffer[CLI_BUFFER_NB];
 bool otUART_TX_Schdl = FALSE;
 bool otUART_RX_Schdl = FALSE;
 
+
+/* stubs for external functions 
+   prevent linking errors when not defined in application */
+__WEAK void APP_THREAD_ScheduleUART(void)
+{
+  /* Need to be implemented by user (os dependant) */
+  while(1);
+}
+
 /*
  * UART used for commands input/output
  * The selection among those available is done in this order:
  * USART1 --> Error (no UART found)
  *
  */
-
-
 otError otPlatUartEnable(void)
 {
   otError error = OT_ERROR_NONE;
@@ -174,6 +173,16 @@ static void processReceive(void)
 {
   LL_LOCK();
   if (buffer_index > 0){
+    
+    /* In case of "factoryreset" cmd, echo should be returned before giving cmd to OT stack 
+    else device will reset before echo sent by uart   */
+    if ((strncmp((char*)g_buffer, FACTORYRESET_CMD, 12) == 0) || ((strncmp((char*)g_buffer, RESET_CMD, 6) == 0)))
+    {
+        processTransmit();
+        /* Waiting for echo to be sent over uart before giving cmd to OT stack */
+        while(oTCLIuart->gState != HAL_UART_STATE_READY);
+    }
+    
     otPlatUartReceived(g_buffer, buffer_index);
     buffer_index = 0;
     memset(g_buffer, 0x0, BUFFER_SIZE);

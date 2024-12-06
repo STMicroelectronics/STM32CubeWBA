@@ -45,7 +45,7 @@
 #include "zcl/general/zcl.onoff.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -100,7 +100,7 @@
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE BEGIN PFP */
-static void APP_ZIGBEE_FindBindStart      ( void );
+static void APP_ZIGBEE_DisplayBindTable      ( void );
 
 /* USER CODE END PFP */
 
@@ -140,7 +140,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 {
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
   /* Start Find-Bind */
-  APP_ZIGBEE_FindBindStart();
+  APP_ZIGBEE_DisplayBindTable();
 
   /* Display Short Address */
   LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
@@ -241,9 +241,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -312,35 +309,51 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
 /**
- * @brief  Start the OnOff Client.
+ * @brief  Display Binding Table
  * @param  None
  * @retval None
  */
-static void APP_ZIGBEE_FindBindStart(void)
+static void APP_ZIGBEE_DisplayBindTable(void)
 {
-  /* Search the number of Binding */
-  uint16_t              iIndex = 0, iNbEntries = 0;
+  bool                  bEndDone = false;  
+  uint16_t              iIndex = 0, iCount = 0;
   struct ZbApsmeBindT   stBindEntry;
   enum ZbStatusCodeT    eStatus;
 
+  LOG_INFO_APP( "[FIND-BIND] Printing Binding table below:" );
+  LOG_INFO_APP( "  Item | ClusterId | Dest. Ext. Address | Dst EP | Src EP |" );
+  LOG_INFO_APP( "  -----|-----------|--------------------|--------|--------|" );
+
+  /* Go through each elements */
   do
   {
-    eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof(stBindEntry), iIndex );
-    if ( eStatus ==  ZB_APS_STATUS_SUCCESS )
-    {
-      if ( stBindEntry.srcExtAddr != 0ULL)
+      /* Check the end of the table */
+      eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof(stBindEntry), iIndex );
+      if ( eStatus != ZB_APS_STATUS_SUCCESS)
       {
-          iNbEntries++;
-          LOG_INFO_APP( "[FIND-BIND] Entry : Cluster (0x%02X) on Source Endpoint (0x%02X) and Dest EndPoint/Address (0x%02X / 0x%04X)",
-                    stBindEntry.clusterId, stBindEntry.srcEndpt, stBindEntry.dst.endpoint, stBindEntry.dst.nwkAddr );
+          if ( eStatus != ZB_APS_STATUS_INVALID_INDEX )
+          {
+              LOG_ERROR_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)", eStatus );
+          }
+          bEndDone = true;
       }
-    }
-    iIndex++;
+      else
+      {
+          /* If empty, ignore */
+          if ( stBindEntry.srcExtAddr != 0u )
+          {
+            /* Display element */
+            LOG_INFO_APP( "   %2d  |   0x%03X   | " LOG_DISPLAY64() " |  0x%02X  |  0x%02X  |", iIndex, stBindEntry.clusterId, 
+                         LOG_NUMBER64(stBindEntry.dst.extAddr), stBindEntry.dst.endpoint, stBindEntry.srcEndpt );
+            iCount++;
+          }
+      }
+      iIndex++;
   }
-  while ( eStatus ==  ZB_APS_STATUS_SUCCESS );
+  while ( bEndDone == false );
 
-  LOG_INFO_APP( "[FIND-BIND] Binding entries created: %d", iNbEntries );
-  if ( iNbEntries != 0u ) 
+  LOG_INFO_APP( "  Found %d Binds", iCount );
+  if ( iCount != 0u ) 
   {
     APP_LED_ON(LED_GREEN);
   }
@@ -351,7 +364,7 @@ static void APP_ZIGBEE_FindBindStart(void)
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   struct ZbApsAddrT     stDest;
   enum ZclStatusCodeT   eStatus;
@@ -379,7 +392,7 @@ void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   struct zcl_scenes_store_request_t stRequest;
   enum ZclStatusCodeT               eStatus;
@@ -407,7 +420,7 @@ void APPE_Button2Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button3Action(void)
+void APP_BSP_Button3Action(void)
 {
   struct zcl_scenes_recall_request_t  stRequest;
   enum ZclStatusCodeT                 eStatus;

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -36,6 +36,7 @@ typedef enum
   PWR_CO_GPIO_ON,
   PWR_CO_GPIO_TIM_RESET_ON,
 } PWR_CO_GPIO_Status_t;
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -51,7 +52,7 @@ typedef enum
   GATT_CLIENT_APP_DISCOVER_NOTIFICATION_CHAR_DESC,
   GATT_CLIENT_APP_ENABLE_NOTIFICATION_DESC,
   GATT_CLIENT_APP_DISABLE_NOTIFICATION_DESC,
-  /* USER CODE BEGIN GATT_CLIENT_APP_State_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_State_t */
 
   /* USER CODE END GATT_CLIENT_APP_State_t */
 }GATT_CLIENT_APP_State_t;
@@ -60,7 +61,7 @@ typedef enum
 {
   PEER_CONN_HANDLE_EVT,
   PEER_DISCON_HANDLE_EVT,
-  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t */
 
   /* USER CODE END GATT_CLIENT_APP_Conn_Opcode_t */
 }GATT_CLIENT_APP_Conn_Opcode_t;
@@ -71,7 +72,7 @@ typedef enum
   PROC_GATT_DISC_ALL_CHARS,
   PROC_GATT_DISC_ALL_DESCS,
   PROC_GATT_PROPERTIES_ENABLE_ALL,
-  /* USER CODE BEGIN ProcGattId_t*/
+  /* USER CODE BEGIN ProcGattId_t */
 
   /* USER CODE END ProcGattId_t */
 }ProcGattId_t;
@@ -110,10 +111,15 @@ typedef struct
   DTC_App_Flow_Status_t DtFlowStatus;
   uint8_t connectionstatus;
 } DTC_Context_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+
+#define ST_LPWR_CO_SERVICE_UUID                                       (0xFF10)
+#define ST_LPWR_CO_WRITE_CHAR_UUID                                    (0xFF11)
+#define ST_LPWR_CO_NOTIFY_CHAR_UUID                                   (0xFF12)
 
 /* USER CODE END EC */
 
@@ -124,9 +130,7 @@ typedef struct
 
 /* Exported macros ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define ST_LPWR_CO_SERVICE_UUID                                       (0xFF10)
-#define ST_LPWR_CO_WRITE_CHAR_UUID                                    (0xFF11)
-#define ST_LPWR_CO_NOTIFY_CHAR_UUID                                   (0xFF12)
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

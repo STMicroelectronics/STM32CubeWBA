@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -31,6 +31,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,6 +39,7 @@
 /* USER CODE BEGIN PTD */
 PWR_CO_GPIO_Status_t PWR_CO_GPIO_Status;
 DTC_Context_t DTC_Context;
+
 /* USER CODE END PTD */
 
 typedef enum
@@ -82,9 +84,10 @@ typedef struct
   uint16_t ServiceChangedCharEndHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
-  /* handles of the PwrCo service */
-  uint16_t PwrCoServiceHdl;
-  uint16_t PwrCoServiceEndHdl;
+
+  /* handles of the P2P service */
+  uint16_t P2PServiceHdl;
+  uint16_t P2PServiceEndHdl;
 
   /* handles of the Tx characteristic - Write To Server */
   uint16_t P2PWriteToServerCharHdl;
@@ -96,17 +99,22 @@ typedef struct
   uint16_t P2PNotificationValueHdl;
   uint16_t P2PNotificationDescHdl;
 
+  /* handles of the PwrCo service */
+  uint16_t PwrCoServiceHdl;
+  uint16_t PwrCoServiceEndHdl;
+
   /* handles of the Rx characteristic - Notification From Server */
   uint16_t PWR_CO_NotificationCharHdl;
   uint16_t PWR_CO_NotificationValueHdl;
   uint16_t PWR_CO_NotificationDescHdl;
-  
-    /* handles of the Tx characteristic - Write To Server */
+
+  /* handles of the Tx characteristic - Write To Server */
   uint16_t PWR_CO_WriteToServerCharHdl;
   uint16_t PWR_CO_WriteToServerValueHdl;
   uint16_t PWR_CO_WriteToServerDescHdl;
-  
+
   uint16_t MTUSizeValue;
+
 /* USER CODE END BleClientAppContext_t */
 
 }BleClientAppContext_t;
@@ -131,7 +139,8 @@ static uint16_t gattCharStartHdl = 0;
 static uint16_t gattCharValueHdl = 0;
 
 /* USER CODE BEGIN PV */
-static uint8_t Notification_Data_Buffer[USER_PAYLOAD_LENGTH]; 
+
+static uint8_t Notification_Data_Buffer[USER_PAYLOAD_LENGTH];
 
 /* USER CODE END PV */
 
@@ -152,8 +161,10 @@ static void client_discover_all(void);
 static void gatt_cmd_resp_release(void);
 static void gatt_cmd_resp_wait(void);
 /* USER CODE BEGIN PFP */
+
 void FormatingBytes(uint8_t *SendData, uint8_t nbByte);
 static void SendDataWrite(void);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -167,6 +178,7 @@ void GATT_CLIENT_APP_Init(void)
   uint8_t index =0;
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_1 */
   uint8_t i;
+
   /* USER CODE END GATT_CLIENT_APP_Init_1 */
   for(index = 0; index < BLE_CFG_CLT_MAX_NBR_CB; index++)
   {
@@ -180,15 +192,17 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_all);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
+
   PWR_CO_GPIO_Status = PWR_CO_GPIO_ON;
-  
-    for (i = 0 ; i < (USER_PAYLOAD_LENGTH) ; i++)
+
+  for (i = 0 ; i < (USER_PAYLOAD_LENGTH) ; i++)
   {
     Notification_Data_Buffer[i] = i;
   }
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_POCO_WRITE_CHAR_ID, UTIL_SEQ_RFU, SendDataWrite);
   a_ClientContext[0].MTUSizeValue = USER_PAYLOAD_LENGTH;
+
   /* USER CODE END GATT_CLIENT_APP_Init_2 */
   return;
 }
@@ -214,13 +228,15 @@ void GATT_CLIENT_APP_Notification(GATT_CLIENT_APP_ConnHandle_Notif_evt_t *p_Noti
       /* USER CODE BEGIN PEER_DISCON_HANDLE_EVT */
     {
       uint8_t index = 0;
-
-      while((index < BLE_CFG_CLT_MAX_NBR_CB) &&
-            (a_ClientContext[index].state != GATT_CLIENT_APP_IDLE))
+      for(index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
       {
-        a_ClientContext[index].state = GATT_CLIENT_APP_IDLE;
+        if (a_ClientContext[index].connHdl == p_Notif->ConnHdl)
+        {
+          a_ClientContext[index].state = GATT_CLIENT_APP_IDLE;
+        }
       }
     }
+
       /* USER CODE END PEER_DISCON_HANDLE_EVT */
       break;
 
@@ -368,8 +384,15 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
                                             a_ClientContext[index].ServiceChangedCharDescHdl,
                                             2,
                                             (uint8_t *) &charPropVal);
-          gatt_cmd_resp_wait();
-          LOG_INFO_APP(" ServiceChangedCharDescHdl =0x%04X\n",a_ClientContext[index].ServiceChangedCharDescHdl);
+          if (result == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+            LOG_INFO_APP(" ServiceChangedCharDescHdl =0x%04X\n",a_ClientContext[index].ServiceChangedCharDescHdl);
+          }
+          else
+          {
+            LOG_INFO_APP(" ServiceChangedCharDescHdl write Failed, status =0x%02X\n\n", result);
+          }
         }
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
         charPropVal = 0x0001;
@@ -382,6 +405,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           gatt_cmd_resp_wait();
           APP_DBG_MSG(" LPWR_CO_NotificationDescHdl =0x%04X\n",a_ClientContext[index].PWR_CO_NotificationDescHdl);
         }
+
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (result == BLE_STATUS_SUCCESS)
@@ -507,17 +531,18 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           {
             a_ClientContext[0].MTUSizeValue = DATA_NOTIFICATION_MAX_PACKET_SIZE;
           }
-          APP_DBG_MSG("  MTU_size = %d\n", a_ClientContext[0].MTUSizeValue);
+          LOG_INFO_APP("  MTU_size = %d\n", a_ClientContext[0].MTUSizeValue);
           tBleStatus status;
-		  status = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
+          status = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
           if (status != BLE_STATUS_SUCCESS)
           {
-            APP_DBG_MSG("  Fail   : set data length command   : error code: 0x%x \n\r", status);
+            LOG_INFO_APP("  Fail   : set data length command   : error code: 0x%x \n\r", status);
           }
           else
           {
-            APP_DBG_MSG("  Success: set data length command  \n\r");
+            LOG_INFO_APP("  Success: set data length command  \n\r");
           }
+		
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         break;
@@ -536,7 +561,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
 
 __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif)
 {
-  /* USER CODE BEGIN gatt_Notification_1*/
+  /* USER CODE BEGIN gatt_Notification_1 */
 
   /* USER CODE END gatt_Notification_1 */
   switch (p_Notif->Client_Evt_Opcode)
@@ -557,7 +582,7 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
       /* USER CODE END Client_Evt_Opcode_Default */
       break;
   }
-  /* USER CODE BEGIN gatt_Notification_2*/
+  /* USER CODE BEGIN gatt_Notification_2 */
 
   /* USER CODE END gatt_Notification_2 */
   return;
@@ -646,10 +671,10 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
 /* USER CODE BEGIN gatt_parse_services_1 */
       else if (uuid == P2P_SERVICE_UUID)
       {
-        a_ClientContext[index].PwrCoServiceHdl = ServiceStartHdl;
-        a_ClientContext[index].PwrCoServiceEndHdl = ServiceEndHdl;
+        a_ClientContext[index].P2PServiceHdl = ServiceStartHdl;
+        a_ClientContext[index].P2PServiceEndHdl = ServiceEndHdl;
 
-        APP_DBG_MSG(", P2P_SERVICE_UUID found\n");
+        LOG_INFO_APP(", P2P_SERVICE_UUID found\n");
       }
       else if (uuid == ST_LPWR_CO_SERVICE_UUID)
       {
@@ -794,6 +819,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
           a_ClientContext[index].PWR_CO_NotificationValueHdl = CharValueHdl;
           APP_DBG_MSG(", ST_LPWR_CO_NOTIFY_CHAR_UUID charac found\n");
         }
+
 /* USER CODE END gatt_parse_chars_1 */
         else
         {
@@ -911,6 +937,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           APP_DBG_MSG("LPWR_CO_Notification found : Desc UUID=0x%04X handle=0x%04X-0x%04X-0x%04X\n",
                        uuid, gattCharStartHdl, gattCharValueHdl, handle);
         }
+
 /* USER CODE END gatt_parse_descs_1 */
         else
         {
@@ -939,7 +966,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
 /* USER CODE BEGIN gatt_parse_descs_2 */
         else if (uuid == PERIPHERAL_PREFERRED_CONN_PARAMS_UUID)
         {
-          APP_DBG_MSG(", found PERIPHERAL_PREFERRED_CONN_PARAMS_UUID\n");        
+          APP_DBG_MSG(", found PERIPHERAL_PREFERRED_CONN_PARAMS_UUID\n");
         }
         else if (uuid == ST_LPWR_CO_WRITE_CHAR_UUID)
         {
@@ -949,6 +976,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
         {
           APP_DBG_MSG(", found ST_LPWR_CO_NOTIFY_CHAR_UUID\n");
         }
+
 /* USER CODE END gatt_parse_descs_2 */
         else
         {
@@ -1009,21 +1037,18 @@ static void gatt_cmd_resp_wait(void)
 static void SendDataWrite( void )
 {
   tBleStatus status = BLE_STATUS_INVALID_PARAMS;
-    
+
   /*Data Packet to send to remote*/
   Notification_Data_Buffer[0] += 1;
 
   DTC_Context.TxData.pPayload = Notification_Data_Buffer;
   DTC_Context.TxData.Length =  USER_PAYLOAD_LENGTH;
-  
-  
-  
 
   status = aci_gatt_write_without_resp(a_ClientContext[0].connHdl,
                                        a_ClientContext[0].PWR_CO_WriteToServerValueHdl,
                                        DTC_Context.TxData.Length,
                                        (const uint8_t*)(DTC_Context.TxData.pPayload));
-  
+
   if (status != BLE_STATUS_SUCCESS)
   {
     APP_DBG_MSG("aci_gatt_write_without_resp failed, connHdl=0x%04X, ValueHdl=0x%04X\n",
@@ -1038,7 +1063,7 @@ static void SendDataWrite( void )
       a_ClientContext[0].PWR_CO_WriteToServerValueHdl);
   }
 
-
   return;
 }
+
 /* USER CODE END LF */

@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "bas_app.h"
 #include "bas.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -230,23 +230,23 @@ __USED void BAS_Bal_SendNotification(void) /* Property Notification */
   bas_notification_data.p_Payload = (uint8_t*)a_BAS_UpdateCharData;
   bas_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service3Char1_NS_1*/
+  /* USER CODE BEGIN Service3Char1_NS_1 */
 
-  /* USER CODE END Service3Char1_NS_1*/
+  /* USER CODE END Service3Char1_NS_1 */
 
   if (notification_on_off != Bal_NOTIFICATION_OFF)
   {
     BAS_UpdateValue(BAS_BAL, &bas_notification_data);
   }
 
-  /* USER CODE BEGIN Service3Char1_NS_Last*/
+  /* USER CODE BEGIN Service3Char1_NS_Last */
 
-  /* USER CODE END Service3Char1_NS_Last*/
+  /* USER CODE END Service3Char1_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 static void BAS_APP_Level( void )
 {
   BAS_Data_t msg_conf;
@@ -282,4 +282,4 @@ static void BAS_APP_UpdateLevel_timCB(void *arg)
 
   return;
 }
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

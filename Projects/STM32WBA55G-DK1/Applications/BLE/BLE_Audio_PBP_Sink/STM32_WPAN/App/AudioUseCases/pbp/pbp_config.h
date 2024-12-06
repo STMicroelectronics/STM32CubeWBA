@@ -22,7 +22,7 @@
 
 
 /* Private defines -----------------------------------------------------------*/
-#define BLE_CFG_PBP_PUBLIC_BROADCAST_SOURCE_ROLE                (1u)    /* Indicate if Public Broadcat Source Role is
+#define BLE_CFG_PBP_PUBLIC_BROADCAST_SOURCE_ROLE                (1u)    /* Indicate if Public Broadcast Source Role is
                                                                          * supported
                                                                          */
 #define BLE_CFG_PBP_PUBLIC_BROADCAST_SINK_ROLE                  (1u)    /* Indicate if Public Broadcast Sink role is

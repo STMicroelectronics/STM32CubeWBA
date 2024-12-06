@@ -23,6 +23,12 @@
 #include "app_conf.h"
 #include "ll_sys.h"
 #include "skel_ble.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
 
@@ -34,7 +40,7 @@
 /* USER CODE END EFP */
 
 /**
-  * @brief  BLE Host stack processing request.
+  * @brief  Host stack processing request from Link Layer.
   * @param  None
   * @retval None
   */

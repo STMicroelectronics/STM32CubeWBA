@@ -40,7 +40,11 @@
 
 /* Private includes -----------------------------------------------------------*/
 #include "zcl/zcl.h"
-#include "stm32wbaxx_nucleo.h"
+
+/* USER CODE BEGIN PI */
+#include "app_bsp.h"
+
+/* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                13u
@@ -162,9 +166,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-  
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -226,7 +227,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
  */
 static void APP_ZIGBEE_ApsParseFrame( struct ZbApsdeDataIndT * pstDataInd )
 {
-  uint16_t  iIndex, iMaxIndex;
+  uint16_t  iPayLoadIndex, iIndex, iMaxIndex;
   uint8_t   szPayload[(25u * 4u ) + 1u] = { 0 };
   
   LOG_INFO_APP( "  Source Network Address: 0x%04X", pstDataInd->src.nwkAddr );
@@ -242,7 +243,8 @@ static void APP_ZIGBEE_ApsParseFrame( struct ZbApsdeDataIndT * pstDataInd )
   
   for ( iIndex = 0; iIndex < iMaxIndex; iIndex++ )
   {
-    printf( (char *)&szPayload[iIndex * 4u], "0x%02X", pstDataInd->asdu[iIndex] );
+    iPayLoadIndex = iIndex * 4u;
+    snprintf( (char *)&szPayload[iPayLoadIndex], ( sizeof( szPayload ) - iPayLoadIndex ), "0x%02X", pstDataInd->asdu[iIndex] );
   }
   LOG_INFO_APP( "  Payload: %s", szPayload );
   
@@ -370,7 +372,7 @@ static enum zb_msg_filter_rc APP_ZIGBEE_ApsIndicationCallback( struct ZbApsdeDat
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   struct ZbApsAddrT     stDest;
   

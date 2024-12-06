@@ -1173,7 +1173,7 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
 
           if (ret == BLE_STATUS_SUCCESS)
           {
-            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 1);
+            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 0);
 
             if (ret == BLE_STATUS_SUCCESS)
             {

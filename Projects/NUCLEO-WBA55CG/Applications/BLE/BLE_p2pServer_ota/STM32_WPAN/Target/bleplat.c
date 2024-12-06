@@ -25,6 +25,8 @@
 #include "bpka.h"
 #include "ble_timer.h"
 #include "blestack.h"
+#include "host_stack_if.h"
+
 #include "ble_wrap.c"
 
 /*****************************************************************************/
@@ -160,7 +162,8 @@ int BLEPLAT_PkaReadDhKey( uint32_t* dh_key )
 void BPKACB_Complete( void )
 {
   BLEPLATCB_PkaComplete( );
-  HostStack_Process( );
+
+  BleStackCB_Process( );
 }
 
 /*****************************************************************************/

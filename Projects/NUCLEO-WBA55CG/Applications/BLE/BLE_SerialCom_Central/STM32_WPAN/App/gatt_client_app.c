@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -31,9 +31,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usart_if.h"
+#include "adv_trace_usart_if.h"
 #include "host_stack_if.h"
 #include "stm32wbaxx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +58,7 @@ typedef struct
   COC_Client_Opcode_Notification_evt_t  COC_Client_Evt_Opcode;
   COC_Client_Data_t DataTransfered;
 }COC_Client_App_Notification_evt_t;
+
 /* USER CODE END PTD */
 
 typedef enum
@@ -110,6 +112,7 @@ typedef struct
 /* USER CODE BEGIN PD */
 #define BUFFUARTRX_SIZE   248
 #define BUFFCOCTX_SIZE    BUFFUARTRX_SIZE
+
 /* USER CODE END PD */
 
 /* Private macros -------------------------------------------------------------*/
@@ -127,17 +130,19 @@ static uint16_t gattCharStartHdl = 0;
 static uint16_t gattCharValueHdl = 0;
 
 /* USER CODE BEGIN PV */
+
 static uint8_t a_buffUartRx[BUFFUARTRX_SIZE];
 static uint8_t buffUartRxIndex;
-
 static uint8_t a_buffCocTx[BUFFCOCTX_SIZE];
 static uint8_t buffCocTxLen;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
 extern uint8_t charRx;
 extern uint8_t real_time;
+
 /* USER CODE END GV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -152,10 +157,12 @@ static void client_discover_all(void);
 static void gatt_cmd_resp_release(void);
 static void gatt_cmd_resp_wait(void);
 /* USER CODE BEGIN PFP */
+
 static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16_t size, uint8_t error);
 static void RxUART_Init(void);
 static void COC_CENTRAL_APP_Terminal_Init(void);
 static void CentralSendData(void);
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -168,7 +175,7 @@ void GATT_CLIENT_APP_Init(void)
 {
   uint8_t index =0;
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_1 */
-  
+
   /* USER CODE END GATT_CLIENT_APP_Init_1 */
   for(index = 0; index < BLE_CFG_CLT_MAX_NBR_CB; index++)
   {
@@ -182,13 +189,14 @@ void GATT_CLIENT_APP_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_all);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
-    
+
   UTIL_SEQ_RegTask(1U << CFG_TASK_COC_CENTRAL_TX_REQ_ID, UTIL_SEQ_RFU, CentralSendData);
 
   COC_CENTRAL_APP_Terminal_Init();
   BleCoCContextCentral.cocFlag = 0;
 
   LOG_INFO_APP("-- CENTRAL INITIALIZED \n");
+
   /* USER CODE END GATT_CLIENT_APP_Init_2 */
   return;
 }
@@ -360,8 +368,15 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
                                             a_ClientContext[index].ServiceChangedCharDescHdl,
                                             2,
                                             (uint8_t *) &charPropVal);
-          gatt_cmd_resp_wait();
-          LOG_INFO_APP(" ServiceChangedCharDescHdl =0x%04X\n",a_ClientContext[index].ServiceChangedCharDescHdl);
+          if (result == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+            LOG_INFO_APP(" ServiceChangedCharDescHdl =0x%04X\n",a_ClientContext[index].ServiceChangedCharDescHdl);
+          }
+          else
+          {
+            LOG_INFO_APP(" ServiceChangedCharDescHdl write Failed, status =0x%02X\n\n", result);
+          }
         }
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
 
@@ -471,9 +486,10 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           tx_pool_available = (aci_att_exchange_mtu_resp_event_rp0 *)p_blecore_evt->data;
           UNUSED(tx_pool_available);
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
-			LOG_INFO_APP(">>== Connection Handle = %d \n",tx_pool_available->Connection_Handle );
-			LOG_INFO_APP(">>== Available buffers = %d \n",tx_pool_available->Server_RX_MTU );
-			LOG_INFO_APP("\r\n\r");
+          LOG_INFO_APP(">>== Connection Handle = %d \n",tx_pool_available->Connection_Handle );
+          LOG_INFO_APP(">>== Available buffers = %d \n",tx_pool_available->Server_RX_MTU );
+          LOG_INFO_APP("\r\n\r");
+
           /* USER CODE END ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
         }
         break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
@@ -485,7 +501,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           UNUSED(exchange_mtu_resp);
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           tBleStatus result;
-	  result = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
+          result = hci_le_set_data_length(a_ClientContext[0].connHdl,251,2120);
           if (result != BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP("  Fail   : set data length command   : error code: 0x%x \n\r", result);
@@ -494,7 +510,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
           {
             LOG_INFO_APP("  Success: set data length command  \n\r");
           }
-
+		
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         break;
@@ -513,7 +529,7 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
 
 __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif)
 {
-  /* USER CODE BEGIN gatt_Notification_1*/
+  /* USER CODE BEGIN gatt_Notification_1 */
 
   /* USER CODE END gatt_Notification_1 */
   switch (p_Notif->Client_Evt_Opcode)
@@ -534,7 +550,7 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
       /* USER CODE END Client_Evt_Opcode_Default */
       break;
   }
-  /* USER CODE BEGIN gatt_Notification_2*/
+  /* USER CODE BEGIN gatt_Notification_2 */
 
   /* USER CODE END gatt_Notification_2 */
   return;
@@ -621,7 +637,6 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
         LOG_INFO_APP(", GENERIC_ATTRIBUTE_SERVICE_UUID found\n");
       }
 /* USER CODE BEGIN gatt_parse_services_1 */
-
 /* USER CODE END gatt_parse_services_1 */
       else
       {
@@ -846,6 +861,7 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           LOG_INFO_APP(", Service Changed found\n");
         }
 /* USER CODE BEGIN gatt_parse_descs_1 */
+
 /* USER CODE END gatt_parse_descs_1 */
         else
         {
@@ -946,13 +962,13 @@ static void RxUART_Init(void)
 }
 
 static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16_t size, uint8_t error )
-{  
+{
   uint8_t byte_received;
-    
+
   if(size == 1)
   {
     byte_received = pdata[0];
-    
+
     if(buffUartRxIndex < sizeof(a_buffUartRx))
     {
       a_buffUartRx[buffUartRxIndex++] = byte_received;
@@ -961,37 +977,37 @@ static void COC_Central_APP_Terminal_UART_RxCpltCallback( uint8_t *pdata, uint16
     {
       buffUartRxIndex = 0;
     }
-    
+
     if( (real_time ==1) || (real_time == 0 && (byte_received == '\n')))
     {
       memcpy(&a_buffCocTx[2], &a_buffUartRx[0], buffUartRxIndex);
       buffCocTxLen = buffUartRxIndex;
-      
+
       buffUartRxIndex = 0;
       a_buffCocTx[0] = buffCocTxLen;
       a_buffCocTx[1] = 0;
-       
-      UTIL_SEQ_SetTask(1 << CFG_TASK_COC_CENTRAL_TX_REQ_ID, CFG_SEQ_PRIO_0);      
-    }    
+
+      UTIL_SEQ_SetTask(1 << CFG_TASK_COC_CENTRAL_TX_REQ_ID, CFG_SEQ_PRIO_0);
+    }
   }
   else
   {
-    
+
   }
   UART_StartRx(COC_Central_APP_Terminal_UART_RxCpltCallback);
-  
+
   return;
  }
 
 static void CentralSendData( void )
 {
   tBleStatus status = BLE_STATUS_INVALID_PARAMS;
-  
+
   /* Data Packet to send to remote */
-  status = aci_l2cap_coc_tx_data(BleCoCContextCentral.Channel_Index_List, 
-                                 2 + buffCocTxLen,/* 2 bytes of header */ 
+  status = aci_l2cap_coc_tx_data(BleCoCContextCentral.Channel_Index_List,
+                                 2 + buffCocTxLen,/* 2 bytes of header */
                                  (uint8_t *) &a_buffCocTx[0]);
-  
+
   if (status != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("==>> aci_l2cap_coc_tx_data : Fail, reason: 0x%02X\n", status);

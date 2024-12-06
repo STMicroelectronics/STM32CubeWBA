@@ -55,6 +55,8 @@
 #include <string.h>
 #include "logging.h"
 #include "platform_wba.h"
+#include "logging_stm32wba.h"
+
 #define LOG_PARSE_BUFFER_SIZE  356U
 
 /* JCA ADDED */

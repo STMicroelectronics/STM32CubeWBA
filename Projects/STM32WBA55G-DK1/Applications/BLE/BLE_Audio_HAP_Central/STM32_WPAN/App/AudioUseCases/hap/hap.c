@@ -207,6 +207,10 @@ void HAP_AclDisconnection(uint16_t ConnHandle)
 #endif /* (BLE_CFG_HAP_IAC_ROLE == 1u) */
 }
 
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
 void HAP_LinkEncrypted(uint16_t ConnHandle)
 {
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ot_inc/instance.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ot_inc/instance.h#2 $*/
 /*
  *  Copyright (c) 2016, The OpenThread Authors.
  *  All rights reserved.
@@ -37,9 +37,6 @@
 #define OPENTHREAD_INSTANCE_H_
 
 #include <stdlib.h>
-#ifdef OTDLL
-#include <guiddef.h>
-#endif
 
 #include "error.h"
 #include "logging.h"
@@ -48,6 +45,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * The OpenThread API monotonic version number.
+ *
+ * This number MUST increase by one each time the contents of public OpenThread API include headers change.
+ *
+ * @note This number versions both OpenThread platform and user APIs.
+ *
+ */
+#define OPENTHREAD_API_VERSION (420)
 
 /**
  * @addtogroup api-instance
@@ -60,153 +67,21 @@ extern "C" {
  */
 
 /**
- * This structure represents the OpenThread instance structure.
+ * Represents the OpenThread instance structure.
  */
 typedef struct otInstance otInstance;
 
-#ifdef OTDLL
-
 /**
- * This structure represents the handle to the OpenThread API.
+ * Initializes the OpenThread library.
  *
- */
-typedef struct otApiInstance otApiInstance;
-
-/**
- * This structure represents a list of device GUIDs.
- *
- */
-typedef struct otDeviceList
-{
-    uint16_t aDevicesLength;
-    GUID     aDevices[1];
-} otDeviceList;
-
-/**
- * This function pointer is called to notify addition and removal of OpenThread devices.
- *
- * @param[in]  aAdded       A flag indicating if the device was added or removed.
- * @param[in]  aDeviceGuid  A GUID indicating which device state changed.
- * @param[in]  aContext     A pointer to application-specific context.
- *
- */
-typedef void(OTCALL *otDeviceAvailabilityChangedCallback)(bool aAdded, const GUID *aDeviceGuid, void *aContext);
-
-/**
- * This function initializes a new instance of the OpenThread library.
- *
- * @retval otApiInstance*  The new OpenThread context structure.
- *
- * @sa otApiFinalize
- *
- */
-OTAPI otApiInstance *OTCALL otApiInit(void);
-
-/**
- * This function uninitializes the OpenThread library.
- *
- * Call this function when OpenThread is no longer in use.
- *
- * @param[in]  aApiInstance  The OpenThread api instance.
- *
- */
-OTAPI void OTCALL otApiFinalize(otApiInstance *aApiInstance);
-
-/**
- * This function frees any memory returned/allocated by the library.
- *
- * @param[in] aMem  The memory to free.
- *
- */
-OTAPI void OTCALL otFreeMemory(const void *aMem);
-
-/**
- * This function pointer is called to notify addition and removal of OpenThread devices.
- *
- * @param[in]  aAdded       A flag indicating if the device was added or removed.
- * @param[in]  aDeviceGuid  A GUID indicating which device state changed.
- * @param[in]  aContext     A pointer to application-specific context.
- *
- */
-typedef void(OTCALL *otDeviceAvailabilityChangedCallback)(bool aAdded, const GUID *aDeviceGuid, void *aContext);
-
-/**
- * This function registers a callback to indicate OpenThread devices come and go.
- *
- * @param[in]  aApiInstance     The OpenThread api instance.
- * @param[in]  aCallback        A pointer to a function that is called with the state changes.
- * @param[in]  aContextContext  A pointer to application-specific context.
- *
- */
-OTAPI void OTCALL otSetDeviceAvailabilityChangedCallback(otApiInstance *                     aApiInstance,
-                                                         otDeviceAvailabilityChangedCallback aCallback,
-                                                         void *                              aCallbackContext);
-
-/**
- * This function querys the list of OpenThread device contexts on the system.
- *
- * @param[in]  aApiInstance     The OpenThread api instance.
- *
- * @sa otFreeMemory
- */
-OTAPI otDeviceList *OTCALL otEnumerateDevices(otApiInstance *aApiInstance);
-
-/**
- * This function initializes an OpenThread context for a device.
- *
- * @param[in]  aApiInstance  The OpenThread api instance.
- * @param[in]  aDeviceGuid   The device guid to create an OpenThread context for.
- *
- * @returns  The new OpenThread device instance structure for the device.
- *
- * @sa otFreeMemory
- *
- */
-OTAPI otInstance *OTCALL otInstanceInit(otApiInstance *aApiInstance, const GUID *aDeviceGuid);
-
-/**
- * This queries the Windows device/interface GUID for the otContext.
- *
- * @param[in] aContext  The OpenThread context structure.
- *
- * @returns  The device GUID.
- *
- */
-OTAPI GUID OTCALL otGetDeviceGuid(otInstance *aInstance);
-
-/**
- * This queries the Windows device/interface IfIndex for the otContext.
- *
- * @param[in] aContext  The OpenThread context structure.
- *
- * @returns The device IfIndex.
- *
- */
-OTAPI uint32_t OTCALL otGetDeviceIfIndex(otInstance *aInstance);
-
-/**
- * This queries the Windows Compartment ID for the otContext.
- *
- * @param[in] aContext  The OpenThread context structure.
- *
- * @returns  The compartment ID.
- *
- */
-OTAPI uint32_t OTCALL otGetCompartmentId(otInstance *aInstance);
-
-#else // OTDLL
-
-/**
- * This function initializes the OpenThread library.
- *
- * This function initializes OpenThread and prepares it for subsequent OpenThread API calls. This function must be
+ * Initializes OpenThread and prepares it for subsequent OpenThread API calls. This function must be
  * called before any other calls to OpenThread.
  *
- * This function is available and can only be used when support for multiple OpenThread instances is enabled.
+ * Is available and can only be used when support for multiple OpenThread instances is enabled.
  *
- * @param[in]    aInstanceBuffer      The buffer for OpenThread to use for allocating the otInstance structure.
- * @param[inout] aInstanceBufferSize  On input, the size of aInstanceBuffer. On output, if not enough space for
- *                                    otInstance, the number of bytes required for otInstance.
+ * @param[in]     aInstanceBuffer      The buffer for OpenThread to use for allocating the otInstance structure.
+ * @param[in,out] aInstanceBufferSize  On input, the size of aInstanceBuffer. On output, if not enough space for
+ *                                     otInstance, the number of bytes required for otInstance.
  *
  * @returns  A pointer to the new OpenThread instance.
  *
@@ -216,12 +91,12 @@ OTAPI uint32_t OTCALL otGetCompartmentId(otInstance *aInstance);
 otInstance *otInstanceInit(void *aInstanceBuffer, size_t *aInstanceBufferSize);
 
 /**
- * This function initializes the static single instance of the OpenThread library.
+ * Initializes the static single instance of the OpenThread library.
  *
- * This function initializes OpenThread and prepares it for subsequent OpenThread API calls. This function must be
+ * Initializes OpenThread and prepares it for subsequent OpenThread API calls. This function must be
  * called before any other calls to OpenThread.
  *
- * This function is available and can only be used when support for multiple OpenThread instances is disabled.
+ * Is available and can only be used when support for multiple OpenThread instances is disabled.
  *
  * @returns A pointer to the single OpenThread instance.
  *
@@ -229,7 +104,35 @@ otInstance *otInstanceInit(void *aInstanceBuffer, size_t *aInstanceBufferSize);
 otInstance *otInstanceInitSingle(void);
 
 /**
- * This function indicates whether or not the instance is valid/initialized.
+ * Initializes the OpenThread instance.
+ *
+ * This function initializes OpenThread and prepares it for subsequent OpenThread API calls. This function must be
+ * called before any other calls to OpenThread. This method utilizes static buffer to initialize the OpenThread
+ * instance.
+ *
+ * This function is available and can only be used when support for multiple OpenThread static instances is
+ * enabled (`OPENTHREAD_CONFIG_MULTIPLE_STATIC_INSTANCE_ENABLE`)
+ *
+ * @param[in] aIdx The index of the OpenThread instance to initialize.
+ *
+ * @returns  A pointer to the new OpenThread instance.
+ *
+ */
+otInstance *otInstanceInitMultiple(uint8_t aIdx);
+
+/**
+ * Gets the instance identifier.
+ *
+ * The instance identifier is set to a random value when the instance is constructed, and then its value will not
+ * change after initialization.
+ *
+ * @returns The instance identifier.
+ *
+ */
+uint32_t otInstanceGetId(otInstance *aInstance);
+
+/**
+ * Indicates whether or not the instance is valid/initialized.
  *
  * The instance is considered valid if it is acquired and initialized using either `otInstanceInitSingle()` (in single
  * instance case) or `otInstanceInit()` (in multi instance case). A subsequent call to `otInstanceFinalize()` causes
@@ -243,7 +146,7 @@ otInstance *otInstanceInitSingle(void);
 bool otInstanceIsInitialized(otInstance *aInstance);
 
 /**
- * This function disables the OpenThread library.
+ * Disables the OpenThread library.
  *
  * Call this function when OpenThread is no longer in use.
  *
@@ -252,59 +155,91 @@ bool otInstanceIsInitialized(otInstance *aInstance);
  */
 void otInstanceFinalize(otInstance *aInstance);
 
-#endif // OTDLL
-
 /**
- * This enumeration defines flags that are passed as part of `otStateChangedCallback`.
+ * Returns the current instance uptime (in msec).
+ *
+ * Requires `OPENTHREAD_CONFIG_UPTIME_ENABLE` to be enabled.
+ *
+ * The uptime is given as number of milliseconds since OpenThread instance was initialized.
+ *
+ * @param[in] aInstance A pointer to an OpenThread instance.
+ *
+ * @returns The uptime (number of milliseconds).
  *
  */
-enum
-{
-    OT_CHANGED_IP6_ADDRESS_ADDED           = 1 << 0,  ///< IPv6 address was added
-    OT_CHANGED_IP6_ADDRESS_REMOVED         = 1 << 1,  ///< IPv6 address was removed
-    OT_CHANGED_THREAD_ROLE                 = 1 << 2,  ///< Role (disabled, detached, child, router, leader) changed
-    OT_CHANGED_THREAD_LL_ADDR              = 1 << 3,  ///< The link-local address changed
-    OT_CHANGED_THREAD_ML_ADDR              = 1 << 4,  ///< The mesh-local address changed
-    OT_CHANGED_THREAD_RLOC_ADDED           = 1 << 5,  ///< RLOC was added
-    OT_CHANGED_THREAD_RLOC_REMOVED         = 1 << 6,  ///< RLOC was removed
-    OT_CHANGED_THREAD_PARTITION_ID         = 1 << 7,  ///< Partition ID changed
-    OT_CHANGED_THREAD_KEY_SEQUENCE_COUNTER = 1 << 8,  ///< Thread Key Sequence changed
-    OT_CHANGED_THREAD_NETDATA              = 1 << 9,  ///< Thread Network Data changed
-    OT_CHANGED_THREAD_CHILD_ADDED          = 1 << 10, ///< Child was added
-    OT_CHANGED_THREAD_CHILD_REMOVED        = 1 << 11, ///< Child was removed
-    OT_CHANGED_IP6_MULTICAST_SUBSRCRIBED   = 1 << 12, ///< Subscribed to a IPv6 multicast address
-    OT_CHANGED_IP6_MULTICAST_UNSUBSRCRIBED = 1 << 13, ///< Unsubscribed from a IPv6 multicast address
-    OT_CHANGED_COMMISSIONER_STATE          = 1 << 14, ///< Commissioner state changed
-    OT_CHANGED_JOINER_STATE                = 1 << 15, ///< Joiner state changed
-    OT_CHANGED_THREAD_CHANNEL              = 1 << 16, ///< Thread network channel changed
-    OT_CHANGED_THREAD_PANID                = 1 << 17, ///< Thread network PAN Id changed
-    OT_CHANGED_THREAD_NETWORK_NAME         = 1 << 18, ///< Thread network name changed
-    OT_CHANGED_THREAD_EXT_PANID            = 1 << 19, ///< Thread network extended PAN ID changed
-    OT_CHANGED_MASTER_KEY                  = 1 << 20, ///< Master key changed
-    OT_CHANGED_PSKC                        = 1 << 21, ///< PSKc changed
-    OT_CHANGED_SECURITY_POLICY             = 1 << 22, ///< Security Policy changed
-    OT_CHANGED_CHANNEL_MANAGER_NEW_CHANNEL = 1 << 23, ///< Channel Manager new pending Thread channel changed
-    OT_CHANGED_SUPPORTED_CHANNEL_MASK      = 1 << 24, ///< Supported channel mask changed
-};
+uint64_t otInstanceGetUptime(otInstance *aInstance);
+
+#define OT_UPTIME_STRING_SIZE 24 ///< Recommended size for string representation of uptime.
 
 /**
- * This type represents a bit-field indicating specific state/configuration that has changed. See `OT_CHANGED_*`
+ * Returns the current instance uptime as a human-readable string.
+ *
+ * Requires `OPENTHREAD_CONFIG_UPTIME_ENABLE` to be enabled.
+ *
+ * The string follows the format "<hh>:<mm>:<ss>.<mmmm>" for hours, minutes, seconds and millisecond (if uptime is
+ * shorter than one day) or "<dd>d.<hh>:<mm>:<ss>.<mmmm>" (if longer than a day).
+ *
+ * If the resulting string does not fit in @p aBuffer (within its @p aSize characters), the string will be truncated
+ * but the outputted string is always null-terminated.
+ *
+ * @param[in]  aInstance A pointer to an OpenThread instance.
+ * @param[out] aBuffer   A pointer to a char array to output the string.
+ * @param[in]  aSize     The size of @p aBuffer (in bytes). Recommended to use `OT_UPTIME_STRING_SIZE`.
+ *
+ */
+void otInstanceGetUptimeAsString(otInstance *aInstance, char *aBuffer, uint16_t aSize);
+
+#define OT_CHANGED_IP6_ADDRESS_ADDED (1U << 0)             ///< IPv6 address was added
+#define OT_CHANGED_IP6_ADDRESS_REMOVED (1U << 1)           ///< IPv6 address was removed
+#define OT_CHANGED_THREAD_ROLE (1U << 2)                   ///< Role (disabled, detached, child, router, leader) changed
+#define OT_CHANGED_THREAD_LL_ADDR (1U << 3)                ///< The link-local address changed
+#define OT_CHANGED_THREAD_ML_ADDR (1U << 4)                ///< The mesh-local address changed
+#define OT_CHANGED_THREAD_RLOC_ADDED (1U << 5)             ///< RLOC was added
+#define OT_CHANGED_THREAD_RLOC_REMOVED (1U << 6)           ///< RLOC was removed
+#define OT_CHANGED_THREAD_PARTITION_ID (1U << 7)           ///< Partition ID changed
+#define OT_CHANGED_THREAD_KEY_SEQUENCE_COUNTER (1U << 8)   ///< Thread Key Sequence changed
+#define OT_CHANGED_THREAD_NETDATA (1U << 9)                ///< Thread Network Data changed
+#define OT_CHANGED_THREAD_CHILD_ADDED (1U << 10)           ///< Child was added
+#define OT_CHANGED_THREAD_CHILD_REMOVED (1U << 11)         ///< Child was removed
+#define OT_CHANGED_IP6_MULTICAST_SUBSCRIBED (1U << 12)     ///< Subscribed to a IPv6 multicast address
+#define OT_CHANGED_IP6_MULTICAST_UNSUBSCRIBED (1U << 13)   ///< Unsubscribed from a IPv6 multicast address
+#define OT_CHANGED_THREAD_CHANNEL (1U << 14)               ///< Thread network channel changed
+#define OT_CHANGED_THREAD_PANID (1U << 15)                 ///< Thread network PAN Id changed
+#define OT_CHANGED_THREAD_NETWORK_NAME (1U << 16)          ///< Thread network name changed
+#define OT_CHANGED_THREAD_EXT_PANID (1U << 17)             ///< Thread network extended PAN ID changed
+#define OT_CHANGED_NETWORK_KEY (1U << 18)                  ///< Network key changed
+#define OT_CHANGED_PSKC (1U << 19)                         ///< PSKc changed
+#define OT_CHANGED_SECURITY_POLICY (1U << 20)              ///< Security Policy changed
+#define OT_CHANGED_CHANNEL_MANAGER_NEW_CHANNEL (1U << 21)  ///< Channel Manager new pending Thread channel changed
+#define OT_CHANGED_SUPPORTED_CHANNEL_MASK (1U << 22)       ///< Supported channel mask changed
+#define OT_CHANGED_COMMISSIONER_STATE (1U << 23)           ///< Commissioner state changed
+#define OT_CHANGED_THREAD_NETIF_STATE (1U << 24)           ///< Thread network interface state changed
+#define OT_CHANGED_THREAD_BACKBONE_ROUTER_STATE (1U << 25) ///< Backbone Router state changed
+#define OT_CHANGED_THREAD_BACKBONE_ROUTER_LOCAL (1U << 26) ///< Local Backbone Router configuration changed
+#define OT_CHANGED_JOINER_STATE (1U << 27)                 ///< Joiner state changed
+#define OT_CHANGED_ACTIVE_DATASET (1U << 28)               ///< Active Operational Dataset changed
+#define OT_CHANGED_PENDING_DATASET (1U << 29)              ///< Pending Operational Dataset changed
+#define OT_CHANGED_NAT64_TRANSLATOR_STATE (1U << 30)       ///< The state of NAT64 translator changed
+#define OT_CHANGED_PARENT_LINK_QUALITY (1U << 31)          ///< Parent link quality changed
+
+/**
+ * Represents a bit-field indicating specific state/configuration that has changed. See `OT_CHANGED_*`
  * definitions.
  *
  */
 typedef uint32_t otChangedFlags;
 
 /**
- * This function pointer is called to notify certain configuration or state changes within OpenThread.
+ * Pointer is called to notify certain configuration or state changes within OpenThread.
  *
  * @param[in]  aFlags    A bit-field indicating specific state that has changed.  See `OT_CHANGED_*` definitions.
  * @param[in]  aContext  A pointer to application-specific context.
  *
  */
-typedef void(OTCALL *otStateChangedCallback)(otChangedFlags aFlags, void *aContext);
+typedef void (*otStateChangedCallback)(otChangedFlags aFlags, void *aContext);
 
 /**
- * This function registers a callback to indicate when certain configuration or state changes within OpenThread.
+ * Registers a callback to indicate when certain configuration or state changes within OpenThread.
  *
  * @param[in]  aInstance  A pointer to an OpenThread instance.
  * @param[in]  aCallback  A pointer to a function that is called with certain configuration or state changes.
@@ -315,37 +250,65 @@ typedef void(OTCALL *otStateChangedCallback)(otChangedFlags aFlags, void *aConte
  * @retval OT_ERROR_NO_BUFS  Could not add the callback due to resource constraints.
  *
  */
-OTAPI otError OTCALL otSetStateChangedCallback(otInstance *aInstance, otStateChangedCallback aCallback, void *aContext);
+otError otSetStateChangedCallback(otInstance *aInstance, otStateChangedCallback aCallback, void *aContext);
 
 /**
- * This function removes a callback to indicate when certain configuration or state changes within OpenThread.
+ * Removes a callback to indicate when certain configuration or state changes within OpenThread.
  *
  * @param[in]  aInstance   A pointer to an OpenThread instance.
  * @param[in]  aCallback   A pointer to a function that is called with certain configuration or state changes.
  * @param[in]  aContext    A pointer to application-specific context.
  *
  */
-OTAPI void OTCALL otRemoveStateChangeCallback(otInstance *aInstance, otStateChangedCallback aCallback, void *aContext);
+void otRemoveStateChangeCallback(otInstance *aInstance, otStateChangedCallback aCallback, void *aContext);
 
 /**
- * This method triggers a platform reset.
+ * Triggers a platform reset.
  *
  * The reset process ensures that all the OpenThread state/info (stored in volatile memory) is erased. Note that the
  * `otPlatformReset` does not erase any persistent state/info saved in non-volatile memory.
  *
- * @param[in]  aInstance A pointer to an OpenThread instance.
- */
-OTAPI void OTCALL otInstanceReset(otInstance *aInstance);
-
-/**
- * This method deletes all the settings stored on non-volatile memory, and then triggers platform reset.
+ * @param[in]  aInstance  A pointer to an OpenThread instance.
  *
- * @param[in]  aInstance A pointer to an OpenThread instance.
  */
-OTAPI void OTCALL otInstanceFactoryReset(otInstance *aInstance);
+void otInstanceReset(otInstance *aInstance);
 
 /**
- * This function erases all the OpenThread persistent info (network settings) stored on non-volatile memory.
+ * Triggers a platform reset to bootloader mode, if supported.
+ *
+ * Requires `OPENTHREAD_CONFIG_PLATFORM_BOOTLOADER_MODE_ENABLE`.
+ *
+ * @param[in]  aInstance  A pointer to an OpenThread instance.
+ *
+ * @retval OT_ERROR_NONE         Reset to bootloader successfully.
+ * @retval OT_ERROR_BUSY         Failed due to another operation is ongoing.
+ * @retval OT_ERROR_NOT_CAPABLE  Not capable of resetting to bootloader.
+ *
+ */
+otError otInstanceResetToBootloader(otInstance *aInstance);
+
+/**
+ * Deletes all the settings stored on non-volatile memory, and then triggers a platform reset.
+ *
+ * @param[in]  aInstance  A pointer to an OpenThread instance.
+ *
+ */
+void otInstanceFactoryReset(otInstance *aInstance);
+
+/**
+ * Resets the internal states of the OpenThread radio stack.
+ *
+ * Callbacks and configurations are preserved.
+ *
+ * This API is only available under radio builds (`OPENTHREAD_RADIO = 1`).
+ *
+ * @param[in]  aInstance  A pointer to an OpenThread instance.
+ *
+ */
+void otInstanceResetRadioStack(otInstance *aInstance);
+
+/**
+ * Erases all the OpenThread persistent info (network settings) stored on non-volatile memory.
  * Erase is successful only if the device is in `disabled` state/role.
  *
  * @param[in]  aInstance A pointer to an OpenThread instance.
@@ -357,35 +320,22 @@ OTAPI void OTCALL otInstanceFactoryReset(otInstance *aInstance);
 otError otInstanceErasePersistentInfo(otInstance *aInstance);
 
 /**
- * This function returns the current dynamic log level.
- *
- * @param[in]  aInstance A pointer to an OpenThread instance.
- *
- * @returns the currently set dynamic log level.
- *
- */
-otLogLevel otGetDynamicLogLevel(otInstance *aInstance);
-
-/**
- * This function sets the dynamic log level.
- *
- * @param[in]  aInstance A pointer to an OpenThread instance.
- * @param[in]  aLogLevel The dynamic log level.
- *
- * @retval OT_ERROR_NONE               The log level was changed successfully.
- * @retval OT_ERROR_DISABLED_FEATURE   The dynamic log level feature is disabled.
- *                                     (@sa `OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL` configuration option).
- *
- */
-otError otSetDynamicLogLevel(otInstance *aInstance, otLogLevel aLogLevel);
-
-/**
- * Get the OpenThread version string.
+ * Gets the OpenThread version string.
  *
  * @returns A pointer to the OpenThread version.
  *
  */
-OTAPI const char *OTCALL otGetVersionString(void);
+const char *otGetVersionString(void);
+
+/**
+ * Gets the OpenThread radio version string.
+ *
+ * @param[in]  aInstance A pointer to an OpenThread instance.
+ *
+ * @returns A pointer to the OpenThread radio version.
+ *
+ */
+const char *otGetRadioVersionString(otInstance *aInstance);
 
 /**
  * @}

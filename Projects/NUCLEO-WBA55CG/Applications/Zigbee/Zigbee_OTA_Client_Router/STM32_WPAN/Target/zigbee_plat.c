@@ -24,6 +24,7 @@
 #include "app_common.h"
 #include "hw.h"
 #include "baes.h"
+#include "zigbee_plat.h"
 #include "advanced_memory_manager.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -183,7 +184,7 @@ bool ZIGBEE_PLAT_ZbHeapInit( void )
 /**
  *
  */
-void * ZIGBEE_PLAT_ZbHeapMalloc( uint32_t iSize )
+void * ZIGBEE_PLAT_ZbHeapMalloc( unsigned int iSize )
 {
   void  *ptr = NULL;
 

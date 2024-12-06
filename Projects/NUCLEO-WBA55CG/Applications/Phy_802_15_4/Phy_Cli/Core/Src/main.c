@@ -110,6 +110,7 @@ int main(void)
   MX_ADC4_Init();
   MX_RNG_Init();
   MX_ICACHE_Init();
+
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

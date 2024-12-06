@@ -548,18 +548,6 @@ struct ZbZdoDeviceAnnceT {
     uint8_t capability; /**< Capability */
 };
 
-/** System_Server_Discovery_req */
-struct ZbZdoServerDiscReqT {
-    uint16_t serverMask; /**< ServerMask */
-};
-
-/* System_Server_Discovery_rsp */
-struct ZbZdoSsdRspT {
-    enum ZbStatusCodeT status; /**< Status */
-    uint16_t serverMask; /**< ServerMask */
-    uint16_t nwkAddr; /**< Network address */ /* Added by Exegin */
-};
-
 /** Bind_req */
 struct ZbZdoBindReqT {
     uint16_t target; /**< Destination for the ZDO Bind Request message */
@@ -784,53 +772,6 @@ struct ZbZdoClearAllBindingsRspT {
 };
 
 /*
- * Security_Key_Negotiation_Req (R23)
- */
-struct ZbZdoSecKeyNegotiationReqT {
-    uint64_t srcExtAddr;
-    /**< Source extended address. */
-    uint16_t destAddr;
-    /**< Destination short address. */
-    uint8_t publicPoint[ZB_DLK_CURVE25519_PUB_POINT_LEN];
-    /**< public portion of Curve25519 public/private key pair */
-    struct ZbApsRelayInfoT relayInfo;
-    /**< Contains required information to relay the APS packet. */
-};
-
-/*
- * Security_Key_Negotiation_Rsp (R23)
- */
-struct ZbZdoSecKeyNegotiationRspT {
-    enum ZbStatusCodeT status;
-    /**< Status. */
-    uint64_t srcExtAddr;
-    /**< Source extended address. */
-    uint16_t dstAddr;
-    /**< Destination short address. */
-    uint8_t publicPoint[ZB_DLK_CURVE25519_PUB_POINT_LEN];
-    /**< public portion of Curve25519 public/private key pair */
-    struct ZbApsRelayInfoT relayInfo;
-    /**< Contains required information to relay the APS packet. */
-};
-
-/*
- * Security_Retrieve_Auth_Token_Req (R23)
- */
-struct ZbZdoSecRetrieveAuthTokenReqT {
-    uint16_t destAddr;
-    /**< Destination short address. */
-    enum zb_tlv_type authTokenId;
-    /**< Authentication token ID. */
-};
-
-/*
- * Security_Retrieve_Auth_Token_Rsp (R23)
- */
-struct ZbZdoSecRetrieveAuthTokenRspT {
-    enum ZbStatusCodeT status; /**< Status */
-};
-
-/*
  * Security_Get_Authentication_Level_Req (R23)
  */
 struct ZbZdoSecGetAuthLevelReqT {
@@ -960,9 +901,11 @@ struct ZbZdoSecDecommissionRspT {
  */
 struct ZbZdoSecChallengeReqT {
     uint16_t destAddr;
-    /**< destination address. */
+    /**< Network destination address of where to send packet. */
+    uint64_t targetEUI64;
+    /**< Target's extended address */
     uint64_t senderEUI64;
-    /**< sender extended address. */
+    /**< Sender's extended address. */
     uint8_t challengeValue[ZB_ZDO_SEC_CHALLENGE_LEN];
     /**< A randomly generated 64-bit value sent to a device to prove they
      * have the link key. */
@@ -1114,28 +1057,6 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoMatchDescMulti(struct ZigBeeT *zb, struct
     void (*callback)(struct ZbZdoMatchDescRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Retrieve the system server mask from a device.
- * @param zb Zigbee stack instance
- * @param req Server_desc_rec
- * @param callback Function to call on completion
- * @param arg Callback argument
- * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
- */
-enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoSystemServerDiscReq(struct ZigBeeT *zb, struct ZbZdoServerDiscReqT *req,
-    void (*callback)(struct ZbZdoSsdRspT *rsp, void *cb_arg), void *arg);
-
-/**
- * Send a ZDO Match-Desc-Multi request and receive multiple responses.
- * @param zb Zigbee stack instance
- * @param req Server_desc_rec
- * @param callback Function to call on completion
- * @param arg Callback argument
- * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
- */
-enum ZbStatusCodeT ZbZdoSystemServerDiscMulti(struct ZigBeeT *zb, struct ZbZdoServerDiscReqT *req,
-    void (*callback)(struct ZbZdoSsdRspT *rsp, void *cb_arg), void *arg);
-
-/**
  * Send a Device_annce message to the network. Automatically called by the stack after joining.
  * @param zb Zigbee stack instance
  * @param deviceAnncePtr Pointer to Device_annce structure
@@ -1152,17 +1073,7 @@ void ZbZdoDeviceAnnce(struct ZigBeeT *zb, struct ZbZdoDeviceAnnceT *deviceAnnceP
 void ZbZdoDeviceAnnceAlias(struct ZigBeeT *zb, struct ZbZdoDeviceAnnceT *deviceAnncePtr);
 
 /**
- * Parse the device announce received.
- * @param structPtr Pointer to structure
- * @param buf Packet buffer
- * @param len Packet length
- * @return size of the device announce size, which will be 11, or other value on error
- */
-int ZbZdoParseDeviceAnnce(struct ZbZdoDeviceAnnceT *structPtr, const uint8_t *buf, unsigned int len);
-
-/**
  * Register a filter in the ZDO for the application to receive Device_Annce messages.
- * Freed by calling ZbZdoFilterRemove.
  * @param zb Zigbee stack instance
  * @param filter Optional pointer to a pre-allocated ZbZdoFilterT structure. If NULL, the struct will be allocated via ZbHeapAlloc().
  * @param callback Function to call upon reception of a valid ZDO Device-Annce message.
@@ -1207,17 +1118,6 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoUnbindReq(struct ZigBeeT *zb, struct ZbZd
  */
 enum ZbStatusCodeT ZbZdoClearAllBindingsReq(struct ZigBeeT *zb, struct ZbZdoClearAllBindingsReqT *req,
     void (*callback)(struct ZbZdoClearAllBindingsRspT *rsp, void *cb_arg), void *arg);
-
-/**
- * Send a ZDO Security Retrieve authentication token request command.
- * @param zb Zigbee stack instance.
- * @param req get device token req struct
- * @param callback Function to call on completion
- * @param arg argument to response handler function
- * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
- */
-enum ZbStatusCodeT ZbZdoSecRetrieveAuthTokenReq(struct ZigBeeT *zb, struct ZbZdoSecRetrieveAuthTokenReqT *req,
-    void (*callback)(struct ZbZdoSecRetrieveAuthTokenRspT *rsp, void *cb_arg), void *arg);
 
 /**
  * Send a ZDO Security get authentication level request command.
@@ -1374,7 +1274,6 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoNwkUpdateNotify(struct ZigBeeT *zb, struc
 
 /**
  * Register a filter in the ZDO for the application to receive Mgmt_Nwk_Update_notify messages.
- * Freed by calling ZbZdoFilterRemove.
  * @param zb Zigbee stack instance
  * @param filter Optional pointer to a pre-allocated ZbZdoFilterT structure. If NULL, the struct will be allocated via ZbHeapAlloc().
  * @param callback Function to call upon reception of a valid ZDO NWK-Update-Notify message.
@@ -1388,7 +1287,6 @@ struct ZbZdoFilterT * ZbZdoNwkUpdateNotifyFilterRegister(struct ZigBeeT *zb, str
 
 /**
  * Register a filter in the ZDO for the application to receive Mgmt_Nwk_Enhanced_Update_notify messages.
- * Freed by calling ZbZdoFilterRemove.
  * @param zb Zigbee stack instance
  * @param filter Optional pointer to a pre-allocated ZbZdoFilterT structure. If NULL, the struct will be allocated via ZbHeapAlloc().
  * @param callback Function to call upon reception of a valid ZDO NWK-Update-Notify message.
@@ -1456,34 +1354,6 @@ unsigned int ZbZdoNwkIeeeJoinListBcastAll(struct ZigBeeT *zb);
 enum ZbStatusCodeT ZbZdoSecKeyUpdateReq(struct ZigBeeT *zb, struct ZbZdoSecKeyUpdateReqT *req,
     void (*callback)(struct ZbZdoSecKeyUpdateRspT *rsp, void *cb_arg), void *arg);
 
-/**
- * Sends ZDO Security Key Negotiation response.
- * @param zb ZigBee stack structure.
- * @param rsp ZDO SEC Key negotiation rsp struct.
- * @param seqnum Sequence number.
- * @return enum ZbStatusCodeT
- */
-enum ZbStatusCodeT ZbZdoSecKeyNegotiationRsp(struct ZigBeeT *zb, struct ZbZdoSecKeyNegotiationRspT *rsp,
-    uint8_t seqnum);
-
-/**
- * Send a ZDO Security Key Negotiation Request.
- * @param zb Zigbee stack instance
- * @param req security key negotiation req struct
- * @param callback Function to call on completion
- * @param arg argument to ZDO key negotiation response handler
- * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
- */
-enum ZbStatusCodeT ZbZdoSecKeyNegotiationReq(struct ZigBeeT *zb, struct ZbZdoSecKeyNegotiationReqT *req,
-    void (*callback)(struct ZbApsmeKeyNegoConfirmT *conf, void *cb_arg), void *arg);
 #endif
-
-/**
- * Remove a ZDO filter.
- * @param zb Zigbee stack instance
- * @param filter Filter instance to remove and free
- * @return Returns void
- */
-void ZbZdoFilterRemove(struct ZigBeeT *zb, struct ZbZdoFilterT *filter);
 
 #endif

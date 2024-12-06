@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   service2 definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -183,7 +183,22 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-
+        /* Manage ACI_GATT_INDICATION_VSEVT_CODE */
+        case ACI_GATT_INDICATION_VSEVT_CODE:
+          {
+            tBleStatus status = BLE_STATUS_FAILED;
+            aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
+            status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            if (status != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
+          }
+          break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -191,19 +206,19 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -332,9 +347,9 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value PNI command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_1*/
+      /* USER CODE BEGIN Service2_Char_Value_1 */
 
-      /* USER CODE END Service2_Char_Value_1*/
+      /* USER CODE END Service2_Char_Value_1 */
       break;
 
     default:

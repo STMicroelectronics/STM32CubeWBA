@@ -67,6 +67,9 @@ void MX_StandbyExit_PeripharalInit(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
+#if (CFG_SW_HSE_WORKAROUND == 1)
+  MX_TIM16_Init();
+#endif /* CFG_SW_HSE_WORKAROUND */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};

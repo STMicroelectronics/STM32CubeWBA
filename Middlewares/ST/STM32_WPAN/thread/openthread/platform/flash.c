@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "platform/flash.h"
+#include "cmsis_compiler.h"
+#include "platform/settings.h"
+#include "flash.h"
 #include OPENTHREAD_CONFIG_FILE
-
 
 /******************************************************************************
  * NON VOLATILE STORAGE BUFFER
@@ -45,25 +46,72 @@ __attribute__ ((section (".noinit"))) uint32_t sSettingsBufPos;
 __attribute__ ((section (".noinit"))) __attribute__ ((aligned (8))) static uint8_t sSettingBufStart[THREAD_SETTINGS_BUFFER_SIZE];
 
 /* Private function prototypes -----------------------------------------------*/
+/**
+ * @brief return base address of setting buffer
+*/
+static uint32_t GetSettingsBuffer_Base(void);
 /* USER CODE BEGIN PFP */
-static inline  uint32_t GetSettingsBuffer_Base(void);
-static inline uint32_t GetSettingsBuffer_Size(void);
+
 /* USER CODE END PFP */
 
 /* Private functions ---------------------------------------------------------*/
-static inline uint32_t GetSettingsBuffer_Base(void)
+
+/* stubs for external functions 
+   prevent linking errors when not defined in application */
+__WEAK void APP_THREAD_SettingsUpdated(settings_type_t SettingType)
+{
+  /* Can be implemented by user for NVM managment (os dependant) */
+  /* empty, by default OT settings are saved in RAM, user responsability to save parameter in ROM */
+}
+
+uint32_t GetSettingsBuffer_Base(void)
 {
   return (uint32_t)sSettingBufStart;
 }
 
-static inline uint32_t GetSettingsBuffer_Size(void)
+uint32_t GetSettingsBuffer_MaxSize(void)
 {
-  return (THREAD_SETTINGS_BUFFER_SIZE - 8U);
+  return (THREAD_SETTINGS_BUFFER_SIZE);
 }
 
-void otPlatSettingsInit(otInstance *aInstance)
+otError FillSettingBuffer(uint8_t* buf, uint32_t size)
+{
+  otError ret = OT_ERROR_NO_BUFS;
+  if (size <= THREAD_SETTINGS_BUFFER_SIZE)
+  {
+    memcpy(sSettingBufStart, buf,size);
+    
+    sSettingsIsReset = THREAD_SETTINGS_RESET_FLAG;
+    
+    sSettingsBufPos = GetSettingsBuffer_Base() + size;
+    
+    ret = OT_ERROR_NONE;
+  }
+  
+  return ret;
+}
+
+
+uint8_t* GetSettingBuffer(uint32_t* size)
+{
+  if (sSettingsBufPos >= GetSettingsBuffer_Base())
+  {
+    *size = sSettingsBufPos - GetSettingsBuffer_Base();
+  }
+  else
+  {
+    *size = 0;
+  }
+
+  return sSettingBufStart;
+}
+
+
+void otPlatSettingsInit(otInstance *aInstance, const uint16_t *aSensitiveKeys, uint16_t aSensitiveKeysLength)
 {
     OT_UNUSED_VARIABLE(aInstance);
+    OT_UNUSED_VARIABLE(aSensitiveKeys);
+    OT_UNUSED_VARIABLE(aSensitiveKeysLength);
 
     if (sSettingsIsReset != THREAD_SETTINGS_RESET_FLAG)
     {
@@ -134,16 +182,19 @@ otError otPlatSettingsAdd(otInstance *aInstance, uint16_t aKey, const uint8_t *a
   struct settingsBlock *currentBlock;
   const uint16_t newBlockLength = sizeof(struct settingsBlock) + aValueLength;
 
-  if ( (sSettingsBufPos +  newBlockLength) <= (GetSettingsBuffer_Base() + GetSettingsBuffer_Size()) )
+  if ( (sSettingsBufPos +  newBlockLength) <= (GetSettingsBuffer_Base() + GetSettingsBuffer_MaxSize()) )
   {
     currentBlock         = (struct settingsBlock *)sSettingsBufPos;
     currentBlock->key    = aKey;
     currentBlock->length = aValueLength;
 
     memcpy((uint8_t*) (sSettingsBufPos + sizeof(struct settingsBlock)), aValue, aValueLength);
-
+    
     /* Update current position on Buffer */
     sSettingsBufPos += newBlockLength;
+    
+    /* Callback to prevent user settings has been added */
+    APP_THREAD_SettingsUpdated(SETTINGS_ADDED);
 
     error = OT_ERROR_NONE;
   }
@@ -182,6 +233,9 @@ otError otPlatSettingsDelete(otInstance *aInstance, uint16_t aKey, int aIndex)
         }
 
         sSettingsBufPos -= currentBlockLength;
+        
+        /* Callback to prevent user settings has been added */
+        APP_THREAD_SettingsUpdated(SETTINGS_REMOVED);
         error = OT_ERROR_NONE;
         break;
       }
@@ -228,6 +282,8 @@ otError otPlatSettingsSet(otInstance *aInstance, uint16_t aKey, const uint8_t *a
 
 void otPlatSettingsWipe(otInstance *aInstance)
 {
-  sSettingsIsReset = ~sSettingsIsReset;
+  /* Reset pos & reset flag like at first init */
+  sSettingsIsReset = THREAD_SETTINGS_RESET_FLAG;
   sSettingsBufPos = GetSettingsBuffer_Base();
+  APP_THREAD_SettingsUpdated(SETTINGS_MASSERASE);
 }

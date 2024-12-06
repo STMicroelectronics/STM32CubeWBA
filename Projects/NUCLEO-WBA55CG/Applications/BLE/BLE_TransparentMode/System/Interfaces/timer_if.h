@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -41,6 +41,10 @@ extern "C" {
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
+#define RTC_N_PREDIV_S      (10U)
+#define RTC_PREDIV_S        ( ( 1U << RTC_N_PREDIV_S ) - 1U )
+#define RTC_PREDIV_A        ( ( 1U << ( 15U - RTC_N_PREDIV_S ) ) - 1U )
+
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */

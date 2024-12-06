@@ -62,7 +62,7 @@
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
 /* Defines time to wake up from standby before radio event to meet timings */
-#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -92,9 +92,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -117,6 +114,10 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
+
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
@@ -137,7 +138,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -158,6 +159,7 @@ typedef enum
   CFG_TASK_OT_ALARM,
   CFG_TASK_OT_US_ALARM,
   CFG_TASK_OT_TASKLETS,
+  CFG_TASK_OT_RCP_SPINEL_RX,
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
@@ -220,20 +222,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (2)
+#define CFG_DEBUGGER_LEVEL                  (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration

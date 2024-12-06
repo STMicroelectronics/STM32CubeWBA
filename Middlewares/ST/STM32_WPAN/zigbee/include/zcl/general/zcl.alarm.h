@@ -1,6 +1,6 @@
 /**
  * @file zcl.alarm.h
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
  * @heading Alarms
  * @brief ZCL Alarms cluster header
  *
@@ -178,7 +178,7 @@ struct ZbZclClusterT * ZbZclAlarmServerAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * Create a new instance of the Alarms Client cluster
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
- * @param callback Callback function that will be invoked later when an alarm occurs
+ * @param callback Callback function that will be invoked when an alarm occurs
  * @param arg Pointer to application data that will later be provided back to the callback function when it is invoked
  * @return Cluster pointer, or NULL if there is an error
  */
@@ -190,7 +190,7 @@ struct ZbZclClusterT * ZbZclAlarmClientAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * @param dst Destination address for request
  * @param alarm_code Code of the detected alarm condition
  * @param cluster_id ID of cluster where alarm condition occurred
- * @param callback Callback function that will be invoked later when response is received
+ * @param callback Callback function that will be invoked when response is received
  * @param arg Pointer to application data that will later be provided back to the callback function when it is invoked
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
@@ -201,7 +201,7 @@ enum ZclStatusCodeT ZbZclAlarmClientResetAlarmReq(struct ZbZclClusterT *cluster,
  * Send a Reset All Alarms command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when response is received
+ * @param callback Callback function that will be invoked when response is received
  * @param arg Pointer to application data that will later be provided back to the callback function when it is invoked
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
@@ -212,7 +212,7 @@ enum ZclStatusCodeT ZbZclAlarmClientResetAllAlarmsReq(struct ZbZclClusterT *clus
  * Send a Get Alarm command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when response is received
+ * @param callback Callback function that will be invoked when response is received
  * @param arg Pointer to application data that will later be provided back to the callback function when it is invoked
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
@@ -223,7 +223,7 @@ enum ZclStatusCodeT ZbZclAlarmClientGetAlarmReq(struct ZbZclClusterT *cluster, c
  * Send a Reset Alarm Log command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when response is received
+ * @param callback Callback function that will be invoked when response is received
  * @param arg Pointer to application data that will later be provided back to the callback function when it is invoked
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,6 +25,8 @@
 #include "bpka.h"
 #include "ble_timer.h"
 #include "blestack.h"
+#include "host_stack_if.h"
+
 #include "ble_wrap.c"
 
 /*****************************************************************************/
@@ -160,7 +162,8 @@ int BLEPLAT_PkaReadDhKey( uint32_t* dh_key )
 void BPKACB_Complete( void )
 {
   BLEPLATCB_PkaComplete( );
-  HostStack_Process( );
+
+  BleStackCB_Process( );
 }
 
 /*****************************************************************************/

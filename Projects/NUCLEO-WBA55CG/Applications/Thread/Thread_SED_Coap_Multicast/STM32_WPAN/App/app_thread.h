@@ -9,7 +9,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -58,7 +58,6 @@ typedef enum
   ERR_TIMER_START,
   ERR_THREAD_MSG_COMPARE_FAILED,
   ERR_THREAD_COAP_ADDRESS_NOT_DEFINED,
-
   /* USER CODE END ERROR_APPLI_ENUM */
   ERR_THREAD_CHECK_WIRELESS
 } ErrAppliIdEnum_t;

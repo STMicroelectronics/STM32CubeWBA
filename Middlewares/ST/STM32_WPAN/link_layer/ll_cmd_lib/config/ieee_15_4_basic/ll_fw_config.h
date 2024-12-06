@@ -68,6 +68,8 @@
 #define SUPPORT_AUGMENTED_BLE_MODE                  0 /* Enable\Disable Augmented BLE Support. Enable:1 - Disable:0 */
 #define SUPPORT_PTA                                 1 /* Enable\Disable PTA Feature. Enable:1 - Disable:0 */
 
+#define CHECK_ANY_MISSED_EVENT_ON_DEEP_SLEEP_EXIT   1 /* Enable\Disable calling event scheduler handler function at the end of deep sleep exit*/
+
 /*************************** MAC Configuration *************************************/
 /*Configurations of MAC will apply only when MAC is enabled*/
 #define FFD_DEVICE_CONFIG                           1 /* Enable\Disable FFD:1 - RFD:0 */

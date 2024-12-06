@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,6 +19,10 @@
 /* USER CODE END Header */
 #ifndef DEBUG_CONFIG_H
 #define DEBUG_CONFIG_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "app_conf.h"
 
@@ -1520,5 +1524,9 @@ static const st_gpio_debug_t general_debug_table[] = {
 };
 
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DEBUG_CONFIG_H */

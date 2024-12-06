@@ -27,17 +27,6 @@
 #define APP_WRITE32_REG(base_addr, data)  (*(volatile uint32_t *)(base_addr) = (data))
 
 /* Exported types ------------------------------------------------------------*/
-typedef struct {
-  int    paramType;
-  char * paramStr;
-} param_t;
-
-typedef struct {
-  char *  cmd;         // command name
-  int     nArgsMin;    // minimum argument number for this command
-  int     nArgsMax;    // maximum argument number for this command
-  param_t args[10];    // argument list (max is 10)
-} cliCmd_t;
 
 /* Exported constants --------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/

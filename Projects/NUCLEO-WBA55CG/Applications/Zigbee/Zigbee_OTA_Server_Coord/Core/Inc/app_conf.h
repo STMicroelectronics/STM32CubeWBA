@@ -311,6 +311,8 @@ typedef enum
  */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
+#define CFG_SW_HSE_WORKAROUND               (1)
+
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */

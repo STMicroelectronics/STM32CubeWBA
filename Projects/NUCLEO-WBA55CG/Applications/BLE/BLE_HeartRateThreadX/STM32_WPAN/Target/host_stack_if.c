@@ -25,6 +25,12 @@
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "app_threadx.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
 /* External variables --------------------------------------------------------*/
 /**
   * @brief  Missed HCI event flag
@@ -39,8 +45,17 @@ extern uint8_t missed_hci_event_flag;
 
 /* USER CODE END EFP */
 
+/* Release Link Layer Mutex before calling any aci/hci functions */
+#define BLE_WRAP_PREPROC tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER)
+
+/* Release Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
+#define BLE_WRAP_POSTPROC do{ \
+                              tx_mutex_put(&LinkLayerMutex);  \
+                              BleStackCB_Process(); \
+                            }while(0)
+
 /**
-  * @brief  BLE Host stack processing request.
+  * @brief  Host stack processing request from Link Layer.
   * @param  None
   * @retval None
   */

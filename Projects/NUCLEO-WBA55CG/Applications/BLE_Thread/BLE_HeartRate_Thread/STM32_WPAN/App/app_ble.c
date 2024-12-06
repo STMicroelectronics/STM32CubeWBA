@@ -43,7 +43,7 @@
 #endif
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -325,7 +325,7 @@ void APP_BLE_Init(void)
     /* Create timer to handle the Led Switch OFF */
     UTIL_TIMER_Create(&(bleAppContext.SwitchOffLed_timer_Id),
                       0,
-                      (UTIL_TIMER_Mode_t)hw_ts_SingleShot,
+                      UTIL_TIMER_ONESHOT,
                       &Switch_OFF_Led,
                       0);
 #endif

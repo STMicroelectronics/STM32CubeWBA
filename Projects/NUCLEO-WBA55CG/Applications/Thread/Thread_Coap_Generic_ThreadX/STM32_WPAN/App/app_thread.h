@@ -82,6 +82,7 @@ typedef enum
 /* USER CODE END EC */
 
 /* Exported functions prototypes ---------------------------------------------*/
+void Thread_Init(void);
 
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);

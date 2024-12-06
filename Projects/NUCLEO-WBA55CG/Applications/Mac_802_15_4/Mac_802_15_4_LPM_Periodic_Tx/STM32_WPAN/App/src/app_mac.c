@@ -41,31 +41,23 @@ extern LPTIM_HandleTypeDef hlptim1;
 #define FRAME_MAX_SIZE 127
 
 /* Set the Maximum value of the counter (Auto-Reload) that defines the Period */
-#define PERIOD               (uint32_t) (32768 - 1) // 1s
 #define SEND_TIMEOUT  (1000) /**< 1s */
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint8_t rfBuffer[256];
 static uint16_t     g_panId             = 0x1AAA;
+static uint16_t     g_broadcastPanId    = 0xFFFF;
 static uint8_t      g_dataHandle        = 0x02;
 static uint16_t     g_shortAddr         = 0xABCD;
 static uint16_t     g_broadcastAddr     = 0xFFFF; /* Broadcast Addr */
 static uint8_t      g_channel           = DEMO_CHANNEL;
 
-#if CFG_LPM_STDBY_SUPPORTED
 static UTIL_TIMER_Object_t SendTimer;
-#endif
-
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 
-#if CFG_LPM_STDBY_SUPPORTED
 static void SendTimerCallback(void *arg);
-#else
-static void HAL_LPTIM_CompareMatchCallback(LPTIM_HandleTypeDef *hlptim);
-static void Start_Timer_MicroSec_AddFifo(uint32_t TimeUs);
-#endif
 
 void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 
@@ -74,37 +66,11 @@ MAC_handle mac_hndl;
 ST_MAC_callbacks_t macCallback;
 
 /* Private function -----------------------------------------------*/
-#if CFG_LPM_STDBY_SUPPORTED
 static void SendTimerCallback(void *arg)
 {
   // Request Data Transmit on Compare Match callback
   UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_NODE, TASK_MAC_APP_PRIO );
 }
-#else
-static void HAL_LPTIM_UpdateEventCallback(LPTIM_HandleTypeDef *hlptim)
-{
-  // Request Data Transmit on Compare Match callback
-  UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_NODE, TASK_MAC_APP_PRIO );
-
-}
-
-static void Start_Timer_MicroSec_AddFifo(uint32_t TimeUs)
-{
-
-  // uint32_t Ticks = (TimeUs-8)*50; //LPTIM = 50MHz; -8 because of IRQ and LPMTIM Init Processing time
-  hlptim1.Init.Period = TimeUs;
-  /* Set LPTIM Period */
-  HAL_LPTIM_Init(&hlptim1);
-  
-  __HAL_LPTIM_ENABLE(&hlptim1);
-  
-  __HAL_LPTIM_ENABLE_IT(&hlptim1, LPTIM_IT_UPDATE);
-  
-  /* Start timer in continuous mode */
-  __HAL_LPTIM_START_CONTINUOUS(&hlptim1);
-
-}
-#endif
 /**
   * @brief  compute  simple xor signature of the data to transmit
   *
@@ -181,18 +147,17 @@ void APP_MAC_Init(void) {
   /* Configuration MAC 802_15_4 */
   app_mac_regMacCallback(&macCallback);
   ST_MAC_init(&macCallback);
-  #if CFG_LPM_STDBY_SUPPORTED
+
   /* Create Timer for standby mode*/
     UTIL_TIMER_Status_t tmr_status = UTIL_TIMER_OK;
   /**
    * Create timer to handle COAP request sending
    */
-  tmr_status = UTIL_TIMER_Create(&SendTimer, SEND_TIMEOUT, UTIL_TIMER_PERIODIC,
+  tmr_status = UTIL_TIMER_Create(&SendTimer, SEND_TIMEOUT, UTIL_TIMER_ONESHOT,
                                  &SendTimerCallback, NULL);
   if (tmr_status != UTIL_TIMER_OK){
     while(1);
   }
-#endif
   
   /* Execute once at startup */
   UTIL_SEQ_SetTask(TASK_RFD, TASK_MAC_APP_PRIO);
@@ -276,13 +241,8 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SetupTask(void)
   UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
     
   APP_DBG("LPM MAC APP - Ready \r\n"); // To Handle Association Req and Receive Data
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
   UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_NODE, TASK_MAC_APP_PRIO );
-  UTIL_TIMER_Start(&SendTimer);
-#else 
-  /* Start LPTimer to trigg the data emiter node task */
-  Start_Timer_MicroSec_AddFifo(PERIOD);
-#endif
+
 
 }
 
@@ -301,7 +261,7 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SendData(const char * data)
   
   DataReq.src_addr_mode = g_SHORT_ADDR_MODE_c; // Address source mode
   DataReq.dst_addr_mode = g_SHORT_ADDR_MODE_c; // Address destination mode
-  memcpy(DataReq.a_dst_PAN_id,&g_panId,0x02); // PANID destination
+  memcpy(DataReq.a_dst_PAN_id,&g_broadcastPanId,0x02); // PANID destination
   memcpy(DataReq.dst_address.a_short_addr,&g_broadcastAddr,0x02); // Address destination
   DataReq.msdu_handle = g_dataHandle++; // The handle associated with the MSDU
   DataReq.ack_Tx = 0x00;  // No ACK is required
@@ -321,4 +281,6 @@ void APP_LPM_TRANSMIT_MAC_802_15_4_SendData(const char * data)
   
   /* Wait DATA CONFIRMATION */
   UTIL_SEQ_WaitEvt(EVENT_DATA_CNF);
+  
+  UTIL_TIMER_Start(&SendTimer);
 }

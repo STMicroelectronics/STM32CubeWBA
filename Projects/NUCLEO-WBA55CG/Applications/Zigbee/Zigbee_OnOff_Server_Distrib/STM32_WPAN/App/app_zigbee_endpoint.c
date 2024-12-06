@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.onoff.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -228,12 +228,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
-
-  /* Set the TC address to be distributed. */
-  pstConfig->security.trustCenterAddress = ZB_DISTRIBUTED_TC_ADDR;
-
-  /* Using the Uncertified Distributed Global Key */
-  memcpy( pstConfig->security.distributedGlobalKey, sec_key_distrib_uncert, ZB_SEC_KEYSIZE );
 
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;

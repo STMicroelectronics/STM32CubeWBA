@@ -93,6 +93,7 @@ typedef struct
 /* Codec Mode */
 typedef uint8_t CODEC_Mode_t;
 #define CODEC_MODE_DEFAULT      (0x00)
+#define CODEC_MODE_FLOW_CTRL    (0x01)
 
 /* Structure for allocating RAM used by the LC3 codec */
 typedef struct
@@ -174,6 +175,7 @@ typedef enum
   *                               for including higher priority processing over a codec frame interval
   * @param rf_max_setup_time_us : maximum timing in microseconds measured from the radio interrupt to the beginning of
   *                               the corresponding ISO event (radio preparation). Added as an extra latency at source
+  * @note Margin are added to the minimum controller delay each time the CODEC_ReadLocalSupportedControllerDelay is called
   * @param codec_mode : configuration of the codec manager behavior, see CODEC_Mode_t
   * @retval status
   */
@@ -206,9 +208,10 @@ void CODEC_ManagerProcess( void );
   * @param path_id : path id
   * @param dir : direction (input or output)
   * @param clbk_function : callback function that will be called after de CIS/BIS is established
+  * @note The callback function can return any value different from 0 to ask a new trigger
   * @retval status
   */
-codec_status_t CODEC_RegisterTriggerClbk(uint8_t path_id, uint8_t direction, void clbk_function(void));
+codec_status_t CODEC_RegisterTriggerClbk(uint8_t path_id, uint8_t direction, int32_t clbk_function(void));
 
 /**
   * @brief Notify the codec manager that new data is available on a given data path
@@ -292,7 +295,8 @@ uint8_t CODEC_ReadSupportedCodecCapabilies(uint8_t* codecID, uint8_t transport, 
 /**
   * @brief  Function used for reading controller delay range
   * @note This function don't handle case of parallel process, that may impact the minimum controller delay value
-  * @note Minimum values are computed from the Codec MCPS and CPU target frequency
+  * @note Minimum values are computed from the Codec MCPS, CPU target frequency and initialization parameters
+  * @note Margins are added at every calls and could be retrieved by calling with param codec_conf_len set to zero
   * @note Maximum value is defined by the allocated RAM
   * @param *codecID : array defining the Codec ID
   * @param transport : Bluetooth transport type

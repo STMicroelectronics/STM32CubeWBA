@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -63,6 +62,7 @@
   */
 void HAL_MspInit(void)
 {
+
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
@@ -96,6 +96,7 @@ void HAL_CRYP_MspInit(CRYP_HandleTypeDef* hcryp)
     HAL_NVIC_EnableIRQ(AES_IRQn);
   /* USER CODE BEGIN AES_MspInit 1 */
   /* USER CODE END AES_MspInit 1 */
+
   }
 
 }

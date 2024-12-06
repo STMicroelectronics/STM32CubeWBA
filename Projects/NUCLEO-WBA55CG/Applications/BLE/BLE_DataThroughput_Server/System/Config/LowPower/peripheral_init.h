@@ -26,6 +26,6 @@
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void);
+void MX_StandbyExit_PeripheralInit(void);
 
 #endif /* PERIPHERAL_INIT_H */

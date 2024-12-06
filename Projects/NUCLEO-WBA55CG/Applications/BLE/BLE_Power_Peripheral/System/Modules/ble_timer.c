@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,8 +22,8 @@
 #include "main.h"
 #include "app_common.h"
 #include "log_module.h"
-#include "stm32wbaxx.h"
 #include "blestack.h"
+#include "host_stack_if.h"
 #include "stm32_timer.h"
 #include "bleplat.h"
 #include "stm_list.h"
@@ -116,7 +116,7 @@ void BLE_TIMER_Stop(uint16_t id){
 static void BLE_TIMER_Background(void)
 {
   BLEPLATCB_TimerExpiry( (uint16_t)BLE_TIMER_timer->id);
-  HostStack_Process( );
+  BleStackCB_Process();
 
   /* Delete the BLE_TIMER_timer from the list */
   LST_remove_node((tListNode *)BLE_TIMER_timer);

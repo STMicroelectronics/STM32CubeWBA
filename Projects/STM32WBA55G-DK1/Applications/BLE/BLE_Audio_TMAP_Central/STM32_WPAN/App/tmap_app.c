@@ -30,7 +30,7 @@
 #include "usecase_dev_mgmt.h"
 #include "app_menu_cfg.h"
 #include "log_module.h"
-
+#include "app_ble.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +63,7 @@
 #define BAP_UCL_ASE_BLOCKS_SIZE \
           BAP_MEM_BLOCKS_ASE_PER_CONN_SIZE_BYTES(MAX_NUM_UCL_SNK_ASE_PER_LINK,MAX_NUM_UCL_SRC_ASE_PER_LINK,MAX_UCL_CODEC_CONFIG_SIZE,MAX_UCL_METADATA_SIZE)
 
-/* Memory size required to allocate resource for Published Audio Capabilites for Unicast Client and/or Broadcast Assistant*/
+/* Memory size required to allocate resource for Published Audio Capabilities for Unicast Client and/or Broadcast Assistant*/
 #define BAP_PACS_CLT_DYN_ALLOC_SIZE  \
               BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_UCL_LINK,0,(MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
 
@@ -337,8 +337,8 @@ static uint8_t TMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
                                          uint16_t CIS_ConnHandle,
                                          uint8_t ASE_ID,
                                          uint32_t ControllerDelay);
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
@@ -378,7 +378,7 @@ extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
 
-void TMAPAPP_Init()
+void TMAPAPP_Init(void)
 {
   tBleStatus status;
   /* Init Initiator/Commander with Unicast Client */
@@ -551,12 +551,15 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
       }
       Menu_SetNoStreamPage();
 
-      if (p_conn->ConfirmIndicationRequired == 1u)
+      if (p_conn != 0)
       {
-        /* Confirm indication now that the GATT is available */
-        ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-        LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
-        p_conn->ConfirmIndicationRequired = 0u;
+        if (p_conn->ConfirmIndicationRequired == 1u)
+        {
+          /* Confirm indication now that the GATT is available */
+          ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
+          LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          p_conn->ConfirmIndicationRequired = 0u;
+        }
       }
 
 #if (CFG_BLE_NUM_LINK > 0u)
@@ -768,7 +771,6 @@ uint8_t TMAPAPP_StartMediaStream(void)
     }
   }
 
-
   for( uint8_t i = 0u; i < num_acceptors ; i++)
   {
     uint8_t num_chnls;
@@ -776,112 +778,119 @@ uint8_t TMAPAPP_StartMediaStream(void)
     p_conn = APP_GetACLConn(StartStreamParams[i].ConnHandle);
     uint8_t qos_conf_id = TARGET_MEDIA_STREAM_QOS_CONFIG;
     uint8_t codec_conf_id = TARGET_MEDIA_STREAM_QOS_CONFIG % 16;
+    if (p_conn != 0)
+    {
+      if (p_conn->TargetedMediaQoSConfSupported == 0)
+      {
+        LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 24_2\n", TARGET_MEDIA_STREAM_QOS_CONFIG);
+        qos_conf_id = LC3_QOS_24_2_2;
+        codec_conf_id = LC3_24_2;
+      }
 
-    if (p_conn->TargetedMediaQoSConfSupported == 0)
-    {
-      LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 24_2\n", TARGET_MEDIA_STREAM_QOS_CONFIG);
-      qos_conf_id = LC3_QOS_24_2_2;
-      codec_conf_id = LC3_24_2;
-    }
-
-    CodecConfSnk[i].TargetLatency = TARGET_LATENCY_LOW;
-    CodecConfSnk[i].TargetPhy = TARGET_LE_2M_PHY;
-    CodecConfSnk[i].CodecID.CodingFormat = 0x06;
-    CodecConfSnk[i].CodecID.CompanyID = 0x0000;
-    CodecConfSnk[i].CodecID.VsCodecID = 0x0000;
-    CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
-    CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
-    CodecConfSnk[i].CodecSpecificConfParams.FrameBlockPerSdu = 1;
-    CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
-    if (num_acceptors == MAX_UNICAST_ACCEPTORS)
-    {
-      if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
+      CodecConfSnk[i].TargetLatency = TARGET_LATENCY_LOW;
+      CodecConfSnk[i].TargetPhy = TARGET_LE_2M_PHY;
+      CodecConfSnk[i].CodecID.CodingFormat = 0x06;
+      CodecConfSnk[i].CodecID.CompanyID = 0x0000;
+      CodecConfSnk[i].CodecID.VsCodecID = 0x0000;
+      CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
+      CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
+      CodecConfSnk[i].CodecSpecificConfParams.FrameBlockPerSdu = 1;
+      CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
+      if (num_acceptors == MAX_UNICAST_ACCEPTORS)
       {
-        CodecConfSnk[i].AudioChannelAllocation = FRONT_LEFT;
-      }
-      else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
-      {
-        CodecConfSnk[i].AudioChannelAllocation = FRONT_RIGHT;
-      }
-      else
-      {
-        CodecConfSnk[i].AudioChannelAllocation = 0;
-      }
-      num_chnls = 1u;
-      CodecConfSnk[i].ChannelPerCIS = 1u;
-    }
-    else
-    {
-      if (APP_GetBitsAudioChnlAllocations(p_conn->UnicastServerInfo.SnkAudioLocations) > 1u)
-      {
-        uint8_t j;
-        uint8_t num_snk_ase = 0u;
-        for (j = 0; j < MAX_NUM_UCL_SNK_ASE_PER_LINK; j++)
+        if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
         {
-          if (p_conn->pASEs->aSnkASE[j].allocated == 1u)
-          {
-            num_snk_ase++;
-          }
+          CodecConfSnk[i].AudioChannelAllocation = FRONT_LEFT;
         }
-
-        CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
-
-        if (num_snk_ase == 2)
+        else if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_RIGHT) == FRONT_RIGHT)
         {
-          CodecConfSnk[i].ChannelPerCIS = 1u;
+          CodecConfSnk[i].AudioChannelAllocation = FRONT_RIGHT;
         }
         else
         {
-          CodecConfSnk[i].ChannelPerCIS = 2u;
+          CodecConfSnk[i].AudioChannelAllocation = 0;
         }
-        num_chnls = 2u;
+        num_chnls = 1u;
+        CodecConfSnk[i].ChannelPerCIS = 1u;
       }
       else
       {
-        CodecConfSnk[i].AudioChannelAllocation = 0;
-        CodecConfSnk[i].ChannelPerCIS = 1u;
-        num_chnls = 1u;
+        if (APP_GetBitsAudioChnlAllocations(p_conn->UnicastServerInfo.SnkAudioLocations) > 1u)
+        {
+          uint8_t j;
+          uint8_t num_snk_ase = 0u;
+          for (j = 0; j < MAX_NUM_UCL_SNK_ASE_PER_LINK; j++)
+          {
+            if (p_conn->pASEs->aSnkASE[j].allocated == 1u)
+            {
+              num_snk_ase++;
+            }
+          }
+
+          CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
+
+          if (num_snk_ase == 2)
+          {
+            CodecConfSnk[i].ChannelPerCIS = 1u;
+          }
+          else
+          {
+            CodecConfSnk[i].ChannelPerCIS = 2u;
+          }
+          num_chnls = 2u;
+        }
+        else
+        {
+          CodecConfSnk[i].AudioChannelAllocation = 0;
+          CodecConfSnk[i].ChannelPerCIS = 1u;
+          num_chnls = 1u;
+        }
       }
+      QosConfSnk[i].SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
+      QosConfSnk[i].Framing = APP_QoSConf[qos_conf_id].framing;
+      QosConfSnk[i].MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
+        * MIN(num_chnls, CodecConfSnk[i].ChannelPerCIS);
+      QosConfSnk[i].RetransmissionNumber = APP_QoSConf[qos_conf_id].rtx_num;
+      QosConfSnk[i].MaxTransportLatency = APP_QoSConf[qos_conf_id].max_tp_latency;
+      QosConfSnk[i].PresentationDelay = APP_QoSConf[qos_conf_id].presentation_delay;
+
+      aMetadataSnk[i][metadata_snk_len++] = 0x03;
+      aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
+      aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_MEDIA;
+      aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8);
+      aMetadataSnk[i][metadata_snk_len++] = 0x02;
+      aMetadataSnk[i][metadata_snk_len++] = METADATA_CCID_LIST;
+      aMetadataSnk[i][metadata_snk_len++] = APP_MCP_START_CCID;
+
+      StartStreamParams[i].StreamSnk.pCodecConf = &CodecConfSnk[i];
+      StartStreamParams[i].StreamSnk.pQoSConf = &QosConfSnk[i];
+      StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
+      StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
+
+      StartStreamParams[i].StreamSrc.pCodecConf = &CodecConfSrc[i];
+      StartStreamParams[i].StreamSrc.pQoSConf = &QosConfSrc[i];
+      StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
+      StartStreamParams[i].StreamSrc.MetadataLen = 0;
+      LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
+      LOG_INFO_APP("Sink Codec Conf :\n");
+      LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",CodecConfSnk[i].AudioChannelAllocation);
+      LOG_INFO_APP("    Channel Per CIS : %d\n",CodecConfSnk[i].ChannelPerCIS);
+      LOG_INFO_APP("    Sampling Freq : 0x%02X\n",CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency);
     }
-    QosConfSnk[i].SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
-    QosConfSnk[i].Framing = APP_QoSConf[qos_conf_id].framing;
-    QosConfSnk[i].MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
-      * MIN(num_chnls, CodecConfSnk[i].ChannelPerCIS);
-    QosConfSnk[i].RetransmissionNumber = APP_QoSConf[qos_conf_id].rtx_num;
-    QosConfSnk[i].MaxTransportLatency = APP_QoSConf[qos_conf_id].max_tp_latency;
-    QosConfSnk[i].PresentationDelay = APP_QoSConf[qos_conf_id].presentation_delay;
-
-    aMetadataSnk[i][metadata_snk_len++] = 0x03;
-    aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
-    aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_MEDIA;
-    aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_MEDIA >> 8);
-    aMetadataSnk[i][metadata_snk_len++] = 0x02;
-    aMetadataSnk[i][metadata_snk_len++] = METADATA_CCID_LIST;
-    aMetadataSnk[i][metadata_snk_len++] = APP_MCP_START_CCID;
-
-    StartStreamParams[i].StreamSnk.pCodecConf = &CodecConfSnk[i];
-    StartStreamParams[i].StreamSnk.pQoSConf = &QosConfSnk[i];
-    StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
-    StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
-
-    StartStreamParams[i].StreamSrc.pCodecConf = &CodecConfSrc[i];
-    StartStreamParams[i].StreamSrc.pQoSConf = &QosConfSrc[i];
-    StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
-    StartStreamParams[i].StreamSrc.MetadataLen = 0;
-    LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
-    LOG_INFO_APP("Sink Codec Conf :\n");
-    LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",CodecConfSnk[i].AudioChannelAllocation);
-    LOG_INFO_APP("    Channel Per CIS : %d\n",CodecConfSnk[i].ChannelPerCIS);
-    LOG_INFO_APP("    Sampling Freq : 0x%02X\n",CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency);
   }
+  if (num_acceptors > 0)
+  {
+    status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
 
-  status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
-
-  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status %02X\n",
-               num_acceptors,
-               set_type,
-               status);
-
+    LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status 0x%02X\n",
+                 num_acceptors,
+                 set_type,
+                 status);
+  }
+  else
+  {
+    status = HCI_COMMAND_DISALLOWED_ERR_CODE;
+  }
   return status;
 }
 
@@ -963,102 +972,112 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
     metadata_snk_len = 0u;
     metadata_src_len = 0u;
     p_conn = APP_GetACLConn(StartStreamParams[i].ConnHandle);
-
-    if ((p_conn->TargetedTelephonySnkQoSConfSupported == 0) || (p_conn->TargetedTelephonySrcQoSConfSupported == 0))
+    if (p_conn != 0)
     {
-      LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 16_2\n", TARGET_TELEPHONY_STREAM_QOS_CONFIG);
-      codec_conf_id = LC3_16_2;
-      qos_conf_id = LC3_QOS_16_2_1;
-    }
-
-    LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
-    for (Audio_Role_t role = AUDIO_ROLE_SINK; role <= AUDIO_ROLE_SOURCE;role++)
-    {
-      CAP_Unicast_AudioStart_Codec_Conf_t *pCodecConf;
-      CAP_Unicast_AudioStart_QoS_Conf_t *pQoS_Conf;
-      uint8_t num_chnls;
-      if ((role & AUDIO_ROLE_SINK ) == AUDIO_ROLE_SINK)
+      if ((p_conn->TargetedTelephonySnkQoSConfSupported == 0) || (p_conn->TargetedTelephonySrcQoSConfSupported == 0))
       {
-        pCodecConf = &CodecConfSnk[i];
-        pQoS_Conf = &QosConfSnk[i];
-      }
-      else /* ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)*/
-      {
-        pCodecConf = &CodecConfSrc[i];
-        pQoS_Conf = &QosConfSrc[i];
+        LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 16_2\n",
+                     TARGET_TELEPHONY_STREAM_QOS_CONFIG);
+        codec_conf_id = LC3_16_2;
+        qos_conf_id = LC3_QOS_16_2_1;
       }
 
-      if ((StartStreamParams[i].StreamRole & role ) == role)
+      LOG_INFO_APP("Set Start Stream for CAP Acceptor %d on connHandle 0x%04X :\n",i,StartStreamParams[i].ConnHandle);
+      for (Audio_Role_t role = AUDIO_ROLE_SINK; role <= AUDIO_ROLE_SOURCE;role++)
       {
-        pCodecConf->TargetLatency = TARGET_LATENCY_LOW;
-        pCodecConf->TargetPhy = TARGET_LE_2M_PHY;
-        pCodecConf->CodecID.CodingFormat = 0x06;
-        pCodecConf->CodecID.CompanyID = 0x0000;
-        pCodecConf->CodecID.VsCodecID = 0x0000;
-        pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
-        pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
-        pCodecConf->CodecSpecificConfParams.FrameBlockPerSdu = 1;
-        pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
-
-        /* Set Mono channel for telephony as microphone IN is mono */
-        pCodecConf->AudioChannelAllocation = 0;
-        pCodecConf->ChannelPerCIS = 1u;
-        num_chnls = 1u;
-
-        pQoS_Conf->SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
-        pQoS_Conf->Framing = APP_QoSConf[qos_conf_id].framing;
-        pQoS_Conf->MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
-          * MIN(num_chnls, pCodecConf->ChannelPerCIS);
-        pQoS_Conf->RetransmissionNumber = APP_QoSConf[qos_conf_id].rtx_num;
-        pQoS_Conf->MaxTransportLatency = APP_QoSConf[qos_conf_id].max_tp_latency;
-        pQoS_Conf->PresentationDelay = APP_QoSConf[qos_conf_id].presentation_delay;
-
+        CAP_Unicast_AudioStart_Codec_Conf_t *pCodecConf;
+        CAP_Unicast_AudioStart_QoS_Conf_t *pQoS_Conf;
+        uint8_t num_chnls;
         if ((role & AUDIO_ROLE_SINK ) == AUDIO_ROLE_SINK)
         {
-          aMetadataSnk[i][metadata_snk_len++] = 0x03;
-          aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
-          aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_CONVERSATIONAL;
-          aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8);
-          aMetadataSnk[i][metadata_snk_len++] = 0x02;
-          aMetadataSnk[i][metadata_snk_len++] = METADATA_CCID_LIST;
-          aMetadataSnk[i][metadata_snk_len++] = APP_CCP_START_CCID;
-          StartStreamParams[i].StreamSnk.pCodecConf = pCodecConf;
-          StartStreamParams[i].StreamSnk.pQoSConf = pQoS_Conf;
-          StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
-          StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
-          LOG_INFO_APP("Sink Codec Conf :\n");
-          LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",pCodecConf->AudioChannelAllocation);
-          LOG_INFO_APP("    Channel Per CIS : %d\n",pCodecConf->ChannelPerCIS);
-          LOG_INFO_APP("    Sampling Freq : 0x%02X\n",pCodecConf->CodecSpecificConfParams.SamplingFrequency);
+          pCodecConf = &CodecConfSnk[i];
+          pQoS_Conf = &QosConfSnk[i];
         }
-        else if ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)
+        else /* ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)*/
         {
-          aMetadataSrc[i][metadata_src_len++] = 0x03;
-          aMetadataSrc[i][metadata_src_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
-          aMetadataSrc[i][metadata_src_len++] = (uint8_t) AUDIO_CONTEXT_CONVERSATIONAL;
-          aMetadataSrc[i][metadata_src_len++] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8);
-          aMetadataSrc[i][metadata_src_len++] = 0x02;
-          aMetadataSrc[i][metadata_src_len++] = METADATA_CCID_LIST;
-          aMetadataSrc[i][metadata_src_len++] = APP_CCP_START_CCID;
-          StartStreamParams[i].StreamSrc.pCodecConf = pCodecConf;
-          StartStreamParams[i].StreamSrc.pQoSConf = pQoS_Conf;
-          StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
-          StartStreamParams[i].StreamSrc.MetadataLen = metadata_src_len;
-          LOG_INFO_APP("Source Codec Conf :\n");
-          LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",pCodecConf->AudioChannelAllocation);
-          LOG_INFO_APP("    Channel Per CIS : %d\n",pCodecConf->ChannelPerCIS);
-          LOG_INFO_APP("    Sampling Freq : 0x%02X\n",pCodecConf->CodecSpecificConfParams.SamplingFrequency);
+          pCodecConf = &CodecConfSrc[i];
+          pQoS_Conf = &QosConfSrc[i];
+        }
+
+        if ((StartStreamParams[i].StreamRole & role ) == role)
+        {
+          pCodecConf->TargetLatency = TARGET_LATENCY_LOW;
+          pCodecConf->TargetPhy = TARGET_LE_2M_PHY;
+          pCodecConf->CodecID.CodingFormat = 0x06;
+          pCodecConf->CodecID.CompanyID = 0x0000;
+          pCodecConf->CodecID.VsCodecID = 0x0000;
+          pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
+          pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
+          pCodecConf->CodecSpecificConfParams.FrameBlockPerSdu = 1;
+          pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
+
+          /* Set Mono channel for telephony as microphone IN is mono */
+          pCodecConf->AudioChannelAllocation = 0;
+          pCodecConf->ChannelPerCIS = 1u;
+          num_chnls = 1u;
+
+          pQoS_Conf->SDUInterval = APP_QoSConf[qos_conf_id].sdu_interval;
+          pQoS_Conf->Framing = APP_QoSConf[qos_conf_id].framing;
+          pQoS_Conf->MaxSDU = APP_QoSConf[qos_conf_id].max_sdu \
+            * MIN(num_chnls, pCodecConf->ChannelPerCIS);
+          pQoS_Conf->RetransmissionNumber = APP_QoSConf[qos_conf_id].rtx_num;
+          pQoS_Conf->MaxTransportLatency = APP_QoSConf[qos_conf_id].max_tp_latency;
+          pQoS_Conf->PresentationDelay = APP_QoSConf[qos_conf_id].presentation_delay;
+
+          if ((role & AUDIO_ROLE_SINK ) == AUDIO_ROLE_SINK)
+          {
+            aMetadataSnk[i][metadata_snk_len++] = 0x03;
+            aMetadataSnk[i][metadata_snk_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
+            aMetadataSnk[i][metadata_snk_len++] = (uint8_t) AUDIO_CONTEXT_CONVERSATIONAL;
+            aMetadataSnk[i][metadata_snk_len++] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8);
+            aMetadataSnk[i][metadata_snk_len++] = 0x02;
+            aMetadataSnk[i][metadata_snk_len++] = METADATA_CCID_LIST;
+            aMetadataSnk[i][metadata_snk_len++] = APP_CCP_START_CCID;
+            StartStreamParams[i].StreamSnk.pCodecConf = pCodecConf;
+            StartStreamParams[i].StreamSnk.pQoSConf = pQoS_Conf;
+            StartStreamParams[i].StreamSnk.pMetadata = &aMetadataSnk[i][0];
+            StartStreamParams[i].StreamSnk.MetadataLen = metadata_snk_len;
+            LOG_INFO_APP("Sink Codec Conf :\n");
+            LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",pCodecConf->AudioChannelAllocation);
+            LOG_INFO_APP("    Channel Per CIS : %d\n",pCodecConf->ChannelPerCIS);
+            LOG_INFO_APP("    Sampling Freq : 0x%02X\n",pCodecConf->CodecSpecificConfParams.SamplingFrequency);
+          }
+          else if ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)
+          {
+            aMetadataSrc[i][metadata_src_len++] = 0x03;
+            aMetadataSrc[i][metadata_src_len++] = METADATA_STREAMING_AUDIO_CONTEXTS;
+            aMetadataSrc[i][metadata_src_len++] = (uint8_t) AUDIO_CONTEXT_CONVERSATIONAL;
+            aMetadataSrc[i][metadata_src_len++] = (uint8_t) (AUDIO_CONTEXT_CONVERSATIONAL >> 8);
+            aMetadataSrc[i][metadata_src_len++] = 0x02;
+            aMetadataSrc[i][metadata_src_len++] = METADATA_CCID_LIST;
+            aMetadataSrc[i][metadata_src_len++] = APP_CCP_START_CCID;
+            StartStreamParams[i].StreamSrc.pCodecConf = pCodecConf;
+            StartStreamParams[i].StreamSrc.pQoSConf = pQoS_Conf;
+            StartStreamParams[i].StreamSrc.pMetadata = &aMetadataSrc[i][0];
+            StartStreamParams[i].StreamSrc.MetadataLen = metadata_src_len;
+            LOG_INFO_APP("Source Codec Conf :\n");
+            LOG_INFO_APP("    Audio Channel Allocation : 0x%08X\n",pCodecConf->AudioChannelAllocation);
+            LOG_INFO_APP("    Channel Per CIS : %d\n",pCodecConf->ChannelPerCIS);
+            LOG_INFO_APP("    Sampling Freq : 0x%02X\n",pCodecConf->CodecSpecificConfParams.SamplingFrequency);
+          }
         }
       }
     }
   }
+  if (num_acceptors > 0)
+  {
 
-  status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
+    status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
 
-  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status %02X\n",
-               num_acceptors,
-               set_type,
-               status);
+    LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status 0x%02X\n",
+                 num_acceptors,
+                 set_type,
+                 status);
+  }
+  else
+  {
+    status = HCI_COMMAND_DISALLOWED_ERR_CODE;
+  }
   return status;
 }
 
@@ -1108,7 +1127,7 @@ uint8_t TMAPAPP_StopStream(void)
   if(num_acceptors > 0u)
   {
     status = CAP_Unicast_AudioStop(num_acceptors, &a_conn_handle[0], 1u);
-    LOG_INFO_APP("CAP_Unicast_AudioStop() of %d CAP Accceptors returns status %02X\n",
+    LOG_INFO_APP("CAP_Unicast_AudioStop() of %d CAP Accceptors returns status 0x%02X\n",
                  num_acceptors,
                  status);
   }
@@ -1150,7 +1169,6 @@ uint8_t TMAPAPP_RemoteVolumeUp(void)
   {
     status = TMAPAPP_RemoteToggleMute();
   }
-
   return status;
 #else /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1190,7 +1208,6 @@ uint8_t TMAPAPP_RemoteVolumeDown(void)
   {
     status = TMAPAPP_RemoteToggleMute();
   }
-
   return status;
 #else /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1276,51 +1293,56 @@ tBleStatus TMAPAPP_NextTrack(void)
 #if (APP_MCP_ROLE_SERVER_SUPPORT == 1u)
   tBleStatus status;
   TMAPAPP_MediaPlayer_t *p_mediaplayer = TMAPAPP_GetMediaPlayer(TMAPAPP_Context.GenericMediaPlayer.CCID);
-
-  if( p_mediaplayer->TrackID == APP_MCP_NUM_TRACKS)
+  if(p_mediaplayer != 0)
   {
-   p_mediaplayer->TrackID = 1u;
+    if( p_mediaplayer->TrackID == APP_MCP_NUM_TRACKS)
+    {
+     p_mediaplayer->TrackID = 1u;
+    }
+    else
+    {
+      p_mediaplayer->TrackID += 1u;
+    }
+
+    LOG_INFO_APP("[MP %d] Change to Track %d\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  p_mediaplayer->TrackID);
+    status = MCP_SERVER_SetTrackTitle(TMAPAPP_Context.GenericMediaPlayer.CCID,
+                                      MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                                      6u);
+    LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    if (status == BLE_STATUS_SUCCESS)
+    {
+      Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                       MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
+    }
+    status = MCP_SERVER_SetTrackDuration(TMAPAPP_Context.GenericMediaPlayer.CCID,
+                                         MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
+    LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    p_mediaplayer->TrackPosition = 0;
+    status =  MCP_SERVER_SetTrackPosition(TMAPAPP_Context.GenericMediaPlayer.CCID,p_mediaplayer->TrackPosition);
+    LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  (int32_t)p_mediaplayer->TrackPosition,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    status = MCP_SERVER_NotifyTrackChanged(TMAPAPP_Context.GenericMediaPlayer.CCID);
+    LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",TMAPAPP_Context.GenericMediaPlayer.CCID,status);
   }
   else
   {
-    p_mediaplayer->TrackID += 1u;
+    status = HCI_UNSUPPORTED_REMOTE_FEATURE_ERR_CODE;
   }
-
-  LOG_INFO_APP("[MP %d] Change to Track %d\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                p_mediaplayer->TrackID);
-  status = MCP_SERVER_SetTrackTitle(TMAPAPP_Context.GenericMediaPlayer.CCID,
-                                    MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                                    6u);
-  LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  if (status == BLE_STATUS_SUCCESS)
-  {
-    Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                     MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
-  }
-  status = MCP_SERVER_SetTrackDuration(TMAPAPP_Context.GenericMediaPlayer.CCID,
-                                       MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
-  LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  p_mediaplayer->TrackPosition = 0;
-  status =  MCP_SERVER_SetTrackPosition(TMAPAPP_Context.GenericMediaPlayer.CCID,p_mediaplayer->TrackPosition);
-  LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                (int32_t)p_mediaplayer->TrackPosition,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  status = MCP_SERVER_NotifyTrackChanged(TMAPAPP_Context.GenericMediaPlayer.CCID);
-  LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",TMAPAPP_Context.GenericMediaPlayer.CCID,status);
-
   return status;
 #else /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1332,50 +1354,56 @@ tBleStatus TMAPAPP_PreviousTrack(void)
 #if (APP_MCP_ROLE_SERVER_SUPPORT == 1u)
   tBleStatus status;
   TMAPAPP_MediaPlayer_t *p_mediaplayer = TMAPAPP_GetMediaPlayer(TMAPAPP_Context.GenericMediaPlayer.CCID);
-
-  if( p_mediaplayer->TrackID > 1u)
+  if(p_mediaplayer != 0)
   {
-   p_mediaplayer->TrackID -= 1u;
+    if( p_mediaplayer->TrackID > 1u)
+    {
+     p_mediaplayer->TrackID -= 1u;
+    }
+    else
+    {
+      p_mediaplayer->TrackID = 1u;
+    }
+
+    LOG_INFO_APP("[MP %d] Change to Track %d\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  p_mediaplayer->TrackID);
+    status = MCP_SERVER_SetTrackTitle(TMAPAPP_Context.GenericMediaPlayer.CCID,
+                                      MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                                      6u);
+    LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    if (status == BLE_STATUS_SUCCESS)
+    {
+      Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                         MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
+    }
+    status = MCP_SERVER_SetTrackDuration(TMAPAPP_Context.GenericMediaPlayer.CCID,
+                                         MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
+    LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    p_mediaplayer->TrackPosition = 0;
+    status =  MCP_SERVER_SetTrackPosition(TMAPAPP_Context.GenericMediaPlayer.CCID,p_mediaplayer->TrackPosition);
+    LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
+                  TMAPAPP_Context.GenericMediaPlayer.CCID,
+                  (int32_t)p_mediaplayer->TrackPosition,
+                  p_mediaplayer->TrackID,
+                  p_mediaplayer->GroupID,
+                  status);
+    status = MCP_SERVER_NotifyTrackChanged(TMAPAPP_Context.GenericMediaPlayer.CCID);
+    LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n", TMAPAPP_Context.GenericMediaPlayer.CCID);
   }
   else
   {
-    p_mediaplayer->TrackID = 1u;
+    status = HCI_UNSUPPORTED_REMOTE_FEATURE_ERR_CODE;
   }
-
-  LOG_INFO_APP("[MP %d] Change to Track %d\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                p_mediaplayer->TrackID);
-  status = MCP_SERVER_SetTrackTitle(TMAPAPP_Context.GenericMediaPlayer.CCID,
-                                    MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                                    6u);
-  LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  if (status == BLE_STATUS_SUCCESS)
-  {
-    Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                       MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
-  }
-  status = MCP_SERVER_SetTrackDuration(TMAPAPP_Context.GenericMediaPlayer.CCID,
-                                       MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
-  LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  p_mediaplayer->TrackPosition = 0;
-  status =  MCP_SERVER_SetTrackPosition(TMAPAPP_Context.GenericMediaPlayer.CCID,p_mediaplayer->TrackPosition);
-  LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
-                TMAPAPP_Context.GenericMediaPlayer.CCID,
-                (int32_t)p_mediaplayer->TrackPosition,
-                p_mediaplayer->TrackID,
-                p_mediaplayer->GroupID,
-                status);
-  status = MCP_SERVER_NotifyTrackChanged(TMAPAPP_Context.GenericMediaPlayer.CCID);
-  LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n", TMAPAPP_Context.GenericMediaPlayer.CCID);
 
   return status;
 #else /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
@@ -1389,27 +1417,35 @@ tBleStatus TMAPAPP_PlayPause(void)
   tBleStatus status = BLE_STATUS_SUCCESS;
   TMAPAPP_MediaPlayer_t *p_mediaplayer = TMAPAPP_GetMediaPlayer(TMAPAPP_Context.GenericMediaPlayer.CCID);
   MCP_MediaState_t state = MCP_MEDIA_STATE_INACTIVE;
-  switch (p_mediaplayer->MediaState)
+  if(p_mediaplayer != 0)
   {
-    case MCP_MEDIA_STATE_INACTIVE:
-    case MCP_MEDIA_STATE_PAUSED:
+    switch (p_mediaplayer->MediaState)
     {
-      state = MCP_MEDIA_STATE_PLAYING;
+      case MCP_MEDIA_STATE_INACTIVE:
+      case MCP_MEDIA_STATE_PAUSED:
+      {
+        state = MCP_MEDIA_STATE_PLAYING;
+      }
+      break;
+      case MCP_MEDIA_STATE_PLAYING:
+      case MCP_MEDIA_STATE_SEEKING:
+      {
+        state = MCP_MEDIA_STATE_PAUSED;
+      }
+      break;
     }
-    break;
-    case MCP_MEDIA_STATE_PLAYING:
-    case MCP_MEDIA_STATE_SEEKING:
-    {
-      state = MCP_MEDIA_STATE_PAUSED;
-    }
-    break;
-  }
-  status = TMAPAPP_SetMediaState(TMAPAPP_Context.GenericMediaPlayer.CCID, state);
+    status = TMAPAPP_SetMediaState(TMAPAPP_Context.GenericMediaPlayer.CCID, state);
 
-  LOG_INFO_APP("TMAPAPP_SetMediaState() on CCID %d with Media State 0x%02X returns status 0x%02X\n",
-               TMAPAPP_Context.GenericMediaPlayer.CCID,
-               state,
-               status);
+    LOG_INFO_APP("TMAPAPP_SetMediaState() on CCID %d with Media State 0x%02X returns status 0x%02X\n",
+                 TMAPAPP_Context.GenericMediaPlayer.CCID,
+                 state,
+                 status);
+  }
+  else
+  {
+    status = HCI_UNSUPPORTED_REMOTE_FEATURE_ERR_CODE;
+  }
+
   return status;
 #else /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1424,7 +1460,6 @@ tBleStatus TMAPAPP_AnswerCall(void)
   status = CCP_SERVER_SetActiveCall(TMAPAPP_Context.GenericBearer.CCID,
                                     TMAPAPP_Context.CurrentCallID);
   LOG_INFO_APP("CCP_SERVER_SetActiveCall() returns status 0x%02X\n", status);
-
   return status;
 #else /* (APP_CCP_ROLE_SERVER_SUPPORT == 1u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -1523,7 +1558,7 @@ tBleStatus TMAPAPP_StopBroadcastSource(void)
   uint8_t ret;
 
   ret = CAP_Broadcast_AudioStop(BIG_HANDLE, 1);
-  LOG_INFO_APP("CAP_Broadcast_AudioStop() returns status 0x%02X", ret);
+  LOG_INFO_APP("CAP_Broadcast_AudioStop() returns status 0x%02X\n", ret);
 
   return ret;
 }
@@ -1646,9 +1681,12 @@ void TMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_
   if (p_conn == 0)
   {
     p_conn = APP_AllocateACLConn(ConnHandle);
-    p_conn->TargetedMediaQoSConfSupported = 0u;
-    p_conn->TargetedTelephonySnkQoSConfSupported = 0u;
-    p_conn->TargetedTelephonySrcQoSConfSupported = 0u;
+    if (p_conn != 0)
+    {
+      p_conn->TargetedMediaQoSConfSupported = 0u;
+      p_conn->TargetedTelephonySnkQoSConfSupported = 0u;
+      p_conn->TargetedTelephonySrcQoSConfSupported = 0u;
+    }
   }
   if (p_conn != 0)
   {
@@ -1886,7 +1924,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUCLLinks = MAX_NUM_UCL_LINK;
 
-  /*Published Audio Capabilites for Unicast Client and/or Broadcast Assistant Configuration*/
+  /*Published Audio Capabilities for Unicast Client and/or Broadcast Assistant Configuration*/
   APP_BAP_Config.PACSCltConfig.MaxNumSnkPACRecordsPerLink = MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.MaxNumSrcPACRecordsPerLink = MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.pStartRamAddr = (uint8_t *)&aPACSCltMemBuffer;
@@ -1969,12 +2007,12 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
     return status;
   }
 #if (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1)
-    if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
-    {
+  if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
+  {
 #if (APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)
-      TMAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
+    TMAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
 #endif /*(APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)*/
-    }
+  }
 #endif /* (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1) */
   for (uint8_t i = 0; i< APP_MAX_NUM_CIS; i++)
   {
@@ -2249,14 +2287,12 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
   {
     case CAP_UNICAST_AUDIOSTARTED_EVT:
     {
-      LOG_INFO_APP("CAP Unicast Start Procedure is Complete with status 0x%02X\n",
-                  pNotification->Status);
+      LOG_INFO_APP("CAP Unicast Start Procedure is Complete with status 0x%02X\n",pNotification->Status);
       break;
     }
     case CAP_UNICAST_AUDIOSTOPPED_EVT:
     {
-      LOG_INFO_APP("CAP Unicast Stop Procedure is Complete with status 0x%02X\n",
-                  pNotification->Status);
+      LOG_INFO_APP("CAP Unicast Stop Procedure is Complete with status 0x%02X\n",pNotification->Status);
       break;
     }
     case CAP_UNICAST_AUDIO_UPDATED_EVT:
@@ -2338,7 +2374,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 if ((p_conn->AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
                 {
                   uint8_t num_members = 0u;
-  #if (CFG_BLE_NUM_LINK > 0u)
+#if (CFG_BLE_NUM_LINK > 0u)
                   for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
                   {
                     if ((TMAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_CSIP) == AUDIO_PROFILE_CSIP)
@@ -2354,7 +2390,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                         num_members++;
                     }
                   }
-  #endif /*(CFG_BLE_NUM_LINK > 0u)*/
+#endif /*(CFG_BLE_NUM_LINK > 0u)*/
                   LOG_INFO_APP("Number of Set Members discovered %d on %d\n", num_members,p_conn->Size);
                   if (num_members < p_conn->Size)
                   {
@@ -2426,15 +2462,18 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       BAP_SetupAudioDataPathReq_t *info = (BAP_SetupAudioDataPathReq_t *)pNotification->pInfo;
       uint32_t controller_delay;
       APP_ASE_Info_t *p_ase;
-      LOG_INFO_APP("Setup Audio Data Path is requested for ASE ID %d (CIS Conn Handle 0x%04X)\n",
-                  info->ASE_ID,
-                  info->CIS_ConnHandle);
       if (info->PathDirection == BAP_AUDIO_PATH_INPUT){
-        LOG_INFO_APP("Input Audio Data Path Configuration is requested\n");
+        LOG_INFO_APP("Setup Input Audio Data Path is requested for ASE ID %d on ACL Conn Handle 0x%04X (CIS Conn Handle 0x%04X)\n",
+                     info->ASE_ID,
+                     pNotification->ConnHandle,
+                     info->CIS_ConnHandle);
       }
       else
       {
-        LOG_INFO_APP("Output Audio Data Path Configuration is requested\n");
+        LOG_INFO_APP("Setup Output Audio Data Path is requested for ASE ID %d on ACL Conn Handle 0x%04X (CIS Conn Handle 0x%04X)\n",
+                   info->ASE_ID,
+                   pNotification->ConnHandle,
+                   info->CIS_ConnHandle);
       }
       LOG_INFO_APP("  Codec ID\n");
       LOG_INFO_APP("    Coding format : 0x%02X\n",info->CodecConf.CodecID.CodingFormat);
@@ -2519,7 +2558,9 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       Supported_Frame_Duration_t remote_supported_frame_duration;
       Supported_Channel_Counts_t remote_supported_audio_chan;
       uint32_t                   remote_supported_octet_per_codec_frame;
+#if (CFG_LOG_SUPPORTED != 0)
       uint8_t                    remote_supported_max_codec_frame_per_sdu;
+#endif /* (CFG_LOG_SUPPORTED != 0) */
       Audio_Context_t            remote_preferred_audio_contexts = 0x0000u;
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
 
@@ -2554,6 +2595,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         remote_supported_audio_chan = 0x01;
       }
 
+#if (CFG_LOG_SUPPORTED != 0)
       remote_supported_max_codec_frame_per_sdu = LTV_GetSupportedMaxCodecFramesPerSDU(p_cap->pSpecificCap,
                                                                                       p_cap->SpecificCapLength);
       if (remote_supported_max_codec_frame_per_sdu == 0)
@@ -2561,6 +2603,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         /* Default value */
         remote_supported_max_codec_frame_per_sdu = 0x01;
       }
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
       LTV_GetPreferredAudioContexts(p_cap->pMetadata,
                                     p_cap->MetadataLength,
@@ -2731,6 +2774,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 p_ase->ID = p_info->ASE_ID;
                 p_ase->type = p_info->Type;
                 p_ase->allocated = 1u;
+                break;
               }
             }
 #endif /* (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0u) */
@@ -2746,6 +2790,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 p_ase->ID = p_info->ASE_ID;
                 p_ase->type = p_info->Type;
                 p_ase->allocated = 1u;
+                break;
               }
             }
 #endif /* (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u) */
@@ -2860,15 +2905,14 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           case CSIP_COO_ADV_REPORT_NEW_SET_MEMBER_DISCOVERED_EVT:
             {
               CSIP_New_Member_Evt_Params_t *p_info = (CSIP_New_Member_Evt_Params_t *) p_csip_evt->pInfo;
-              LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : 0X%02X%02X%02X%02X%02X%02X\n",
+              LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : %02x:%02x:%02x:%02x:%02x:%02x\n",
                               p_info->AddressType,
-                              p_info->Address[0],
-                              p_info->Address[1],
-                              p_info->Address[2],
-                              p_info->Address[3],
+                              p_info->Address[5],
                               p_info->Address[4],
-                              p_info->Address[5]);
-
+                              p_info->Address[3],
+                              p_info->Address[2],
+                              p_info->Address[1],
+                              p_info->Address[0]);
               if( TMAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
               {
                 tBleStatus status;
@@ -2881,6 +2925,9 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
           case CSIP_COO_NEW_SET_MEMBER_DISCOVERED_EVT:
           {
+            LOG_INFO_APP("Set Member discovery is Complete with ConnHandle 0x%04X with status 0x%02X\n",
+                         p_csip_evt->ConnHandle,
+                         p_csip_evt->Status);
             if (p_csip_evt->Status == BLE_STATUS_SUCCESS)
             {
               APP_ACL_Conn_t *p_conn = APP_GetACLConn(p_csip_evt->ConnHandle);
@@ -2912,7 +2959,9 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (pNotification->Status != BLE_STATUS_SUCCESS)
             {
               hciCmdResult = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-              LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,hciCmdResult);
+              LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",
+                           GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
+                           hciCmdResult);
             }
 #if (CFG_BLE_NUM_LINK > 0u)
             /*Check if a CAP Linkup witha discovered Set Member should started*/
@@ -3048,7 +3097,7 @@ static APP_ASE_Info_t * TMAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
 #if (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u)
       for( i = 0; i < MAX_NUM_UCL_SRC_ASE_PER_LINK;i++)
       {
-        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSnkASE[i].allocated == 1u))
+        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSrcASE[i].allocated == 1u))
         {
           return &p_conn->pASEs->aSrcASE[i];
         }
@@ -3310,16 +3359,13 @@ static void TMAPAPP_SetupBASE(uint8_t BAPConfID)
 
   TMAPAPP_Context.BaseGroup.pSubgroups[0].CodecSpecificConfLength += 3;
 
+  TMAPAPP_Context.RTN = APP_BroadcastQoSConf[BAPConfID].rtx_num;
+  TMAPAPP_Context.MaxTransportLatency = APP_BroadcastQoSConf[BAPConfID].max_tp_latency;
+  TMAPAPP_Context.BaseGroup.PresentationDelay = APP_BroadcastQoSConf[BAPConfID].presentation_delay;
 
   for (i = 0; i < BROADCAST_SOURCE_NUM_BIS; i++)
   {
     uint8_t bis_i = 0;
-    /* Take max RTN and transport latency */
-    TMAPAPP_Context.RTN = MAX(TMAPAPP_Context.RTN, APP_BroadcastQoSConf[BAPConfID].rtx_num);
-    TMAPAPP_Context.MaxTransportLatency = MAX( TMAPAPP_Context.MaxTransportLatency,
-                                               APP_BroadcastQoSConf[BAPConfID].max_tp_latency);
-    TMAPAPP_Context.BaseGroup.PresentationDelay = MAX(TMAPAPP_Context.BaseGroup.PresentationDelay,
-                                                      APP_BroadcastQoSConf[BAPConfID].presentation_delay);
 
     TMAPAPP_Context.BaseGroup.pSubgroups[0].pBIS[i].CodecSpecificConfLength = 0;
 
@@ -3420,111 +3466,25 @@ static tBleStatus TMAPAPP_BroadcastSetupAudio(void)
 }
 
 /*Audio Source */
-static void start_audio_source(void)
+static int32_t start_audio_source(void)
 {
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  Start_RxAudio();
-
-  if (TMAPAPP_Context.num_cis_established > 0)
-  {
-    switch (TMAPAPP_Context.ConfiguredSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-      {
-        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_16000_HZ:
-      {
-        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_24000_HZ:
-      {
-        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_32000_HZ:
-      {
-        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_44100_HZ:
-      {
-        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_48000_HZ:
-      {
-        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      default:
-      {
-        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-    }
-  }
+  return Start_RxAudio();
 }
 
 
 /*Audio Sink */
-static void start_audio_sink(void)
+static int32_t start_audio_sink(void)
 {
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  Start_TxAudio();
-
-  if (TMAPAPP_Context.num_cis_established > 0)
-  {
-    switch (TMAPAPP_Context.ConfiguredSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-      {
-        Menu_SetStreamingPage("8KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_16000_HZ:
-      {
-        Menu_SetStreamingPage("16KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_24000_HZ:
-      {
-        Menu_SetStreamingPage("24KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_32000_HZ:
-      {
-        Menu_SetStreamingPage("32KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_44100_HZ:
-      {
-        Menu_SetStreamingPage("44.1KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      case SAMPLE_FREQ_48000_HZ:
-      {
-        Menu_SetStreamingPage("48KHz", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-      default:
-      {
-        Menu_SetStreamingPage("Unknown Frequency", TMAPAPP_Context.audio_role_setup);
-        break;
-      }
-    }
-  }
+  return Start_TxAudio();
 }
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 static tBleStatus TMAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID)
 {
-  tBleStatus ret = HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
+  tBleStatus ret;
   CCP_BearerInit_t BearerInit;
   BearerInit.pProviderName = (uint8_t *)"Orange";
   BearerInit.pUCI = (uint8_t *)"skype";
@@ -3537,10 +3497,10 @@ static tBleStatus TMAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID)
   BearerInit.LocalHoldOption = CCP_LOCAL_HOLD_FEATURE_SUPPORTED;
   BearerInit.JoinOption = CCP_JOIN_FEATURE_SUPPORTED;
 
-  ret = CAP_RegisterGenericTelephonyBearer(TMAPAPP_Context.GenericBearer.CCID,&BearerInit);
+  ret = CAP_RegisterGenericTelephonyBearer(APP_CCP_START_CCID,&BearerInit);
   if (ret == BLE_STATUS_SUCCESS)
   {
-    TMAPAPP_Context.GenericBearer.CCID = TMAPAPP_Context.GenericBearer.CCID;
+    TMAPAPP_Context.GenericBearer.CCID = APP_CCP_START_CCID;
     LOG_INFO_APP("Generic Telephony Bearer CCID %d successfully registered\n",TMAPAPP_Context.GenericBearer.CCID);
     *pCCID = TMAPAPP_Context.GenericBearer.CCID;
   }
@@ -3712,12 +3672,12 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
 #if (APP_MCP_ROLE_SERVER_SUPPORT == 1u)
 static tBleStatus TMAPAPP_RegisterGenericMediaPlayer(uint8_t *pCCID)
 {
-  tBleStatus ret = HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE_ERR_CODE;
+  tBleStatus ret;
 
-  ret = CAP_RegisterGenericMediaPlayer(TMAPAPP_Context.GenericMediaPlayer.CCID);
+  ret = CAP_RegisterGenericMediaPlayer(APP_MCP_START_CCID);
   if (ret == BLE_STATUS_SUCCESS)
   {
-    TMAPAPP_Context.GenericMediaPlayer.CCID = TMAPAPP_Context.GenericMediaPlayer.CCID;
+    TMAPAPP_Context.GenericMediaPlayer.CCID = APP_MCP_START_CCID;
     LOG_INFO_APP("Generic Media Player CCID %d successfully registered\n",TMAPAPP_Context.GenericMediaPlayer.CCID);
     ret = MCP_SERVER_SetMediaPlayerName(TMAPAPP_Context.GenericMediaPlayer.CCID,(uint8_t *)"Radio App",9u);
     LOG_INFO_APP("[MP %d] Set Media Player Name status 0x%02X\n",TMAPAPP_Context.GenericMediaPlayer.CCID,ret);
@@ -3899,7 +3859,6 @@ static tBleStatus TMAPAPP_SetMediaState(uint8_t MediaPlayerCCID,MCP_MediaState_t
     p_mediaplayer->MediaState = MediaState;
     status = MCP_SERVER_SetMediaState(MediaPlayerCCID,p_mediaplayer->MediaState);
     LOG_INFO_APP("[MP %d] Set Media State 0x%02X : status 0x%02X\n",MediaPlayerCCID,p_mediaplayer->MediaState,status);
-
     if (status == BLE_STATUS_SUCCESS)
     {
       switch(MediaState)
@@ -4092,64 +4051,94 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
 {
   tBleStatus status;
   TMAPAPP_MediaPlayer_t *p_mediaplayer = TMAPAPP_GetMediaPlayer(pNotification->ContentControlID);
-  switch(pNotification->EvtOpcode)
+  if (p_mediaplayer != 0)
   {
-    case MCP_SRV_TRACK_POSITION_REQ_EVT:
+    switch(pNotification->EvtOpcode)
     {
-      MCP_SRV_TrackPositionReq_Evt_t *p_info = (MCP_SRV_TrackPositionReq_Evt_t *)pNotification->pInfo;
-      LOG_INFO_APP("[MP %d] Track Position has been requested by remote MCP Client\n",
-                  pNotification->ContentControlID);
-      LOG_INFO_APP("     Position : %d\n",p_mediaplayer->TrackPosition);
-      *(p_info->TrackPosition) = p_mediaplayer->TrackPosition;
-    }
-    break;
-
-  case MCP_SRV_CTRL_REQ_EVT:
-    {
-      MCP_SRV_MediaCtrlReq_Evt_t *p_info = (MCP_SRV_MediaCtrlReq_Evt_t *)pNotification->pInfo;
-      LOG_INFO_APP("[MP %d] Media Control Request has been received from remote MCP Client : \n",
-                  pNotification->ContentControlID);
-      LOG_INFO_APP("     Ctrl Type : 0x%02x\n",p_info->CtrlOp);
-      LOG_INFO_APP("     Value : %d\n",p_info->Value);
-      switch (p_info->CtrlOp)
+      case MCP_SRV_TRACK_POSITION_REQ_EVT:
       {
-        case MCP_MEDIA_CTRL_PLAY:
-          /* The media player shall start playing the current track and call MCP_SERVER_SetMediaState()
-           * with State MCP_MEDIA_STATE_PLAYING
-           */
-          LOG_INFO_APP("[MP %d] Media State 0x%02X transits to PLAYING State (0x%02x)\n",
-                      pNotification->ContentControlID,
-                      p_mediaplayer->MediaState,
-                      MCP_MEDIA_STATE_PLAYING);
-          TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PLAYING);
-          status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
-                                       pNotification->ContentControlID,
-                                       p_info->CtrlOp,
-                                       BLE_STATUS_SUCCESS);
-          LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
-                      pNotification->ContentControlID,
-                      status);
-          break;
+        MCP_SRV_TrackPositionReq_Evt_t *p_info = (MCP_SRV_TrackPositionReq_Evt_t *)pNotification->pInfo;
+        LOG_INFO_APP("[MP %d] Track Position has been requested by remote MCP Client\n",
+                    pNotification->ContentControlID);
+        LOG_INFO_APP("     Position : %d\n",p_mediaplayer->TrackPosition);
+        *(p_info->TrackPosition) = p_mediaplayer->TrackPosition;
+      }
+      break;
 
-        case MCP_MEDIA_CTRL_PAUSE:
-          if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_PLAYING)
-          {
-            /* If the media state is in PLAYING state, the media player shall pause playing the current
-            * track and call MCP_SERVER_SetMediaState() with State MCP_MEDIA_STATE_PAUSED.
-            */
-            LOG_INFO_APP("[MP %d] Media State Playing transits to PAUSED State\n",pNotification->ContentControlID);
-            TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
+    case MCP_SRV_CTRL_REQ_EVT:
+      {
+        MCP_SRV_MediaCtrlReq_Evt_t *p_info = (MCP_SRV_MediaCtrlReq_Evt_t *)pNotification->pInfo;
+        LOG_INFO_APP("[MP %d] Media Control Request has been received from remote MCP Client : \n",
+                    pNotification->ContentControlID);
+        LOG_INFO_APP("     Ctrl Type : 0x%02x\n",p_info->CtrlOp);
+        LOG_INFO_APP("     Value : %d\n",p_info->Value);
+        switch (p_info->CtrlOp)
+        {
+          case MCP_MEDIA_CTRL_PLAY:
+            /* The media player shall start playing the current track and call MCP_SERVER_SetMediaState()
+             * with State MCP_MEDIA_STATE_PLAYING
+             */
+            LOG_INFO_APP("[MP %d] Media State 0x%02X transits to PLAYING State (0x%02x)\n",
+                        pNotification->ContentControlID,
+                        p_mediaplayer->MediaState,
+                        MCP_MEDIA_STATE_PLAYING);
+            TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PLAYING);
+            status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
+                                         pNotification->ContentControlID,
+                                         p_info->CtrlOp,
+                                         BLE_STATUS_SUCCESS);
+            LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
+                        pNotification->ContentControlID,
+                        status);
+            break;
+
+          case MCP_MEDIA_CTRL_PAUSE:
+            if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_PLAYING)
+            {
+              /* If the media state is in PLAYING state, the media player shall pause playing the current
+              * track and call MCP_SERVER_SetMediaState() with State MCP_MEDIA_STATE_PAUSED.
+              */
+              LOG_INFO_APP("[MP %d] Media State Playing transits to PAUSED State\n",pNotification->ContentControlID);
+              TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
+              UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
+            }
+            else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_SEEKING)
+            {
+              /* If the media state is in SEEKING state, the media player shall stop seeking, set the current
+              * track and track position, thanks to the MCP_SERVER_SetTrackPosition(), as a result of seeking,
+              * and call MCP_SERVER_SetMediaState() with State MCP_MEDIA_STATE_PAUSED.
+              */
+              LOG_INFO_APP("[MP %d] Media State Seeking transits to PAUSED State\n",pNotification->ContentControlID);
+              UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
+              TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
+              status =  MCP_SERVER_SetTrackPosition(pNotification->ContentControlID,p_mediaplayer->TrackPosition);
+              LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d :status 0x%02X\n",
+                          pNotification->ContentControlID,
+                          (int32_t)p_mediaplayer->TrackPosition,
+                          p_mediaplayer->TrackID,
+                          p_mediaplayer->GroupID,
+                          status);
+            }
+            status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
+                                         pNotification->ContentControlID,
+                                         p_info->CtrlOp,
+                                         BLE_STATUS_SUCCESS);
+            LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
+                        pNotification->ContentControlID,
+                        status);
+            break;
+
+          case MCP_MEDIA_CTRL_STOP:
+            /* The media player shall stop any activity  and call MCP_SERVER_SetMediaState() with State
+             * MCP_MEDIA_STATE_PAUSED. The track position shall be set to the beginning of the current track
+             * thanks to MCP_SERVER_SetTrackPosition().
+             */
             UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
-          }
-          else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_SEEKING)
-          {
-            /* If the media state is in SEEKING state, the media player shall stop seeking, set the current
-            * track and track position, thanks to the MCP_SERVER_SetTrackPosition(), as a result of seeking,
-            * and call MCP_SERVER_SetMediaState() with State MCP_MEDIA_STATE_PAUSED.
-            */
-            LOG_INFO_APP("[MP %d] Media State Seeking transits to PAUSED State\n",pNotification->ContentControlID);
-            UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
+            LOG_INFO_APP("[MP %d] Media State 0x%02X transits to PAUSED State\n",
+                        pNotification->ContentControlID,
+                        p_mediaplayer->MediaState);
             TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
+            p_mediaplayer->TrackPosition = 0;
             status =  MCP_SERVER_SetTrackPosition(pNotification->ContentControlID,p_mediaplayer->TrackPosition);
             LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d :status 0x%02X\n",
                         pNotification->ContentControlID,
@@ -4157,163 +4146,136 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
                         p_mediaplayer->TrackID,
                         p_mediaplayer->GroupID,
                         status);
-          }
-          status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
-                                       pNotification->ContentControlID,
-                                       p_info->CtrlOp,
-                                       BLE_STATUS_SUCCESS);
-          LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
-                      pNotification->ContentControlID,
-                      status);
-          break;
-
-        case MCP_MEDIA_CTRL_STOP:
-          /* The media player shall stop any activity  and call MCP_SERVER_SetMediaState() with State
-           * MCP_MEDIA_STATE_PAUSED. The track position shall be set to the beginning of the current track
-           * thanks to MCP_SERVER_SetTrackPosition().
-           */
-          UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
-          LOG_INFO_APP("[MP %d] Media State 0x%02X transits to PAUSED State\n",
-                      pNotification->ContentControlID,
-                      p_mediaplayer->MediaState);
-          TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
-          p_mediaplayer->TrackPosition = 0;
-          status =  MCP_SERVER_SetTrackPosition(pNotification->ContentControlID,p_mediaplayer->TrackPosition);
-          LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d :status 0x%02X\n",
-                      pNotification->ContentControlID,
-                      (int32_t)p_mediaplayer->TrackPosition,
-                      p_mediaplayer->TrackID,
-                      p_mediaplayer->GroupID,
-                      status);
-          status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
-                                       pNotification->ContentControlID,
-                                       p_info->CtrlOp,
-                                       BLE_STATUS_SUCCESS);
-          LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
-                      pNotification->ContentControlID,
-                      status);
-          break;
-
-        case MCP_MEDIA_CTRL_PREVIOUS_TRACK:
-        case MCP_MEDIA_CTRL_NEXT_TRACK:
-        case MCP_MEDIA_CTRL_FIRST_TRACK:
-        case MCP_MEDIA_CTRL_LAST_TRACK:
-        case MCP_MEDIA_CTRL_GOTO_TRACK:
-          if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_INACTIVE)
-          {
-            LOG_INFO_APP("[MP %d] Media State Inactive transits to PAUSED State\n",
+            status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
+                                         pNotification->ContentControlID,
+                                         p_info->CtrlOp,
+                                         BLE_STATUS_SUCCESS);
+            LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
                         pNotification->ContentControlID,
-                        p_mediaplayer->MediaState);
-            TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
-          }
-          else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_SEEKING)
-          {
-            p_mediaplayer->TrackPosition = 0;
-            UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
-            LOG_INFO_APP("[MP %d] Media State Seeking transits to PAUSED State\n",
-                        pNotification->ContentControlID,
-                        p_mediaplayer->MediaState);
-            TMAPAPP_SetMediaState(p_mediaplayer->CCID,MCP_MEDIA_STATE_PAUSED);
-          }
-          else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_PLAYING)
-          {
-            p_mediaplayer->TrackPosition = 0;
-            /*Restart the timer*/
-            UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
-            UTIL_TIMER_StartWithPeriod( &(p_mediaplayer->TimerTrackPosition_Id), p_mediaplayer->TrackPositionInterval);
-          }
-          if (p_info->CtrlOp == MCP_MEDIA_CTRL_FIRST_TRACK)
-          {
-            p_mediaplayer->TrackID = 1u;
-          }
-          else if (p_info->CtrlOp == MCP_MEDIA_CTRL_PREVIOUS_TRACK)
-          {
-            if( p_mediaplayer->TrackID > 1u)
+                        status);
+            break;
+
+          case MCP_MEDIA_CTRL_PREVIOUS_TRACK:
+          case MCP_MEDIA_CTRL_NEXT_TRACK:
+          case MCP_MEDIA_CTRL_FIRST_TRACK:
+          case MCP_MEDIA_CTRL_LAST_TRACK:
+          case MCP_MEDIA_CTRL_GOTO_TRACK:
+            if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_INACTIVE)
             {
-             p_mediaplayer->TrackID -= 1u;
+              LOG_INFO_APP("[MP %d] Media State Inactive transits to PAUSED State\n",
+                          pNotification->ContentControlID,
+                          p_mediaplayer->MediaState);
+              TMAPAPP_SetMediaState(pNotification->ContentControlID,MCP_MEDIA_STATE_PAUSED);
             }
-            else
+            else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_SEEKING)
+            {
+              p_mediaplayer->TrackPosition = 0;
+              UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
+              LOG_INFO_APP("[MP %d] Media State Seeking transits to PAUSED State\n",
+                          pNotification->ContentControlID,
+                          p_mediaplayer->MediaState);
+              TMAPAPP_SetMediaState(p_mediaplayer->CCID,MCP_MEDIA_STATE_PAUSED);
+            }
+            else if (p_mediaplayer->MediaState == MCP_MEDIA_STATE_PLAYING)
+            {
+              p_mediaplayer->TrackPosition = 0;
+              /*Restart the timer*/
+              UTIL_TIMER_Stop(&(p_mediaplayer->TimerTrackPosition_Id));
+              UTIL_TIMER_StartWithPeriod( &(p_mediaplayer->TimerTrackPosition_Id), p_mediaplayer->TrackPositionInterval);
+            }
+            if (p_info->CtrlOp == MCP_MEDIA_CTRL_FIRST_TRACK)
             {
               p_mediaplayer->TrackID = 1u;
             }
-          }
-          else if (p_info->CtrlOp == MCP_MEDIA_CTRL_NEXT_TRACK)
-          {
-            if( p_mediaplayer->TrackID == APP_MCP_NUM_TRACKS)
+            else if (p_info->CtrlOp == MCP_MEDIA_CTRL_PREVIOUS_TRACK)
             {
-             p_mediaplayer->TrackID = 1u;
+              if( p_mediaplayer->TrackID > 1u)
+              {
+               p_mediaplayer->TrackID -= 1u;
+              }
+              else
+              {
+                p_mediaplayer->TrackID = 1u;
+              }
             }
-            else
+            else if (p_info->CtrlOp == MCP_MEDIA_CTRL_NEXT_TRACK)
             {
-              p_mediaplayer->TrackID += 1u;
+              if( p_mediaplayer->TrackID == APP_MCP_NUM_TRACKS)
+              {
+               p_mediaplayer->TrackID = 1u;
+              }
+              else
+              {
+                p_mediaplayer->TrackID += 1u;
+              }
             }
-          }
-          else if (p_info->CtrlOp == MCP_MEDIA_CTRL_LAST_TRACK)
-          {
-            p_mediaplayer->TrackID = APP_MCP_NUM_TRACKS;
-          }
-          else if (p_info->CtrlOp == MCP_MEDIA_CTRL_GOTO_TRACK)
-          {
-            if ( p_info->Value > 0)
+            else if (p_info->CtrlOp == MCP_MEDIA_CTRL_LAST_TRACK)
             {
-              p_mediaplayer->TrackID = p_info->Value;
+              p_mediaplayer->TrackID = APP_MCP_NUM_TRACKS;
             }
-            else if ( p_info->Value < 0)
+            else if (p_info->CtrlOp == MCP_MEDIA_CTRL_GOTO_TRACK)
             {
-              p_mediaplayer->TrackID = APP_MCP_NUM_TRACKS - (abs(p_info->Value) -1u);
+              if ( p_info->Value > 0)
+              {
+                p_mediaplayer->TrackID = p_info->Value;
+              }
+              else if ( p_info->Value < 0)
+              {
+                p_mediaplayer->TrackID = APP_MCP_NUM_TRACKS - (abs(p_info->Value) -1u);
+              }
             }
-          }
-          LOG_INFO_APP("[MP %d] Change to Track %d\n",
+            LOG_INFO_APP("[MP %d] Change to Track %d\n",
+                          pNotification->ContentControlID,
+                          p_mediaplayer->TrackID);
+            status = MCP_SERVER_SetTrackTitle(pNotification->ContentControlID,
+                                              MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                                              6u);
+            LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
+                          pNotification->ContentControlID,
+                          p_mediaplayer->TrackID,
+                          p_mediaplayer->GroupID,
+                          status);
+            if (status == BLE_STATUS_SUCCESS)
+            {
+              Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
+                               MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
+            }
+            status = MCP_SERVER_SetTrackDuration(pNotification->ContentControlID,
+                                                 MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
+            LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
+                          pNotification->ContentControlID,
+                          MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
+                          p_mediaplayer->TrackID,
+                          p_mediaplayer->GroupID,
+                          status);
+            p_mediaplayer->TrackPosition = 0;
+            status =  MCP_SERVER_SetTrackPosition(pNotification->ContentControlID,p_mediaplayer->TrackPosition);
+            LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
+                          pNotification->ContentControlID,
+                          (int32_t)p_mediaplayer->TrackPosition,
+                          p_mediaplayer->TrackID,
+                          p_mediaplayer->GroupID,
+                          status);
+            status = MCP_SERVER_NotifyTrackChanged(pNotification->ContentControlID);
+            LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",pNotification->ContentControlID);
+            status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
+                                         pNotification->ContentControlID,
+                                         p_info->CtrlOp,
+                                         BLE_STATUS_SUCCESS);
+            LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
                         pNotification->ContentControlID,
-                        p_mediaplayer->TrackID);
-          status = MCP_SERVER_SetTrackTitle(pNotification->ContentControlID,
-                                            MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                                            6u);
-          LOG_INFO_APP("[MP %d] Set Track Title of Track %d in Group %d : status 0x%02X\n",
-                        pNotification->ContentControlID,
-                        p_mediaplayer->TrackID,
-                        p_mediaplayer->GroupID,
                         status);
-          if (status == BLE_STATUS_SUCCESS)
-          {
-            Menu_SetTrackTitle(MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].pTitle,
-                             MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].TitleLen);
-          }
-          status = MCP_SERVER_SetTrackDuration(pNotification->ContentControlID,
-                                               MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration);
-          LOG_INFO_APP("[MP %d] Set Track Duration (%d) of Track %d in Group %d : status 0x%02X\n",
-                        pNotification->ContentControlID,
-                        MCPAPP_Track[p_mediaplayer->GroupID-1u][p_mediaplayer->TrackID-1u].Duration,
-                        p_mediaplayer->TrackID,
-                        p_mediaplayer->GroupID,
-                        status);
-          p_mediaplayer->TrackPosition = 0;
-          status =  MCP_SERVER_SetTrackPosition(pNotification->ContentControlID,p_mediaplayer->TrackPosition);
-          LOG_INFO_APP("[MP %d] Set Track Position (%d) of Track %d in Group %d : status 0x%02X\n",
-                        pNotification->ContentControlID,
-                        (int32_t)p_mediaplayer->TrackPosition,
-                        p_mediaplayer->TrackID,
-                        p_mediaplayer->GroupID,
-                        status);
-          status = MCP_SERVER_NotifyTrackChanged(pNotification->ContentControlID);
-          LOG_INFO_APP("[MP %d] Track Change Notification status 0x%02X\n",pNotification->ContentControlID);
-          status = MCP_SERVER_CtrlOpRsp(pNotification->ConnHandle,
-                                       pNotification->ContentControlID,
-                                       p_info->CtrlOp,
-                                       BLE_STATUS_SUCCESS);
-          LOG_INFO_APP("[MP %d] Response to Ctrl Operation Request status 0x%02X\n",
-                      pNotification->ContentControlID,
-                      status);
-        break;
+          break;
 
-        default:
-         LOG_INFO_APP("Ctrl Operation not handled in Application Layer\n");
-        break;
+          default:
+           LOG_INFO_APP("Ctrl Operation not handled in Application Layer\n");
+          break;
+        }
       }
-    }
-    break;
-    default:
       break;
+      default:
+        break;
+    }
   }
 }
 #endif /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */

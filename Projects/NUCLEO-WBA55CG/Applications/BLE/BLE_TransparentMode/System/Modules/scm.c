@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -36,6 +36,17 @@ __weak void SCM_HSI_CLK_OFF(void)
 
 }
 
+/* SCM HSE BEGIN */
+__weak void SCM_HSI_SwithSystemClock_Entry(void)
+{
+
+}
+
+__weak void SCM_HSI_SwithSystemClock_Exit(void)
+{
+
+}
+/* SCM HSE END */
 /* Private typedef -----------------------------------------------------------*/
 #define PLL_INPUTRANGE0_FREQMAX         8000000u  /* 8 MHz is maximum frequency for VCO input range 0 */
 
@@ -43,6 +54,10 @@ __weak void SCM_HSI_CLK_OFF(void)
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+/* SCM HSE BEGIN */
+static uint8_t SW_HSERDY = 0;
+/* SCM HSE END */
+
 RAMCFG_HandleTypeDef sram1_ns =
 {
   RAMCFG_SRAM1,           /* Instance */
@@ -70,6 +85,12 @@ static void SwitchHsePre(scm_hse_hsepre_t hse_pre);
 static void SwitchHse16toHse32(void);
 static void SwitchHse32toHse16(void);
 static void SwitchPlltoHse32(void);
+/* SCM HSE BEGIN */
+/**
+ * @brief Initialize the timer for HSE stabilization
+ */
+static void SCM_HSE_TimerInit(void);
+/* SCM HSE END */
 
 /* Private functions ---------------------------------------------------------*/
 OPTIMIZED static scm_clockconfig_t scm_getmaxfreq(void)
@@ -175,13 +196,23 @@ OPTIMIZED static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
   /* Start HSI */
   SCM_HSI_CLK_ON();
 
+  /* SCM HSE BEGIN */
+  /* Entry hook for HSI switch */
+  SCM_HSI_SwithSystemClock_Entry();
+  /* SCM HSE END */
+
   /* Set HSI as SYSCLK */
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
   while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI);
 
   /* Enable HSEON */
+  /* SCM HSE BEGIN */
   LL_RCC_HSE_Enable();
-  while(LL_RCC_HSE_IsReady() == 0);
+  SCM_HSE_WaitUntilReady();
+
+  /* Exit hook for HSI switch */
+  SCM_HSI_SwithSystemClock_Exit();
+  /* SCM HSE END */
 
   /* Set/Clear HSEPRE */
   if(hse_pre == HSEPRE_DISABLE)
@@ -199,6 +230,16 @@ OPTIMIZED static void SwitchHsePre(scm_hse_hsepre_t hse_pre)
 
   /* Disable HSI */
   SCM_HSI_CLK_OFF();
+
+#if defined(STM32WBAXX_SI_CUT1_0)
+  /* STM32WBA5 Cut1.0 only: if the radio is not active is set to OFF by the hardware. */
+  if(isRadioActive() == SCM_RADIO_NOT_ACTIVE)
+  {
+    /* SCM HSE BEGIN */
+    SCM_HSE_Clear_SW_HSERDY();
+	/* SCM HSE END */
+  }
+#endif /* STM32WBAXX_SI_CUT1_0 */
 }
 
 OPTIMIZED static void SwitchHse16toHse32(void)
@@ -325,6 +366,29 @@ static void ConfigHwPll(scm_pll_config_t *p_hw_config)
   scm_system_clock_config.pll.are_pll_params_initialized = 1;
 }
 
+/* SCM HSE BEGIN */
+static void SCM_HSE_TimerInit(void)
+{
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+
+  /* TIM16 interrupt Init */
+  NVIC_SetPriority(TIM16_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(TIM16_IRQn);
+
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_DOWN;
+  TIM_InitStruct.Autoreload = 3200;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  TIM_InitStruct.RepetitionCounter = 0;
+  LL_TIM_Init(TIM16, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM16);
+  LL_TIM_SetOnePulseMode(TIM16, LL_TIM_ONEPULSEMODE_SINGLE);
+}
+/* SCM HSE END */
+
 /* Public functions ----------------------------------------------------------*/
 
 /**
@@ -352,8 +416,15 @@ OPTIMIZED void scm_init()
   /* Enable RAMCFG clock */
   __HAL_RCC_RAMCFG_CLK_ENABLE();
 
-  /* Reading system core clock configuration from registers */
+  /* SCM HSE BEGIN */
+  /* Init SW HSE Flag */
+  SCM_HSE_Set_SW_HSERDY();
 
+  /* Init timer for HSE stabilization measurement */
+  SCM_HSE_TimerInit ();
+  /* SCM HSE END */
+
+  /* Reading system core clock configuration from registers */
   switch(LL_RCC_GetSysClkSource())
   {
     case LL_RCC_SYS_CLKSOURCE_STATUS_HSI:
@@ -415,6 +486,8 @@ OPTIMIZED void scm_init()
 
       break;
   }
+
+  scm_system_clock_requests[SCM_USER_APP]= scm_system_clock_config.targeted_clock_freq;
 }
 
 /**
@@ -432,7 +505,9 @@ OPTIMIZED void scm_setup(void)
   /* Start HSE */
   LL_RCC_HSE_Enable();
 
-  if ((LL_RCC_HSE_IsReady() != 0) && (RadioState == SCM_RADIO_ACTIVE))
+  /* SCM HSE BEGIN */
+  if ((SCM_HSE_Get_SW_HSERDY() != 0) && (RadioState == SCM_RADIO_ACTIVE))
+  /* SCM HSE END */
   {
     /**
       * The current system configuration is:
@@ -447,7 +522,7 @@ OPTIMIZED void scm_setup(void)
     scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
 
     /* As system switched to HSE, disable HSI */
-    LL_RCC_HSI_Disable();
+    SCM_HSI_CLK_OFF();
 
     /* Check if the clock system used PLL before low power mode entry */
     if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
@@ -470,14 +545,31 @@ OPTIMIZED void scm_setup(void)
       LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
     }
 
-    if (LL_RCC_HSE_IsReady() != 0)
+    /* SCM HSE BEGIN */
+    if (SCM_HSE_Get_SW_HSERDY() != 0)
+    /* SCM HSE END */
     {
       scm_hserdy_isr();
     }
     else
     {
+      /* Disable RCC IRQs */
+      HAL_NVIC_DisableIRQ(RCC_IRQn);
+
       /* Enable HSERDY interrupt */
       __HAL_RCC_ENABLE_IT(RCC_IT_HSERDY);
+
+      if (LL_RCC_HSE_IsReady() != 0)
+      {
+        __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
+
+		    /* SCM HSE BEGIN */
+        SCM_HSE_StartStabilizationTimer();
+        /* SCM HSE END */
+      }
+
+      /* Enable RCC IRQs */
+      HAL_NVIC_EnableIRQ(RCC_IRQn);
     }
   }
   SYSTEM_DEBUG_SIGNAL_RESET(SCM_SETUP);
@@ -583,7 +675,9 @@ OPTIMIZED void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t syscl
             while (LL_PWR_IsActiveFlag_VOS() == 0);
 
             /* Wait until HSE is ready */
-            while (LL_RCC_HSE_IsReady() == 0);
+            /* SCM HSE BEGIN */
+            SCM_HSE_WaitUntilReady();
+			/* SCM HSE END */
 
             LL_RCC_HSE_DisablePrescaler();
 
@@ -595,7 +689,7 @@ OPTIMIZED void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t syscl
 
             LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1);
 
-            LL_RCC_HSI_Disable();
+            SCM_HSI_CLK_OFF();
 
             /* Check if PLL is requested */
             if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
@@ -840,10 +934,120 @@ OPTIMIZED void scm_standbyexit(void)
     ConfigHwPll(&scm_system_clock_config.pll);
   }
 
+  /* SCM HSE BEGIN */
+  /* Init timer for HSE stabilization measurement */
+  SCM_HSE_TimerInit ();
+  /* SCM HSE END */
+
   scm_setup();
 }
 
+/* SCM HSE BEGIN */
+scm_radio_state_t isRadioActive(void)
+{
+  return RadioState;
+}
+
+OPTIMIZED uint8_t SCM_HSE_Get_SW_HSERDY(void)
+{
+  return SW_HSERDY;
+}
+
+OPTIMIZED void SCM_HSE_Set_SW_HSERDY(void)
+{
+  UTILS_ENTER_CRITICAL_SECTION();
+  SW_HSERDY = 1;
+  UTILS_EXIT_CRITICAL_SECTION();
+}
+
+OPTIMIZED void SCM_HSE_Clear_SW_HSERDY(void)
+{
+  UTILS_ENTER_CRITICAL_SECTION();
+  SW_HSERDY = 0;
+  UTILS_EXIT_CRITICAL_SECTION();
+}
+
+OPTIMIZED void SCM_HSE_WaitUntilReady(void)
+{
+  if(SCM_HSE_Get_SW_HSERDY() == 0)
+  {
+    /* Is timer already running ? */
+    if (LL_TIM_IsEnabledCounter(TIM16) != 0)
+    {
+      /* Blocking wait until the end of stabilization */
+      while (LL_TIM_IsEnabledCounter (TIM16) != 0);
+    }
+    else
+    {
+      /* Active wait on HSERDY flag */
+      while (LL_RCC_HSE_IsReady() == 0);
+
+      /* Clear the update flag */
+      LL_TIM_ClearFlag_UPDATE(TIM16);
+
+      LL_TIM_DisableIT_UPDATE(TIM16);
+
+      LL_TIM_EnableCounter(TIM16);
+
+      /* Wait until the timer is ready */
+      while(LL_TIM_IsEnabledCounter(TIM16) == 0);
+
+      /* Wait until the timer is over - ie: Stabilization done */
+      while(LL_TIM_GetCounter(TIM16) != 0);
+
+      LL_TIM_EnableIT_UPDATE(TIM16);
+
+      /* Set the SW HSERDY flag */
+      SCM_HSE_Set_SW_HSERDY();
+
+      SCM_HSE_StopStabilizationTimer();
+    }
+  }
+}
+
+OPTIMIZED void SCM_HSE_StartStabilizationTimer(void)
+{
+  if((SCM_HSE_Get_SW_HSERDY() == 0) && (LL_TIM_IsEnabledCounter(TIM16) == 0))
+  {
+    /* Clear the update flag */
+    LL_TIM_ClearFlag_UPDATE(TIM16);
+
+    LL_TIM_EnableUpdateEvent(TIM16);
+
+    /* Enable the update interrupt */
+    LL_TIM_EnableIT_UPDATE(TIM16);
+
+    /* Enable counter */
+    LL_TIM_EnableCounter(TIM16);
+  }
+}
+
+OPTIMIZED void SCM_HSE_StopStabilizationTimer(void)
+{
+  UTILS_ENTER_CRITICAL_SECTION();
+
+  /* Disable counter */
+  LL_TIM_DisableCounter(TIM16);
+
+  LL_TIM_DisableUpdateEvent(TIM16);
+
+  LL_TIM_DisableIT_UPDATE(TIM16);
+
+  UTILS_EXIT_CRITICAL_SECTION();
+}
+
+OPTIMIZED void SCM_HSE_SW_HSERDY_isr(void)
+{
+  /* Set the SW HSERDY flag */
+  SCM_HSE_Set_SW_HSERDY();
+
+  /* Stop the timer */
+  SCM_HSE_StopStabilizationTimer();
+
+  scm_hserdy_isr();
+}
+/* SCM HSE END */
 #else /* CFG_SCM_SUPPORTED */
-void scm_pllrdy_isr(void){/* Intentionally enpty */}
-void scm_hserdy_isr(void){/* Intentionally enpty */}
+__weak void scm_pllrdy_isr(void){/* Intentionally enpty */}
+__weak void scm_hserdy_isr(void){/* Intentionally enpty */}
 #endif /* CFG_SCM_SUPPORTED */

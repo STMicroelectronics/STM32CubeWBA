@@ -24,7 +24,6 @@
 #define APP_THREAD_H
 
 #include "coap.h"
-#include "openthread-system.h"
 #include "tasklet.h"
 #include "thread.h"
 

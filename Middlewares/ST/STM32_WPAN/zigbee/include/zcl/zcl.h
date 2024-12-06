@@ -1,4 +1,10 @@
-/* Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved. */
+/**
+ * @file zcl.h
+ * @heading Zigbee ZCL Core
+ * @brief Zigbee header file.
+ * @author Exegin Technologies
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ */
 
 #ifndef ZCL_H
 # define ZCL_H
@@ -38,15 +44,18 @@ extern void ZbLogPrintf(struct ZigBeeT *zb, uint32_t mask, const char *hdr, cons
 /*lint -emacro(831,ZCL_LOG_PRINTF) "right arg to | is certain to be 0 [LINT]" */
 
 #if ((ZB_LOG_MASK_ZCL & CONFIG_ZB_LOG_ALLOWED_MASK) != 0U)
+bool zcl_log_allowed(struct ZigBeeT *zb, uint32_t mask);
+void zcl_log_mask_set(struct ZigBeeT *zb, uint32_t mask);
+void zcl_log_mask_clear(struct ZigBeeT *zb, uint32_t mask);
+
 #define ZCL_LOG_PRINTF(zb, mask, hdr, ...) \
     do { \
         if (((mask) & CONFIG_ZCL_LOG_ALLOWED_MASK) == 0U) { \
             break; \
         } \
-        if ((zb) == NULL) { \
-            break; \
+        if (zcl_log_allowed(zb, mask)) { \
+            ZbLogPrintf(zb, ZB_LOG_MASK_ZCL, hdr, __VA_ARGS__); \
         } \
-        ZbLogPrintf(zb, ZB_LOG_MASK_ZCL, hdr, __VA_ARGS__); \
     } while (false)
 
 #define ZCL_LOG_ASSERT(zb, cond) \
@@ -120,17 +129,33 @@ struct ZbZclCommandRspT {
     uint16_t length;
 };
 
+#define ZCL_REQ_CMD_RSP_ID_IGNORE           0xffU
+
 /**
  * Send a ZCL command. The callback function is called when the
  * associated ZCL response is received, or there's an error.
  * @param zb Zigbee stack instance
- * @param zclreq
- * @param callback
- * @param arg
- * @return
+ * @param zclreq ZCL Command Request info
+ * @param rspCmd The Command Id of the response to wait for, which is added to the APS filter.
+ * This may be set to ZCL_REQ_CMD_RSP_ID_IGNORE, in which case only the matching ZCL sequence
+ * number, direction bit, etc, are used. The ZCL Default Response is always added to the APS filter.
+ * @param callback Callback function to receive ZCL Response
+ * @param arg Callback argument
+ * @return ZCL Status Code. ZCL_STATUS_SUCCESS if command was sent and caller can wait for
+ * the callback to be called. Otherwise, there was a problem sending the command and the
+ * callback is never called in this case.
  */
-enum ZclStatusCodeT ZbZclCommandReq(struct ZigBeeT *zb, struct ZbZclCommandReqT *zclReq,
-    void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+enum ZclStatusCodeT ZbZclCommandReqWithRspFilter(struct ZigBeeT *zb, struct ZbZclCommandReqT *zclReq,
+    uint8_t rspCmd, void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/* For backward compatibility with previous API that did not filter explicitly for the
+ * ZCL Response Command Id.
+ *
+ * Old prototype (for searching):
+ * enum ZclStatusCodeT ZbZclCommandReq(struct ZigBeeT *zb, struct ZbZclCommandReqT *zclReq,
+        void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg); */
+#define ZbZclCommandReq(zb, zclReq, callback, arg) \
+    ZbZclCommandReqWithRspFilter(zb, zclReq, ZCL_REQ_CMD_RSP_ID_IGNORE, callback, arg)
 
 /*---------------------------------------------------------------
  * Attribute Reporting Intervals
@@ -204,9 +229,7 @@ struct ZbZclAttrT {
      * A custom size is also required if both customRead and customWrite callbacks
      * are provided and ZCL_ATTR_FLAG_PERSISTABLE is set.
      *
-     * The maximum size is the length returned by ZbZclClusterGetMaxAsduLength() or
-     * the cluster's maxAsduLength parameter. It should not exceed
-     * ZB_APS_CONST_MAX_FRAG_SIZE. */
+     * The maximum size should not exceed ZB_APS_CONST_MAX_FRAG_SIZE. */
 
     enum ZclStatusCodeT (*callback)(struct ZbZclClusterT *cluster, struct ZbZclAttrCbInfoT *info);
     /**< If flags ZCL_ATTR_FLAG_CB_READ or ZCL_ATTR_FLAG_CB_WRITE are set, then
@@ -326,7 +349,7 @@ void ZbZclClusterReverseUnbind(struct ZbZclClusterT *cluster, struct ZbApsFilter
 
 /**
  * Send an alarm from a cluster as if it originated from the alarms cluster
- * on the same endpoint. Typically, src_endpoint = ZbZclClusterGetEndpoint(cluster).
+ * on the same endpoint. Typically, src_endpoint = cluster->endpoint.
  * If the cluster appears on multiple endpoints (e.g. Basic Cluster), the src_endpoint
  * is required to know which one to actually send the Alarm Command from.
  * The alarm message is sent via APS binding(s).
@@ -386,10 +409,15 @@ struct ZbZclClusterT {
         struct ZbMsgFilterT *reset_filter; /**< Filter to receive message for resetting reports back to defaults */
         struct LinkListT list; /* List of "struct ZbZclReportT" reports */
         struct ZbTimerT *timer; /* Report timer */
-        bool send_all;
         bool kicked;
-        /* Callback for ZbZclAttrReportKick when done sending reports */
+
+        /* ZbZclClusterReportsSend */
+        bool send_all;
+        /**< Set to true if application called ZbZclClusterReportsSend. Otherwise, only send reports based
+         * on the attribute's reporting interval and change threshold.  */
         void (*callback)(struct ZbZclClusterT *cluster, unsigned int next_timeout, void *arg);
+        /**< Callback saved from ZbZclClusterReportsSend, which is called once the
+         * reports have been sent. */
         void *arg;
     } reports;
     struct {
@@ -519,8 +547,6 @@ bool ZbZclAttrIsAnalog(enum ZclDataTypeT dataType);
  * length of the attribute. */
 int ZbZclAttrParseLength(enum ZclDataTypeT type, const uint8_t *ptr,
     unsigned int max_len, uint8_t recurs_depth);
-
-int ZbZclAppendInteger(unsigned long long value, enum ZclDataTypeT dataType, uint8_t *data, unsigned int len);
 
 /**
  * Parses a integer number from a buffer starting at the given pointer and returns it as a
@@ -669,6 +695,7 @@ struct ZbZclReadRspDataT {
 };
 
 struct ZbZclReadRspT {
+    enum ZbStatusCodeT aps_status; /**< APS-DATA.confirm status */
     enum ZclStatusCodeT status;
     struct ZbApsAddrT src;
     uint16_t profileId;
@@ -700,6 +727,7 @@ struct ZbZclWriteReqT {
 };
 
 struct ZbZclWriteRspT {
+    enum ZbStatusCodeT aps_status; /**< APS-DATA.confirm status */
     enum ZclStatusCodeT status;
     struct ZbApsAddrT src;
     uint16_t profileId;
@@ -748,6 +776,7 @@ struct ZbZclAttrReportConfigRecordT {
     uint16_t timeout_period; /* Only if ZCL_REPORT_DIRECTION_REVERSE. */
 };
 
+/* Configure Reporting Command payload entry format */
 struct ZbZclAttrReportConfigT {
     struct ZbApsAddrT dst;
     uint8_t num_records;
@@ -755,12 +784,10 @@ struct ZbZclAttrReportConfigT {
 };
 
 /**
- * Configure an attribute's default reporting intervals. It will also set the
- * active reporting intervals to these values and reset the reporting timer.
- * The Reportable Change value will also be reset back to defaults (value = 1).
+ * Send a Configure Reporting Command. Response is returned in the 'callback' if provided by application.
  * @param cluster Cluster instance
  * @param config Attribute reporting configuration destination and records
- * @param callback Callback function
+ * @param callback Callback function to receive Configure Reporting Response Command
  * @param arg Callback argument
  * @return ZCL Status Code
  */
@@ -781,6 +808,14 @@ struct ZbZclAttrReportReadT {
     struct ZbZclAttrReportConfigRecordT record_list[ZCL_ATTR_REPORT_READ_NUM_MAX];
 };
 
+/**
+ * Send a Read Reporting Configuration Command. Response is returned in the 'callback' if provided by application.
+ * @param cluster Cluster instance
+ * @param report Attribute reporting configuration destination and records to read
+ * @param callback Callback function to receive Read Reporting Configuration Response Command
+ * @param arg Callback argument
+ * @return ZCL Status Code
+ */
 enum ZclStatusCodeT ZbZclAttrReportReadReq(struct ZbZclClusterT *cluster, struct ZbZclAttrReportReadT *report,
     void (*callback)(struct ZbZclCommandRspT *cmd_rsp, void *arg), void *arg);
 
@@ -799,17 +834,23 @@ enum ZclStatusCodeT ZbZclAttrReportConfigDefault(struct ZbZclClusterT *clusterPt
     uint16_t attrId, uint16_t default_min, uint16_t default_max, double *default_change);
 
 /**
- * This function is called to manually drive the attribute reporting mechanism.
- * The application may disable the automatic periodic reporting by setting the Network
- * Attribute 'ZB_NWK_NIB_ID_DisablePeriodicTimers' to 1.
+ * If the application disables the automatic attribute reporting mechanism in the stack by
+ * setting the NIB 'ZB_NWK_NIB_ID_DisablePeriodicTimers' to 1, then the application will
+ * need to manually and periodically send reports by calling this function.
  * @param cluster Cluster instance
+ * @param send_all If true, send all reportable attributes no matter if they have changed or
+ * reporting interval has timed-out. Normally, when used by a sleepy device application to
+ * manually drive reporting, this parameter should be set to false.
  * @param callback Callback that is called once all reports have been sent. The 'next_timeout'
  * parameter is the time until the next scheduled report, in milliseconds.
  * @param arg Callback argument
  * @return ZCL Status Code. If not ZCL_STATUS_SUCCESS, then callback will not be called.
  */
-enum ZclStatusCodeT ZbZclAttrReportKick(struct ZbZclClusterT *cluster, bool send_all,
+enum ZclStatusCodeT ZbZclClusterReportsSend(struct ZbZclClusterT *cluster, bool send_all,
     void (*callback)(struct ZbZclClusterT *cluster, unsigned int next_timeout, void *arg), void *arg);
+
+/* WARNING: ZbZclAttrReportKick is deprecated and has been replaced by ZbZclClusterReportsSend. */
+#define ZbZclAttrReportKick ZbZclClusterReportsSend
 
 /*---------------------------------------------------------------
  * Attribute Discovery
@@ -880,6 +921,9 @@ struct ZbZclClusterCommandReqT {
  * Information from the cluster is used when sending the command (source addressing, APS TX Options).
  * @param cluster Cluster instance
  * @param req Request struct pointer
+ * @param rspCmd The Command Id of the response to wait for, which is added to the APS filter.
+ * This may be set to ZCL_REQ_CMD_RSP_ID_IGNORE, in which case only the matching ZCL sequence
+ * number, direction bit, etc, are used. The ZCL Default Response is always added to the APS filter.
  * @param delay Delay in milliseconds. If non-zero, then a copy of the ASDU must be made, and the
  *  message is sent later, after the delay time expires.
  * @param callback Callback function. This may be set to NULL.
@@ -888,8 +932,13 @@ struct ZbZclClusterCommandReqT {
  * command is complete. If something other than ZCL_STATUS_SUCCESS, that indicates an error and
  * the callback is never called in that case.
  */
-enum ZclStatusCodeT ZbZclClusterCommandReq(struct ZbZclClusterT *cluster, struct ZbZclClusterCommandReqT *req,
-    unsigned int delay, void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+enum ZclStatusCodeT ZbZclClusterCommandReqWithRspFilter(struct ZbZclClusterT *cluster,
+    struct ZbZclClusterCommandReqT *req, uint8_t rspCmd, unsigned int delay,
+    void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+
+#define ZbZclClusterCommandReq(cluster, req, delay, callback, arg) \
+    ZbZclClusterCommandReqWithRspFilter(cluster, req, ZCL_REQ_CMD_RSP_ID_IGNORE, \
+    delay, callback, arg)
 
 /*---------------------------------------------------------------
  * Cluster Response helpers
@@ -953,23 +1002,20 @@ void ZbZclDeviceLogClear(struct ZigBeeT *zb);
  * Helper Functions
  *---------------------------------------------------------------
  */
+/* Get the current uptime from ZB_APS_IB_ID_CHANNEL_TIMER (ZbUptime) */
 ZbUptimeT ZbZclUptime(struct ZigBeeT *zb);
 
 /* Get the next ZCL sequence number to use in a request/notify message. */
-uint8_t ZbZclGetNextSeqnum(void);
+uint8_t ZbZclGetNextSeqnum(struct ZigBeeT *zb);
 
-/* Helper functions to SET cluster parameters */
-void ZbZclClusterSetCallbackArg(struct ZbZclClusterT *cluster, void *app_cb_arg);
-void ZbZclClusterSetMfrCode(struct ZbZclClusterT *cluster, uint16_t mfrCode);
 void ZbZclClusterSetProfileId(struct ZbZclClusterT *cluster, uint16_t profileId);
+uint16_t ZbZclClusterGetProfileId(struct ZbZclClusterT *cluster);
+
 /* Sets the minimum security level for incoming frames, and also adjusts
  * the tx options to match (assuming symmetrical security).
  * minSecurity can be one of: ZB_APS_STATUS_UNSECURED, ZB_APS_STATUS_SECURED_NWK_KEY or ZB_APS_STATUS_SECURED_LINK_KEY  */
 bool ZbZclClusterSetMinSecurity(struct ZbZclClusterT *cluster, enum ZbStatusCodeT minSecurity);
-/* e.g. ZB_APSDE_DATAREQ_TXOPTIONS_ACK, ZB_APSDE_DATAREQ_TXOPTIONS_SECURITY */
-void ZbZclClusterSetTxOptions(struct ZbZclClusterT *cluster, uint16_t txOptions);
-void ZbZclClusterSetDiscoverRoute(struct ZbZclClusterT *cluster, bool discoverRoute);
-void ZbZclClusterSetRadius(struct ZbZclClusterT *cluster, uint8_t radius);
+
 /* Set the maximum ASDU length for the cluster. The ASDU length includes
  * fragmentation, if enabled in the cluster's tx options. */
 bool ZbZclClusterSetMaxAsduLength(struct ZbZclClusterT *cluster, uint16_t maxAsduLength);
@@ -977,19 +1023,10 @@ bool ZbZclClusterSetMaxAsduLength(struct ZbZclClusterT *cluster, uint16_t maxAsd
 /* Helper functions to initialize requests based on cluster parameters */
 void ZbZclClusterInitCommandReq(struct ZbZclClusterT *cluster, struct ZbZclCommandReqT *cmdReq);
 void ZbZclClusterInitApsdeReq(struct ZbZclClusterT *cluster, struct ZbApsdeDataReqT *apsReq, struct ZbApsdeDataIndT *dataIndPtr);
+
 /* Helper to generate proper APS TX Options (e.g. ZB_APSDE_DATAREQ_TXOPTIONS_SECURITY)
  * for a response, based on the given (incoming message) security status code. */
 uint16_t ZbZclTxOptsFromSecurityStatus(enum ZbStatusCodeT security_status);
-
-/* Helper functions to GET cluster parameters */
-uint8_t ZbZclClusterGetEndpoint(struct ZbZclClusterT *cluster);
-enum ZbZclClusterIdT ZbZclClusterGetClusterId(struct ZbZclClusterT *cluster);
-uint16_t ZbZclClusterGetProfileId(struct ZbZclClusterT *cluster);
-uint16_t ZbZclClusterGetTxOptions(struct ZbZclClusterT *cluster);
-enum ZbZclDirectionT ZbZclClusterGetDirection(struct ZbZclClusterT *cluster);
-const char * ZbZclClusterGetDirectionStr(struct ZbZclClusterT *cluster);
-uint8_t ZbZclClusterGetRadius(struct ZbZclClusterT *cluster);
-unsigned int ZbZclClusterGetMaxAsduLength(struct ZbZclClusterT *cluster);
 
 /**
  * Attach a callback function to receive ZCL Attribute Report Commands.
@@ -1031,6 +1068,87 @@ bool ZbZclIsDefaultRsp(struct ZbZclHeaderT *hdr);
  * @return Number of bytes written to 'out' or -1 on error.
  */
 int zcl_hexstr_to_bin(const char *str, uint8_t *out, unsigned int maxlen);
+
+/*---------------------------------------------------------------
+ * Deprecated Helper APIs. For backward compatibility only.
+ *---------------------------------------------------------------
+ */
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline void
+ZbZclClusterSetCallbackArg(struct ZbZclClusterT *cluster, void *app_cb_arg)
+{
+    cluster->app_cb_arg = app_cb_arg;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline void
+ZbZclClusterSetMfrCode(struct ZbZclClusterT *cluster, uint16_t mfrCode)
+{
+    cluster->mfrCode = mfrCode;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline void
+ZbZclClusterSetTxOptions(struct ZbZclClusterT *cluster, uint16_t txOptions)
+{
+    cluster->txOptions = txOptions;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline void
+ZbZclClusterSetDiscoverRoute(struct ZbZclClusterT *cluster, bool discoverRoute)
+{
+    cluster->discoverRoute = discoverRoute;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline void
+ZbZclClusterSetRadius(struct ZbZclClusterT *cluster, uint8_t radius)
+{
+    cluster->radius = radius;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline uint8_t
+ZbZclClusterGetEndpoint(struct ZbZclClusterT *cluster)
+{
+    return cluster->endpoint;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline enum ZbZclClusterIdT
+ZbZclClusterGetClusterId(struct ZbZclClusterT *cluster)
+{
+    return cluster->clusterId;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline uint16_t
+ZbZclClusterGetTxOptions(struct ZbZclClusterT *cluster)
+{
+    return cluster->txOptions;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline enum ZbZclDirectionT
+ZbZclClusterGetDirection(struct ZbZclClusterT *cluster)
+{
+    return cluster->direction;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline uint8_t
+ZbZclClusterGetRadius(struct ZbZclClusterT *cluster)
+{
+    return cluster->radius;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline unsigned int
+ZbZclClusterGetMaxAsduLength(struct ZbZclClusterT *cluster)
+{
+    return cluster->maxAsduLength;
+}
 
 /*---------------------------------------------------------------
  * Exegin Internal ZCL Loopback Commands

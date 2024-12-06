@@ -37,7 +37,7 @@
 
 /* For embedded application using the zigbee mempool, the maximum size
  * we can allocate is slightly larger than 2000 bytes */
-#define ZB_APS_CONST_MAX_FRAG_SIZE                  2000U
+#define ZB_APS_CONST_MAX_FRAG_SIZE                  ZB_HEAP_MAX_ALLOC /* 2000U */
 
 /* Maximum APS payload size if no security at all */
 #define ZB_APS_CONST_MAX_UNSECURED_PAYLOAD_SIZE     (ZB_NWK_CONST_MAX_PAYLOAD_SIZE /* 108 */ - \
@@ -79,15 +79,14 @@
  * ZB_APS_CONST_MAX_PAYLOAD_SIZE:               20,992 bytes
  * ZB_APS_CONST_SAFE_NWKSEC_PAYLOAD_SIZE:       16,896 bytes
  * ZB_APS_CONST_SAFE_APSSEC_PAYLOAD_SIZE:       14,592 bytes */
-#define ZB_APS_CONST_MAX_ASDU_LENGTH                (256U * ZB_APS_CONST_MAX_PAYLOAD_SIZE)
+/* NOTE: Was set to (256U * ZB_APS_CONST_MAX_PAYLOAD_SIZE) = 20K.
+ * However, the max size we can allocate in the stack is ZB_HEAP_MAX_ALLOC = 2000 */
+#define ZB_APS_CONST_MAX_ASDU_LENGTH                ZB_APS_CONST_MAX_FRAG_SIZE
 
 /* apscMaxFrameRetries */
 #define ZB_APS_CONST_MAX_FRAME_RETRIES              3U
 
 #define ZB_APS_CONST_MAX_WINDOW_SIZE                8U
-
-/* apscJoinerTLVsUnfragmentedMaxSize */
-#define ZB_APS_CONST_JOINER_TLVS_UNFRAG_MAX_SIZE    ZB_JOINER_TLVS_MAX_SIZE
 
 /* A set of feature flags pertaining to the APS Key-Pair security material
  * denoting the peer’s support for specific APS security features. e.g,
@@ -257,7 +256,7 @@ struct ZbApsAddrT {
 /** Helper struct to send using binding */
 extern const struct ZbApsAddrT *ZbApsAddrBinding; /**< Pointer to APS address binding */
 
-/* Helpter to configure the loopback destination */
+/* Helper to configure the loopback destination */
 static inline void
 zb_aps_dst_loopback(struct ZigBeeT *zb, struct ZbApsAddrT *dst, uint8_t endpoint)
 {
@@ -437,7 +436,7 @@ enum ZbApsmeIbAttrIdT {
     ZB_APS_IB_ID_TRUST_CENTER_ADDRESS = 0xab,
     /**< apsTrustCenterAddress (type: uint64_t, reset: yes, persist: yes) */
     ZB_APS_IB_ID_SECURITY_TIMEOUT_PERIOD = 0xac,
-    /**< apsSecurityTimeOutPeriod, milliseconds
+    /**< apsSecurityTimeoutPeriod, milliseconds
      * (type: uint16_t, reset: no, persist: no) */
 
     ZB_APS_IB_ID_TRUST_CENTER_POLICY = 0xad,
@@ -467,11 +466,10 @@ enum ZbApsmeIbAttrIdT {
     ZB_APS_IB_ID_DEVICE_INTERVIEW_TIMEOUT_PERIOD = 0xb4,
     /**< apsDeviceInterviewTimeoutPeriod (R23), seconds
      * (type: uint8_t, reset: no, persist: no).
-     * NOTE: On the Coordinator, the ZSDK stack uses apsSecurityTimeOutPeriod
-     * (ZB_APS_IB_ID_SECURITY_TIMEOUT_PERIOD) instead of this APS IB
-     * for device interview timeout. The joining device undergoing Device Interview
-     * will use this APS IB to refresh its Interview Timeout upon each received
-     * APS Downstream Relay */
+     * The TC will refresh the Device Interview Timeout for each APS Downstream Relay
+     * sent to the joining device.
+     * The joining device will refresh the Device Interview Timeout for each
+     * APS Downstream Relay it receives from the TC. */
 
     /* Exegin extensions (0x0500 to 0x05ff reserved for custom AIBs) */
     ZB_APS_IB_ID_SCAN_COUNT = 0x0500,
@@ -1016,6 +1014,10 @@ struct ZbApsmeSwitchKeyIndT {
     enum ZbSecEncryptT encryptKeyType; /* Key used to encrypt the incoming command */
 };
 
+/*-----------------------------------------------------------------------------
+ * APS Verify and Confirm Key commands
+ *-----------------------------------------------------------------------------
+ */
 /** APSME-VERIFY-KEY.request */
 struct ZbApsmeVerifyKeyReqT {
     uint64_t dstExtAddr; /**< DestAddress */
@@ -1236,7 +1238,7 @@ struct ZbApsmeKeyNegoConfirmT {
     /**< Extended address of intermediate relay device. */
 };
 
-/* APSME-KEY-NEGOTIATION.indication (R23) */
+/** APSME-KEY-NEGOTIATION.indication (R23) */
 struct ZbApsmeKeyNegoIndT {
     uint64_t partnerLongAddr;
     /**< Partner extended address. */
@@ -1250,7 +1252,7 @@ struct ZbApsmeKeyNegoIndT {
     /**< Extended address of intermediate relay device. */
 };
 
-/* APSME-SEC-CHALLENGE.request (R23 - Exegin add-on) */
+/** APSME-SEC-CHALLENGE.request (R23 - Exegin add-on) */
 struct ZbApsmeSecChallengeReqT {
     uint16_t devShortAddr;
     /**< Device short address. */
@@ -1258,7 +1260,7 @@ struct ZbApsmeSecChallengeReqT {
     /**< Extended address of partner device to perform APS Frame counter synchronization. */
 };
 
-/* APSME-SEC-CHALLENGE.indication (R23 - Exegin add-on) */
+/** APSME-SEC-CHALLENGE.indication (R23 - Exegin add-on) */
 struct ZbApsmeSecChallengeIndT {
     uint16_t devShortAddr;
     /**< Device short address. */
@@ -1404,23 +1406,6 @@ void ZbApsmeGetKeyReq(struct ZigBeeT *zb, struct ZbApsmeGetKeyReqT *req,
 void ZbApsmeRemoveKeyReq(struct ZigBeeT *zb, struct ZbApsmeRemoveKeyReqT *req,
     struct ZbApsmeRemoveKeyConfT *conf);
 
-#if (CONFIG_ZB_REV >= 23)
-/* APSME-KEY-NEGOTIATION.request */
-enum ZbStatusCodeT ZbApsmeKeyNegoRequest(struct ZigBeeT *zb, struct ZbApsmeKeyNegoReqT *req,
-    void (*callback)(enum ZbStatusCodeT status, void *cb_arg), void *arg);
-enum ZbStatusCodeT ZbApsmeKeyNegoIndRsp(struct ZigBeeT *zb, struct ZbApsmeKeyNegoIndT *ind);
-
-/* APSME-SEC-CHALLENGE.request */
-/**
- * Perform an APSME-SEC-CHALLENGE.request.
- * @param zb Zigbee stack instance
- * @param req APSME-SEC-CHALLENGE.request
- * @return Returns enum ZbStatusCodeT.
- */
-enum ZbStatusCodeT ZbApsmeSecChallengeRequest(struct ZigBeeT *zb,
-    struct ZbApsmeSecChallengeReqT *req);
-#endif
-
 /*---------------------------------------------------------------
  * Filter API
  *---------------------------------------------------------------
@@ -1503,7 +1488,8 @@ enum ZbStatusCodeT ZbApsSetIndex(struct ZigBeeT *zb, enum ZbApsmeIbAttrIdT attrI
  * Check if the local device is a member of a specified group.
  * @param zb Zigbee stack instance
  * @param groupAddr Group address
- * @param endpoint Endpoint of interest, or ZB_ENDPOINT_BCAST to determine if any endpoint is a member of the group
+ * @param endpoint Endpoint of interest, or ZB_ENDPOINT_BCAST to determine if any
+ * endpoint is a member of the group
  * @return Returns true if device is a member, false otherwise
  */
 bool ZbApsGroupIsMember(struct ZigBeeT *zb, uint16_t groupAddr, uint8_t endpoint);
@@ -1550,27 +1536,46 @@ bool ZbApsAddrIsLocal(struct ZigBeeT *zb, const struct ZbApsAddrT *addr);
  * @param encryptKeyType Key type
  * @return Returns true if the command is allowed, false otherwise
  */
-bool ZbApsCommandSecurityCheck(struct ZigBeeT *zb, enum ZbApsCmdIdT cmdId, uint64_t srcExtAddr, enum ZbSecEncryptT encryptKeyType);
+bool ZbApsCommandSecurityCheck(struct ZigBeeT *zb, enum ZbApsCmdIdT cmdId,
+    uint64_t srcExtAddr, enum ZbSecEncryptT encryptKeyType);
 
-/*
- * Helpers for certification testing (TP/PRO/BV-43 and TP/PRO/BV-44)
- * - For Internal use Only
- * - Controls GU behaviour
- */
-
-/*
- *
+/**
+ * Used by the zbcli application as a DUT during ZCP certification testing
+ * (TP/PRO/BV-43 and TP/PRO/BV-44).
+ * It causes the stack to drop the next APS fragment to be transmitted matching
+ * the block number given by 'blockNum'.
  * @param zb Zigbee stack instance
- * @param blockNum
- * @return
+ * @param blockNum APS fragment block number to drop and prevent from being sent.
+ * @return True if block number entry was created, false otherwise.
  */
 bool ZbApsFragDropTxAdd(struct ZigBeeT *zb, uint8_t blockNum);
 
-/*
- *
+/**
+ * Used by the zbcli application as a DUT during ZCP certification testing
+ * (TP/PRO/BV-43 and TP/PRO/BV-44).
+ * It will clear any and all entries created by ZbApsFragDropTxAdd to drop
+ * APS fragments about to be transmitted. No fragments will be purposefully
+ * dropped after this point.
  * @param zb Zigbee stack instance
  * @return Returns void
  */
 void ZbApsFragDropTxClear(struct ZigBeeT *zb);
+
+/**
+ * APS Command Indication struct. Used with the message filter Id
+ * 'ZB_MSG_FILTER_APS_COMMAND_IND'.
+ */
+struct ZbMsgApsCommandT {
+    enum ZbApsCmdIdT id; /**< The APS Command Id. e.g. ZB_APS_CMD_TRANSPORT_KEY */
+    union {
+        struct ZbApsmeTransKeyIndT trans_key; /* ZB_APS_CMD_TRANSPORT_KEY */
+        struct ZbApsmeUpdateDeviceIndT update_device; /* ZB_APS_CMD_UPDATE_DEVICE */
+        struct ZbApsmeRemoveDeviceIndT remove_device; /* ZB_APS_CMD_REMOVE_DEVICE */
+        struct ZbApsmeRequestKeyIndT request_key; /* ZB_APS_CMD_REQUEST_KEY */
+        struct ZbApsmeSwitchKeyIndT switch_key; /* ZB_APS_CMD_SWITCH_KEY */
+        struct ZbApsmeVerifyKeyIndT verify_key; /* ZB_APS_CMD_VERIFY_KEY */
+        struct ZbApsmeConfirmKeyIndT confirm_key; /* ZB_APS_CMD_CONFIRM_KEY */
+    } data;
+};
 
 #endif /* ZIGBEE_APS_H */

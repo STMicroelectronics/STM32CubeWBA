@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/mac_host_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/mac_host_intf.h#2 $*/
 /**
  ********************************************************************************
  * @file    mac_host_intf.h
@@ -39,9 +39,9 @@
 
 #ifndef INCLUDE_MAC_HOST_INTF_H_
 #define INCLUDE_MAC_HOST_INTF_H_
+#include "common_types.h"
 #include "ll_fw_config.h"
 #include "rfd_dev_config.h"
-#include "common_types.h"
 #include "error.h"
 #include  "stdint.h"
 /*====================================   MACROS   =======================================*/
@@ -888,7 +888,7 @@ struct mac_dispatch_tbl {
 	 * @retval None.
 	 */
 	void (*mlme_get_cca_threshold_cfm)(void* mac_cntx_ptr, uint8_t status, int8_t cca_thresold);
-#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+#if SUPPORT_ANT_DIV
 	/**
 	 * @brief  MLME-SET-ANT-DIV-PARAMS.CONFIRM primitive callback
 	 *
@@ -929,7 +929,7 @@ struct mac_dispatch_tbl {
 	 * @retval None.
 	 */
 	void (*mlme_set_ant_div_rssi_threshold_cfm)(void* mac_cntx_ptr, uint8_t status, int8_t rssi_threshold);
-#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+#endif /* SUPPORT_ANT_DIV */
 #if SUPPORT_SEC
 	/*===== Get key table Confirm Callback =====*/
 	/**
@@ -1576,7 +1576,7 @@ mac_status_enum_t mac_set_cca_threshold(uint32_t mac_hndl, int8_t cca_thresold);
  */
 mac_status_enum_t mac_get_cca_threshold(uint32_t mac_hndl, int8_t * cca_thresold);
 
-#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+#if SUPPORT_ANT_DIV
 /**
  * @fn mac_set_ant_div_params
  *
@@ -1636,7 +1636,7 @@ mac_status_enum_t mac_set_default_ant_id(uint32_t mac_hndl, uint8_t enable);
  * @retval mac_status_enum_t .
  */
 mac_status_enum_t mac_set_ant_div_rssi_threshold(uint32_t mac_hndl, int8_t rssi_threshold);
-#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+#endif /* SUPPORT_ANT_DIV */
 #endif /* INCLUDE_MAC_HOST_INTF_H_ */
 /**
  * @}

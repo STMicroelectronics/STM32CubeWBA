@@ -25,7 +25,7 @@
 #include "app_ble.h"
 #include "coc_peripheral_app.h"
 #include "stm32_seq.h"
-#include "usart_if.h"
+#include "adv_trace_usart_if.h"
 #include "host_stack_if.h"
 
 /* Private includes ----------------------------------------------------------*/

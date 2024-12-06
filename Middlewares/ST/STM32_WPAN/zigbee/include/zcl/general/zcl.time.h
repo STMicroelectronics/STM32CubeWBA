@@ -4,7 +4,7 @@
  * @brief ZCL Time cluster header
  * ZCL 7 section 3.12
  * ZCL 8 section 3.12
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_TIME_H
@@ -70,7 +70,8 @@ enum ZbZclTimeSvrAttrT {
 #define ZCL_TIME_EPOCH_NTP                   0xBC17C20000000000ULL
 #define ZCL_TIME_EPOCH_NTP_SECONDS           0xBC17C200UL
 
-/* January 1, 2000, which equates to 946,684,800 seconds. */
+/* Zigbee Epoch is January 1, 2000, which equates to 946,684,800 seconds in Unix time.
+ * The range for Zigbee time is January 1, 2000 to the year 2136. */
 #define ZCL_TIME_EPOCH_UNIX                  0x386D4380UL
 
 #define ZCL_TIME_TIME_ZONE_MIN              (-86400)
@@ -102,13 +103,14 @@ struct ZbZclTimeServerCallbacks {
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclTimeServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,
     struct ZbZclTimeServerCallbacks *callbacks, void *arg);
 
-/* Wrapper to get/set the current time. This is only applicable if ZbZclTimeServerAlloc() was called with use_stack_uptime=true. */
+/* Wrapper to get/set the current time. This is only applicable if ZbZclTimeServerAlloc()
+ * was called with use_stack_uptime=true. */
 
 /**
  * Call the set_time callback defined as part of the Time Server callbacks configuration

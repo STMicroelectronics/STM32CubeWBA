@@ -89,7 +89,7 @@
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
-          <SelectedForBatchBuild>0</SelectedForBatchBuild>
+          <SelectedForBatchBuild>1</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-rcp-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-rcp-config.h&gt;,OPENTHREAD_RADIO,OPENTHREAD_CONFIG_NCP_HDLC_ENABLE=1,_AEABI_PORTABILITY_LEVEL=1,SPINEL_PLATFORM_DOESNT_IMPLEMENT_ERRNO_VAR,PKA_HW_ACCELERATION</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\source\target\stm32wbxx_thread_host\;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBxx_Nucleo;..\..\..\..\..\..\Drivers\STM32WBxx_HAL_Driver\Inc;..\..\..\source\common;..\..\..\source\hw;..\..\..\source\debug;..\..\..\source\nvm;..\..\..\source\openthread_platform;..\..\..\source\openthread_platform\crypto;..\..\..\source\target\stm32wbxx_thread_host;..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\stack\third_party\mbedtls\repo\include;..\..\..\stack\third_party\mbedtls\repo\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\..\..\..\Middlewares\ST\Thread\OpenThread\patterns\pattern1\tl_thread;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\core\openthread_api;..\..\..\source\rf_low_level_driver\aes\inc;..\..\..\source\rf_low_level_driver\ip802154\inc;..\..\..\source\rf_low_level_driver\\radio\inc;..\..\..\source\rf_low_level_driver\sys\inc;..\..\..\source\rf_low_level_driver\common_rf\inc;..\..\..\source\thread_interface;..\..\..\source\tl;..\..\..\source\host;..\..\..\source\syshci;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface\patterns\ble_thread\tl;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\config;..\..\..\..\..\hw;..\..\..\..\..\..\..\..\Drivers\CMSIS\Core\Include;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\stack;..\..\..\platform</IncludePath>
+              <IncludePath>..\..\..\source\target\stm32wbxx_thread_host\;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBxx_Nucleo;..\..\..\..\..\..\Drivers\STM32WBxx_HAL_Driver\Inc;..\..\..\source\common;..\..\..\source\hw;..\..\..\source\debug;..\..\..\source\nvm;..\..\..\source\openthread_platform;..\..\..\source\openthread_platform\crypto;..\..\..\source\target\stm32wbxx_thread_host;..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\..\..\..\Middlewares\ST\Thread\OpenThread\patterns\pattern1\tl_thread;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\core\openthread_api;..\..\..\source\rf_low_level_driver\aes\inc;..\..\..\source\rf_low_level_driver\ip802154\inc;..\..\..\source\rf_low_level_driver\\radio\inc;..\..\..\source\rf_low_level_driver\sys\inc;..\..\..\source\rf_low_level_driver\common_rf\inc;..\..\..\source\thread_interface;..\..\..\source\tl;..\..\..\source\host;..\..\..\source\syshci;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface\patterns\ble_thread\tl;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\config;..\..\..\..\..\hw;..\..\..\..\..\..\..\..\Drivers\CMSIS\Core\Include;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\stack;..\..\..\platform</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -395,11 +395,6 @@
           <GroupName>src_core_api</GroupName>
           <Files>
             <File>
-              <FileName>diags_api.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\api\diags_api.cpp</FilePath>
-            </File>
-            <File>
               <FileName>error_api.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\api\error_api.cpp</FilePath>
@@ -429,11 +424,6 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\api\tasklet_api.cpp</FilePath>
             </File>
-            <File>
-              <FileName>tcp_ext_api.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\api\tcp_ext_api.cpp</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -460,11 +450,6 @@
               <FilePath>..\..\..\stack\src\core\common\frame_data.cpp</FilePath>
             </File>
             <File>
-              <FileName>instance.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\instance.cpp</FilePath>
-            </File>
-            <File>
               <FileName>log.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\log.cpp</FilePath>
@@ -488,36 +473,6 @@
               <FileName>timer.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\timer.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>uptime.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\uptime.cpp</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>src_core_crypto</GroupName>
-          <Files>
-            <File>
-              <FileName>crypto_platform.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\crypto\crypto_platform.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>storage.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\crypto\storage.cpp</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>src_core_diags</GroupName>
-          <Files>
-            <File>
-              <FileName>factory_diags.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\diags\factory_diags.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -589,45 +544,15 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\mle_tlvs.cpp</FilePath>
             </File>
-            <File>
-              <FileName>network_data_publisher.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\thread\network_data_publisher.cpp</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>src_core_utils</GroupName>
           <Files>
             <File>
-              <FileName>flash.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\flash.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>history_tracker.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\history_tracker.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>otns.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\otns.cpp</FilePath>
-            </File>
-            <File>
               <FileName>parse_cmdline.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\utils\parse_cmdline.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>ping_sender.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\ping_sender.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>srp_client_buffers.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\utils\srp_client_buffers.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -669,490 +594,10 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\ncp\ncp_spi.cpp</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>third_party_mbedtls</GroupName>
-          <Files>
             <File>
-              <FileName>aes.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\aes.c</FilePath>
-            </File>
-            <File>
-              <FileName>aesni.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\aesni.c</FilePath>
-            </File>
-            <File>
-              <FileName>arc4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\arc4.c</FilePath>
-            </File>
-            <File>
-              <FileName>aria.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\aria.c</FilePath>
-            </File>
-            <File>
-              <FileName>asn1parse.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\asn1parse.c</FilePath>
-            </File>
-            <File>
-              <FileName>asn1write.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\asn1write.c</FilePath>
-            </File>
-            <File>
-              <FileName>base64.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\base64.c</FilePath>
-            </File>
-            <File>
-              <FileName>bignum.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\bignum.c</FilePath>
-            </File>
-            <File>
-              <FileName>blowfish.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\blowfish.c</FilePath>
-            </File>
-            <File>
-              <FileName>camellia.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\camellia.c</FilePath>
-            </File>
-            <File>
-              <FileName>ccm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ccm.c</FilePath>
-            </File>
-            <File>
-              <FileName>certs.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\certs.c</FilePath>
-            </File>
-            <File>
-              <FileName>chacha20.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\chacha20.c</FilePath>
-            </File>
-            <File>
-              <FileName>chachapoly.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\chachapoly.c</FilePath>
-            </File>
-            <File>
-              <FileName>cipher.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\cipher.c</FilePath>
-            </File>
-            <File>
-              <FileName>cipher_wrap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\cipher_wrap.c</FilePath>
-            </File>
-            <File>
-              <FileName>cmac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\cmac.c</FilePath>
-            </File>
-            <File>
-              <FileName>constant_time.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\constant_time.c</FilePath>
-            </File>
-            <File>
-              <FileName>ctr_drbg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ctr_drbg.c</FilePath>
-            </File>
-            <File>
-              <FileName>debug.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\debug.c</FilePath>
-            </File>
-            <File>
-              <FileName>des.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\des.c</FilePath>
-            </File>
-            <File>
-              <FileName>dhm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\dhm.c</FilePath>
-            </File>
-            <File>
-              <FileName>ecdh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ecdh.c</FilePath>
-            </File>
-            <File>
-              <FileName>ecdsa_renamed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ecdsa_renamed.c</FilePath>
-            </File>
-            <File>
-              <FileName>ecjpake.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ecjpake.c</FilePath>
-            </File>
-            <File>
-              <FileName>ecp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ecp.c</FilePath>
-            </File>
-            <File>
-              <FileName>ecp_curves.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ecp_curves.c</FilePath>
-            </File>
-            <File>
-              <FileName>entropy.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\entropy.c</FilePath>
-            </File>
-            <File>
-              <FileName>entropy_poll.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\entropy_poll.c</FilePath>
-            </File>
-            <File>
-              <FileName>error_renamed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\error_renamed.c</FilePath>
-            </File>
-            <File>
-              <FileName>gcm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\gcm.c</FilePath>
-            </File>
-            <File>
-              <FileName>havege.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\havege.c</FilePath>
-            </File>
-            <File>
-              <FileName>hkdf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\hkdf.c</FilePath>
-            </File>
-            <File>
-              <FileName>hmac_drbg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\hmac_drbg.c</FilePath>
-            </File>
-            <File>
-              <FileName>md.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\md.c</FilePath>
-            </File>
-            <File>
-              <FileName>md2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\md2.c</FilePath>
-            </File>
-            <File>
-              <FileName>md4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\md4.c</FilePath>
-            </File>
-            <File>
-              <FileName>md5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\md5.c</FilePath>
-            </File>
-            <File>
-              <FileName>memory_buffer_alloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\memory_buffer_alloc.c</FilePath>
-            </File>
-            <File>
-              <FileName>mps_reader.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\mps_reader.c</FilePath>
-            </File>
-            <File>
-              <FileName>mps_trace.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\mps_trace.c</FilePath>
-            </File>
-            <File>
-              <FileName>net_sockets.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\net_sockets.c</FilePath>
-            </File>
-            <File>
-              <FileName>nist_kw.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\nist_kw.c</FilePath>
-            </File>
-            <File>
-              <FileName>oid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\oid.c</FilePath>
-            </File>
-            <File>
-              <FileName>padlock.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\padlock.c</FilePath>
-            </File>
-            <File>
-              <FileName>pem.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pem.c</FilePath>
-            </File>
-            <File>
-              <FileName>pk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pk.c</FilePath>
-            </File>
-            <File>
-              <FileName>pk_wrap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pk_wrap.c</FilePath>
-            </File>
-            <File>
-              <FileName>pkcs5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pkcs5.c</FilePath>
-            </File>
-            <File>
-              <FileName>pkcs11.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pkcs11.c</FilePath>
-            </File>
-            <File>
-              <FileName>pkcs12.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pkcs12.c</FilePath>
-            </File>
-            <File>
-              <FileName>pkparse.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pkparse.c</FilePath>
-            </File>
-            <File>
-              <FileName>pkwrite.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\pkwrite.c</FilePath>
-            </File>
-            <File>
-              <FileName>platform.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\platform.c</FilePath>
-            </File>
-            <File>
-              <FileName>platform_util.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\platform_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>poly1305.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\poly1305.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_aead.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_aead.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_cipher.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_cipher.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_client.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_client.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_driver_wrappers.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_driver_wrappers.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_ecp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_ecp.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_hash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_hash.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_mac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_mac.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_rsa.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_rsa.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_se.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_se.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_slot_management.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_slot_management.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_crypto_storage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_crypto_storage.c</FilePath>
-            </File>
-            <File>
-              <FileName>psa_its_file.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\psa_its_file.c</FilePath>
-            </File>
-            <File>
-              <FileName>ripemd160.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ripemd160.c</FilePath>
-            </File>
-            <File>
-              <FileName>rsa.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\rsa.c</FilePath>
-            </File>
-            <File>
-              <FileName>rsa_internal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\rsa_internal.c</FilePath>
-            </File>
-            <File>
-              <FileName>sha1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\sha1.c</FilePath>
-            </File>
-            <File>
-              <FileName>sha256_renamed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\sha256_renamed.c</FilePath>
-            </File>
-            <File>
-              <FileName>sha512.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\sha512.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_cache.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_cache.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_ciphersuites.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_ciphersuites.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_cli.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_cli.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_cookie.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_cookie.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_msg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_msg.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_srv.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_srv.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_ticket.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_ticket.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_tls.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_tls.c</FilePath>
-            </File>
-            <File>
-              <FileName>ssl_tls13_keys.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\ssl_tls13_keys.c</FilePath>
-            </File>
-            <File>
-              <FileName>threading.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\threading.c</FilePath>
-            </File>
-            <File>
-              <FileName>timing.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\timing.c</FilePath>
-            </File>
-            <File>
-              <FileName>version.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\version.c</FilePath>
-            </File>
-            <File>
-              <FileName>version_features.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\version_features.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509_create.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509_create.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509_crl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509_crl.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509_crt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509_crt.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509_csr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509_csr.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509write_crt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509write_crt.c</FilePath>
-            </File>
-            <File>
-              <FileName>x509write_csr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\x509write_csr.c</FilePath>
-            </File>
-            <File>
-              <FileName>xtea.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\stack\third_party\mbedtls\repo\library\xtea.c</FilePath>
+              <FileName>multipan_platform.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\ncp\multipan_platform.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1208,6 +653,16 @@
               <FileName>spinel_encoder.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\lib\spinel\spinel_encoder.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>src_core_instance</GroupName>
+          <Files>
+            <File>
+              <FileName>instance.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\instance\instance.cpp</FilePath>
             </File>
           </Files>
         </Group>

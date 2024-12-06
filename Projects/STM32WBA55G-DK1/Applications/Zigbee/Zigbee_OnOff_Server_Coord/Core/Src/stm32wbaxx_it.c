@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -87,7 +87,7 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+   while (1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -239,16 +239,18 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_hserdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    SCM_HSE_StartStabilizationTimer();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    scm_pllrdy_isr();
+#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -295,6 +297,32 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM16 global interrupt.
+  */
+void TIM16_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM16_IRQn 0 */
+
+  /* USER CODE END TIM16_IRQn 0 */
+  /* Check whether update interrupt is pending */
+  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+  {
+    /* Clear the update interrupt flag */
+    LL_TIM_ClearFlag_UPDATE(TIM16);
+
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  /* USER CODE BEGIN TIM16_IRQn 1 */
+
+  /* USER CODE END TIM16_IRQn 1 */
 }
 
 /**

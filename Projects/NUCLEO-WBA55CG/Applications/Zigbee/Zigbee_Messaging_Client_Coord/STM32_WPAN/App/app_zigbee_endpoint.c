@@ -43,7 +43,7 @@
 #include "zcl/se/zcl.message.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -80,6 +80,7 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -242,9 +243,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
-
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
@@ -491,7 +489,7 @@ static void APP_ZIGBEE_MessageConfirmation( void )
  * @param  None
  * @retval None
  */
-void APPE_Button1Action( void )
+void APP_BSP_Button1Action( void )
 {
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )

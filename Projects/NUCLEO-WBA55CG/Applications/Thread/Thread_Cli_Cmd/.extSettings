@@ -5,3 +5,4 @@ HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo
 [Groups]
 Doc=../README.md;
 Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_bsp.c;

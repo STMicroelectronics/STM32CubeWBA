@@ -70,6 +70,7 @@ void SecureError_Callback(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* Register SecureFault callback defined in non-secure and to be called by secure handler */

@@ -28,6 +28,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "tx_api.h"
+#include "tx_initialize.h"
+#include "tx_thread.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -68,7 +70,9 @@ extern "C" {
 #define TASK_PREEMP_BPKA                        (0u)
 
 /* USER CODE BEGIN TASK_Priority_Define */
-
+#define TASK_PRIO_BUTTON_Bx                     (13u)
+#define TASK_PREEMP_BUTTON_Bx                   (13u)
+  
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
@@ -82,14 +86,14 @@ extern "C" {
 
 /* Tasks stack sizes by default  */
 #define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_SMALL
-#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_FLASH_MANAGER           RTOS_STACK_SIZE_NORMAL
 #define TASK_STACK_SIZE_BLE_HOST                RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_HCI_ASYNC_EVENT         RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_BLE_TIMER               RTOS_STACK_SIZE_SMALL
-#define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_BLE_TIMER               RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
 
 /* USER CODE END TASK_Size_Define */

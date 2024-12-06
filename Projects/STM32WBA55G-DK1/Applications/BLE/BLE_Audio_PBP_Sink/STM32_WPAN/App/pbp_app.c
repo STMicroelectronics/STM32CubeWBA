@@ -26,6 +26,7 @@
 #include "ltv_utils.h"
 #include "pbp.h"
 #include "log_module.h"
+#include "app_ble.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -135,8 +136,8 @@ static tBleStatus PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role);
 static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification);
 static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
 static uint8_t PBPAPP_StartBroadcastAudio(Audio_Role_t role);
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 /* Exported functions --------------------------------------------------------*/
 extern void APP_NotifyToRun(void);
 
@@ -432,7 +433,6 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
             memcpy(&PBPAPP_Context.codec_specific_config_subgroup[0],
                    PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
                    PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
-            PBPAPP_Context.base_group.PresentationDelay = PBPAPP_Context.base_group.PresentationDelay;
 
             uint32_t freq = LTV_GetConfiguredSamplingFrequency(PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
                                                                PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
@@ -745,11 +745,11 @@ void PBPAPP_SwitchBrdSource(uint8_t next, uint32_t *pSourceID)
     ret = PBP_PBK_StopBIGSync(BIG_HANDLE);
     if (ret != BLE_STATUS_SUCCESS)
     {
-      LOG_INFO_APP("  Fail   : BP_PBK_StopBIGSync() function, result: 0x%02X\n", ret);
+      LOG_INFO_APP("  Fail   : PBP_PBK_StopBIGSync() function, result: 0x%02X\n", ret);
     }
     else
     {
-      LOG_INFO_APP("  Success: BP_PBK_StopBIGSync() function\n");
+      LOG_INFO_APP("  Success: PBP_PBK_StopBIGSync() function\n");
       PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
     }
   }
@@ -1128,14 +1128,14 @@ static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
 }
 
 
-/*Audio Source */
-static void start_audio_source(void)
+/* Audio Source */
+static int32_t start_audio_source(void)
 {
-  Start_RxAudio();
+  return Start_RxAudio();
 }
 
-/*Audio Sink */
-static void start_audio_sink(void)
+/* Audio Sink */
+static int32_t start_audio_sink(void)
 {
-  Start_TxAudio();
+  return Start_TxAudio();
 }

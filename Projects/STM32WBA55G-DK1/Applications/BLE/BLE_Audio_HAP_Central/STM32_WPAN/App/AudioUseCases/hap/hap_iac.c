@@ -139,7 +139,7 @@ tBleStatus HAP_IAC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
       }
       else
       {
-        BLE_DBG_HAP_IAC_MSG("No ressource to use a HAP IAC Instance\n");
+        BLE_DBG_HAP_IAC_MSG("No resource to use a HAP IAC Instance\n");
         hciCmdResult = BLE_STATUS_FAILED;
       }
     }
@@ -752,10 +752,10 @@ static void HAP_IAC_Post_Linkup_Event(HAP_IAC_Inst_t *pIAC_Inst, tBleStatus cons
   evt.EvtOpcode = (HAP_IAC_NotCode_t) IAC_LINKUP_COMPLETE_EVT;
   if (evt.Status == BLE_STATUS_SUCCESS)
   {
-    HAP_AttServiceInfo_Evt_t parms;
-    parms.StartAttHandle = pIAC_Inst->IASServiceStartHandle;
-    parms.EndAttHandle = pIAC_Inst->IASServiceEndHandle;
-    evt.pInfo = (uint8_t *) &parms;
+    HAP_AttServiceInfo_Evt_t params;
+    params.StartAttHandle = pIAC_Inst->IASServiceStartHandle;
+    params.EndAttHandle = pIAC_Inst->IASServiceEndHandle;
+    evt.pInfo = (uint8_t *) &params;
   }
   else
   {

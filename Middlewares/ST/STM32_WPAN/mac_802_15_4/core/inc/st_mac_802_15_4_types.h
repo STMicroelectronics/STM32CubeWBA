@@ -27,6 +27,10 @@
 typedef uint8_t  MAC_Status_t;
 typedef uint8_t  MAC_handle;
 
+#ifndef UNUSED
+#define UNUSED(x)(void)(x)
+#endif /* UNUSED */
+
 #define MAC_SUCCESS                   ((uint8_t)0x00)
 #define MAC_ERROR                     ((uint8_t)0x01)
 #define MAC_NOT_IMPLEMENTED_STATUS    ((uint8_t)0x02)
@@ -87,6 +91,8 @@ typedef uint8_t  MAC_handle;
 /** @brief Index to CMD Id field in MAC Cmd Frames */
 #define g_IDX_TO_CMD_ID_c      0x00
 
+/** @brief  tab size to stock PAN coordiantor when beacon is received */
+#define NB_PAN_BEACON_RECEIVED      10U
 
 /** @brief  Defines the type used to handle addresses. Addresses are either short (2 bytes)
     or extended (8 bytes) */
@@ -254,13 +260,11 @@ typedef struct {
     value of RANGING_ON or to not enable ranging for
     RANGING_OFF */
     uint8_t ranging_Rx_control;
-    /*! Byte Stuffing to keep 32 bit alignment*/
-    uint8_t a_stuffing[2];
     /*! Number of symbols measured before the receiver is to be enabled or
     disabled */
-    uint8_t a_Rx_on_time[4];
+    uint8_t a_Rx_on_time[3];
     /*! Number of symbols for which the receiver is to be enabled */
-    uint8_t a_Rx_on_duration[4];
+    uint8_t a_Rx_on_duration[3];
 } ST_MAC_rxEnableReq_t;
 
 /******************************************************************************/
@@ -302,7 +306,7 @@ typedef struct {
     /*! The name of the PIB attribute to set*/
     uint8_t PIB_attribute;
     /*! Byte Stuffing to keep 32 bit alignment*/
-    uint8_t a_stuffing[3];
+    uint8_t a_stuffing[2];
 } ST_MAC_setReq_t;
 
 
@@ -549,7 +553,6 @@ typedef struct {
  initiate a response to an MLME-ASSOCIATE.indication*/
 
 typedef struct {
-
     /*! Extended address of the device requesting association */
     uint8_t a_device_address[8];
     /*! 16-bit short device address allocated by the coordinator on successful
@@ -575,7 +578,6 @@ typedef struct {
  Indication */
 
 typedef struct {
-
     /*! Extended address of the orphaned device */
     uint8_t a_orphan_address[8];
     /*! Short address allocated to the orphaned device */
@@ -601,7 +603,6 @@ typedef struct {
  request to associate was successful or unsuccessful */
 
 typedef struct {
-
     /*! Short address allocated by the coordinator on successful association */
     uint8_t a_assoc_short_address[2];
     /*! Status of the association attempt*/
@@ -669,7 +670,6 @@ typedef struct {
  the results of the reset operation */
 
 typedef struct {
-
     /*! The result of the reset operation */
     uint8_t status;
     /*! Byte Stuffing to keep 32 bit alignment*/
@@ -767,6 +767,8 @@ typedef struct {
     uint8_t a_sounding_list[g_MAX_SOUNDING_LIST_SUPPORTED_c];
     /*! The status of the attempt to return sounding data*/
     uint8_t status;
+    /*! Byte Stuffing to keep 32 bit alignment*/
+    uint8_t a_stuffing[2];
 } ST_MAC_soundingCnf_t;
 
 /******************************************************************************/
@@ -776,14 +778,14 @@ result of a request to the PHY to provide internal propagation path information.
 typedef struct {
     /*! The status of the attempt to return sounding data*/
     uint8_t status;
-    /*! Byte Stuffing to keep 32 bit alignment*/
-    uint8_t a_stuffing[3];
     /*! A count of the propagation time from the ranging counter to
     the transmit antenna */
     uint32_t cal_Tx_rmaker_offset;
     /*! A count of the propagation time from the
     receive antenna to the ranging counter */
     uint32_t cal_Rx_rmaker_offset;
+    /*! Byte Stuffing to keep 32 bit alignment*/
+    uint8_t a_stuffing[3];
 } ST_MAC_calibrateCnf_t;
 
 /******************************************************************************/
@@ -813,8 +815,6 @@ typedef struct {
     uint32_t ranging_offset;
     /*! The FOM characterizing the ranging measurement */
     uint8_t ranging_FOM;
-    /*! Byte Stuffing to keep 32 bit alignment*/
-    uint8_t a_stuffing[3];
 } ST_MAC_dataCnf_t;
 
 /******************************************************************************/
@@ -823,7 +823,6 @@ typedef struct {
  to purge an MSDU from the transaction queue */
 
 typedef struct {
-
     /*! Handle associated with the MSDU requested to be purged from the
      transaction queue */
     uint8_t msdu_handle;
@@ -852,7 +851,7 @@ typedef struct {
   /*! Network Negotiated */
   uint8_t nwk_negociated;
   /*! Byte Stuffing to keep 32 bit alignment*/
-  uint8_t a_stuffing[3];
+  uint8_t a_stuffing[2];
 } ST_MAC_getPwrInfoTableCnf_t;
 
 /******************************************************************************/
@@ -1122,6 +1121,8 @@ typedef struct {
   uint8_t addr_mode; // Valid Range: 0x02 – 0x03
   /*! Poll requester address */
   MAC_addr_t request_address;
+  /*! Byte Stuffing to keep 32 bit alignment*/
+  uint8_t a_stuffing[3];
 } ST_MAC_pollInd_t;
 
 
@@ -1145,6 +1146,24 @@ typedef struct {
   uint8_t a_stuffing[2];
 } ST_MAC_beaconReqInd_t;
 
+
+/** @brief Defines the structure for list_PAN_Coord tab, allows to stock all beacons received from PAN coordinator. */
+typedef struct {
+  /*! PAN identifier of the coordinator */
+  uint8_t a_coord_PAN_id[2];
+  /*! Coordinator addressing mode */
+  uint8_t coord_addr_mode;
+  /*! The current logical channel occupied by the network */
+  uint8_t logical_channel;
+  /*! Coordinator address */
+  MAC_addr_t coord_addr;
+} ST_MAC_PAN_COORD_t;
+
+/** @brief Defines the structure for regroup table of ST_MAC_PAN_COORD_t and indice_PAN_Coord */
+typedef struct {
+  ST_MAC_PAN_COORD_t list_PAN_Coord[NB_PAN_BEACON_RECEIVED];
+  uint8_t indice_PAN_Coord;
+} ST_MAC_PAN_Coord_Table_t;
 
 /*Callback Typedef */
 /******************************************************************************/

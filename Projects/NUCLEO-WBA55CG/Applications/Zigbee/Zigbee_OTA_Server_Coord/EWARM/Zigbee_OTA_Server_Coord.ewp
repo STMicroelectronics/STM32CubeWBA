@@ -1,4 +1,5 @@
-<?xml version="1.0" ?><project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
     <fileVersion>3</fileVersion>
     <configuration>
         <name>Zigbee_OTA_Server_Coord</name>
@@ -85,7 +86,7 @@
                 </option>
                 <option>
                     <name>OGBufferedTerminalOutput</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>GenStdoutInterface</name>
@@ -171,11 +172,11 @@
                 </option>
                 <option>
                     <name>GenLocaleTags</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>GenLocaleDisplayOnly</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>DSPExtension</name>
@@ -220,13 +221,10 @@
                     <state>USE_HAL_DRIVER</state>
                     <state>USE_FULL_ASSERT</state>
                     <state>USE_FULL_LL_DRIVER</state>
-                    <state>PHY_2_10_a</state>
-                    <state>PHY_40nm_2_30_a_A1</state>
-                    <state>LOGGER_ENABLE=0</state>
-                    <state>LOGUARTENABLED</state>
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
                     <state>APPLICATION_USE_BAREMETAL</state>
+                    <state>APPLICATION_USE_NUCLEO</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
                     <state>APPLICATION_USE_AMM</state>
@@ -271,19 +269,19 @@
                 </option>
                 <option>
                     <name>CCDiagSuppress</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagRemark</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagWarning</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagError</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCObjPrefix</name>
@@ -292,7 +290,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>10010100</state>
+                    <state>11111110</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -326,7 +324,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>
@@ -350,7 +348,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCIncludePath2</name>
@@ -406,7 +404,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>2</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -415,7 +413,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>2</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CCPosIndRopi</name>
@@ -542,15 +540,15 @@
                 </option>
                 <option>
                     <name>AWarnOne</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AWarnRange1</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AWarnRange2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>ADebug</name>
@@ -562,7 +560,7 @@
                 </option>
                 <option>
                     <name>ADefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AList</name>
@@ -654,7 +652,7 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -662,7 +660,7 @@
                 </option>
                 <option>
                     <name>AExtraOptionsV2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AsmNoLiteralPool</name>
@@ -670,7 +668,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state/>
+                    <state></state>
                 </option>
             </data>
         </settings>
@@ -708,8 +706,8 @@
             <name>CUSTOM</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <extensions/>
-                <cmdline/>
+                <extensions></extensions>
+                <cmdline></cmdline>
                 <hasPrio>0</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
@@ -718,7 +716,7 @@
             <name>BUILDACTION</name>
             <archiveVersion>1</archiveVersion>
             <data>
-                <prebuild/>
+                <prebuild></prebuild>
                 <postbuild>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin</postbuild>
             </data>
         </settings>
@@ -747,31 +745,31 @@
                 </option>
                 <option>
                     <name>IlinkKeepSymbols</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkDefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkConfigDefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkMapFile</name>
@@ -807,7 +805,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkEnableRemarks</name>
@@ -815,19 +813,19 @@
                 </option>
                 <option>
                     <name>IlinkSuppressDiags</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsRem</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsWarn</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsErr</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkWarningsAreErrors</name>
@@ -839,7 +837,7 @@
                 </option>
                 <option>
                     <name>IlinkExtraOptions</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkLowLevelInterfaceSlave</name>
@@ -851,7 +849,7 @@
                 </option>
                 <option>
                     <name>IlinkAdditionalLibs</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkOverrideProgramEntryLabel</name>
@@ -986,11 +984,11 @@
                 </option>
                 <option>
                     <name>IlinkStackControlFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkStackCallGraphFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CrcAlgorithm</name>
@@ -1012,7 +1010,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile_AltDefault</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkEncInput</name>
@@ -1044,19 +1042,19 @@
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkLogCrtRoutineSelection</name>
@@ -1084,7 +1082,7 @@
                 </option>
                 <option>
                     <name>IlinkWrapperFile</name>
-                    <state/>
+                    <state></state>
                 </option>
             </data>
         </settings>
@@ -1097,7 +1095,7 @@
                 <debug>1</debug>
                 <option>
                     <name>IarchiveInputs</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IarchiveOverride</name>
@@ -1112,7 +1110,7 @@
         <settings>
             <name>Coder</name>
             <archiveVersion>0</archiveVersion>
-            <data/>
+            <data />
         </settings>
     </configuration>
     <group>
@@ -1325,7 +1323,7 @@
     <group>
         <name>Doc</name>
         <file>
-            <name>$PROJ_DIR$\..\readme.md</name>
+            <name>$PROJ_DIR$\..\README.md</name>
         </file>
     </group>
     <group>
@@ -1500,6 +1498,9 @@
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_rcc.c</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</name>
+            </file>
         </group>
     </group>
     <group>
@@ -1525,7 +1526,7 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigbeeClusters.a</name>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigBeeClusters.a</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</name>

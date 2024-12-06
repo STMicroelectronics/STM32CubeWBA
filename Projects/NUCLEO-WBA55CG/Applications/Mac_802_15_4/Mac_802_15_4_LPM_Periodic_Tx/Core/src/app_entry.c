@@ -23,6 +23,7 @@
 #include "app_conf.h"
 #include "main.h"
 #include "app_entry.h"
+#include "log_module.h"
 #include "app_mac.h"
 #include "ll_sys_startup.h"
 #include "stm32_seq.h"
@@ -31,9 +32,9 @@
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
 #if (CFG_LOG_SUPPORTED != 0)
+#include "usart_if.h"
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
-#include "usart_if.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "ll_sys_if.h"
 #include "app_sys.h"
@@ -49,8 +50,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usart_if.h"
-#include "hw_if.h"
+#include "adv_trace_usart_if.h"
 
 /* USER CODE END Includes */
 
@@ -267,7 +267,7 @@ static void System_Init( void )
 {
 #if (CFG_LOG_SUPPORTED != 0)
   Ifhuart_s sIfUartInit;
-#endif
+#endif  /* (CFG_LOG_SUPPORTED != 0) */
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
@@ -277,17 +277,19 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
-    /*Initialize the terminal using the LPUART */
   sIfUartInit.IfhuartTx = &IF_USART_TX;
   sIfUartInit.IfhuartRx = &IF_USART_RX;
   UartIf_Init(sIfUartInit);
+  
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
+  UTIL_ADV_TRACE_Init();
 
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
+  
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
@@ -509,6 +511,11 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_StopStabilizationTimer();
+  /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -532,7 +539,13 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+ #if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -581,6 +594,7 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF */
 }
 
+#if (CFG_SCM_SUPPORTED == 1)
 void SCM_HSI_CLK_OFF(void)
 {
   /* SCM module may not switch off HSI clock when traces are used */
@@ -589,6 +603,7 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF */
 }
+#endif /* CFG_SCM_SUPPORTED */
 
 void UTIL_ADV_TRACE_PreSendHook(void)
 {
@@ -622,6 +637,38 @@ void BSP_PB_Callback(Button_TypeDef Button)
   UTIL_TIMER_StartWithPeriod(&buttonDesc[Button].longTimerId, BUTTON_LONG_PRESS_THRESHOLD_MS);
 
   return;
+}
+
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+
+  /* USER CODE BEGIN Uart_Cmd_Execute */
+  Button_TypeDef      eButton;
+
+  /* Parse received frame */
+  if ( strcmp((char const*)pRxBuffer, "SW1") == 0 )
+  {
+    eButton = B1;
+  }
+  else if ( strcmp( (char const*)pRxBuffer, "SW2" ) == 0 )
+  {
+    eButton = B2;
+  }
+  else if ( strcmp( (char const*)pRxBuffer, "SW3" ) == 0 )
+  {
+    eButton = B3;
+  }
+  else
+  {
+    LOG_ERROR_APP( "ERROR : NOT RECOGNIZED COMMAND : %s\n", pRxBuffer );
+    return;
+  }
+
+  /* Launch SW Command */
+  LOG_INFO_APP( "%s pressed by Command.", pRxBuffer );
+  BSP_PB_Callback( eButton );
+
+  /* USER CODE END Uart_Cmd_Execute */
 }
 #endif
 

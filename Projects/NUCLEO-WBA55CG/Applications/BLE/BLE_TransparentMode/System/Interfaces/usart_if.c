@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,8 +19,8 @@
 /* USER CODE END Header */
 
 /**
- *	THIS FILE IS NOT USED FOR BLE TM.
- *	THE SERIAL LINK IS DIRECTLY USED ON app_ble.c side.
+ * THIS FILE IS NOT USED FOR BLE TM.
+ * THE SERIAL LINK IS DIRECTLY USED ON app_ble.c side.
  */
 
 /* Includes ------------------------------------------------------------------*/

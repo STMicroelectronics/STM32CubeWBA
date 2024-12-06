@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.h
+  * @file    dis_app.h
   * @author  MCD Application Team
-  * @brief   Header for service2_app.c
+  * @brief   Header for dis_app.c
   ******************************************************************************
   * @attention
   *

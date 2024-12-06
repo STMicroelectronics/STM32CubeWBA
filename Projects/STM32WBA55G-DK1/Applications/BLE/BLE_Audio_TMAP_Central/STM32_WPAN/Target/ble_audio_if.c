@@ -127,7 +127,45 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
-
+/* Exported functions --------------------------------------------------------*/
+void BAP_USR_Task(void);
+SVCCTL_EvtAckStatus_t BAP_USR_GattEventHandler(void *pEvent);
+SVCCTL_EvtAckStatus_t BAP_UCL_GattEventHandler(void *pEvent);
+void CAP_INITIATOR_UnicastEventHandler(void *pEvent);void BAP_UNICAST_HciEventHandler(void *pEvent);
+void BAP_BSRC_HciEventHandler(void *pEvent);
+void BAP_BSNK_HciEventHandler(void *pEvent);
+SVCCTL_EvtAckStatus_t BAP_SDE_GattEventHandler(void *pEvent);
+void BAP_SDE_HciEventHandler(void *pEvent);
+SVCCTL_EvtAckStatus_t BAP_BA_GattEventHandler(void *pEvent);
+void BAP_BA_HciEventHandler(void *pEvent);
+void CAP_COMMANDER_BAEventHandler(void *pEvent);
+void CCP_SERVER_Task(void);
+SVCCTL_EvtAckStatus_t CCP_SERVER_GattEventHandler(void *pEvent);
+void CCP_SERVER_HciEventHandler(void *pEvent);
+SVCCTL_EvtAckStatus_t CCP_CLIENT_GattEventHandler(void *pEvent);
+void CCP_CLIENT_HciEventHandler(void *pEvent);
+void MCP_SERVER_Task(void);
+SVCCTL_EvtAckStatus_t MCP_SERVER_GattEventHandler(void *pEvent);
+void MCP_SERVER_HciEventHandler(void *pEvent);
+SVCCTL_EvtAckStatus_t MCP_CLIENT_GattEventHandler(void *pEvent);
+void MCP_CLIENT_HciEventHandler(void *pEvent);
+void CSIP_SET_MEMBER_Task(void);
+SVCCTL_EvtAckStatus_t CSIP_SET_MEMBER_GattEventHandler(void *pEvent);
+void CSIP_SET_MEMBER_HciEventHandler(void *pEvent);
+void CSIP_SET_COORDINATOR_Task(void);
+SVCCTL_EvtAckStatus_t CSIP_SET_COORDINATOR_GattEventHandler(void *pEvent);
+void CSIP_SET_COORDINATOR_HciEventHandler(void *pEvent);
+void CAP_SetCoordinatorEventHandler(void *pEvent);
+void VCP_RENDERER_Task(void);
+SVCCTL_EvtAckStatus_t VCP_RENDERER_GattEventHandler(void *pEvent);
+void VCP_CONTROLLER_Task(void);
+SVCCTL_EvtAckStatus_t VCP_CONTROLLER_GattEventHandler(void *pEvent);
+void VCP_CONTROLLER_HciEventHandler(void *pEvent);
+void MICP_DEVICE_Task(void);
+SVCCTL_EvtAckStatus_t MICP_DEVICE_GattEventHandler(void *pEvent);
+void MICP_CONTROLLER_Task(void);
+SVCCTL_EvtAckStatus_t MICP_CONTROLLER_GattEventHandler(void *pEvent);
+void MICP_CONTROLLER_HciEventHandler(void *pEvent);
 /* Private user code ---------------------------------------------------------*/
 #if (LINK_BAP_UNICAST_SERVER == 0)
 /**

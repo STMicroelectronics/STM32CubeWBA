@@ -43,7 +43,7 @@
 #include "zcl/se/zcl.message.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -80,6 +80,7 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PC */
 const uint8_t  szMessageImmediate[] = "Hello";
 const uint8_t  szMessageDelayed[]   = "GoodBye";
@@ -240,9 +241,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -375,11 +373,12 @@ static void APP_ZIGBEE_MessagingServerStart(void)
 }
 
 /**
- * @brief Send an 'immediate message' with a confirmation.
+ * @brief  Short Press : Send an 'immediate message' without confirmation.
+ *         Long Press : Send an 'immediate message' with confirmation.
  * @param  None
  * @retval None
  */
-void APPE_Button1Action( void )
+void APP_BSP_Button1Action( void )
 {
   struct ZbApsAddrT   stDest;
   enum ZclStatusCodeT eStatus;
@@ -394,7 +393,7 @@ void APPE_Button1Action( void )
     stDest.nwkAddr = 0x0000;
     
     /* Update Confirmation field in function of if button long pressed or not */
-    if ( APPE_ButtonIsLongPressed( B1 ) != 0u )
+    if ( APP_BSP_ButtonIsLongPressed( B1 ) != 0u )
     {
       stImmediateMessage.message_control |= ZCL_MESSAGE_CTRL_CONF;
       LOG_INFO_APP( "SW1 PUSHED : Sending '%s' message (with confirmation) to Client", stImmediateMessage.message_str );
@@ -414,11 +413,12 @@ void APPE_Button1Action( void )
 }
 
 /**
- * @brief Send a 'delayed message' without a confirmation.
+ * @brief  Short Press : Send a 'delayed message' without confirmation.
+ *         long Press : Send a 'delayed message' with confirmation.
  * @param  None
  * @retval None
  */
-void APPE_Button2Action( void )
+void APP_BSP_Button2Action( void )
 {
   struct ZbApsAddrT   stDest;
   enum ZclStatusCodeT eStatus;
@@ -432,7 +432,7 @@ void APPE_Button2Action( void )
     stDest.endpoint = APP_ZIGBEE_ENDPOINT;
     stDest.nwkAddr = 0x0000;
     
-    if ( APPE_ButtonIsLongPressed( B2 ) != 0 )
+    if ( APP_BSP_ButtonIsLongPressed( B2 ) != 0 )
     {
       stDelayedMessage.message_control |= ZCL_MESSAGE_CTRL_CONF;
       LOG_INFO_APP( "SW2 PUSHED : Sending '%s' message (with confirmation) to Client (display in %d ms)", stDelayedMessage.message_str, stDelayedMessage.start_time );
@@ -451,36 +451,42 @@ void APPE_Button2Action( void )
   }
 }
 
-
 /**
- * @brief Cancel the 'delayed message' (if possible).
+ * @brief  Short Press : Cancel the 'delayed message' (if possible).
+ *         Long Press : -.
  * @param  None
  * @retval None
  */
-void APPE_Button3Action( void )
+void APP_BSP_Button3Action( void )
 {
   struct ZbApsAddrT             stDest;
   struct ZbZclMsgMessageCancelT stCancelMessage; 
   enum ZclStatusCodeT           eStatus;
-  
+    
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
   {
-    /* Set destination (Coordinator) */
-    memset( &stDest, 0, sizeof( stDest ) );
-    stDest.mode = ZB_APSDE_ADDRMODE_SHORT;
-    stDest.endpoint = APP_ZIGBEE_ENDPOINT;
-    stDest.nwkAddr = 0x0000;
-    
-    /* Set Cancel Message */
-    stCancelMessage.message_id = stDelayedMessage.message_id;
-    stCancelMessage.control = 0;
-
-    LOG_INFO_APP( "SW3 PUSHED : Cancel '%s' message to Client", stDelayedMessage.message_str );
-    eStatus = ZbZclMsgServerCancelMessageReq( stZigbeeAppInfo.MessagingServer, &stDest, &stCancelMessage, NULL, NULL);
-    if ( eStatus != ZCL_STATUS_SUCCESS) 
+    if ( APP_BSP_ButtonIsLongPressed( B3 ) != 0 )
     {
-      LOG_ERROR_APP( "Error, ZbZclMsgServerCancelMessageReq failed (0x%02X)", eStatus );
+    }
+    else
+    {
+      /* Set destination (Coordinator) */
+      memset( &stDest, 0, sizeof( stDest ) );
+      stDest.mode = ZB_APSDE_ADDRMODE_SHORT;
+      stDest.endpoint = APP_ZIGBEE_ENDPOINT;
+      stDest.nwkAddr = 0x0000;
+      
+      /* Set Cancel Message */
+      stCancelMessage.message_id = stDelayedMessage.message_id;
+      stCancelMessage.control = 0;
+
+      LOG_INFO_APP( "SW3 PUSHED : Cancel '%s' message to Client", stDelayedMessage.message_str );
+      eStatus = ZbZclMsgServerCancelMessageReq( stZigbeeAppInfo.MessagingServer, &stDest, &stCancelMessage, NULL, NULL);
+      if ( eStatus != ZCL_STATUS_SUCCESS) 
+      {
+        LOG_ERROR_APP( "Error, ZbZclMsgServerCancelMessageReq failed (0x%02X)", eStatus );
+      }
     }
   }
 }

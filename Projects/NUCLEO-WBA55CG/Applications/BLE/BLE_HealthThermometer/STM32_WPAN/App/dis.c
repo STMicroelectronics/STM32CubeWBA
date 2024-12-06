@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   service1 definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
@@ -118,9 +118,9 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
   SVCCTL_EvtAckStatus_t return_value;
   hci_event_pckt *p_event_pckt;
   evt_blecore_aci *p_blecore_evt;
-  /* USER CODE BEGIN Service1_EventHandler_1 */
+  /* USER CODE BEGIN Service2_EventHandler_1 */
 
-  /* USER CODE END Service1_EventHandler_1 */
+  /* USER CODE END Service2_EventHandler_1 */
 
   return_value = SVCCTL_EvtNotAck;
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)p_Event)->data);
@@ -187,11 +187,12 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */   
+        /* Manage ACI_GATT_INDICATION_VSEVT_CODE */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
+            tBleStatus status = BLE_STATUS_FAILED;
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
@@ -199,7 +200,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             else
             {
               LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
-            }   
+            }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
         /* USER CODE END BLECORE_EVT */
@@ -209,25 +210,25 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
-  /* USER CODE BEGIN Service1_EventHandler_2 */
+  /* USER CODE BEGIN Service2_EventHandler_2 */
 
-  /* USER CODE END Service1_EventHandler_2 */
+  /* USER CODE END Service2_EventHandler_2 */
 
   return(return_value);
 }/* end DIS_EventHandler */
@@ -245,9 +246,9 @@ void DIS_Init(void)
   tBleStatus ret;
   uint8_t max_attr_record;
 
-  /* USER CODE BEGIN SVCCTL_InitService1Svc_1 */
+  /* USER CODE BEGIN SVCCTL_InitService2Svc_1 */
 
-  /* USER CODE END SVCCTL_InitService1Svc_1 */
+  /* USER CODE END SVCCTL_InitService2Svc_1 */
 
   /**
    *  Register the event handler to the BLE controller
@@ -311,9 +312,10 @@ void DIS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : MANS\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService1Char1 */
+  /* USER CODE BEGIN SVCCTL_InitService2Char1 */
+  /* Place holder for Characteristic Descriptors */
 
-  /* USER CODE END SVCCTL_InitService1Char1 */
+  /* USER CODE END SVCCTL_InitService2Char1 */
 
   /**
    * MONS
@@ -338,9 +340,10 @@ void DIS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : MONS\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService1Char2 */
+  /* USER CODE BEGIN SVCCTL_InitService2Char2 */
+  /* Place holder for Characteristic Descriptors */
 
-  /* USER CODE END SVCCTL_InitService1Char2 */
+  /* USER CODE END SVCCTL_InitService2Char2 */
 
   /**
    * SYID
@@ -352,7 +355,7 @@ void DIS_Init(void)
                           SizeSyid,
                           CHAR_PROP_READ,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_DONT_NOTIFY_EVENTS,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(DIS_Context.SyidCharHdle));
@@ -365,13 +368,13 @@ void DIS_Init(void)
     LOG_INFO_APP("  Success: aci_gatt_add_char command   : SYID\n");
   }
 
-  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+  /* USER CODE BEGIN SVCCTL_InitService2Char3 */
 
-  /* USER CODE END SVCCTL_InitService1Char3 */
+  /* USER CODE END SVCCTL_InitService2Char3 */
 
-  /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
+  /* USER CODE BEGIN SVCCTL_InitService2Svc_2 */
 
-  /* USER CODE END SVCCTL_InitService1Svc_2 */
+  /* USER CODE END SVCCTL_InitService2Svc_2 */
 
   return;
 }
@@ -385,9 +388,9 @@ void DIS_Init(void)
 tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
 {
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
-  /* USER CODE BEGIN Service1_App_Update_Char_1 */
+  /* USER CODE BEGIN Service2_App_Update_Char_1 */
 
-  /* USER CODE END Service1_App_Update_Char_1 */
+  /* USER CODE END Service2_App_Update_Char_1 */
 
   switch(CharOpcode)
   {
@@ -405,9 +408,9 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value MANS command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_1*/
+      /* USER CODE BEGIN Service2_Char_Value_1 */
 
-      /* USER CODE END Service1_Char_Value_1*/
+      /* USER CODE END Service2_Char_Value_1 */
       break;
 
     case DIS_MONS:
@@ -424,9 +427,9 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value MONS command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_2*/
+      /* USER CODE BEGIN Service2_Char_Value_2 */
 
-      /* USER CODE END Service1_Char_Value_2*/
+      /* USER CODE END Service2_Char_Value_2 */
       break;
 
     case DIS_SYID:
@@ -443,18 +446,18 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value SYID command\n");
       }
-      /* USER CODE BEGIN Service1_Char_Value_3*/
+      /* USER CODE BEGIN Service2_Char_Value_3 */
 
-      /* USER CODE END Service1_Char_Value_3*/
+      /* USER CODE END Service2_Char_Value_3 */
       break;
 
     default:
       break;
   }
 
-  /* USER CODE BEGIN Service1_App_Update_Char_2 */
+  /* USER CODE BEGIN Service2_App_Update_Char_2 */
 
-  /* USER CODE END Service1_App_Update_Char_2 */
+  /* USER CODE END Service2_App_Update_Char_2 */
 
   return ret;
 }

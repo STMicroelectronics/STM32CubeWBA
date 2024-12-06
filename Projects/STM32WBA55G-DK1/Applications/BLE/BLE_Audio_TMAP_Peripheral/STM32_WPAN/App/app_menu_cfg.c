@@ -23,6 +23,7 @@
 #include "ble_gap_aci.h"
 #include "log_module.h"
 #include "stm32_timer.h"
+#include "stm32_seq.h"
 
 /* External variables ------------------------------------------------------- */
 extern uint8_t volume_mute_byteicon[];
@@ -148,6 +149,7 @@ static void Menu_SelectBroadcast(uint8_t id);
 static void Menu_StartBroadcastScan(void);
 static void Menu_StopBroadcastScan(void);
 static void Menu_StopBroadcastSync(void);
+static void Menu_TimerTaskHandler(void);
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 static void Menu_Startup_TimerCallback(void *arg);
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
@@ -281,6 +283,7 @@ void Menu_Config(void)
 
   Menu_SetControlAction(p_broadcast_list_menu, MENU_DIRECTION_LEFT, stop_broadcast_scan_action);
 
+  UTIL_SEQ_RegTask(1U << CFG_TASK_APP_TIMER_ID, UTIL_SEQ_RFU, Menu_TimerTaskHandler);
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   Menu_SetActivePage(p_stlogo_menu);
   UTIL_TIMER_Create(&Startup_Timer, STARTUP_TIMEOUT, UTIL_TIMER_ONESHOT, &Menu_Startup_TimerCallback, 0);
@@ -352,9 +355,9 @@ void Menu_SetStartupPage(void)
 /**
  * @brief Set the 4 characters Device Identifier
  */
-void Menu_SetIdentifier(char *pId)
+void Menu_SetIdentifier(char *pId, uint8_t len)
 {
-  UTIL_MEM_cpy_8(&waitcon_text.Lines[1][9], pId, 4);
+  UTIL_MEM_cpy_8(&waitcon_text.Lines[1][0], pId, len);
 }
 
 /**
@@ -575,7 +578,7 @@ static void Menu_Start_Advertising(void)
       /* Register CSIS */
       status = CSIPAPP_RegisterCSIS(0,
                                     CSIP_SIRK_IS_NOT_OOB,
-                                    0x01, /*0x00 : Encrypted, 0x01 : PlainText*/
+                                    0x00, /*0x00 : Encrypted, 0x01 : PlainText*/
                                     (uint8_t *)APP_SIRK,
                                     APP_CSIP_SET_MEMBER_SIZE,
                                     csip_conf_id);
@@ -759,7 +762,7 @@ static void Menu_StartBroadcastScan(void)
       /* Register CSIS */
       status = CSIPAPP_RegisterCSIS(0,
                                     CSIP_SIRK_IS_NOT_OOB,
-                                    0x01, /*0x00 : Encrypted, 0x01 : PlainText*/
+                                    0x00, /*0x00 : Encrypted, 0x01 : PlainText*/
                                     (uint8_t *)APP_SIRK,
                                     APP_CSIP_SET_MEMBER_SIZE,
                                     csip_conf_id);
@@ -816,6 +819,14 @@ static void Menu_StopBroadcastSync(void)
  * @brief Advertising Timer Callback
  */
 static void Menu_Advertising_TimerCallback(void *arg)
+{
+  UTIL_SEQ_SetTask(1U << CFG_TASK_APP_TIMER_ID, CFG_SEQ_PRIO_0);
+}
+
+/**
+ * @brief Timer Task Handler
+ */
+static void Menu_TimerTaskHandler(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Timer Expired, stop advertising\n");
   Menu_SetStartupPage();

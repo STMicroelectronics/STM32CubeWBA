@@ -31,6 +31,7 @@
 #include "app_menu_cfg.h"
 #include "log_module.h"
 #include "micp.h"
+#include "app_ble.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -257,8 +258,8 @@ static VCP_AIC_InitInst_t aAICInst[APP_VCP_RDR_NUM_AIC_INSTANCES];
 #if (APP_VCP_RDR_NUM_VOC_INSTANCES > 0)
 static VCP_VOC_InitInst_t aVOCInst[APP_VCP_RDR_NUM_VOC_INSTANCES];
 #endif /*(APP_VCP_RDR_NUM_VOC_INSTANCES > 0)*/
-uint8_t Volume = 0x7F;
-uint8_t Mute = 0x00;
+uint8_t VCP_Volume = 0x7F;
+uint8_t VCP_Mute = 0x00;
 #endif /*(APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
 
 #if (APP_MICP_ROLE_DEVICE_SUPPORT == 1)
@@ -279,8 +280,8 @@ static uint8_t APP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
                                          uint16_t CIS_ConnHandle,
                                          uint8_t ASE_ID,
                                          uint32_t ControllerDelay);
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
 static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                                     uint16_t ConnHandle,
@@ -307,8 +308,6 @@ static char Hex_To_Char(uint8_t Hex);
 static void Print_String(uint8_t *pString, uint8_t StringLen);
 static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn);
 /* Exported functions --------------------------------------------------------*/
-
-extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -387,8 +386,9 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
       tBleStatus ret;
       /* Restore the GAF Profiles saved in NVM*/
       ret = CAP_Linkup(ConnHandle,NVMLink,0x00);
-      LOG_INFO_APP("CAP_Linkup() for GAF restoration for ConnHandle 0x%04X returns status 0x%02X\n",
+      LOG_INFO_APP("CAP_Linkup() for GAF restoration on ConnHandle 0x%04X for link mask 0x%02X returns status 0x%02X\n",
                   ConnHandle,
+                  NVMLink,
                   ret);
       p_conn->CAPLinkupState = APP_CAP_LINKUP_STATE_STARTED_RESTORE;
       UNUSED(ret);
@@ -503,7 +503,8 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
     case HAP_HA_SET_PRESET_REQ_EVT:
     {
       HAP_ActivePresetChangeReq_Info_t *preset_req = (HAP_ActivePresetChangeReq_Info_t *) pNotification->pInfo;
-      LOG_INFO_APP("HAP Set Preset Req with ConnHandle 0x%04X is received\n",
+      LOG_INFO_APP("HAP Set Preset Req of preset id %d with ConnHandle 0x%04X is received\n",
+                  preset_req->pPreset->Index,
                   pNotification->ConnHandle);
 
       /* Accept preset request */
@@ -693,15 +694,16 @@ uint8_t HAPAPP_VolumeUp(void)
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
   uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
-  if (Mute == 1)
+  if (VCP_Mute == 1)
   {
+    LOG_INFO_APP("Mute is activated, VCP Unmute\n");
     status = VCP_RENDER_SetMuteState(0);
-    LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute %d returns status 0x%02X\n", Mute, status);
+    LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute 0 returns status 0x%02X\n", status);
   }
 
-  if (0xFF - Volume > VOLUME_STEP)
+  if (0xFF - VCP_Volume > VOLUME_STEP)
   {
-    volume = Volume + VOLUME_STEP;
+    volume = VCP_Volume + VOLUME_STEP;
   }
   else
   {
@@ -725,15 +727,16 @@ uint8_t HAPAPP_VolumeDown(void)
   uint8_t status = BLE_STATUS_SUCCESS;
   uint8_t volume;
 
-  if (Volume > VOLUME_STEP)
+  if (VCP_Volume > VOLUME_STEP)
   {
-    volume = Volume - VOLUME_STEP;
+    volume = VCP_Volume - VOLUME_STEP;
   }
   else
   {
+    LOG_INFO_APP("VCP Volume is at the lowest limit, VCP Mute\n");
     volume = 0;
     status = VCP_RENDER_SetMuteState(1);
-    LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute %d returns status 0x%02X\n", Mute, status);
+    LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute 1 returns status 0x%02X\n", status);
   }
   if (status == BLE_STATUS_SUCCESS)
   {
@@ -751,11 +754,12 @@ uint8_t HAPAPP_ToggleMute(void)
 {
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
   uint8_t status;
+  uint8_t mute;
 
-  Mute = (Mute + 1) % 2;
+  mute = (VCP_Mute + 1) % 2;
 
-  status = VCP_RENDER_SetMuteState(Mute);
-  LOG_INFO_APP("VCP_RENDER_SetMuteState() returns status 0x%02X\n",status);
+  status = VCP_RENDER_SetMuteState(mute);
+  LOG_INFO_APP("VCP_RENDER_SetMuteState() with Mute State %d returns status 0x%02X\n",mute,status);
 
   return status;
 #else /*#if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
@@ -771,7 +775,7 @@ uint8_t HAPAPP_ToggleMicrophoneMute(void)
   MicMute = (MicMute + 1) % 2;
 
   status = MICP_DEVICE_SetMute(MicMute);
-  LOG_INFO_APP("MICP_DEVICE_SetMute() returns status 0x%02X\n",status);
+  LOG_INFO_APP("MICP_DEVICE_SetMute() with Mute State %d returns status 0x%02X\n",MicMute,status);
 
   if (status == BLE_STATUS_SUCCESS)
   {
@@ -1196,7 +1200,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 	    /* Start Advertising */
 	    status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
 	    LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
-	
+
 	    Menu_SetWaitConnPage();
 	 }
     else
@@ -1341,7 +1345,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUSRLinks = MAX_NUM_USR_LINK;
 
-  /*Published Audio Capabilites of Unicast Server and Broadcast Sink Configuration*/
+  /*Published Audio Capabilities of Unicast Server and Broadcast Sink Configuration*/
   APP_BAP_Config.PACSSrvConfig.MaxNumSnkPACRecords = APP_NUM_SNK_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.MaxNumSrcPACRecords = APP_NUM_SRC_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.pStartRamAddr = (uint8_t *)&aPACSSrvMemBuffer;
@@ -1353,6 +1357,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole,uint8_t AudioConfId, uint8_
   APP_BAP_Config.ASCSSrvConfig.MaxNumSrcASEs = MAX_NUM_USR_SRC_ASE;
   APP_BAP_Config.ASCSSrvConfig.MaxCodecConfSize = MAX_USR_CODEC_CONFIG_SIZE;
   APP_BAP_Config.ASCSSrvConfig.MaxMetadataLength = MAX_USR_METADATA_SIZE;
+  APP_BAP_Config.ASCSSrvConfig.CachingEn = 1u;
   APP_BAP_Config.ASCSSrvConfig.pStartRamAddr = (uint8_t *)&aASCSSrvMemBuffer;
   APP_BAP_Config.ASCSSrvConfig.RamSize = BAP_ASCS_SRV_DYN_ALLOC_SIZE;
 
@@ -2009,9 +2014,9 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     {
       GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
       APP_ACL_Conn_t *p_conn;
-      LOG_INFO_APP("CAP Linkup process on ConnHandle 0x%04X is complete with status 0x%02X\n",
-                        pNotification->ConnHandle,
-                        pNotification->Status);
+      LOG_INFO_APP("CAP Linkup Complete on Connhandle 0x%04X with status 0x%02X\n",
+                   pNotification->ConnHandle,
+                   pNotification->Status);
 
       LOG_INFO_APP("profiles 0x%02X of the GAF are linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -2278,15 +2283,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 HAPAPP_StopAdvertising();
                 /* Start Advertising */
                 status = HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
-                if (status != BLE_STATUS_SUCCESS)
-                {
-                  LOG_INFO_APP("  Fail   : HAPAPP_StartAdvertising() returns status 0x%02X\n",
-                               status);
-                }
-                else
-                {
-                  LOG_INFO_APP("  Success: HAPAPP_StartAdvertising()\n");
-                }
+                LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
               }
             }
             /* If no more ASEs are in Enabling/Streaming state, we could check if ASE associated to other CAP Initiator
@@ -2743,12 +2740,12 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             info->pPrefQoSConfRsp->MaxTransportLatency = APP_QoSConf[i+offset].max_tp_latency;
           }
         }
-        /*maxmimum simulateous Sink ASEs in streaming is 2 sink ASEs*/
+        /*maximum simulateous Sink ASEs in streaming is 2 sink ASEs*/
         if (num_snk_ases > 2u)
         {
           num_snk_ases = 2u;
         }
-        /*maxmimum simulateous Source ASEs in streaming is 2 source ASEs*/
+        /*maximum simulateous Source ASEs in streaming is 2 source ASEs*/
         if (num_src_ases > 2u)
         {
           num_src_ases = 2u;
@@ -2800,7 +2797,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               controller_delay_min = controller_delay_min - (controller_delay_margin_snk * (num_snk_ases - 1));
             }
           }
-        } 
+        }
 
         LOG_INFO_APP("Computed Min Controller Delay with %d Snk ASEs and %d Src ASEs : %d us\n",
             num_snk_ases,
@@ -3451,21 +3448,19 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
 
 
 /*Audio Source */
-static void start_audio_source(void)
+static int32_t start_audio_source(void)
 {
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  Start_RxAudio();
+  return Start_RxAudio();
 }
 
 
 /*Audio Sink */
-static void start_audio_sink(void)
+static int32_t start_audio_sink(void)
 {
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  Start_TxAudio();
+  return Start_TxAudio();
 }
 
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
@@ -3816,7 +3811,8 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
 
     case CCP_CLT_NO_CURRENT_CALL_EVT:
     {
-      LOG_INFO_APP("No Call in Progress\n");
+      LOG_INFO_APP("No Call in Progress on Telephone Bearer Instance ID %d on remote CCP Server\n",
+                   pNotification->ContentControlID);
       break;
     }
 
@@ -4011,9 +4007,9 @@ static void VCP_MetaEvt_Notification(VCP_Notification_Evt_t *pNotification)
       LOG_INFO_APP("     Volume Setting : %d\n",p_info->VolSetting);
       LOG_INFO_APP("     Mute : %d\n",p_info->Mute);
       LOG_INFO_APP("     Change Counter : %d\n",p_info->ChangeCounter);
-      Volume = p_info->VolSetting;
-      Mute = p_info->Mute;
-      if (Mute == 0)
+      VCP_Volume = p_info->VolSetting;
+      VCP_Mute = p_info->Mute;
+      if (VCP_Mute == 0)
       {
         Menu_SetVolume(p_info->VolSetting);
         Set_Volume(p_info->VolSetting);

@@ -68,7 +68,7 @@ extern "C" {
 /* These delays refers to the time at which the audio signal passes through an
  * audio interface (such an electroacoustic transducer ) to or from
  * the Codec interface.
- * These delays are a subpart of the Presentation Delay as descibed in chapter 7
+ * These delays are a subpart of the Presentation Delay as described in chapter 7
  * of the Basic Audio Profile specification
  * The delay unit is us
  */

@@ -21,6 +21,7 @@
 #ifndef APP_CLI_RUNNER_H
 #define APP_CLI_RUNNER_H
 
+#include "app_phy_cli.h"
 #include "st_mac_802_15_4_raw_svc.h"
 
 /* Includes ------------------------------------------------------------------*/
@@ -87,12 +88,12 @@ typedef struct {
 
 /* Exported constants --------------------------------------------------------*/
 #define CLI_PROMPT              "802.15.4 valid cli >"
-#define CLI_NAME                "(STM32WBA5xx) PHY CLI\r\n"
+#define CLI_NAME                "(STM32WBAxx) PHY CLI\r\n"
 
 #if (FULL_CERTIFICATION_CAPABLE == 1)
-#define CLI_APP_VERSION         "v1.4.1 " __DATE__
+#define CLI_APP_VERSION         "v1.5.0 " __DATE__
 #else
-#define CLI_APP_VERSION         "v1.4.1"
+#define CLI_APP_VERSION         "v1.5.0"
 #endif
 
 #if defined(STM32WBA52xx)

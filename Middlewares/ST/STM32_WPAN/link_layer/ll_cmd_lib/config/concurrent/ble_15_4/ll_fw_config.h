@@ -63,10 +63,16 @@
 #define USE_NON_ACCURATE_32K_SLEEP_CLK              1 /* Allow to drive the sleep clock by sources other than the default crystal oscillator source.*/
                                                        /*LL can use crystal oscillator or RTC or RCO to drive the sleep clock.This selection is done via "DEFAULT_SLEEP_CLOCK_SOURCE" macro. */
 
+#define SUPPORT_CSSA                                0 /* Enable\Disable Coding Selection Scheme on Advertising Feature. Enable:1 - Disable:0 */
+#define SUPPORT_LE_PAWR_ADVERTISER_ROLE             0 /* Enable\Disable PAwR Advertiser role. Enable:1 - Disable:0 */
+#define SUPPORT_LE_PAWR_SYNC_ROLE                   0 /* Enable\Disable PAwR Synchronizer role. Enable:1 - Disable:0 */
+
 /* Non-standard features configurations */
 #define NUM_OF_CTSM_EMNGR_HNDLS                     1 /* Number of custom handles in event manager to be used for app specific needs */
 #define SUPPORT_AUGMENTED_BLE_MODE                  1 /* Enable\Disable Augmented BLE Support. Enable:1 - Disable:0 */
 #define SUPPORT_PTA                                 1 /* Enable\Disable PTA Feature. Enable:1 - Disable:0 */
+
+#define CHECK_ANY_MISSED_EVENT_ON_DEEP_SLEEP_EXIT   1 /* Enable\Disable calling event scheduler handler function at the end of deep sleep exit*/
 
 /*************************** MAC Configuration *************************************/
 /*Configurations of MAC will apply only when MAC is enabled*/
@@ -80,7 +86,7 @@
 #define SUPPORT_OPENTHREAD_1_2                      0 /* Enable / disable FW parts related to new features introduced in openthread 1.2*/
 #define SUPPORT_SEC                                 0 /* The MAC Security Supported : 1 - Not Supported:0 */
 #define RADIO_CSMA                                  1 /* Enable\Disable CSMA Algorithm in Radio Layer, Must be Enabled if MAC_LAYER_BUILD */
-#define SUPPORT_ANT_DIV                             0 /* Enable/Disable Antenna Diversity Feature */
+#define SUPPORT_ANT_DIV                             1 /* Enable/Disable Antenna Diversity Feature */
 #define SUPPORT_A_MAC                               1
 #define SMPL_PRTCL_TEST_ENABLE                      0
 #define IEEE_EUI64_VENDOR_SPECIFIC_FUNC             1 /* Comment to disable EUI-64 vendor specific function, in this case EUI-64 is not unique */

@@ -346,38 +346,6 @@ HAL_StatusTypeDef plat_set_nv_counter(enum nv_counter_t CounterId,
   return HAL_OK;
 }
 
-/**
-  * @brief  Increment/updates counter data in NV area.
-  * @warning This function is not reentrant
-  * @param  CounterId to be written
-  * @retval HAL_StatusTypeDef
-  *          HAL_OK on write successfully done.
-             HAL_ERROR when max updateable value written
-  */
-
-HAL_StatusTypeDef plat_increment_nv_counter(
-  enum nv_counter_t CounterId)
-{
-  uint32_t security_cnt;
-  HAL_StatusTypeDef err;
-  uint32_t Updated;
-
-  err = plat_read_nv_counter(CounterId,
-                                 sizeof(security_cnt),
-                                 (uint8_t *)&security_cnt);
-  if (err != HAL_OK)
-  {
-    return err;
-  }
-
-  if (security_cnt == UINT32_MAX)
-  {
-    return HAL_ERROR;
-  }
-
-  return plat_set_nv_counter(CounterId, security_cnt + 1u, &Updated);
-}
-
 HAL_StatusTypeDef plat_read_nv_counter(enum nv_counter_t CounterId,
                                              uint32_t size, uint8_t *val)
 {

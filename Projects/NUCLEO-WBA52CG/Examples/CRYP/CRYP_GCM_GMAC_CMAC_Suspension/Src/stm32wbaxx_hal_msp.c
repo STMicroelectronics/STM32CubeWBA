@@ -62,6 +62,7 @@
   */
 void HAL_MspInit(void)
 {
+
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
@@ -101,6 +102,7 @@ void HAL_CRYP_MspInit(CRYP_HandleTypeDef* hcryp)
   __HAL_RCC_AES_RELEASE_RESET();
     
   /* USER CODE END AES_MspInit 1 */
+
   }
 
 }

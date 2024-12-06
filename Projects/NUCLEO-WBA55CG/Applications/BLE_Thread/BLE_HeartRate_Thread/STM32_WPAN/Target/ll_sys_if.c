@@ -202,6 +202,8 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
       /* Revision ID not supported, default value of 500ppm applied */
       BLE_sleep_clock_accuracy = STM32WBA5x_DEFAULT_SCA_RANGE;
     }
+#else
+    UNUSED(RevID);
 #endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) */
   }
   else

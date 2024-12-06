@@ -183,7 +183,7 @@ tBleStatus PBP_PBS_BroadcastAudioStop(uint8_t BigHandle, uint8_t Release)
 /**
   * @brief Perform the Broadcast Audio Update procedure
   * @param AdvHandle: Handle of the periodic advertising of the broadcast source
-  * @param pBASEGroup: Pointer to the BASE Group fo the broadcast source
+  * @param pBASEGroup: Pointer to the BASE Group for the broadcast source
   * @retval status of the operation
   */
 tBleStatus PBP_PBS_BroadcastAudioUpdate(uint8_t AdvHandle, BAP_BASE_Group_t *pBASEGroup)
@@ -374,6 +374,10 @@ tBleStatus PBP_PBA_StartAdvReportParsing(uint16_t ConnHandle)
       && PBP_Context.PBAScanState == PBP_PBA_SCAN_STATE_IDLE)
   {
     ret = CAP_BroadcastAssistant_StartAdvReportParsing(ConnHandle);
+    if (ret == BLE_STATUS_SUCCESS)
+    {
+      PBP_Context.PBAScanState = PBP_PBA_SCAN_STATE_SCANNING;
+    }
   }
 #endif /* (BLE_CFG_PBP_PUBLIC_BROADCAST_ASSISTANT_ROLE == 1u) */
   return ret;
@@ -395,6 +399,10 @@ tBleStatus PBP_PBA_StopAdvReportParsing(uint16_t ConnHandle)
       && PBP_Context.PBAScanState == PBP_PBA_SCAN_STATE_SCANNING)
   {
     ret = CAP_BroadcastAssistant_StopAdvReportParsing(ConnHandle);
+    if (ret == BLE_STATUS_SUCCESS)
+    {
+      PBP_Context.PBAScanState = PBP_PBA_SCAN_STATE_IDLE;
+    }
   }
 #endif /* (BLE_CFG_PBP_PUBLIC_BROADCAST_ASSISTANT_ROLE == 1u) */
   return ret;
@@ -489,6 +497,10 @@ tBleStatus PBP_PBA_StopPASync(uint16_t SyncHandle)
   if (PBP_Context.Role & PBP_ROLE_PUBLIC_BROADCAST_ASSISTANT)
   {
     ret = CAP_BroadcastAssistant_StopPASync(SyncHandle);
+    if (ret == BLE_STATUS_SUCCESS)
+    {
+      PBP_Context.PBAPASyncState = PBP_PBA_PA_SYNC_STATE_IDLE;
+    }
   }
 #endif /* (BLE_CFG_PBP_PUBLIC_BROADCAST_ASSISTANT_ROLE == 1u) */
   return ret;

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,6 +32,18 @@ extern "C" {
 #include "app_entry.h"
 #include "app_common.h"
 #include "app_debug.h"
+
+#include "stm32wbaxx_ll_tim.h"
+#include "stm32wbaxx_ll_bus.h"
+#include "stm32wbaxx_ll_cortex.h"
+#include "stm32wbaxx_ll_rcc.h"
+#include "stm32wbaxx_ll_system.h"
+#include "stm32wbaxx_ll_utils.h"
+#include "stm32wbaxx_ll_pwr.h"
+#include "stm32wbaxx_ll_gpio.h"
+#include "stm32wbaxx_ll_dma.h"
+
+#include "stm32wbaxx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -61,7 +73,6 @@ void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_RNG_Init(void);
-void MX_CRC_Init(void);
 
 /* USER CODE BEGIN EFP */
 

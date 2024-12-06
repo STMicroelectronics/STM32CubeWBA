@@ -71,6 +71,7 @@ static void MX_ICACHE_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* STM32WBAxx **NON-SECURE** HAL library initialization:

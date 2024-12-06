@@ -150,7 +150,7 @@ tBleStatus HAP_HARC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("No ressource to use a HAP Client Instance\n");
+        BLE_DBG_HAP_HARC_MSG("No resource to use a HAP Client Instance\n");
         hciCmdResult = BLE_STATUS_FAILED;
       }
     }
@@ -2167,10 +2167,10 @@ static void HAP_HARC_Post_Linkup_Event(HAP_HARC_Inst_t *pHARC_Inst, tBleStatus c
   evt.EvtOpcode = (HAP_HARC_NotCode_t) HARC_LINKUP_COMPLETE_EVT;
   if (evt.Status == BLE_STATUS_SUCCESS)
   {
-    HAP_AttServiceInfo_Evt_t parms;
-    parms.StartAttHandle = pHARC_Inst->HASServiceStartHandle;
-    parms.EndAttHandle = pHARC_Inst->HASServiceEndHandle;
-    evt.pInfo = (void *) &parms;
+    HAP_AttServiceInfo_Evt_t params;
+    params.StartAttHandle = pHARC_Inst->HASServiceStartHandle;
+    params.EndAttHandle = pHARC_Inst->HASServiceEndHandle;
+    evt.pInfo = (void *) &params;
   }
   else
   {

@@ -4,7 +4,7 @@
  * @brief ZCL Voice Over Zigbee cluster header
  * ZCL 7 section 12.4
  * ZCL 8 section 12.3
- * @copyright Copyright [2019 - 2021] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2019 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_VOICE_H
@@ -187,7 +187,7 @@ struct zcl_voice_client_callbacks_t {
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclVoiceClientAlloc(struct ZigBeeT *zb, uint8_t endpoint,
@@ -198,8 +198,8 @@ struct ZbZclClusterT * ZbZclVoiceClientAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param estab_req Establishment Request command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclVoiceClientEstabReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -210,8 +210,8 @@ enum ZclStatusCodeT ZbZclVoiceClientEstabReq(struct ZbZclClusterT *cluster, cons
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param voice_tx Voice Transmission command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclVoiceVoiceTxReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -221,8 +221,8 @@ enum ZclStatusCodeT ZbZclVoiceVoiceTxReq(struct ZbZclClusterT *cluster, const st
  * Send a Voice Transmission Complete command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclVoiceTxCompletedReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -245,7 +245,7 @@ enum ZclStatusCodeT ZbZclVoiceClientSendControlRsp(struct ZbZclClusterT *cluster
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclVoiceServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,
@@ -256,8 +256,8 @@ struct ZbZclClusterT * ZbZclVoiceServerAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param control_cmd Control command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclVoiceServerControlReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,

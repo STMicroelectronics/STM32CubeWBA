@@ -41,14 +41,15 @@
 #define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
 
 /**
- * Define Advertising parameters
+ * Definition of public BD Address,
+ * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0x0000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
  */
-#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_DEVICE             (GAP_PUBLIC_ADDR)
 
 /**
  * Define privacy: PRIVACY_DISABLED or PRIVACY_ENABLED
@@ -61,7 +62,7 @@
  * if CFG_PRIVACY equals PRIVACY_DISABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_PUBLIC_ADDR or GAP_STATIC_RANDOM_ADDR
  * if CFG_PRIVACY equals PRIVACY_ENABLED, CFG_BLE_ADDRESS_TYPE has 2 allowed values: GAP_RESOLVABLE_PRIVATE_ADDR or GAP_NON_RESOLVABLE_PRIVATE_ADDR
  */
-#define CFG_BLE_ADDRESS_TYPE              (GAP_PUBLIC_ADDR)
+#define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
 #define ADV_INTERVAL_MIN                  (0x0080)
 #define ADV_INTERVAL_MAX                  (0x00A0)
@@ -73,35 +74,31 @@
 /**
  * Define IO Authentication
  */
-#define CFG_BONDING_MODE                 (1)
-#define CFG_USED_FIXED_PIN               (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
-#define CFG_FIXED_PIN                    (111111)
-#define CFG_ENCRYPTION_KEY_SIZE_MAX      (16)
-#define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
+#define CFG_BONDING_MODE                  (1)
+#define CFG_USED_FIXED_PIN                (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
+#define CFG_FIXED_PIN                     (111111)
+#define CFG_ENCRYPTION_KEY_SIZE_MAX       (16)
+#define CFG_ENCRYPTION_KEY_SIZE_MIN       (8)
 
 /**
  * Define Input Output capabilities
  */
-#define CFG_IO_CAPABILITY                (IO_CAP_DISPLAY_YES_NO)
+#define CFG_IO_CAPABILITY                 (IO_CAP_DISPLAY_YES_NO)
 
 /**
  * Define Man In The Middle modes
  */
-#define CFG_MITM_PROTECTION              (MITM_PROTECTION_REQUIRED)
+#define CFG_MITM_PROTECTION               (MITM_PROTECTION_REQUIRED)
 
 /**
  * Define Secure Connections Support
  */
-#define CFG_SECURE_NOT_SUPPORTED              (0x00)
-#define CFG_SECURE_OPTIONAL                   (0x01)
-#define CFG_SECURE_MANDATORY                  (0x02)
-
-#define CFG_SC_SUPPORT                        CFG_SECURE_OPTIONAL
+#define CFG_SC_SUPPORT                    (SC_PAIRING_OPTIONAL)
 
 /**
  * Define Keypress Notification Support
  */
-#define CFG_KEYPRESS_NOTIFICATION_SUPPORT     (KEYPRESS_NOT_SUPPORTED)
+#define CFG_KEYPRESS_NOTIFICATION_SUPPORT (KEYPRESS_NOT_SUPPORTED)
 
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
@@ -131,6 +128,7 @@
  * BLE stack options, bitmap to active or not some features at BleStack_Init() function call.
  */
 #define CFG_BLE_OPTIONS             (0 | \
+                                     0 | \
                                      0 | \
                                      0 | \
                                      0 | \
@@ -233,6 +231,9 @@
 #define CFG_LPM_LEVEL            (2)
 #define CFG_LPM_STDBY_SUPPORTED  (1)
 
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
+
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -245,6 +246,9 @@ typedef enum
 {
   CFG_LPM_APP,
   CFG_LPM_LOG,
+  CFG_LPM_LL_DEEPSLEEP,
+  CFG_LPM_LL_HW_RCO_CLBR,
+  CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -255,15 +259,9 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -286,10 +284,17 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
+
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
 #define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
+
+#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
+#define CFG_LOG_TRACE_BUF_SIZE      (256U)
 
 /* macro ensuring retrocompatibility with old applications */
 #define APP_DBG                     LOG_INFO_APP
@@ -344,9 +349,9 @@ typedef enum
   CFG_TASK_OT_TASKLETS,
   CFG_TASK_SEND_COAP_MSG,
   
-  TASK_BUTTON_1,
-  TASK_BUTTON_2,
-  TASK_BUTTON_3,
+  CFG_TASK_BUTTON_B1,
+  CFG_TASK_BUTTON_B2,
+  CFG_TASK_BUTTON_B3,
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
@@ -385,7 +390,7 @@ typedef enum
 
 /* Sequencer priorities by default  */
 #define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
-#define CFG_TASK_PRIO_HW_PKA                CFG_SEQ_PRIO_0   
+#define CFG_TASK_PRIO_HW_PKA                CFG_SEQ_PRIO_0
 #define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
 #define CFG_TASK_PRIO_ALARM                 CFG_SEQ_PRIO_1
 #define CFG_TASK_PRIO_US_ALARM              CFG_TASK_PRIO_ALARM
@@ -496,6 +501,7 @@ typedef enum
  */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
+
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */
@@ -530,6 +536,9 @@ typedef enum
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
+#define CFG_BSP_ON_SEQUENCER                    (1)
+#define CFG_BSP_ON_NUCLEO                       (1)
+                                                 
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested

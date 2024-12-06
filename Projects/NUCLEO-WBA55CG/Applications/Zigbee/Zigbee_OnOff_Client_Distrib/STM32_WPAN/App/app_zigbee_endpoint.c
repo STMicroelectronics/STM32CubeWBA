@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.onoff.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -227,12 +227,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Set the TC address to be distributed. */
-  pstConfig->security.trustCenterAddress = ZB_DISTRIBUTED_TC_ADDR;
-
-  /* Using the Uncertified Distributed Global Key */
-  memcpy( pstConfig->security.distributedGlobalKey, sec_key_distrib_uncert, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -324,7 +318,7 @@ static void APP_ZIGBEE_OnOffClientStart(void)
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   struct ZbApsAddrT     stDest;
   enum ZclStatusCodeT   eStatus;
@@ -356,15 +350,16 @@ void APPE_Button1Action(void)
  */
 static void APP_ZIGBEE_TimerToggleCallback( void * arg )
 {
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_SW1, CFG_TASK_PRIO_BUTTON_SWx );
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_B1, CFG_TASK_PRIO_BUTTON_Bx );
 }
+
 
 /**
  * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
  * @param  None
  * @retval None
  */
-void APPE_Button3Action(void)
+void APP_BSP_Button3Action(void)
 {
   static  uint8_t   cToggleOn = 0;
   

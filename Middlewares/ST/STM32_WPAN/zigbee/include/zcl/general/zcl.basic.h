@@ -6,7 +6,7 @@
  * @brief ZCL Basic cluster header
  * ZCL 7 section 3.2
  * ZCL 8 section 3.2
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_BASIC_H
@@ -216,6 +216,7 @@ enum ZbZclBasicPhysicalEnvT {
 
 /* ZCL_BASIC_ATTR_ZCL_VERSION */
 enum {
+    ZCL_BASIC_ZCL_VERSION_4 = 0x01U, /* Smart Energy references ZCL revision 4 */
     ZCL_BASIC_ZCL_VERSION_6 = 0x02U,
     ZCL_BASIC_ZCL_VERSION_7 = 0x03U,
     ZCL_BASIC_ZCL_VERSION_8 = 0x08U /* Starting from ZCL8, this number matches the revision of ZCL. */

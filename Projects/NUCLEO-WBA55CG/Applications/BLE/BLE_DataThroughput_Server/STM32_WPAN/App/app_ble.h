@@ -45,7 +45,7 @@ typedef enum
   APP_BLE_ADV_LP,
   APP_BLE_ADV_NON_CONN_FAST,
   APP_BLE_ADV_NON_CONN_LP,
-  /* USER CODE BEGIN APP_BLE_ConnStatus_t*/
+  /* USER CODE BEGIN APP_BLE_ConnStatus_t */
 
   /* USER CODE END APP_BLE_ConnStatus_t */
 } APP_BLE_ConnStatus_t;
@@ -83,7 +83,7 @@ typedef enum
   PROC_GAP_GEN_PHY_TOGGLE,
   PROC_GAP_GEN_CONN_TERMINATE,
   PROC_GATT_EXCHANGE_CONFIG,
-  /* USER CODE BEGIN ProcGapGeneralId_t*/
+  /* USER CODE BEGIN ProcGapGeneralId_t */
 
   /* USER CODE END ProcGapGeneralId_t */
 }ProcGapGeneralId_t;
@@ -138,7 +138,6 @@ enum
 {
   BOARD_ID_NUCLEO_WBA5X =  0x8B,
   BOARD_ID_DK_WBA5X     =  0x8C,
-  BOARD_ID_NUCLEO_WBA6X =  0x8E
 };
 
 /** 
@@ -182,6 +181,7 @@ void APP_BLE_Init(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
+const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen );
 void BLE_SVC_GAP_Change_PHY(void);

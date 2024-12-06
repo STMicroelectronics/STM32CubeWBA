@@ -168,6 +168,10 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
+/* USER CODE BEGIN ll_sys_config_params_0 */
+
+/* USER CODE END ll_sys_config_params_0 */
+
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
@@ -175,6 +179,10 @@ void ll_sys_config_params(void)
   ll_intf_cmn_config_ll_ctx_params(USE_RADIO_LOW_ISR, NEXT_EVENT_SCHEDULING_FROM_ISR);
   /* Apply the selected link layer sleep timer source */
   ll_sys_sleep_clock_source_selection();
+
+/* USER CODE BEGIN ll_sys_config_params_1 */
+
+/* USER CODE END ll_sys_config_params_1 */
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   /* Initialize link layer temperature measurement background task */
@@ -186,6 +194,9 @@ void ll_sys_config_params(void)
 
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+/* USER CODE BEGIN ll_sys_config_params_2 */
+
+/* USER CODE END ll_sys_config_params_2 */
 }
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
@@ -201,9 +212,7 @@ static void TempMeasureLL_Task_Entry( ULONG lArgument )
   for(;;)
   {
     tx_semaphore_get(&TempMeasLLSemaphore, TX_WAIT_FOREVER);
-    tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
     TEMPMEAS_RequestTemperatureMeasurement();
-    tx_mutex_put(&LinkLayerMutex);
     tx_thread_relinquish();
   }
 }
@@ -331,6 +340,9 @@ void ll_sys_sleep_clock_source_selection(void)
 
 void ll_sys_reset(void)
 {
+/* USER CODE BEGIN ll_sys_reset_0 */
+
+/* USER CODE END ll_sys_reset_0 */
 #if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
   uint8_t bsca = 0;
 #endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
@@ -348,4 +360,8 @@ void ll_sys_reset(void)
     ll_intf_le_set_sleep_clock_accuracy(bsca);
   }
 #endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
+/* USER CODE BEGIN ll_sys_reset_1 */
+
+/* USER CODE END ll_sys_reset_1 */
 }

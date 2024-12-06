@@ -46,7 +46,7 @@ typedef enum
   GATT_CLIENT_APP_DISCOVER_NOTIFICATION_CHAR_DESC,
   GATT_CLIENT_APP_ENABLE_NOTIFICATION_DESC,
   GATT_CLIENT_APP_DISABLE_NOTIFICATION_DESC,
-  /* USER CODE BEGIN GATT_CLIENT_APP_State_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_State_t */
 
   /* USER CODE END GATT_CLIENT_APP_State_t */
 }GATT_CLIENT_APP_State_t;
@@ -55,7 +55,7 @@ typedef enum
 {
   PEER_CONN_HANDLE_EVT,
   PEER_DISCON_HANDLE_EVT,
-  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t*/
+  /* USER CODE BEGIN GATT_CLIENT_APP_Conn_Opcode_t */
 
   /* USER CODE END GATT_CLIENT_APP_Conn_Opcode_t */
 }GATT_CLIENT_APP_Conn_Opcode_t;
@@ -66,7 +66,7 @@ typedef enum
   PROC_GATT_DISC_ALL_CHARS,
   PROC_GATT_DISC_ALL_DESCS,
   PROC_GATT_PROPERTIES_ENABLE_ALL,
-  /* USER CODE BEGIN ProcGattId_t*/
+  /* USER CODE BEGIN ProcGattId_t */
 
   /* USER CODE END ProcGattId_t */
 }ProcGattId_t;
@@ -85,6 +85,7 @@ typedef struct
 #define ST_P2P_SERVICE_UUID                                           (0xFE40)
 #define ST_P2P_WRITE_CHAR_UUID                                        (0xFE41)
 #define ST_P2P_NOTIFY_CHAR_UUID                                       (0xFE42)
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -105,7 +106,9 @@ tBleStatus GATT_CLIENT_APP_Set_Conn_Handle(uint8_t index, uint16_t connHdle);
 uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
 void GATT_CLIENT_APP_Discover_services(uint8_t index);
 /* USER CODE BEGIN EFP */
+
 void GATT_CLIENT_APP_ForwardWrite(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

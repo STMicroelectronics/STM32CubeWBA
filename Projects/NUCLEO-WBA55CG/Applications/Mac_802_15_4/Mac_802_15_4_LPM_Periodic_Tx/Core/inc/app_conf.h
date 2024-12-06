@@ -104,13 +104,6 @@ typedef enum
 #define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
 
 
-/******************************************************************************
- * RTC
- ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
-
 /* USER CODE BEGIN RTC */
 
 /* USER CODE END RTC */
@@ -131,6 +124,10 @@ typedef enum
  * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (0U)
+
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
@@ -383,6 +380,44 @@ typedef enum
     #define CFG_LOG_SUPPORTED       (0)
   #endif /* CFG_LOG_SUPPORTED */
 #endif /* CFG_LPM_STDBY_SUPPORTED */
+
+/******************************************************************************
+ * HW TimerServer
+ ******************************************************************************/
+/**
+ * This setting is used when standby mode is supported.
+ * hw_ts_InitMode_Limited should be used when the device restarts from Standby Mode. In that case, the Timer Server does
+ * not re-initialized its context. Only the Hardware register which content has been lost is reconfigured
+ * Otherwise, hw_ts_InitMode_Full should be requested (Start from Power ON) and everything is re-initialized.
+ */
+typedef enum
+{
+  hw_ts_InitMode_Full,
+  hw_ts_InitMode_Limited,
+} HW_TS_InitMode_t;
+
+/**
+ * When a Timer is created as a SingleShot timer, it is not automatically restarted when the timeout occurs. However,
+ * the timer is kept reserved in the list and could be restarted at anytime with HW_TS_Start()
+ *
+ * When a Timer is created as a Repeated timer, it is automatically restarted when the timeout occurs.
+ */
+typedef enum
+{
+  hw_ts_SingleShot,
+  hw_ts_Repeated
+} HW_TS_Mode_t;
+
+/**
+ * hw_ts_Successful is returned when a Timer has been successfully created with HW_TS_Create(). Otherwise, hw_ts_Failed
+ * is returned. When hw_ts_Failed is returned, that means there are not enough free slots in the list to create a
+ * Timer. In that case, CFG_HW_TS_MAX_NBR_CONCURRENT_TIMER should be increased
+ */
+typedef enum
+{
+  hw_ts_Successful,
+  hw_ts_Failed,
+}HW_TS_ReturnStatus_t;
 
 /* USER CODE BEGIN Defines_2 */
 

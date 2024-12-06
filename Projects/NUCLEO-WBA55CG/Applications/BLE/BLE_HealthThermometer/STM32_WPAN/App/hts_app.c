@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.c
+  * @file    HTS_app.c
   * @author  MCD Application Team
-  * @brief   service2_app application definition.
+  * @brief   HTS_app application definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "hts_app.h"
 #include "hts.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -48,9 +48,9 @@ typedef enum
   Int_NOTIFICATION_ON,
   Mei_INDICATION_OFF,
   Mei_INDICATION_ON,
-  /* USER CODE BEGIN Service2_APP_SendInformation_t */
+  /* USER CODE BEGIN Service1_APP_SendInformation_t */
 
-  /* USER CODE END Service2_APP_SendInformation_t */
+  /* USER CODE END Service1_APP_SendInformation_t */
   HTS_APP_SENDINFORMATION_LAST
 } HTS_APP_SendInformation_t;
 
@@ -59,7 +59,7 @@ typedef struct
   HTS_APP_SendInformation_t     Temm_Indication_Status;
   HTS_APP_SendInformation_t     Int_Notification_Status;
   HTS_APP_SendInformation_t     Mei_Indication_Status;
-  /* USER CODE BEGIN Service2_APP_Context_t */
+  /* USER CODE BEGIN Service1_APP_Context_t */
   HTS_TemperatureValue_t        IntermediateTemperatureChar;
   HTS_TemperatureValue_t        TemperatureMeasurementChar;
   uint16_t                      MeasurementIntervalChar;
@@ -68,7 +68,7 @@ typedef struct
   uint8_t                       TimerMeasurementStarted;
   UTIL_TIMER_Object_t           TimerMeasInt_Id;
   uint32_t                      StartTick;
-  /* USER CODE END Service2_APP_Context_t */
+  /* USER CODE END Service1_APP_Context_t */
   uint16_t              ConnectionHandle;
 } HTS_APP_Context_t;
 
@@ -122,17 +122,17 @@ static void HTS_APP_Store(void);
 /* Functions Definition ------------------------------------------------------*/
 void HTS_Notification(HTS_NotificationEvt_t *p_Notification)
 {
-  /* USER CODE BEGIN Service2_Notification_1 */
+  /* USER CODE BEGIN Service1_Notification_1 */
 
-  /* USER CODE END Service2_Notification_1 */
+  /* USER CODE END Service1_Notification_1 */
   switch(p_Notification->EvtOpcode)
   {
-    /* USER CODE BEGIN Service2_Notification_Service2_EvtOpcode */
+    /* USER CODE BEGIN Service1_Notification_Service1_EvtOpcode */
 
-    /* USER CODE END Service2_Notification_Service2_EvtOpcode */
+    /* USER CODE END Service1_Notification_Service1_EvtOpcode */
 
     case HTS_TEMM_INDICATE_ENABLED_EVT:
-      /* USER CODE BEGIN Service2Char1_INDICATE_ENABLED_EVT */
+      /* USER CODE BEGIN Service1Char1_INDICATE_ENABLED_EVT */
       HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_ON;
       if(HTS_APP_Context.TimerMeasurementStarted == 0)
       {
@@ -141,42 +141,42 @@ void HTS_Notification(HTS_NotificationEvt_t *p_Notification)
         UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, DEFAULT_HTS_MEASUREMENT_INTERVAL);
         HTS_APP_Context.TimerMeasurementStarted = 1;
       }
-      /* USER CODE END Service2Char1_INDICATE_ENABLED_EVT */
+      /* USER CODE END Service1Char1_INDICATE_ENABLED_EVT */
       break;
 
     case HTS_TEMM_INDICATE_DISABLED_EVT:
-      /* USER CODE BEGIN Service2Char1_INDICATE_DISABLED_EVT */
+      /* USER CODE BEGIN Service1Char1_INDICATE_DISABLED_EVT */
       HTS_APP_Context.Temm_Indication_Status = Temm_INDICATION_OFF;
       UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasurement_Id);
       HTS_APP_Context.TimerMeasurementStarted = 0;
-      /* USER CODE END Service2Char1_INDICATE_DISABLED_EVT */
+      /* USER CODE END Service1Char1_INDICATE_DISABLED_EVT */
       break;
 
     case HTS_MNBS_READ_EVT:
-      /* USER CODE BEGIN Service2Char2_READ_EVT */
+      /* USER CODE BEGIN Service1Char2_READ_EVT */
 
-      /* USER CODE END Service2Char2_READ_EVT */
+      /* USER CODE END Service1Char2_READ_EVT */
       break;
 
     case HTS_INT_NOTIFY_ENABLED_EVT:
-      /* USER CODE BEGIN Service2Char3_NOTIFY_ENABLED_EVT */
+      /* USER CODE BEGIN Service1Char3_NOTIFY_ENABLED_EVT */
       LOG_INFO_APP("HTS_INT_NOTIFY_ENABLED_EVT\n");
       HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_ON;
       UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
       UTIL_TIMER_Start(&HTS_APP_Context.TimerIntTemp_Id);
-      /* USER CODE END Service2Char3_NOTIFY_ENABLED_EVT */
+      /* USER CODE END Service1Char3_NOTIFY_ENABLED_EVT */
       break;
 
     case HTS_INT_NOTIFY_DISABLED_EVT:
-      /* USER CODE BEGIN Service2Char3_NOTIFY_DISABLED_EVT */
+      /* USER CODE BEGIN Service1Char3_NOTIFY_DISABLED_EVT */
       LOG_INFO_APP("HTS_INT_NOTIFY_DISABLED_EVT\n");
       HTS_APP_Context.Int_Notification_Status = Int_NOTIFICATION_OFF;
       UTIL_TIMER_Stop(&HTS_APP_Context.TimerIntTemp_Id);
-      /* USER CODE END Service2Char3_NOTIFY_DISABLED_EVT */
+      /* USER CODE END Service1Char3_NOTIFY_DISABLED_EVT */
       break;
 
     case HTS_MEI_READ_EVT:
-      /* USER CODE BEGIN Service2Char4_READ_EVT */
+      /* USER CODE BEGIN Service1Char4_READ_EVT */
       {
         LOG_INFO_APP("HTS_MEI_READ_EVT\n");
         if(p_Notification->RangeInterval != 0)
@@ -206,78 +206,78 @@ void HTS_Notification(HTS_NotificationEvt_t *p_Notification)
           HTS_APP_Context.TimerMeasurementStarted = 0;
         }
       }
-      /* USER CODE END Service2Char4_READ_EVT */
+      /* USER CODE END Service1Char4_READ_EVT */
       break;
 
     case HTS_MEI_WRITE_EVT:
-      /* USER CODE BEGIN Service2Char4_WRITE_EVT */
+      /* USER CODE BEGIN Service1Char4_WRITE_EVT */
 
-      /* USER CODE END Service2Char4_WRITE_EVT */
+      /* USER CODE END Service1Char4_WRITE_EVT */
       break;
 
     case HTS_MEI_INDICATE_ENABLED_EVT:
-      /* USER CODE BEGIN Service2Char4_INDICATE_ENABLED_EVT */
+      /* USER CODE BEGIN Service1Char4_INDICATE_ENABLED_EVT */
       LOG_INFO_APP("HTS_MEI_INDICATE_ENABLED_EVT\n");
       HTS_APP_Context.Mei_Indication_Status = Mei_INDICATION_ON;
       UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasInt_Id);
       UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasInt_Id, DEFAULT_HTS_MEASUREMENT_INTERVAL*3);
-      /* USER CODE END Service2Char4_INDICATE_ENABLED_EVT */
+      /* USER CODE END Service1Char4_INDICATE_ENABLED_EVT */
       break;
 
     case HTS_MEI_INDICATE_DISABLED_EVT:
-      /* USER CODE BEGIN Service2Char4_INDICATE_DISABLED_EVT */
+      /* USER CODE BEGIN Service1Char4_INDICATE_DISABLED_EVT */
       LOG_INFO_APP("HTS_MEI_INDICATE_DISABLED_EVT\n");
       HTS_APP_Context.Mei_Indication_Status = Mei_INDICATION_OFF;
       UTIL_TIMER_Stop(&HTS_APP_Context.TimerMeasInt_Id);
-      /* USER CODE END Service2Char4_INDICATE_DISABLED_EVT */
+      /* USER CODE END Service1Char4_INDICATE_DISABLED_EVT */
       break;
 
     default:
-      /* USER CODE BEGIN Service2_Notification_default */
+      /* USER CODE BEGIN Service1_Notification_default */
 
-      /* USER CODE END Service2_Notification_default */
+      /* USER CODE END Service1_Notification_default */
       break;
   }
-  /* USER CODE BEGIN Service2_Notification_2 */
+  /* USER CODE BEGIN Service1_Notification_2 */
 
-  /* USER CODE END Service2_Notification_2 */
+  /* USER CODE END Service1_Notification_2 */
   return;
 }
 
 void HTS_APP_EvtRx(HTS_APP_ConnHandleNotEvt_t *p_Notification)
 {
-  /* USER CODE BEGIN Service2_APP_EvtRx_1 */
+  /* USER CODE BEGIN Service1_APP_EvtRx_1 */
 
-  /* USER CODE END Service2_APP_EvtRx_1 */
+  /* USER CODE END Service1_APP_EvtRx_1 */
 
   switch(p_Notification->EvtOpcode)
   {
-    /* USER CODE BEGIN Service2_APP_EvtRx_Service2_EvtOpcode */
+    /* USER CODE BEGIN Service1_APP_EvtRx_Service1_EvtOpcode */
 
-    /* USER CODE END Service2_APP_EvtRx_Service2_EvtOpcode */
+    /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case HTS_CONN_HANDLE_EVT :
-      /* USER CODE BEGIN Service2_APP_CONN_HANDLE_EVT */
+      /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
 
-      /* USER CODE END Service2_APP_CONN_HANDLE_EVT */
+      /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
 
     case HTS_DISCON_HANDLE_EVT :
-      /* USER CODE BEGIN Service2_APP_DISCON_HANDLE_EVT */
+      /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
       UTIL_TIMER_Stop(&(HTS_APP_Context.TimerMeasurement_Id));
       UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, DEFAULT_HTS_MEASUREMENT_INTERVAL);
-      /* USER CODE END Service2_APP_DISCON_HANDLE_EVT */
+      /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
       break;
 
     default:
-      /* USER CODE BEGIN Service2_APP_EvtRx_default */
+      /* USER CODE BEGIN Service1_APP_EvtRx_default */
 
-      /* USER CODE END Service2_APP_EvtRx_default */
+      /* USER CODE END Service1_APP_EvtRx_default */
       break;
   }
 
-  /* USER CODE BEGIN Service2_APP_EvtRx_2 */
+  /* USER CODE BEGIN Service1_APP_EvtRx_2 */
 
-  /* USER CODE END Service2_APP_EvtRx_2 */
+  /* USER CODE END Service1_APP_EvtRx_2 */
 
   return;
 }
@@ -287,7 +287,7 @@ void HTS_APP_Init(void)
   UNUSED(HTS_APP_Context);
   HTS_Init();
 
-  /* USER CODE BEGIN Service2_APP_Init */
+  /* USER CODE BEGIN Service1_APP_Init */
   HTS_Data_t msg_conf;
 
   HTS_APP_Context.StartTick = HAL_GetTick();
@@ -360,7 +360,7 @@ void HTS_APP_Init(void)
   HTS_OldIndex = 0;
 
   UTIL_TIMER_StartWithPeriod(&HTS_APP_Context.TimerMeasurement_Id, DEFAULT_HTS_MEASUREMENT_INTERVAL);
-  /* USER CODE END Service2_APP_Init */
+  /* USER CODE END Service1_APP_Init */
   return;
 }
 
@@ -414,18 +414,18 @@ __USED void HTS_Temm_SendIndication(void) /* Property Indication */
   hts_indication_data.p_Payload = (uint8_t*)a_HTS_UpdateCharData;
   hts_indication_data.Length = 0;
 
-  /* USER CODE BEGIN Service2Char1_IS_1*/
+  /* USER CODE BEGIN Service1Char1_IS_1 */
 
-  /* USER CODE END Service2Char1_IS_1*/
+  /* USER CODE END Service1Char1_IS_1 */
 
   if (indication_on_off != Temm_INDICATION_OFF)
   {
     HTS_UpdateValue(HTS_TEMM, &hts_indication_data);
   }
 
-  /* USER CODE BEGIN Service2Char1_IS_Last*/
+  /* USER CODE BEGIN Service1Char1_IS_Last */
 
-  /* USER CODE END Service2Char1_IS_Last*/
+  /* USER CODE END Service1Char1_IS_Last */
 
   return;
 }
@@ -438,18 +438,18 @@ __USED void HTS_Int_SendNotification(void) /* Property Notification */
   hts_notification_data.p_Payload = (uint8_t*)a_HTS_UpdateCharData;
   hts_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service2Char3_NS_1*/
+  /* USER CODE BEGIN Service1Char3_NS_1 */
 
-  /* USER CODE END Service2Char3_NS_1*/
+  /* USER CODE END Service1Char3_NS_1 */
 
   if (notification_on_off != Int_NOTIFICATION_OFF)
   {
     HTS_UpdateValue(HTS_INT, &hts_notification_data);
   }
 
-  /* USER CODE BEGIN Service2Char3_NS_Last*/
+  /* USER CODE BEGIN Service1Char3_NS_Last */
 
-  /* USER CODE END Service2Char3_NS_Last*/
+  /* USER CODE END Service1Char3_NS_Last */
 
   return;
 }
@@ -462,23 +462,23 @@ __USED void HTS_Mei_SendIndication(void) /* Property Indication */
   hts_indication_data.p_Payload = (uint8_t*)a_HTS_UpdateCharData;
   hts_indication_data.Length = 0;
 
-  /* USER CODE BEGIN Service2Char4_IS_1*/
+  /* USER CODE BEGIN Service1Char4_IS_1 */
 
-  /* USER CODE END Service2Char4_IS_1*/
+  /* USER CODE END Service1Char4_IS_1 */
 
   if (indication_on_off != Mei_INDICATION_OFF)
   {
     HTS_UpdateValue(HTS_MEI, &hts_indication_data);
   }
 
-  /* USER CODE BEGIN Service2Char4_IS_Last*/
+  /* USER CODE BEGIN Service1Char4_IS_Last */
 
-  /* USER CODE END Service2Char4_IS_Last*/
+  /* USER CODE END Service1Char4_IS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 void HTS_APP_Measurement(void)
 {
   uint32_t measurement;
@@ -821,6 +821,5 @@ static void HTS_APP_Suppress(void)
   {
     HTS_OldIndex = 0;
   }
-/* USER CODE END HTSAPP_Suppress */
 }
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

@@ -31,24 +31,21 @@
 #define CONFIG_ZB_REV                   23
 #endif
 
-/* stdarg is required for the logging (ZbSetLogging) */
-/*lint -save -e829 "'stdarg.h' usage should be deprecated [MISRA Rule 17.1 (REQUIRED)]" */
-/*lint -save -e451 "header file included withoutstandard guard [Dir 4.10 (REQUIRED)]" */
-#include <stdarg.h>
-/*lint -restore */
-/*lint -restore */
-
 #include <stdint.h>
 #include <stdbool.h>
-#include <stddef.h> /* NULL */
+#include <stddef.h> /* for NULL */
 #include "pletoh.h" /* Little endian conversion */
 #include "llist.h" /* Link list */
 #include "ieee802154_enums.h"
 
-/* Zigbee instance */
+#include "zigbee.log.h"
+
+/* Zigbee instance as an opaque data structure. The internal parameters of this structure
+ * are only accessible within the Zigbee stack. */
 struct ZigBeeT;
 
-/* MAC instance */
+/* MAC instance as an opaque data structure. The internal parameters of this structure
+ * are only accessible within the Zigbee stack and MAC layers. */
 struct WpanPublicT;
 
 /* ZigBee Protocol Versions as related to the spec version. */
@@ -220,45 +217,6 @@ enum ZbTcsoStatusT {
 #define ZB_SCAN_TYPE_ENHANCED           4 /* MCP_SCAN_ENHANCED (4) */
 
 /*---------------------------------------------------------------
- * Stack Logging
- *---------------------------------------------------------------
- */
-/* Debugging log mask. */
-#define ZB_LOG_MASK_FATAL               0x00000001U /* Unrecoverable errors. */
-#define ZB_LOG_MASK_ERROR               0x00000002U /* Recoverable internal errors. */
-#define ZB_LOG_MASK_INFO                0x00000004U /* Basic debugging info. Less verbose than ZB_LOG_MASK_DEBUG. */
-#define ZB_LOG_MASK_DEBUG               0x00000008U /* General debug info */
-/* NWK */
-#define ZB_LOG_MASK_NWK_ROUTING         0x00000010U /* Network routing details. */
-#define ZB_LOG_MASK_NWK_LQI             0x00000020U /* Network link status and lqi updates. */
-#define ZB_LOG_MASK_NWK_SECURITY        0x00000040U /* Network security. */
-#define ZB_LOG_MASK_NWK_ADDR_MAP        0x00000080U /* Network address map changes */
-#define ZB_LOG_MASK_NWK_PARENT_SEL      0x00000100U /* Parent selection during join/rejoin */
-#define ZB_LOG_MASK_NWK_SEND            0x00000200U /* Network packet debugging */
-/* APS */
-#define ZB_LOG_MASK_APS_SEND            0x00001000U /* APS packet transmission */
-#define ZB_LOG_MASK_APS_FRAG            0x00002000U /* APS fragmentation debugging */
-/* ZDO */
-#define ZB_LOG_MASK_ZDO_ANNCE           0x00010000U /* Print on reception of ZDO Device_Annce */
-/* Misc */
-#define ZB_LOG_MASK_PERSIST             0x00100000U /* Persistence */
-#define ZB_LOG_MASK_GREENPOWER          0x00200000U /* Green Power */
-#define ZB_LOG_MASK_HEAP                0x00400000U /* ZbHeapAlloc / ZbHeapFree debugging */
-#define ZB_LOG_MASK_TIMER               0x00800000U /* ZbTimer */
-#define ZB_LOG_MASK_SLEEPY              0x01000000U /* Sleepy (e.g. Polling) */
-#define ZB_LOG_MASK_MAC_RSSI            0x02000000U /* Print debug message per MCPS-DATA.indication showing RSSI */
-#define ZB_LOG_MASK_ZB_DIRECT           0x04000000U /* Zigbee Direct debugging */
-/* ZCL / Application */
-#define ZB_LOG_MASK_ZCL                 0x10000000U /* ZCL */
-
-/* Specifies the level of logging to use, and a callback that outputs the log information. */
-void ZbSetLogging(struct ZigBeeT *zb, uint32_t mask,
-    void (*func)(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argptr));
-
-void ZbGetLogging(struct ZigBeeT *zb, uint32_t *mask,
-    void(**func)(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argptr));
-
-/*---------------------------------------------------------------
  * Exegin Manufacturing ID
  *---------------------------------------------------------------
  */
@@ -273,17 +231,27 @@ void ZbGetLogging(struct ZigBeeT *zb, uint32_t *mask,
 /* One 2.4 GHz mask + one North American mask + five EU masks + four GB-868 masks. */
 #define ZB_CHANNEL_LIST_NUM_MAX         11U
 
+/**
+ * A single Channel List Entry. Includes the Channel Page and Channel Mask.
+ * It is used within 'struct ZbChannelListT' when describing a list of channels masks,
+ * or on its own in some cases.
+ */
 struct ZbChannelListEntryT {
-    /* 802.15.4 Channel Page */
-    uint8_t page;
-    /* e.g. WPAN_CHANNELMASK_2400MHZ or ZB_CHANNELMASK_2400MHZ_HA for Page 0. */
+    uint8_t page; /**< The 802.15.4 Channel Page (e.g. 2.4 GHz O-QPSK = Page 0) */
     uint32_t channelMask;
+    /**< The 32-bit Channel Mask. The 5 MSB Channel Page bits are not used and should
+     * be set to 0. The 27 LSB define the channel(s) supported or to be used during
+     * commissioning. */
 };
 
+/**
+ * The Channel List structure. Includes a list of 'struct ZbChannelListEntryT'
+ * entries; one for each Channel Page supported or to be used during commissioning.
+ */
 struct ZbChannelListT {
-    /* Number of channel masks in 'list' */
-    uint8_t count;
+    uint8_t count; /**< Number of channel masks in 'list'. Maximum is ZB_CHANNEL_LIST_NUM_MAX. */
     struct ZbChannelListEntryT list[ZB_CHANNEL_LIST_NUM_MAX];
+    /**< The list of Channel Pages and Masks. */
 };
 
 /*---------------------------------------------------------------
@@ -294,11 +262,15 @@ struct ZbChannelListT {
  * APSME-UPDATE-DEVICE.request command need not be fragmented. */
 #define ZB_JOINER_TLVS_MAX_SIZE                 79U
 
+/**
+ * TLV structure the application can use to include TLVs in certains packet payloads
+ * during the commissioning process.
+ */
 struct ZbJoinerTLVsT {
-    /* length of tlv data. */
-    uint8_t length;
-    /* TLV buffer. */
+    uint8_t length; /**< Length of the TLV buffer 'buf'. Maximum length is ZB_JOINER_TLVS_MAX_SIZE. */
     uint8_t buf[ZB_JOINER_TLVS_MAX_SIZE];
+    /**< Buffer containing the TLV data.
+     * The data is in the format as would appear over-the-air (i.e. binary blob format) */
 };
 
 /*---------------------------------------------------------------
@@ -312,6 +284,7 @@ struct ZbMsgFilterT;
 
 /* Zigbee uptime structure **/
 typedef unsigned long ZbUptimeT;
+
 /**
  * Zigbee timeout remaining function.
  * @param now Current time
@@ -321,7 +294,7 @@ typedef unsigned long ZbUptimeT;
  */
 unsigned int ZbTimeoutRemaining(ZbUptimeT now, ZbUptimeT expire_time);
 
-/* A pointer to this struct type is passed to ZbInit to define the various
+/** A pointer to this struct type is passed to ZbInit to define the various
  * ZigBee tables used in the stack. If the pointer to ZbInit is NULL, the
  * default sizes are used. */
 struct ZbInitTblSizesT {
@@ -354,7 +327,7 @@ struct ZbInitTblSizesT {
     unsigned int apsPeerLinkKeyTblSz; /* Default: 32 */
 };
 
-/* Same parameters as ZbSetLogging takes. Allows debug log output
+/** Same parameters as ZbSetLogging takes. Allows debug log output
  * as stack is being initialized. */
 struct ZbInitSetLoggingT {
     uint32_t mask; /**< e.g. ZB_LOG_MASK_LEVEL_2 */
@@ -379,18 +352,33 @@ struct ZbInitSetLoggingT {
  */
 struct ZigBeeT * ZbInit(uint64_t extAddr, struct ZbInitTblSizesT *tblSizes, struct ZbInitSetLoggingT *setLogging);
 
-/* Deallocates a Zigbee stack instance. */
+/**
+ * Deallocates a Zigbee stack instance.
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbDestroy(struct ZigBeeT *zb);
+
+/**
+ * Deallocates a Zigbee stack instance and save callback to application structure
+ * @param zb Pointer to Zigbee stack instance
+ * @param callback Callback function
+ * @param arg Callback argument
+ * @return Returns ZB_STATUS_SUCCESS on success, other status code on failure
+ */
 enum ZbStatusCodeT ZbDestroyWithCb(struct ZigBeeT *zb, void (*callback)(void *arg), void *arg);
 
-/* Help seed the stack's PRNG. If the data has real entropy, set the has_entropy flag to true. */
-void ZbSeedRand(struct ZigBeeT *zb, uint8_t *randBuf, unsigned int len, bool has_entropy);
-
-/* Called periodically to run the stack. */
+/**
+ * Called periodically to run the stack.
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbTimerWork(struct ZigBeeT *zb);
 
-/* Returns the length of time (in milliseconds) until the next scheduled timer will elapse,
- * or UINT_MAX if there are no scheduled timers. */
+/**
+ * Returns the length of time (in milliseconds) until the next scheduled timer will elapse,
+ * or UINT_MAX if there are no scheduled timers.
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns Length of time on success, 0 on failure
+ */
 unsigned int ZbCheckTime(struct ZigBeeT *zb);
 
 /* Configure a callback to wakeup the application if there's a new stack event to
@@ -404,27 +392,55 @@ unsigned int ZbCheckTime(struct ZigBeeT *zb);
  */
 void ZbWakeupCallbackConfig(struct ZigBeeT *zb, void (*wakeup_cb)(void));
 
-/* Called to get the file descriptor to be used to wake-up the stack thread calling
+/**
+ * Called to get the file descriptor to be used to wake-up the stack thread calling
  * ZbTimerWork if a stack event needs to be processed. This is only required in
  * multi-threaded environments. Without this event, it is possible for a user thread to
  * initiate a stack function which does not activate the MAC layer, which in turn would
- * wake up the stack thread. */
+ * wake up the stack thread.
+ * @param zb Pointer to Zigbee stack instance
+ */
 int ZbPortStackEventFd(struct ZigBeeT *zb);
 
+/**
+ * Change extended address of the stack instance
+ * @param zb Pointer to Zigbee stack instance
+ * @param extAddr New extended address
+ */
 void ZbChangeExtAddr(struct ZigBeeT *zb, uint64_t extAddr);
 
 struct ZbNlmeLeaveConfT;
+
+/**
+ * Send a leave request to the stack
+ * @param zb Pointer to Zigbee stack instance
+ * @param callback Callback function
+ * @param cbarg Callback argument
+ * @return Returns ZB_STATUS_SUCCESS on success, other status code on failure
+ */
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbLeaveReq(struct ZigBeeT *zb,
     void (*callback)(struct ZbNlmeLeaveConfT *conf, void *arg), void *cbarg);
 
-/* Helper function to perform an APS and NWK reset */
+/**
+ * Helper function to perform an APS and NWK reset
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbReset(struct ZigBeeT *zb);
 
-/* Attaches an IEEE 802.15.4 device driver to the ZigBee stack. Uses the link pointers
- * within the device structure for linking. */
+/**
+ * Attaches an IEEE 802.15.4 device driver to the ZigBee stack. Uses the link pointers
+ * within the device structure for linking.
+ * @param zb Pointer to Zigbee stack instance
+ * @param dev Pointer to wpan device
+ * @return Returns true on success, false otherwise
+ */
 bool ZbIfAttach(struct ZigBeeT *zb, struct WpanPublicT *dev);
 
-/* Detaches an IEEE 802.15.4 device driver from the ZigBee stack. */
+/**
+ * Detaches an IEEE 802.15.4 device driver from the ZigBee stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @param dev Pointer to wpan device
+ */
 void ZbIfDetach(struct ZigBeeT *zb, struct WpanPublicT *dev);
 
 /*---------------------------------------------------------------
@@ -485,7 +501,13 @@ enum ZclStatusCodeT ZbZclBasicWriteDirect(struct ZigBeeT *zb, uint16_t attrId, c
  */
 enum ZclStatusCodeT ZbZclBasicReadDirect(struct ZigBeeT *zb, uint16_t attrId, void *buf, unsigned int max_len);
 
-/* Post an alarm code to the Basic Cluster */
+/**
+ * Post an alarm code to the Basic Cluster.
+ * @param zb Pointer to Zigbee stack instance
+ * @param endpoint Endpoint of basic cluster
+ * @param alarm_code Alarm code
+ * @return Returns true on success, false otherwise
+ */
 bool ZbZclBasicPostAlarm(struct ZigBeeT *zb, uint8_t endpoint, uint8_t alarm_code);
 
 /*---------------------------------------------------------------
@@ -539,7 +561,7 @@ void ZbTimerReset(struct ZbTimerT *timer, unsigned int timeout);
 bool ZbTimerRunning(struct ZbTimerT *timer);
 
 /**
- *  Returns time remaining in ms for a timer.
+ * Returns time remaining in ms for a timer.
  * @param timer Pointer to Zigbee timer structure
  * @return Time remaining in ms as an unsigned int
  */
@@ -549,77 +571,112 @@ unsigned int ZbTimerRemaining(struct ZbTimerT *timer);
  * Persistence
  *---------------------------------------------------------
  */
-/* Configure the persistence callback that tells the application when important
- * stack parameters have changed and should be saved. */
+/**
+ * Configure the persistence callback that tells the application when important
+ * stack parameters have changed and should be saved.
+ * @param zb Pointer to Zigbee stack instance
+ * @param callback Callback function
+ * @param cbarg Callback argument
+ * @return True if callback was registered, false otherwise.
+ */
 bool ZbPersistNotifyRegister(struct ZigBeeT *zb, void (*callback)(struct ZigBeeT *zb, void *cbarg), void *cbarg);
 
-/* Get the stack persistence data and write it to the buffer provided by buf.
+/**
+ * Get the stack persistence data and write it to the buffer provided by buf.
  * If buf is NULL and maxlen is zero, this function determines the buffer size
  * required to save the persistence data.
  * Use ZbStartupPersist to restore the persistence data to the stack and restart
- * the zigbee stack. */
+ * the zigbee stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @param buf Pointer to memory to write persistence data
+ * @param maxlen Max length of persistence data
+ * @return Returns length of persistence data
+ */
 unsigned int ZbPersistGet(struct ZigBeeT *zb, uint8_t *buf, unsigned int maxlen);
 
-/* Same as ZbPersistGet, but saves additional more dynamic data such as routing tables.
+/**
+ * Same as ZbPersistGet, but saves additional more dynamic data such as routing tables.
  * Use the same ZbStartupPersist to restore the persistence data to the stack and
- * to restart the zigbee stack. */
+ * to restart the zigbee stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @param buf Pointer to memory to write persistence and additional data
+ * @param maxlen Max length of persistence and additional data
+ * @return Returns length of persistence and additional data
+ */
 unsigned int ZbStateGet(struct ZigBeeT *zb, uint8_t *buf, unsigned int maxlen);
 
 /*---------------------------------------------------------
  * Shutdown
  *---------------------------------------------------------
  */
-/* This API moves the stack to shutdown mode, used in case of a sleepy end device to conserve power. */
+/**
+ * This API moves the stack to shutdown mode, used in case of a sleepy end device to conserve power.
+ * @param zb Pointer to Zigbee stack instance
+ */
 void ZbShutdown(struct ZigBeeT *zb);
-
-/* The following APIs are to pause the stack and allow another service to use the
- * MAC layer. Upon resume, the MAC interface(s) are reconfigured to work with the
- * Zigbee stack again. */
-enum ZbStatusCodeT ZbStatePause(struct ZigBeeT *zb, void (*callback)(void *arg), void *arg);
-enum ZbStatusCodeT ZbStateResume(struct ZigBeeT *zb);
 
 /*---------------------------------------------------------------
  * Misc. Helper Functions
  *---------------------------------------------------------------
  */
-/* Message filter return values. */
-enum zb_msg_filter_rc {
-    ZB_MSG_CONTINUE = 0, /* Continue processing any further filter callbacks. */
-    ZB_MSG_DISCARD /* Stop processing further filter callbacks. */
-};
 
+/**
+ * Returns the Extended address of the Zigbee stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns extended address
+ */
 uint64_t ZbExtendedAddress(struct ZigBeeT *zb);
+
+/**
+ * Returns the Short address of the Zigbee stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns short address
+ */
 uint16_t ZbShortAddress(struct ZigBeeT *zb);
 
 /* Returns the number of channels (bits) set in 'mask'.
  * Sets '*first_channel' to the first channel found in the mask. */
-uint8_t ZbGetNumChannelsFromMask(uint32_t mask, uint16_t *first_channel);
-
-/* Total memory allocated from the system heap. */
-unsigned int zb_malloc_current_sz(void);
 
 /* Returns the amount of memory allocated from the zigbee stack heap. */
+
+/**
+ * Current size of memory allocated from the zigbee stack heap
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns the memory allocated from the zigbee stack heap
+ */
 unsigned long ZbHeapUsed(struct ZigBeeT *zb);
-/* Returns the amount of memory available in the zigbee stack heap. May be zero if unknown or unbounded. */
+
+/**
+ * Current size of memory available in the zigbee stack heap
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns the amount of memory available in the zigbee stack heap,
+ * or 0 if unknown or unbounded
+ */
 unsigned long ZbHeapAvailable(struct ZigBeeT *zb);
 
+/**
+ * Zigbee memory heap high-water mark. Useful during testing to determine maximum
+ * amount of memory consumed from total heap size.
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns the worst-case heap usage (high-water mark)
+ */
 unsigned long ZbHeapHighWaterMark(struct ZigBeeT *zb);
 
 /*---------------------------------------------------------------
  * Additional Layer Includes
  *---------------------------------------------------------------
  */
+#include "zigbee.filter.h"
 #include "zigbee.security.h"
 #include "zigbee.hash.h"
 #if (CONFIG_ZB_REV >= 23)
-#include "zigbee.tlv.h"
-#include "zigbee.dlk.h"
+# include "zigbee.tlv.h"
+# include "zigbee.dlk.h"
 #endif
 #include "zigbee.bdb.h"
 #include "zigbee.aps.h"
 #include "zigbee.nwk.h"
 #include "zigbee.startup.h"
 #include "zigbee.zdo.h"
-#include "zigbee.filter.h"
 
 #endif

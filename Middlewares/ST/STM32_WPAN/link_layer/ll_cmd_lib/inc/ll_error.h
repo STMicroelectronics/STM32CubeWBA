@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ll_error.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ll_error.h#2 $*/
 /**
  ********************************************************************************
  * @file    error.h
@@ -117,7 +117,7 @@
 #define     OPERATION_CANCELLED_BY_HOST														0x44
 #define		PACKET_TOO_LONG																	0x45
 #define 	TOO_LATE																		0x46
-
+#define     INSUFFICIENT_CHANNELS                                                           0x48
 #if SUPPORT_BLE
 
 #if ((MAX_NUM_CNCRT_STAT_MCHNS > 1) && !((SUPPORT_MASTER_CONNECTION) || (SUPPORT_SLAVE_CONNECTION)||(SUPPORT_LE_EXTENDED_ADVERTISING)))
@@ -172,6 +172,17 @@
 #error "LE Enhanced Connection Update(subrating) enabled only if master or slave enabled"
 #endif /* #error */
 
+#if ((SUPPORT_CSSA) && (!SUPPORT_LE_EXTENDED_ADVERTISING))
+#error If controller supports Code Scheme selection feature , then it shall support Extended advertising feature
+#endif /* ((SUPPORT_CSSA) && (!SUPPORT_LE_EXTENDED_ADVERTISING)) */
+
+#if ((SUPPORT_LE_PAWR_ADVERTISER_ROLE) && (!SUPPORT_PERIODIC_SYNC_TRANSFER || !SUPPORT_EXPLCT_BROADCASTER_ROLE))
+#error PAWR feature shall be enabled only if PAST transmitter feature is enabled
+#endif /* #error */
+
+#if ((SUPPORT_LE_PAWR_SYNC_ROLE) && (!SUPPORT_PERIODIC_SYNC_TRANSFER || !SUPPORT_EXPLCT_OBSERVER_ROLE))
+#error PAWR feature shall be enabled only if PAST recipient feature is enabled
+#endif /* #error */
 
 
 

@@ -143,10 +143,12 @@ static void BleStack_Process_BG(void);
 static void Ble_UserEvtRx(void);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static uint8_t  HOST_BLE_Init(void);
+void LINKLAYER_DEBUG_SIGNAL_SET(void* signal);
+void LINKLAYER_DEBUG_SIGNAL_RESET(void* signal);
+void LINKLAYER_DEBUG_SIGNAL_TOGGLE(void* signal);
 
 /* USER CODE BEGIN PFP */
 void CPU2_BLE_GATT_MyBLENotifyCharacteristic_Update(void);
-
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -286,9 +288,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
     /* USER CODE END EVENT_PCKT */
     default:
     {
-      /* USER CODE BEGIN EVENT_PCKT_DEFAULT*/
+      /* USER CODE BEGIN EVENT_PCKT_DEFAULT */
 
-      /* USER CODE END EVENT_PCKT_DEFAULT*/
+      /* USER CODE END EVENT_PCKT_DEFAULT */
       break;
     }
   }
@@ -372,9 +374,9 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint16_t gap_service_handle, gap_dev_name_char_handle, gap_appearance_char_handle;
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
 
-  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init*/
+  /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init */
 
-  /* USER CODE END Ble_Hci_Gap_Gatt_Init*/
+  /* USER CODE END Ble_Hci_Gap_Gatt_Init */
 
   ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
                                   CONFIG_DATA_PUBADDR_LEN,
@@ -394,7 +396,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   /* Initialize GAP interface */
   role = 0x01;
 
-  /* USER CODE BEGIN Role_Mngt*/
+  /* USER CODE BEGIN Role_Mngt */
 
   /* USER CODE END Role_Mngt */
 
@@ -681,19 +683,28 @@ void Ble_HostStack_Process(void)
 
 /*************************************************************/
 
-/* Link Layer debug API definition (Unused)*/
+/* Link Layer debug API definition */
 void LINKLAYER_DEBUG_SIGNAL_SET(void* signal)
 {
+  /* USER CODE BEGIN LINKLAYER_DEBUG_SIGNAL_SET */
+
+  /* USER CODE END LINKLAYER_DEBUG_SIGNAL_SET */
   return;
 }
 
 void LINKLAYER_DEBUG_SIGNAL_RESET(void* signal)
 {
+  /* USER CODE BEGIN LINKLAYER_DEBUG_SIGNAL_RESET */
+
+  /* USER CODE END LINKLAYER_DEBUG_SIGNAL_RESET */
   return;
 }
 
 void LINKLAYER_DEBUG_SIGNAL_TOGGLE(void* signal)
 {
+  /* USER CODE BEGIN LINKLAYER_DEBUG_SIGNAL_TOGGLE */
+
+  /* USER CODE END LINKLAYER_DEBUG_SIGNAL_TOGGLE */
   return;
 }
 

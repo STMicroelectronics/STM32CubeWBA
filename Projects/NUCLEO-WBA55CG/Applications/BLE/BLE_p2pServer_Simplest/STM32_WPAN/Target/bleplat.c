@@ -22,6 +22,7 @@
 #include "bleplat.h"
 #include "stm32wbaxx_ll_rng.h"
 #include "stm32wbaxx_ll_bus.h"
+
 #include "ble_wrap.c"
 
 /*****************************************************************************/
@@ -151,13 +152,6 @@ int BLEPLAT_PkaStartDhKey( const uint32_t* local_private_key,
 int BLEPLAT_PkaReadDhKey( uint32_t* dh_key )
 {
   return 0;
-}
-
-/*****************************************************************************/
-
-void BPKACB_Complete( void )
-{
-  return;
 }
 
 /*****************************************************************************/

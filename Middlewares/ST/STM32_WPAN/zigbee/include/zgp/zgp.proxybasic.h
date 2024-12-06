@@ -1,4 +1,4 @@
-/* Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved. */
 
 /*--------------------------------------------------------------------------
  *  DESCRIPTION
@@ -62,7 +62,7 @@ enum {
 (i) at least 2 entries in the Lightweight sink address list and/or Full unicast sink address list,
 (ii) at least 2 entries in the Sink group list and
 (iii) at least 1 entry in the Lightweight sink address list or Full unicast sink address list and at least 1 entry in the Sink group list.
-*/
+ */
 
 #if 0 /* EXEGIN - NOT_INCLUDED */
 #define ZB_ZGP_MAX_PROXY_TABLE_ENTRIES  5

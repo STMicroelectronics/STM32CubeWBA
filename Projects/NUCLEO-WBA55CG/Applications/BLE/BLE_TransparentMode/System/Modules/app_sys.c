@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,6 +25,15 @@
 #include "stm32_lpm.h"
 #include "ll_intf.h"
 #include "ll_sys.h"
+
+#include "ral.h"
+
+/* External functions ----------------------------------------------------------*/
+extern uint32_t             llhwc_cmn_is_dp_slp_enabled(void);
+
+/* External variables ----------------------------------------------------------*/
+
+/* Functions Definition ------------------------------------------------------*/
 
 void APP_SYS_BLE_EnterDeepSleep(void)
 {

@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "pwr_app.h"
 #include "pwr.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -225,6 +225,10 @@ void Disable_GPIOs(void)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
   
     /*Put all GPIOs on analog*/
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
     
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -259,22 +263,22 @@ __USED void PWR_Pwr_rx_SendNotification(void) /* Property Notification */
   pwr_notification_data.p_Payload = (uint8_t*)a_PWR_UpdateCharData;
   pwr_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char2_NS_1*/
+  /* USER CODE BEGIN Service1Char2_NS_1 */
 
-  /* USER CODE END Service1Char2_NS_1*/
+  /* USER CODE END Service1Char2_NS_1 */
 
   if (notification_on_off != Pwr_rx_NOTIFICATION_OFF)
   {
     PWR_UpdateValue(PWR_PWR_RX, &pwr_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char2_NS_Last*/
+  /* USER CODE BEGIN Service1Char2_NS_Last */
 
-  /* USER CODE END Service1Char2_NS_Last*/
+  /* USER CODE END Service1Char2_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

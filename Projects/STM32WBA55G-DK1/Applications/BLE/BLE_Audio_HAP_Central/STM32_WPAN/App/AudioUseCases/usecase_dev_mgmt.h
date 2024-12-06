@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    usecase_dev_mgmt.h
  * @author  MCD Application Team
- * @brief   BDevice Management Interface for Use Case Profiles
+ * @brief   Device Management Interface for Use Case Profiles
  ******************************************************************************
  * @attention
  *
@@ -27,6 +27,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_compiler.h"
 #include "ble_types.h"
+#include "svc_ctl.h"
 
 /* Defines -----------------------------------------------------------*/
 #define USECASE_DEV_MGMT_MAX_CONNECTION        (2u)
@@ -86,6 +87,63 @@ void USECASE_DEV_MGMT_SetCSIPInfo(uint16_t ConnHandle, uint8_t *pSIRK, uint8_t S
   * @retval Connection Handle (0xFFFF if connection index doesn't correspond to a connected device)
   */
 extern uint16_t USECASE_DEV_MGMT_GetConnHandle(uint8_t ConnIndex);
+
+/** @brief This function is used by the Device in the TMAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent);
+
+/** @brief This function is used by the Device in the HAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent);
+
+/** @brief This function is used by the Device in the GMAP Profile to handle GATT Events received
+  *        from the BLE core device.
+  * @param  Event: Address of the buffer holding the Event
+  * @retval Ack: Return whether the Event has been managed or not
+  */
+SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void TMAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void HAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that connection with specified device is down
+  * @param  ConnHandle: connection handle
+  */
+void GMAP_AclDisconnection(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void TMAP_LinkEncrypted(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void HAP_LinkEncrypted(uint16_t ConnHandle);
+
+/**
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @param  ConnHandle: connection handle
+  */
+void GMAP_LinkEncrypted(uint16_t ConnHandle);
 
 #ifdef __cplusplus
 }

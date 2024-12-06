@@ -20,7 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include <assert.h>
 #include <stdint.h>
-
+#include <inttypes.h>
+  
 #include "app_common.h"
 #include "app_conf.h"
 #include "log_module.h"

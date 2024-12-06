@@ -4,7 +4,7 @@
  * @brief ZCL RSSI Location cluster header
  * ZCL 7 section 3.13
  * ZCL 8 section 3.13
- * @copyright Copyright [2019 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2019 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_RSSI_LOC_H
@@ -324,7 +324,7 @@ struct zcl_rssi_loc_client_callbacks_t {
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclRssiLocClientAlloc(struct ZigBeeT *zb, uint8_t endpoint,
@@ -335,7 +335,7 @@ struct ZbZclClusterT * ZbZclRssiLocClientAlloc(struct ZigBeeT *zb, uint8_t endpo
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclRssiLocServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,
@@ -348,8 +348,8 @@ struct ZbZclClusterT * ZbZclRssiLocServerAlloc(struct ZigBeeT *zb, uint8_t endpo
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param set_abs_loc Set Absolute Location command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientSetAbsLocation(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -360,8 +360,8 @@ enum ZclStatusCodeT ZbZclRssiLocClientSetAbsLocation(struct ZbZclClusterT *clust
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param set_dev_config Set Device Config command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientSetDevConfig(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -372,8 +372,8 @@ enum ZclStatusCodeT ZbZclRssiLocClientSetDevConfig(struct ZbZclClusterT *cluster
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param get_dev_config Get Device Configuration command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientGetDevConfig(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -384,8 +384,8 @@ enum ZclStatusCodeT ZbZclRssiLocClientGetDevConfig(struct ZbZclClusterT *cluster
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param get_loc_data Get Location Data command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientGetLocData(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -406,8 +406,8 @@ enum ZclStatusCodeT ZbZclRssiLocClientSendRssiRsp(struct ZbZclClusterT *clusterP
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param send_pings Send Pings command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientSendPings(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -418,8 +418,8 @@ enum ZclStatusCodeT ZbZclRssiLocClientSendPings(struct ZbZclClusterT *cluster, c
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param anchor_node_annc Anchor Node Announce command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocClientAnchorNodeAnnc(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -451,8 +451,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerSendLocDataRsp(struct ZbZclClusterT *clust
  * Send a Location Data Notification command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerLocDataNotif(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -462,8 +462,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerLocDataNotif(struct ZbZclClusterT *cluster
  * Send a Compact Data Notification command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerCompDataNotif(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -473,8 +473,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerCompDataNotif(struct ZbZclClusterT *cluste
  * Send a RSSI Ping command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerRssiPing(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -484,8 +484,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerRssiPing(struct ZbZclClusterT *cluster, co
  * Send a RSSI Request command
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerRssiReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -496,8 +496,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerRssiReq(struct ZbZclClusterT *cluster, con
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param report_rssi Report Rssi command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerReportRssi(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
@@ -508,8 +508,8 @@ enum ZclStatusCodeT ZbZclRssiLocServerReportRssi(struct ZbZclClusterT *cluster, 
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req_own_loc Request Own Location command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclRssiLocServerReqOwnLoc(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,

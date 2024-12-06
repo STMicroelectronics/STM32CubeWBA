@@ -29,6 +29,7 @@
 #include "stm32wbaxx_hal.h"
 #include "stm32wbaxx_ll_pwr.h"
 #include "stm32wbaxx_ll_rcc.h"
+#include "stm32wbaxx_ll_tim.h"
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
@@ -125,6 +126,13 @@ void scm_pll_setconfig(const scm_pll_config_t *p_pll_config);
 void scm_standbyexit(void);
 
 /**
+  * @brief  Return the state of the Radio.
+  * @param  None
+  * @retval radio_state
+  */
+scm_radio_state_t isRadioActive(void);
+
+/**
   * @brief  Configure the PLL for switching fractional parameters on the fly.
   * @param  pll_frac Up to date fractional configuration.
   * @retval None
@@ -212,6 +220,28 @@ extern void SCM_HSI_CLK_ON(void);
   * @retval None
   */
 extern void SCM_HSI_CLK_OFF(void);
+
+#if (CFG_SW_HSE_WORKAROUND == 1)
+void HSE_MNGT_HSE_SwitchOn(void);
+void HSE_MNGT_HSE_SwitchOff(void);
+
+uint8_t HSE_MNGT_Get_SW_HSERDY(void);
+void HSE_MNGT_Set_SW_HSERDY(void);
+void HSE_MNGT_Clear_SW_HSERDY(void);
+
+void HSE_MNGT_WaitUntilReady(void);
+void HSE_MNGT_StartStabilizationTimer(void);
+void HSE_MNGT_StopStabilizationTimer(void);
+void HSE_MNGT_SW_HSERDY_isr(void);
+
+void HSE_MNGT_SaveTimerCounter(void);
+void HSE_MNGT_RestoreTimerCounter(void);
+
+extern void SCM_HSI_SwithSystemClock_Entry(void);
+
+extern void SCM_HSI_SwithSystemClock_Exit(void);
+
+#endif /* (CFG_SW_HSE_WORKAROUND == 1) */
 
 #else /* CFG_SCM_SUPPORTED */
 

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,7 +44,7 @@
 #include "zcl/general/zcl.onoff.swconfig.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -243,9 +243,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
-
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
@@ -477,7 +474,7 @@ static void APP_ZIGBEE_OnOffClientStart(void)
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   struct ZbZclReadReqT  stRequest;
   enum ZclStatusCodeT   eStatus;
@@ -507,7 +504,7 @@ void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   struct ZbZclWriteReqT   stRequest;
   enum ZclStatusCodeT     eStatus;

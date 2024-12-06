@@ -84,6 +84,15 @@ For this application it is requested to have:
              |                                       | -IdentifyClient             |
              |                                       |Clusters.                    |
              |                                       |                             |           
+             |                                       |                             |
+             |                                       |After a few seconds,         |
+             |                                       |the blue LED should light on |
+             |                                       |(The network is now establ.) |
+             |                                       |                             |
+             |                                       |                      SW1  =>|Turn on the
+             |                                       |                             |Identify Mode 
+             |                                       |                             |(valid during 30 Seconds)
+             |                                       |                             |
  Power up  =>|                                       |                             |
              |Allocate                               |                             |
              |-OnOffClient                           |                             |
@@ -91,9 +100,9 @@ For this application it is requested to have:
              |-ScenesClient                          |                             |
              |Clusters                               |                             |
              |                                       |                             |
-             |After a few seconds,                   |After a few seconds,         |
-             |the blue LED should light on           |the blue LED should light on |
-             |(The network is now established)       |(The network is now establ.) |
+             |After a few seconds,                   |                             |
+             |the blue LED should light on           |                             |
+             |(The network is now established)       |                             |
              |                                       |                             |
              |Once the find and bind procedure       |                             |
              |is completed, the green LED goes On    |                             | 

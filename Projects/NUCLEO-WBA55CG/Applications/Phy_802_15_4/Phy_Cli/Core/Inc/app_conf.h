@@ -39,6 +39,9 @@
 /******************************************************************************
  * UART interfaces
  ******************************************************************************/
+/* CLI UART interface (*UART_HandleTypeDef vtype expected) */
+extern UART_HandleTypeDef huart1;
+#define CLI_UART &huart1
 
 /******************************************************************************
  * USB interface
@@ -63,7 +66,10 @@
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (0)
-#define CFG_LPM_STDBY_SUPPORTED  (1)
+#define CFG_LPM_STDBY_SUPPORTED  (0)
+
+/* Defines time to wake up from standby before radio event to meet timings */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 typedef enum
 {
@@ -192,12 +198,7 @@ typedef enum
  ******************************************************************************/
 
 #define CFG_RT_DEBUG_GPIO_MODULE         (0)
-
-#if (FULL_CERTIFICATION_CAPABLE == 1)
 #define CFG_RT_DEBUG_DTB                 (1)
-#else
-#define CFG_RT_DEBUG_DTB                 (0)
-#endif /* FULL_CERTIFICATION_CAPABLE */
 
 /******************************************************************************
  * System Clock Manager module configuration
@@ -251,13 +252,6 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
-
-/******************************************************************************
- * RTC
- ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 

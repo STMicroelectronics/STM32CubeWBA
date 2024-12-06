@@ -43,11 +43,11 @@
 
 #include "event_manager.h"
 #include "thread.h"
+#include "system.h"   
 
-#define CSMA_MAX_BE      8
+#define CSMA_MAX_BE      6
 #define CSMA_MIN_BE      3
 #define CSMA_MAX_BACKOFF 4
-#define MAX_FRAME_RETRIES    4
 
 bool g_PseudoReset = FALSE;
 
@@ -62,7 +62,6 @@ static struct mac_cbk_dispatch_tbl ot_cbk_dispatch_tbl = {
 		.mac_frm_updtd = NULL
 		};
 
-extern uint8_t ral_set_auto_sleep_state(uint8_t ral_instance, uint8_t cont_recp_state);
 
 static void systemRxDone(otInstance *aInstance, otRadioFrame *aFrame, otError aError)
 {
@@ -98,14 +97,12 @@ void otSysInit(int argc, char *argv[])
 		
 		if (IsSystemInitCalled == 0)
 		{
-			radio_init();
-                        set_max_csma_be(CSMA_MAX_BE);
-                        set_min_csma_be(CSMA_MIN_BE);
-                        set_max_csma_backoff(CSMA_MAX_BACKOFF);
-                        set_max_frm_retries(MAX_FRAME_RETRIES);
-                        set_max_full_csma_frm_retries(MAX_FRAME_RETRIES);
-			otPlatRadioSetPromiscuous(NULL, (bool) 0);
-			IsSystemInitCalled++;
+                  radio_init();
+                  set_max_csma_be(CSMA_MAX_BE);
+                  set_min_csma_be(CSMA_MIN_BE);
+                  set_max_csma_backoff(CSMA_MAX_BACKOFF);
+                  otPlatRadioSetPromiscuous(NULL, (bool) 0);
+                  IsSystemInitCalled++;
 		}
 	}
 	arcAlarmInit();

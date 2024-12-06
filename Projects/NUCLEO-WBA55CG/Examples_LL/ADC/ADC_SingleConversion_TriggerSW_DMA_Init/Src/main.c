@@ -323,7 +323,6 @@ static void MX_ADC4_Init(void)
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   LL_DMA_InitNodeTypeDef NodeConfig = {0};
-  LL_DMA_LinkNodeTypeDef Node_GPDMA1_Channel1 = {0};
   LL_DMA_InitLinkedListTypeDef DMA_InitLinkedListStruct = {0};
 
   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_HCLK);

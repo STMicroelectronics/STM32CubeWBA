@@ -60,6 +60,9 @@
 #endif /* CFG_LCD_SUPPORTED */
 #include "stm32_lpm.h"
 #include "pbp_app.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,7 +94,7 @@ static bool system_startup_done = FALSE;
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
@@ -263,8 +266,8 @@ uint32_t MX_APPE_Init(void *p_param)
   UTIL_TIMER_Start(&JOYSTICK_TimerObj);
 #endif /* CFG_JOYSTICK_SUPPORTED */
 
-  /* Indicate to the low power manager that the Stop mode isn't allow : Sleep mode will be used in low power mode*/
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  /* Indicate to the low power manager that the Standby mode isn't allow : Stop mode will be used in low power mode*/
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   /* USER CODE END APPE_Init_2 */
 
@@ -285,7 +288,41 @@ void MX_APPE_Process(void)
 }
 
 /* USER CODE BEGIN FD */
+void App_Menu_Up_Right(void)
+{
+  uint32_t source_id;
+  uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
+  PBPAPP_SwitchBrdSource(1, &source_id);
+#if (CFG_LCD_SUPPORTED == 1)
+  BSP_SPI3_Init();
+  /*reset the string line with black*/
+  UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
 
+  SourceIDToString(source_id, &(source_id_string[10]));
+
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  BSP_LCD_Refresh(0);
+  BSP_SPI3_DeInit();
+#endif /* (CFG_LCD_SUPPORTED == 1) */
+}
+
+void App_Menu_Down_Left(void)
+{
+  uint32_t source_id;
+  uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
+  PBPAPP_SwitchBrdSource(0, &source_id);
+#if (CFG_LCD_SUPPORTED == 1)
+  BSP_SPI3_Init();
+  /*reset the string line with black*/
+  UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
+
+  SourceIDToString(source_id, &(source_id_string[10]));
+
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  BSP_LCD_Refresh(0);
+  BSP_SPI3_DeInit();
+#endif /* (CFG_LCD_SUPPORTED == 1) */
+}
 /* USER CODE END FD */
 
 /*************************************************************
@@ -328,6 +365,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  MX_USART1_UART_Init();
+
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -440,21 +479,6 @@ static void APPE_AMM_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 }
 
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
-{
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
-}
-
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
-{
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
-}
-
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 #if (CFG_LED_SUPPORTED == 1)
 static void Led_Init( void )
@@ -507,6 +531,7 @@ static void Joystick_ActionHandle(void)
 
   BSP_JOY_DeInit(JOY1, JOY_ALL);
 
+
   /* process Joystick information */
   if (state != JOY_NONE && state != Joystick_Prev_State)
   {
@@ -515,37 +540,11 @@ static void Joystick_ActionHandle(void)
     }
     else if ((state == JOY_UP) || (state == JOY_RIGHT))
     {
-      uint32_t source_id;
-      uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
-      PBPAPP_SwitchBrdSource(1, &source_id);
-  #if (CFG_LCD_SUPPORTED == 1)
-      BSP_SPI3_Init();
-      /*reset the string line with black*/
-      UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
-
-      SourceIDToString(source_id, &(source_id_string[10]));
-
-      UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
-      BSP_LCD_Refresh(0);
-      BSP_SPI3_DeInit();
-  #endif /* (CFG_LCD_SUPPORTED == 1) */
+      App_Menu_Up_Right();
     }
     else if ((state == JOY_DOWN) || (state == JOY_LEFT))
     {
-      uint32_t source_id;
-      uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
-      PBPAPP_SwitchBrdSource(0, &source_id);
-  #if (CFG_LCD_SUPPORTED == 1)
-      BSP_SPI3_Init();
-      /*reset the string line with black*/
-      UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
-
-      SourceIDToString(source_id, &(source_id_string[10]));
-
-      UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
-      BSP_LCD_Refresh(0);
-      BSP_SPI3_DeInit();
-  #endif /* (CFG_LCD_SUPPORTED == 1) */
+      App_Menu_Down_Left();
     }
   }
 
@@ -763,7 +762,7 @@ void PLL_Ready_Task(void)
   corrector_pll_config.PLLOutputDiv = 4; /* PLL_P */
   AUDIO_InitializeClockCorrector(&corrector_pll_config, 500, 4000);
 
-  /* I2C init takes a long time, it is better to do it before CIS establishement */
+  /* I2C init takes a long time, it is better to do it before BIS establishement */
   BSP_I2C3_Init();
 }
 
@@ -858,20 +857,6 @@ void MX_AudioInit(Audio_Role_t role,
       Error_Handler();
       return;
   }
-  switch(frame_duration)
-  {
-    case FRAME_DURATION_7_5_MS:
-      sample_per_frame = audioFrequency * 75 / 10000;
-      break;
-
-    case FRAME_DURATION_10_MS:
-      sample_per_frame = audioFrequency * 100 / 10000;
-      break;
-
-    default:
-      Error_Handler();
-      return;
-  }
 
   if (sampling_frequency == SAMPLE_FREQ_44100_HZ)
   {
@@ -891,31 +876,43 @@ void MX_AudioInit(Audio_Role_t role,
 		  return;
     }
   }
-
-
-  audio_conf.Device = AUDIO_IN_DEVICE_LINE_IN;
-  audio_conf.ChannelsNbr = 2;
-  audio_conf.Volume = 50; /* input volume is not used */
-  audio_conf.SampleRate = audioFrequency;
-  audio_conf.BitsPerSample = AUDIO_RESOLUTION_16B;
-
-  if (BSP_AUDIO_IN_Init(0x00, &audio_conf) != BSP_ERROR_NONE)
+  else
   {
-    Error_Handler();
+	switch(frame_duration)
+	{
+      case FRAME_DURATION_7_5_MS:
+        sample_per_frame = audioFrequency * 75 / 10000;
+        break;
+
+      case FRAME_DURATION_10_MS:
+        sample_per_frame = audioFrequency * 100 / 10000;
+        break;
+
+      default:
+        Error_Handler();
+        return;
+	}
   }
+
 
   audio_conf.Device = AUDIO_OUT_DEVICE_HEADPHONE;
   audio_conf.ChannelsNbr = 2;
   audio_conf.Volume = 90;
+  audio_conf.SampleRate = audioFrequency;
+  audio_conf.BitsPerSample = AUDIO_RESOLUTION_16B;
+  
   if (BSP_AUDIO_OUT_Init(0x00, &audio_conf) != BSP_ERROR_NONE)
   {
     Error_Handler();
+    /* Release Bus for power consumption optimisation */
+    __HAL_RCC_I2C3_CLK_DISABLE();
+    return;
   }
 
   /* Start SAI clock without DMA interrupt */
-  uint8_t channel_at_src = 2; /* SAI is in stereo for Line IN */
-  uint8_t channel_at_snk = 2; /* SAI is in stereo for Headset */
-  uint8_t buffer_nb = 2; /* double buffer strategie for minimum latency*/
+  uint8_t channel_at_src = 0;
+  uint8_t channel_at_snk = 2;   /* SAI is in stereo for Headset */
+  uint8_t buffer_nb = 2;        /* double buffer strategy for minimum latency*/
   uint8_t bytes_per_sample = 2;
 
   Sink_frame_size = sample_per_frame * channel_at_snk * buffer_nb;
@@ -983,24 +980,29 @@ static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pS
   }
 }
 
-void Start_TxAudio(void)
+int32_t Start_TxAudio(void)
 {
-  /* Initialize Bus which bas been released for Power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_ENABLE();
+  int32_t status = 1;
 
-  APP_NotifyTxAudioCplt(Sink_frame_size);
-  if (BSP_AUDIO_OUT_Resume(0) != BSP_ERROR_NONE)
+  /* restart DMA request only if it was on pause */
+  if ((haudio_out_sai.Instance->CR1 & SAI_xCR1_DMAEN) == 0)
   {
-    Error_Handler();
+    SET_BIT(haudio_out_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+    haudio_out_sai.Instance->CR1 |= SAI_xCR1_DMAEN;
+    status = 0;
+
+    APP_NotifyTxAudioCplt(Sink_frame_size);
   }
 
-  /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
-
+  if (status == 0)
+  {
+    LOG_INFO_APP("START AUDIO SINK (output)\n");
 #if (CFG_LCD_SUPPORTED == 1)
-  mute = 0;
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_DRAW_SPEAKER_ID, CFG_SEQ_PRIO_0);
+    mute = 0;
+    UTIL_SEQ_SetTask( 1U << CFG_TASK_DRAW_SPEAKER_ID, CFG_SEQ_PRIO_0);
 #endif /* (CFG_LCD_SUPPORTED == 1) */
+  }
+  return status;
 }
 
 void Stop_TxAudio(void)
@@ -1028,13 +1030,9 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
   {
     if (Play_Req_Pause == 1)
     {
-      __HAL_RCC_I2C3_CLK_ENABLE();
-      /* Pause the DMA that as run one frame only and wait the codec trigger to re run*/
-      if (BSP_AUDIO_OUT_Pause(0) != BSP_ERROR_NONE)
-      {
-        Error_Handler();
-      }
-      __HAL_RCC_I2C3_CLK_DISABLE();
+      /* Pause the DMA aligned on a interrupt and wait the codec trigger to restart it synchronized to BLE */
+      haudio_out_sai.Instance->CR1 &= ~SAI_xCR1_DMAEN;
+
       Play_Req_Pause = 0;
     }
 
@@ -1042,18 +1040,23 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
   }
 }
 
-void Start_RxAudio(void)
+int32_t Start_RxAudio(void)
 {
-  /* Initialize Bus which bas been released for Power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_ENABLE();
+  int32_t status = 1;
 
-  if (BSP_AUDIO_IN_Resume(0) != BSP_ERROR_NONE)
+  /* restart DMA request only if it was on pause */
+  if ((haudio_in_sai.Instance->CR1 & SAI_xCR1_DMAEN) == 0)
   {
-    Error_Handler();
+    SET_BIT(haudio_in_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+    haudio_in_sai.Instance->CR1 |= SAI_xCR1_DMAEN;
+    status = 0;
   }
 
-  /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
+  if (status == 0)
+  {
+    LOG_INFO_APP("START AUDIO SOURCE (input)\n");
+  }
+  return status;
 }
 
 void Stop_RxAudio(void)
@@ -1081,12 +1084,9 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
   {
     if (Record_Req_Pause == 1)
     {
-      __HAL_RCC_I2C3_CLK_ENABLE();
-      if (BSP_AUDIO_IN_Pause(0) != BSP_ERROR_NONE)
-      {
-        Error_Handler();
-      }
-      __HAL_RCC_I2C3_CLK_DISABLE();
+      /* Pause the DMA aligned on a interrupt and wait the codec trigger to restart it synchronized to BLE */
+      haudio_in_sai.Instance->CR1 &= ~SAI_xCR1_DMAEN;
+
       Record_Req_Pause = 0;
     }
 
@@ -1105,6 +1105,11 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_StopStabilizationTimer();
+  /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -1128,7 +1133,13 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -1191,6 +1202,21 @@ void AMM_ProcessRequest(void)
   UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
 }
 
+static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
+{
+  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
+}
+
+static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
+{
+  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
+}
+
+static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
+{
+  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
+}
+
 void FM_ProcessRequest(void)
 {
   /* Trigger to call Flash Manager process function */
@@ -1210,6 +1236,7 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -1221,6 +1248,7 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -1231,7 +1259,11 @@ void UTIL_ADV_TRACE_PreSendHook(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
-
+#if (CFG_TEST_VALIDATION == 1)
+#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
+    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
+#endif /* (CFG_TEST_VALIDATION == 1) */
   /* USER CODE END UTIL_ADV_TRACE_PreSendHook */
 }
 
@@ -1242,8 +1274,26 @@ void UTIL_ADV_TRACE_PostSendHook(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
-
+#if (CFG_TEST_VALIDATION == 1)
+#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
+    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
+#endif /* (CFG_TEST_VALIDATION == 1) */
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
+}
+
+/**
+ * @brief  Treat Serial commands.
+ *
+ * @param  pRxBuffer      Pointer on received data from USART.
+ * @param  iRxBufferSize  Number of received data.
+ * @retval None
+ */
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+  /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */

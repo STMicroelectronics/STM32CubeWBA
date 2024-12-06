@@ -44,14 +44,18 @@
 #include "coap.h"
 #include "tasklet.h"
 #include "thread.h"
-#include "threadplat_pka.h"
+#if (OT_CLI_USE == 1)
+#include "uart.h"
+#endif
 #include "joiner.h"
+#include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "udp.h"
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,7 +118,6 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
 static void APP_THREAD_CliInit(otInstance *aInstance);
 static void APP_THREAD_ProcessUart(void);
 #endif // OT_CLI_USE
-static void APP_THREAD_ProcessPka(void);
 
 /* USER CODE BEGIN PFP */
 static otError UdpBind(uint16_t aPort);
@@ -212,11 +215,6 @@ static void APP_THREAD_TaskletsInit(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_OT_TASKLETS, UTIL_SEQ_RFU, ProcessOpenThreadTasklets);
 }
 
-static void APP_THREAD_PkaInit(void)
-{
-  UTIL_SEQ_RegTask(1U << CFG_TASK_PKA, UTIL_SEQ_RFU, APP_THREAD_ProcessPka);
-}
-
 /**
  *
  */
@@ -253,7 +251,6 @@ void Thread_Init(void)
   /* Register tasks */
   APP_THREAD_AlarmsInit();
   APP_THREAD_TaskletsInit();
-  APP_THREAD_PkaInit();
 
   ll_sys_thread_init();
 
@@ -319,8 +316,8 @@ static void APP_THREAD_DeviceConfig(void)
   memset(&mSocket, 0, sizeof(mSocket));
 
   /* Open socket */
-  otUdpOpen(PtOpenThreadInstance, &mSocket, HandleUdpReceive, NULL);
-  UdpBind(UDP_PORT);
+  (void)otUdpOpen(PtOpenThreadInstance, &mSocket, HandleUdpReceive, NULL);
+  (void)UdpBind(UDP_PORT);
 
   /* USER CODE END DEVICECONFIG */
 }
@@ -348,7 +345,7 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
 {
   /* USER CODE BEGIN TRACE_ERROR */
   //APP_DBG("**** Fatal error = %s (Err = %d)", pMess, ErrCode);
-  while(1U == 1U)
+  while (1)
   {
   }
   /* USER CODE END TRACE_ERROR */
@@ -400,7 +397,7 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
         APP_THREAD_TraceError("ERROR : ERR_THREAD_CHECK_WIRELESS ",ErrCode);
         break;
 
-	case ERR_THREAD_SET_THRESHOLD:
+    case ERR_THREAD_SET_THRESHOLD:
         APP_THREAD_TraceError("ERROR : ERR_THREAD_SET_THRESHOLD", ErrCode);
         break;
 
@@ -496,37 +493,10 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
   /* run first time */
   UTIL_SEQ_SetTask(1U << CFG_TASK_OT_UART, TASK_PRIO_UART);
 
-  otPlatUartEnable();
+  (void)otPlatUartEnable();
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
-
-static void APP_THREAD_ProcessPka(void)
-{
-  otPlatPkaProccessLoop();
-}
-
-void APP_THREAD_SchedulePka(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_PKA, TASK_PRIO_PKA);
-}
-
-void APP_THREAD_WaitPkaEndOfOperation(void)
-{
-  /* Wait for event CFG_EVENT_PKA_COMPLETED */
-  UTIL_SEQ_WaitEvt(1U << CFG_EVENT_PKA_COMPLETED);
-}
-
-void APP_THREAD_PostPkaEndOfOperation(void)
-{
-  /* Pka operation ended, set CFG_EVENT_PKA_COMPLETED event */
-  UTIL_SEQ_SetEvt(1U << CFG_EVENT_PKA_COMPLETED);
-}
-
-void app_logger_write(uint8_t *buffer, uint32_t size)
-{
-  //UTIL_ADV_TRACE_COND_Send(VLEVEL_ALWAYS, ~0x0, 0, buffer, (uint16_t)size);
-}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 static uint16_t Swap16(uint16_t v)
@@ -599,7 +569,7 @@ static void APP_THREAD_SW1_Process(void)
   if (eDeviceRole == OT_DEVICE_ROLE_LEADER)
   {
     /* Send Udp request */
-    UdpSend();
+    (void)UdpSend();
   }
   else if ((eDeviceRole == OT_DEVICE_ROLE_ROUTER)||(eDeviceRole == OT_DEVICE_ROLE_CHILD))
   {
@@ -629,7 +599,7 @@ static void APP_THREAD_SW2_Process(void)
   else if ((eDeviceRole == OT_DEVICE_ROLE_ROUTER)||(eDeviceRole == OT_DEVICE_ROLE_CHILD))
   {
     /* Send Udp request */
-    UdpSend();
+    (void)UdpSend();
   }
   else
   {
@@ -671,12 +641,12 @@ exit:
     return error;
 }
 
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   APP_THREAD_SW1_Process();
 }
 
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   APP_THREAD_SW2_Process();
 }

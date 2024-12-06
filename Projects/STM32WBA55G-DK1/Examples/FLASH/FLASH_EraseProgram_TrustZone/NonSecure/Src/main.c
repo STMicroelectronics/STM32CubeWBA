@@ -77,6 +77,7 @@ static uint32_t GetPage(uint32_t Address);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* STM32WBAxx **NON-SECURE** HAL library initialization:

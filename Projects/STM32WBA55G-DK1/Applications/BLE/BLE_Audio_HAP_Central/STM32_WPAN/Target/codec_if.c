@@ -23,6 +23,7 @@
 #include "main.h"
 #include "app_conf.h"
 #include "log_module.h"
+#include "stm32wbaxx_it.h"
 
 #if CODEC_LC3_NUM_ENCODER_CHANNEL == 0
 #include "LC3_encoder.h"

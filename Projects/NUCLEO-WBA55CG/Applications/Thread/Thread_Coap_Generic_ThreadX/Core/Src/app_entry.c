@@ -37,52 +37,25 @@
 #include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
+#include "crc_ctrl.h"
 #include "ll_sys.h"
+#include "assert.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
-#include "serial_cmd_interpreter.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
-#if (CFG_BUTTON_SUPPORTED == 1)
-typedef struct
-{
-  Button_TypeDef      button;
-  UTIL_TIMER_Object_t longTimerId;
-  uint8_t             longPressed;
-  uint32_t            waitingTime;
-} ButtonDesc_t;
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PD */
-#if (CFG_BUTTON_SUPPORTED == 1)
-#define BUTTON_LONG_PRESS_SAMPLE_MS           (50u)         // Sample Button every 50ms.
-#define BUTTON_LONG_PRESS_THRESHOLD_MS        (500u)        // Normally 500ms if we use 'Long pression' on button.
-#define BUTTON_NB_MAX                         (B3 + 1u)
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
-/* Push Button SW1 Task related defines */
-#define TASK_BUTTON_SW1_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW1_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW1_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
-
-/* Push Button SW2 Task related defines */
-#define TASK_BUTTON_SW2_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW2_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW2_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
-
-/* Push Button SW3 Task related defines */
-#define TASK_BUTTON_SW3_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_BUTTON_SW3_PRIORITY              CFG_TASK_PRIO_BUTTON_SWx
-#define TASK_BUTTON_SW3_PREEM_TRES            CFG_TASK_PREEMP_BUTTON_SWx
 
 /* USER CODE END PD */
 
@@ -100,7 +73,7 @@ typedef struct
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration */
-static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
+static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* ThreadX objects declaration */
@@ -108,13 +81,9 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 static TX_THREAD      RngTaskHandle;
 static TX_SEMAPHORE   RngSemaphore;
 
+static TX_MUTEX       crcCtrlMutex;
+
 /* USER CODE BEGIN PV */
-#if (CFG_BUTTON_SUPPORTED == 1)
-/* Button management */
-TX_SEMAPHORE          ButtonSw1Semaphore, ButtonSw2Semaphore, ButtonSw3Semaphore;
-TX_THREAD             ButtonSw1Thread, ButtonSw2Thread, ButtonSw3Thread;
-static ButtonDesc_t   buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0, 0 } , { B2, { 0 } , 0, 0 }, { B3, { 0 }, 0, 0 } };
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PV */
 
@@ -143,13 +112,6 @@ void ThreadXLowPowerUserExit( void );
 #endif
 
 /* USER CODE BEGIN PFP */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init                      ( void );
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-static void Button_Init                   ( void );
-static void Button_TriggerActions         ( void * arg );
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END PFP */
 
@@ -173,6 +135,7 @@ void MX_APPE_Config(void)
  */
 uint32_t MX_APPE_Init(void *p_param)
 {
+  UINT TXstatus;
   APP_DEBUG_SIGNAL_SET(APP_APPE_INIT);
 
   /* Save ThreadX byte pool for whole WPAN middleware */
@@ -190,13 +153,30 @@ uint32_t MX_APPE_Init(void *p_param)
   /* USER CODE BEGIN APPE_Init_1 */
   /* Initialize Peripherals */
 #if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
+  APP_BSP_LedInit();
 #endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_BUTTON_SUPPORTED == 1)
-  Button_Init();
+  APP_BSP_ButtonInit();
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
   /* USER CODE END APPE_Init_1 */
+
+  TXstatus = tx_mutex_create(&crcCtrlMutex, "CRC CTRL Mutex", 0 );
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "CRC CTRL ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  TXstatus = tx_mutex_create(&adcCtrlMutex, "ADC CTRL Mutex", 0 );
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "ADC CTRL ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
   /* Thread Initialisation */
   APP_THREAD_Init();
@@ -212,54 +192,6 @@ uint32_t MX_APPE_Init(void *p_param)
 }
 
 /* USER CODE BEGIN FD */
-#if ( CFG_BUTTON_SUPPORTED == 1 ) 
-
-/**
- * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
- *
- * @param   btnIdx    Button to test, listed in enum Button_TypeDef
- * @return  '1' if pressed during a 'long time', else '0'.
- */
-uint8_t APPE_ButtonIsLongPressed( uint16_t btnIdx )
-{
-  uint8_t pressStatus = 0;
-
-  if ( btnIdx < BUTTON_NB_MAX )
-  {
-    pressStatus = buttonDesc[btnIdx].longPressed;
-  }
-
-  return pressStatus;
-}
-
-/**
- * @brief  Action of button 1 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button1Action( void )
-{
-}
-
-/**
- * @brief  Action of button 2 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button2Action( void )
-{
-}
-
-/**
- * @brief  Action of button 3 when pressed, to be implemented by user.
- * @param  None
- * @retval None
- */
-__WEAK void APPE_Button3Action( void )
-{
-}
-
-#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END FD */
 
@@ -303,6 +235,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  MX_USART1_UART_Init();
+
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
@@ -418,209 +352,6 @@ static void APPE_RNG_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if ( CFG_LED_SUPPORTED == 1 )
-
-static void Led_Init( void )
-{
-  /* Leds Initialization */
-  BSP_LED_Init(LED_BLUE);
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_RED);
-
-  APP_LED_ON(LED_GREEN);
-}
-
-#endif // (CFG_LED_SUPPORTED == 1)
-#if ( CFG_BUTTON_SUPPORTED == 1 )
-
-/**
- * @brief  Management of the SW1 pushbutton task
- * @param  lArgument  Not used.
- * @retval None
- */
-static void ButtonSw1Task( ULONG lArgument )
-{
-  UNUSED( lArgument );
-  
-  for(;;)
-  {
-    tx_semaphore_get( &ButtonSw1Semaphore, TX_WAIT_FOREVER );
-    APPE_Button1Action();
-    tx_thread_relinquish();
-  }
-}
-    
-/**
- * @brief  Management of the SW2 pushbutton task
- * @param  lArgument  Not used.
- * @retval None
- */
-static void ButtonSw2Task( ULONG lArgument )
-{
-  UNUSED( lArgument );
-  
-  for(;;)
-  {
-    tx_semaphore_get( &ButtonSw2Semaphore, TX_WAIT_FOREVER );
-    APPE_Button2Action();
-    tx_thread_relinquish();
-  }
-}
-
-/**
- * @brief  Management of the SW3 pushbutton task
- * @param  lArgument  Not used.
- * @retval None
- */
-static void ButtonSw3Task( ULONG lArgument )
-{
-  UNUSED( lArgument );
-  
-  for(;;)
-  {
-    tx_semaphore_get( &ButtonSw3Semaphore, TX_WAIT_FOREVER );
-    APPE_Button3Action();
-    tx_thread_relinquish();
-  }
-}
-
-static void Button_InitTask( void )
-{
-  UINT        ThreadXStatus;
-  
-  /* Register Semaphore to launch the pushbutton SW1 Task */
-  ThreadXStatus = tx_semaphore_create( &ButtonSw1Semaphore, "ButtonSw1 Semaphore", 0 );
-  
-  /* Create the pushbutton SWx Thread and this Stack */
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW1_STACK_SIZE, TX_NO_WAIT);
-  }
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_thread_create(  &ButtonSw1Thread, "ButtonSw1 Thread", ButtonSw1Task, 0, pStack,
-                                        TASK_BUTTON_SW1_STACK_SIZE, TASK_BUTTON_SW1_PRIORITY, TASK_BUTTON_SW1_PREEM_TRES,
-                                        TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  
-  /* Verify if it's OK */
-  if ( ThreadXStatus != TX_SUCCESS )
-  { 
-    APP_DBG( "ERROR THREADX : PUSH BUTTON SW1 THREAD CREATION FAILED (0x%04X)", ThreadXStatus );
-    while(1);
-  }
-  
-  
-  /* Register Semaphore to launch the pushbutton SW2 Task */
-  ThreadXStatus = tx_semaphore_create( &ButtonSw2Semaphore, "ButtonSw2 Semaphore", 0 );
-  
-  /* Create the pushbutton SW2 Thread and this Stack */
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW2_STACK_SIZE, TX_NO_WAIT);
-  }
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_thread_create(  &ButtonSw2Thread, "ButtonSw2 Thread", ButtonSw2Task, 0, pStack,
-                                        TASK_BUTTON_SW2_STACK_SIZE, TASK_BUTTON_SW2_PRIORITY, TASK_BUTTON_SW2_PREEM_TRES,
-                                        TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  
-  /* Verify if it's OK */
-  if ( ThreadXStatus != TX_SUCCESS )
-  { 
-    APP_DBG( "ERROR THREADX : PUSH BUTTON SW2 THREAD CREATION FAILED (0x%04X)", ThreadXStatus );
-    while(1);
-  }
-  
-  
-  /* Register Semaphore to launch the pushbutton SW3 Task */
-  ThreadXStatus = tx_semaphore_create( &ButtonSw3Semaphore, "ButtonSw3 Semaphore", 0 );
-  
-  /* Create the pushbutton SW3 Thread and this Stack */
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_BUTTON_SW3_STACK_SIZE, TX_NO_WAIT);
-  }
-  if ( ThreadXStatus == TX_SUCCESS )
-  {
-    ThreadXStatus = tx_thread_create(  &ButtonSw3Thread, "ButtonSw3 Thread", ButtonSw3Task, 0, pStack,
-                                        TASK_BUTTON_SW3_STACK_SIZE, TASK_BUTTON_SW3_PRIORITY, TASK_BUTTON_SW3_PREEM_TRES,
-                                        TX_NO_TIME_SLICE, TX_AUTO_START );
-  }
-  
-  /* Verify if it's OK */
-  if ( ThreadXStatus != TX_SUCCESS )
-  { 
-    APP_DBG( "ERROR THREADX : PUSH BUTTON SW3 THREAD CREATION FAILED (0x%04X)", ThreadXStatus );
-    while(1);
-  }
-}
-
-
-static void Button_Init( void )
-{
-  Button_TypeDef  buttonIndex;
-  
-  /* Buttons HW Initialization */
-  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-
-  /* Button task initialisation */
-  Button_InitTask();
-  
-  /* Button timers initialisation (one for each button) */
-  for ( buttonIndex = B1; buttonIndex < BUTTON_NB_MAX; buttonIndex++ )
-  { 
-    UTIL_TIMER_Create( &buttonDesc[buttonIndex].longTimerId, 0, UTIL_TIMER_PERIODIC, &Button_TriggerActions, &buttonDesc[buttonIndex] ); 
-  }
-}
-
-
-/**
- *
- */
-static void Button_TriggerActions( void * arg )
-{
-  ButtonDesc_t  * p_buttonDesc = arg;
-  int32_t       buttonState;
-
-  buttonState = BSP_PB_GetState( p_buttonDesc->button );
-
-  /* If Button pressed and Threshold time not finish, continue waiting */
-  p_buttonDesc->waitingTime += BUTTON_LONG_PRESS_SAMPLE_MS;
-  if ( ( buttonState == 1 ) && ( p_buttonDesc->waitingTime < BUTTON_LONG_PRESS_THRESHOLD_MS ) )
-  {
-    return;
-  }
-
-  /* Save button state */
-  p_buttonDesc->longPressed = buttonState;
-
-  /* Stop Timer */
-  UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
-
-  switch ( p_buttonDesc->button )
-  {
-    case B1:
-        tx_semaphore_put( &ButtonSw1Semaphore );
-        break;
-
-    case B2:
-        tx_semaphore_put( &ButtonSw2Semaphore );
-        break;
-
-    case B3:
-        tx_semaphore_put( &ButtonSw3Semaphore );
-        break;
-
-    default:
-        break;
-  }
-}
-
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
@@ -654,6 +385,7 @@ void RNG_KERNEL_CLK_OFF(void)
   /* USER CODE END RNG_KERNEL_CLK_OFF_2 */
 }
 
+#if (CFG_SCM_SUPPORTED == 1)
 /* SCM module turn off HSI clock when traces are not used and low power used */
 void SCM_HSI_CLK_OFF(void)
 {
@@ -665,6 +397,7 @@ void SCM_HSI_CLK_OFF(void)
 
   /* USER CODE END SCM_HSI_CLK_OFF_2 */
 }
+#endif /* CFG_SCM_SUPPORTED */
 #endif /* ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0)) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -688,6 +421,23 @@ void UTIL_ADV_TRACE_PostSendHook(void)
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
+}
+
+/**
+ * @brief  Treat Serial commands.
+ *
+ * @param  pRxBuffer      Pointer on received data from USART.
+ * @param  iRxBufferSize  Number of received data.
+ * @retval None
+ */
+void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
+{
+  /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* Threat USART Command to simulate button press for instance. */
+  (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
+  
+  /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
@@ -755,21 +505,69 @@ void ThreadXLowPowerUserExit( void )
 __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
 {
   Error_Handler();
+  __builtin_unreachable();
+}
+
+CRCCTRL_Cmd_Status_t CRCCTRL_MutexTake(void)
+{
+  UINT TXstatus;
+  CRCCTRL_Cmd_Status_t crc_status;
+  /* USER CODE BEGIN CRCCTRL_MutexTake_0 */
+
+  /* USER CODE END CRCCTRL_MutexTake_0 */
+  if(TX_THREAD_GET_SYSTEM_STATE() == TX_INITIALIZE_IS_FINISHED)
+  {
+    TXstatus = tx_mutex_get(&crcCtrlMutex, TX_WAIT_FOREVER);
+  }
+  else
+  {
+    TXstatus = TX_SUCCESS;
+  }
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    crc_status = CRCCTRL_NOK;
+  }
+  else
+  {
+    crc_status = CRCCTRL_OK;
+  }
+  /* USER CODE BEGIN CRCCTRL_MutexTake_1 */
+
+  /* USER CODE END CRCCTRL_MutexTake_1 */
+  return crc_status;
+}
+
+CRCCTRL_Cmd_Status_t CRCCTRL_MutexRelease(void)
+{
+  UINT TXstatus;
+  CRCCTRL_Cmd_Status_t crc_status;
+  /* USER CODE BEGIN CRCCTRL_MutexRelease_0 */
+
+  /* USER CODE END CRCCTRL_MutexRelease_0 */
+  if(TX_THREAD_GET_SYSTEM_STATE() == TX_INITIALIZE_IS_FINISHED)
+  {
+    TXstatus = tx_mutex_put(&crcCtrlMutex);
+  }
+  else
+  {
+    TXstatus = TX_SUCCESS;
+  }
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    crc_status = CRCCTRL_NOK;
+  }
+  else
+  {
+    crc_status = CRCCTRL_OK;
+  }
+  /* USER CODE BEGIN CRCCTRL_MutexRelease_1 */
+
+  /* USER CODE END CRCCTRL_MutexRelease_1 */
+  return crc_status;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-#if ( CFG_BUTTON_SUPPORTED == 1 ) 
-
-/**
- *
- */
-void BSP_PB_Callback( Button_TypeDef button )
-{
-  buttonDesc[button].longPressed = 0;
-  buttonDesc[button].waitingTime = 0;
-  UTIL_TIMER_StartWithPeriod( &buttonDesc[button].longTimerId, BUTTON_LONG_PRESS_SAMPLE_MS );
-}
-
-#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END FD_WRAP_FUNCTIONS */

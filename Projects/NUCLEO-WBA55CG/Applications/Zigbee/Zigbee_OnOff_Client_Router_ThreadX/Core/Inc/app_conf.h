@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -62,7 +62,7 @@
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
 /* Defines time to wake up from standby before radio event to meet timings */
-#define CFG_LPM_STDBY_WAKEUP_TIME (0)
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -90,9 +90,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -114,6 +111,10 @@ typedef enum
  * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
+
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
@@ -147,7 +148,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -161,20 +162,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (2)
+#define CFG_DEBUGGER_LEVEL                  (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -230,14 +231,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (64000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (54000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (1U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10000U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10500U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (2U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (2000U)  /* words (32 bits) */
-#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (3000U)  /* words (32 bits) */
+#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -249,6 +250,9 @@ typedef enum
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
+
+#define CFG_BSP_ON_NUCLEO           (1)
+#define CFG_BSP_ON_THREADX          (1)
 
 #define CFG_LED_SUPPORTED           (1)
 #define CFG_BUTTON_SUPPORTED        (1)

@@ -26,7 +26,6 @@
 #include "app_entry.h"
 #include "log_module.h"
 #include "app_thread.h"
-#include "threadplat_pka.h"
 #include "dbg_trace.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
@@ -46,6 +45,7 @@
 #include "coap.h"
 
 #include "joiner.h"
+#include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
 
 /* Private includes -----------------------------------------------------------*/
@@ -81,15 +81,13 @@
 
 /* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#include "app_bsp.h"
 /* USER CODE END PM */
 
 /* Private function prototypes -----------------------------------------------*/
 static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext);
 static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
-
-static void ProcessPka(void);
 
 #if (OT_CLI_USE == 1)
 static void APP_THREAD_CliInit(otInstance *aInstance);
@@ -188,9 +186,6 @@ void Thread_Init(void)
 #endif
 
   otDispatch_tbl_init(PtOpenThreadInstance);
-
-  /* Register tasks */
-  UTIL_SEQ_RegTask(1 << CFG_TASK_HW_PKA, UTIL_SEQ_RFU, ProcessPka);
   
 #if (OT_CLI_USE == 1)
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_UART, UTIL_SEQ_RFU, APP_THREAD_ProcessUart);
@@ -219,15 +214,10 @@ void Thread_Init(void)
   /* Create timer to handle periodic CoAp msg transmission */
   UTIL_TIMER_Create(&APP_Thread_transmitTimerId,
                     0,
-                    (UTIL_TIMER_Mode_t)hw_ts_Repeated,
+                    UTIL_TIMER_PERIODIC,
                     &APP_THREAD_TransmitRequest,
                     0);
 #endif
-}
-
-static void ProcessPka(void)
-{
-  otPlatPkaProccessLoop();
 }
 
 void ProcessAlarm(void)
@@ -363,24 +353,6 @@ void APP_THREAD_Init( void )
   APP_THREAD_DeviceConfig();
 }
 
-void APP_THREAD_SchedulePka(void)
-{
-  /* Schedule otPlatPkaProccessLoop() */
-  UTIL_SEQ_SetTask(1 << CFG_TASK_HW_PKA, CFG_TASK_PRIO_HW_PKA);
-}
-
-void APP_THREAD_WaitPkaEndOfOperation(void)
-{
-  /* Wait for event CFG_IDLEEVT_PKA_END_OF_OPERATION */
-  UTIL_SEQ_WaitEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
-}
-
-void APP_THREAD_PostPkaEndOfOperation(void)
-{
-  /* Pka operation ended, set CFG_IDLEEVT_PKA_END_OF_OPERATION event */
-  UTIL_SEQ_SetEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
-}
-
 
 /**
  * @brief  Warn the user that an error has occurred.
@@ -395,7 +367,7 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   LOG_ERROR_APP("**** FATAL ERROR = %s (Err = %d)", pMess, ErrCode);
   /* In this case, the LEDs on the Board will start blinking. */
 
-  while(1U == 1U)
+  while (1)
   {
     BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
@@ -561,11 +533,6 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           break;
     }
   }
-}
-
-void app_logger_write(uint8_t *buffer, uint32_t size)
-{
-  //UTIL_ADV_TRACE_COND_Send(VLEVEL_ALWAYS, ~0x0, 0, buffer, (uint16_t)size);
 }
 
 #if (OT_CLI_USE == 1)
@@ -872,7 +839,7 @@ static void APP_THREAD_TransmitRequest(void *arg)
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+void APP_BSP_Button1Action(void)
 {
   APP_THREAD_SendCoapMsgWithNoConf();
 }
@@ -882,7 +849,7 @@ void APPE_Button1Action(void)
  * @param  None
  * @retval None
  */
-void APPE_Button2Action(void)
+void APP_BSP_Button2Action(void)
 {
   APP_THREAD_SendCoapMsgWithConf();
 }

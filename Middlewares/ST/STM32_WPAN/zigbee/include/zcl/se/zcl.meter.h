@@ -1317,11 +1317,10 @@ struct ZbZclMeterServerCallbacksT {
 
 /**
  * Create a new instance of the Metering Server cluster
- * After initialization, ZbZclClusterSetCallbackArg is called with 'arg' to configure the application's callback argument
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will included in the callback when invoked.
+ * @param arg Pointer to application data that will included in the callbacks when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclMeterServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,

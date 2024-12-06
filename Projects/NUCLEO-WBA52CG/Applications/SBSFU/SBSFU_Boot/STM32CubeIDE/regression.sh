@@ -3,8 +3,7 @@ echo "regression script started"
 source ../../env.sh
 secbootadd0=
 flashsectnbr=
-connect="-c port=SWD mode=UR ap=1 --hardRst"
-connect_no_hwrst="-c port=SWD mode=UR ap=1"
+connect="-c port=SWD mode=UR ap=1"
 connect_no_reset="-c port=SWD ap=1 mode=HotPlug"
 rdp_0="-ob RDP=0xAA TZEN=1 UNLOCK_A=1 UNLOCK_B=1"
 remove_bank1_protect="-ob SECWM_PSTRT="$flashsectnbr" SECWM_PEND=0 WRPA_PSTRT="$flashsectnbr" WRPA_PEND=0 WRPB_PSTRT="$flashsectnbr" WRPB_PEND=0"
@@ -17,7 +16,7 @@ echo "Regression to RDP 0, enable tz"
 "$stm32programmercli" $connect_no_reset $rdp_0
 ret=$?
 if [ $ret != 0 ]; then
-  "$stm32programmercli" $connect_no_hwrst $rdp_0
+  "$stm32programmercli" $connect $rdp_0
   ret=$?
   if [ $ret != 0 ]; then
     if [ "$1" != "AUTO" ]; then read -p "regression script failed, press a key" -n1 -s; fi
@@ -25,14 +24,14 @@ if [ $ret != 0 ]; then
   fi
 fi
 echo "Provision default OEM2 key"
-"$stm32programmercli" $connect_no_hwrst $oem_passwd2
+"$stm32programmercli" $connect $oem_passwd2
 ret=$?
 if [ $ret != 0 ]; then
   if [ "$1" != "AUTO" ]; then read -p "regression script failed, press a key" -n1 -s; fi
   exit 1
 fi
 echo "Remove bank1 protection"
-"$stm32programmercli" $connect_no_hwrst $remove_bank1_protect
+"$stm32programmercli" $connect $remove_bank1_protect
 ret=$?
 if [ $ret != 0 ]; then
   if [ "$1" != "AUTO" ]; then read -p "regression script failed, press a key" -n1 -s; fi

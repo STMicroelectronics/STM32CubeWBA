@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.c
+  * @file    dis_app.c
   * @author  MCD Application Team
-  * @brief   service2_app application definition.
+  * @brief   DIS application definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "dis_app.h"
 #include "dis.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -77,13 +77,14 @@ static DIS_APP_Context_t DIS_APP_Context;
 uint8_t a_DIS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-uint8_t DIS_APP_PnpId[] = 
+uint8_t DIS_APP_PnpId[] =
 {
   0x01,
   0xAD, 0xDE,
   0xDE, 0xDA,
   0x01, 0x00
 };
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -166,10 +167,11 @@ void DIS_APP_Init(void)
 
   /* USER CODE BEGIN Service2_APP_Init */
   DIS_Data_t dis_information_data;
-  
+
   dis_information_data.p_Payload = (uint8_t*)DIS_APP_PnpId;
   dis_information_data.Length = sizeof(DIS_APP_PnpId);
   DIS_UpdateValue(DIS_PNI, &dis_information_data);
+
   /* USER CODE END Service2_APP_Init */
   return;
 }
@@ -184,6 +186,6 @@ void DIS_APP_Init(void)
  *
  *************************************************************/
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

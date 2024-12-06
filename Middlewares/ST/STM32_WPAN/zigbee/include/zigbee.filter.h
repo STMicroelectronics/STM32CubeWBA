@@ -3,7 +3,7 @@
  * @heading Zigbee Message Filters
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_FILTER_H
@@ -13,42 +13,79 @@
  * Asynchronous messaging filter API
  *---------------------------------------------------------------
  */
+
+/* Important: A typical application will not need to register (ZbMsgFilterRegister)
+ * to receive the following message callbacks in order to operate correctly.
+ * The stack will automatically handle these messages by default. */
+
 /* Asynchronous message filter mask. */
 /* NWK Indications */
-#define ZB_MSG_FILTER_JOIN_IND                  0x00000001U /* NLME-JOIN.indication (struct ZbNlmeJoinIndT) */
-#define ZB_MSG_FILTER_LEAVE_IND                 0x00000002U /* NLME-LEAVE.indication (struct ZbNlmeLeaveIndT) */
-#define ZB_MSG_FILTER_STATUS_IND                0x00000004U /* NLME-NETWORK-STATUS.indication (struct ZbNlmeNetworkStatusIndT) */
-#define ZB_MSG_FILTER_STACK_EVENT               0x00000008U /* General stack event (struct ZbMsgStackEventT) */
+/** NLME-JOIN.indication (struct ZbNlmeJoinIndT) */
+#define ZB_MSG_FILTER_JOIN_IND                  0x00000001U
+/* NLME-LEAVE.indication (struct ZbNlmeLeaveIndT) */
+#define ZB_MSG_FILTER_LEAVE_IND                 0x00000002U
+/* NLME-NETWORK-STATUS.indication (struct ZbNlmeNetworkStatusIndT) */
+#define ZB_MSG_FILTER_STATUS_IND                0x00000004U
+/* General stack event. See ZbMsgStackEventTypeT for the different stack event message types.
+ * The message format is "struct ZbMsgStackEventT" */
+#define ZB_MSG_FILTER_STACK_EVENT               0x00000008U
 
 /* Data and Command Indications */
-#define ZB_MSG_FILTER_MCPS_DATA_IND             0x00000010U /* MCPS-DATA.indication (struct mcp_dataind) */
-#define ZB_MSG_FILTER_NLDE_DATA_IND             0x00000020U /* NLDE-DATA.indication (struct ZbNldeDataIndT) */
-#define ZB_MSG_FILTER_APSDE_DATA_IND            0x00000040U /* APSDE-DATA.indication (struct ZbApsdeDataIndT) */
-#define ZB_MSG_FILTER_APS_COMMAND_IND           0x00000080U /* APS Commands (struct ZbMsgApsCommandT) */
+/* MCPS-DATA.indication (struct zb_msg_mac_data_ind) */
+#define ZB_MSG_FILTER_MCPS_DATA_IND             0x00000010U
+/* NLDE-DATA.indication (struct ZbNldeDataIndT) */
+#define ZB_MSG_FILTER_NLDE_DATA_IND             0x00000020U
+/* APSDE-DATA.indication (struct ZbApsdeDataIndT) */
+#define ZB_MSG_FILTER_APSDE_DATA_IND            0x00000040U
+/* APS Commands (struct ZbMsgApsCommandT) */
+#define ZB_MSG_FILTER_APS_COMMAND_IND           0x00000080U
 
 /* R23 security ZDO Indications. */
-#define ZB_MSG_FILTER_SEC_KEY_UPDATE_IND        0x00000100U /* struct ZbZdoSecKeyUpdateIndT */
-#define ZB_MSG_FILTER_SEC_KEY_NEGO_IND          0x00000200U /* struct ZbApsmeKeyNegoIndT */
-#define ZB_MSG_FILTER_SEC_CHALLENGE_IND         0x00000400U /* struct ZbApsmeSecChallengeIndT */
-/* R23 Device interview event. */
-#define ZB_MSG_FILTER_DEVICE_INTERVIEW_IND      0x00000800U /* struct ZbMsgDeviceInterviewIndT */
+/* struct ZbZdoSecKeyUpdateIndT */
+#define ZB_MSG_FILTER_SEC_KEY_UPDATE_IND        0x00000100U
+/* struct ZbApsmeKeyNegoIndT */
+#define ZB_MSG_FILTER_SEC_KEY_NEGO_IND          0x00000200U
+/* struct ZbApsmeSecChallengeIndT */
+#define ZB_MSG_FILTER_SEC_CHALLENGE_IND         0x00000400U
+
+/* R23 Device Interview event for Downstream Relay message that is either sent if TC,
+ * or received if joiner. It is used internally by the stack to refresh the Device
+ * Interview timeout. The message structure is defined by "struct ZbMsgDeviceInterviewIndT" */
+#define ZB_MSG_FILTER_DEVICE_INTERVIEW_IND      0x00000800U
 /* Note, max filter bit we can specify here is  0x00080000U */
 
-/* Groups of messages that are filterable. */
-#define ZB_MSG_FILTER_NLME \
-    (ZB_MSG_FILTER_JOIN_IND | ZB_MSG_FILTER_LEAVE_IND | ZB_MSG_FILTER_STATUS_IND)
+/* Message filter priorities (255 = highest, 0 = lowest).
+ * Filters with higher priority are executed first before filters with
+ * lower priorities. A higher priority filter can prevent a lower priority
+ * filter from being executed if the higher priority filter callback returns
+ * ZB_MSG_DISCARD. */
+#define ZB_MSG_INTERNAL_PRIO                    128U /* default stack priority */
+#define ZB_MSG_DEFAULT_PRIO                     64U /* default application priority */
+#define ZB_MSG_LOWEST_PRIO                      0U
 
-#define ZB_MSG_FILTER_APSME \
-    (ZB_MSG_FILTER_APS_COMMAND_IND | ZB_MSG_FILTER_SEC_KEY_UPDATE_IND | ZB_MSG_FILTER_SEC_KEY_NEGO_IND | \
-     ZB_MSG_FILTER_SEC_CHALLENGE_IND | ZB_MSG_FILTER_DEVICE_INTERVIEW_IND)
+/**
+ * Message filter callback return values.
+ * Used for the return codes with the callbacks for ZbMsgFilterRegister,
+ * ZbApsFilterEndpointAdd, etc.
+ */
+enum zb_msg_filter_rc {
+    ZB_MSG_CONTINUE = 0, /**< Continue processing any further filter callbacks. */
+    ZB_MSG_DISCARD /**< Stop processing further filter callbacks. */
+};
 
-/* Message filter priorities (255 = highest, 0 = lowest) */
-#define ZB_MSG_INTERNAL_PRIO                128U /* default stack priority */
-#define ZB_MSG_DEFAULT_PRIO                 64U /* default application priority */
-#define ZB_MSG_LOWEST_PRIO                  0U
-
+/* APS Filter instance as an opaque data structure. The internal parameters of this structure
+ * are only accessible within the Zigbee stack. */
 struct ZbApsFilterT;
 
+/**
+ * Register message filter with the stack.
+ * @param zb Pointer to Zigbee stack instance
+ * @param mask Message filter mask flag
+ * @param prio Message filter priority
+ * @param callback Callback function invoked after message matching filter is received
+ * @param arg Callback function argument
+ * @param filter Pointer to filter struct.
+ */
 struct ZbMsgFilterT * ZbMsgFilterRegister(struct ZigBeeT *zb, uint32_t mask, uint8_t prio,
     enum zb_msg_filter_rc (*callback)(struct ZigBeeT *zb, uint32_t id, void *msg, void *cbarg), void *arg);
 
@@ -58,23 +95,6 @@ struct ZbMsgFilterT * ZbMsgFilterRegister(struct ZigBeeT *zb, uint32_t mask, uin
  * @param filter Pointer to filter struct returned by ZbMsgFilterRegister.
  */
 void ZbMsgFilterRemove(struct ZigBeeT *zb, struct ZbMsgFilterT *filter);
-
-/*---------------------------------------------------------
- * APS Command Indication Struct
- *---------------------------------------------------------
- */
-struct ZbMsgApsCommandT {
-    enum ZbApsCmdIdT id; /**< The APS Command Id. e.g. ZB_APS_CMD_TRANSPORT_KEY */
-    union {
-        struct ZbApsmeTransKeyIndT trans_key; /* ZB_APS_CMD_TRANSPORT_KEY */
-        struct ZbApsmeUpdateDeviceIndT update_device; /* ZB_APS_CMD_UPDATE_DEVICE */
-        struct ZbApsmeRemoveDeviceIndT remove_device; /* ZB_APS_CMD_REMOVE_DEVICE */
-        struct ZbApsmeRequestKeyIndT request_key; /* ZB_APS_CMD_REQUEST_KEY */
-        struct ZbApsmeSwitchKeyIndT switch_key; /* ZB_APS_CMD_SWITCH_KEY */
-        struct ZbApsmeVerifyKeyIndT verify_key; /* ZB_APS_CMD_VERIFY_KEY */
-        struct ZbApsmeConfirmKeyIndT confirm_key; /* ZB_APS_CMD_CONFIRM_KEY */
-    } data;
-};
 
 /*---------------------------------------------------------
  * ZB_MSG_FILTER_STACK_EVENT
@@ -138,10 +158,6 @@ enum ZbMsgStackEventTypeT {
      * are no more valid, forcing ZVD to setup limited authorization session and perform
      * trust center. Will only get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT
      * enabled. */
-
-    ZB_MSG_STACK_EVENT_STARTUP_JOIN_AUTH_TOKEN,
-    /**< A message that is sent after the stack completes updating the symmetric Passphrase
-     * after initially joining a network and negotiating the trust center link key using DLK. */
 
     ZB_MSG_STACK_EVENT_PARENT_LINK_FAIL
     /** A message that is sent if the device is an end-device and it has received an

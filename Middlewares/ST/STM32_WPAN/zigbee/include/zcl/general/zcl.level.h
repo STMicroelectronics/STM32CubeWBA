@@ -10,7 +10,7 @@
  * @brief ZCL Level cluster header
  * ZCL 7 section 3.10
  * ZCL 8 section 3.10
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_LEVEL_H
@@ -218,7 +218,7 @@ struct ZbZclLevelServerCallbacksT {
  * @param endpoint Endpoint on which to create cluster
  * @param onoff_server OnOff server cluster pointer for processing commands with the Options fields. May be NULL
  * @param callbacks Structure containing any callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclLevelServerAlloc(struct ZigBeeT *zb,
@@ -243,8 +243,8 @@ struct ZbZclClusterT * ZbZclLevelClientAlloc(struct ZigBeeT *zb, uint8_t endpoin
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move To Level command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclLevelClientMoveToLevelReq(struct ZbZclClusterT *cluster,
@@ -256,8 +256,8 @@ enum ZclStatusCodeT ZbZclLevelClientMoveToLevelReq(struct ZbZclClusterT *cluster
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Move command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclLevelClientMoveReq(struct ZbZclClusterT *cluster,
@@ -269,8 +269,8 @@ enum ZclStatusCodeT ZbZclLevelClientMoveReq(struct ZbZclClusterT *cluster,
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Step command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclLevelClientStepReq(struct ZbZclClusterT *cluster,
@@ -282,8 +282,8 @@ enum ZclStatusCodeT ZbZclLevelClientStepReq(struct ZbZclClusterT *cluster,
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Stop command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclLevelClientStopReq(struct ZbZclClusterT *cluster,
@@ -295,8 +295,8 @@ enum ZclStatusCodeT ZbZclLevelClientStopReq(struct ZbZclClusterT *cluster,
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param req Stop command request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback function when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclLevelClientMoveToFreqReq(struct ZbZclClusterT *cluster,

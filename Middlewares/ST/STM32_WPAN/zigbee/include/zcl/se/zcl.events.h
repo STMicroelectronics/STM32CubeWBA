@@ -3,7 +3,7 @@
  * @heading Events
  * @brief ZCL Events cluster header
  * ZCL 8 section 10.11
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_EVENTS_H

@@ -8,7 +8,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -1738,6 +1738,8 @@ uint8_t EraseSector (const uint32_t SectorId, const uint32_t SectorNumber)
     /* Setup erase index */
     sectorIdx = (SectorNumber - 1u);
 
+    HAL_FLASH_Unlock();
+
     while ((SectorNumber > sectorIdx) && (FD_FLASHOP_SUCCESS == funcError))
     {
       funcError = FD_EraseSectors ((SectorId + sectorIdx));
@@ -1747,6 +1749,8 @@ uint8_t EraseSector (const uint32_t SectorId, const uint32_t SectorNumber)
         sectorIdx++;
       }
     }
+
+    HAL_FLASH_Lock();
 
     /* Check if operation OK */
     if ((SectorNumber <= sectorIdx) &&

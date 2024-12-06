@@ -1,4 +1,4 @@
-/* Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved. */
 
 #include "zcl/se/zcl.meter.h"
 
@@ -10,7 +10,7 @@
 /* Minimum reporting interval for all attributes. If an attribute changes, its
  * report will be sent at least this much time since the last report.
  * This value should be less than the sleep cycle for a sleepy Meter device, so
- * when the Meter wakes up and calls ZbZclAttrReportKick, any modified attributes
+ * when the Meter wakes up and calls ZbZclClusterReportsSend, any modified attributes
  * since the last wake cycle will be reported on. */
 # define ZCL_METER_ATTR_REPORT_INTVL_MIN            900U /* 15 minutes, assuming a sleepy cycle of 30 minutes. */
 

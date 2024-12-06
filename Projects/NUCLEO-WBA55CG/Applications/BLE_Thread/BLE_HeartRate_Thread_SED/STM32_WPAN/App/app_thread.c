@@ -41,7 +41,6 @@
 #include "app_conf.h"
 #include "instance.h"
 #include "main.h"
-#include "openthread-system.h"
 #include "cli.h"
 #include "radio.h"
 #include "platform.h"
@@ -51,7 +50,6 @@
 #include "ll_sys_startup.h"
 
 #include "app_thread.h"
-#include "threadplat_pka.h"
 #include "common_types.h"
 #include "stm32_lpm.h"
 #include "stm32_timer.h"
@@ -66,6 +64,7 @@
 
 extern void otPlatSettingsWipe(otInstance *aInstance);
 #include "joiner.h"
+#include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
 
 #if ((CFG_BUTTON_SUPPORTED ==1)||(CFG_LED_SUPPORTED == 1))
@@ -90,8 +89,6 @@ otExtAddress ext_addr =
 static void APP_THREAD_DeviceConfig(void);
 static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext);
 static void APP_THREAD_Child_Role_Handler(void);
-
-static void ProcessPka(void);
 
 static void APP_THREAD_CoapRequestHandler(void                * pContext,
     otMessage           * pMessage,
@@ -149,8 +146,6 @@ void Thread_Init(void)
 
 
   /* Register tasks */
-  UTIL_SEQ_RegTask(1 << CFG_TASK_HW_PKA, UTIL_SEQ_RFU, ProcessPka);
-  
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_ALARM, UTIL_SEQ_RFU, ProcessAlarm);
   UTIL_SEQ_RegTask(1<<CFG_TASK_OT_US_ALARM, UTIL_SEQ_RFU, ProcessUsAlarm);
   
@@ -162,11 +157,6 @@ void Thread_Init(void)
 
   /* Run first time */
   UTIL_SEQ_SetTask(1U<<CFG_TASK_OT_ALARM, CFG_TASK_PRIO_ALARM);
-}
-
-static void ProcessPka(void)
-{
-  otPlatPkaProccessLoop();
 }
 
 void ProcessAlarm(void)
@@ -232,24 +222,6 @@ void APP_THREAD_Init( void )
     APP_THREAD_TraceError("ERROR : COAP TIMER init failed", -1);
 
   APP_THREAD_DeviceConfig();
-}
-
-void APP_THREAD_SchedulePka(void)
-{
-  /* Schedule otPlatPkaProccessLoop() */
-  UTIL_SEQ_SetTask(1 << CFG_TASK_HW_PKA, CFG_TASK_PRIO_HW_PKA);
-}
-
-void APP_THREAD_WaitPkaEndOfOperation(void)
-{
-  /* Wait for event CFG_IDLEEVT_PKA_END_OF_OPERATION */
-  UTIL_SEQ_WaitEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
-}
-
-void APP_THREAD_PostPkaEndOfOperation(void)
-{
-  /* Pka operation ended, set CFG_IDLEEVT_PKA_END_OF_OPERATION event */
-  UTIL_SEQ_SetEvt(1<<CFG_IDLEEVT_PKA_END_OF_OPERATION);
 }
 
 /**
@@ -445,9 +417,18 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
     }
 
     otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
-    otCoapMessageAppendUriPathOptions(pOT_Message, aCoapRessource->mUriPath);
-    otCoapMessageSetPayloadMarker(pOT_Message);
-
+    error = otCoapMessageAppendUriPathOptions(pOT_Message, aCoapRessource->mUriPath);
+		
+		if (error != OT_ERROR_NONE)
+		{
+			APP_THREAD_Error(ERR_THREAD_START,error);
+		}
+		
+    error= otCoapMessageSetPayloadMarker(pOT_Message);
+		if (error != OT_ERROR_NONE)
+		{
+			APP_THREAD_Error(ERR_THREAD_START,error);
+		}
     if((aPayload != NULL) && (Size > 0))
     {
       error = otMessageAppend(pOT_Message, aPayload, Size);
@@ -464,7 +445,12 @@ static void APP_THREAD_CoapSendRequest(otCoapResource* aCoapRessource,
 
     if((aPeerAddress == NULL) && (aStringAddress != NULL))
     {
-      otIp6AddressFromString(aStringAddress, &OT_MessageInfo.mPeerAddr);
+      error = otIp6AddressFromString(aStringAddress, &OT_MessageInfo.mPeerAddr);
+			if (error != OT_ERROR_NONE)
+      {
+        APP_THREAD_Error(ERR_THREAD_COAP_APPEND,error);
+        break;
+      }
     }
     else
     if (aPeerAddress != NULL)
@@ -520,7 +506,7 @@ static void coapSendTimerCallback(void *arg)
 static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
 {
   /* USER CODE BEGIN TRACE_ERROR */
-  while(1U == 1U)
+  while (1)
   {
   }
   /* USER CODE END TRACE_ERROR */

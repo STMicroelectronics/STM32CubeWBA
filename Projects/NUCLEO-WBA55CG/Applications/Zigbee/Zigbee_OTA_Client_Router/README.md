@@ -40,9 +40,9 @@ For this application it is requested to have at least:
                                   |        |                                                           |        |
   Reboot and Jump to OTA Image <= |        |                            Start OTA Upgrade Procedure <= |        |
                                   |        |                    (Section 11.12 OTA Upgrade Diagram)    |        |
-                                  |        |                                                           |        |
-                                  |        |               ZbZclOnOffClientToggleReq                   |        |
-      PushB SW1 (On OTA Image) => |        | --------------------------------------------------------> |        | => Red LED Toggle
+								  |        |                                                           |        |
+								  |        |                                                           |        |
+								  |        |                                                           |        |
                                   |        |                                                           |        |
                          Reset => |        | => Reboot and Jump to Original Downloaded Image           |        |
                                   |        |                                                           |        |
@@ -65,10 +65,10 @@ For this application it is requested to have at least:
     3. Start the second board. This board is configured as Zigbee router and will be attached to the network created by the Coordinator. Do the same for the other boards if applicable.
 &rarr; At this stage, the Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED turn ON before pushing buttons.
 
-    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully. You shall see the Green LED toggling on the Client. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by an immediate soft reset. The Client will jump to the OTA image.
+    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully.
+	You shall see the Green LED toggling on the Client. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by an immediate soft reset. The Client will jump to the OTA image.
 
-    5. Once the Client soft resets and jumps to the OTA image, it is possible to send OnOff Cluster commands from the Client to the Server in multicast mode by pressing on the SW1 push button.
-       In addition, it is possible to hard reset using the Reset push button on the Client to restore the original downloaded image.
+    5. Once the Client soft resets and jumps to the OTA image, it is possible to hard reset using the Reset push button on the Client to restore the OTA Client.  
 
     6. Once the Client hard resets and restores the original downloaded image, it is possible to soft reset using push button SW2 on the Client to jump to the OTA image.
 

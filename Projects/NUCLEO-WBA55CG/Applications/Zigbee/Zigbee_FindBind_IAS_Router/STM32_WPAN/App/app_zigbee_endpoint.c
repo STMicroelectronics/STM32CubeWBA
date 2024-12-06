@@ -44,8 +44,8 @@
 #include "zcl/se/zcl.message.h"
 
 /* USER CODE BEGIN PI */
+#include "app_bsp.h"
 #include "zcl/security/zcl.ias_wd.h"
-#include "stm32wbaxx_nucleo.h"
 
 /* USER CODE END PI */
 
@@ -257,9 +257,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -376,27 +373,46 @@ static void APP_ZIGBEE_FindBindClientStart(void)
  */
 static uint16_t APP_ZIGBEE_GetNumberOfBinding( void )
 {
-  uint16_t              iIndex = 0, iNumEntries = 0;
+  bool                  bEndDone = false;
+  uint16_t              iIndex = 0, iCount = 0;
   struct ZbApsmeBindT   stBindEntry;
   enum ZbStatusCodeT    eStatus;
 
+  LOG_INFO_APP( "[FIND-BIND] Printing Binding table below:" );
+  LOG_INFO_APP( "  Item | ClusterId | Dest. Ext. Address | Dst EP | Src EP |" );
+  LOG_INFO_APP( "  -----|-----------|--------------------|--------|--------|" );
+
+  /* Go through each elements */
   do
   {
-    eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof( stBindEntry ), iIndex );
-    if ( eStatus == ZB_APS_STATUS_SUCCESS )
-    {
-      if ( stBindEntry.srcExtAddr != 0u ) 
+      /* Check the end of the table */
+      eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof(stBindEntry), iIndex );
+      if ( eStatus != ZB_APS_STATUS_SUCCESS)
       {
-        iNumEntries++;
-        LOG_INFO_APP( "[FIND-BIND] Entry : Cluster (0x%02X) on Source Endpoint (0x%02X) and Dest EndPoint/Address (0x%02X / 0x%04X)",
-                    stBindEntry.clusterId, stBindEntry.srcEndpt, stBindEntry.dst.endpoint, stBindEntry.dst.nwkAddr );
+          if ( eStatus != ZB_APS_STATUS_INVALID_INDEX )
+          {
+              LOG_ERROR_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)", eStatus );
+          }
+          bEndDone = true;
       }
-    }
-    iIndex++;
+      else
+      {
+          /* If empty, ignore */
+          if ( stBindEntry.srcExtAddr != 0u )
+          {
+            /* Display element */
+            LOG_INFO_APP( "   %2d  |   0x%03X   | " LOG_DISPLAY64() " |  0x%02X  |  0x%02X  |", iIndex, stBindEntry.clusterId, 
+                         LOG_NUMBER64(stBindEntry.dst.extAddr), stBindEntry.dst.endpoint, stBindEntry.srcEndpt );
+            iCount++;
+          }
+      }
+      iIndex++;
   }
-  while ( eStatus == ZB_APS_STATUS_SUCCESS );
+  while ( bEndDone == false );
+
+  LOG_INFO_APP( "  Found %d Binds", iCount );
          
-  return iNumEntries;
+  return iCount;
 }
 
 /**
@@ -435,8 +451,6 @@ static void APP_ZIGBEE_FindBindCheckBindings( void )
     /* First F&B is successful allocate IAS cluster */
     APP_ZIGBEE_FindBindAllocateIasClient();
   }
-  
-  LOG_INFO_APP( "[FIND-BIND] Binding entries created: %d", iNbBinding);
 }
 
 /**
@@ -454,7 +468,7 @@ static void APP_ZIGBEE_FindBindCheckTimerCallback( void * arg )
  * @param  None
  * @retval None
  */
-void APPE_Button1Action( void )
+void APP_BSP_Button1Action( void )
 {
   enum ZbStatusCodeT    eStatus;
   
@@ -481,7 +495,7 @@ void APPE_Button1Action( void )
  * @param  None
  * @retval None
  */
-void APPE_Button2Action( void )
+void APP_BSP_Button2Action( void )
 {
   struct ZbZclIasWdClientStartWarningReqT   stRequest;
   enum ZclStatusCodeT                       eStatus;
@@ -513,7 +527,7 @@ void APPE_Button2Action( void )
  * @param  None
  * @retval None
  */
-void APPE_Button3Action( void )
+void APP_BSP_Button3Action( void )
 {
   enum ZclStatusCodeT  eStatus;
   

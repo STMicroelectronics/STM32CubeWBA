@@ -56,6 +56,7 @@ typedef struct
 /* Private defines ------------------------------------------------------------*/
 #define ADV_SET_COUNT                  (8)
 #define DATA_SLICE_SIZE                (251)
+#define RF_TX_POWER_DBM                (0)
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -107,7 +108,7 @@ uint8_t ADV_EXT_Config(void)
   adv_set_param[i].sid = i;
   adv_set_param[i].interval_min = 200;
   adv_set_param[i].interval_max = 300;
-  adv_set_param[i].tx_power = CFG_TX_POWER;
+  adv_set_param[i].tx_power = RF_TX_POWER_DBM;
   adv_set_param[i].adv_channels = ADV_CH_37 | ADV_CH_38 | ADV_CH_39;
   adv_set_param[i].property = HCI_ADV_EVENT_PROP_SCANNABLE;
   adv_set_param[i].address_type = GAP_STATIC_RANDOM_ADDR;
@@ -126,7 +127,7 @@ uint8_t ADV_EXT_Config(void)
   adv_set_param[i].sid = i;
   adv_set_param[i].interval_min = 200;
   adv_set_param[i].interval_max = 300;
-  adv_set_param[i].tx_power = CFG_TX_POWER;
+  adv_set_param[i].tx_power = RF_TX_POWER_DBM;
   adv_set_param[i].adv_channels = ADV_CH_37 | ADV_CH_38 | ADV_CH_39;
   adv_set_param[i].property = 0x00;
   adv_set_param[i].address_type = GAP_STATIC_RANDOM_ADDR;
@@ -149,7 +150,7 @@ uint8_t ADV_EXT_Config(void)
   adv_set_param[i].sid = i;
   adv_set_param[i].interval_min = 200;
   adv_set_param[i].interval_max = 300;
-  adv_set_param[i].tx_power = CFG_TX_POWER;
+  adv_set_param[i].tx_power = RF_TX_POWER_DBM;
   adv_set_param[i].adv_channels = ADV_CH_37 | ADV_CH_38 | ADV_CH_39;
   adv_set_param[i].property = HCI_ADV_EVENT_PROP_CONNECTABLE;
   adv_set_param[i].address_type = GAP_STATIC_RANDOM_ADDR;
@@ -176,7 +177,7 @@ uint8_t ADV_EXT_Config(void)
   adv_set_param[i].sid = i;
   adv_set_param[i].interval_min = 200;
   adv_set_param[i].interval_max = 300;
-  adv_set_param[i].tx_power = CFG_TX_POWER;
+  adv_set_param[i].tx_power = RF_TX_POWER_DBM;
   adv_set_param[i].adv_channels = ADV_CH_37 | ADV_CH_38 | ADV_CH_39;
   adv_set_param[i].property = HCI_ADV_EVENT_PROP_CONNECTABLE | HCI_ADV_EVENT_PROP_LEGACY | HCI_ADV_EVENT_PROP_SCANNABLE;
   adv_set_param[i].address_type = GAP_PUBLIC_ADDR;

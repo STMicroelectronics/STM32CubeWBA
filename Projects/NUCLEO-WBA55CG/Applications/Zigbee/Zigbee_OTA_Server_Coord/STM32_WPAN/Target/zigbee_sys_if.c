@@ -24,6 +24,7 @@
 #include "log_module.h"
 #include "app_zigbee.h"
 #include "stm32_rtos.h"
+#include "zigbee.stm32wba.sys.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */

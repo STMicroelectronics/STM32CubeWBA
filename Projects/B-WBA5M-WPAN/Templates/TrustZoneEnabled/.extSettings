@@ -1,0 +1,8 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\Drivers\BSP\B-WBA5M-WPAN
+[Others]
+Define=
+HALModule=
+[Groups]
+Doc=../README.md;
+Drivers/BSP/B-WBA5M-WPAN=../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan.c;

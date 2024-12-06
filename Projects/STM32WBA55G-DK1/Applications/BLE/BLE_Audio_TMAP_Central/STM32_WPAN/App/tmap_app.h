@@ -470,7 +470,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
-void TMAPAPP_Init();
+void TMAPAPP_Init(void);
 tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t TMAPAPP_StartScanning(void);
 uint8_t TMAPAPP_StopScanning(void);

@@ -3,7 +3,7 @@
  * @heading Security Utilities
  * @brief Zigbee security header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_SECURITY_H
@@ -237,57 +237,6 @@ struct ZbZclCbke2InfoT {
 #define ZB_ECDHE_C25519_SESSION_ID_SIZE         80U
 
 /*---------------------------------------------------------------
- * Auxiliary Frame Functions
- *---------------------------------------------------------------
- */
-/* Security Control Field of the Auxilliary Header */
-struct ZbSecAuxHdrCtrlT {
-    uint8_t secLevel;
-    /**< Security level of the frame. */
-    enum ZbSecHdrKeyIdT keyId;
-    /**< Key used to encrypt the frame. */
-    bool extNonce;
-    /**< Extended nonce present. */
-};
-
-/* Structure containing the fields stored in the Aux Header */
-struct ZbSecAuxHdrT {
-    struct ZbSecAuxHdrCtrlT securityCtrl;
-    uint32_t frameCounter;
-    uint64_t srcExtAddr; /* Present if securityCtrl.extNonce */
-    uint8_t keySeqno; /* Present if securityCtrl.keyId = 1 (Network Key) */
-};
-
-/**
- * Parses the auxiliary header into the provided structure.
- * @param data Packet buffer
- * @param dataLen Packet length
- * @param auxHdrPtr Pointer to ZbSecAuxHdrT structure to parse data into.
- * @return Number of bytes in the header, or <0 on error.
- */
-int ZbSecParseAuxHdr(const uint8_t *data, unsigned int dataLen, struct ZbSecAuxHdrT *auxHdrPtr);
-
-/**
- * Append an auxillary security header to a packet
- * @param data Packet buffer
- * @param dataLen Packet length
- * @param auxHdrPtr auxillary header struct to use
- * @return Number of bytes written, or <0 on error.
- */
-int ZbSecAppendAuxHdr(uint8_t *data, unsigned int dataLen, struct ZbSecAuxHdrT *auxHdrPtr);
-
-/**
- * Builds the CCM* nonce from the source address, frame counter and security control bits.
- * The nonce buffer must be at least ZB_SEC_NONCE_LENGTH in size.
- * @param nonce Nonce buffer (output)
- * @param extAddr Source extended addres
- * @param frameCounter Frame counter
- * @param secCtrl Security control field
- * @return None
- */
-void ZbSecMakeNonce(uint8_t *nonce, uint64_t extAddr, uint32_t frameCounter, uint8_t secCtrl);
-
-/*---------------------------------------------------------------
  * Security Transformations
  *---------------------------------------------------------------
  */
@@ -303,33 +252,24 @@ void ZbSecMakeNonce(uint8_t *nonce, uint64_t extAddr, uint32_t frameCounter, uin
 bool ZbAesMmoHash(uint8_t const *data, const unsigned int length, uint8_t *digest);
 
 /**
- * Performs the Keyed Hash function for Message Authentication. The HMAC operation described
- * in section B.1.4, and specified by FIPS pub 198. This is used to trasmute the link keys into
- * key-load and key-transport keys.
- * @param key The encryption key to use
- * @param input The input data byte
- * @param keyOut The resultant tranformed key
- * @return None
- */
-void ZbSecKeyTransform(uint8_t *key, uint8_t input, uint8_t *keyOut);
-
-/**
- * Adds a device key-pair to the stack as a Trust Center Link Key type.
- * This API is typically used to add link keys to the TC for devices
- * that need to join the network.
+ * ZbApsmeAddKeyReq helper function. Adds a device key-pair to the stack as a
+ * Trust Center Link Key type. This API is typically only used by a Trust Center
+ * to add link keys for devices that need to join the network.
+ * On the Joiner side, the link key is set to the preconfiguredLinkKey parameter in the
+ * ZbStartupT configuration when calling ZbStartup to join the network.
  * @param zb Zigbee stack instance
  * @param extAddr The EUI64 address of the device matching the link key
  * @param key The link key, of length ZB_SEC_KEYSIZE, to add
  * @return Zigbee Status Code
  */
-enum ZbStatusCodeT ZbSecAddDeviceLinkKeyByKey(struct ZigBeeT *zb, uint64_t extAddr,
-    uint8_t *key);
+enum ZbStatusCodeT ZbSecAddDeviceLinkKeyByKey(struct ZigBeeT *zb, uint64_t extAddr, uint8_t *key);
 
 /**
- * Adds a device key-pair to the stack as a Trust Center Link Key type.
- * The key being added is defined by the Install Code provided to this function.
- * This API is typically used to add link keys to the TC for devices
- * that need to join the network.
+ * ZbApsmeAddKeyReq helper function. Adds a device key-pair to the stack as a
+ * Trust Center Link Key type. This API is typically only used by a Trust Center
+ * to add link keys for devices that need to join the network.
+ * On the Joiner side, the link key is set to the preconfiguredLinkKey parameter in the
+ * ZbStartupT configuration when calling ZbStartup to join the network.
  * @param zb Zigbee stack instance
  * @param extAddr The EUI64 address of the device matching the link key
  * @param ic The install code, including the trailing 2-octet CRC.

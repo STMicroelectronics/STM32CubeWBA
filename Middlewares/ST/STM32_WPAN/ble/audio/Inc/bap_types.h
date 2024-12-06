@@ -121,6 +121,11 @@ typedef struct
   uint8_t       MaxMetadataLength;      /* Maximum Length of the buffer allocated for each ASE to store its
                                          * associated Metadata
                                          */
+  uint8_t       CachingEn;              /* ASE state Caching : Indicate if server caches the ASE codec configuration
+                                         * during autonomous Released operation when ASE is in Releasing state.
+                                         * Transition an ASE from Releasing state to the Idle state (CachingEn = 0)
+                                         * or the Codec Configured state (CachingEn = 1)
+                                         */
   uint8_t       *pStartRamAddr;         /* Start address of the RAM buffer allocated for memory resource of
                                          * Audio Stream Control
                                          * It must be a 32bit aligned RAM area.

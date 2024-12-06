@@ -17,7 +17,6 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "usecase_dev_mgmt.h"
-#include "svc_ctl.h"
 #include "ble_vs_codes.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,11 +35,6 @@ static USECASE_DEV_MGMT_Context_t  USECASE_DEV_MGMT_Context = {0};
 static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent);
 static SVCCTL_EvtAckStatus_t UDM_GATT_Event_Handler(void *pEvent);
 /* External functions prototype-----------------------------------------------*/
-extern void TMAP_AclDisconnection(uint16_t ConnHandle);
-extern void HAP_AclDisconnection(uint16_t ConnHandle);
-extern void HAP_LinkEncrypted(uint16_t ConnHandle);
-extern __WEAK SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent);
-extern __WEAK SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent);
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -49,7 +43,7 @@ extern __WEAK SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent);
   * @brief Use Case Manager initialization.
   * @note  This function shall be called before any Use Case Profile function
   */
-tBleStatus USECASE_DEV_MGMT_Init()
+tBleStatus USECASE_DEV_MGMT_Init(void)
 {
   uint8_t i;
   /* Clear audio stack variables */
@@ -161,7 +155,19 @@ __WEAK void HAP_AclDisconnection(uint16_t ConnHandle)
 {
 }
 
+__WEAK void GMAP_AclDisconnection(uint16_t ConnHandle)
+{
+}
+
+__WEAK void TMAP_LinkEncrypted(uint16_t ConnHandle)
+{
+}
+
 __WEAK void HAP_LinkEncrypted(uint16_t ConnHandle)
+{
+}
+
+__WEAK void GMAP_LinkEncrypted(uint16_t ConnHandle)
 {
 }
 
@@ -171,6 +177,11 @@ __WEAK SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent)
 }
 
 __WEAK SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent)
+{
+  return SVCCTL_EvtNotAck;
+}
+
+__WEAK SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
 {
   return SVCCTL_EvtNotAck;
 }
@@ -198,6 +209,7 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
         {
           TMAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
           HAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
+          GMAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
 
           USECASE_DEV_MGMT_Context.NumConnectedLinks--;
           USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle = 0xFFFFu;
@@ -223,7 +235,9 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
           }
         }
 
+        TMAP_LinkEncrypted(enc_change_event->Connection_Handle);
         HAP_LinkEncrypted(enc_change_event->Connection_Handle);
+        GMAP_LinkEncrypted(enc_change_event->Connection_Handle);
       }
     }
     break;
@@ -338,6 +352,10 @@ static SVCCTL_EvtAckStatus_t UDM_GATT_Event_Handler(void *pEvent)
   if (return_value == SVCCTL_EvtNotAck)
   {
     return_value = HAP_GATT_Event_Handler(pEvent);
+  }
+  if (return_value == SVCCTL_EvtNotAck)
+  {
+    return_value = GMAP_GATT_Event_Handler(pEvent);
   }
 
   return return_value;

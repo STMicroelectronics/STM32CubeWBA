@@ -40,6 +40,7 @@
 #include "otp.h"
 #include "scm.h"
 #include "stm32wbaxx_ll_rcc.h"
+#include "assert.h"
 
 /* Private includes -----------------------------------------------------------*/
 extern void ll_sys_mac_cntrl_init( void );
@@ -339,6 +340,10 @@ static void System_Init( void )
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
 
+#if (CFG_SW_HSE_WORKAROUND == 1)
+  HSE_MNGT_Set_SW_HSERDY();
+#endif /* CFG_SW_HSE_WORKAROUND */
+
 #if(CFG_RT_DEBUG_DTB == 1)
   /* DTB initialization and configuration */
   RT_DEBUG_DTBInit();
@@ -553,6 +558,9 @@ void UTIL_SEQ_Idle( void )
 {
 #if ( CFG_LPM_LEVEL != 0)
   HAL_SuspendTick();
+#if (CFG_SW_HSE_WORKAROUND == 1u)
+  HSE_MNGT_StopStabilizationTimer();
+#endif /* (CFG_SW_HSE_WORKAROUND == 1u) */
   UTIL_LPM_EnterLowPower();
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
@@ -579,7 +587,11 @@ void UTIL_SEQ_PreIdle( void )
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
+#if (CFG_SW_HSE_WORKAROUND == 1u)
+  HSE_MNGT_WaitUntilReady();
+#else
   while (LL_RCC_HSE_IsReady() == 0);
+#endif /* (CFG_SW_HSE_WORKAROUND == 1u) */
 
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
   scm_hserdy_isr();
@@ -686,6 +698,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
 {
   Error_Handler();
+  __builtin_unreachable();
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

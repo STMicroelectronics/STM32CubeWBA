@@ -342,19 +342,14 @@
                 <option>
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$\..\Core\Inc</state>
-                    <state>$PROJ_DIR$\..\System\Interfaces</state>
-                    <state>$PROJ_DIR$\..\System\Modules</state>
-                    <state>$PROJ_DIR$\..\System\Modules\baes</state>
-                    <state>$PROJ_DIR$\..\System\Modules\MemoryManager</state>
-                    <state>$PROJ_DIR$\..\System\Modules\Nvm</state>
-                    <state>$PROJ_DIR$\..\System\Modules\Flash</state>
+                    <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules</state>
                     <state>$PROJ_DIR$\..\System\Config</state>
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
-                    <state>$PROJ_DIR$\..\System\Config\Flash</state>
                     <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
-                    <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug</state>
                     <state>$PROJ_DIR$\..\System\Config\LowPower</state>
-                    <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\App\cli_runner</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</state>
@@ -372,6 +367,7 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\thread</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1165,22 +1161,16 @@
                 <group>
                     <name>Interfaces</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_aes.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_pka.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_rng.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\pka_p256.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\timer_if.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
                     </file>
                 </group>
                 <group>
@@ -1188,26 +1178,29 @@
                     <group>
                         <name>RTDebug</name>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
                         </file>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug_dtb.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
                         </file>
                     </group>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\app_sys.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\scm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                     </file>
                 </group>
             </group>
@@ -1294,6 +1287,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</name>
             </file>
         </group>
     </group>

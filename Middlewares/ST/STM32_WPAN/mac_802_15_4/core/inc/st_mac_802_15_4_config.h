@@ -49,8 +49,8 @@ of pending data*/
 #define NB_PYLD_IES 2 // Mandatory at least two
 #define MASK_HDR_IE_SIZE 0x007F
 #define MASK_HDR_IE_ELEMENT_TYPE 0xFF80
-#define MASK_PYLD_IE_SIZE 0x03FF
-#define MASK_PYLD_IE_GROUP_TYPE 0xFC00
+#define MASK_PYLD_IE_SIZE 0x07FF
+#define MASK_PYLD_IE_GROUP_TYPE 0xF800
 #define MASK_IE_TYPE 0x8000
 
 #define g_SIZE_LONG_INT_c             4
@@ -68,6 +68,7 @@ of pending data*/
 #define g_TRUE      0x01
 #define g_FALSE     0x00
 
+#define ST_PIB_REVISION 0x01000100 // version: 1.0.1
 
 /**************************** Public Enum Definitions ************************/
 
@@ -369,6 +370,9 @@ typedef enum MAC_Pib_Ids_Tag {
     
      /*! Attribute ID of max csma-ca frame retry  */
     g_MAC_MAX_FULL_CSMA_FRAME_RETRY_ID_c = (uint8_t) 0x8A,
+    
+    /*! Attribute ID of implicit broadcast  */
+    g_MAC_IMPLICIT_BROADCAST_ID_c  = 0x8B,
 
     /*! Proprietary Attribute ID of Default MAC Security Extended Address  */
     g_MAC_ASSOCIATED_PAN_COORDINATOR_c = (uint8_t) 0x56,
@@ -381,6 +385,87 @@ typedef enum MAC_Pib_Ids_Tag {
 #endif
     /*! Attribute ID of enabling the promiscuous mode */
     g_MAC_PROMISCUOUS_MODE_c = (uint8_t) 0x51,
+    
+    /*! Attribute ID not supported */
+    g_MAC_NOTIFY_ALL_BEACONS = (uint8_t) 0xB0,
+    
+    /*! Attribute ID for enhanced beacon order always set to 15 in our implementation */
+    g_MAC_ENHANCED_BEACON_ORDER = (uint8_t) 0xB1,
+    
+    /*! Attribute ID not supported */
+    g_MAC_MPMLE = (uint8_t) 0xB2,
+    
+    /*! Attribute ID not supported */
+    g_MAC_OFFSET_TIME_SLOT = (uint8_t) 0xB3,
+    
+    /*! Attribute ID not supported */
+    g_MAC_FCS_TYPE = (uint8_t) 0xB4,
+    
+    /*! Attribute ID not supported */
+    g_MAC_LE_CIM_ALOHA_UNIT_BACKOFF_PERIOD = (uint8_t) 0xB5,
+    
+    /*! Attribute ID not supported */
+    g_MAC_LE_CIM_ALOHA_BE = (uint8_t) 0xB6,
+    
+    /*! Attribute ID not supported */
+    g_MAC_PRIORITY_CHANNEL_ACCESS = (uint8_t) 0xB7,
+    
+    /*! Attribute ID not supported */
+    g_MAC_PCA_ALLOCATION_SUPER_RATE = (uint8_t) 0xB8,
+    
+    /*! Attribute ID not supported */
+    g_MAC_PCA_ALLOCATION_RATE = (uint8_t) 0xB9,
+    
+    /*! Attribute ID not supported */
+    g_MAC_CRIT_MSG_DELAY_TOY = (uint8_t) 0xBA,
+    
+    /*! Attribute ID not supported */
+    g_MAC_START_BAND_EDGE = (uint8_t) 0xBB,
+    
+    /*! Attribute ID not supported */
+    g_MAC_END_BAND_EDGE = (uint8_t) 0xBC,
+    
+    /*! Attribute ID not supported */
+    g_MAC_GROUP_RX_MODE = (uint8_t) 0xBD,
+    
+    /*! Attribute ID not supported */
+    g_MAC_TMCTP_EXTENDED_ORDER = (uint8_t) 0xBE,
+    
+    /*! Attribute ID not supported */
+    g_MAC_SEC_ENHANCED_BEACON_SECURITY_LEVEL = (uint8_t) 0xBF,
+    
+    /*! Attribute ID not supported */
+    g_MAC_SEC_ENHANCED_BEACON_KEY_ID_MODE = (uint8_t) 0xC0,
+    
+    /*! Attribute ID not supported */
+    g_MAC_SEC_ENHANCED_BEACON_KEY_SOURCE = (uint8_t) 0xC1,
+    
+    /*! Attribute ID not supported */
+    g_MAC_SEC_ENHANCED_BEACON_KEY_INDEX = (uint8_t) 0xC2,
+    
+    /*! Attribute ID not supported */
+    g_MAC_COORD_REALIGN_SECURITY_LEVEL = (uint8_t) 0xC3,
+    
+    /*! Attribute ID not supported */
+    g_MAC_COORD_REALIGN_KEY_ID_MODE = (uint8_t) 0xC4,
+    
+    /*! Attribute ID not supported */
+    g_MAC_COORD_REALIGN_KEY_SOURCE = (uint8_t) 0xC5,
+    
+    /*! Attribute ID not supported */
+    g_MAC_BEACON_SECURITY_LEVEL = (uint8_t) 0xC6,
+    
+    /*! Attribute ID not supported */
+    g_MAC_BEACON_KEY_ID_MODE = (uint8_t) 0xC7,
+    
+    /*! Attribute ID not supported */
+    g_MAC_BEACON_KEY_SOURCE = (uint8_t) 0xC8,
+    
+    /*! Attribute ID not supported */
+    g_MAC_BEACON_KEY_INDEX = (uint8_t) 0xC9,
+    
+    /*! Attribute ID to know which PIB version is used */
+    g_MAC_PROP_PIB_REVISION = (uint8_t) 0xFC,
 } MAC_Pib_Ids_t;
 
 
@@ -427,7 +512,10 @@ typedef enum MAC_Scan_Types_Tag {
     g_MAC_PASSIVE_SCAN_TYPE_c,
 
     /*! -Orphan Scan */
-    g_MAC_ORPHAN_SCAN_TYPE_c
+    g_MAC_ORPHAN_SCAN_TYPE_c,
+    
+    /*! -Enhanced Active Scan */
+    g_MAC_ENHANCED_ACTIVE_SCAN_TYPE_c
 } MAC_Scan_Types_t;
 
 

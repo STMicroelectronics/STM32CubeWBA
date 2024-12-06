@@ -140,8 +140,8 @@ enum ZbZclOtaSvrAttrId {
     ZCL_OTA_ATTR_IMAGE_TYPE_ID = 0x0008, /**< ImageTypeID (Optional) */
     ZCL_OTA_ATTR_MIN_BLOCK_PERIOD = 0x0009, /**< MinimumBlockPeriod (Optional) */
     ZCL_OTA_ATTR_IMAGE_STAMP = 0x000a, /**< ImageStamp (Optional) */
-    ZCL_OTA_ATTR_UPGRADE_ACTIVATION_POLICY = 0x00b, /**< UpgradeActivationPolicy (Optional) */
-    ZCL_OTA_ATTR_UPGRADE_TIMEOUT_POLICY = 0x000c /**< UpgradeTimeoutPolicy (Optional) */
+    ZCL_OTA_ATTR_UPGRADE_ACTIVATION_POLICY = 0x000b, /**< UpgradeActivationPolicy (Optional) */
+    ZCL_OTA_ATTR_UPGRADE_TIMEOUT_POLICY = 0x0000c /**< UpgradeTimeoutPolicy (Optional) */
 };
 
 /** OTA Upgrade Status Attribute Values (ImageUpgradeStatus) */

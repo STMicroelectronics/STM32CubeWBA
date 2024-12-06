@@ -70,18 +70,13 @@ void APP_MENU_Init ( struct MenuButtonsT * pMenu )
 }
 
 
-void APP_MENU_DisplayMenu( void )
+static void APP_MENU_DisplayMenu( void )
 {
   LOG_INFO_APP( "%s", pstMenuButton[iMenuIndex].szMenuDisplay );
 }
 
 
-uint8_t APP_MENU_IsMenuDisplayed( void )
-{
-  return( bMenuDisplayed );
-}
-
-void APP_MENU_DisplayOption( void )
+static void APP_MENU_DisplayOption( void )
 {
   int16_t   iDiv;
   
@@ -105,7 +100,7 @@ void APP_MENU_DisplayOption( void )
 }
 
 
-void APP_MENU_DisplayExit( uint8_t bExitWithValid )
+static void APP_MENU_DisplayExit( uint8_t bExitWithValid )
 {
   if ( bExitWithValid == FALSE )
   {
@@ -115,6 +110,12 @@ void APP_MENU_DisplayExit( uint8_t bExitWithValid )
   {
     LOG_INFO_APP( "Exit from Menu with new value." );
   }
+}
+
+
+uint8_t APP_MENU_IsMenuDisplayed( void )
+{
+  return( bMenuDisplayed );
 }
 
 

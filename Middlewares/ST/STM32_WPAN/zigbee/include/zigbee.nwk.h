@@ -170,7 +170,9 @@ enum ZbNwkNibAttrIdT {
     /**< (type: uint8_t, reset: yes, persist: yes) */
     /* nwkUniqueAddr has been deprecated, assumed to be false (0xa8) */
     ZB_NWK_NIB_ID_AddressMap = 0xa9,
-    /**< (type: struct ZbNwkAddrMapEntryT, reset: yes, persist: yes) */
+    /**< Use ZbNwkAddrStoreMap to write new address mappings. NLME-SET.request
+     * will return an error.
+     * (type: struct ZbNwkAddrMapEntryT, reset: yes, persist: yes) */
 
     /* ...continued in zigbee.aps.h with ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET... */
 
@@ -222,6 +224,9 @@ enum ZbNwkNibAttrIdT {
      * (type: uint16_t, reset: yes, persist: no) */
     ZB_NWK_NIB_ID_FrameCounterCooldown = 0x0404,
     /**< Cooldown timer (in seconds) to apply to frame counter resets.
+     * By default, frames carrying stale frame counters are dropped and handled as replays.
+     * In order to enable accepting stale frame counters and rate limiting frame counter resets,
+     * application needs to set this IB to non-zero value in seconds.
      * (type: uint16_t, reset: yes, persist: no) */
     ZB_NWK_NIB_ID_OutgoingCounter = 0x0405,
     /**< Global outgoing frame counter. (type: uint32_t, reset: no, persist: yes) */
@@ -290,6 +295,10 @@ enum ZbNwkNibAttrIdT {
     /* deprecated, was ZB_NWK_NIB_ID_RouteNeighborMaxCost = 0x04a1, */
     ZB_NWK_NIB_ID_KeepAliveInfo = 0x04a2,
     /**< NIB for keeping track of which KA method is supported (R22 Table 3-55)
+     * This only affects the joiner. It does not affect the advertised KA methods
+     * in the EDKA response, unless stack is compiled as a Golden Unit
+     * (CONFIG_ZB_ENABLE_GU) with special abilities.
+     * Default value is ZB_NWK_PARENT_INFO_KEEP_ALIVE (0x02).
      * (type: uint8_t, reset: yes, persist: no) */
     ZB_NWK_NIB_ID_AllowLostParentFlag = 0x04a3,
     /**< If true, then a stack internal flag is set when a
@@ -492,7 +501,7 @@ enum ZbNwkNeighborRelT {
 
 /* Parent Information is one byte. We extend it to two bytes for internal state. */
 #define ZB_NWK_PARENT_INFO_MASK                     0x0007U /* Valid over-the-air bits in the Parent Information */
-#define ZB_NWK_PARENT_INFO_DATA_POLL                0x0001U /* MAC Data Poll Keepalive Supported */
+#define ZB_NWK_PARENT_INFO_DATA_POLL                0x0001U /* MAC Data Poll Keepalive Supported (For Golden Unit only) */
 #define ZB_NWK_PARENT_INFO_KEEP_ALIVE               0x0002U /* End Device Timeout Request Keepalive Supported */
 #define ZB_NWK_PARENT_INFO_POWER_NEGOT              0x0004U /* Power Negotiation Supported (R22: Link Power Delta) */
 #define ZB_NWK_PARENT_INFO_EDKA_MASK                (ZB_NWK_PARENT_INFO_DATA_POLL | ZB_NWK_PARENT_INFO_KEEP_ALIVE)
@@ -1176,7 +1185,7 @@ bool ZbNwkIfSetTxPower(struct ZigBeeT *zb, const char *name, int8_t tx_power);
 bool ZbNwkIfGetTxPower(struct ZigBeeT *zb, const char *name, int8_t *tx_power);
 
 /**
- * ZbNwkToggleDutyCycle - Enable or disable Duty Cycle management in the MAC.
+ * Enable or disable Duty Cycle management in the MAC.
  * Disabling duty cycle will also clear the duty cycle history and set the status to
  * MCP_DUTYCYCLE_STATUS_NORMAL.
  * This function would typically be used in conjunction with ZB_NWK_NIB_ID_TxPowerMgmtSupported,
@@ -1186,6 +1195,12 @@ bool ZbNwkIfGetTxPower(struct ZigBeeT *zb, const char *name, int8_t *tx_power);
  * @return Returns true on Success, or false otherwise
  */
 bool ZbNwkToggleDutyCycle(struct ZigBeeT *zb, bool enable);
+
+/* Undocumented API. Only used for testing / debugging purposes.
+ * Only available when stack compiled with CONFIG_ZB_ENABLE_GU defined.
+ * If min_val != 0, check if macDCCurrentBytes is >= min_val
+ * If max_val != 0, check if macDCCurrentBytes is <= max_val */
+bool nwk_dutycycle_status_check(struct ZigBeeT *zb, unsigned int min_val, unsigned int max_val);
 
 /**
  * Called by the application to manually send the End Device Timeout Request Command.

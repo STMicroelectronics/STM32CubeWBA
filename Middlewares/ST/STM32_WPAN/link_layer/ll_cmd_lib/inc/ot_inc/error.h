@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ot_inc/error.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ot_inc/error.h#2 $*/
 /*
  *  Copyright (c) 2016, The OpenThread Authors.
  *  All rights reserved.
@@ -43,116 +43,6 @@ extern "C" {
 #endif
 
 /**
- * @defgroup api  API
- * @brief
- *   This module includes the application programming interface to the OpenThread stack.
- *
- * @{
- *
- * @defgroup api-error Error
- *
- * @defgroup api-execution Execution
- *
- * @{
- *
- * @defgroup api-instance Instance
- * @defgroup api-tasklets Tasklets
- *
- * @}
- *
- * @defgroup api-net IPv6 Networking
- * @{
- *
- * @defgroup api-dhcp6 DHCPv6
- * @brief This module includes functions for DHCPv6 Client and Server.
- * @defgroup api-dns   DNSv6
- * @defgroup api-icmp6 ICMPv6
- * @defgroup api-ip6   IPv6
- * @defgroup api-udp-group UDP
- *
- * @{
- *
- * @defgroup api-udp       UDP
- * @defgroup api-udp-proxy UDP Proxy
- *
- * @}
- *
- * @}
- *
- * @defgroup api-link Link
- *
- * @{
- *
- * @defgroup api-link-link Link
- * @defgroup api-link-raw  Raw Link
- *
- * @}
- *
- * @defgroup api-message Message
- *
- * @defgroup api-thread Thread
- *
- * @{
- *
- * @defgroup api-border-router  Border Router
- * @defgroup api-commissioner   Commissioner
- * @defgroup api-thread-general General
- * @brief This module includes functions for all Thread roles.
- * @defgroup api-joiner         Joiner
- * @defgroup api-thread-router  Router/Leader
- * @brief This module includes functions for Thread Routers and Leaders.
- * @defgroup api-server         Server
- *
- * @}
- *
- * @defgroup api-addons Add-Ons
- *
- * @{
- *
- * @defgroup api-channel-manager     Channel Manager
- * @defgroup api-channel-monitor     Channel Monitoring
- * @defgroup api-child-supervision   Child Supervision
- * @defgroup api-coap                CoAP
- * @defgroup api-cli                 Command Line Interface
- * @defgroup api-crypto              Crypto
- * @defgroup api-factory-diagnostics Factory Diagnostics
- * @defgroup api-jam-detection       Jam Detection
- * @defgroup api-ncp                 Network Co-Processor
- * @defgroup api-network-time        Network Time Synchronization
- *
- * @}
- *
- * @}
- *
- */
-
-/**
- * @defgroup platform  Platform Abstraction
- * @brief
- *   This module includes the platform abstraction used by the OpenThread stack.
- *
- * @{
- *
- * @defgroup plat-alarm               Alarm
- * @defgroup plat-ble                 BLE Host
- * @defgroup plat-factory-diagnostics Factory Diagnostics
- * @defgroup plat-logging             Logging
- * @defgroup plat-memory              Memory
- * @defgroup plat-messagepool         Message Pool
- * @defgroup plat-misc                Miscellaneous
- * @defgroup plat-radio               Radio
- * @defgroup plat-random              Random
- * @defgroup plat-settings            Settings
- * @defgroup plat-spi-slave           SPI Slave
- * @defgroup plat-time                Time Service
- * @defgroup plat-toolchain           Toolchain
- * @defgroup plat-uart                UART
- *
- * @}
- *
- */
-
-/**
  * @addtogroup api-error
  *
  * @brief
@@ -163,10 +53,11 @@ extern "C" {
  */
 
 /**
- * This enumeration represents error codes used throughout OpenThread.
+ * Represents error codes used throughout OpenThread.
  *
  */
-typedef enum otError {
+typedef enum OT_MUST_USE_RESULT otError
+{
     /**
      * No error.
      */
@@ -198,7 +89,7 @@ typedef enum otError {
     OT_ERROR_BUSY = 5,
 
     /**
-     * Failed to parse message or arguments.
+     * Failed to parse message.
      */
     OT_ERROR_PARSE = 6,
 
@@ -274,7 +165,7 @@ typedef enum otError {
     OT_ERROR_INVALID_SOURCE_ADDRESS = 20,
 
     /**
-     * Received a frame filtered by the address filter (whitelisted or blacklisted).
+     * Received a frame filtered by the address filter (allowlisted or denylisted).
      */
     OT_ERROR_ADDRESS_FILTERED = 21,
 
@@ -304,7 +195,7 @@ typedef enum otError {
     OT_ERROR_NOT_CAPABLE = 27,
 
     /**
-     * Coap response or acknowledgment or DNS response not received.
+     * Coap response or acknowledgment or DNS, SNTP response not received.
      */
     OT_ERROR_RESPONSE_TIMEOUT = 28,
 
@@ -329,14 +220,30 @@ typedef enum otError {
     OT_ERROR_NOT_LOWPAN_DATA_FRAME = 32,
 
     /**
-     * A feature/functionality disabled by build-time configuration options.
-     */
-    OT_ERROR_DISABLED_FEATURE = 33,
-
-    /**
      * The link margin was too low.
      */
     OT_ERROR_LINK_MARGIN_LOW = 34,
+
+    /**
+     * Input (CLI) command is invalid.
+     */
+    OT_ERROR_INVALID_COMMAND = 35,
+
+    /**
+     * Special error code used to indicate success/error status is pending and not yet known.
+     *
+     */
+    OT_ERROR_PENDING = 36,
+
+    /**
+     * Request rejected.
+     */
+    OT_ERROR_REJECTED = 37,
+
+    /**
+     * The number of defined errors.
+     */
+    OT_NUM_ERRORS,
 
     /**
      * Generic error (should not use).
@@ -345,14 +252,14 @@ typedef enum otError {
 } otError;
 
 /**
- * This function converts an otError enum into a string.
+ * Converts an otError enum into a string.
  *
  * @param[in]  aError     An otError enum.
  *
  * @returns  A string representation of an otError.
  *
  */
-OTAPI const char *OTCALL otThreadErrorToString(otError aError);
+const char *otThreadErrorToString(otError aError);
 
 /**
  * @}

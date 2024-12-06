@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "ota_app.h"
 #include "ota.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -246,25 +246,25 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
 
-                  /* Check write op. */
+                  /* Check Erase result */
                   if (error == FM_OK)
                   {
-                    /* Wait for write callback to be invoked */
+                    /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
-                    /* Check status of write op. */
+                    /* Check status of Erase status. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
                       error = FM_ERROR;
-                      LOG_INFO_APP("OTA_USER_CONF_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
+                      LOG_INFO_APP("OTA_USER_CONF_UPLOAD: FM_EraseStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
                     }
                   }
                   else if(error == FM_BUSY)
                   {
-                    /* Wait for write callback to be invoked */
+                    /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                     
                     /* Clear events before start testing */
@@ -330,7 +330,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
                 while(error != FM_OK)
                 {  
-                  /* Flash manager write */
+                  /* Flash manager Erase */
                   if(OTA_APP_Context.sectors == 0)
                   {
                     OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
@@ -339,25 +339,25 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
 
-                  /* Check write op. */
+                  /* Check Erase result. */
                   if (error == FM_OK)
                   {
-                    /* Wait for write callback to be invoked */
+                    /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
-                    /* Check status of write op. */
+                    /* Check status of Erase. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
                     {
                       error = FM_ERROR;
-                      LOG_INFO_APP("OTA_APPLICATION_UPLOAD: FM_WriteStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
+                      LOG_INFO_APP("OTA_APPLICATION_UPLOAD: FM_EraseStatus != FM_OPERATION_COMPLETE => FM_ERROR\n");
                     }
                   }
                   else if(error == FM_BUSY)
                   {
-                    /* Wait for write callback to be invoked */
+                    /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                     
                     /* Clear events before start testing */
@@ -450,22 +450,22 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
         while(error != FM_OK)
         {  
-          /* Flash manager write */
+          /* Flash manager Write */
           error = FM_Write ((uint32_t *)(&OTA_APP_Context.write_value[0]),
                             (uint32_t *)((OTA_APP_Context.base_address) + address_offset),
                             size_left >> 2,
                             &FM_WriteStatusCallback);
 
-          /* Check write op. */
+          /* Check Write result. */
           if (error == FM_OK)
           {
-            /* Wait for write callback to be invoked */
+            /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
             /* Clear events before start testing */
             UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
-            /* Check status of write op. */
+            /* Check status of Write op. */
             if (FM_WriteStatus != FM_OPERATION_COMPLETE)
             {
               error = FM_ERROR;
@@ -474,7 +474,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           }
           else if(error == FM_BUSY)
           {
-            /* Wait for write callback to be invoked */
+            /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
             
             /* Clear events before start testing */
@@ -654,22 +654,22 @@ __USED void OTA_Conf_SendIndication(void) /* Property Indication */
   ota_indication_data.p_Payload = (uint8_t*)a_OTA_UpdateCharData;
   ota_indication_data.Length = 0;
 
-  /* USER CODE BEGIN Service3Char2_IS_1*/
+  /* USER CODE BEGIN Service3Char2_IS_1 */
 
-  /* USER CODE END Service3Char2_IS_1*/
+  /* USER CODE END Service3Char2_IS_1 */
 
   if (indication_on_off != Conf_INDICATION_OFF)
   {
     OTA_UpdateValue(OTA_CONF, &ota_indication_data);
   }
 
-  /* USER CODE BEGIN Service3Char2_IS_Last*/
+  /* USER CODE BEGIN Service3Char2_IS_Last */
 
-  /* USER CODE END Service3Char2_IS_Last*/
+  /* USER CODE END Service3Char2_IS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

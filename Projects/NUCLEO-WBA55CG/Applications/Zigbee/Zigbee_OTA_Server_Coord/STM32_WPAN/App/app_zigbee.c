@@ -130,7 +130,7 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
  * @param  None
  * @retval None
  */
-void APP_ZIGBEE_ConfigBasicServer(void)
+static void APP_ZIGBEE_ConfigBasicServer(void)
 {
   static struct ZbZclBasicServerDefaults   stBasicServerDefaults;
 
@@ -656,7 +656,7 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
 
   // Intentional INFINITE_LOOP
   // coverity[no_escape]
-  while (1U == 1U)
+  while (1)
   {
     /* USER CODE BEGIN APP_ZIGBEE_TraceError */
     APP_LED_TOGGLE( LED_BLUE );

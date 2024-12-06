@@ -21,8 +21,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "app_conf.h"
 #include "app_common.h"
+#include "app_conf.h"
 #include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.onoff.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -62,14 +62,10 @@
 
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME
-#define APP_ZIGBEE_APPLICATION_OS_NAME    "."
+#define APP_ZIGBEE_APPLICATION_OS_NAME    ""
 
-/* Enable periodic OnOff 'Toggle' transmission to Zigbee Server Coord */
-#define APP_ZIGEE_PERIODIC_TRANSMIT
+#define APP_ZIGBEE_TOGGLE_PERIOD          (uint32_t)( 1000u ) /* Toggle OnOff every seconds 1s */
 
-#ifdef APP_ZIGEE_PERIODIC_TRANSMIT
-#define APP_ZIGBEE_TRANSMIT_PERIOD        (1*1000)        /**< 1000ms */
-#endif
 /* USER CODE END PD */
 
 // -- Redefine Clusters to better code read --
@@ -86,26 +82,19 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t   iDeviceShortAddress;
-#ifdef APP_ZIGEE_PERIODIC_TRANSMIT
-static UTIL_TIMER_Object_t APP_ZIGBEE_transmitTimerId;
-#endif
-
 /* USER CODE BEGIN PV */
+
+static UTIL_TIMER_Object_t      stTimerToggle;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE BEGIN PFP */
+static void APP_ZIGBEE_ApplicationTaskInit    ( void );
 static void APP_ZIGBEE_OnOffClientStart       ( void );
-static void APP_ZIGBEE_OnOffToggleRequest(void *arg);
-#ifdef APP_ZIGEE_PERIODIC_TRANSMIT
-static void APP_ZIGBEE_OnOffTrigger(void *arg);
-#if !(CFG_BUTTON_SUPPORTED == 1)
-static void APPE_Button1Action(void);
-#endif
-#endif
+static void APP_ZIGBEE_TimerToggleCallback    ( void * arg );
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -128,6 +117,8 @@ void APP_ZIGBEE_ApplicationInit(void)
   stZigbeeAppInfo.bNwkStartup = true;
 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
+  /* Initialization of used Tasks */
+  APP_ZIGBEE_ApplicationTaskInit();
 
   /* USER CODE END APP_ZIGBEE_ApplicationInit */
 
@@ -143,34 +134,14 @@ void APP_ZIGBEE_ApplicationInit(void)
 void APP_ZIGBEE_ApplicationStart( void )
 {
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
-  uint16_t  iShortAddress;
 
   /* Start OnOff Client */
   APP_ZIGBEE_OnOffClientStart();
 
   /* Display Short Address */
-  iShortAddress = ZbShortAddress( stZigbeeAppInfo.pstZigbee );
-  LOG_INFO_APP( "Use Short Address : 0x%04X", iShortAddress );
-
+  LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
-#ifdef APP_ZIGEE_PERIODIC_TRANSMIT
-  
-#if !(CFG_BUTTON_SUPPORTED == 1)  
-  /* register task if buttons not supported */
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_1, UTIL_SEQ_RFU, APPE_Button1Action);
-#endif
-  
-  /* Create timer to handle periodic OnOff 'Toggle' transmission */
-  UTIL_TIMER_Create(&APP_ZIGBEE_transmitTimerId,
-                    0,
-                    UTIL_TIMER_PERIODIC,
-                    &APP_ZIGBEE_OnOffTrigger,
-                    0);
-  
-  /* Start timer for periodic OnOff 'Toggle' transmission */
-  UTIL_TIMER_StartWithPeriod(&APP_ZIGBEE_transmitTimerId, APP_ZIGBEE_TRANSMIT_PERIOD);
-#endif  
   /* USER CODE END APP_ZIGBEE_ApplicationStart */
 
 #if ( CFG_LPM_LEVEL != 0)
@@ -207,6 +178,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 
   /* Add EndPoint */
   memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
@@ -252,9 +225,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -282,8 +252,7 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
 {
-  iDeviceShortAddress = iShortAddress;
-  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( 0x%016" PRIX64 " ) and Short ( 0x%04" PRIX16 " ) Address.", cCapability, dlExtendedAddress, iDeviceShortAddress );
+  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
 
@@ -301,7 +270,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   LOG_INFO_APP( "Network config : CENTRALIZED ROUTER" );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
-  LOG_INFO_APP( "Application Flashed : Zigbee %s %s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
+  LOG_INFO_APP( "Application Flashed : Zigbee %s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
@@ -321,6 +290,17 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
 /**
+ * @brief  Zigbee application Task initialization
+ * @param  None
+ * @retval None
+ */
+static void APP_ZIGBEE_ApplicationTaskInit( void )
+{
+  /* Create timer to toggle the OnOff */
+  UTIL_TIMER_Create( &stTimerToggle, APP_ZIGBEE_TOGGLE_PERIOD, UTIL_TIMER_PERIODIC, APP_ZIGBEE_TimerToggleCallback, NULL );
+}
+
+/**
  * @brief  Start the OnOff Client.
  * @param  None
  * @retval None
@@ -330,12 +310,13 @@ static void APP_ZIGBEE_OnOffClientStart(void)
 
 }
 
+
 /**
- * @brief  Trigger a OnOff 'Toggle' request.
- * @param  arg
+ * @brief  Management of the SW1 button : Send the OnOff Command
+ * @param  None
  * @retval None
  */
-static void APP_ZIGBEE_OnOffToggleRequest(void *arg)
+void APP_BSP_Button1Action(void)
 {
   struct ZbApsAddrT     stDest;
   enum ZclStatusCodeT   eStatus;
@@ -358,24 +339,41 @@ static void APP_ZIGBEE_OnOffToggleRequest(void *arg)
   }
 }
 
-#if (CFG_BUTTON_SUPPORTED == 1) || defined(APP_ZIGEE_PERIODIC_TRANSMIT)
 /**
- * @brief  Management of the SW1 button : Send the OnOff Command
+ * @brief  Management of the toggle OnOff (via Button SW1) with the Timer
  * @param  None
  * @retval None
  */
-void APPE_Button1Action(void)
+static void APP_ZIGBEE_TimerToggleCallback( void * arg )
 {
-  APP_ZIGBEE_OnOffToggleRequest(0);
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_B1, CFG_TASK_PRIO_BUTTON_Bx );
 }
-#endif
 
-#ifdef APP_ZIGEE_PERIODIC_TRANSMIT
-static void APP_ZIGBEE_OnOffTrigger(void *arg)
+/**
+ * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button3Action(void)
 {
-  UNUSED(arg);
-  UTIL_SEQ_SetTask(1U << TASK_BUTTON_1, CFG_SEQ_PRIO_0);
+  static  uint8_t   cToggleOn = 0;
+  
+  /* First, verify if Appli has already Join a Network  */ 
+  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
+  {
+    if ( cToggleOn == 0u )
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Start automatic On/Off." );
+      UTIL_TIMER_Start( &stTimerToggle );
+      cToggleOn = 1;
+    }
+    else
+    {
+      LOG_INFO_APP( "[ONOFF] SW3 pushed, Stop automatic On/Off." );
+      UTIL_TIMER_Stop( &stTimerToggle ); 
+      cToggleOn = 0;
+    }
+  }
 }
-#endif /* APP_ZIGEE_PERIODIC_TRANSMIT */
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

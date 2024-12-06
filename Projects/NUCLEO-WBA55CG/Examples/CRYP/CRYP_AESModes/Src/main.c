@@ -51,7 +51,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 CRYP_HandleTypeDef hcryp;
-uint32_t pKeyAES[4] = {0x2B7E1516,0x28AED2A6,0xABF71588,0x09CF4F3C};
+__ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
+                            0x2B7E1516,0x28AED2A6,0xABF71588,0x09CF4F3C};
 
 /* USER CODE BEGIN PV */
 
@@ -168,6 +169,7 @@ extern void initialise_monitor_handles(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
   initialise_monitor_handles(); 

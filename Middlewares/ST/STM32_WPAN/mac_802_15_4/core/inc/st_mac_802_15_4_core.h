@@ -98,6 +98,9 @@ uint8_t ST_MAC_enqueue_req(uint8_t command_id, MAC_handle st_mac_hndl, uint8_t r
 /** @brief  Function allows to serialize pan description for MLME-BeaconNotify.indication */
 void mac_serialize_pan_desc_to_ST(  ST_MAC_PAN_Desc_t * pan_desc,  pan_descr_st * pan_desc_snps);
 
+/** @brief  Function allows to identify if a beacon is already received with theses information like channel, PANID, addr mode, short/ext address */
+uint8_t mac_unique_list_PAN_beacon(ST_MAC_PAN_Desc_t MAC_PAN_Desc);
+
 /** @brief  Interface Functions */
 uint8_t is_MAC_ready(uint8_t mac_command_id);
 uint8_t mac_command_validate(uint8_t command_id, uint8_t command_len);

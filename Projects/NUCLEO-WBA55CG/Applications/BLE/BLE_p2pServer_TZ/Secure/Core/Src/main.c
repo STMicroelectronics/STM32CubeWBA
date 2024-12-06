@@ -108,6 +108,11 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Secure SysTick should rather be suspended before calling non-secure  */
+  /* in order to avoid wake-up from sleep mode entered by non-secure      */
+  /* The Secure SysTick shall be resumed on non-secure callable functions */
+  HAL_SuspendTick();
+
   /*************** Setup and jump to non-secure *******************************/
 
   NonSecure_Init();
@@ -369,7 +374,8 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void RestoreFromStandby(){
+void RestoreFromStandby(void)
+{
 
   /* Ensure this is a return from Standby, and not a reset */
   __HAL_RCC_PWR_CLK_ENABLE();

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,6 +26,6 @@
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void);
+void MX_StandbyExit_PeripheralInit(void);
 
 #endif /* PERIPHERAL_INIT_H */

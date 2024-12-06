@@ -129,7 +129,7 @@ extern "C" {
 /* These delays refers to the time at which the audio signal passes through an
  * audio interface (such an electroacoustic transducer ) to or from
  * the Codec interface.
- * These delays are a subpart of the Presentation Delay as descibed in chapter 7
+ * These delays are a subpart of the Presentation Delay as described in chapter 7
  * of the Basic Audio Profile specification
  * The delay unit is us
  */
@@ -161,7 +161,7 @@ extern "C" {
 
 #define MAX_USR_CODEC_CONFIG_SIZE               (20u)   /* Maximum size of the Codec Specific Configuration for each Audio Stream Endpoint supported by Unicast Server */
 #define MAX_USR_METADATA_SIZE                   (10u)   /* Maximum size of the Metadata for each Audio Stream Endpoint supported by Unicast Server */
-#define PACS_CODEC_SPECIFIC_CAPABILITIES_LENGTH (16u)   /* Size of the Codec Specific Capabilites Length of the registered PACS records */
+#define PACS_CODEC_SPECIFIC_CAPABILITIES_LENGTH (16u)   /* Size of the Codec Specific Capabilities Length of the registered PACS records */
 #define PACS_SRV_METADATA_SIZE                  (4u)    /* Size of the metadata associated to the registered PACS records */
 
 
@@ -265,7 +265,7 @@ extern "C" {
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)
 #define APP_CSIP_SET_MEMBER_SIZE                        (2u)
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (1u)
-#define APP_SIRK                                        "SIRKTEST"
+#define APP_SIRK                                        "STM32WBA_APPSIRK"
 #else /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 0u)*/
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (0u)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */

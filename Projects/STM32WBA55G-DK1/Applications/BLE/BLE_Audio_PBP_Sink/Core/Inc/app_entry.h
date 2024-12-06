@@ -68,12 +68,17 @@ uint32_t MX_APPE_Init(void *p_param);
 void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */
-void MX_AudioInit(Audio_Role_t role, Sampling_Freq_t sampling_frequency, Frame_Duration_t frame_duration,
-                  uint8_t *pSnkBuff, uint8_t *pSrcBuff, AudioDriverConfig driver_config);
+void PLL_Ready_ProcessIT(void);
+void MX_AudioInit(Audio_Role_t role,
+                  Sampling_Freq_t sampling_frequency,
+                  Frame_Duration_t frame_duration,
+                  uint8_t *pSnkBuff,
+                  uint8_t *pSrcBuff,
+                  AudioDriverConfig driver_config);
 void MX_AudioDeInit(void);
-void Start_TxAudio(void);
+int32_t Start_TxAudio(void);
 void Stop_TxAudio(void);
-void Start_RxAudio(void);
+int32_t Start_RxAudio(void);
 void Stop_RxAudio(void);
 void AudioClock_Init(uint32_t frequency);
 void PLL_Exit(void);
@@ -81,6 +86,8 @@ void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize);
 void APP_NotifyRxAudioHalfCplt(void);
 void APP_NotifyTxAudioCplt(uint16_t AudioFrameSize);
 void APP_NotifyTxAudioHalfCplt(void);
+void App_Menu_Up_Right(void);
+void App_Menu_Down_Left(void);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

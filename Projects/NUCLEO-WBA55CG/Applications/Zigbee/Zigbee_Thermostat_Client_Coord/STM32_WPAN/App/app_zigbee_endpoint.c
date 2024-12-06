@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,7 +43,7 @@
 #include "zcl/general/zcl.therm.h"
 
 /* USER CODE BEGIN PI */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END PI */
 
@@ -242,9 +242,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
-  /* Using the default HA preconfigured Link Key */
-  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
-
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
@@ -298,7 +295,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
-
+  
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
@@ -413,7 +410,7 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
   int       iAttrLen;
   int16_t   iAttrValue;
   float     fTempValue;
-  char      szText[32], szHeader[32]; 
+  char      szText[32];
 
   iAttrLen = ZbZclAttrParseLength( eDataType, pDataInputPayload, pstDataInd->asduLength, 0 );
   if ( iAttrLen < 0 )
@@ -435,8 +432,7 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
   }
 
   bDisplay = TRUE;
-  sprintf( szHeader, "[THERMOSTAT] " LOG_DISPLAY64(), LOG_NUMBER64( pstDataInd->src.extAddr ) );
-  
+
   switch ( iAttributeId )
   {
     /* The only reportable Attribute is the Local Temperature */
@@ -453,7 +449,7 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
   
   if ( bDisplay != FALSE )
   {
-    LOG_INFO_APP( "%s : %s", szHeader, szText );
+    LOG_INFO_APP( "[THERMOSTAT] " LOG_DISPLAY64() " : %s", LOG_NUMBER64( pstDataInd->src.extAddr ), szText );
   }
 }
 

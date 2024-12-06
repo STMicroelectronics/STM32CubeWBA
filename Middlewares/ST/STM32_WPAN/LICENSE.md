@@ -10,9 +10,9 @@ __SOFTWARE BILL OF MATERIALS__
 Component            | Copyright                                                         | License 
 ---------            | ----------------------------------------------------------------- | ------- 
 Bluetooth Low Energy | STMicroelectronics                                                | SLA 
-Linklayer            | Synopsys, Inc.                                                    | SLA 
-MAC                  | Synopsys, Inc.                                                    | SLA 
-OpenThread           | The OpenThread Authors                                            | BSD-3-Clause 
+Linklayer            | Synopsys, Inc, STMicroelectronics                                 | SLA 
+MAC                  | Synopsys, Inc, STMicroelectronics                                 | SLA 
+OpenThread stack     | The OpenThread Authors                                            | BSD-3-Clause 
 Zigbee               | Exegin Technologies Limited, STMicroelectronics, Dr Brian Gladman | SLA 
 
 

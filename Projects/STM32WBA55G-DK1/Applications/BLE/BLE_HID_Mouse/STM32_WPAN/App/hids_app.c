@@ -28,7 +28,7 @@
 #include "ble.h"
 #include "hids_app.h"
 #include "hids.h"
-#include "stm32_seq.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -375,23 +375,23 @@ __USED void HIDS_Inputrep_SendNotification(void) /* Property Notification */
   hids_notification_data.p_Payload = (uint8_t*)a_HIDS_UpdateCharData;
   hids_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char1_NS_1*/
+  /* USER CODE BEGIN Service1Char1_NS_1 */
 
-  /* USER CODE END Service1Char1_NS_1*/
+  /* USER CODE END Service1Char1_NS_1 */
 
   if (notification_on_off != Inputrep_NOTIFICATION_OFF)
   {
     HIDS_UpdateValue(HIDS_INPUTREP, &hids_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char1_NS_Last*/
+  /* USER CODE BEGIN Service1Char1_NS_Last */
 
-  /* USER CODE END Service1Char1_NS_Last*/
+  /* USER CODE END Service1Char1_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 /**
  * @brief  Timer callback of the Jostick state sampling  
  * @param  void *args arguments
@@ -519,4 +519,4 @@ static void LCD_DrawIcon(uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t 
   }
 }
 #endif /* CFG_LCD_SUPPORTED */
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

@@ -31,12 +31,20 @@ int32_t tfm_hal_random_init(void)
 int32_t tfm_hal_random_generate(uint8_t *rand, size_t size)
 {
   static uint8_t index_seed_buf = 0U;
+  size_t len = 0U;
 
   *rand = seed_buf[index_seed_buf];
   index_seed_buf++;
 
   if (RNG_NUMBER == index_seed_buf)
   {
+    /* generate several random */
+    RNG_GetBytes((unsigned char *)seed_buf, sizeof(seed_buf),(size_t *)&len);
+    if(len == 0)/* fail to generate random values */
+    {
+      Error_Handler();
+    }
+
     index_seed_buf = 0;
   }
   return 0;

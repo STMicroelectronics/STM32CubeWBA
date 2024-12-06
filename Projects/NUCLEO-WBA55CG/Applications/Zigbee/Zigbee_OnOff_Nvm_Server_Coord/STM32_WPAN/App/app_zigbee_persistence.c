@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -45,13 +45,13 @@
 #define PERSISTENCE_DATA_OFFSET_IN_WORDS        1u                                              /* Offset in words for Persistence Data */
 #define PERSISTENCE_DATA_OFFSET_IN_BYTES        ( 4u * PERSISTENCE_DATA_OFFSET_IN_WORDS)        /* Offset in bytes for Persistence Data */
 
-/* Private Structure Definition ------------------------------------------------------*/
+/* Private Structure Definition ----------------------------------------------*/
 
 
 /* Private function prototypes -----------------------------------------------*/
 
 
-/* Private variables -----------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 
 /* Cache in uninitialized RAM to store/retrieve persistent data */
 union cache

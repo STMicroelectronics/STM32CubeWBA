@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   service2 definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
@@ -36,10 +36,6 @@
 typedef struct{
   uint16_t  DisSvcHdle;                  /**< Dis Service Handle */
   uint16_t  MansCharHdle;                  /**< MANS Characteristic Handle */
-  uint16_t  MnbsCharHdle;                  /**< MNBS Characteristic Handle */
-  uint16_t  SnsCharHdle;                  /**< SNS Characteristic Handle */
-  uint16_t  HrsCharHdle;                  /**< HRS Characteristic Handle */
-  uint16_t  FrsCharHdle;                  /**< FRS Characteristic Handle */
 /* USER CODE BEGIN Context */
   /* Place holder for Characteristic Descriptors Handle*/
 
@@ -75,10 +71,6 @@ typedef struct{
 
 /* Private variables ---------------------------------------------------------*/
 static const uint16_t SizeMans = 32;
-static const uint16_t SizeMnbs = 32;
-static const uint16_t SizeSns = 32;
-static const uint16_t SizeHrs = 32;
-static const uint16_t SizeFrs = 32;
 
 static DIS_Context_t DIS_Context;
 
@@ -194,8 +186,9 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
         /* Manage ACI_GATT_INDICATION_VSEVT_CODE */
         case ACI_GATT_INDICATION_VSEVT_CODE:
           {
+            tBleStatus status = BLE_STATUS_FAILED;
             aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            status = aci_gatt_confirm_indication(pr->Connection_Handle);
             if (status != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
@@ -203,7 +196,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             else
             {
               LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
-            }   
+            }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
         /* USER CODE END BLECORE_EVT */
@@ -213,19 +206,19 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
           /* USER CODE END EVT_DEFAULT */
           break;
       }
-      /* USER CODE BEGIN EVT_VENDOR*/
+      /* USER CODE BEGIN EVT_VENDOR */
 
-      /* USER CODE END EVT_VENDOR*/
+      /* USER CODE END EVT_VENDOR */
       break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
 
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
+      /* USER CODE BEGIN EVENT_PCKT_CASES */
 
-      /* USER CODE END EVENT_PCKT_CASES*/
+      /* USER CODE END EVENT_PCKT_CASES */
 
     default:
-      /* USER CODE BEGIN EVENT_PCKT*/
+      /* USER CODE BEGIN EVENT_PCKT */
 
-      /* USER CODE END EVENT_PCKT*/
+      /* USER CODE END EVENT_PCKT */
       break;
   }
 
@@ -261,18 +254,14 @@ void DIS_Init(void)
   /**
    * DIS
    *
-   * Max_Attribute_Records = 1 + 2*5 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
+   * Max_Attribute_Records = 1 + 2*1 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
    * service_max_attribute_record = 1 for DIS +
    *                                2 for MANS +
-   *                                2 for MNBS +
-   *                                2 for SNS +
-   *                                2 for HRS +
-   *                                2 for FRS +
-   *                              = 11
+   *                              = 3
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 11;
+  max_attr_record = 3;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
@@ -318,116 +307,9 @@ void DIS_Init(void)
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char1 */
+  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService2Char1 */
-
-  /**
-   * MNBS
-   */
-  uuid.Char_UUID_16 = 0x2a24;
-  ret = aci_gatt_add_char(DIS_Context.DisSvcHdle,
-                          UUID_TYPE_16,
-                          (Char_UUID_t *) &uuid,
-                          SizeMnbs,
-                          CHAR_PROP_READ,
-                          ATTR_PERMISSION_NONE,
-                          GATT_DONT_NOTIFY_EVENTS,
-                          0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(DIS_Context.MnbsCharHdle));
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : MNBS, error code: 0x%2X\n", ret);
-  }
-  else
-  {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MNBS\n");
-  }
-
-  /* USER CODE BEGIN SVCCTL_InitService2Char2 */
-
-  /* USER CODE END SVCCTL_InitService2Char2 */
-
-  /**
-   * SNS
-   */
-  uuid.Char_UUID_16 = 0x2a25;
-  ret = aci_gatt_add_char(DIS_Context.DisSvcHdle,
-                          UUID_TYPE_16,
-                          (Char_UUID_t *) &uuid,
-                          SizeSns,
-                          CHAR_PROP_READ,
-                          ATTR_PERMISSION_NONE,
-                          GATT_DONT_NOTIFY_EVENTS,
-                          0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(DIS_Context.SnsCharHdle));
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : SNS, error code: 0x%2X\n", ret);
-  }
-  else
-  {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SNS\n");
-  }
-
-  /* USER CODE BEGIN SVCCTL_InitService2Char3 */
-
-  /* USER CODE END SVCCTL_InitService2Char3 */
-
-  /**
-   * HRS
-   */
-  uuid.Char_UUID_16 = 0x2a27;
-  ret = aci_gatt_add_char(DIS_Context.DisSvcHdle,
-                          UUID_TYPE_16,
-                          (Char_UUID_t *) &uuid,
-                          SizeHrs,
-                          CHAR_PROP_READ,
-                          ATTR_PERMISSION_NONE,
-                          GATT_DONT_NOTIFY_EVENTS,
-                          0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(DIS_Context.HrsCharHdle));
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HRS, error code: 0x%2X\n", ret);
-  }
-  else
-  {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HRS\n");
-  }
-
-  /* USER CODE BEGIN SVCCTL_InitService2Char4 */
-
-  /* USER CODE END SVCCTL_InitService2Char4 */
-
-  /**
-   * FRS
-   */
-  uuid.Char_UUID_16 = 0x2a26;
-  ret = aci_gatt_add_char(DIS_Context.DisSvcHdle,
-                          UUID_TYPE_16,
-                          (Char_UUID_t *) &uuid,
-                          SizeFrs,
-                          CHAR_PROP_READ,
-                          ATTR_PERMISSION_NONE,
-                          GATT_DONT_NOTIFY_EVENTS,
-                          0x10,
-                          CHAR_VALUE_LEN_VARIABLE,
-                          &(DIS_Context.FrsCharHdle));
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : FRS, error code: 0x%2X\n", ret);
-  }
-  else
-  {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : FRS\n");
-  }
-
-  /* USER CODE BEGIN SVCCTL_InitService2Char5 */
-
-  /* USER CODE END SVCCTL_InitService2Char5 */
 
   /* USER CODE BEGIN SVCCTL_InitService2Svc_2 */
 
@@ -465,85 +347,9 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
       {
         LOG_INFO_APP("  Success: aci_gatt_update_char_value MANS command\n");
       }
-      /* USER CODE BEGIN Service2_Char_Value_1*/
+      /* USER CODE BEGIN Service2_Char_Value_1 */
 
-      /* USER CODE END Service2_Char_Value_1*/
-      break;
-
-    case DIS_MNBS:
-      ret = aci_gatt_update_char_value(DIS_Context.DisSvcHdle,
-                                       DIS_Context.MnbsCharHdle,
-                                       0, /* charValOffset */
-                                       pData->Length, /* charValueLen */
-                                       (uint8_t *)pData->p_Payload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MNBS command, error code: 0x%2X\n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MNBS command\n");
-      }
-      /* USER CODE BEGIN Service2_Char_Value_2*/
-
-      /* USER CODE END Service2_Char_Value_2*/
-      break;
-
-    case DIS_SNS:
-      ret = aci_gatt_update_char_value(DIS_Context.DisSvcHdle,
-                                       DIS_Context.SnsCharHdle,
-                                       0, /* charValOffset */
-                                       pData->Length, /* charValueLen */
-                                       (uint8_t *)pData->p_Payload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SNS command, error code: 0x%2X\n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SNS command\n");
-      }
-      /* USER CODE BEGIN Service2_Char_Value_3*/
-
-      /* USER CODE END Service2_Char_Value_3*/
-      break;
-
-    case DIS_HRS:
-      ret = aci_gatt_update_char_value(DIS_Context.DisSvcHdle,
-                                       DIS_Context.HrsCharHdle,
-                                       0, /* charValOffset */
-                                       pData->Length, /* charValueLen */
-                                       (uint8_t *)pData->p_Payload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HRS command, error code: 0x%2X\n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HRS command\n");
-      }
-      /* USER CODE BEGIN Service2_Char_Value_4*/
-
-      /* USER CODE END Service2_Char_Value_4*/
-      break;
-
-    case DIS_FRS:
-      ret = aci_gatt_update_char_value(DIS_Context.DisSvcHdle,
-                                       DIS_Context.FrsCharHdle,
-                                       0, /* charValOffset */
-                                       pData->Length, /* charValueLen */
-                                       (uint8_t *)pData->p_Payload);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value FRS command, error code: 0x%2X\n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value FRS command\n");
-      }
-      /* USER CODE BEGIN Service2_Char_Value_5*/
-
-      /* USER CODE END Service2_Char_Value_5*/
+      /* USER CODE END Service2_Char_Value_1 */
       break;
 
     default:

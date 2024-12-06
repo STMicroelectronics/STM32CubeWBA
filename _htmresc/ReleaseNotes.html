@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.4.0 / 05-June-2024</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.5.0RC1 / 20-September-2024</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -14,67 +14,67 @@
 </p>
 
 <p>
-<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx and STM32WBA55xx devices</b>
+<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx and STM32WBA55xx devices</b>
 </p>
 <p>
 <b>Security</b>
 </p>
 <p>
-- Introduction of Imgtool in STM32CubeProgrammer and AppliCfg script.
-</p>
-<p>
-- Update of mbed-crypto, mcuboot, TrustedFirmware for security improvements.
+- Minor updates in security applications (SBSFU and TFM) and related scripts.
 </p>
 <p>
 <b>Connectivity</b>
 </p>
 <p>
-- STM32WBA50xx is now supported. 
+- External PA(+20dbm) is now supported on BLE using BLE_TransparentMode application. 
 </p>
 <p>
-- 802.15.4 Antenna Diversity.
+- New third-party MW support: FreeRTOS, mbedtls (mbedtls_alt) 
 </p>
 <p>
-- BLE Audio Hearing Access Profile support added. 
+- Deployment of new directory structure using Common/WPAN directory for Connectivity Applications 
 </p>
 <p>
-- Applications based on ThreadX are delivered on MDK-ARM (Keil) toolchain.
+- HSE clock startup instabilities fixed with SW workaround (please refer to errata sheet) 
 </p>
 <p>
-- WIFI PTA(via PTACONV) support on BLE applications.
+- OpenThread update to SHA-1: 4a0d6b7b6495a1e4e2e03ab7a4f8baa064df4a6e (June 11th 2024) 
 </p>
 <p>
-- Adding of new Zigbee Applications (including NVM and OTA)
+- Zigbee Smart Energy support 
 </p>
 <p>
-- Adding of two new BLE stack configurations: Basic Plus and Peripheral Only
+- 802.15.4 Antenna Diversity (Mac_802_15_4_Node_Antenna_Diversity application) 
 </p>
 <p>
-- Adding of BLE wrapper : pre and post command handling
+- Add Support of WBA5M (CEB Module) (Applications under B-WBA5M-WPAN) 
 </p>
 <p>
-- A new command ACI_HAL_EAD_ENCRYPT_DECRYPT is added to ease implementation of Encrypted Advertising Data feature. 
-</p>
-<p>
-- 802.15.4 Long term robustness improvement
+- Advertising Coding Scheme Selection features added 
 </p>
 <b>Drivers</b>
 </p>
 <p>
-- CMSIS Device Drivers supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx and STM32WBA55xx devices
+- CMSIS Device Drivers supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx and STM32WBA55xx devices
 </p>
 <p>
 - HAL/LL Drivers available for all peripherals
 </p>
 <p>
-- BSP Drivers supporting NUCLEO-WBA50KGU, NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards
+- BSP Drivers : Update STM32WBAxx_Nucleo and STM32WBA55G-DK1 BSP drivers to include latest corrections. Add B-WBA5M-WPAN BSP drivers.
 </p>
 <p>
 
 <b>Projects</b>
 </p>
 <p>
-- NUCLEO-WBA55CG
+<b>- B-WBA5M-WPAN</b>
+</p>
+<p>
+- Add new applications demonstrating BLE, Thread and Zigbee capabilities
+</p>
+<p>
+<b>- NUCLEO-WBA55CG</b>
 </p>
 <p>
 - Update Applications demonstrating BLE capabilities
@@ -86,16 +86,16 @@
 - Update Applications demonstrating Thread capabilities
 </p>
 <p>
-- NUCLEO-WBA52CG
+<b>- NUCLEO-WBA52CG</b>
 </p>
 <p>
 - Update Applications demonstrating SBSFU/TFM capabilities
 </p>
 <p>
-- STM32WBA55G-DK1
+<b>- STM32WBA55G-DK1</b>
 </p>
 <p>
-- Update applications demonstrating  BLE, Zigbee capabilities
+- Update applications demonstrating BLE, Zigbee capabilities
 </p>
 </div>
 </body>

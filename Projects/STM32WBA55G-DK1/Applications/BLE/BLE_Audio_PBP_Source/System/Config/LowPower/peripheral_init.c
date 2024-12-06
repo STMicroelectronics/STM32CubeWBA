@@ -29,7 +29,6 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM2;
 extern RNG_HandleTypeDef hrng;
@@ -48,7 +47,7 @@ extern uint8_t JOY_StandbyExitFlag;
   * @param  None
   * @retval None
   */
-void MX_StandbyExit_PeripharalInit(void)
+void MX_StandbyExit_PeripheralInit(void)
 {
   HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
@@ -65,7 +64,6 @@ void MX_StandbyExit_PeripharalInit(void)
     assert_param(0);
   }
 
-  memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hramcfg_SRAM2, 0, sizeof(hramcfg_SRAM2));
   memset(&hrng, 0, sizeof(hrng));

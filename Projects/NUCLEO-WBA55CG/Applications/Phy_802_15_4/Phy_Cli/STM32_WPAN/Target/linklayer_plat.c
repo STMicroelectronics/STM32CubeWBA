@@ -32,49 +32,7 @@
 #include "stm32_lpm.h"
 
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_ll_pwr.h"
 
-/* Radio bus clock control variables */
-uint8_t AHB5_SwitchedOff = 0;
-uint32_t radio_sleep_timer_val = 0;
-
-/**
-  * @brief  Notify the Link Layer platform layer the system will enter in WFI 
-  *         and AHB5 clock may be turned of regarding the 2.4Ghz radio state. 
-  * @param  None
-  * @retval None
-  */
-void LINKLAYER_PLAT_NotifyWFIEnter(void)
-{
-  /* Check if Radio state will allow the AHB5 clock to be cut */
-  
-  /* AHB5 clock will be cut in the following cases:
-   * - 2.4GHz radio is not in ACTIVE mode (in SLEEP or DEEPSLEEP mode).
-   * - RADIOSMEN and STRADIOCLKON bits are at 0.
-   */
-  if((LL_PWR_GetRadioMode() != LL_PWR_RADIO_ACTIVE_MODE) ||
-     ((__HAL_RCC_RADIO_IS_CLK_SLEEP_ENABLED() == 0) && (LL_RCC_RADIO_IsEnabledSleepTimerClock() == 0)))
-  {
-    AHB5_SwitchedOff = 1;
-  }
-}
-
-/**
-  * @brief  Notify the Link Layer platform layer the system exited WFI and AHB5 
-  *         clock may be resynchronized as is may have been turned of during
-  *         low power mode entry.
-  * @param  None
-  * @retval None
-  */
-void LINKLAYER_PLAT_NotifyWFIExit(void)
-{
- /* Check if AHB5 clock has been turned of and needs resynchronisation */
-  if (AHB5_SwitchedOff)
-  {
-    /* Read sleep register as earlier as possible */
-    radio_sleep_timer_val = ll_intf_cmn_get_slptmr_value();
-  }
-}
 /* USER CODE END Includes */
 
 #define max(a,b) ((a) > (b) ? a : b)
@@ -159,12 +117,21 @@ void LINKLAYER_PLAT_WaitHclkRdy(void)
   */
 void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
 {
-  if(enable){
+  if(enable != 0u)
+  {
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Polling on HSE32 activation */
+    SCM_HSE_WaitUntilReady();
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
-
+	/* SCM HSE END */
+#else
+    /* Enable RADIO baseband clock (active CLK) */
+    HAL_RCCEx_EnableRadioBBClock();
     /* Polling on HSE32 activation */
     while ( LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
   }
   else
   {

@@ -15,37 +15,37 @@
 enum ZbBdbCommissioningStatusT {
     ZB_BDB_COMMISS_STATUS_SUCCESS = 0x00,
     /**< SUCCESS - The commissioning sub-procedure was successful */
-    ZB_BDB_COMMISS_STATUS_IN_PROGRESS,
+    ZB_BDB_COMMISS_STATUS_IN_PROGRESS = 0x01,
     /**< IN_PROGRESS - One of the commissioning sub-procedures has started but is not yet complete */
-    ZB_BDB_COMMISS_STATUS_NOT_AA_CAPABLE,
+    ZB_BDB_COMMISS_STATUS_NOT_AA_CAPABLE = 0x02,
     /**< NOT_AA_CAPABLE - The initiator is not address assignment capable during touchlink */
-    ZB_BDB_COMMISS_STATUS_NO_NETWORK,
+    ZB_BDB_COMMISS_STATUS_NO_NETWORK = 0x03,
     /**< NO_NETWORK - A network has not been found during network steering or touchlink*/
-    ZB_BDB_COMMISS_STATUS_TARGET_FAILURE,
+    ZB_BDB_COMMISS_STATUS_TARGET_FAILURE = 0x04,
     /**< TARGET_FAILURE - A node has not joined a network when requested during touchlink */
-    ZB_BDB_COMMISS_STATUS_FORMATION_FAILURE,
+    ZB_BDB_COMMISS_STATUS_FORMATION_FAILURE = 0x05,
     /**< FORMATION_FAILURE - A network could not be formed during network formation */
-    ZB_BDB_COMMISS_STATUS_NO_IDENTIFY_QUERY_RESPONSE,
+    ZB_BDB_COMMISS_STATUS_NO_IDENTIFY_QUERY_RESPONSE = 0x06,
     /**< NO_IDENTIFY_QUERY_RESPONSE - No response to an identify query command has been
      * received during finding & binding */
-    ZB_BDB_COMMISS_STATUS_BINDING_TABLE_FULL,
+    ZB_BDB_COMMISS_STATUS_BINDING_TABLE_FULL = 0x07,
     /**< BINDING_TABLE_FULL - A binding table entry could not be created due to insufficient
      * space in the binding table during finding & binding */
-    ZB_BDB_COMMISS_STATUS_NO_SCAN_RESPONSE,
+    ZB_BDB_COMMISS_STATUS_NO_SCAN_RESPONSE = 0x08,
     /**< NO_SCAN_RESPONSE - No response to a scan request inter-PAN command has been received
      * during touchlink */
-    ZB_BDB_COMMISS_STATUS_NOT_PERMITTED,
+    ZB_BDB_COMMISS_STATUS_NOT_PERMITTED = 0x09,
     /**< NOT_PERMITTED - A touchlink (steal) attempt was made when a node is already connected
      * to a centralized security network or when end node attempts to form network */
-    ZB_BDB_COMMISS_STATUS_TCLK_EX_FAILURE,
+    ZB_BDB_COMMISS_STATUS_TCLK_EX_FAILURE = 0x0a,
     /**< TCLK_EX_FAILURE - The Trust Center link key exchange procedure has failed attempting
      * to join a centralized security network */
-    ZB_BDB_COMMISS_STATUS_NOT_ON_A_NETWORK,
+    ZB_BDB_COMMISS_STATUS_NOT_ON_A_NETWORK = 0x0b,
     /**< NOT_ON_A_NETWORK - A commissioning procedure was forbidden since the node was not
      * currently on a network. */
-    ZB_BDB_COMMISS_STATUS_ON_A_NETWORK
-    /**< ON_A_NETWORK - A commissioning procedure was forbidden since the node was
-     * currently on a network. */
+    ZB_BDB_COMMISS_STATUS_ON_A_NETWORK = 0x0c
+        /**< ON_A_NETWORK - A commissioning procedure was forbidden since the node was
+         * currently on a network. */
 };
 
 #define BDB_DEFAULT_TC_NODE_JOIN_TIMEOUT        15 /* seconds */
@@ -58,20 +58,6 @@ enum ZbBdbCommissioningStatusT {
 #define BDB_COMMISSION_MODE_NET_STEER           0x02U
 #define BDB_COMMISSION_MODE_NET_FORM            0x04U /* Whether to form a network. Configured by ZbStartup (e.g. ZbStartTypeForm) */
 #define BDB_COMMISSION_MODE_FIND_BIND           0x08U
-
-/* Bits for bdbCommissioningCapability. */
-#define BDB_COMMISSION_CAP_MASK                 0x0FU
-#define BDB_COMMISSION_CAP_STEER                0x01U
-#define BDB_COMMISSION_CAP_NETWORK              0x02U
-#define BDB_COMMISSION_CAP_FIND_BIND            0x04U
-#define BDB_COMMISSION_CAP_TL                   0x08U
-
-/* Bits for bdbNodeJoinLinkKeyType */
-#define BDB_JOINLINK_KEYTYPE_FLAG               0x0F
-#define BDB_JOINLINK_KEYTYPE_GTC                0x01 /* global trust center*/
-#define BDB_JOINLINK_KEYTYPE_DS                 0x02 /* distributed security global */
-#define BDB_JOINLINK_KEYTYPE_IC                 0x04 /* install code preconfigured. */
-#define BDB_JOINLINK_KEYTYPE_TC                 0x08 /* touchlink preconfigured. */
 
 /* values for ZB_BDB_TCLinkKeyExchangeMethod / bdbTCLinkKeyExchangeMethod */
 /** bdbTCLinkKeyExchangeMethod */
@@ -190,49 +176,61 @@ enum ZbBdbTouchlinkKeyIndexT {
  * "No other command is sent in response to the received command,
  * using the same Transaction sequence number as the received command." */
 #define ZB_BDB_FLAG_ZCL_CLEAR_DEFAULT_RESPONSE_BIT      0x00001000U
+#define ZB_BDB_FLAG_ZCL_SET_DEFAULT_RESPONSE_BIT        0x00002000U
+
+/* By default, the stack will attempt a network rejoin on the BDB Primary & Secondary
+ * Channel sets, provided network rejoin on the current operating channel and the
+ * APS Channel mask were unsuccessful and there are valid BDB Channel masks present.
+ * The said default behaviour can be disabled using below BDB flag. */
+#define ZB_BDB_FLAG_DISABLE_REJOIN_ON_BDB_CHANNEL_MASK  0x00004000U
 
 /** BDB IB Attributes */
 enum ZbBdbAttrIdT {
     /* Removed -- 0x1000 (ZB_BDB_CommissioningGroupID) */
     ZB_BDB_CommissioningMode = 0x1001,
     /**< bdbCommissioningMode - BDB_COMMISSION_MODE_MASK
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
     /* Removed -- 0x1002 (ZB_BDB_JoiningNodeEui64) */
     /* Removed -- 0x1002 (ZB_BDB_JoiningNodeNewTCLinkKey) */
     ZB_BDB_JoinUsesInstallCodeKey = 0x1004,
-    /**< bdbJoinUsesInstallCodeKey (type: uint8_t, reset: no, persist: no) */
-    ZB_BDB_NodeCommissioningCapability = 0x1005,
-    /**< bdbNodeCommissioningCapability - BDB_COMMISSION_CAP_MASK
+    /**< bdbJoinUsesInstallCodeKey - Deprecated in BDB 3.1
      * (type: uint8_t, reset: no, persist: no) */
+    ZB_BDB_NodeCommissioningCapability = 0x1005,
+    /**< bdbNodeCommissioningCapability
+     * Deprecated in BDB 3.1 (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_NodeIsOnANetwork = 0x1006,
     /**< bdbNodeIsOnANetwork - Checks nwkExtendedPanId if non-zero
-     * (type: uint8_t, reset: no, persist: no) */
+     * Deprecated in BDB 3.1 (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_NodeJoinLinkKeyType = 0x1007,
     /**< bdbNodeJoinLinkKeyType - BDB_JOINLINK_KEYTYPE_FLAG, Link key with which
      * the node was able to decrypt the network key
-     * (type: uint8_t, reset: yes, persist: no) */
+     * Deprecated in BDB 3.1 (type: uint8_t, reset: yes, persist: no) */
     ZB_BDB_PrimaryChannelSet = 0x1008,
-    /**< bdbPrimaryChannelSet (type: uint32_t, reset: no, persist: yes) */
+    /**< bdbPrimaryChannelSet (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_ScanDuration = 0x1009,
-    /**< bdbScanDuration (type: uint8_t, reset: no, persist: yes) */
+    /**< bdbScanDuration (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_SecondaryChannelSet = 0x100a,
-    /**< bdbSecondaryChannelSet (type: uint32_t, reset: no, persist: yes) */
+    /**< bdbSecondaryChannelSet (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttempts = 0x100b,
-    /**< bdbTCLinkKeyExchangeAttempts (type: uint8_t, reset: no, persist: yes) */
+    /**< bdbTCLinkKeyExchangeAttempts - Deprecated in BDB 3.1, still used as a counter
+     * to keep track of number of TCLK exchange attempts made.
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttemptsMax = 0x100c,
-    /**< bdbTCLinkKeyExchangeAttemptsMax (type: uint8_t, reset: no, persist: yes) */
+    /**< bdbTCLKExchangeAttempts (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLinkKeyExchangeMethod = 0x100d,
-    /**< bdbTCLinkKeyExchangeMethod (type: uint8_t / enum ZbBdbLinkKeyExchMethodT,
-     * reset: no, persist: yes) */
+    /**< bdbTCLinkKeyExchangeMethod - Deprecated in BDB 3.1
+     * (type: uint8_t / enum ZbBdbLinkKeyExchMethodT, reset: no, persist: no) */
     ZB_BDB_TrustCenterNodeJoinTimeout = 0x100e,
-    /**< bdbTrustCenterNodeJoinTimeout (type: uint8_t, reset: no, persist: yes) */
+    /**< bdbTrustCenterNodeJoinTimeout - Deprecated in BDB 3.1
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TrustCenterRequiresKeyExchange = 0x100f,
     /**< bdbTrustCenterRequireKey-Exchange. Modifies ZB_APSME_POLICY_TCLK_UPDATE_REQUIRED bit
-     * in ZB_APS_IB_ID_TRUST_CENTER_POLICY (type: uint8_t, reset: no, persist: yes) */
+     * in ZB_APS_IB_ID_TRUST_CENTER_POLICY - Deprecated in BDB 3.1
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_AcceptNewUnsolicitedTCLinkKey = 0x1010,
-    /**< acceptNewUnsolicitedTrustCenterLinkKey (type: uint8_t, reset: no, persist: yes) */
+    /**< acceptNewUnsolicitedTrustCenterLinkKey (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_AcceptNewUnsolicitedApplicationLinkKey = 0x1011,
-    /**< acceptNewUnsolicitedApplicationLinkKey (type: uint8_t, reset: no, persist: yes) */
+    /**< acceptNewUnsolicitedApplicationLinkKey (type: uint8_t, reset: no, persist: no) */
 
     /* Extra stuff not explicitly covered by the BDB spec. */
     /* discontinuity */
@@ -364,37 +362,6 @@ enum ZbBdbAttrIdT {
         /**< Milliseconds (type: uint8_t, reset: no, persist: no) */
 };
 
-/** BDB-GET.request */
-struct ZbBdbGetReqT {
-    enum ZbBdbAttrIdT attrId; /**< Attribute ID */
-    void *attr; /**< Pointer to attribute */
-    unsigned int attrLength; /**< Attribute Length */
-    unsigned int attrIndex; /**< Attribute Index */
-};
-
-/** BDB-GET.confirm */
-struct ZbBdbGetConfT {
-    enum ZbStatusCodeT status; /**< Status */
-    enum ZbBdbAttrIdT attrId; /**< Attribute ID */
-};
-
-/** BDB-SET.request */
-struct ZbBdbSetReqT {
-    enum ZbBdbAttrIdT attrId; /**< Attribute ID */
-    const void *attr; /**< Pointer to attribute */
-    unsigned int attrLength; /**< Attribute Length */
-    unsigned int attrIndex; /**< Attribute Index */
-};
-
-/** BDB-SET.confirm */
-struct ZbBdbSetConfT {
-    enum ZbStatusCodeT status; /**< Status */
-    enum ZbBdbAttrIdT attrId; /**< Attribute ID */
-};
-
-#define ZbBdbGet(_zb_, _id_, _ptr_, _sz_) ZbBdbGetIndex(_zb_, _id_, _ptr_, _sz_, 0)
-#define ZbBdbSet(_zb_, _id_, _ptr_, _sz_) ZbBdbSetIndex(_zb_, _id_, _ptr_, _sz_, 0)
-
 /**
  * Read a BDB IB attribute.
  * @param zb Zigbee stack instance
@@ -419,89 +386,11 @@ enum ZbStatusCodeT ZbBdbGetIndex(struct ZigBeeT *zb, enum ZbBdbAttrIdT attrId,
 enum ZbStatusCodeT ZbBdbSetIndex(struct ZigBeeT *zb, enum ZbBdbAttrIdT attrId,
     const void *attrPtr, unsigned int attrSz, unsigned int attrIndex);
 
-/**
- * Send a BDB-GET.request.
- * @param zb Zigbee stack instance
- * @param getReqPtr Pointer to BDB-GET.request
- * @param getConfPtr Pointer to BDB-GET.confirm
- * @return Returns void
- */
-void ZbBdbGetReq(struct ZigBeeT *zb, struct ZbBdbGetReqT *getReqPtr, struct ZbBdbGetConfT *getConfPtr);
+#define ZbBdbGet(_zb_, _id_, _ptr_, _sz_) ZbBdbGetIndex(_zb_, _id_, _ptr_, _sz_, 0)
+#define ZbBdbSet(_zb_, _id_, _ptr_, _sz_) ZbBdbSetIndex(_zb_, _id_, _ptr_, _sz_, 0)
 
-/**
- * Send a BDB-SET.request.
- * @param zb Zigbee stack instance
- * @param setReqPtr Pointer to BDB-SET.request
- * @param setConfPtr Pointer to BDB-SET.confirm
- * @return Returns void
- */
-void ZbBdbSetReq(struct ZigBeeT *zb, struct ZbBdbSetReqT *setReqPtr, struct ZbBdbSetConfT *setConfPtr);
-
-/* Helpers for ZB_BDB_CommissioningMode bits */
-
-/**
- * Check if a BDB_COMMISSION_MODE bit or mask is supported by bdbNodeCommissioningCapability
- * @param zb Zigbee instance
- * @param new_mode_bit BDB_COMMISSION_MODE_ bit or mask
- * @return Returns true on success, false otherwise
- */
-bool ZbBdbCommissionModeBitSupported(struct ZigBeeT *zb, uint8_t new_mode_bit);
-
-/**
- * Set ZB_BDB_CommissioningMode bits
- * @param zb Zigbee instance
- * @param new_mode_bit ZB_BDB_CommissioningMode bit or mask
- * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
- */
-enum ZbStatusCodeT ZbBdbCommissionModeBitSet(struct ZigBeeT *zb, uint8_t new_mode_bit);
-
-/**
- * Clear ZB_BDB_CommissioningMode bits
- * @param zb Zigbee instance
- * @param new_mode_bit ZB_BDB_CommissioningMode bit or mask
- * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
- */
-enum ZbStatusCodeT ZbBdbCommissionModeBitClear(struct ZigBeeT *zb, uint8_t new_mode_bit);
-
-/* Helpers for ZB_BDB_Flags bits */
-
-/**
- * Set ZB_BDB_Flags bits
- * @param zb Zigbee instance
- * @param mask ZB_BDB_Flags bit or mask
- * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
- */
-enum ZbStatusCodeT ZbBdbFlagBitSet(struct ZigBeeT *zb, uint32_t mask);
-
-/**
- * Clear ZB_BDB_Flags bits
- * @param zb Zigbee instance
- * @param mask ZB_BDB_Flags bit or mask
- * @return Returns ZB_NWK_STATUS_SUCCESS on success, or other ZbStatusCodeT on failure
- */
-enum ZbStatusCodeT ZbBdbFlagBitClear(struct ZigBeeT *zb, uint32_t mask);
-
-/**
- * Check if ZB_BDB_Flags bits are set
- * @param zb Zigbee instance
- * @param mask ZB_BDB_Flags bit or mask
- * @return Returns true on success, false otherwise
- */
-bool ZbBdbFlagBitCheck(struct ZigBeeT *zb, uint32_t mask);
-
-/**
- * Convertes a zigbee status code to the closest BDB status code
- * @param status Zigbee status code
- * @return Returns BDB status code
- */
-enum ZbBdbCommissioningStatusT ZbBdbNwkStatusToBdbStatus(enum ZbStatusCodeT status);
-
-/**
- * Convertes a BDB status code to the closest zigbee status code
- * @param status BDB status code
- * @return Returns Zigbee status code
- */
-enum ZbStatusCodeT ZbBdbStatusToNwkStatus(enum ZbBdbCommissioningStatusT status);
+/* Configures the endpoint with the given commissioning status. Mostly for internal use only. */
+void ZbBdbSetEndpointStatus(struct ZigBeeT *zb, enum ZbBdbCommissioningStatusT status, uint8_t endpoint);
 
 /**
  * Get commissioning status for the given endpoint (same for all endpoints?).
@@ -511,8 +400,5 @@ enum ZbStatusCodeT ZbBdbStatusToNwkStatus(enum ZbBdbCommissioningStatusT status)
  * @return Returns ZB_BDB_COMMISS_STATUS_SUCCESS on success, other BDB status code on failure
  */
 enum ZbBdbCommissioningStatusT ZbBdbGetEndpointStatus(struct ZigBeeT *zb, uint8_t endpoint);
-
-/* Configures the endpoint with the given commissioning status. Mostly for internal use only. */
-void ZbBdbSetEndpointStatus(struct ZigBeeT *zb, enum ZbBdbCommissioningStatusT status, uint8_t endpoint);
 
 #endif

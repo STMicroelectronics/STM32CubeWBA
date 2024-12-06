@@ -214,9 +214,9 @@ void APP_BLE_Init(void)
   return;
 }
 
-/* USER CODE BEGIN FD*/
+/* USER CODE BEGIN FD */
 
-/* USER CODE END FD*/
+/* USER CODE END FD */
 
 /*************************************************************
  *
@@ -277,11 +277,11 @@ static void TM_Init(void)
 
   BLEUART_Read(&huart1, HCI_GetFreeRxBuffer(), 1 /*IDENTIFIER_OFFSET*/);
 
-/* USER CODE BEGIN TM_Init*/
+/* USER CODE BEGIN TM_Init */
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
   UTIL_LPM_SetStopMode(1<<CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
   LowPowerModeStatus = LOW_POWER_MODE_DISABLE;
-/* USER CODE END TM_Init*/
+/* USER CODE END TM_Init */
 
   os_enable_isr();
   UTIL_SEQ_RegTask(1U << CFG_TASK_TX_TO_HOST_ID, UTIL_SEQ_RFU, TM_TxToHost);
@@ -345,7 +345,7 @@ static void TM_TxToHost(void)
       }
 
       BleStack_Request(pData);
-      HostStack_Process();
+      BleStackCB_Process();
 
       if(( packet_type == 0x01 ) || ( packet_type == TL_LOCCMD_PKT_TYPE ) || ( packet_type == TL_LOCRSP_PKT_TYPE ))
       {
@@ -710,16 +710,16 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   uint8_t status;
   uint8_t bufferHci[HCI_DATA_MAX_SIZE];
 
-  memcpy( &bufferHci[0], data, length);
+  MEMCPY( &bufferHci[0], data, length);
 
   if ( ext_length > 255 )
   {
-    memcpy( &bufferHci[length], ext_data, 254);
-    memcpy( &bufferHci[length + 254], ext_data + 254, ext_length - 254 );
+    MEMCPY( &bufferHci[length], ext_data, 254);
+    MEMCPY( &bufferHci[length + 254], ext_data + 254, ext_length - 254 );
   }
   else
   {
-    memcpy( &bufferHci[length], ext_data, ext_length );
+    MEMCPY( &bufferHci[length], ext_data, ext_length );
   }
 
   if (bufferHci[1] == 0xFF) /* ACI events */

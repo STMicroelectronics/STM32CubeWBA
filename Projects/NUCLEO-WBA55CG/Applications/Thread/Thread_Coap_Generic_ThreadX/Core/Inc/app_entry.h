@@ -64,12 +64,6 @@ uint32_t MX_APPE_Init(void *p_param);
 void MX_APPE_LinkLayerInit(void);
 
 /* USER CODE BEGIN EFP */
-#if ( CFG_BUTTON_SUPPORTED == 1 ) 
-uint8_t   APPE_ButtonIsLongPressed    ( uint16_t btnIdx );
-void      APPE_Button1Action          ( void );
-void      APPE_Button2Action          ( void );
-void      APPE_Button3Action          ( void );
-#endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /* USER CODE END EFP */
 

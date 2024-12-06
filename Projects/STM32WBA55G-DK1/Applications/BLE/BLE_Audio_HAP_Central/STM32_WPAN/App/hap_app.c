@@ -30,6 +30,7 @@
 #include "usecase_dev_mgmt.h"
 #include "app_menu_cfg.h"
 #include "log_module.h"
+#include "app_ble.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -63,7 +64,7 @@
 #define BAP_UCL_ASE_BLOCKS_SIZE \
           BAP_MEM_BLOCKS_ASE_PER_CONN_SIZE_BYTES(MAX_NUM_UCL_SNK_ASE_PER_LINK,MAX_NUM_UCL_SRC_ASE_PER_LINK,MAX_UCL_CODEC_CONFIG_SIZE,MAX_UCL_METADATA_SIZE)
 
-/* Memory size required to allocate resource for Published Audio Capabilites for Unicast Client and/or Broadcast Assistant*/
+/* Memory size required to allocate resource for Published Audio Capabilities for Unicast Client and/or Broadcast Assistant*/
 #define BAP_PACS_CLT_DYN_ALLOC_SIZE  \
               BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_UCL_LINK,0,(MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
 
@@ -255,8 +256,8 @@ static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
                                          uint16_t CIS_ConnHandle,
                                          uint8_t ASE_ID,
                                          uint32_t ControllerDelay);
-static void start_audio_source(void);
-static void start_audio_sink(void);
+static int32_t start_audio_source(void);
+static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
 
 static HAPAPP_Preset_t aPresetRecord[APP_HAP_NUM_PRESETS] = {0};
@@ -285,8 +286,6 @@ uint8_t LocalVolume = BASE_VOLUME;
 uint8_t LocalMute = 0x00;
 
 /* Exported functions --------------------------------------------------------*/
-
-extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -510,7 +509,9 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
     {
       uint8_t active_preset_index = pNotification->pInfo[0];
       uint8_t i, j;
-      LOG_INFO_APP("HAP Active Preset received: %d\n", active_preset_index);
+      LOG_INFO_APP("HAP Active Preset received with ConnHandle 0x%04X: %d\n",
+                   pNotification->ConnHandle,
+                   active_preset_index);
 
       if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
@@ -531,19 +532,22 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
             HAPAPP_Context.ACL_Conn[i].active_preset = active_preset_index;
             for (j = 0; j < CFG_BLE_NUM_LINK; j++)
             {
-              if (HAPAPP_Context.ACL_Conn[j].active_preset != active_preset_index)
+              if (HAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle != 0xFFFF)
               {
-                HAPAPP_SetActivePreset(HAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle, active_preset_index);
-                break;
+                if (HAPAPP_Context.ACL_Conn[j].active_preset != active_preset_index)
+                {
+                  HAPAPP_SetActivePreset(HAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle, active_preset_index);
+                  break;
+                }
               }
             }
             break;
           }
         }
       }
-
       break;
     }
+
     case HAP_HARC_READ_PRESET_RESPONSE_EVT:
     {
       HAP_ReadPresetResponse_Info_t *p_read_response = (HAP_ReadPresetResponse_Info_t *) pNotification->pInfo;
@@ -701,9 +705,13 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
               if (num_members < p_conn->Size)
               {
                 /* Start scanning */
-                HAPAPP_StartScanning();
+                HAPAPP_StartScanning();;
+                ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle);
+                LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
+                             pNotification->ConnHandle,
+                             ret);
                 /* perform discovery to another potential Coordinated Set Member*/
-                if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle) == BLE_STATUS_SUCCESS)
+                if (ret == BLE_STATUS_SUCCESS)
                 {
                   HAPAPP_Context.InitState = HAP_APP_INIT_STATE_SET_MEMBER_DISC;
                   return;
@@ -759,6 +767,7 @@ uint8_t HAPAPP_StartScanning(void)
                                    0x01,
                                    &scan_param_phy);
   LOG_INFO_APP("aci_gap_ext_start_scan() returns status 0x%02X\n",status);
+  LOG_INFO_APP("HAPAPP_StartScanning() returns status 0x%02X\n",status);
 
   return status;
 }
@@ -904,6 +913,7 @@ uint8_t HAPAPP_StartMediaStream(void)
         {
           CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
           CodecConfSnk[i].ChannelPerCIS = 1u;
+          //CodecConfSnk[i].ChannelPerCIS = 2u;
           num_chnls = 2u;
         }
         else
@@ -949,7 +959,7 @@ uint8_t HAPAPP_StartMediaStream(void)
 
   status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
 
-  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status %02X\n",
+  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status 0x%02X\n",
                num_acceptors,
                set_type,
                status);
@@ -1111,7 +1121,7 @@ uint8_t HAPAPP_StartTelephonyStream(void)
 
   status = CAP_Unicast_AudioStart(set_type, num_acceptors, &StartStreamParams[0]);
 
-  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status %02X\n",
+  LOG_INFO_APP("CAP_Unicast_AudioStart() of %d CAP Accceptors in Set Type 0x%02X returns status 0x%02X\n",
                num_acceptors,
                set_type,
                status);
@@ -1164,7 +1174,7 @@ uint8_t HAPAPP_StopStream(void)
   if(num_acceptors > 0u)
   {
     status = CAP_Unicast_AudioStop(num_acceptors, &a_conn_handle[0], 1u);
-    LOG_INFO_APP("CAP_Unicast_AudioStop() of %d CAP Accceptors returns status %02X\n",
+    LOG_INFO_APP("CAP_Unicast_AudioStop() of %d CAP Accceptors returns status 0x%02X\n",
                  num_acceptors,
                  status);
   }
@@ -1339,7 +1349,7 @@ uint8_t HAPAPP_RemoteToggleMicMute(void)
         && ((HAPAPP_Context.ACL_Conn[i].AudioProfile & AUDIO_PROFILE_MICP) == AUDIO_PROFILE_MICP))
     {
       status = CAP_MicrophoneController_StartSetMuteProcedure(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle, mute);
-      LOG_INFO_APP("CAP_MicrophoneController_StartSetMuteProcedure() with Mute %d returns status 0x%02X\n",
+      LOG_INFO_APP("CAP_MicrophoneController_StartSetMuteProcedure() with Mute State %d returns status 0x%02X\n",
                    mute, status);
       break;
     }
@@ -1355,7 +1365,9 @@ tBleStatus HAPAPP_NextPreset(void)
   tBleStatus status;
 
   status = HAP_HARC_SetNextPreset(HAPAPP_Context.ACL_Conn[0].Acl_Conn_Handle, 0u);
-  LOG_INFO_APP("HAP_HARC_SetNextPreset() returns status 0x%02X\n", status);
+  LOG_INFO_APP("HAP_HARC_SetNextPreset() on ConnHandle 0x%04X returns status 0x%02X\n",
+               HAPAPP_Context.ACL_Conn[0].Acl_Conn_Handle,
+               status);
 
   return status;
 }
@@ -1365,7 +1377,9 @@ tBleStatus HAPAPP_PreviousPreset(void)
   tBleStatus status;
 
   status = HAP_HARC_SetPreviousPreset(HAPAPP_Context.ACL_Conn[0].Acl_Conn_Handle, 0u);
-  LOG_INFO_APP("HAP_HARC_SetPreviousPreset() returns status 0x%02X\n", status);
+  LOG_INFO_APP("HAP_HARC_SetPreviousPreset() on ConnHandle 0x%04X returns status 0x%02X\n",
+               HAPAPP_Context.ACL_Conn[0].Acl_Conn_Handle,
+               status);
 
   return status;
 }
@@ -1375,7 +1389,10 @@ tBleStatus HAPAPP_SetActivePreset(uint16_t ConnHandle, uint8_t Index)
   tBleStatus status;
 
   status = HAP_HARC_SetActivePreset(ConnHandle, Index, 0u);
-  LOG_INFO_APP("HAP_HARC_SetActivePreset() returns status 0x%02X\n", status);
+  LOG_INFO_APP("HAP_HARC_SetActivePreset() on ConnHandle 0x%04X with preset id %d returns status 0x%02X\n",
+               ConnHandle,
+               Index,
+               status);
 
   return status;
 }
@@ -1656,7 +1673,6 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
         Menu_SetScanningPage();
         /* no more active connections, restart scanning */
         status = HAPAPP_StartScanning();
-        LOG_INFO_APP("HAPAPP_StartScanning() returns status 0x%02X\n",status);
       }
       else
       {
@@ -1675,16 +1691,21 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
                   if ((HAPAPP_Context.ACL_Conn[i].SIRK_type == p_conn->SIRK_type) \
                      && (memcmp(&HAPAPP_Context.ACL_Conn[i].SIRK[0], &p_conn->SIRK[0],16u) == 0u))
                   {
+                    tBleStatus ret;
                     /* Start scanning */
                     HAPAPP_StartScanning();
+                    /* perform discovery to another potential Coordinated Set Member*/;
+                    ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
+                    LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
+                                 HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle,
+                                 ret);
                     /* perform discovery to another potential Coordinated Set Member*/
-                    if (CAP_StartCoordinatedSetMemberDiscoveryProcedure(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle) == BLE_STATUS_SUCCESS)
+                    if (ret == BLE_STATUS_SUCCESS)
                     {
                       return;
                     }
                     else
                     {
-                      tBleStatus ret;
                       ret = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
                       if (ret != BLE_STATUS_SUCCESS)
                       {
@@ -1781,7 +1802,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUCLLinks = MAX_NUM_UCL_LINK;
 
-  /*Published Audio Capabilites for Unicast Client and/or Broadcast Assistant Configuration*/
+  /*Published AudioCapabilities for Unicast Client and/or Broadcast Assistant Configuration*/
   APP_BAP_Config.PACSCltConfig.MaxNumSnkPACRecordsPerLink = MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.MaxNumSrcPACRecordsPerLink = MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.pStartRamAddr = (uint8_t *)&aPACSCltMemBuffer;
@@ -2225,15 +2246,18 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       BAP_SetupAudioDataPathReq_t *info = (BAP_SetupAudioDataPathReq_t *)pNotification->pInfo;
       uint32_t controller_delay;
       APP_ASE_Info_t *p_ase;
-      LOG_INFO_APP("Setup Audio Data Path is requested for ASE ID %d (CIS Conn Handle 0x%04X)\n",
-                  info->ASE_ID,
-                  info->CIS_ConnHandle);
       if (info->PathDirection == BAP_AUDIO_PATH_INPUT){
-        LOG_INFO_APP("Input Audio Data Path Configuration is requested\n");
+        LOG_INFO_APP("Setup Input Audio Data Path is requested for ASE ID %d on ACL Conn Handle 0x%04X (CIS Conn Handle 0x%04X)\n",
+                     info->ASE_ID,
+                     pNotification->ConnHandle,
+                     info->CIS_ConnHandle);
       }
       else
       {
-        LOG_INFO_APP("Output Audio Data Path Configuration is requested\n");
+        LOG_INFO_APP("Setup Output Audio Data Path is requested for ASE ID %d on ACL Conn Handle 0x%04X (CIS Conn Handle 0x%04X)\n",
+                   info->ASE_ID,
+                   pNotification->ConnHandle,
+                   info->CIS_ConnHandle);
       }
       LOG_INFO_APP("  Codec ID\n");
       LOG_INFO_APP("    Coding format : 0x%02X\n",info->CodecConf.CodecID.CodingFormat);
@@ -2500,6 +2524,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 p_ase->ID = p_info->ASE_ID;
                 p_ase->type = p_info->Type;
                 p_ase->allocated = 1u;
+                break;
               }
             }
 #endif /* (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0u) */
@@ -2515,6 +2540,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 p_ase->ID = p_info->ASE_ID;
                 p_ase->type = p_info->Type;
                 p_ase->allocated = 1u;
+                break;
               }
             }
 #endif /* (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u) */
@@ -2595,7 +2621,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     }
     case CAP_SET_VOLUME_PROCEDURE_COMPLETE_EVT:
     {
-      LOG_INFO_APP("Set Volume procedure is complete\n");
+      LOG_INFO_APP("CAP Set Volume Procedure is complete with status 0x%02X\n",pNotification->Status);
       if (HAPAPP_Context.InitState == HAP_APP_INIT_STATE_SET_VOLUME)
       {
         tBleStatus status;
@@ -2606,6 +2632,14 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
+    case CAP_SET_VOLUME_MUTE_STATE_PROCEDURE_COMPLETE_EVT:
+    {
+      LOG_INFO_APP("CAP Set Volume Mute State Procedure is complete with status 0x%02X\n",
+                   pNotification->Status);
+      break;
+    }
+
     case CAP_CSI_LINKUP_EVT:
     {
       APP_ACL_Conn_t *p_conn;
@@ -2648,14 +2682,14 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           case CSIP_COO_ADV_REPORT_NEW_SET_MEMBER_DISCOVERED_EVT:
             {
               CSIP_New_Member_Evt_Params_t *p_info = (CSIP_New_Member_Evt_Params_t *) p_csip_evt->pInfo;
-              LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : 0X%02X%02X%02X%02X%02X%02X\n",
+              LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : %02x:%02x:%02x:%02x:%02x:%02x\n",
                               p_info->AddressType,
-                              p_info->Address[0],
-                              p_info->Address[1],
-                              p_info->Address[2],
-                              p_info->Address[3],
+                              p_info->Address[5],
                               p_info->Address[4],
-                              p_info->Address[5]);
+                              p_info->Address[3],
+                              p_info->Address[2],
+                              p_info->Address[1],
+                              p_info->Address[0]);
 
               if( HAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
               {
@@ -2669,6 +2703,9 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
           case CSIP_COO_NEW_SET_MEMBER_DISCOVERED_EVT:
           {
+            LOG_INFO_APP("Set Member discovery is Complete with ConnHandle 0x%04X with status 0x%02X\n",
+                         p_csip_evt->ConnHandle,
+                         p_csip_evt->Status);
             if (p_csip_evt->Status == BLE_STATUS_SUCCESS)
             {
               APP_ACL_Conn_t *p_conn = APP_GetACLConn(p_csip_evt->ConnHandle);
@@ -2696,7 +2733,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             tBleStatus hciCmdResult;
             LOG_INFO_APP("CSIP Set Members Discovery Procedure is complete with status 0x%02X\n",
-                            pNotification->Status);
+                         pNotification->Status);
             if (pNotification->Status != BLE_STATUS_SUCCESS)
             {
               hciCmdResult = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
@@ -3003,22 +3040,20 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
   return bits;
 }
 
-/*Audio Source */
-static void start_audio_source(void)
+/* Audio Source */
+static int32_t start_audio_source(void)
 {
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  Start_RxAudio();
+  return Start_RxAudio();
 }
 
 
-/*Audio Sink */
-static void start_audio_sink(void)
+/* Audio Sink */
+static int32_t start_audio_sink(void)
 {
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  Start_TxAudio();
+  return Start_TxAudio();
 }
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
@@ -3036,10 +3071,11 @@ static tBleStatus HAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID)
   BearerInit.SilentMode = CCP_SILENT_MODE_ON;
   BearerInit.LocalHoldOption = CCP_LOCAL_HOLD_FEATURE_SUPPORTED;
   BearerInit.JoinOption = CCP_JOIN_FEATURE_SUPPORTED;
-  HAPAPP_Context.GenericBearer.CCID = APP_CCP_START_CCID;
-  ret = CAP_RegisterGenericTelephonyBearer(HAPAPP_Context.GenericBearer.CCID,&BearerInit);
+
+  ret = CAP_RegisterGenericTelephonyBearer(APP_CCP_START_CCID,&BearerInit);
   if (ret == BLE_STATUS_SUCCESS)
   {
+	HAPAPP_Context.GenericBearer.CCID = APP_CCP_START_CCID;
     LOG_INFO_APP("Generic Telephony Bearer CCID %d successfully registered\n",HAPAPP_Context.GenericBearer.CCID);
     *pCCID = HAPAPP_Context.GenericBearer.CCID;
   }

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -106,6 +106,10 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
+/* USER CODE BEGIN ll_sys_config_params_0 */
+
+/* USER CODE END ll_sys_config_params_0 */
+
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
@@ -114,8 +118,15 @@ void ll_sys_config_params(void)
   /* Apply the selected link layer sleep timer source */
   ll_sys_sleep_clock_source_selection();
 
+/* USER CODE BEGIN ll_sys_config_params_1 */
+
+/* USER CODE END ll_sys_config_params_1 */
+
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+/* USER CODE BEGIN ll_sys_config_params_2 */
+
+/* USER CODE END ll_sys_config_params_2 */
 }
 
 void ll_sys_sleep_clock_source_selection(void)
@@ -148,6 +159,9 @@ void ll_sys_sleep_clock_source_selection(void)
 
 void ll_sys_reset(void)
 {
+/* USER CODE BEGIN ll_sys_reset_0 */
+
+/* USER CODE END ll_sys_reset_0 */
 #if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
   uint8_t bsca = 0;
 #endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
@@ -164,4 +178,8 @@ void ll_sys_reset(void)
     ll_intf_le_set_sleep_clock_accuracy(bsca);
   }
 #endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
+/* USER CODE BEGIN ll_sys_reset_1 */
+
+/* USER CODE END ll_sys_reset_1 */
 }

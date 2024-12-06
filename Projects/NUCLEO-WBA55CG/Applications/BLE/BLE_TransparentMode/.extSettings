@@ -1,5 +1,6 @@
 [ProjectFiles]
-HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;
+
 [Others]
 
 [Groups]

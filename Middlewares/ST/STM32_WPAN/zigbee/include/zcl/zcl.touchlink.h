@@ -2,7 +2,7 @@
  * @file zcl.touchlink.h
  * @heading Touchlink
  * @brief  Touchlink API
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_TOUCHLINK_H
@@ -190,8 +190,8 @@ struct ZbTouchlinkCallbacks {
  * @param zb Zigbee stack instance
  * @param dst Destination address
  * @param cmd Get Group Identifiers Request structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclTouchlinkInitiatorGetGrpIdReq(struct ZigBeeT *zb, struct ZbTlGetGroupIdsReqCmd *cmd,
@@ -202,8 +202,8 @@ enum ZclStatusCodeT ZbZclTouchlinkInitiatorGetGrpIdReq(struct ZigBeeT *zb, struc
  * @param zb Zigbee stack instance
  * @param dst Destination address
  * @param cmd Get Endpoint List Request Command structure
- * @param callback Callback function that will be invoked later when the response is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclTouchlinkInitiatorGetEpListReq(struct ZigBeeT *zb, struct ZbTlGetEpListReqCmd *cmd,
@@ -215,7 +215,7 @@ enum ZclStatusCodeT ZbZclTouchlinkInitiatorGetEpListReq(struct ZigBeeT *zb, stru
  * @param endpoint Endpoint identifier. Must match the endpoint already registered with Touchlink
  * through the ZbStartup configuration, otherwise an error is returned.
  * @param dst Destination address
- * @param callback Callback function that will be invoked later when the response is received
+ * @param callback Callback function that will be invoked when the response is received.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclTouchlinkTargetSendEpInfoCmd(struct ZigBeeT *zb, uint8_t endpoint,

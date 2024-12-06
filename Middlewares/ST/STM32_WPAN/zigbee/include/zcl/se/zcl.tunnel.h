@@ -4,7 +4,7 @@
  * @brief ZCL Tunneling cluster header
  * ZCL 7 section 10.6
  * ZCL 8 section 10.6
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 /* EXEGIN - removed '@'PICS escape sequence, since these are not the
@@ -68,8 +68,13 @@
 
 #include "zcl/zcl.h"
 
-/** Manufacturer code unused. */
-#define ZCL_TUNNEL_MANUFACTURER_CODE_UNUSED                 0xffffU
+/* Protocal Ids less than this value do not pertain to manufacturer specific protocols.
+ * For values greater than or equal to this value, the Protocol Id and Manufacturer Code must match. */
+#define ZCL_TUNNEL_PROTO_ID_MANUF_MIN               200U
+
+/** Manufacturer code unused. If Protocal Id is less than ZCL_TUNNEL_PROTO_ID_MANUF_MIN,
+ * this special manufacturer code should be used. */
+#define ZCL_TUNNEL_MANUFACTURER_CODE_UNUSED         0xffffU
 
 /** Tunneling Server Attribute IDs */
 enum ZbZclTunnelSvrAttrT {
@@ -176,16 +181,26 @@ struct ZbZclTunnelStateT;
 struct ZbZclTunnelProtoCbT {
     enum ZbZclTunnelStatusT (*request)(struct ZbZclClusterT *clusterPtr,
         struct ZbZclTunnelStateT *statePtr, void *priv);
-    /**< Callback to the request handler. Only applicable for Tunnel Server cluster. */
+    /**< Callback to handle a Request Tunnel (ZCL_TUNNEL_CLI_CMD_REQUEST) command.
+     * The callback returns a tunnel state structure, which is used to identify the tunnel to the server
+     * cluster. It is an opaque structure, meaning the application does not have access to the internals,
+     * but the application can call functions such as ZbZclTunnelStateGetId to get the tunnel Id from
+     * the state. */
+
     void (*input)(struct ZbZclClusterT *clusterPtr, struct ZbZclTunnelStateT *statePtr, void *priv);
-    /**< Callback to the input handler */
+    /**< Callback to handle received data from the tunnel (ZCL_TUNNEL_CLI_CMD_DATA).
+     * The application uses the ZbZclTunnelStateGetDataPtr and ZbZclTunnelStateGetDataLen
+     * to get the current received data queued in the tunnel cluster. */
+
     void (*close)(struct ZbZclClusterT *clusterPtr, struct ZbZclTunnelStateT *statePtr, void *priv);
-    /**< Callback to the close handler (Optional). Required if the application needs to keep track of
-     * open tunnels, e.g., for persistence */
+    /**< Callback to handle a Close Tunnel command, to close the tunnel (Optional). */
+
     bool (*error)(struct ZbZclClusterT *clusterPtr, struct ZbZclTunnelStateT *statePtr, void *priv,
         enum ZbZclTunnelXferStatusT status);
-    /**< Callback to the error handler (Optional). To handle ZCL_TUNNEL_SVR_CMD_ERROR.
-     * Return false if tunnel should be closed */
+    /**< Callback to handle an Error command (ZCL_TUNNEL_SVR_CMD_ERROR) (Optional).
+     * Return false if tunnel should also be closed. Return true to keep tunnel open
+     * and continue normally. */
+
     void *priv;
     /**< Application private data pointer */
 };
@@ -247,9 +262,11 @@ enum ZclStatusCodeT ZbZclTunnelClientAddProto(struct ZbZclClusterT *cluster, enu
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for command
  * @param connect Request Tunnel command structure.
- * @param callback Callback function to handle response
- * @param state Tunneling Cluster State structure
- * @param status Status of the tunnel
+ * @param callback Callback function to handle response. If the status is ZCL_TUNNEL_STATUS_SUCCESS,
+ * the callback returns a tunnel state structure, which is used to identify the tunnel to the client
+ * cluster. It is an opaque structure, meaning the application does not have access to the internals,
+ * but the application can call functions such as ZbZclTunnelStateGetId to get the tunnel Id from
+ * the state.
  * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
@@ -332,15 +349,36 @@ uint16_t ZbZclTunnelStateGetId(struct ZbZclTunnelStateT *state);
 enum ZbZclTunnelProtocolT ZbZclTunnelStateGetProtocol(struct ZbZclTunnelStateT *state);
 
 /**
+ * Get the current tunnel's MTU, which is the smaller of the two side's MTUs.
+ * @param state Tunneling Cluster State structure
+ * @return MTU size in bytes
+ */
+uint16_t ZbZclTunnelStateGetMtu(struct ZbZclTunnelStateT *state);
+
+/**
+ * Get the current tunnel's remote addressing.
+ * @param state Tunneling Cluster State structure
+ * @param addr Pointer to write EUI-64 of the remote device's address.
+ * @param endpoint Pointer to write EUI-64 of the remote device's endpoint.
+ * @return True if address info is present and valid, false otherwise.
+ */
+bool ZbZclTunnelStateGetRmtAddr(struct ZbZclTunnelStateT *state, uint64_t *addr, uint8_t *endpoint);
+
+/**
  * Get received data using Tunneling Cluster State structure
  * @param state Tunneling Cluster State structure
- * @return Data receive buffer
+ * @return Pointer to received data buffer.
+ * Length of data is determined by ZbZclTunnelStateGetDataLen.
  */
 uint8_t * ZbZclTunnelStateGetDataPtr(struct ZbZclTunnelStateT *state);
 
 /**
  * Get received data length using Tunneling Cluster State structure
  * @param state Tunneling Cluster State structure
+ * @param clear_data If true, clear any data queued in the tunnel.
+ * The application would first call ZbZclTunnelStateGetDataLen with clear_data
+ * set to false to get the length and process the data. Once complete, it will
+ * call ZbZclTunnelStateGetDataLen with clear_data set to true.
  * @return Length of data in the buffer
  */
 uint32_t ZbZclTunnelStateGetDataLen(struct ZbZclTunnelStateT *state, bool clear_data);

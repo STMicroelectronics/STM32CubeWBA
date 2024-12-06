@@ -4,7 +4,7 @@
  * @brief ZCL Thermostat cluster header
  * ZCL 7 section 6.3
  * ZCL 8 section 6.3
- * @copyright Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_THERM_H
@@ -224,6 +224,16 @@ enum {
 #define ZCL_THERM_MODE_HEAT_SETPOINT_PRESENT        0x01
 #define ZCL_THERM_MODE_COOL_SETPOINT_PRESENT        0x02
 
+/* As a result of CCB-4028, it was determined that if one supports
+ * the Mandatory OccupiedCoolingSetpoint & OccupiedHeatingSetpoint
+ * attributes but not the associated Min/Max values, then the default values
+ * for these optional attributes shall be used as the ranges
+ * for the mandatory attributes instead */
+#define ZCL_THERM_HEAT_SETPOINT_MIN_DEFAULT         0x02bc /* 7 deg C */
+#define ZCL_THERM_HEAT_SETPOINT_MAX_DEFAULT         0x0bb8 /* 30 deg C */
+#define ZCL_THERM_COOL_SETPOINT_MIN_DEFAULT         0x0640 /* 16 deg C */
+#define ZCL_THERM_COOL_SETPOINT_MAX_DEFAULT         0x0c80 /* 32 deg C */
+
 /**
  * Create a new instance of the Scenes Client cluster
  * @param zb Zigbee stack instance
@@ -244,7 +254,7 @@ struct ZbZclThermCliSetpointT {
  * @param dst Destination address for request
  * @param req Thermostat Setpoint structure
  * @param callback Callback function that will be called when the response for this request is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclThermClientSetpointRaiseLower(struct ZbZclClusterT *cluster,
@@ -272,7 +282,7 @@ struct ZbZclThermWeeklySchedT {
  * @param dst Destination address for request
  * @param req Thermostat Weekly Schedule structure
  * @param callback Callback function that will be called when the response for this request is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclThermClientSetWeeklySched(struct ZbZclClusterT *cluster,
@@ -291,7 +301,7 @@ struct ZbZclThermCliGetWeeklyT {
  * @param dst Destination address for request
  * @param req Thermostat Get Weekly Schedule info
  * @param callback Callback function that will be called when the response for this request is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclThermClientGetWeeklySched(struct ZbZclClusterT *cluster,
@@ -303,7 +313,7 @@ enum ZclStatusCodeT ZbZclThermClientGetWeeklySched(struct ZbZclClusterT *cluster
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param callback Callback function that will be called when the response for this request is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclThermClientClearWeeklySched(struct ZbZclClusterT *cluster,
@@ -315,7 +325,7 @@ enum ZclStatusCodeT ZbZclThermClientClearWeeklySched(struct ZbZclClusterT *clust
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param callback Callback function that will be called when the response for this request is received
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclThermClientGetRelayStatusLog(struct ZbZclClusterT *cluster,
@@ -352,7 +362,7 @@ struct ZbZclThermServerCallbacksT {
  * @param zb Zigbee stack instance
  * @param endpoint Endpoint on which to create cluster
  * @param callbacks Structure containing callback function pointers for this cluster
- * @param arg Pointer to application data that will later be provided back to the callback functions when invoked
+ * @param arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclThermServerAlloc(struct ZigBeeT *zb, uint8_t endpoint,

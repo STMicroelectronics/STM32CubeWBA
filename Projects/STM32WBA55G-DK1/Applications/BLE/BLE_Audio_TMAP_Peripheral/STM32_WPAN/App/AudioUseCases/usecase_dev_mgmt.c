@@ -17,7 +17,7 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "usecase_dev_mgmt.h"
-#include "svc_ctl.h"
+#include "ble_vs_codes.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -33,8 +33,8 @@ static USECASE_DEV_MGMT_Context_t  USECASE_DEV_MGMT_Context = {0};
 
 /* Private functions prototype------------------------------------------------*/
 static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent);
+static SVCCTL_EvtAckStatus_t UDM_GATT_Event_Handler(void *pEvent);
 /* External functions prototype-----------------------------------------------*/
-extern void TMAP_AclDisconnection(uint16_t ConnHandle);
 
 /* Functions Definition ------------------------------------------------------*/
 
@@ -43,7 +43,7 @@ extern void TMAP_AclDisconnection(uint16_t ConnHandle);
   * @brief Use Case Manager initialization.
   * @note  This function shall be called before any Use Case Profile function
   */
-tBleStatus USECASE_DEV_MGMT_Init()
+tBleStatus USECASE_DEV_MGMT_Init(void)
 {
   uint8_t i;
   /* Clear audio stack variables */
@@ -53,12 +53,18 @@ tBleStatus USECASE_DEV_MGMT_Init()
   for (i = 0u; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
   {
     USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle = 0xFFFFu;
+    USECASE_DEV_MGMT_Context.pConnInfo[i].CSIPDiscovered = 0;
   }
 #if (USECASE_DEV_MGMT_MAX_CONNECTION > 0u)
   /**
    *  Register the hci event handler to the BLE controller
    */
   SVCCTL_RegisterHandler(UDM_HCI_Event_Handler);
+
+  /**
+  *	Register the event handler to the BLE controller
+  */
+  SVCCTL_RegisterSvcHandler(UDM_GATT_Event_Handler);
 #endif /* (USECASE_DEV_MGMT_MAX_CONNECTION > 0u) */
 
   return BLE_STATUS_SUCCESS;
@@ -115,9 +121,71 @@ uint16_t USECASE_DEV_MGMT_GetConnHandle(uint8_t ConnIndex)
   }
   return 0xFFFFu;
 }
+
+/**
+  * @brief Set CSIP information for ConnHandle
+  * @param ConnHandle: Connection Handle of the set member
+  * @param pSIRK: Pointer to the SIRC of the set
+  * @param SIRKType: Type of SIRC of the set
+  * @param Rank: Rank of the set member
+  * @param SetSize: Size of the set member
+  */
+void USECASE_DEV_MGMT_SetCSIPInfo(uint16_t ConnHandle, uint8_t *pSIRK, uint8_t SIRKType, uint8_t Rank, uint8_t SetSize)
+{
+  uint8_t i;
+  for (i = 0u; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+  {
+    if (USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle == ConnHandle)
+    {
+      USECASE_DEV_MGMT_Context.pConnInfo[i].CSIPDiscovered = 1u;
+      memcpy(&USECASE_DEV_MGMT_Context.pConnInfo[i].aSIRK[0], pSIRK, 16);
+      USECASE_DEV_MGMT_Context.pConnInfo[i].SIRK_type = SIRKType;
+      USECASE_DEV_MGMT_Context.pConnInfo[i].Rank = Rank;
+      USECASE_DEV_MGMT_Context.pConnInfo[i].Size = SetSize;
+      break;
+    }
+  }
+}
+
 __WEAK void TMAP_AclDisconnection(uint16_t ConnHandle)
 {
 }
+
+__WEAK void HAP_AclDisconnection(uint16_t ConnHandle)
+{
+}
+
+__WEAK void GMAP_AclDisconnection(uint16_t ConnHandle)
+{
+}
+
+__WEAK void TMAP_LinkEncrypted(uint16_t ConnHandle)
+{
+}
+
+__WEAK void HAP_LinkEncrypted(uint16_t ConnHandle)
+{
+}
+
+__WEAK void GMAP_LinkEncrypted(uint16_t ConnHandle)
+{
+}
+
+__WEAK SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent)
+{
+  return SVCCTL_EvtNotAck;
+}
+
+__WEAK SVCCTL_EvtAckStatus_t HAP_GATT_Event_Handler(void *pEvent)
+{
+  return SVCCTL_EvtNotAck;
+}
+
+__WEAK SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
+{
+  return SVCCTL_EvtNotAck;
+}
+
 /* Private functions ----------------------------------------------------------*/
 static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
 {
@@ -140,6 +208,8 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
         if (USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle == p_disconnection_complete_event->Connection_Handle)
         {
           TMAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
+          HAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
+          GMAP_AclDisconnection(p_disconnection_complete_event->Connection_Handle);
 
           USECASE_DEV_MGMT_Context.NumConnectedLinks--;
           USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle = 0xFFFFu;
@@ -149,6 +219,28 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
       }
     }
     break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
+
+    case HCI_ENCRYPTION_CHANGE_EVT_CODE:
+    {
+      hci_encryption_change_event_rp0 *enc_change_event = (hci_encryption_change_event_rp0 *) p_event_pckt->data;
+      if ((enc_change_event->Status == BLE_STATUS_SUCCESS) && (enc_change_event->Encryption_Enabled == 0x01))
+      {
+        uint8_t i;
+        for (i = 0u; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+        {
+          if (USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle == enc_change_event->Connection_Handle)
+          {
+              USECASE_DEV_MGMT_Context.pConnInfo[i].LinkEncrypted = 1u;
+              break;
+          }
+        }
+
+        TMAP_LinkEncrypted(enc_change_event->Connection_Handle);
+        HAP_LinkEncrypted(enc_change_event->Connection_Handle);
+        GMAP_LinkEncrypted(enc_change_event->Connection_Handle);
+      }
+    }
+    break;
 
     case HCI_LE_META_EVT_CODE:
     {
@@ -173,6 +265,8 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
                 USECASE_DEV_MGMT_Context.pConnInfo[i].Role = p_connection_complete_event->Role;
                 USECASE_DEV_MGMT_Context.pConnInfo[i].Peer_Address_Type = p_connection_complete_event->Peer_Address_Type;
                 memcpy(&USECASE_DEV_MGMT_Context.pConnInfo[i].Peer_Address[0],&p_connection_complete_event->Peer_Address[0],6u);
+                USECASE_DEV_MGMT_Context.pConnInfo[i].MTU = 0;
+                USECASE_DEV_MGMT_Context.pConnInfo[i].CSIPDiscovered = 0u;
                 break;
               }
             }
@@ -196,6 +290,9 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
                 USECASE_DEV_MGMT_Context.pConnInfo[i].Role = p_connection_complete_event->Role;
                 USECASE_DEV_MGMT_Context.pConnInfo[i].Peer_Address_Type = p_connection_complete_event->Peer_Address_Type;
                 memcpy(&USECASE_DEV_MGMT_Context.pConnInfo[i].Peer_Address[0],&p_connection_complete_event->Peer_Address[0],6u);
+                USECASE_DEV_MGMT_Context.pConnInfo[i].MTU = 0;
+                USECASE_DEV_MGMT_Context.pConnInfo[i].LinkEncrypted = 0;
+                USECASE_DEV_MGMT_Context.pConnInfo[i].CSIPDiscovered = 0u;
                 break;
               }
             }
@@ -212,5 +309,54 @@ static SVCCTL_EvtAckStatus_t UDM_HCI_Event_Handler(void *pEvent)
     default:
       break;
   }
+  return return_value;
+}
+
+static SVCCTL_EvtAckStatus_t UDM_GATT_Event_Handler(void *pEvent)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+
+  hci_event_pckt *p_event_pckt;
+  evt_blecore_aci *p_blecore_evt;
+
+  p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
+
+  switch (p_event_pckt->evt)
+  {
+    case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE:
+    {
+      p_blecore_evt = (evt_blecore_aci*)p_event_pckt->data;
+      switch (p_blecore_evt->ecode)
+      {
+        case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
+        {
+          aci_att_exchange_mtu_resp_event_rp0 *mtu_resp_event = (void*)p_blecore_evt->data;
+          uint8_t i;
+          for (i = 0u; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+          {
+            if (USECASE_DEV_MGMT_Context.pConnInfo[i].Connection_Handle == mtu_resp_event->Connection_Handle)
+            {
+                USECASE_DEV_MGMT_Context.pConnInfo[i].MTU = mtu_resp_event->Server_RX_MTU;
+                break;
+            }
+          }
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  return_value = TMAP_GATT_Event_Handler(pEvent);
+
+  if (return_value == SVCCTL_EvtNotAck)
+  {
+    return_value = HAP_GATT_Event_Handler(pEvent);
+  }
+  if (return_value == SVCCTL_EvtNotAck)
+  {
+    return_value = GMAP_GATT_Event_Handler(pEvent);
+  }
+
   return return_value;
 }

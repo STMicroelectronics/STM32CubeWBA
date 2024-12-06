@@ -659,15 +659,24 @@ tBleStatus HCI_LE_SUBRATE_REQUEST( uint16_t Connection_Handle,
                                    uint16_t Continuation_Number,
                                    uint16_t Supervision_Timeout );
 
-tBleStatus HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2( uint8_t Advertising_Handle,
-                                                          uint16_t Periodic_Adv_Interval_Min,
-                                                          uint16_t Periodic_Adv_Interval_Max,
-                                                          uint16_t Periodic_Adv_Properties,
-                                                          uint8_t Num_Subevents,
-                                                          uint8_t Subevent_Interval,
-                                                          uint8_t Response_Slot_Delay,
-                                                          uint8_t Response_Slot_Spacing,
-                                                          uint8_t Num_Response_Slots );
+tBleStatus HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2( uint8_t Advertising_Handle,
+                                                          uint16_t Adv_Event_Properties,
+                                                          const uint8_t* Primary_Adv_Interval_Min,
+                                                          const uint8_t* Primary_Adv_Interval_Max,
+                                                          uint8_t Primary_Adv_Channel_Map,
+                                                          uint8_t Own_Address_Type,
+                                                          uint8_t Peer_Address_Type,
+                                                          const uint8_t* Peer_Address,
+                                                          uint8_t Adv_Filter_Policy,
+                                                          uint8_t Adv_TX_Power,
+                                                          uint8_t Primary_Adv_PHY,
+                                                          uint8_t Secondary_Adv_Max_Skip,
+                                                          uint8_t Secondary_Adv_PHY,
+                                                          uint8_t Adv_SID,
+                                                          uint8_t Scan_Req_Notification_Enable,
+                                                          uint8_t Primary_Adv_PHY_Options,
+                                                          uint8_t Secondary_Adv_PHY_Options,
+                                                          uint8_t* Selected_TX_Power );
 
 tBleStatus ACI_HAL_GET_FW_BUILD_NUMBER( uint16_t* Build_Number );
 
@@ -930,6 +939,9 @@ tBleStatus ACI_GAP_ADD_DEVICES_TO_LIST( uint8_t Num_of_List_Entries,
                                         const List_Entry_t* List_Entry,
                                         uint8_t Mode );
 
+tBleStatus ACI_GAP_PAIRING_REQUEST_REPLY( uint16_t Connection_Handle,
+                                          uint8_t Accept );
+
 tBleStatus ACI_GAP_ADV_SET_CONFIGURATION( uint8_t Adv_Mode,
                                           uint8_t Advertising_Handle,
                                           uint16_t Adv_Event_Properties,
@@ -986,6 +998,25 @@ tBleStatus ACI_GAP_ADV_SET_PERIODIC_DATA( uint8_t Advertising_Handle,
 
 tBleStatus ACI_GAP_ADV_SET_PERIODIC_ENABLE( uint8_t Enable,
                                             uint8_t Advertising_Handle );
+
+tBleStatus ACI_GAP_ADV_SET_CONFIGURATION_V2( uint8_t Adv_Mode,
+                                             uint8_t Advertising_Handle,
+                                             uint16_t Adv_Event_Properties,
+                                             uint32_t Primary_Adv_Interval_Min,
+                                             uint32_t Primary_Adv_Interval_Max,
+                                             uint8_t Primary_Adv_Channel_Map,
+                                             uint8_t Own_Address_Type,
+                                             uint8_t Peer_Address_Type,
+                                             const uint8_t* Peer_Address,
+                                             uint8_t Adv_Filter_Policy,
+                                             uint8_t Adv_TX_Power,
+                                             uint8_t Primary_Adv_PHY,
+                                             uint8_t Secondary_Adv_Max_Skip,
+                                             uint8_t Secondary_Adv_PHY,
+                                             uint8_t Adv_SID,
+                                             uint8_t Scan_Req_Notification_Enable,
+                                             uint8_t Primary_Adv_PHY_Options,
+                                             uint8_t Secondary_Adv_PHY_Options );
 
 tBleStatus ACI_GAP_EXT_START_SCAN( uint8_t Scan_Mode,
                                    uint8_t Procedure,
@@ -1563,10 +1594,6 @@ tBleStatus ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT( uint8_t Last_State,
                                                 uint8_t Last_State_Slot,
                                                 uint8_t Next_State_Slot );
 
-tBleStatus ACI_HAL_SCAN_REQ_REPORT_EVENT( uint8_t RSSI,
-                                          uint8_t Peer_Address_Type,
-                                          const uint8_t* Peer_Address );
-
 tBleStatus ACI_HAL_FW_ERROR_EVENT( uint8_t FW_Error_Type,
                                    uint8_t Data_Length,
                                    const uint8_t* Data );
@@ -1602,6 +1629,10 @@ tBleStatus ACI_GAP_NUMERIC_COMPARISON_VALUE_EVENT( uint16_t Connection_Handle,
 
 tBleStatus ACI_GAP_KEYPRESS_NOTIFICATION_EVENT( uint16_t Connection_Handle,
                                                 uint8_t Notification_Type );
+
+tBleStatus ACI_GAP_PAIRING_REQUEST_EVENT( uint16_t Connection_Handle,
+                                          uint8_t Bonded,
+                                          uint8_t Auth_Req );
 
 tBleStatus ACI_L2CAP_CONNECTION_UPDATE_RESP_EVENT( uint16_t Connection_Handle,
                                                    uint16_t Result );

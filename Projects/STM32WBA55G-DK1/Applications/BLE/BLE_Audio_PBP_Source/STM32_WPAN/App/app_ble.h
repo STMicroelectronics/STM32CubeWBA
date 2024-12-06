@@ -69,12 +69,12 @@ typedef __PACKED_STRUCT __ALIGNED(4)
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-/** 
+/**
   * ST Manufacturer ID
 **/
 #define ST_MANUF_ID  0x30
 
-/** 
+/**
   * BlueSTSDK Version
 **/
 enum
@@ -83,16 +83,16 @@ enum
   BLUESTSDK_V2 =  0x02
 };
 
-/** 
-  * BOARD ID 
+/**
+  * BOARD ID
 **/
 enum
 {
   BOARD_ID_NUCLEO_WBA =  0x8B
 };
 
-/** 
-  * FIRMWARE ID 
+/**
+  * FIRMWARE ID
 **/
 enum
 {
@@ -118,8 +118,9 @@ enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
-
+void APP_NotifyToRun( void );
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

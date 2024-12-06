@@ -97,6 +97,7 @@
 <li><em>ZigbeeProR23_RFD.a</em> (R23 Reduced Functional Device)</li>
 <li><em>ZigbeeProR22_FFD.a</em> (R22 Full Functional Device)</li>
 <li><em>ZigbeeProR22_RFD.a</em> (R22 Reduced Functional Device)</li>
+<li><em>ZigBeeProR22_SE_FFD.a</em> (R22 SE Full Functional Device)</li>
 </ul></li>
 <li>Clusters:
 <ul>
@@ -152,18 +153,22 @@
 <li>Security IAS Warning Device (IAS_WD)</li>
 <li>Security IAS Zone</li>
 </ul></li>
-<li>List of Smart Energy clusters:
+<li>Zigbee SE 1.4[a] (Zigbee r22.2) with following clusters:
 <ul>
-<li>Calendar</li>
-<li>Device Management</li>
-<li>Demand Response and Load Control</li>
-<li>Energy Management</li>
-<li>Events</li>
-<li>Messaging</li>
-<li>Metering</li>
-<li>Prepayment</li>
-<li>Price</li>
-<li>Tunneling</li>
+<li>Basic (Server)</li>
+<li>Key Establishment (Client &amp; Server)</li>
+<li>Time (Client &amp; Server)</li>
+<li>OTA Upgrade cluster (Client)</li>
+<li>Events cluster (Server)</li>
+<li>Keep-Alive (Client - Router)</li>
+<li>Metering (Server)</li>
+<li>Messaging (Server)</li>
+<li>Price (Server)</li>
+<li>DRLC (Server)</li>
+<li>Calendar (Server)</li>
+<li>Prepayment (Server)</li>
+<li>Device Management (Server)</li>
+<li>Tunneling (Server)</li>
 </ul></li>
 </ul></li>
 </ul>
@@ -171,31 +176,109 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section7" checked aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.4.1 / 18-July-2024</label>
+<input type="checkbox" id="collapse-section7" checked aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.5.0 / 29-October-2024</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
 <ul>
-<li>Productive PHY settings including AoA/AoD support.</li>
-<li><p>ID 181488 : Optimization of RF calibration timing.</p></li>
+<li>BLE:
+<ul>
+<li>Advertising Coding Scheme Selection features added.</li>
+<li><p>LE Power Control Golden Range configurable through ACI_HAL_WRITE_CONFIG_DATA command.</p></li>
+<li>Issues fixed :
+<ul>
+<li>ID 189505 : Respond with an error when HCI_LE_Setup_ISO_Data_Path is called when the controller is in test mode</li>
+<li>ID 190991 : Active scanning affected by privacy</li>
+<li>ID 183978 : Conflict of LL procedure timer at disconnection.</li>
+<li>ID 186135 : Possibility to disable any SMP Association Model via ACI_HAL_WRITE_CONFIG_DATA command.</li>
+<li>ID 189284 : New SMP event ACI_GAP_PAIRING_REQUEST_EVENT and command ACI_GAP_PAIRING_REQUEST_REPLY.</li>
+<li>ID 186138 : Support Advertising Coding selection.</li>
+<li>ID 189465 : A new configuration of the static random address is now taken into account by GAP at next operation start.</li>
+<li>ID 180738 : Added a mechanism to control the number of received ACL packets through the ACI_HAL_WRITE_CONFIG_DATA command</li>
+<li>ID 181488 : Improve RF calibration mechanism when no BLE activity</li>
+<li>ID 186386 : Disconnection observed with multiple connections with specific connection intervals</li>
+<li>ID 184112 : Wrong handling of create connection when maximum number of connections is reached.</li>
+<li>ID 177968 : Wrong reject of pairing key refresh procedure</li>
+<li>ID 175965 : Slave Latency is not applied correctly with Connection Subrating</li>
+<li>ID 186777 : Optimization of delta between two connections events</li>
+<li>ID 183074 : Incorrect values in Connectionless_IQ_report in DTM</li>
+<li>ID 176898 : Collision between encryption request and PHY update request</li>
+<li>ID 184023 : Connection lost after conflicting with Ext. Scanning</li>
+<li>ID 186090 : ASSERT Failed when sending ACI_GAP_TERMINATE on ACI_GAP_CREATE_CONNECTION</li>
+<li>ID 185792 : Update of ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT event</li>
+<li>ID 187176 : Extended Adv. Set. with duration not correctly terminated if periodic advertising isn’t supported</li>
+</ul></li>
+</ul></li>
 <li>BLE Audio:
 <ul>
-<li>Changes :
+<li>Codec Manager : Add status to audio trigger callback functions</li>
+<li>New field ‘CachingEn’ in BAP_AudioStreamCtrlSrvConfig_t allowing to enable/disable Audio Stream Endpoint State Caching in Unicast Server role</li>
+<li>Issues fixed :
 <ul>
-<li>Codec : Change ReadLocalSupportedControllerDelay to provide only margin if codec configuration length parameter is null</li>
-</ul></li>
-<li>Issues fixed:
-<ul>
-<li>ID 186241 : 2 successive Volume Setting Updates from one CAP Acceptor are not correctly transmitted to 2nd CAP Acceptor from CAP Initiator</li>
-<li>When ASCS Enable Control Operation includes invalid ASE ID, the “Number of ASEs” value in the Control Operation Response of BAP Unicast Server is invalid</li>
+<li>ID 187013 : ACI_GATT_NOTIFICATION_COMPLETE_VSEVT_CODE is not generated after MCP_SERVER_SetTrackTitle() is called</li>
 </ul></li>
 </ul></li>
-<li>PHY 802.15.4:
+<li><p>MAC 802.15.4:</p>
 <ul>
-<li>Issues fixed:
+<li>Issues fixed :
 <ul>
-<li>ID 160933 : API for continuous wave not yet supported</li>
-<li>ID 160930 : API for continuous modulation not yet supported</li>
-<li>ID 164825 : RSSI reading incorrect : around 6dbm loss from –90 to -30dbm</li>
+<li>ID 182157 : Assert with enhanced ACK received when SUPPORT_RADIO_SECURITY_OT_1_2 = 0</li>
+<li>ID 182902 : Bad associate short address during unsuccessful association</li>
+<li>ID 182970 : Deadlock on noisy channel after several hours/days</li>
+<li>ID 183144 : Missing Association Callbacks in noisy environment in MAC Test Apps</li>
+<li>ID 183125 : Set macAssociatedPanCoord PIB when the device is associate to PAN Coordinator</li>
+<li>ID 184661 : Don’t received ACK time out in a stressful setup</li>
+<li>ID 184756 : Timestamps field in MCPS-data.indication always set to 0</li>
+<li>ID 185204 : Beacons sent on a channel while we receive no beacon request on the current channel</li>
+<li>ID 185489 : Assert during ED scan sequence</li>
+<li>ID 185739 : Assert because queue handle is full</li>
+<li>ID 185953 : Defenscis test makes the WBA board stuck</li>
+<li>ID 185980 : Assert in mlme_orphan_scn because the timer event is not completely aborted</li>
+<li>ID 186084 : Poll.confirm missing after Poll.request</li>
+<li>ID 186316 : MAC/LinkLayer assert_failed mac_proc_tx_data_req</li>
+<li>ID 186852 : Deadlock timer overflow</li>
+</ul></li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>OpenThread update to SHA-1: 4a0d6b7b6495a1e4e2e03ab7a4f8baa064df4a6e (June 11th 2024)</li>
+<li>stm32wba_mbedtls_ftd_lib.a/stm32wba_mbedtls_mtd_lib.a generated with mbedtls 3.6.1 &amp; mbedtls_alt (HW acceleration)</li>
+<li>Issue fixed :
+<ul>
+<li>ID 192664 : Align CLI echo with WB55 for CubeMonitorRF</li>
+<li>ID 186567 : RxOnwhenIdle=1 device doesn’t receive frame anymore during few seconds</li>
+<li>ID 184518 &amp; 184513 : OT alarm platform file reworked to avoid overflow after 36.2 hours</li>
+<li>ID 180428 : CSMA-CA retries algorithm reviewed to be compliant with Thread standard</li>
+<li>ID 178797 : Thread_RCP uart interface stabilized at high baudrate to avoid Border Router crash</li>
+</ul></li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>Zigbee SE1.4[a] (Zigbee r22.2) with following clusters:
+<ul>
+<li>Basic (Server)</li>
+<li>Key Establishment (Client &amp; Server)</li>
+<li>Time (Client &amp; Server)</li>
+<li>OTA Upgrade cluster (Client)</li>
+<li>Events cluster (Server)</li>
+<li>Keep-Alive (Client - Router)</li>
+<li>Metering (Server)</li>
+<li>Messaging (Server)</li>
+<li>Price (Server)</li>
+<li>DRLC (Server)</li>
+<li>Calendar (Server)</li>
+<li>Prepayment (Server)</li>
+<li>Device Management (Server)</li>
+<li>Tunneling (Server)</li>
+</ul></li>
+</ul></li>
+<li>BLE_Thread:
+<ul>
+<li>Thread FTD/MTD pre-certified</li>
+<li>Issue fixed :
+<ul>
+<li>ID 182045 : SED stop sending data_req , SED pre-certification test OK</li>
+<li>ID 183973 : Device cannot transmit CSL frame in noisy environment, CSL pre-certification test OK</li>
+<li>ID 191058 : Hardfault during bonding operation</li>
 </ul></li>
 </ul></li>
 <li><strong>Known limitations</strong>:
@@ -203,26 +286,35 @@
 <li>BLE:
 <ul>
 <li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
-<li>ID 178561 : White list not updated when advertising in privacy mode.</li>
+<li>ID 189781 : An unoptimized mechanism of sending ACL packets might lead to giving the priority to empty packets.</li>
+<li>ID 191485 : An occasional conflict between the scanning and initiating states might lead to an ACL connection creation failure.</li>
 </ul></li>
 <li>BLE Audio:
 <ul>
 <li>Framed mode not supported (44.1 KHz).</li>
-<li>ID 135240 : Long synchronization time in Broadcast due to scheduling conflict between extended advertising and BIG event.</li>
 <li>ID 165710 : Audio Latency may not be respected with high transport latency.</li>
-</ul></li>
-<li>Common 802.15.4 (MAC / Thread / Zigbee):
-<ul>
-<li>ID 182045 : [BLE_Thread_SED] issue with data polling / device crash</li>
-</ul></li>
-<li>Zigbee:
-<ul>
-<li>ID 182978 In color cluster, wrong parsing for enhanced move to hue command.</li>
 </ul></li>
 <li>MAC 802.15.4:
 <ul>
-<li>ID 182781 : During association, the capable information with receiver On When Idle doesn’t work</li>
-<li>ID 182904 : Not received MLME-Sync-Loss.ind for associate device to a PAN coordinator</li>
+<li>ID 191973 : Impossible to send beacon with a payload length greater than 52 bytes</li>
+<li>ID 191800 : During association sequence, don’t received association confirm</li>
+<li>ID 188986 : Assert in RxEnable MAC API on WBA</li>
+<li>ID 192786 : Not received association.confirm when beacon request is received during the association sequence</li>
+<li>ID 191239 : Information elements partially implemented</li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>ID 191203 : SSED do not update CSL IE phase after retries leading to desynchronization</li>
+<li>ID 190279 : SHA256 mbedtls is still executed in software and not with hardware accelerator</li>
+</ul></li>
+<li>BLE Zigbee:
+<ul>
+<li>ID 191836: Hardfault when close to 37h overflow</li>
+</ul></li>
+<li>BLE Thread:
+<ul>
+<li>ID 192199, 192192, 192486, 192653 : CSL feature unstable in noisy environment</li>
+<li>ID 191905 : SED crash after several hours in noisy environment</li>
 </ul></li>
 </ul></li>
 </ul>

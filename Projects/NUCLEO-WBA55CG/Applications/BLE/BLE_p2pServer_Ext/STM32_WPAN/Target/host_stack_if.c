@@ -25,6 +25,12 @@
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "stm32_seq.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
 /* External variables --------------------------------------------------------*/
 /**
   * @brief  Missed HCI event flag
@@ -39,8 +45,11 @@ extern uint8_t missed_hci_event_flag;
 
 /* USER CODE END EFP */
 
+/* Trigger BLE Host stack process after calling any aci/hci functions */
+#define BLE_WRAP_POSTPROC BleStackCB_Process()
+
 /**
-  * @brief  BLE Host stack processing request.
+  * @brief  Host stack processing request from Link Layer.
   * @param  None
   * @retval None
   */

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/platform.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/platform.h#2 $*/
 /**
  ********************************************************************************
  * @file    platform.h
@@ -472,7 +472,7 @@ void radio_run_phy_clbr_on_temp_change(void);
  */
 otError radio_set_dp_slp_mode(dpslp_state_e dp_slp_mode);
 #endif /*end of (!SUPPORT_COEXISTENCE)*/
-#if defined(PHY_40nm_3_00_a) && SUPPORT_MAC_PHY_CONT_TESTING_CMDS
+#if SUPPORT_MAC_PHY_CONT_TESTING_CMDS
 /**
  *
  * @brief set the phy continuous modulation and continuous wave modes upon enable
@@ -484,8 +484,8 @@ otError radio_set_dp_slp_mode(dpslp_state_e dp_slp_mode);
  * @retval Status
  */
 otError platform_zigbee_set_phy_cont_modul_mode(uint8_t type, uint8_t enable_mode, uint8_t chnl_num, int8_t pwr);
-#endif /*end of PHY_40nm_3_00_a && SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
-#if SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE
+#endif /*end of SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
+#if SUPPORT_ANT_DIV
 /**
  *
  * @brief set antenna diversity parameters
@@ -535,7 +535,7 @@ otError radio_set_default_ant_id(otInstance *aInstance, uint8_t default_ant_id);
  * @retval Status
  */
 otError radio_set_ant_div_rssi_threshold(otInstance *aInstance, int8_t rssi_threshold);
-#endif /* SUPPORT_ANT_DIV && !SUPPORT_COEXISTENCE */
+#endif /* SUPPORT_ANT_DIV */
 
 
 #endif /* INCLUDE_PLATFORM_H_ */

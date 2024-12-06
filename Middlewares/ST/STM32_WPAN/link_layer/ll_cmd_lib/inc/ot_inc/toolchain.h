@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-LCA00/firmware/public_inc/ot_inc/toolchain.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ot_inc/toolchain.h#2 $*/
 /*
  *  Copyright (c) 2016, The OpenThread Authors.
  *  All rights reserved.
@@ -64,14 +64,23 @@
 extern "C" {
 #endif
 
-#ifdef _WIN32
-#pragma warning(disable : 4214) // nonstandard extension used: bit field types other than int
-#ifdef _KERNEL_MODE
-#include <ntdef.h>
+/**
+ * @def OT_MUST_USE_RESULT
+ *
+ * Compiler-specific indication that a class or enum must be used when it is
+ * the return value of a function.
+ *
+ * @note This is currently only available with clang (C++17 implements it
+ *       as attribute [[nodiscard]]).
+ * @note To suppress the 'unused-result' warning/error, please use the
+ *       '-Wno-unused-result' compiler option.
+ *
+ */
+#if defined(__clang__) && (__clang_major__ >= 4 || (__clang_major__ >= 3 && __clang_minor__ >= 9))
+#define OT_MUST_USE_RESULT __attribute__((warn_unused_result))
 #else
-#include <windows.h>
+#define OT_MUST_USE_RESULT
 #endif
-#endif /* _WIN32 */
 
 /**
  * @def OT_TOOL_PACKED_BEGIN
@@ -96,13 +105,6 @@ extern "C" {
  */
 
 /**
- * @def OT_TOOL_ALIGN
- *
- * Compiler-specific alignment modifier.
- *
- */
-
-/**
  * @def OT_TOOL_WEAK
  *
  * Compiler-specific weak symbol modifier.
@@ -110,16 +112,20 @@ extern "C" {
  */
 
 /**
- * @def OT_CALL
+ * @def OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK
  *
- * Compiler-specific function modifier, ie: Win DLL support
+ * Specifies that a function or method takes `printf` style arguments and should be type-checked against
+ * a format string.
  *
- */
-
-/**
- * @def OT_CDECL
+ * Must be added after the function/method declaration. For example:
  *
- * Compiler-specific function modifier, ie: Win DLL support
+ *    `void MyPrintf(void *aObject, const char *aFormat, ...) OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK(2, 3);`
+ *
+ * The two argument index values indicate format string and first argument to check against it. They start at index 1
+ * for the first parameter in a function and at index 2 for the first parameter in a method.
+ *
+ * @param[in] aFmtIndex    The argument index of the format string.
+ * @param[in] aStartIndex  The argument index of the first argument to check against the format string.
  *
  */
 
@@ -135,7 +141,8 @@ extern "C" {
 #define OT_TOOL_PACKED_END __attribute__((packed))
 #define OT_TOOL_WEAK __attribute__((weak))
 
-#define OT_TOOL_ALIGN(X)
+#define OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK(aFmtIndex, aStartIndex) \
+    __attribute__((format(printf, aFmtIndex, aStartIndex)))
 
 #elif defined(__ICCARM__) || defined(__ICC8051__)
 
@@ -148,16 +155,7 @@ extern "C" {
 #define OT_TOOL_PACKED_END
 #define OT_TOOL_WEAK __weak
 
-#define OT_TOOL_ALIGN(X)
-
-#elif defined(_MSC_VER)
-
-#define OT_TOOL_PACKED_BEGIN __pragma(pack(push, 1))
-#define OT_TOOL_PACKED_FIELD
-#define OT_TOOL_PACKED_END __pragma(pack(pop))
-#define OT_TOOL_WEAK
-
-#define OT_TOOL_ALIGN(X) __declspec(align(4))
+#define OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK(aFmtIndex, aStartIndex)
 
 #elif defined(__SDCC)
 
@@ -168,7 +166,7 @@ extern "C" {
 #define OT_TOOL_PACKED_END
 #define OT_TOOL_WEAK
 
-#define OT_TOOL_ALIGN(X)
+#define OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK(aFmtIndex, aStartIndex)
 
 #else
 
@@ -181,50 +179,11 @@ extern "C" {
 #define OT_TOOL_PACKED_END
 #define OT_TOOL_WEAK
 
-#define OT_TOOL_ALIGN(X)
+#define OT_TOOL_PRINTF_STYLE_FORMAT_ARG_CHECK(aFmtIndex, aStartIndex)
 
 #endif
 
 // =========== TOOLCHAIN SELECTION : END ===========
-
-/**
- * @def OTAPI
- *
- * Compiler-specific modifier for public API declarations.
- *
- */
-
-/**
- * @def OTCALL
- *
- * Compiler-specific modifier to export functions in a DLL.
- *
- */
-
-#ifdef _MSC_VER
-
-#ifdef _WIN64
-#define OT_CDECL
-#else
-#define OT_CDECL __cdecl
-#endif
-
-#else
-
-#define OT_CALL
-#define OT_CDECL
-
-#endif
-
-#ifdef OTDLL
-#ifndef OTAPI
-#define OTAPI __declspec(dllimport)
-#endif
-#define OTCALL WINAPI
-#else
-#define OTAPI
-#define OTCALL
-#endif
 
 /**
  * @def OT_UNUSED_VARIABLE
@@ -299,6 +258,50 @@ extern "C" {
 
 #define OT_UNREACHABLE_CODE(CODE) CODE
 
+#endif
+
+/*
+ * Keil and IAR compiler doesn't provide type limits for C++.
+ */
+#ifdef __cplusplus
+#if defined(__CC_ARM) || defined(__ICCARM__)
+
+#ifndef UINT8_MAX
+#define UINT8_MAX 0xff
+#endif
+
+#ifndef UINT16_MAX
+#define UINT16_MAX 0xffff
+#endif
+
+#endif
+#endif
+
+#ifdef __APPLE__
+#define OT_APPLE_IGNORE_GNU_FOLDING_CONSTANT(...)                                               \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wgnu-folding-constant\"") \
+        __VA_ARGS__ _Pragma("GCC diagnostic pop")
+#else
+#define OT_APPLE_IGNORE_GNU_FOLDING_CONSTANT(...) __VA_ARGS__
+#endif
+
+/**
+ * @def OT_FALL_THROUGH
+ *
+ * Suppress fall through warning in specific compiler.
+ *
+ */
+#if defined(__cplusplus) && (__cplusplus >= 201703L)
+#define OT_FALL_THROUGH [[fallthrough]]
+#elif defined(__clang__)
+#define OT_FALL_THROUGH [[clang::fallthrough]]
+#elif defined(__GNUC__) && (__GNUC__ >= 7)
+#define OT_FALL_THROUGH __attribute__((fallthrough))
+#else
+#define OT_FALL_THROUGH \
+    do                  \
+    {                   \
+    } while (false) /* fallthrough */
 #endif
 
 /**

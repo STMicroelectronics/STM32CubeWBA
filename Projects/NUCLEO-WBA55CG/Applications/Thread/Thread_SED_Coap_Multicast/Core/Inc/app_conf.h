@@ -92,9 +92,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -117,6 +114,10 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
+
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
@@ -137,7 +138,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -158,12 +159,13 @@ typedef enum
   CFG_TASK_OT_ALARM,
   CFG_TASK_OT_US_ALARM,
   CFG_TASK_OT_TASKLETS,
+  CFG_TASK_OT_RCP_SPINEL_RX,
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_SW1,		        /* Task linked to push-button. */
-  CFG_TASK_BUTTON_SW2,
-  CFG_TASK_BUTTON_SW3,
+  CFG_TASK_BUTTON_B1,		        /* Task linked to push-button. */
+  CFG_TASK_BUTTON_B2,
+  CFG_TASK_BUTTON_B3,
   CFG_TASK_COAP_SEND_MSG,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
@@ -194,9 +196,9 @@ typedef enum
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 /* USER CODE BEGIN TASK_ID_Define */
-#define TASK_BUTTON_SW1                     ( 1u << CFG_TASK_BUTTON_SW1 )
-#define TASK_BUTTON_SW2                     ( 1u << CFG_TASK_BUTTON_SW2 )
-#define TASK_BUTTON_SW3                     ( 1u << CFG_TASK_BUTTON_SW3 )
+#define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
+#define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
+#define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
 
 /* USER CODE END TASK_ID_Define */
 
@@ -227,20 +229,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (0)
+#define CFG_DEBUGGER_LEVEL                  (0)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -293,6 +295,9 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /* USER CODE BEGIN Defines */
+#define CFG_BSP_ON_SEQUENCER                    (1)
+#define CFG_BSP_ON_NUCLEO                       (1)
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested

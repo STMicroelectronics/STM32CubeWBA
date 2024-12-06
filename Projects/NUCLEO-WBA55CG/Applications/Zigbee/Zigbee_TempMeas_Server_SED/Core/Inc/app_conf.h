@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -90,9 +90,6 @@ typedef enum
 /******************************************************************************
  * RTC
  ******************************************************************************/
-#define RTC_N_PREDIV_S (10)
-#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -114,6 +111,10 @@ typedef enum
  * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (0U)
+
+/* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
@@ -147,7 +148,7 @@ typedef enum
  * Configure Log level for Application
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -174,9 +175,9 @@ typedef enum
   CFG_TASK_ZIGBEE_APP3,
   CFG_TASK_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_SW1,		        /* Task linked to push-button. */
-  CFG_TASK_BUTTON_SW2,
-  CFG_TASK_BUTTON_SW3,
+  CFG_TASK_BUTTON_B1,            /* Task linked to push-button. */
+  CFG_TASK_BUTTON_B2,
+  CFG_TASK_BUTTON_B3,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -214,9 +215,9 @@ typedef enum
 #define TASK_ZIGBEE_APP3                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 #define TASK_ZIGBEE_APP4                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 /* USER CODE BEGIN TASK_ID_Define */
-#define TASK_BUTTON_SW1                     ( 1u << CFG_TASK_BUTTON_SW1 )
-#define TASK_BUTTON_SW2                     ( 1u << CFG_TASK_BUTTON_SW2 )
-#define TASK_BUTTON_SW3                     ( 1u << CFG_TASK_BUTTON_SW3 )
+#define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
+#define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
+#define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
 
 /* USER CODE END TASK_ID_Define */
 
@@ -235,6 +236,7 @@ typedef enum
   CFG_EVENT_ZIGBEE_APP3,
   CFG_EVENT_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Event_Id_t */
+
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -261,20 +263,20 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (0)
+#define CFG_DEBUGGER_LEVEL                  (0)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
  ******************************************************************************/
 
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
@@ -330,14 +332,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (64000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (32000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (1U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10000U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (6000U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (2U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (2000U)  /* words (32 bits) */
-#define CFG_AMM_POOL_SIZE                                 DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -349,6 +351,9 @@ typedef enum
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
+
+#define CFG_BSP_ON_NUCLEO           (1)
+#define CFG_BSP_ON_SEQUENCER        (1)
 
 #define CFG_LED_SUPPORTED           (1)
 #define CFG_BUTTON_SUPPORTED        (1)

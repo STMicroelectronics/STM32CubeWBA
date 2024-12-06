@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>PHY_Cli</name>
+	<name>Phy_Cli</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -214,6 +214,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/STM32_WPAN/ll_sys_cs.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
@@ -291,27 +296,17 @@
 		<link>
 			<name>Application/User/System/Interfaces/hw_aes.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_aes.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Interfaces/hw_otp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_otp.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_aes.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/hw_pka.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_pka.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_pka.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/hw_rng.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Interfaces/pka_p256.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/pka_p256.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
@@ -321,32 +316,27 @@
 		<link>
 			<name>Application/User/System/Interfaces/timer_if.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/timer_if.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Interfaces/usart_if.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/usart_if.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/timer_if.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/app_sys.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/app_sys.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/app_sys.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/otp.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/otp.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/scm.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/scm.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/scm.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler.S</name>
+			<name>Application/User/System/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Startup/stm32wbaxx_ResetHandler.S</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/LowPower/peripheral_init.c</name>
@@ -361,12 +351,12 @@
 		<link>
 			<name>Application/User/System/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RTDebug/RTDebug.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/RTDebug/RTDebug_dtb.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/RTDebug/RTDebug_dtb.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>

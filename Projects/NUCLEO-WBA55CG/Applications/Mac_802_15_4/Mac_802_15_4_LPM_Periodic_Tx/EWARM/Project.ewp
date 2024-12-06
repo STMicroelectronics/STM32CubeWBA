@@ -347,10 +347,11 @@
                     <state>$PROJ_DIR$\..\Core\Inc</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\App\Inc</state>
                     <state>$PROJ_DIR$\..\System\Interfaces</state>
-                    <state>$PROJ_DIR$\..\System\Modules</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules</state>
                     <state>$PROJ_DIR$\..\System\Config\LowPower</state>
                     <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
-                    <state>$PROJ_DIR$\..\System\Modules\RTDebug</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc</state>
@@ -368,11 +369,12 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
-                    <state>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
-                    <state>$PROJ_DIR$\..\System\Startup</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup</state>
                     <state>$PROJ_DIR$\..\System\Config\ADC_Ctrl</state>
                     <state>$PROJ_DIR$\..\System\Config\CRC_Ctrl</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1110,16 +1112,16 @@
             <group>
                 <name>Core</name>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\src\app_entry.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\app_entry.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\src\main.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\main.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\src\stm32wbaxx_hal_msp.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_hal_msp.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\Core\src\stm32wbaxx_it.c</name>
+                    <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_it.c</name>
                 </file>
             </group>
             <group>
@@ -1187,91 +1189,76 @@
                 <group>
                     <name>Interfaces</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_aes.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_otp.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_pka.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\hw_rng.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka_p256.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\pka_p256.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\timer_if.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Modules</name>
                     <group>
-                        <name>baes</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_cmac.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\baes\baes_ecb.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>Nvm</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\System\Modules\Nvm\nvm_emul.c</name>
-                        </file>
-                    </group>
-                    <group>
                         <name>RFControl</name>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RFControl\rf_antenna_switch.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
                         </file>
                     </group>
                     <group>
                         <name>RTDebug</name>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
                         </file>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\RTDebug\RTDebug_dtb.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
                         </file>
                     </group>
                     <group>
                         <name>SerialCmdInterpreter</name>
                         <file>
-                            <name>$PROJ_DIR$\..\System\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
+                            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
                         </file>
                     </group>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\adc_ctrl.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\adc_ctrl.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\app_sys.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\otp.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\crc_ctrl.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\scm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\stm_list.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Modules\temp_measurement.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_list.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Interfaces\usart_if.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\temp_measurement.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Startup</name>
                     <file>
-                        <name>$PROJ_DIR$\..\System\Startup\stm32wbaxx_ResetHandler.S</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                     </file>
                 </group>
             </group>
@@ -1454,6 +1441,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_timebase_tim_template.c</name>
+                <excluded>
+                    <configuration>Mac_802_15_4_LPM_Periodic_Tx</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tsc.c</name>

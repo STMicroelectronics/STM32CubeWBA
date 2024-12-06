@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,6 +28,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "tx_api.h"
+#include "tx_initialize.h"
+#include "tx_thread.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -65,8 +67,8 @@ extern "C" {
 #define TASK_PREEMP_ZIGBEE_APP_START            (0u)
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define TASK_PRIO_BUTTON_SWx                    (13u)
-#define TASK_PREEMP_BUTTON_SWx                  (13u)
+#define TASK_PRIO_BUTTON_Bx                     (13u)
+#define TASK_PREEMP_BUTTON_Bx                   (13u)
 
 /* USER CODE END TASK_Priority_Define */
 
@@ -81,15 +83,15 @@ extern "C" {
 
 /* Tasks stack sizes by default  */
 #define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_SMALL
-#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_MAC_LAYER               RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_ZIGBEE_LAYER            RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_ZIGBEE_NETWORK_FORM     RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_ZIGBEE_APP_START        RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
-#define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
+#define TASK_BUTTON_Bx_STACK_SIZE               RTOS_STACK_SIZE_SMALL
 
 /* USER CODE END TASK_Size_Define */
 
@@ -108,7 +110,7 @@ extern TX_BYTE_POOL       *pBytePool;   /* ThreadX byte pool pointer for whole W
 /* USER CODE BEGIN EV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
-extern TX_SEMAPHORE       ButtonSw1Semaphore, ButtonSw2Semaphore, ButtonSw3Semaphore;
+extern TX_SEMAPHORE       ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
 /* USER CODE END EV */

@@ -1027,13 +1027,16 @@ enum ZclStatusCodeT ZbZclPrepayClientSetOverallDebtCapReq(struct ZbZclClusterT *
  *  attaches the mandatory prepayment server attributes.
  * @param cluster Prepayment client cluster instance
  * @param endpoint Endpoint on which to create the mirror cluster
- * @param meter_mirror Pointer to Metering Mirror cluster. This is used to queue
+ * @param meter_mirror_client Metering Mirror Client cluster. This is used to
+ *  manage the Mirror.
+ * @param meter_mirror_server Metering Mirror Server cluster. This is used to queue
  *  any commands that need to be forwarded to the BOMD when it wakes up.
  * @param rmt_addr Extended address of the remote Metering device being mirrored.
  * @param rmt_endpoint Endpoint on the remote Metering device being mirrored.
  * @return Cluster pointer, or NULL if there is an error
  */
 struct ZbZclClusterT * ZbZclPrepayClientCreateMirror(struct ZbZclClusterT *cluster, uint8_t endpoint,
-    struct ZbZclClusterT *meter_mirror, uint64_t rmt_addr, uint8_t rmt_endpoint);
+    struct ZbZclClusterT *meter_mirror_client, struct ZbZclClusterT *meter_mirror_server,
+    uint64_t rmt_addr, uint8_t rmt_endpoint);
 
 #endif

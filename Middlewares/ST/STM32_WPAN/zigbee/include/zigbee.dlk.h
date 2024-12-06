@@ -3,7 +3,7 @@
  * @heading DLK Utilities
  * @brief ZigBee DLK implementation.
  * @author Exegin Technologies Limited
- * @copyright Copyright [2019 - 2022] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2019 - 2024] Exegin Technologies Limited. All rights reserved.
  *
  * This file defines all the Public API's used as part of ZigBee dynamic link key (DLK) implementation.
  */
@@ -53,7 +53,9 @@ enum ZbSelPreSharedSecretT {
     ZB_SEL_PSK_SYMMETRIC_AUTH_TOKEN = 0x00U,
     /**< Symmetric authentication token negotiated using DLK */
     ZB_SEL_PSK_IC_KEY = 0x01U,
-    /**< Pre-configured link-key derived from installation code */
+    /**< Pre-configured link key derived from installation code.
+     * Pre-configured link keys are added to the ZbStartupT struct for joiners,
+     * and via ZbApsmeAddKeyReq on the Trust Center. */
     ZB_SEL_PSK_PASSCODE_PAKE = 0x02U,
     /**< Variable-length pass code (for PAKE protocols) */
     ZB_SEL_PSK_BASIC_ACCESS_KEY = 0x03U,
