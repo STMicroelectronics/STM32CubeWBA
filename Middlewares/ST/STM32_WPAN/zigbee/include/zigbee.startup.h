@@ -35,8 +35,17 @@ enum ZbStartType {
 /** CBKE configuration parameters for ZbStartup. This configuration is only
  * applicable if the 'suite_mask' is non-zero. */
 struct ZbStartupCbkeT {
+    bool bdbRequireCBKESuccess;
+    /**< If true, it indicates that CBKE is mandatory as part of network join and on CBKE failure
+     * joiner shall terminate the join procedure. If false, the joiner is allowed to use other
+     * link key establishment mechanisms in case of CBKE failure. By default, it is set to true.
+     * This is flag is introduced with BDB 3.1. */
+
     uint8_t endpoint;
     /**< Endpoint to assign ZCL Key Exchange cluster. Default is ZB_ENDPOINT_CBKE_DEFAULT (240) */
+
+    uint16_t profileId;
+    /**< Profile Id to assign ZCL Key Exchange cluster. Default is ZCL_PROFILE_SMART_ENERGY (0x0109) */
 
     uint16_t deviceId;
     /**< Device Id to assign to the endpoint created for the ZCL Key Exchange cluster.
@@ -120,7 +129,17 @@ struct ZbStartupT {
 
     struct ZbChannelListT channelList;
     /**< Specify the channel mask(s) to use. If no channel masks are specified,
-     * ZB_BDB_PrimaryChannelSet and ZB_BDB_SecondaryChannelSet are used instead. */
+     * ZB_BDB_PrimaryChannelSet and ZB_BDB_SecondaryChannelSet will be used instead. */
+
+    uint32_t bdbPrimaryChannelSet;
+    /**< Configures the BDB IB ZB_BDB_PrimaryChannelSet, which is a single 32-bit BDB Primary
+     * Channel mask. The 'channelList' parameter should be cleared if you want to use the BDB
+     * Primary and Secondary channel masks. */
+
+    uint32_t bdbSecondaryChannelSet;
+    /**< Configures the BDB IB ZB_BDB_SecondaryChannelSet, which is a single 32-bit BDB Secondary
+     * Channel mask. The 'channelList' parameter should be cleared if you want to use the BDB
+     * Primary and Secondary channel masks. */
 
     uint8_t stackProfile;
     /**< Network Stack Profile. If not ZB_NWK_STACK_PROFILE_PRO, application must
@@ -220,26 +239,25 @@ struct ZbStartupT {
         /**< DeviceId to assign to the endpoint on which Sub-GHz server cluster is created. */
     } subghz; /**< Sub-GHz cluster configuration, only applicable on a coordiantor. */
 
-    /* NOTE: The following is for (CONFIG_ZB_REV >= 23), but we prefer to not add
-     * conditionals in header files. */
+    /*
+     * R23 additions
+     */
     uint8_t supp_key_nego_methods;
     /**< A bitmask of the supported key negotiation methods e.g, ZB_DLK_STATIC_KEY_REQUEST. */
     uint8_t supp_pre_shared_secrets;
     /**< A bitmask of the supported pre-shared secrets e.g, ZB_DLK_SUPP_PSK_SYMMETRIC_AUTH_TOKEN. */
 
     void (*device_interview_cb)(struct ZbApsRelayInfoT *relay_info, uint64_t joiner_eui, void *arg);
-    /**< Device Interview callback. This is called for a device acting as the Trust Center
-     * when the Device Interview process can start with the Joiner. As packets are sent as
-     * Downstream Relays to the Joiner, the security timer is refreshed by the amount given
-     * by apsDeviceInterviewTimeoutPeriod. The 'relay_info' parameter includes the information
-     * about where to send packets for the interview process so the Joiner can receive them.
-     * The 'joiner_eui' parameter is the Extended Address of the Joiner.
-     * Once the TC application is done with the interview
-     * process, it must call ZbStartupDeviceInterviewComplete. Refer to that function's
-     * description for more information.
+    /**< Device Interview callback. This is called when the device is acting as
+     * Trust Center in order to start the Device Interview process with the
+     * Joiner. As packets are sent as Downstream Relays to the Joiner, the
+     * security timer is refreshed by the amount given by apsDeviceInterviewTimeoutPeriod.
+     * Once the TC application is done with the interview process, it must call
+     * ZbStartupDeviceInterviewComplete. Refer to that functions description for more
+     * information.
      */
     void *device_interview_cb_arg;
-    /**< Argument pointer to include in the device interview callback. */
+    /**< Argument pointer for device interview callback. */
 };
 
 /**

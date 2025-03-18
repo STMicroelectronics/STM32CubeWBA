@@ -202,7 +202,6 @@ void otTaskletsSignalPending(otInstance *aInstance)
 
 void APP_THREAD_Init( void )
 {
-  scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
   UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
 

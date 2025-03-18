@@ -1189,25 +1189,25 @@
           <name>App</name>
           <group>
             <name>AudioUseCases</name>
+            <group>
+              <name>tmap</name>
+              <file>
+                <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap.c</name>
+              </file>
+              <file>
+                <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c</name>
+              </file>
+              <file>
+                <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c</name>
+              </file>
+              <file>
+                <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmas.c</name>
+              </file>
+            </group>
             <file>
               <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/usecase_dev_mgmt.c</name>
             </file>
-            <file>
-              <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap.c</name>
-            </file>
-            <file>
-              <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c</name>
-            </file>
-            <file>
-              <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c</name>
-            </file>
-            <file>
-              <name>$PROJ_DIR$/../STM32_WPAN/App/AudioUseCases/tmap/tmas.c</name>
-            </file>
           </group>
-          <file>
-            <name>$PROJ_DIR$/../STM32_WPAN/App/app_ble.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$/../STM32_WPAN/App/tmap_app.c</name>
           </file>
@@ -1216,6 +1216,12 @@
           </file>
           <file>
             <name>$PROJ_DIR$/../STM32_WPAN/App/app_menu_cfg.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../STM32_WPAN/App/app_bsp.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../STM32_WPAN/App/app_ble.c</name>
           </file>
         </group>
       </group>
@@ -1525,6 +1531,9 @@
       <file>
         <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
+      </file>
     </group>
     <group>
       <name>CMSIS</name>
@@ -1606,6 +1615,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm/stm32_lpm.c</name>
+    </file>
+  </group>
+  <group>
+    <name>Doc</name>
+    <file>
+      <name>$PROJ_DIR$/../README.md</name>
     </file>
   </group>
 </project>

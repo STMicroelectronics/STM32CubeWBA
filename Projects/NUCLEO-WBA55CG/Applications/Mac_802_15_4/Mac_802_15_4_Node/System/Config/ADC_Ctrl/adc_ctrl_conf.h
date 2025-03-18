@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -34,6 +34,12 @@
  * @brief Physical address of the ADC to use
  */
 #define ADCCTRL_HWADDR   ADC4
+
+/**
+ * @brief Set ADC Clock source
+ */
+#define ADCTCTRL_SET_CLOCK_SOURCE() \
+   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_HCLK)
 
 /**
  * @brief Peripheral clock enable for ADC

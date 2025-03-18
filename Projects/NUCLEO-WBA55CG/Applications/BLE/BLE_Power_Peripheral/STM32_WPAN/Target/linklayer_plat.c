@@ -33,7 +33,9 @@
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
+#include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
 /* USER CODE END Includes */
@@ -489,16 +491,15 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   */
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_DisableSleepMode();
+  /* Disabling stop mode prevents also from entering in standby */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -508,16 +509,14 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
   */
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_EnableSleepMode();
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**

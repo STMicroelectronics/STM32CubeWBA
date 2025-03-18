@@ -1,0 +1,10 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\B-WBA5M-WPAN;..\..\..\..\..\..\Drivers\BSP\Components\ism330dhcx;..\..\..\..\..\..\Drivers\BSP\Components\sht40ad1b;..\..\..\..\..\..\Drivers\BSP\Components\Common;
+
+[Others]
+
+[Groups]
+Doc=../README.md;
+Drivers/BSP/B-WBA5M-WPAN=../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_bus.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_eeprom.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_env_sensors.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_env_sensors_ex.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_motion_sensors.c;../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan_motion_sensors_ex.c;
+Drivers/BSP/Components=../../../../../../Drivers/BSP/Components/sht40ad1b/sht40ad1b.c;../../../../../../Drivers/BSP/Components/sht40ad1b/sht40ad1b_reg.c;../../../../../../Drivers/BSP/Components/ism330dhcx/ism330dhcx.c;../../../../../../Drivers/BSP/Components/ism330dhcx/ism330dhcx_reg.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_bsp.c;

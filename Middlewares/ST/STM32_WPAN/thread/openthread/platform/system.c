@@ -65,9 +65,6 @@ static struct mac_cbk_dispatch_tbl ot_cbk_dispatch_tbl = {
 
 static void systemRxDone(otInstance *aInstance, otRadioFrame *aFrame, otError aError)
 {
-#ifndef OPENTHREAD_RCP
-  otLinkModeConfig sLinkConfig = {0};
-#endif
   /*
    * Current version of Thread stack does not handle very well NULL packets (i.e. hardfault).
    * If OT_ERROR_ABORT, it can be considered it as a non-valid RX (when continuous
@@ -76,11 +73,6 @@ static void systemRxDone(otInstance *aInstance, otRadioFrame *aFrame, otError aE
    */
   if (aError == OT_ERROR_ABORT) {
     /* Do not call upper layer, OT stack doesn't handle RX error */
-#ifndef OPENTHREAD_RCP
-    /* Update radio continuous reception state in function of Thread mode */
-    sLinkConfig = otThreadGetLinkMode(aInstance);
-    setContRecp(sLinkConfig.mRxOnWhenIdle);
-#endif
   }
   else{
     otPlatRadioReceiveDone(aInstance, aFrame, aError);

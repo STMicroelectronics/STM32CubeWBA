@@ -1128,10 +1128,10 @@
                 <group>
                     <name>App</name>
                     <file>
-                        <name>$PROJ_DIR$\..\STM32_WPAN\App\src\app_mac.c</name>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\Src\app_mac.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\STM32_WPAN\App\src\app_mac_802_15_4_process.c</name>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\Src\app_mac_802_15_4_process.c</name>
                     </file>
                 </group>
                 <group>

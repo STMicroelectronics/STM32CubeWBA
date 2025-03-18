@@ -1,8 +1,20 @@
-/** @file st_mac_802_1584_core_config.h
- *
- * @brief Exports the configurable parameters of MAC PHY
- *
- */
+/**
+  ******************************************************************************
+  * @file    st_mac_802_1584_core_config.h
+  * @author  MCD Application Team
+  * @brief   Exports the configurable parameters of MAC PHY
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 
 #ifndef MAC_STACK_CONFIGURATION_H
 #define MAC_STACK_CONFIGURATION_H
@@ -19,7 +31,7 @@
 #define g_LARGE_BUFFER_SIZE_c  ( (uint8_t)190 )
 
 /** @brief  Defines the number of small buffer */
-#define g_TOTAL_NUMBER_OF_SMALL_BUFFERS_c  ( (uint8_t)0 )
+#define g_TOTAL_NUMBER_OF_SMALL_BUFFERS_c  ( (uint8_t)0 ) // Not used small buffer
 
 /** @brief Default value for channels supported */
 #define  m_DEFAULT_PHY_CHANNELS_SUPPORTED_c           (0x07FFF800)
@@ -36,6 +48,10 @@
 #define QUEUE_MAX_LEN         10              // Define QUEUE_MAX_LEN  
      
 #define  CCA_THRESHOLD        -75
+     
+/** @brief  According to the power table */
+#define ST_MAC_MAX_TX_POWER      10 
+#define ST_MAC_MIN_TX_POWER      -20
      
 /** @brief Internal Incoming mac Command ID */
 
@@ -83,14 +99,6 @@
 #define ST_MAC_GET_PWR_INFO_TABLE_CNF_INT_CMD_ID        0x14
 #define ST_MAC_SET_PWR_INFO_TABLE_CNF_INT_CMD_ID        0x15
 #define ST_MAC_SYNC_LOSS_IND_INT_MSG_ID                 0x16
-     
-     
-    
-
-     
-     
-
-     
 
 
 /*------------------------ Security Related Macros ------------------------*/

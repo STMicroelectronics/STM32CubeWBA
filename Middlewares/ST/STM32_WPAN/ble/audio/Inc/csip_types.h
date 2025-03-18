@@ -72,19 +72,25 @@ extern "C" {
 /*
  * CSIP_SET_COORDINATOR_MEM_PER_CONN_SIZE_BYTES: memory size used per link in CSIP Set Coordinator role
  */
-#define CSIP_SET_COORDINATOR_MEM_PER_CONN_SIZE_BYTES            (64u)
+#define CSIP_SET_COORDINATOR_MEM_PER_CONN_SIZE_BYTES            (68u)
 
 /*
  * CSIP_SET_COORDINATOR_MEM_PER_INSTANCE_SIZE_BYTES: memory size used by CSIP Set Coordinator to allocate Coordinated
  *                                                   Set Identification Instance
  */
-#define CSIP_SET_COORDINATOR_MEM_CIS_INSTANCE_SIZE_BYTES        (76u)
+#define CSIP_SET_COORDINATOR_MEM_CIS_INSTANCE_SIZE_BYTES        (60u)
 
 /*
  * CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES: memory size used by CSIP Set Member per Coordinated Set Identification
  *                                              Instances
  */
-#define CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES             (102u)
+#define CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES             (80u)
+
+/*
+ * CSIP_SERV_INST_MEM_PER_CONN_SIZE_BYTES: memory size used to allocate Service Context per Connection Instance
+ *                                         per Coordinated Set Identification Instances
+ */
+#define CSIP_SERV_INST_MEM_PER_CONN_SIZE_BYTES                  (16u)
 
 /*
  * CSIP_NVM_MGMT_PER_CONN_SIZE_BYTES: memory size used for Non-Volatile Memory Management and CSIS restoration
@@ -118,6 +124,7 @@ extern "C" {
  */
 #define BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(num_csi_instances,num_ble_links) \
           ((CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES * num_csi_instances) + \
+          (CSIP_SERV_INST_MEM_PER_CONN_SIZE_BYTES * (num_csi_instances * num_ble_links)) + \
           (CSIP_NVM_MGMT_PER_CONN_SIZE_BYTES * num_ble_links))
 
 /* Types ---------------------------------------------------------------------*/

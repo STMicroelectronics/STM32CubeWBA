@@ -64,7 +64,7 @@
 									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
 									<listOptionValue builtIn="false" value="../../System/Config/ADC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
-									<listOptionValue builtIn="false" value="../../STM32_WPAN/App/inc"/>
+									<listOptionValue builtIn="false" value="../../STM32_WPAN/App/Inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy"/>
@@ -185,7 +185,7 @@
 									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
 									<listOptionValue builtIn="false" value="../../System/Config/ADC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
-									<listOptionValue builtIn="false" value="../../STM32_WPAN/App/inc"/>
+									<listOptionValue builtIn="false" value="../../STM32_WPAN/App/Inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy"/>

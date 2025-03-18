@@ -1427,15 +1427,6 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
 
             if ((p_hap_inst->DelayDeallocation == 1u) && (p_hap_inst->AttProcStarted == 0u))
             {
-              if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
-              {
-
-                if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
-                    && p_hap_inst->pConnInfo->Size > 1u)
-                {
-                  p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
-                }
-              }
               BLE_DBG_HAP_HARC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
               p_hap_inst->DelayDeallocation = 0u;
               HAP_HARC_InitInstance(p_hap_inst);
@@ -1447,6 +1438,12 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
             {
               tBleStatus status = BLE_STATUS_SUCCESS;
               uint8_t send_proc_complete = 1u;
+
+              if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
+                  && p_hap_inst->pConnInfo->Size > 1u)
+              {
+                p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
+              }
 
               if ((p_csipmember_hap_inst != 0) \
                   && (p_csipmember_hap_inst->pConnInfo->Connection_Handle != HAP_Context.HARC.OpParams.ConnHandle))

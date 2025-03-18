@@ -136,6 +136,12 @@ extern "C" {
 #define CCP_SRV_MEM_PER_CALL_SIZE_BYTES                 (28u)
 
 /*
+ * CCP_SRV_MEM_CALL_STATE_INFO_PER_CALL_SIZE_BYTES: memory size for Call State information used per call in
+ *                                                  CCP Server role
+ */
+#define CCP_SRV_MEM_CALL_STATE_INFO_PER_CALL_SIZE_BYTES (8u)
+
+/*
  * CCP_SRV_MEM_PER_BEARER_SIZE_BYTES: memory size used per Telephony Bearer in CCP Server role
  */
 #define CCP_SRV_MEM_PER_BEARER_SIZE_BYTES               (112u)
@@ -213,6 +219,7 @@ extern "C" {
                                       mem_blocks_uri,mem_blocks_uri_schemes_list,mem_blocks_call_friendly_name) \
           ((CCP_SRV_MEM_PER_BEARER_SIZE_BYTES * (1 + num_bearer_instances)) + \
            (CCP_SRV_MEM_PER_CALL_SIZE_BYTES * max_num_calls * (1 + num_bearer_instances)) + \
+           (CCP_SRV_MEM_CALL_STATE_INFO_PER_CALL_SIZE_BYTES * max_num_calls) + \
            (((read_long_en) == (0x01)) ? (CCP_SRV_MEM_PER_READLONG_PROC_SIZE_BYTES * num_ble_links * (1 + num_bearer_instances)) : (0)) + \
            mem_blocks_uri + mem_blocks_uri_schemes_list + mem_blocks_call_friendly_name)
 

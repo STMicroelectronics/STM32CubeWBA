@@ -220,12 +220,13 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
+ *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  *
  * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
  *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
+ *   - 0 : Stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (0)
@@ -278,7 +279,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -304,6 +305,18 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
@@ -327,10 +340,16 @@ typedef enum
   CFG_TASK_BLE_HOST,
   CFG_TASK_AMM,
   CFG_TASK_BPKA,
-  CFG_TASK_FLASH_MANAGER,
   CFG_TASK_BLE_TIMER_BCKGND,
+  CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_JOYSTICK_ID,
+  CFG_TASK_BSP_JOY_TIMER,
+  CFG_TASK_BSP_JOY_NONE,
+  CFG_TASK_BSP_JOY_UP,
+  CFG_TASK_BSP_JOY_DOWN,
+  CFG_TASK_BSP_JOY_RIGHT,
+  CFG_TASK_BSP_JOY_LEFT,
+  CFG_TASK_BSP_JOY_SELECT,
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
@@ -435,23 +454,12 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Do not modify - must be 1 */
-#define USE_RADIO_LOW_ISR                   (1)
-
-/* Do not modify - must be 1 */
-#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
-#endif /* USE_RADIO_LOW_ISR */
-
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (4)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
@@ -461,11 +469,8 @@ typedef enum
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
-/* Custom LSE sleep clock accuracy to use if both conditions are met:
- * - LSE is selected as Link Layer sleep clock source
- * - the LSE used is different from the default one.
- */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -500,15 +505,26 @@ typedef enum
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
+#define CFG_BSP_ON_SEQUENCER                    (1)
+#define CFG_BSP_ON_DISCOVERY                    (1)
+
 /**
  * User interaction
- * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
- * When CFG_JOYSTICK_SUPPORTED is set, the joystick is activated if requested
+ * When CFG_LED_SUPPORTED is set, LEDs are activated if requested
+ * When CFG_JOYSTICK_SUPPORTED is set, joystick pression are managed
+ * When CFG_LCD_SUPPORTED is set, LCD screen can be used as a display
  */
 
 #define CFG_LED_SUPPORTED                       (1)
 #define CFG_JOYSTICK_SUPPORTED                  (1)
 #define CFG_LCD_SUPPORTED                       (1)
+
+/** 
+ * When CFG_JOYSTICK_TYPE_BUTTON is:
+ *   - set to 1, Joystick callback is called only when Joystick state change
+ *   - set to 0, Joystick callback is called every 100 ms to report current state, except NONE state
+ */
+#define CFG_JOYSTICK_TYPE_BUTTON                (1)
 
 /**
  * Overwrite some configuration imposed by Low Power level selected.
@@ -540,12 +556,12 @@ typedef enum
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
     #define CFG_LOG_SUPPORTED       (0)
   #endif /* CFG_LOG_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN Defines_2 */
 

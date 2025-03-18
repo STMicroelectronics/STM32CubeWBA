@@ -1486,7 +1486,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\aes_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\aes_alt.c</PathWithFileName>
       <FilenameWithoutPath>aes_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1498,7 +1498,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\ecdh_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecdh_alt.c</PathWithFileName>
       <FilenameWithoutPath>ecdh_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1510,7 +1510,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\ecdsa_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecdsa_alt.c</PathWithFileName>
       <FilenameWithoutPath>ecdsa_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1522,7 +1522,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\ecp_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecp_alt.c</PathWithFileName>
       <FilenameWithoutPath>ecp_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1534,7 +1534,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\ecp_curves_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecp_curves_alt.c</PathWithFileName>
       <FilenameWithoutPath>ecp_curves_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1546,7 +1546,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\entropy_hardware_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\entropy_hardware_alt.c</PathWithFileName>
       <FilenameWithoutPath>entropy_hardware_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1558,7 +1558,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\gcm_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\gcm_alt.c</PathWithFileName>
       <FilenameWithoutPath>gcm_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1570,7 +1570,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\rsa_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\rsa_alt.c</PathWithFileName>
       <FilenameWithoutPath>rsa_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1582,7 +1582,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\source\hal\sha256_alt.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\sha256_alt.c</PathWithFileName>
       <FilenameWithoutPath>sha256_alt.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

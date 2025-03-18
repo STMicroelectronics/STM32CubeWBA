@@ -155,7 +155,7 @@ typedef struct
 #define ADV_TIMEOUT_MS                 (60 * 1000)
 
 /* ADV_LP_REQ_TASK related defines */
-#define ADV_LP_REQ_TASK_STACK_SIZE    (1024)
+#define ADV_LP_REQ_TASK_STACK_SIZE    (512+256)
 #define ADV_LP_REQ_TASK_PRIO          (15)
 #define ADV_LP_REQ_TASK_PREEM_TRES    (0)
 

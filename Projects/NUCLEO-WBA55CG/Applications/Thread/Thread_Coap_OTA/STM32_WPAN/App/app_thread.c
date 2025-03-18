@@ -112,6 +112,8 @@ static void APP_THREAD_CliInit(otInstance *aInstance);
 static void APP_THREAD_ProcessUart(void);
 #endif // OT_CLI_USE
 
+static void APP_THREAD_PersistenceStartup(void);
+
 /* USER CODE BEGIN PFP */
 static void APP_THREAD_AppInit(void);
 static void APP_THREAD_CoapRequestHandlerFuotaReboot(void                * pContext,
@@ -253,6 +255,8 @@ void Thread_Init(void)
   size_t otInstanceBufferLength = 0;
   uint8_t *otInstanceBuffer = NULL;
 #endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  APP_THREAD_PersistenceStartup();
 
   otSysInit(0, NULL);
 
@@ -579,6 +583,18 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
+
+/**
+ * @brief  Thread persistence startup
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_PersistenceStartup(void)
+{
+  /* USER CODE BEGIN APP_THREAD_PersistenceStartup */
+
+  /* USER CODE END APP_THREAD_PersistenceStartup */
+}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 /**

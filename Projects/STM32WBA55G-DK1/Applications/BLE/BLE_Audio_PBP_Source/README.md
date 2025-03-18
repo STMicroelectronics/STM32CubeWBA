@@ -2,14 +2,15 @@
 
 How to use the Public Broadcast profile in Source role as specified by the Bluetooth SIG.
 
-PBP Source application advertises and broadcasts audio streams to remote PBP Sinks.
+
+The PBP Source application advertises and broadcasts audio streams to remote PBP Sinks.
+<br>
 
 ### __Keywords__
 
 Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
 
 ### __Directory contents__
-
   - BLE_Audio_PBP_Source/Core/Inc/app_common.h                                      App Common application configuration file for STM32WPAN Middleware.
   - BLE_Audio_PBP_Source/Core/Inc/app_conf.h                                        Application configuration file for STM32WPAN Middleware.
   - BLE_Audio_PBP_Source/Core/Inc/app_entry.h                                       Interface to the application 
@@ -50,6 +51,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
   - BLE_Audio_PBP_Source/Core/Src/stm32wbaxx_hal_msp.c                              This file provides code for the MSP Initialization and de-Initialization codes.
   - BLE_Audio_PBP_Source/Core/Src/stm32wbaxx_it.c                                   Interrupt Service Routines. 
   - BLE_Audio_PBP_Source/Core/Src/system_stm32wbaxx.c                               CMSIS Cortex-M33 Device Peripheral Access Layer System Source File 
+  - BLE_Audio_PBP_Source/STM32_WPAN/App/app_bsp.c                                   Application to manage BSP
   - BLE_Audio_PBP_Source/STM32_WPAN/App/app_ble.c                                   BLE Application 
   - BLE_Audio_PBP_Source/STM32_WPAN/App/pbp_app.c                                   Public Broadcast Profile Application 
   - BLE_Audio_PBP_Source/STM32_WPAN/App/AudioUseCases/pbp/pbp.c                     This file contains Public Broadcast Profile feature 
@@ -72,28 +74,38 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
   - BLE_Audio_PBP_Source/System/Interfaces/stm32_lpm_if.c                           Low layer function to enter/exit low power modes (stop, sleep) 
   - BLE_Audio_PBP_Source/System/Modules/ble_timer.c                                 This module implements the timer core functions
 
+
 ### __Hardware and Software environment__
 
-  - This example runs on STM32WBA55xx devices.
-    Connect the Discovery Board to your PC with a USB cable type C.
-	Connect Audio Input on Jack Connector CN4.
+  - This example runs on STM32WBA55xx devices with SMPS.
+  <br>Connect the Discovery Board to your PC with a USB cable type C
+  <br>Connect an Audio Input on Jack Connector CN4.
+
   - Another Discovery board may be necessary to run PBP Sink application.
 
 ### __How to use it?__
 
 In order to make the program work, you must do the following:
 
- - Open IAR toolchain
- - Source ID is configurable thanks to BAP_BROADCAST_SOURCE_ID in pbp_app_conf.h file
- - Rebuild all files and flash the board with the executable file
+ - Open your preferred toolchain
+ - Rebuild all files and load your image into target memory
  - Run the example
-
- - At startup, PBP Source starts Audio Stream Broadcast
- - Stream Audio in the Jack Connector CN4.
- - Source ID is displayed on the LCD interface
-
-
+<br>
+<br>
+ - PBP Source ID is configurable thanks to BAP_BROADCAST_SOURCE_ID in pbp_app_conf.h file.
+<br>
+ - __At Startup__, PBP Source starts Audio Stream Broadcast<br>Stream Audio in the Jack Connector CN4.<br>Source ID is displayed on the LCD interface
  - Power up a PBP Sink device with Source ID matching with the BAP_BROADCAST_SOURCE_ID value
  - Once PBP Source application is started and Audio Stream Broadcast is launched :
     - On the PBP Sink device, select with the Joystick the Source ID of the remote PBP Source to synchronize to.
  - Once PBP Sink device is synchronized to PBP Source and Audio Stream is received, Audio is available on Jack Connector.
+
+### __Documentation__
+
+   - Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a>
+	 - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Public_Broadcast_Profile"> Bluetooth® Low Energy audio - STM32WBA Public broadcast profile</a>
+

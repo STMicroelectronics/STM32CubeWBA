@@ -113,7 +113,17 @@ GAF_Profiles_Link_t CAP_GetCurrentLinkedProfiles(uint16_t ConnHandle);
 tBleStatus CAP_Unlink(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t NVMSave);
 
 /**
-  * @brief  Set supported audio context for reception and transmission
+  * @brief Store In Non Volatile Memory the information related to the audio profiles composing
+  *        the Generic Audio Framework issued from local or remote service link process.
+  * @note Note that, by default, the audio profiles information is saved per active connection at the
+  *       time of disconnection.
+  * @param ConnHandle: Connection Handle
+  * @retval status of the operation
+  */
+tBleStatus CAP_DB_StoreGAFProfiles(uint16_t ConnHandle);
+
+/**
+  * @brief  Set supported audio contexts for reception and transmission
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
   *                      (0x0000 : device not available to receive audio for any Context Type)
@@ -124,7 +134,7 @@ tBleStatus CAP_Unlink(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t N
 tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
 
 /**
-  * @brief  Set available audio context for reception and transmission which will be used for BAP Announcement and for
+  * @brief  Set available audio contexts for reception and transmission which will be used for BAP Announcement and for
   *         future connections.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @note   This function is applicable only for Unicast Server role and Broadcast Sink role
@@ -139,7 +149,7 @@ tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Conte
 tBleStatus CAP_SetAvailableAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
 
 /**
-  * @brief  Update available audio context for reception and transmission associated to the specified remote PACS Client
+  * @brief  Update available audio contexts for reception and transmission associated to the specified remote CAP device
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  connHandle: connection handle of the PACS Client to notify update
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
@@ -280,6 +290,7 @@ tBleStatus CAP_CheckCodecSpecificCapabilitiesCompatibility(uint8_t NumConf,
 
 /**
   * @brief Perform the Unicast Audio Start Procedure
+  * @note The CAP_UNICAST_AUDIOSTARTED_EVT event will be notified once the Unicast Audio Start Procedure is complete
   * @param SetType: Set Type (Ad-Hoc or Coordinated Set)
   * @param NumAcceptors: Number of CAP Acceptors
   * @param pStartStreamParams: Table of Start Streams Parameters for each CAP Acceptors
@@ -291,6 +302,7 @@ tBleStatus CAP_Unicast_AudioStart(CAP_Set_Acceptors_t SetType,
 
 /**
   * @brief Perform the Unicast Audio Update procedure
+  * @note The CAP_UNICAST_AUDIO_UPDATED_EVT event will be notified once the Unicast Audio Update Procedure is complete
   * @note This procedure is used to change the Context Type values and/or CCID values associated with one or more
   *       unicast Audio Streams.
   * @note The value of the Streaming Audio Contexts LTV must have at least one bit set.
@@ -306,6 +318,7 @@ tBleStatus CAP_Unicast_AudioUpdate(uint8_t NumAcceptors,
 
 /**
   * @brief Perform the Unicast Audio Stop procedure
+  * @note The CAP_UNICAST_AUDIOSTOPPED_EVT event will be notified once the Unicast Audio Stop Procedure is complete
   * @param NumAcceptors: Number of CAP Acceptors
   * @param pConnHandle: pointer on the table of the remote CAP Acceptors Connection Handle
   * @param Release: 0x01 to release the remote ASEs, 0x00 to only Disable them
@@ -808,8 +821,8 @@ tBleStatus CAP_MicrophoneController_StartSetGainSettingProcedure(CAP_MICP_GainSe
 
 /**
   * @brief  Start Procedure to discover Set Members of the Coordinated Set in with specified device is member
-  * @note   A gap discovery procedure ( see aci_gap_start_general_discovery_proc()) shall be in progress
-  *         when the function is called.
+  * @note   A gap discovery procedure ( see aci_gap_ext_start_scan() (with Scan Procedure GAP_OBSERVATION_PROC))
+  *         shall be in progress when the function is called.
   * @note : The CSIP_COO_ADV_REPORT_NEW_SET_MEMBER_DISCOVERED_EVT event is reported when a new Set Member is discovered,
   *         the application is responsible to perform gap connection to connect with the new Set Member.
   * @param  ConnHandle: Connection handle of a member of the Coordinated Set

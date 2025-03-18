@@ -575,7 +575,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE:
         {
           /* USER CODE BEGIN RADIO_ACTIVITY_EVENT */
+          #if (CFG_LED_SUPPORTED == 1)
           BSP_LED_On(LED_GREEN);
+          #endif
           UTIL_TIMER_StartWithPeriod(&bleAppContext.SwitchOffGPIO_timer_Id, LED_ON_TIMEOUT_MS);
           /* USER CODE END RADIO_ACTIVITY_EVENT */
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
@@ -1344,7 +1346,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
 
   LOG_INFO_APP("---------------------------------------------\n");
-  /* Device ID: WBA5x, ... */
+  /* Device ID: WBA5x, WBA6x... */
   a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
   a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);
@@ -1703,13 +1705,17 @@ static void Adv_Cancel_Req(void *arg)
 
 static void Switch_OFF_GPIO(void *arg)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
   return;
 }
 
 static void Adv_Cancel(void)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
 
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
 
@@ -1863,7 +1869,7 @@ void APP_BSP_Button1Action(void)
 void APP_BSP_Button2Action(void)
 {
   tBleStatus ret;
-  
+
   if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
   {
     /* Clear Security Database */

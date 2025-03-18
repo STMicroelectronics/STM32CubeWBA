@@ -444,37 +444,49 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
         /* Enable TX notification */
         uint16_t enable = 0x0001;
+        tBleStatus aci_status = BLE_STATUS_ERROR;
+
         if (a_ClientContext[index].DTTXDescHdl != 0x0000)
         {
-          result = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].DTTXDescHdl,
-                                            2,
-                                            (uint8_t *) &enable);
-          gatt_cmd_resp_wait();
-          APP_DBG_MSG(" DTTXDescHdl =0x%04X\n",a_ClientContext[index].DTTXDescHdl);
+          aci_status = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].DTTXDescHdl,
+                                                2,
+                                                (uint8_t *) &enable);
+          if(aci_status == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+          }
+          LOG_INFO_APP(" DTTXDescHdl =0x%04X, status =0x%02X\n",a_ClientContext[index].DTTXDescHdl, aci_status);
         }
         /* Enable RX notification */
         if (a_ClientContext[index].DTRXDescHdl != 0x0000)
         {
-          result = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].DTRXDescHdl,
-                                            2,
-                                            (uint8_t *) &enable);
-          gatt_cmd_resp_wait();
-          APP_DBG_MSG(" DTRXDescHdl =0x%04X\n",a_ClientContext[index].DTRXDescHdl);
+          aci_status = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].DTRXDescHdl,
+                                                2,
+                                                (uint8_t *) &enable);
+          if(aci_status == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+          }
+          LOG_INFO_APP(" DTRXDescHdl =0x%04X, status =0x%02X\n",a_ClientContext[index].DTRXDescHdl, aci_status);
         }
         /* Enable Throughput notification */
         if (a_ClientContext[index].DTThroughputDescHdl != 0x0000)
         {
-          result = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].DTThroughputDescHdl,
-                                            2,
-                                            (uint8_t *) &enable);
-          gatt_cmd_resp_wait();
-          APP_DBG_MSG(" DTThroughputDescHdl =0x%04X\n",a_ClientContext[index].DTThroughputDescHdl);
+          aci_status = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].DTThroughputDescHdl,
+                                                2,
+                                                (uint8_t *) &enable);
+          if(aci_status == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+          }
+          LOG_INFO_APP(" DTThroughputDescHdl =0x%04X, status =0x%02X\n",a_ClientContext[index].DTThroughputDescHdl, aci_status);
         }
         UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_UPDATE_ID, CFG_SEQ_PRIO_0);
 
+        result |= aci_status;
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (result == BLE_STATUS_SUCCESS)
@@ -1131,12 +1143,16 @@ void DTC_Button1TriggerReceived( void )
   {
     if(DTC_Context.ButtonTransferReq != DTC_APP_TRANSFER_REQ_OFF)
     {
+      #if (CFG_LED_SUPPORTED == 1)
       BSP_LED_Off(LED_BLUE);
+      #endif
       DTC_Context.ButtonTransferReq = DTC_APP_TRANSFER_REQ_OFF;
     }
     else
     {
+      #if (CFG_LED_SUPPORTED == 1)
       BSP_LED_On(LED_BLUE);
+      #endif
       DTC_Context.ButtonTransferReq = DTC_APP_TRANSFER_REQ_ON;
       UTIL_SEQ_SetTask(1U << CFG_TASK_WRITE_DATA_WO_RESP_ID, CFG_SEQ_PRIO_0);
     }
@@ -1198,7 +1214,6 @@ static void SendDataWrite( void )
 
     if (status == BLE_STATUS_INSUFFICIENT_RESOURCES)
     {
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
       DTC_Context.DtFlowStatus = DTC_APP_FLOW_OFF;
       (Notification_Data_Buffer[0])-=1;
     }

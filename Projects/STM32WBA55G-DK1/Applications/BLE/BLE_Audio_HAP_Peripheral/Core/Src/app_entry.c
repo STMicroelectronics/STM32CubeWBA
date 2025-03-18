@@ -49,6 +49,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_bsp.h"
 #include "codec_mngr.h"
 #include "codec_if.h"
 #include "stm32wba55g_discovery.h"
@@ -80,7 +81,7 @@
 
 /* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define VOLUME_VCP_TO_VOLUME_BSP(Volume) ((uint32_t) (47.4f*log10f(((float) Volume)/2+1)))
+#define VOLUME_VCP_TO_VOLUME_BSP(Volume) ((uint32_t) (47.4f*log10f(((float) Volume)/2.0f + 1.0f)))
 /* USER CODE END PM */
 
 /* Private constants ---------------------------------------------------------*/
@@ -94,7 +95,18 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -123,10 +135,6 @@ static AMM_InitParameters_t ammInitConfig =
 };
 
 /* USER CODE BEGIN PV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-static int32_t Joystick_Prev_State;
-static UTIL_TIMER_Object_t JOYSTICK_TimerObj;
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 #if (CFG_LCD_SUPPORTED == 1)
 static uint32_t Codec_Frequency = 0;
 static Audio_Role_t Audio_Role = 0;
@@ -142,9 +150,7 @@ static uint32_t Current_Volume = 50;
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-uint8_t JOY_StandbyExitFlag = 0;
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -163,17 +169,6 @@ static void APPE_FLASH_MANAGER_Init( void );
 static void APPE_BPKA_Init( void );
 
 /* USER CODE BEGIN PFP */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init(void);
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-static void Joystick_Init( uint8_t wkup_mode );
-static void Joystick_TimerCallback(void *arg);
-static void Joystick_ActionHandle(void);
-#endif /* CFG_JOYSTICK_SUPPORTED */
-#if (CFG_LCD_SUPPORTED == 1)
-static void LCD_Init(void);
-#endif /* CFG_LCD_SUPPORTED */
 static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen);
 static void AudioClock_Deinit(void);
 static void PLL_Ready_Task(void);
@@ -220,22 +215,10 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
 
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  Joystick_Init(0);
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+  APP_BSP_Init();
+
 #if (CFG_LCD_SUPPORTED == 1)
-  LCD_Init();
   UTIL_SEQ_RegTask(1U << CFG_TASK_MENU_PRINT_ID, UTIL_SEQ_RFU, Menu_Print_Task);
 #endif /* CFG_LCD_SUPPORTED */
 
@@ -257,15 +240,6 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* USER CODE BEGIN APPE_Init_2 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  /* Register Button Tasks */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_JOYSTICK_ID, UTIL_SEQ_RFU, Joystick_ActionHandle);
-
-  /* Create periodic timer for joystick position reading */
-  UTIL_TIMER_Create(&JOYSTICK_TimerObj, 100, UTIL_TIMER_PERIODIC, &Joystick_TimerCallback, 0);
-  UTIL_TIMER_Start(&JOYSTICK_TimerObj);
-#endif /* CFG_JOYSTICK_SUPPORTED */
-
   /* Indicate to the low power manager that the Standby mode isn't allow : Stop mode will be used in low power mode*/
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
@@ -325,6 +299,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -345,9 +320,14 @@ static void System_Init( void )
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -388,15 +368,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -422,6 +402,15 @@ static void APPE_FLASH_MANAGER_Init(void)
 {
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
+  return;
 }
 
 /**
@@ -446,113 +435,83 @@ static void APPE_AMM_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init( void )
-{
-  /* Leds Initialization */
-  BSP_LED_Init(LD3);
-  BSP_LED_On(LD3);
-
-  return;
-}
-#endif /* CFG_LED_SUPPORTED */
-
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-static void Joystick_Init( uint8_t wkup_mode )
+/**
+ * @brief  Action of Joystick NONE when Joystick state changes to None state, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickNoneAction( void )
 {
-  if (wkup_mode == 1)
-  {
-    /* configuration as a WKUP Pin */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin       = JOY1_CHANNEL_GPIO_PIN;
-    GPIO_InitStruct.Mode      = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(JOY1_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
-
-    HAL_NVIC_SetPriority(EXTI1_IRQn, 15, 0);
-    HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-  }
-  else
-  {
-    BSP_JOY_Init(JOY1, JOY_MODE_POLLING, JOY_ALL);
-    /* reconfiguration of the ADC4 interrupt priority */
-    HAL_NVIC_DisableIRQ(ADC4_IRQn);
-    HAL_NVIC_SetPriority(ADC4_IRQn, 15, 0);
-    HAL_NVIC_EnableIRQ(ADC4_IRQn);
-  }
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY_NONE\n");
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+}
+/**
+ * @brief  Action of Joystick UP when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickUpAction( void )
+{
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_UP);
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+  Menu_Up();
 }
 
-static void Joystick_TimerCallback(void *arg)
+/**
+ * @brief  Action of Joystick RIGHT when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickRightAction( void )
 {
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_JOYSTICK_ID, CFG_SEQ_PRIO_0);
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_RIGHT);
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+  Menu_Right();
 }
 
-static void Joystick_ActionHandle(void)
+/**
+ * @brief  Action of Joystick DOWN when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickDownAction( void )
 {
-  /* Joystick reinitialization */
-  Joystick_Init(0);
-
-  int32_t state = BSP_JOY_GetState(JOY1);
-
-  BSP_JOY_DeInit(JOY1, JOY_ALL);
-
-  /* process Joystick information */
-  if (state != JOY_NONE && state != Joystick_Prev_State)
-  {
-    if (state == JOY_SEL)
-    {
-    }
-    else if (state == JOY_UP)
-    {
-      Menu_Up();
-    }
-    else if (state == JOY_RIGHT)
-    {
-      Menu_Right();
-    }
-    else if (state == JOY_DOWN)
-    {
-      Menu_Down();
-    }
-    else if (state == JOY_LEFT)
-    {
-      Menu_Left();
-    }
-  }
-
-  Joystick_Prev_State = state;
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_DOWN);
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+  Menu_Down();
 }
+
+/**
+ * @brief  Action of Joystick LEFT when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickLeftAction( void )
+{
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_LEFT);
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+  Menu_Left();
+}
+
+/**
+ * @brief  Action of Joystick SELECT when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickSelectAction( void )
+{
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_SEL);
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+}
+
 #endif  /* CFG_JOYSTICK_SUPPORTED */
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-static void LCD_Init( void )
-{
-  /* BSP init LCD*/
-  BSP_LCD_Init(0, LCD_ORIENTATION_LANDSCAPE);
-
-  /* Set LCD Foreground Layer  */
-  UTIL_LCD_SetFuncDriver(&LCD_Driver); /* SetFunc before setting device */
-  UTIL_LCD_SetDevice(0);               /* SetDevice after funcDriver is set */
-
-  BSP_LCD_DisplayOn(0);
-
-  BSP_LCD_Clear(0,SSD1315_COLOR_BLACK);
-  BSP_LCD_Refresh(0);
-
-  /* Set the LCD Text Color */
-  UTIL_LCD_SetFont(&Font12);
-  UTIL_LCD_SetTextColor(SSD1315_COLOR_WHITE);
-  UTIL_LCD_SetBackColor(SSD1315_COLOR_BLACK);
-  BSP_LCD_Refresh(0);
-
-  /* release bus for power optimisation */
-  BSP_SPI3_DeInit();
-}
-
-#endif  /* CFG_LCD_SUPPORTED */
-
 
 /**
   * @brief Configure PLL for the audio frequency, PLL output is used for the SAI peripheral and as the core clock
@@ -629,6 +588,12 @@ void PLL_Ready_Task(void)
   event_time.drift_time    = ISO_PLL_DRIFT_TIME;
   event_time.exec_time     = ISO_PLL_EXEC_TIME;
   event_time.schdling_time = ISO_PLL_SCHDL_TIME;
+
+#if defined(__GNUC__) && defined(DEBUG)
+  event_time.drift_time += ISO_PLL_DRIFT_TIME_EXTRA_GCC_DEBUG;
+  event_time.exec_time += ISO_PLL_EXEC_TIME_EXTRA_GCC_DEBUG;
+#endif
+
   ll_intf_config_schdling_time(&event_time);
 
   CODEC_CLK_Init();
@@ -660,9 +625,15 @@ static void AudioClock_Deinit( void )
 {
   /* back to default timings */
   Evnt_timing_t event_time;
-  event_time.drift_time    = DEFAULT_DRIFT_TIME;
-  event_time.exec_time     = DEFAULT_EXEC_TIME;
-  event_time.schdling_time = DEFAULT_SCHDL_TIME;
+  event_time.drift_time    = DRIFT_TIME_DEFAULT;
+  event_time.exec_time     = EXEC_TIME_DEFAULT;
+  event_time.schdling_time = SCHDL_TIME_DEFAULT;
+
+#if defined(__GNUC__) && defined(DEBUG)
+  event_time.drift_time += DRIFT_TIME_EXTRA_GCC_DEBUG;
+  event_time.exec_time += EXEC_TIME_EXTRA_GCC_DEBUG;
+#endif
+
   ll_intf_config_schdling_time(&event_time);
 
   LOG_INFO_APP("Audio Clock Deinitialization\n");
@@ -693,10 +664,10 @@ HAL_StatusTypeDef MX_SAI1_ClockConfig(SAI_HandleTypeDef *hsai, uint32_t SampleRa
   * @note  To be used at the initialization only, after BSP_AUDIO_xx_Init()
   * @param mode : value from 0 to 2, 0 for lowest gain and 2 for the highest
   */
-static void BSP_MIC_Gain_Init(const uint8_t mode){
-
-  const uint8_t Tab_mic_ctrl[3] =   {0x80, 0x00, 0x03};
-  const uint8_t Tab_attenuator[3] = {0xF1, 0xF6, 0x00};
+static void BSP_MIC_Gain_Init(const uint8_t mode)
+{
+  const uint8_t Tab_mic_ctrl[3] =   {0x00, 0x00, 0x03};
+  const uint8_t Tab_attenuator[3] = {0xE7, 0xF6, 0x00};
 
   if( mode > 2)
   {
@@ -863,6 +834,8 @@ void MX_AudioDeInit(void)
     }
 
     BSP_I2C3_DeInit();
+    SET_BIT(haudio_in_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+    SET_BIT(haudio_out_sai.Instance->CR2, SAI_xCR2_FFLUSH);
   }
 
   AudioClock_Deinit();
@@ -990,8 +963,10 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
 
       Play_Req_Pause = 0;
     }
-
-    APP_NotifyTxAudioHalfCplt();
+    else
+    {
+      APP_NotifyTxAudioHalfCplt();
+    }
   }
 }
 
@@ -1087,7 +1062,10 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
 
       Record_Req_Pause = 0;
     }
-    APP_NotifyRxAudioHalfCplt();
+    else
+    {
+      APP_NotifyRxAudioHalfCplt();
+    }
   }
 }
 
@@ -1169,14 +1147,7 @@ void UTIL_SEQ_PostIdle( void )
   UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  if(JOY_StandbyExitFlag == 1){
-    /* could reconfigure Joystick here */
-    JOY_StandbyExitFlag = 0;
-  }
-#endif /* CFG_JOYSTICK_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  APP_BSP_PostIdle();
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }

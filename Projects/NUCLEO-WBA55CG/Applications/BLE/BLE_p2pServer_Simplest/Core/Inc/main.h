@@ -67,6 +67,7 @@ extern "C" {
 void Error_Handler(void);
 void MX_GPIO_Init(void);
 void MX_RTC_Init(void);
+void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN EFP */
 

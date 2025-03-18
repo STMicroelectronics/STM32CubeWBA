@@ -56,7 +56,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   /* Enable TIM2 clock */
   __HAL_RCC_TIM2_CLK_ENABLE();
 
-/* Get clock configuration */
+  /* Get clock configuration */
   HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
 
   /* Get APB1 prescaler */
@@ -78,12 +78,11 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   htim2.Instance = TIM2;
 
   /* Initialize TIMx peripheral as follow:
-
-  + Period = [(TIM_CNT_FREQ/TIM_FREQ) - 1]. to have a (1/TIM_FREQ) s time base.
-  + Prescaler = (uwTimclock/TIM_CNT_FREQ - 1) to have a TIM_CNT_FREQ counter clock.
-  + ClockDivision = 0
-  + Counter direction = Up
-  */
+   * Period = [(TIM_CNT_FREQ/TIM_FREQ) - 1]. to have a (1/TIM_FREQ) s time base.
+   * Prescaler = (uwTimclock/TIM_CNT_FREQ - 1) to have a TIM_CNT_FREQ counter clock.
+   * ClockDivision = 0
+   * Counter direction = Up
+   */
   htim2.Init.Period = (TIM_CNT_FREQ / TIM_FREQ) - 1U;
   htim2.Init.Prescaler = uwPrescalerValue;
   htim2.Init.ClockDivision = 0;
@@ -96,18 +95,18 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
     Status = HAL_TIM_Base_Start_IT(&htim2);
     if (Status == HAL_OK)
     {
-        if (TickPriority < (1UL << __NVIC_PRIO_BITS))
-        {
-          /* Enable the TIM2 global Interrupt */
-          HAL_NVIC_SetPriority(TIM2_IRQn, TickPriority, 0U);
-          uwTickPrio = TickPriority;
+      if (TickPriority < (1UL << __NVIC_PRIO_BITS))
+      {
+        /* Enable the TIM2 global Interrupt */
+        HAL_NVIC_SetPriority(TIM2_IRQn, TickPriority, 0U);
+        uwTickPrio = TickPriority;
       }
       else
       {
         Status = HAL_ERROR;
       }
     }
-}
+  }
 #if (USE_HAL_TIM_REGISTER_CALLBACKS == 1U)
   HAL_TIM_RegisterCallback(&htim2, HAL_TIM_PERIOD_ELAPSED_CB_ID, TimeBase_TIM_PeriodElapsedCallback);
 #endif

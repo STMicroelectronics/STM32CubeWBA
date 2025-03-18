@@ -139,7 +139,8 @@ void BAES_CmacCompute( const uint8_t* input,
                        uint8_t* output )
 {
   BAES_CMAC_t *av = &BAES_CMAC_var;
-  uint32_t i, last_size;
+  uint32_t i;
+  uint32_t last_size = 0;
   uint32_t tmp[4], key[4];
   const uint8_t* ptr = input;
 

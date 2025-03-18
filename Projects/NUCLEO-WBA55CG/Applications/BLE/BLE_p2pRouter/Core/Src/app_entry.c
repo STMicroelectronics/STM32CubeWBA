@@ -87,7 +87,18 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -188,13 +199,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
 
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)  
   APP_BSP_LedInit();
@@ -277,6 +281,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -301,9 +306,14 @@ static void System_Init( void )
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -344,15 +354,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -378,6 +388,15 @@ static void APPE_FLASH_MANAGER_Init(void)
 {
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
+  return;
 }
 
 /**

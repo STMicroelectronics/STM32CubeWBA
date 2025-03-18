@@ -5,7 +5,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2024 STMicroelectronics.
+ * Copyright (c) 2018-2025 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -884,9 +884,6 @@ tBleStatus ACI_GAP_START_CONNECTION_UPDATE( uint16_t Connection_Handle,
 tBleStatus ACI_GAP_SEND_PAIRING_REQ( uint16_t Connection_Handle,
                                      uint8_t Force_Rebond );
 
-tBleStatus ACI_GAP_RESOLVE_PRIVATE_ADDR( const uint8_t* Address,
-                                         uint8_t* Actual_Address );
-
 tBleStatus ACI_GAP_SET_BROADCAST_MODE( uint16_t Advertising_Interval_Min,
                                        uint16_t Advertising_Interval_Max,
                                        uint8_t Advertising_Type,
@@ -906,8 +903,10 @@ tBleStatus ACI_GAP_START_OBSERVATION_PROC( uint16_t LE_Scan_Interval,
 tBleStatus ACI_GAP_GET_BONDED_DEVICES( uint8_t* Num_of_Addresses,
                                        Bonded_Device_Entry_t* Bonded_Device_Entry );
 
-tBleStatus ACI_GAP_IS_DEVICE_BONDED( uint8_t Peer_Address_Type,
-                                     const uint8_t* Peer_Address );
+tBleStatus ACI_GAP_CHECK_BONDED_DEVICE( uint8_t Peer_Address_Type,
+                                        const uint8_t* Peer_Address,
+                                        uint8_t* Id_Address_Type,
+                                        uint8_t* Id_Address );
 
 tBleStatus ACI_GAP_NUMERIC_COMPARISON_VALUE_CONFIRM_YESNO( uint16_t Connection_Handle,
                                                            uint8_t Confirm_Yes_No );
@@ -1588,15 +1587,38 @@ tBleStatus HCI_LE_SUBRATE_CHANGE_EVENT( uint8_t Status,
                                         uint16_t Continuation_Number,
                                         uint16_t Supervision_Timeout );
 
+tBleStatus HCI_LE_CIS_ESTABLISHED_V2_EVENT( uint8_t Status,
+                                            uint16_t Connection_Handle,
+                                            const uint8_t* CIG_Sync_Delay,
+                                            const uint8_t* CIS_Sync_Delay,
+                                            const uint8_t* Transport_Latency_C_To_P,
+                                            const uint8_t* Transport_Latency_P_To_C,
+                                            uint8_t PHY_C_To_P,
+                                            uint8_t PHY_P_To_C,
+                                            uint8_t NSE,
+                                            uint8_t BN_C_To_P,
+                                            uint8_t BN_P_To_C,
+                                            uint8_t FT_C_To_P,
+                                            uint8_t FT_P_To_C,
+                                            uint16_t Max_PDU_C_To_P,
+                                            uint16_t Max_PDU_P_To_C,
+                                            uint16_t ISO_Interval,
+                                            const uint8_t* Sub_Interval,
+                                            uint16_t Max_SDU_C_To_P,
+                                            uint16_t Max_SDU_P_To_C,
+                                            const uint8_t* SDU_Interval_C_To_P,
+                                            const uint8_t* SDU_Interval_P_To_C,
+                                            uint8_t Framing );
+
 tBleStatus ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT( uint8_t Last_State,
                                                 uint8_t Next_State,
                                                 uint32_t Next_State_SysTime,
                                                 uint8_t Last_State_Slot,
                                                 uint8_t Next_State_Slot );
 
-tBleStatus ACI_HAL_FW_ERROR_EVENT( uint8_t FW_Error_Type,
-                                   uint8_t Data_Length,
-                                   const uint8_t* Data );
+tBleStatus ACI_HAL_WARNING_EVENT( uint8_t Warning_Type,
+                                  uint8_t Data_Length,
+                                  const uint8_t* Data );
 
 tBleStatus ACI_HAL_SYNC_EVENT( uint8_t Group_Id,
                                uint32_t Next_Anchor_Point,
@@ -1613,9 +1635,7 @@ tBleStatus ACI_GAP_PASS_KEY_REQ_EVENT( uint16_t Connection_Handle );
 
 tBleStatus ACI_GAP_AUTHORIZATION_REQ_EVENT( uint16_t Connection_Handle );
 
-tBleStatus ACI_GAP_PERIPHERAL_SECURITY_INITIATED_EVENT( void );
-
-tBleStatus ACI_GAP_BOND_LOST_EVENT( void );
+tBleStatus ACI_GAP_BOND_LOST_EVENT( uint16_t Connection_Handle );
 
 tBleStatus ACI_GAP_PROC_COMPLETE_EVENT( uint8_t Procedure_Code,
                                         uint8_t Status,

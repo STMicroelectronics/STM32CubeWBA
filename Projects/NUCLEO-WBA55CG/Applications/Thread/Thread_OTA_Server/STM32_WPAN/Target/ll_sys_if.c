@@ -29,6 +29,9 @@
 #include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
+/* Radio event scheduling method - must be set at 1 */
+#define USE_RADIO_LOW_ISR                   (1)
+#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* USER CODE BEGIN PD */
 
@@ -57,7 +60,6 @@
 
 /* Private functions prototypes-----------------------------------------------*/
 static void ll_sys_sleep_clock_source_selection(void);
-void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -160,29 +162,3 @@ void ll_sys_sleep_clock_source_selection(void)
   ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 }
 
-void ll_sys_reset(void)
-{
-/* USER CODE BEGIN ll_sys_reset_0 */
-
-/* USER CODE END ll_sys_reset_0 */
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
-  uint8_t bsca = 0;
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
-
-  /* Apply the selected link layer sleep timer source */
-  ll_sys_sleep_clock_source_selection();
-
-  /* Configure the link layer sleep clock accuracy if different from the default one */
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
-  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
-#else
-  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
-  {
-    ll_intf_le_set_sleep_clock_accuracy(bsca);
-  }
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
-
-/* USER CODE BEGIN ll_sys_reset_1 */
-
-/* USER CODE END ll_sys_reset_1 */
-}

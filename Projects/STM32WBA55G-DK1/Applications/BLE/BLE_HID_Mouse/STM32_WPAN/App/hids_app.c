@@ -38,9 +38,7 @@
 #include "stm32wba55g_discovery_lcd.h"
 #include "stm32_lcd.h"
 #endif /* CFG_LCD_SUPPORTED */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-#include "stm32wba55g_discovery.h"
-#endif
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +68,6 @@ typedef struct
   HIDS_APP_SendInformation_t     Inputrep_Notification_Status;
   /* USER CODE BEGIN Service1_APP_Context_t */
   uint16_t SampleFrequency;
-  UTIL_TIMER_Object_t           TimerUpdate_Id;
   /* USER CODE END Service1_APP_Context_t */
   uint16_t              ConnectionHandle;
 } HIDS_APP_Context_t;
@@ -83,7 +80,7 @@ typedef struct
 #define MOUSE_MIDDLE_BUTTON     0x04
 #define MOUSE_RIGHT_BUTTON      0x02
 
-#define MOUSE_SPEED             5
+#define MOUSE_SPEED             10
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -177,8 +174,6 @@ static uint8_t usb_hid_version[4] = {0x01, 0x01, 0x00, 0x03}; // BASE USB HID SP
 static void HIDS_Inputrep_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
-static void HIDS_APP_Update_Cb(void *args);
-static void HIDS_APP_UpdateReport(void);
 #if (CFG_LCD_SUPPORTED == 1)
 static void LCD_DrawIcon(uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height, const uint8_t *pIcon, uint8_t inverted);
 #endif /* CFG_LCD_SUPPORTED */
@@ -270,24 +265,23 @@ void HIDS_APP_EvtRx(HIDS_APP_ConnHandleNotEvt_t *p_Notification)
     /* USER CODE END Service1_APP_EvtRx_Service1_EvtOpcode */
     case HIDS_CONN_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_CONN_HANDLE_EVT */
-      UTIL_TIMER_StartWithPeriod(&(HIDS_APP_Context.TimerUpdate_Id), (uint32_t)(1000 / (HIDS_APP_Context.SampleFrequency)));
 #if (CFG_LCD_SUPPORTED == 1)
       /* ---- Display MOUSE ---- */
-      BSP_LCD_Clear(0,LCD_COLOR_BLACK);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Clear(LCD1, LCD_COLOR_BLACK);
+      BSP_LCD_Refresh(LCD1);
       LCD_DrawIcon(0, 0 , 64, 64, (uint8_t *)mouse, TRUE);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
       UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", RIGHT_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"HID Mouse", RIGHT_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"CONNECTED", RIGHT_MODE);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
 #endif
       /* USER CODE END Service1_APP_CONN_HANDLE_EVT */
       break;
 
     case HIDS_DISCON_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
-      UTIL_TIMER_Stop(&HIDS_APP_Context.TimerUpdate_Id);
+
       /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
       break;
 
@@ -312,32 +306,14 @@ void HIDS_APP_Init(void)
 
   /* USER CODE BEGIN Service1_APP_Init */
   HIDS_Data_t msg_conf;
-
   tBleStatus result = BLE_STATUS_INVALID_PARAMS;
-   
-  /* De-Initialize joystick */
-  BSP_JOY_DeInit(JOY1, JOY_ALL);
-  
-  /* Initialize joystick in GPIO mode */
-  BSP_JOY_Init(JOY1, JOY_MODE_GPIO, JOY_ALL);
-  
-  /* Timer for joystick state sampling */
-  UTIL_TIMER_Create(&(HIDS_APP_Context.TimerUpdate_Id), 
-                    20, //20ms 50Hz
-                    UTIL_TIMER_PERIODIC,
-                    &HIDS_APP_Update_Cb, 0);
-  
-  /* Register Input Report task called every joystick state sampling */
-  UTIL_SEQ_RegTask( 1<< CFG_TASK_HID_UPDATE_REQ_ID, UTIL_SEQ_RFU, HIDS_APP_UpdateReport );
 
-  /* Joystick state sampling at 50Hz */
-  HIDS_APP_Context.SampleFrequency = 50;          /* 50 Hz 20 ms */
-  
   /* Set the Keyboard Report Map */
   memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
   memcpy((void*)a_HIDS_UpdateCharData, (void *)&report_mouse, sizeof(report_mouse));
   msg_conf.p_Payload = a_HIDS_UpdateCharData;
   msg_conf.Length = sizeof(report_mouse);
+
   result = HIDS_UpdateValue(HIDS_REM, &msg_conf);
   if( result != BLE_STATUS_SUCCESS )
   {
@@ -349,6 +325,7 @@ void HIDS_APP_Init(void)
   memcpy((void*)a_HIDS_UpdateCharData, (void *)&usb_hid_version, sizeof(usb_hid_version));
   msg_conf.p_Payload = a_HIDS_UpdateCharData;
   msg_conf.Length = sizeof(usb_hid_version);
+
   result = HIDS_UpdateValue(HIDS_HII, &msg_conf);
   if( result != BLE_STATUS_SUCCESS )
   {
@@ -359,6 +336,136 @@ void HIDS_APP_Init(void)
 }
 
 /* USER CODE BEGIN FD */
+#if (CFG_JOYSTICK_SUPPORTED == 1)
+void APP_BSP_JoystickUpAction( void )
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  mouse_report_t mouse_report = {0};
+  HIDS_Data_t msg_conf;
+  
+  mouse_report.y = -1 * MOUSE_SPEED;
+  
+  memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+  memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+
+  msg_conf.p_Payload = a_HIDS_UpdateCharData;
+  msg_conf.Length = sizeof(mouse_report);
+  
+  result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+  if(result != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("HIDS_UpdateValue fails\n");
+  }  
+}
+
+void APP_BSP_JoystickRightAction( void )
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  mouse_report_t mouse_report = {0};
+  HIDS_Data_t msg_conf;
+  
+  mouse_report.x = 1 * MOUSE_SPEED;
+  
+  memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+  memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+
+  msg_conf.p_Payload = a_HIDS_UpdateCharData;
+  msg_conf.Length = sizeof(mouse_report);
+  
+  result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+  if(result != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("HIDS_UpdateValue fails\n");
+  }  
+}
+
+void APP_BSP_JoystickDownAction( void )
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  mouse_report_t mouse_report = {0};
+  HIDS_Data_t msg_conf;
+  
+  mouse_report.y = 1 * MOUSE_SPEED;
+  
+  memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+  memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+
+  msg_conf.p_Payload = a_HIDS_UpdateCharData;
+  msg_conf.Length = sizeof(mouse_report);
+  
+  result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+  if(result != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("HIDS_UpdateValue fails\n");
+  }  
+}
+
+void APP_BSP_JoystickLeftAction( void )
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  mouse_report_t mouse_report = {0};
+  HIDS_Data_t msg_conf;
+  
+  mouse_report.x = -1 * MOUSE_SPEED;
+  
+  memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+  memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+
+  msg_conf.p_Payload = a_HIDS_UpdateCharData;
+  msg_conf.Length = sizeof(mouse_report);
+  
+  result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+  if(result != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("HIDS_UpdateValue fails\n");
+  }
+}
+
+void APP_BSP_JoystickSelectAction( void )
+{
+  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
+  mouse_report_t mouse_report = {0};
+  HIDS_Data_t msg_conf;
+  static UTIL_TIMER_Time_t time_snapshot = 0;
+  
+  /* perform a click only once per second */
+  if(UTIL_TIMER_GetCurrentTime() - time_snapshot > 1000)
+  {
+    mouse_report.buttons |= MOUSE_LEFT_BUTTON;
+    
+    memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+    memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+
+    msg_conf.p_Payload = a_HIDS_UpdateCharData;
+    msg_conf.Length = sizeof(mouse_report);
+    
+    result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+    if(result != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("HIDS_UpdateValue fails\n");
+    }
+   
+    /* Release Button for the selection */
+    mouse_report.buttons &= ~MOUSE_LEFT_BUTTON;
+    mouse_report.x = 0;
+    mouse_report.y = 0;
+
+    memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
+    memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
+    
+    msg_conf.p_Payload = a_HIDS_UpdateCharData;
+    msg_conf.Length = sizeof(mouse_report);
+    
+    result = HIDS_UpdateValue(HIDS_INPUTREP, &msg_conf);
+    if(result != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("HIDS_UpdateValue fails\n");
+    }
+  }
+  
+  time_snapshot = UTIL_TIMER_GetCurrentTime();
+}
+#endif /* CFG_JOYSTICK_SUPPORTED == 1 */
 
 /* USER CODE END FD */
 
@@ -392,99 +499,7 @@ __USED void HIDS_Inputrep_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-/**
- * @brief  Timer callback of the Jostick state sampling  
- * @param  void *args arguments
- * @retval None
- */
-static void HIDS_APP_Update_Cb(void *args)
-{
-  UTIL_SEQ_SetTask(1<<CFG_TASK_HID_UPDATE_REQ_ID, CFG_SEQ_PRIO_0);
-}
 
-/**
- * @brief  HID Update Report 
- * @param  None
- * @retval None
- */
-static void HIDS_APP_UpdateReport(void)
-{
-  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
-  mouse_report_t mouse_report = {0};
-  HIDS_Data_t msg_conf;
-  HIDS_CharOpcode_t report_type = HIDS_INPUTREP;
-  JOYPin_TypeDef Joystick_state = (JOYPin_TypeDef)BSP_JOY_GetState(JOY1);
-  
-  /* Joystick directions according LCD screen displays */
-  if(Joystick_state != JOY_NONE)
-  {
-    switch(Joystick_state)
-    {
-      case(JOY_SEL):
-        {
-          mouse_report.buttons |= MOUSE_LEFT_BUTTON;
-        }
-        break;
-
-      case(JOY_UP):
-        {
-          mouse_report.y = -1 * MOUSE_SPEED; 
-        }
-        break;
-      
-      case(JOY_DOWN):
-        {
-          mouse_report.y = 1 * MOUSE_SPEED; 
-        }
-        break;
-
-      case(JOY_LEFT):
-        {
-          mouse_report.x = -1 * MOUSE_SPEED; 
-        }
-        break;
-
-      case(JOY_RIGHT):
-        {
-          mouse_report.x = 1 * MOUSE_SPEED; 
-        }
-        break;
-    
-      default:
-        break;
-    }
-  
-    memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
-    memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
- 
-    msg_conf.p_Payload = a_HIDS_UpdateCharData;
-    msg_conf.Length = sizeof(mouse_report);
-    result = HIDS_UpdateValue(report_type, &msg_conf);
-    if(result != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("HIDS_UpdateValue fails\n");
-    }
- 
-    if(Joystick_state == JOY_SEL)
-    {
-      /* Release Button for the selection */
-      mouse_report.buttons &= ~MOUSE_LEFT_BUTTON;
-      mouse_report.x = 0;
-      mouse_report.y = 0;
-      
-      memset((void*)a_HIDS_UpdateCharData, 0, sizeof(a_HIDS_UpdateCharData));
-      memcpy((void*)a_HIDS_UpdateCharData, (void *)&mouse_report, sizeof(mouse_report));
-     
-      msg_conf.p_Payload = a_HIDS_UpdateCharData;
-      msg_conf.Length = sizeof(mouse_report);
-      result = HIDS_UpdateValue(report_type, &msg_conf);
-      if(result != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("HIDS_UpdateValue fails\n");
-      }
-    }
-  }
-}
 #if (CFG_LCD_SUPPORTED == 1)
 static void LCD_DrawIcon(uint16_t Xpos, uint16_t Ypos, uint16_t width, uint16_t height, const uint8_t *pIcon, uint8_t inverted)
 {

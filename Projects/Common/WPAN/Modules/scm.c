@@ -561,7 +561,7 @@ OPTIMIZED void scm_setup(void)
       {
         __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
         
-		    /* SCM HSE BEGIN */
+        /* SCM HSE BEGIN */
         SCM_HSE_StartStabilizationTimer();
         /* SCM HSE END */
       }
@@ -640,80 +640,76 @@ OPTIMIZED void scm_setsystemclock(scm_user_id_t user_id, scm_clockconfig_t syscl
   /* Get the higher frequency required by the clients */
   max_freq_requested = scm_getmaxfreq();
 
-  /* Check if we need to apply another clock frequency */
-  if(scm_system_clock_config.targeted_clock_freq != max_freq_requested)
+  /* Check the current system clock source (HSI or HSE) */
+  if(LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
   {
     scm_system_clock_config.targeted_clock_freq = max_freq_requested;
+    
+    /* HSI is still the system clock */
 
-    /* Check the current system clock source (HSI or HSE) */
-    if(LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
+    if(scm_system_clock_config.targeted_clock_freq == HSE_16MHZ)
     {
-      /* HSI is still the system clock */
+      /* The system clock target is HSE 16Mhz */
 
-      if(scm_system_clock_config.targeted_clock_freq == HSE_16MHZ)
-      {
-        /* The system clock target is HSE 16Mhz */
-
-        /* Clear VOS (Range 2) */
-        LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
-      }
-      else
-      {
-        /* The system clock target is higher than HSE 16Mhz */
-
-        /* Set VOS (Range 1) */
-        LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-
-        if(RadioState != SCM_RADIO_NOT_ACTIVE)
-        {
-            /* Disable HSERDY interrupt */
-            __HAL_RCC_DISABLE_IT(RCC_IT_HSERDY);
-
-            /* Wait until VOS has changed */
-            while (LL_PWR_IsActiveFlag_VOS() == 0);
-
-            /* Wait until HSE is ready */
-            /* SCM HSE BEGIN */
-            SCM_HSE_WaitUntilReady();
-			/* SCM HSE END */
-
-            LL_RCC_HSE_DisablePrescaler();
-
-            /* Switch to HSE */
-            LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
-            while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
-
-            scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
-
-            LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1);
-
-            SCM_HSI_CLK_OFF();
-
-            /* Check if PLL is requested */
-            if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
-            {
-                /* Configure system clock to use PLL */
-                ConfigStartPll();
-            }
-
-            /* Ensure time base clock coherency */
-            SystemCoreClockUpdate();
-        }
-      }
-
-      /* System clock is going to be configured in RCC HSERDY interrupt */
+      /* Clear VOS (Range 2) */
+      LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
     }
     else
     {
+      /* The system clock target is higher than HSE 16Mhz */
+
+      /* Set VOS (Range 1) */
+      LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
+      if(RadioState != SCM_RADIO_NOT_ACTIVE)
+      {
+        /* Disable HSERDY interrupt */
+        __HAL_RCC_DISABLE_IT(RCC_IT_HSERDY);
+
+        /* Wait until VOS has changed */
+        while (LL_PWR_IsActiveFlag_VOS() == 0);
+
+        /* Wait until HSE is ready */
+        /* SCM HSE BEGIN */
+        SCM_HSE_WaitUntilReady();
+        /* SCM HSE END */
+
+        LL_RCC_HSE_DisablePrescaler();
+
+        /* Switch to HSE */
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+        while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE);
+
+        scm_setwaitstates(HSE32); /* There is no limitation when in Range1 */
+
+        LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1);
+
+        SCM_HSI_CLK_OFF();
+
+        /* Check if PLL is requested */
+        if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
+        {
+            /* Configure system clock to use PLL */
+            ConfigStartPll();
+        }
+
+        /* Ensure time base clock coherency */
+        SystemCoreClockUpdate();
+      }
+    }
+
+    /* System clock is going to be configured in RCC HSERDY interrupt */
+  }
+  else
+  {
+    if (scm_system_clock_config.targeted_clock_freq != max_freq_requested)
+    {
+      scm_system_clock_config.targeted_clock_freq = max_freq_requested;
+      
       /* HSE is already the system clock source */
       /* Configure the system clock */
-      scm_systemclockconfig();
-    }
-  }
-  else if(scm_system_clock_config.targeted_clock_freq == SYS_PLL)
-  {
-    /* PLL has requested but system clock is already on PLL */
-    scm_pllready();
+      scm_systemclockconfig();        
+    }      
   }
 
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();
@@ -972,34 +968,45 @@ OPTIMIZED void SCM_HSE_WaitUntilReady(void)
     /* Is timer already running ? */
     if (LL_TIM_IsEnabledCounter(TIM16) != 0)
     {  
+      /* Disable update event */
+      LL_TIM_DisableIT_UPDATE(TIM16);
+      
       /* Blocking wait until the end of stabilization */
-      while (LL_TIM_IsEnabledCounter (TIM16) != 0);
+      while(LL_TIM_GetCounter(TIM16) != 0);
     }
     else
     {
-      /* Active wait on HSERDY flag */
-      while (LL_RCC_HSE_IsReady() == 0);
-          
-      /* Clear the update flag */
-      LL_TIM_ClearFlag_UPDATE(TIM16);
-          
-      LL_TIM_DisableIT_UPDATE(TIM16);
+      /* Check whether update interrupt is pending */
+      if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+      {
+        /* Clear the update interrupt flag */
+        LL_TIM_ClearFlag_UPDATE(TIM16);
+      }
+      else
+      {
+        /* Active wait on HSERDY flag */
+        while (LL_RCC_HSE_IsReady() == 0);
+            
+        /* Clear the update flag */
+        LL_TIM_ClearFlag_UPDATE(TIM16);
+            
+        LL_TIM_DisableIT_UPDATE(TIM16);
 
-      LL_TIM_EnableCounter(TIM16);
-      
-      /* Wait until the timer is ready */
-      while(LL_TIM_IsEnabledCounter(TIM16) == 0);
-      
-      /* Wait until the timer is over - ie: Stabilization done */
-      while(LL_TIM_GetCounter(TIM16) != 0);
+        LL_TIM_EnableCounter(TIM16);
+        
+        /* Wait until the timer is ready */
+        while(LL_TIM_IsEnabledCounter(TIM16) == 0);
+        
+        /* Wait until the timer is over - ie: Stabilization done */
+        while(LL_TIM_GetCounter(TIM16) != 0);
 
-      LL_TIM_EnableIT_UPDATE(TIM16);
-      
-      /* Set the SW HSERDY flag */
-      SCM_HSE_Set_SW_HSERDY();
-      
-      SCM_HSE_StopStabilizationTimer();
+        LL_TIM_EnableIT_UPDATE(TIM16);
+      }
     }
+    
+    /* Stop timer and switch clock 
+       Keep same post process than if timer interrupt has been served */
+    SCM_HSE_SW_HSERDY_isr();
   }
 }
 

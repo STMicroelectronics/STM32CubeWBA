@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ral.h#3 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ral.h#1 $*/
 /**
  ********************************************************************************
  * @file    ral.h
@@ -313,6 +313,13 @@ typedef struct _ral_auto_ack_confg_st {
 	ral_state_enum_t auto_rx_ack_state;					/*Enable/Disable automatic rcvd ack*/
 } ral_auto_ack_confg_st;
 
+#if SUPPORT_A_MAC
+typedef struct _ral_a_mac_params_st {
+	ral_auto_ack_confg_st auto_ack_config;
+	uint16_t ifs;
+	ral_phy_rate_enum_t phy_rate;
+}ral_a_mac_params_st;
+#endif /*SUPPORT_A_MAC*/
 /**
  * @struct ral_coex_info_st
  * @brief RAL event infomration in case of coexistence
@@ -1521,6 +1528,22 @@ void ed_timer_hndl(void* ptr_info);
  */
 void ral_phy_set_zigbee_phy_cont_test_mode(ral_instance_t instance, uint8_t type, uint8_t enable_mode, uint8_t chnl_num, int8_t tx_pwr);
 #endif /*end of SUPPORT_MAC_PHY_CONT_TESTING_CMDS */
+
+#if SUPPORT_A_MAC
+/**
+ *
+ * @fn ral_get_a_mac_params
+ *
+ * @brief   get parameters used in augmented MAC  (IFS, phy_rate, auto_ACK_config)
+ *
+ * @param   ral_instance : [in] ral instance
+ *
+ * @param   a_mac_params : [out] current augmented MAC parameters
+ *
+ * @retval Status
+ */
+ral_error_enum_t ral_get_a_mac_params(ral_instance_t ral_instance,ral_a_mac_params_st* a_mac_params);
+#endif /*SUPPORT_A_MAC*/
 
 #endif /* INCLUDE_RAL_H_ */
 /**

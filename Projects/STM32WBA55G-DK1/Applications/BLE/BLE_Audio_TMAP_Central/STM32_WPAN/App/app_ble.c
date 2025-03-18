@@ -331,7 +331,12 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_le_phy_update_complete);
 
           /* USER CODE BEGIN EVT_LE_PHY_UPDATE_COMPLETE */
-
+          LOG_INFO_APP(">>== HCI_LE_PHY_UPDATE_COMPLETE_SUBEVT_CODE - ACL Connection handle: 0x%04X  - Status 0x%02X\n",
+                       p_le_phy_update_complete->Connection_Handle,
+                       p_le_phy_update_complete->Status);
+          LOG_INFO_APP(">>== RX_PHY : 0x%02X  - TX_PHY : 0x%02X\n",
+                       p_le_phy_update_complete->RX_PHY,
+                       p_le_phy_update_complete->TX_PHY);
           /* USER CODE END EVT_LE_PHY_UPDATE_COMPLETE */
           break;
         }
@@ -342,6 +347,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_enhanced_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
           uint16_t conn_interval_us = 0;
+          uint8_t type, a_address[6];
           conn_interval_us = p_enhanced_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n",
                        p_enhanced_conn_complete->Connection_Handle);
@@ -359,8 +365,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
           UNUSED(conn_interval_us);
-          if (aci_gap_is_device_bonded(p_enhanced_conn_complete->Peer_Address_Type,
-                                      &p_enhanced_conn_complete->Peer_Address[0]) == BLE_STATUS_SUCCESS)
+          if (aci_gap_check_bonded_device(p_enhanced_conn_complete->Peer_Address_Type,
+                                      &p_enhanced_conn_complete->Peer_Address[0],
+                                      &type,
+                                      a_address ) == BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP(">>== device is already bonded\n");
           }
@@ -403,6 +411,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
           uint16_t conn_interval_us = 0;
+          uint8_t type, a_address[6];
           conn_interval_us = p_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n",
                        p_conn_complete->Connection_Handle);
@@ -420,8 +429,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Supervision_Timeout * 10
                      );
           UNUSED(conn_interval_us);
-          if (aci_gap_is_device_bonded(p_conn_complete->Peer_Address_Type,
-                        &p_conn_complete->Peer_Address[0]) == BLE_STATUS_SUCCESS)
+          if (aci_gap_check_bonded_device(p_conn_complete->Peer_Address_Type,
+                                          &p_conn_complete->Peer_Address[0],
+                                          &type,
+                                          a_address ) == BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP(">>== device is already bonded\n");
           }
@@ -449,6 +460,20 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
             hci_le_cis_established_event_rp0 *p_cis_established_event;
             p_cis_established_event = (hci_le_cis_established_event_rp0 *) p_meta_evt->data;
             LOG_INFO_APP(">>== HCI_LE_CIS_ESTABLISHED_SUBEVT_CODE - CIS Connection handle: 0x%04X  - Status 0x%02X\n",
+                         p_cis_established_event->Connection_Handle,
+                         p_cis_established_event->Status);
+            if (p_cis_established_event->Status == BLE_STATUS_SUCCESS)
+            {
+              TMAPAPP_CISConnected(p_cis_established_event->Connection_Handle);
+            }
+        }
+        break;
+
+        case HCI_LE_CIS_ESTABLISHED_V2_SUBEVT_CODE:
+        {
+            hci_le_cis_established_v2_event_rp0 *p_cis_established_event;
+            p_cis_established_event = (hci_le_cis_established_v2_event_rp0 *) p_meta_evt->data;
+            LOG_INFO_APP(">>== HCI_LE_CIS_ESTABLISHED_V2_SUBEVT_CODE - CIS Connection handle: 0x%04X  - Status 0x%02X\n",
                          p_cis_established_event->Connection_Handle,
                          p_cis_established_event->Status);
             if (p_cis_established_event->Status == BLE_STATUS_SUCCESS)
@@ -522,6 +547,12 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
               UTIL_MEM_cpy_8(&name[0], name_ptr, name_len);
               name[name_len] = '\0';
             }
+
+#if (CFG_TEST_VALIDATION == 1u)
+            if (memcmp(&name[0], "TMAP_WBA", 8u) != 0)
+              return SVCCTL_UserEvtFlowEnable;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+
             LOG_INFO_APP("%s: %02x:%02x:%02x:%02x:%02x:%02x\n",
                          name,
                          report->Address[5],
@@ -624,6 +655,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           }
           LOG_INFO_APP("\n");
 
+          /*Set PHY preferences for the connection*/
+          hci_le_set_phy(p_pairing_complete->Connection_Handle, CFG_PHY_PREF, CFG_PHY_PREF_TX, CFG_PHY_PREF_RX, 0);
+
           if (p_pairing_complete->Status == BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP("Pairing Complete with connection handle 0x%04X\n", p_pairing_complete->Connection_Handle);
@@ -706,7 +740,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           LOG_INFO_APP(">>== Attribute_Value_Length : 0x%02X\n", p_indication->Attribute_Value_Length);
           LOG_INFO_APP(">>== ACI_GATT_INDICATION_VSEVT_CODE\n");
           ret = aci_gatt_confirm_indication(p_indication->Connection_Handle);
-          LOG_INFO_APP(">>== aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          if (ret != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+          }
           if (ret != BLE_STATUS_SUCCESS)
           {
             /* Impossible to confirm indication due to GATT process ongoing. Notify tmap_app */
@@ -842,7 +883,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   tBleStatus ret;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init */
-  uint8_t a_hci_commandParams[8] = {0xFFu,0xF7u,0x86u,0xBFu,0x03u,0x00u,0x00u,0x00u};
+  uint8_t a_hci_commandParams[8] = {0xFFu,0xFFu,0x86u,0xBFu,0x03u,0x00u,0x00u,0x00u};
   /* Mask the HAL Events*/
   aci_hal_set_event_mask(0x00000000);
 

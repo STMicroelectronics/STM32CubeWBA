@@ -271,9 +271,14 @@ enum ZbZclOtaHeaderFieldCtrlBitmask {
 
 /** OTA Header Image Definition structure */
 struct ZbZclOtaImageDefinition {
-    uint16_t manufacturer_code; /**< Manufacturer code */
-    uint16_t image_type; /**< Image type */
-    uint32_t file_version; /**< File version */
+    uint16_t manufacturer_code;
+    /**< Manufacturer code. Wildcard value = ZB_MFG_CODE_WILDCARD = 0xffff */
+
+    uint16_t image_type;
+    /**< Image type. Wildcard value = ZCL_OTA_IMAGE_TYPE_WILDCARD = 0xffff */
+
+    uint32_t file_version;
+    /**< File version. Wildcard value = ZCL_OTA_FILE_VERSION_WILDCARD = 0xffffffff */
 };
 
 /** OTA Upgrade Image Types enumerations */

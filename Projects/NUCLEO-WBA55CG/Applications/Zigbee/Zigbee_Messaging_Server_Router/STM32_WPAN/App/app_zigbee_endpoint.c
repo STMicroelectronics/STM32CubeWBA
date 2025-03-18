@@ -88,7 +88,6 @@ const uint8_t  szMessageDelayed[]   = "GoodBye";
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
 static struct ZbZclMsgMessageT          stImmediateMessage;
 static struct ZbZclMsgMessageT          stDelayedMessage;
@@ -161,7 +160,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
   UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
 #endif /* CFG_LPM_STDBY_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
@@ -241,11 +240,15 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
 
+  /* Using the default HA preconfigured Link Key */
+  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
+
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
   pstConfig->channelList.count = 1;
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
+
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )

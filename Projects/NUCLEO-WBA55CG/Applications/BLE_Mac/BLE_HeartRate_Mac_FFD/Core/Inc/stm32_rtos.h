@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -38,6 +38,15 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
+/* Sequencer priorities by default  */
+#define TASK_PRIO_RNG                           CFG_SEQ_PRIO_0
+#define TASK_PRIO_LINK_LAYER                    CFG_SEQ_PRIO_0
+#define TASK_PRIO_MAC_LAYER                     CFG_SEQ_PRIO_1
+
+/* USER CODE BEGIN TASK_Priority_Define */
+
+/* USER CODE END TASK_Priority_Define */
+
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */

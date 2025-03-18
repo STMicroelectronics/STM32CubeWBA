@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -73,7 +73,6 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 /* USER CODE END PD */
 
 /* Private constants ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -280,9 +279,6 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
   {
     /* Application configure Startup */
     APP_ZIGBEE_GetStartupConfig( &stConfig );
-
-    /* Using the default HA preconfigured Link Key */
-    memcpy( stConfig.security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
     /* Using ZbStartupWait (blocking) */
     stZigbeeAppInfo.eJoinStatus = ZbStartupWait( stZigbeeAppInfo.pstZigbee, &stConfig );

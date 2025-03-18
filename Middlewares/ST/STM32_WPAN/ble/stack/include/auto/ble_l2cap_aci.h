@@ -1,11 +1,11 @@
 /*****************************************************************************
  * @file    ble_l2cap_aci.h
- * @brief   STM32WBA BLE API (l2cap_aci)
+ * @brief   STM32WBA BLE API (L2CAP_ACI)
  *          Auto-generated file: do not edit!
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2024 STMicroelectronics.
+ * Copyright (c) 2018-2025 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file

@@ -138,7 +138,7 @@ enum
 {
   BOARD_ID_NUCLEO_WBA5X =  0x8B,
   BOARD_ID_DK_WBA5X     =  0x8C,
-  /* Device ID: WBA5x, ... */
+  BOARD_ID_NUCLEO_WBA6X =  0x8E
 };
 
 /** 
@@ -182,6 +182,7 @@ void APP_BLE_Init(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
+const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

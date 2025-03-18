@@ -91,5 +91,7 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
+  ConfigureStandbyWakeupPins();
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

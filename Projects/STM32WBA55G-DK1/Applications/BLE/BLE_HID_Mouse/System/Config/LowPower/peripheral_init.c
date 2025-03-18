@@ -33,9 +33,7 @@ extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RNG_HandleTypeDef hrng;
 
 /* USER CODE BEGIN EV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-extern uint8_t JOY_StandbyExitFlag;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -86,8 +84,7 @@ void MX_StandbyExit_PeripheralInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  JOY_StandbyExitFlag = 1;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

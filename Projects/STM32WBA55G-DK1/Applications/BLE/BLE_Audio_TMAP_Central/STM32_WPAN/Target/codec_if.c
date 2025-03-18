@@ -521,7 +521,7 @@ void RCC_AUDIOSYNC_IRQHandler(void)
 /******************************************************************************/
 
 #if (LINK_LC3_ENCODER == 0)
-LC3_Status lc3_encoder_process(void *handle, void *input, uint32_t decimation, uint8_t *bytes)
+LC3_Status lc3_encoder_process(void *handle, void *stack, void *input, uint32_t decimation, uint8_t *bytes)
 {
   /* should not be reached */
   return LC3_UNKNOWN_ERROR;
@@ -535,7 +535,7 @@ LC3_Status lc3_encoder_channel_init(void* hSession, void* handle , uint32_t bitr
 #endif /* LINK_LC3_ENCODER */
 
 #if (LINK_LC3_DECODER == 0)
-LC3_Status lc3_decoder_process(void *handle, uint8_t *bytes, void *output, uint32_t decimation, uint32_t BFI_in)
+LC3_Status lc3_decoder_process(void *handle, void *stack, uint8_t *bytes, void *output, uint32_t decimation, uint32_t BFI_in)
 {
   /* should not be reached */
   return LC3_UNKNOWN_ERROR;

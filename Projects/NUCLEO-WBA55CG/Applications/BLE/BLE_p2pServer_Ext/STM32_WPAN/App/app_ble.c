@@ -567,7 +567,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE:
         {
           /* USER CODE BEGIN RADIO_ACTIVITY_EVENT */
+          #if (CFG_LED_SUPPORTED == 1)
           BSP_LED_On(LED_GREEN);
+          #endif
           UTIL_TIMER_StartWithPeriod(&bleAppContext.SwitchOffGPIO_timer_Id, LED_ON_TIMEOUT_MS);
           /* USER CODE END RADIO_ACTIVITY_EVENT */
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
@@ -1577,13 +1579,17 @@ static void Adv_Cancel_Req(void *arg)
 
 static void Switch_OFF_GPIO(void *arg)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
   return;
 }
 
 static void Adv_Cancel(void)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
 
   bleAppContext.Device_Connection_Status = APP_BLE_IDLE;
 
@@ -1734,9 +1740,10 @@ void APP_BSP_Button1Action(void)
 void APP_BSP_Button2Action(void)
 {
   tBleStatus ret;
-  
+
   if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
   {
+    /* Clear Security Database */
     ret = aci_gap_clear_security_db();
     if (ret != BLE_STATUS_SUCCESS)
     {
@@ -1750,6 +1757,7 @@ void APP_BSP_Button2Action(void)
   else
   {
   }
+
   return;
 }
 

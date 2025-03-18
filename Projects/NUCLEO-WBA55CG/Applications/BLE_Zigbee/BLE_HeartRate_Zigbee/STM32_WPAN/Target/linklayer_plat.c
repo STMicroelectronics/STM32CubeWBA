@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -30,7 +30,9 @@
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
+#include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -66,8 +68,15 @@ uint32_t radio_sleep_timer_val = 0;
   */
 void LINKLAYER_PLAT_ClockInit()
 {
-  /* Select LSE as Sleep CLK */
-  __HAL_RCC_RADIOSLPTIM_CONFIG(RCC_RADIOSTCLKSOURCE_LSE);
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
+  /* Get the Link Layer sleep timer clock source */
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_NONE)
+  {
+    /* If there is no clock source defined, should be selected before */
+    assert_param(0);
+  }
 
   /* Enable AHB5ENR peripheral clock (bus CLK) */
   __HAL_RCC_RADIO_CLK_ENABLE();
@@ -166,7 +175,7 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
     SCM_HSE_WaitUntilReady();
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
-	/* SCM HSE END */
+    /* SCM HSE END */
 #else
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
@@ -474,16 +483,15 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   */
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_DisableSleepMode();
+  /* Disabling stop mode prevents also from entering in standby */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -493,16 +501,14 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
   */
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_EnableSleepMode();
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**

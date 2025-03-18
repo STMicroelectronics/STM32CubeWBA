@@ -5,7 +5,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2024 STMicroelectronics.
+ * Copyright (c) 2018-2025 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -122,36 +122,22 @@ tBleStatus hci_read_remote_version_information_complete_event( uint8_t Status,
 
 /**
  * @brief HCI_HARDWARE_ERROR_EVENT
- * The Hardware Error event is used to indicate some implementation specific
- * type of hardware failure for the controller. This event is used to notify
- * the Host that a hardware failure has occurred in the Controller.
+ * This event is used to notify the Host that a hardware failure has occurred
+ * in the Controller.
+ * Refer to Annex for details on the possible values of Hardware_Code.
  * 
- * @param Hardware_Code Hardware Error Event code.
- *        Error code 0 is not used.
- *        Error code 1 is bluecore act2 error detected (only for STM32WB).
- *        Error code 2 is bluecore time overrun error detected (only for
- *        STM32WB).
- *        Error code 3 is internal FIFO full.
- *        Error code 4 is ISR delay error detected (only for STM32WB and only
- *        from cut 2.2).
- *        Error code 5 is LL internal error (only for STM32WBA).
- *        Values:
- *        - 0x01: event_act2 error
- *        - 0x02: event_time_overrun error
- *        - 0x03: event_fifo_full error
- *        - 0x04: event_isr_delay_error
- *        - 0x05: event_ll_error
+ * @param Hardware_Code Implementation-specific hardware code.
  * @return Value indicating success or error code.
  */
 tBleStatus hci_hardware_error_event( uint8_t Hardware_Code );
 
 /**
  * @brief HCI_NUMBER_OF_COMPLETED_PACKETS_EVENT
- * The Number Of Completed Packets event is used by the Controller to indicate
- * to the Host how many HCI Data Packets have been completed (transmitted or
- * flushed) for each Connection_Handle since the previous Number Of Completed
- * Packets event was sent to the Host. This means that the corresponding buffer
- * space has been freed in the Controller. Based on this information, and the
+ * This event is used by the Controller to indicate to the Host how many HCI
+ * Data Packets have been completed (transmitted or flushed) for each
+ * Connection_Handle since the previous Number Of Completed Packets event was
+ * sent to the Host. This means that the corresponding buffer space has been
+ * freed in the Controller. Based on this information, and the
  * HC_Total_Num_ACL_Data_Packets and HC_Total_Num_Synchronous_Data_Packets
  * return parameter of the Read_Buffer_Size command, the Host can determine for
  * which Connection_Handles the following HCI Data Packets should be sent to
@@ -598,14 +584,14 @@ tBleStatus hci_le_directed_advertising_report_event( uint8_t Num_Reports,
  *        Values:
  *        - 0x01: The transmitter PHY for the connection is LE 1M
  *        - 0x02: The transmitter PHY for the connection is LE 2M
- *        - 0x03: The transmitter PHY for the connection is LE Coded (not
- *          supported on STM32WB)
+ *        - 0x03: The transmitter PHY for the connection is LE Coded [not
+ *          supported on STM32WB]
  * @param RX_PHY Receiver PHY in use.
  *        Values:
  *        - 0x01: The receiver PHY for the connection is LE 1M
  *        - 0x02: The receiver PHY for the connection is LE 2M
- *        - 0x03: The receiver PHY for the connection is LE Coded (not
- *          supported on STM32WB)
+ *        - 0x03: The receiver PHY for the connection is LE Coded [not
+ *          supported on STM32WB]
  * @return Value indicating success or error code.
  */
 tBleStatus hci_le_phy_update_complete_event( uint8_t Status,
@@ -711,11 +697,7 @@ tBleStatus hci_le_extended_advertising_report_event( uint8_t Num_Reports,
  * Controller.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.14].
  * 
- * @param Status Periodic advertising sync status.
- *        Values:
- *        - 0x00: Periodic advertising sync successful.
- *        - 0x01 ... 0xFF: Periodic advertising sync failed (see "Status error
- *          codes" section).
+ * @param Status Status error code.
  * @param Sync_Handle Handle identifying the periodic advertising train.
  *        Values:
  *        - 0x0000 ... 0x0EFF
@@ -1025,11 +1007,7 @@ tBleStatus hci_le_connection_iq_report_event( uint16_t Connection_Handle,
  * timeout timer expired.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.23].
  * 
- * @param Status CTE request failed status.
- *        Values:
- *        - 0x00: LL_CTE_RSP PDU received successfully but without a CTE field
- *        - 0x01 ... 0xFF: Peer rejected the request (see "Status error codes"
- *          section)
+ * @param Status Status error code.
  * @param Connection_Handle Handle of the connection where this event occurred.
  *        Values:
  *        - 0x0000 ... 0x0EFF
@@ -1047,11 +1025,7 @@ tBleStatus hci_le_cte_request_failed_event( uint8_t Status,
  * Status will be zero if it successfully synchronized and non-zero otherwise.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.24].
  * 
- * @param Status Periodic advertising sync status.
- *        Values:
- *        - 0x00: Periodic advertising sync successful.
- *        - 0x01 ... 0xFF: Periodic advertising sync failed (see "Status error
- *          codes" section).
+ * @param Status Status error code.
  * @param Connection_Handle Connection handle for which the command applies.
  *        Values:
  *        - 0x0000 ... 0x0EFF
@@ -1118,6 +1092,7 @@ tBleStatus hci_le_periodic_advertising_sync_transfer_received_event( uint8_t Sta
  * on the Peripheral.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.25].
  * 
+ * @param Status Status error code.
  * @param Connection_Handle Connection handle for which the command applies.
  *        Values:
  *        - 0x0000 ... 0x0EFF
@@ -1129,6 +1104,14 @@ tBleStatus hci_le_periodic_advertising_sync_transfer_received_event( uint8_t Sta
  *        PDUs of the specified CIS in a CIG event.
  *        Values:
  *        - 0x0000EA ... 0x7FFFFF
+ * @param Transport_Latency_C_To_P The actual transport latency, in
+ *        microseconds, from Central to Peripheral.
+ *        Values:
+ *        - 0x0000F2 ... 0x7FFFFF
+ * @param Transport_Latency_P_To_C The actual transport latency, in
+ *        microseconds, from Peripheral to Central.
+ *        Values:
+ *        - 0x0000F2 ... 0x7FFFFF
  * @param PHY_C_To_P PHY used for transmission from the Central to the
  *        Peripheral.
  *        Values:
@@ -1225,6 +1208,7 @@ tBleStatus hci_le_cis_request_event( uint16_t ACL_Connection_Handle,
  * This event indicates that the HCI_LE_Create_BIG command has completed.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.27].
  * 
+ * @param Status Status error code.
  * @param BIG_Handle BIG identifier.
  *        Values:
  *        - 0x00 ... 0xEF
@@ -1300,6 +1284,7 @@ tBleStatus hci_le_terminate_big_complete_event( uint8_t BIG_Handle,
  * This event indicates that the HCI_LE_BIG_Create_Sync command has completed.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.29].
  * 
+ * @param Status Status error code.
  * @param BIG_Handle BIG identifier.
  *        Values:
  *        - 0x00 ... 0xEF
@@ -1366,11 +1351,7 @@ tBleStatus hci_le_big_sync_lost_event( uint8_t BIG_Handle,
  * completed.
  * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.31].
  * 
- * @param Status Peer clock accuracy request status.
- *        Values:
- *        - 0x00: The Peer_Clock_Accuracy parameter is successfully received
- *        - 0x01 ... 0xFF: The reception of Peer_Clock_Accuracy parameter
- *          failed (see "Status error codes" section)
+ * @param Status Status error code.
  * @param Connection_Handle Connection handle for which the command applies.
  *        Values:
  *        - 0x0000 ... 0x0EFF
@@ -1573,6 +1554,128 @@ tBleStatus hci_le_subrate_change_event( uint8_t Status,
                                         uint16_t Continuation_Number,
                                         uint16_t Supervision_Timeout );
 
+/**
+ * @brief HCI_LE_CIS_ESTABLISHED_V2_EVENT
+ * This event indicates that a CIS has been established, was considered lost
+ * before being established, or - on the Central - was rejected by the
+ * Peripheral.
+ * See Bluetooth spec. v.6.0 [Vol 4, Part E, 7.7.65.25].
+ * 
+ * @param Status Status error code.
+ * @param Connection_Handle Connection handle for which the command applies.
+ *        Values:
+ *        - 0x0000 ... 0x0EFF
+ * @param CIG_Sync_Delay The maximum time, in microseconds, for transmission of
+ *        PDUs of all CISes in a CIG event.
+ *        Values:
+ *        - 0x0000EA ... 0x7FFFFF
+ * @param CIS_Sync_Delay The maximum time, in microseconds, for transmission of
+ *        PDUs of the specified CIS in a CIG event.
+ *        Values:
+ *        - 0x0000EA ... 0x7FFFFF
+ * @param Transport_Latency_C_To_P The actual transport latency, in
+ *        microseconds, from Central to Peripheral.
+ *        Values:
+ *        - 0x0000F2 ... 0x7FFFFF
+ * @param Transport_Latency_P_To_C The actual transport latency, in
+ *        microseconds, from Peripheral to Central.
+ *        Values:
+ *        - 0x0000F2 ... 0x7FFFFF
+ * @param PHY_C_To_P PHY used for transmission from the Central to the
+ *        Peripheral.
+ *        Values:
+ *        - 0x01: The transmitter PHY of packets from the Central is LE 1M
+ *        - 0x02: The transmitter PHY of packets from the Central is LE 2M
+ *        - 0x03: The transmitter PHY of packets from the Central is LE Coded
+ * @param PHY_P_To_C PHY used for transmission from the Peripheral to the
+ *        Central.
+ *        Values:
+ *        - 0x01: The transmitter PHY of packets from the Peripheral is LE 1M
+ *        - 0x02: The transmitter PHY of packets from the Peripheral is LE 2M
+ *        - 0x03: The transmitter PHY of packets from the Peripheral is LE
+ *          Coded
+ * @param NSE Number of subevents in each interval of each BIS in the BIG.
+ *        Values:
+ *        - 0x01 ... 0x1F
+ * @param BN_C_To_P Burst number for Central to Peripheral.
+ *        Values:
+ *        - 0x00: No isochronous data from the Central to the Peripheral
+ *        - 0x01 ... 0x0F
+ * @param BN_P_To_C Burst number for Peripheral to Central.
+ *        Values:
+ *        - 0x00: No isochronous data from the Peripheral to the Central
+ *        - 0x01 ... 0x0F
+ * @param FT_C_To_P Flush timeout in multiples of ISO_Interval for each payload
+ *        sent from the Central to Peripheral.
+ *        Values:
+ *        - 0x01 ... 0xFF
+ * @param FT_P_To_C Flush timeout in multiples of ISO_Interval for each payload
+ *        sent from the Peripheral to Central.
+ *        Values:
+ *        - 0x01 ... 0xFF
+ * @param Max_PDU_C_To_P Maximum size, in octets, of the payload from the
+ *        Central to the Peripheral.
+ *        Values:
+ *        - 0x0000 ... 0x00FB
+ * @param Max_PDU_P_To_C Maximum size, in octets, of the payload from the
+ *        Peripheral to the Central.
+ *        Values:
+ *        - 0x0000 ... 0x00FB
+ * @param ISO_Interval Time between consecutive BIG anchor points.
+ *        Time = N * 1.25 ms.
+ *        Values:
+ *        - 0x0004 (5.00 ms)  ... 0x0C80 (4000.00 ms)
+ * @param Sub_Interval Time, in microseconds, between the start of consecutive
+ *        subevents in a CIS event.
+ *        Values:
+ *        - 0x000000: NSE = 1 (meaning there is no Sub_Interval)
+ *        - 0x000190 ... 0xFFFFFF: (note that range is limited by ISO_Interval
+ *          multiplied by 1250)
+ * @param Max_SDU_C_To_P Maximum size, in octets, of the payload from the
+ *        Central's Host.
+ *        Values:
+ *        - 0x0000 ... 0x0FFF
+ * @param Max_SDU_P_To_C Maximum size, in octets, of the payload from the
+ *        Peripheral's Host.
+ *        Values:
+ *        - 0x0000 ... 0x0FFF
+ * @param SDU_Interval_C_To_P Time, in microseconds, between the start of
+ *        consecutive SDUs sent by the Central.
+ *        Values:
+ *        - 0x0000FF ... 0x0FFFFF
+ * @param SDU_Interval_P_To_C Time, in microseconds, between the start of
+ *        consecutive SDUs sent by the Peripheral.
+ *        Values:
+ *        - 0x0000FF ... 0x0FFFFF
+ * @param Framing Format of the CIS Data PDUs.
+ *        Values:
+ *        - 0x00: Unframed
+ *        - 0x01: Framed
+ * @return Value indicating success or error code.
+ */
+tBleStatus hci_le_cis_established_v2_event( uint8_t Status,
+                                            uint16_t Connection_Handle,
+                                            const uint8_t* CIG_Sync_Delay,
+                                            const uint8_t* CIS_Sync_Delay,
+                                            const uint8_t* Transport_Latency_C_To_P,
+                                            const uint8_t* Transport_Latency_P_To_C,
+                                            uint8_t PHY_C_To_P,
+                                            uint8_t PHY_P_To_C,
+                                            uint8_t NSE,
+                                            uint8_t BN_C_To_P,
+                                            uint8_t BN_P_To_C,
+                                            uint8_t FT_C_To_P,
+                                            uint8_t FT_P_To_C,
+                                            uint16_t Max_PDU_C_To_P,
+                                            uint16_t Max_PDU_P_To_C,
+                                            uint16_t ISO_Interval,
+                                            const uint8_t* Sub_Interval,
+                                            uint16_t Max_SDU_C_To_P,
+                                            uint16_t Max_SDU_P_To_C,
+                                            const uint8_t* SDU_Interval_C_To_P,
+                                            const uint8_t* SDU_Interval_P_To_C,
+                                            uint8_t Framing );
+
 /* ACI GAP events */
 
 /**
@@ -1652,15 +1755,6 @@ tBleStatus aci_gap_pass_key_req_event( uint16_t Connection_Handle );
 tBleStatus aci_gap_authorization_req_event( uint16_t Connection_Handle );
 
 /**
- * @brief ACI_GAP_PERIPHERAL_SECURITY_INITIATED_EVENT
- * This event is generated when the Peripheral Security Request is successfully
- * sent to the Central.
- * 
- * @return Value indicating success or error code.
- */
-tBleStatus aci_gap_peripheral_security_initiated_event( void );
-
-/**
  * @brief ACI_GAP_BOND_LOST_EVENT
  * This event is generated when a pairing request is issued in response to a
  * Peripheral Security Request from a Central which has previously bonded with
@@ -1668,9 +1762,12 @@ tBleStatus aci_gap_peripheral_security_initiated_event( void );
  * the command ACI_GAP_ALLOW_REBOND in order to allow the Peripheral to
  * continue the pairing process with the Central.
  * 
+ * @param Connection_Handle Handle of the connection where this event occurred.
+ *        Values:
+ *        - 0x0000 ... 0x0EFF
  * @return Value indicating success or error code.
  */
-tBleStatus aci_gap_bond_lost_event( void );
+tBleStatus aci_gap_bond_lost_event( uint16_t Connection_Handle );
 
 /**
  * @brief ACI_GAP_PROC_COMPLETE_EVENT
@@ -2781,12 +2878,12 @@ tBleStatus aci_l2cap_coc_tx_pool_available_event( void );
  *        - 0x05: Central connection
  *        - 0x06: TX test mode
  *        - 0x07: RX test mode
- *        - 0x09: Periodic advertising (only for STM32WBA)
- *        - 0x0A: Periodic sync (only for STM32WBA)
- *        - 0x0B: Iso broadcast (only for STM32WBA)
- *        - 0x0C: Iso sync (only for STM32WBA)
- *        - 0x0D: Iso peripheral connection (only for STM32WBA)
- *        - 0x0E: Iso central connection (only for STM32WBA)
+ *        - 0x09: Periodic advertising [only for STM32WBA]
+ *        - 0x0A: Periodic sync [only for STM32WBA]
+ *        - 0x0B: Iso broadcast [only for STM32WBA]
+ *        - 0x0C: Iso sync [only for STM32WBA]
+ *        - 0x0D: Iso peripheral connection [only for STM32WBA]
+ *        - 0x0E: Iso central connection [only for STM32WBA]
  * @param Next_State Incoming radio event
  *        Values:
  *        - 0x00: Idle
@@ -2796,23 +2893,23 @@ tBleStatus aci_l2cap_coc_tx_pool_available_event( void );
  *        - 0x05: Central connection
  *        - 0x06: TX test mode
  *        - 0x07: RX test mode
- *        - 0x09: Periodic advertising (only for STM32WBA)
- *        - 0x0A: Periodic sync (only for STM32WBA)
- *        - 0x0B: Iso broadcast (only for STM32WBA)
- *        - 0x0C: Iso sync (only for STM32WBA)
- *        - 0x0D: Iso peripheral connection (only for STM32WBA)
- *        - 0x0E: Iso central connection (only for STM32WBA)
+ *        - 0x09: Periodic advertising [only for STM32WBA]
+ *        - 0x0A: Periodic sync [only for STM32WBA]
+ *        - 0x0B: Iso broadcast [only for STM32WBA]
+ *        - 0x0C: Iso sync [only for STM32WBA]
+ *        - 0x0D: Iso peripheral connection [only for STM32WBA]
+ *        - 0x0E: Iso central connection [only for STM32WBA]
  * @param Next_State_SysTime For STM32WB: 32-bit absolute current time
  *        expressed in internal time units;
  *        For STM32WBA: remaining time before next event expressed in
  *        microseconds.
- * @param Last_State_Slot Slot number of completed radio event (only for
- *        STM32WB)
+ * @param Last_State_Slot Slot number of completed radio event [only for
+ *        STM32WB]
  *        Values:
  *        - 0xFF: Idle
  *        - 0x00 ... 0x07
- * @param Next_State_Slot Slot number of incoming radio event (only for
- *        STM32WB)
+ * @param Next_State_Slot Slot number of incoming radio event [only for
+ *        STM32WB]
  *        Values:
  *        - 0xFF: Idle
  *        - 0x00 ... 0x07
@@ -2825,23 +2922,24 @@ tBleStatus aci_hal_end_of_radio_activity_event( uint8_t Last_State,
                                                 uint8_t Next_State_Slot );
 
 /**
- * @brief ACI_HAL_FW_ERROR_EVENT
- * This event is generated to report firmware error information.
+ * @brief ACI_HAL_WARNING_EVENT
+ * This event is generated to report warning information.
  * 
- * @param FW_Error_Type FW Error type
+ * @param Warning_Type Warning type
  *        Values:
  *        - 0x01: L2CAP recombination failure
  *        - 0x02: GATT unexpected peer message
- *        - 0x03: NVM level warning
+ *        - 0x03: NVM almost full
  *        - 0x04: COC RX data length too large
- *        - 0x05: ECOC already assigned DCID
+ *        - 0x05: COC already assigned DCID
+ *        - 0x06: SMP unexpected LTK request
  * @param Data_Length Length of Data in octets
- * @param Data The error event info
+ * @param Data Debug information.
  * @return Value indicating success or error code.
  */
-tBleStatus aci_hal_fw_error_event( uint8_t FW_Error_Type,
-                                   uint8_t Data_Length,
-                                   const uint8_t* Data );
+tBleStatus aci_hal_warning_event( uint8_t Warning_Type,
+                                  uint8_t Data_Length,
+                                  const uint8_t* Data );
 
 /**
  * @brief ACI_HAL_SYNC_EVENT

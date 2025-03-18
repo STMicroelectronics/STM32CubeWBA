@@ -58,6 +58,7 @@ typedef struct ZigbeeAppInfoT
   enum ZbStatusCodeT    eJoinStatus;
   uint32_t              lPersistNumWrites;
   uint32_t              lJoinDelay;
+  uint64_t              dlExtendedAddress;
   /* USER CODE BEGIN ZigbeeAppInfo_t */
 
   /* USER CODE END ZigbeeAppInfo_t */
@@ -107,11 +108,6 @@ extern void       APP_ZIGBEE_PrintApplicationInfo         ( void );
 extern void       APP_ZIGBEE_Error                        ( uint32_t ErrId, uint32_t ErrCode );
 
 /* USER CODE BEGIN EFP */
-/* Exported functions found in app_zigbee_persistence.c */
-extern void       APP_ZIGBEE_Persistence_Init( void );
-extern bool       APP_ZIGBEE_Persistence_StartupNwk( ZigbeeAppInfo_t * pstZigbeeAppInfo, bool bSavePersistence );
-extern void       APP_ZIGBEE_Persistence_Delete ( void );
-
 
 /* USER CODE END EFP */
 

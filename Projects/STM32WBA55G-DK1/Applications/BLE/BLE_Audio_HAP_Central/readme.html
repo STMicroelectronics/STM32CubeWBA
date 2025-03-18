@@ -20,8 +20,8 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_audio_hap_central-application-description"><strong>BLE_Audio_HAP_Central Application Description</strong></h2>
-<p>How to use the Hearing Access Profile in Unicast Client role (Hearing Aid Unicast Client / Hearing Aid Remote Controller / Immediate Alert Client) as specified by the Bluetooth SIG.</p>
-<p>The HAP Central application scans, connects to a remote Unicast Servers (Hearing Aid) and initiate Isochronous Connection. The HAP Central supports Volume Control, Microphone Control and Call Control features.</p>
+<p>How to use the Hearing Access Profile (HAP) in Unicast Client role (Hearing Aid Unicast Client / Hearing Aid Remote Controller / Immediate Alert Client) as specified by the Bluetooth SIG.</p>
+<p>The HAP Central application, in <strong>Unicast Client role</strong>, performs the following actions:<br> - Scans and connects to remote Unicast Servers (Hearing Aid).<br> - Initiate Isochronous Connection.<br> - Supports Volume Control, Call Control, and Microphone Control features.<br> - Supports VHearing Head Preset Control features.<br> <br></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio</p>
 <h3 id="directory-contents"><strong>Directory contents</strong></h3>
@@ -76,6 +76,7 @@
 <li>BLE_Audio_HAP_Central/Core/Src/stm32wbaxx_it.c Interrupt Service Routines.</li>
 <li>BLE_Audio_HAP_Central/Core/Src/system_stm32wbaxx.c CMSIS Cortex-M33 Device Peripheral Access Layer System Source File</li>
 <li>BLE_Audio_HAP_Central/STM32_WPAN/App/app_ble.c BLE Application</li>
+<li>BLE_Audio_HAP_Central/STM32_WPAN/App/app_bsp.c Application to manage BSP</li>
 <li>BLE_Audio_HAP_Central/STM32_WPAN/App/app_menu.c Initialize the Menu module</li>
 <li>BLE_Audio_HAP_Central/STM32_WPAN/App/app_menu_cfg.c Initialize and setup the menu</li>
 <li>BLE_Audio_HAP_Central/STM32_WPAN/App/hap_app.c HAP Application</li>
@@ -108,25 +109,49 @@
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This example runs on STM32WBA55xx devices with SMPS. Connect the Discovery Board to your PC with a USB cable type C. Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3.</li>
+<li>This example runs on STM32WBA55xx devices with SMPS. <br>Connect the Discovery Board to your PC with a USB cable type C <br>Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3. <br>Connect Audio Input on Jack Connector CN4 for Media streaming</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
 <li>Open your preferred toolchain</li>
 <li>Rebuild all files and load your image into target memory</li>
-<li><p>Run the example</p></li>
-<li>At startup, after pressing the Right direction on the joystick and selecting “Start Scan”, the HAP Unicast Server starts scanning nearby Unicast Servers</li>
-<li>Select the Unicast Server you want to connect with the Right direction on the joystick. Pairing and Link-up is initiated automatically.</li>
+<li>Run the example <br> <br></li>
+<li><strong>At Startup</strong> <br>After pressing the Right direction on the joystick, the user accesses a menu offering following actions:
+<ul>
+<li><strong>Start Scan</strong> : the application starts the features associated to the HAP Unicast Client role (Unicast Client, Call Control, Volume Control, HA Preset Control).<br></li>
+<li><strong>Clear Sec. DB</strong> : clear all the information of the bonded devices <br></li>
+</ul></li>
+<li><strong>Start Scan</strong> <br>Once “Start Scan” in HAP Central is executed, the HAP Central starts scanning of nearby Unicast Servers
+<ul>
+<li>Select the Unicast Server you want to connect with the Right direction on the joystick. Pairing and Link-up are initiated automatically.<br> If the remote HAP Peripheral is a Set member of a Coordinated Set, the application starts discovery and linkup of the other Set members of a Coordinated Set (if CFG_BLE_NUM_LINK &gt; 1 and APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY = 1)</li>
 <li>Once connected to the Unicast Server, use the Right direction on the joystick to access the menu:
 <ul>
-<li>Select Audio Stream to access a a submenu where you can Start Media (24KHz unidirectional stereo stream), Start Telephony (16KHz bidirectional mono stream) or Stop the current stream.</li>
-<li>Select Remote Volume to access a panel where the volume of the remote device can be adjusted using the VCP as VCP Controller role (Volume Up / Volume Down / Mute)</li>
-<li>Select Local Volume Control to access a panel where the local volume can be adjusted (Volume Up / Volume Down / Mute)</li>
-<li>Select Microphone Control to access a panel where the microphone mute status of the remote device can be controlled and displayed using the MICP Microphone Controller (Mute)</li>
-<li>Select Call Control to access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call)</li>
-<li>Select Preset Control to access a panel where the remote active Hearing Aid preset can be selected using the HAP as Hearing Aid Remote Controller role (Next Preset / Previous Preset)</li>
-<li>Select Disconnect to disconnect from the device</li>
+<li><strong>Select Audio Stream</strong>: Access a submenu where you can :
+<ul>
+<li>Start Media (24KHz unidirectional stereo stream).</li>
+<li>Start Telephony (16KHz bidirectional mono stream).</li>
+<li>Stop the current stream.</li>
+</ul></li>
+<li><strong>Select Remote Volume</strong>: Access a panel where the volume of the remote device can be adjusted using the VCP as VCP Controller role (Volume Up / Volume Down / Mute)<br></li>
+<li><strong>Select Local Volume Control</strong>: Access a panel where the local volume can be adjusted (Volume Up / Volume Down / Mute)<br></li>
+<li><strong>Select Microphone Control</strong>: Access a panel where the microphone mute status of the remote device can be controlled and displayed using the MICP Microphone Controller (Mute)<br></li>
+<li><strong>Select Call Control</strong>: Access a panel where the remote active Hearing Aid preset can be selected using the HAP as Hearing Aid Remote Controller role (Next Preset / Previous Preset)<br></li>
+<li><strong>Select Preset Control</strong>: Access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call)<br></li>
+<li><strong>Select Disconnect</strong>: Disconnect the connected devices <br></li>
+</ul></li>
+</ul></li>
+<li><strong>Clear Security Database</strong> <br>Once “Clear Sec. DB” in HAP Central is executed, all the information stored in Non-Volatile Memory related to bonded devices are removed.</li>
+</ul>
+<h3 id="documentation"><strong>Documentation</strong></h3>
+<ul>
+<li>Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+<ul>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Hearing_Access_Profile"> Bluetooth® Low Energy audio - Hearing Access Profile</a></li>
 </ul></li>
 </ul>
 </div>

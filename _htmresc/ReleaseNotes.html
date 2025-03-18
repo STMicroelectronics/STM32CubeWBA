@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.5.0RC1 / 20-September-2024</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.6.0 / 05-February-2025</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -14,54 +14,90 @@
 </p>
 
 <p>
-<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx and STM32WBA55xx devices</b>
+<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</b>
 </p>
 <p>
 <b>Security</b>
 </p>
 <p>
-- Minor updates in security applications (SBSFU and TFM) and related scripts.
+- Minor updates in security applications (SBSFU and TFM) and related scripts (NUCLEO-WBA55CG)
+</p>
+<p>
+- For security Applications, main board is STM32WBA65I-DK1
+</p>
+<p>
+- Introducing OEMiRoT & OEMiRoT_OEMuRoT
+</p>
+<p>
+- Add support for initial installation of clear image binaries in execution slots for OEMxRoT
+</p>
+<p>
+- ROT provisioning scripts for OEMiRoT & OEMiRoT_OEMuRoT
+</p>
+<p>
+- Introducing MbedTLS_HW_ALT and MbedTLS_SW
 </p>
 <p>
 <b>Connectivity</b>
 </p>
 <p>
-- External PA(+20dbm) is now supported on BLE using BLE_TransparentMode application. 
+- BLE compliancy to TCRL 2024-2
 </p>
 <p>
-- New third-party MW support: FreeRTOS, mbedtls (mbedtls_alt) 
+- BLE Audio:
 </p>
 <p>
-- Deployment of new directory structure using Common/WPAN directory for Connectivity Applications 
+- LE Audio Projects available on STM32WBA65I-DK
 </p>
 <p>
-- HSE clock startup instabilities fixed with SW workaround (please refer to errata sheet) 
+- New GMAP Peripheral and GMAP Central projects available on STM32WBA65I-DK
 </p>
 <p>
-- OpenThread update to SHA-1: 4a0d6b7b6495a1e4e2e03ab7a4f8baa064df4a6e (June 11th 2024) 
+- Add Scan Delegator feature in TMAP Peripheral project
 </p>
 <p>
-- Zigbee Smart Energy support 
+- RAM Usage optimization in Audio projects
 </p>
 <p>
-- 802.15.4 Antenna Diversity (Mac_802_15_4_Node_Antenna_Diversity application) 
+- Support of CubeMX for the different concurrent modes: BLE_Thread, BLE_Zigbee and BLE_MAC
 </p>
 <p>
-- Add Support of WBA5M (CEB Module) (Applications under B-WBA5M-WPAN) 
+- ioc files are available for applications using those 3 types of concurrent modes.
 </p>
 <p>
-- Advertising Coding Scheme Selection features added 
+- Zigbee Direct :
+</p>
+<p>
+- Zigbee Direct is a new communication protocol designed to enable direct communication between Zigbee devices and smartphones.
+</p>
+<p>
+- Simple Application example using ZigbeeDirect are available in the BLE_Zigbee folders on Nucleo Boards.
+</p>
+<p>
+- LSI2 support for Connectivity applications
 </p>
 <b>Drivers</b>
 </p>
 <p>
-- CMSIS Device Drivers supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx and STM32WBA55xx devices
+- CMSIS Device Drivers supporting TM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA55xx, STM32WBA5Mxx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx  devices
 </p>
 <p>
 - HAL/LL Drivers available for all peripherals
 </p>
 <p>
-- BSP Drivers : Update STM32WBAxx_Nucleo and STM32WBA55G-DK1 BSP drivers to include latest corrections. Add B-WBA5M-WPAN BSP drivers.
+- HAL: ADC, COMP, CORTEX, CRC, CRYP, DMA, EXTI, FLASH, GPIO, GTZC, HASH, HSEM, HCD, I2C, ICACHE, IRDA, IWDG, LPTIM, PKA, PWR, PCD, RAMCFG, RCC, RNG, RTC, SAI, SMARTCARD, SMBUS, SPI, TIM, TSC, UART, USB, USART, WWDG
+</p>
+<p>
+- LL : ADC, COMP, CRC, DMA, EXTI, GPIO, I2C, ICACHE, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SPI, TIM, USART, UTILS
+</p>
+<p>
+- Update HAL/LL drivers to include latest corrections and to support of STM32WBA6xx devices
+</p>
+<p>
+- BSP Drivers : Update STM32WBAxx_Nucleo, STM32WBA65I-DK1 and STM32WBA55G-DK1 BSP drivers to include latest corrections.
+</p>
+<p>
+- Add B-WBA5M-WPAN BSP drivers
 </p>
 <p>
 
@@ -71,31 +107,49 @@
 <b>- B-WBA5M-WPAN</b>
 </p>
 <p>
-- Add new applications demonstrating BLE, Thread and Zigbee capabilities
+- Update new applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
 <b>- NUCLEO-WBA55CG</b>
 </p>
 <p>
-- Update Applications demonstrating BLE capabilities
+- Update Applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
-- Update Applications demonstrating Zigbee capabilities
-</p>
-<p>
-- Update Applications demonstrating Thread capabilities
-</p>
-<p>
-<b>- NUCLEO-WBA52CG</b>
-</p>
-<p>
-- Update Applications demonstrating SBSFU/TFM capabilities
+- Add new Application demonstrating ThreadX and FileX capabilities
 </p>
 <p>
 <b>- STM32WBA55G-DK1</b>
 </p>
 <p>
 - Update applications demonstrating BLE, Zigbee capabilities
+</p>
+<p>
+<b>- NUCLEO-WBA65RI</b>
+</p>
+<p>
+- Add new Applications demonstrating BLE, Thread and Zigbee capabilities
+</p>
+<p>
+- Add new Application demonstrating ThreadX, FileX and USBX capabilities
+</p>
+<p>
+- Add HAL and LL examples
+</p>
+<p>
+<b>- STM32WBA65I-DK1</b>
+</p>
+<p>
+- Add new Applications demonstrating BLE, Thread and Zigbee capabilities
+</p>
+<p>
+- Add new Application demonstrating OEMiRoT capabilities
+</p>
+<p>
+- Add new Applications demonstrating mbedtls capabilities (MbedTLS_HW_ALT and MbedTLS_SW)
+</p>
+<p>
+- Add a HAL SAI example for audio codec
 </p>
 </div>
 </body>

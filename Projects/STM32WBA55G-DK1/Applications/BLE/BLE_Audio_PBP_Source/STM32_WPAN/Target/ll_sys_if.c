@@ -29,6 +29,9 @@
 #include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
+/* Radio event scheduling method - must be set at 1 */
+#define USE_RADIO_LOW_ISR                   (1)
+#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* USER CODE BEGIN PD */
 
@@ -57,9 +60,7 @@
 
 /* Private functions prototypes-----------------------------------------------*/
 static void ll_sys_sleep_clock_source_selection(void);
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
@@ -135,11 +136,12 @@ void ll_sys_config_params(void)
 /* USER CODE END ll_sys_config_params_2 */
 }
 
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
 uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 {
   uint8_t BLE_sleep_clock_accuracy = 0;
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
   uint32_t RevID = LL_DBGMCU_GetRevisionID();
+#endif
   uint32_t linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
 
   if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_LSE)
@@ -147,6 +149,7 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
     /* LSE selected as Link Layer sleep clock source.
        Sleep clock accuracy is different regarding the WBA device ID and revision
      */
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
 #if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx)
     if(RevID == REV_ID_A)
     {
@@ -161,9 +164,15 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
       /* Revision ID not supported, default value of 500ppm applied */
       BLE_sleep_clock_accuracy = STM32WBA5x_DEFAULT_SCA_RANGE;
     }
+#elif defined(STM32WBA65xx)
+    BLE_sleep_clock_accuracy = STM32WBA6x_SCA_RANGE;
+    UNUSED(RevID);
 #else
     UNUSED(RevID);
 #endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) */
+#else /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+    BLE_sleep_clock_accuracy = CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE;
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
   }
   else
   {
@@ -173,7 +182,6 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 
   return BLE_sleep_clock_accuracy;
 }
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 
 void ll_sys_sleep_clock_source_selection(void)
 {
@@ -205,28 +213,45 @@ void ll_sys_sleep_clock_source_selection(void)
 
 void ll_sys_reset(void)
 {
+  uint8_t bsca = 0;
+  /* Link layer timings */
+  uint8_t drift_time = DRIFT_TIME_DEFAULT;
+  uint8_t exec_time = EXEC_TIME_DEFAULT;
+
 /* USER CODE BEGIN ll_sys_reset_0 */
 
 /* USER CODE END ll_sys_reset_0 */
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
-  uint8_t bsca = 0;
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 
   /* Apply the selected link layer sleep timer source */
   ll_sys_sleep_clock_source_selection();
 
-  /* Configure the link layer sleep clock accuracy if different from the default one */
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
-  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
-#else
+  /* Configure the link layer sleep clock accuracy */
   bsca = ll_sys_BLE_sleep_clock_accuracy_selection();
-  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
+  ll_intf_le_set_sleep_clock_accuracy(bsca);
+
+  /* Update link layer timings depending on selected configuration */
+  if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
-    ll_intf_le_set_sleep_clock_accuracy(bsca);
+    drift_time += DRIFT_TIME_EXTRA_LSI2;
+    exec_time += EXEC_TIME_EXTRA_LSI2;
   }
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+  else
+  {
+#if defined(__GNUC__) && defined(DEBUG)
+    drift_time += DRIFT_TIME_EXTRA_GCC_DEBUG;
+    exec_time += EXEC_TIME_EXTRA_GCC_DEBUG;
+#endif
+  }
 
-/* USER CODE BEGIN ll_sys_reset_1 */
+  /* USER CODE BEGIN ll_sys_reset_1 */
 
-/* USER CODE END ll_sys_reset_1 */
+  /* USER CODE END ll_sys_reset_1 */
+
+  if((drift_time != DRIFT_TIME_DEFAULT) || (exec_time != EXEC_TIME_DEFAULT))
+  {
+    ll_sys_config_BLE_schldr_timings(drift_time, exec_time);
+  }
+  /* USER CODE BEGIN ll_sys_reset_2 */
+
+  /* USER CODE END ll_sys_reset_2 */
 }

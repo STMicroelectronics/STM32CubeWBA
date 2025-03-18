@@ -39,6 +39,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/BLE_Audio_TMAP_Peripheral.ioc</locationURI>
 		</link>
 		<link>
+			<name>Doc/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
+		</link>
+		<link>
 			<name>Utilities/stm32_adv_trace.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/trace/adv_trace/stm32_adv_trace.c</locationURI>
@@ -284,6 +289,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_adc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_dma.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</locationURI>
@@ -439,6 +449,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/STM32_WPAN/App/app_menu.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_menu.c</locationURI>
@@ -569,11 +584,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Nvm/nvm_emul.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</locationURI>
-		</link>
-		<link>
 			<name>Common/WPAN/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
@@ -587,26 +597,6 @@
 			<name>Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap_alloc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap_db.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmas.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmas.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/AudioUseCases/usecase_dev_mgmt.c</name>
@@ -637,6 +627,26 @@
 			<name>Application/User/System/Config/LowPower/user_low_power_config.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Config/LowPower/user_low_power_config.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap/tmap.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/AudioUseCases/tmap/tmas.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/AudioUseCases/tmap/tmas.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

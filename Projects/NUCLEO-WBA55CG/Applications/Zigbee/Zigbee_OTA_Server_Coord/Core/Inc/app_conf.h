@@ -285,6 +285,9 @@ typedef enum
 /* Do not modify - must be 1 */
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
+/* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
+#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
+
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -295,7 +298,7 @@ typedef enum
 #endif /* USE_RADIO_LOW_ISR */
 
 /* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (4)
+#define RADIO_NUM_OF_ANTENNAS               (1)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
@@ -311,8 +314,7 @@ typedef enum
  */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
 
-#define CFG_SW_HSE_WORKAROUND               (1)
-
+/* USER CODE BEGIN Radio_Configuration */
 /* USER CODE BEGIN Radio_Configuration */
 
 /* USER CODE END Radio_Configuration */

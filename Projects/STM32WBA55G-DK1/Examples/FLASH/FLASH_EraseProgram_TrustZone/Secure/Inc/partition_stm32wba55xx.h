@@ -37,7 +37,6 @@
 
 #ifndef PARTITION_STM32WBA55XX_H
 #define PARTITION_STM32WBA55XX_H
-
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 */
@@ -459,7 +458,6 @@
 //   <o.30> PKA_IRQn              <0=> Secure state
 //   <o.31> SPI3_IRQn             <0=> Secure state
 */
-
 #define NVIC_INIT_ITNS1_VAL      0x00000000
 
 /*
@@ -473,15 +471,15 @@
 
 /*
 // Interrupts 64..95
-//   <o.0>  ICACHE_IRQn          <0=> Secure state
-//   <o.1>  ADC4_IRQn            <0=> Secure state
-//   <o.2>  RADIO_IRQn           <0=> Secure state
-//   <o.3>  WKUP_IRQn            <0=> Secure state
-//   <o.4>  HSEM_IRQn            <0=> Secure state
-//   <o.5>  HSEM_S_IRQn          <0=> Secure state
-//   <o.6>  WKUP_S_IRQn          <0=> Secure state
+//   <o.0>  ICACHE_IRQn           <0=> Secure state
+//   <o.1>  ADC4_IRQn             <0=> Secure state
+//   <o.2>  RADIO_IRQn            <0=> Secure state
+//   <o.3>  WKUP_IRQn             <0=> Secure state
+//   <o.4>  HSEM_IRQn             <0=> Secure state
+//   <o.5>  HSEM_S_IRQn           <0=> Secure state
+//   <o.6>  WKUP_S_IRQn           <0=> Secure state
+//   <o.7>  RCC_AUDIOSYNC_IRQn    <0=> Secure state
 */
-
 #define NVIC_INIT_ITNS2_VAL      0x00000000
 
 /*
@@ -595,4 +593,3 @@ __STATIC_INLINE void TZ_SAU_Setup (void)
 }
 /* USER CODE END 2 */
 #endif  /* PARTITION_STM32WBA55XX_H */
-

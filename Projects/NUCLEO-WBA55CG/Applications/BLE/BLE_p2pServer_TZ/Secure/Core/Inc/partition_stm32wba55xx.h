@@ -80,7 +80,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END0       0x080FFFFF      /* end address of SAU region 0 */
+#define SAU_INIT_END0       0x80fffff      /* end address of SAU region 0 */
 
 /*
 //     <o>Region is
@@ -106,7 +106,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END1       0x0BF97FFF      /* end address of SAU region 1 */
+#define SAU_INIT_END1       0xbf97fff      /* end address of SAU region 1 */
 
 /*
 //     <o>Region is
@@ -132,7 +132,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END2       0x0C07FFFF      /* end address of SAU region 2 */
+#define SAU_INIT_END2       0xc07ffff      /* end address of SAU region 2 */
 
 /*
 //     <o>Region is
@@ -158,7 +158,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END3       0x2001FFFF      /* end address of SAU region 3 */
+#define SAU_INIT_END3       0x2001ffff      /* end address of SAU region 3 */
 
 /*
 //     <o>Region is
@@ -184,7 +184,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END4       0x4FFFFFFF      /* end address of SAU region 4 */
+#define SAU_INIT_END4       0x4fffffff      /* end address of SAU region 4 */
 
 /*
 //     <o>Region is
@@ -450,7 +450,6 @@
 //   <o.30> PKA_IRQn              <0=> Secure state
 //   <o.31> SPI3_IRQn             <0=> Secure state
 */
-
 #define NVIC_INIT_ITNS1_VAL      0x28084000
 
 /*
@@ -464,15 +463,15 @@
 
 /*
 // Interrupts 64..95
-//   <o.0>  ICACHE_IRQn          <0=> Secure state
-//   <o.1>  ADC4_IRQn            <0=> Secure state
-//   <o.2>  RADIO_IRQn           <1=> Non-Secure state
-//   <o.3>  WKUP_IRQn            <0=> Secure state
-//   <o.4>  HSEM_IRQn            <0=> Secure state
-//   <o.5>  HSEM_S_IRQn          <0=> Secure state
-//   <o.6>  WKUP_S_IRQn          <0=> Secure state
+//   <o.0>  ICACHE_IRQn           <0=> Secure state
+//   <o.1>  ADC4_IRQn             <0=> Secure state
+//   <o.2>  RADIO_IRQn            <1=> Non-Secure state
+//   <o.3>  WKUP_IRQn             <0=> Secure state
+//   <o.4>  HSEM_IRQn             <0=> Secure state
+//   <o.5>  HSEM_S_IRQn           <0=> Secure state
+//   <o.6>  WKUP_S_IRQn           <0=> Secure state
+//   <o.7>  RCC_AUDIOSYNC_IRQn    <0=> Secure state
 */
-
 #define NVIC_INIT_ITNS2_VAL      0x00000004
 
 /*
@@ -586,4 +585,3 @@ __STATIC_INLINE void TZ_SAU_Setup (void)
 }
 /* USER CODE END 2 */
 #endif  /* PARTITION_STM32WBA55XX_H */
-

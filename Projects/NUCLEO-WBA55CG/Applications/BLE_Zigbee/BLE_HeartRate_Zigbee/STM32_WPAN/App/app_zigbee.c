@@ -73,7 +73,6 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 /* USER CODE END PD */
 
 /* Private constants ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -282,9 +281,6 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
   {
     /* Application configure Startup */
     APP_ZIGBEE_GetStartupConfig( &stConfig );
-    
-    /* Using the default HA preconfigured Link Key */
-    memcpy( stConfig.security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
     /* Using ZbStartupWait (blocking) */
     stZigbeeAppInfo.eJoinStatus = ZbStartupWait( stZigbeeAppInfo.pstZigbee, &stConfig );
@@ -725,7 +721,7 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
 
   // Intentional INFINITE_LOOP
   // coverity[no_escape]
-  while (1)
+  while (1U == 1U)
   {
     /* USER CODE BEGIN APP_ZIGBEE_TraceError */
     APP_LED_TOGGLE( LED_BLUE );

@@ -43,7 +43,22 @@ extern "C" {
 #define WPAN_SUCCESS 0u
 
 /* USER CODE BEGIN EC */
-
+/******************************************************************************
+ * Information Table
+ *
+ * Version
+ * [0:3]   = Build - 0: Untracked - 15:Released - x: Tracked version
+ * [4:7]   = branch - 0: Mass Market - x: ...
+ * [8:15]  = Subversion
+ * [16:23] = Version minor
+ * [24:31] = Version major
+ *
+ ******************************************************************************/
+#define CFG_FW_BUILD              (0)
+#define CFG_FW_BRANCH             (0)
+#define CFG_FW_SUBVERSION         (0)
+#define CFG_FW_MINOR_VERSION      (5)
+#define CFG_FW_MAJOR_VERSION      (1)
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
@@ -59,6 +74,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_LinkLayerInit(void);
 void MX_APPE_Process(void);
 
 /* USER CODE BEGIN EFP */

@@ -83,27 +83,8 @@ void HAL_MspInit(void)
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
-  //Do not remove, it prevents hardfault in OT stack
-  MPU_Attributes_InitTypeDef MPU_AttributesInit;
-  MPU_Region_InitTypeDef MPU_RegionInit;
-
-  HAL_MPU_Disable();
-
-  MPU_AttributesInit.Number = 0;
-  MPU_AttributesInit.Attributes = INNER_OUTER(MPU_NOT_CACHEABLE);
-  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
-
-  MPU_RegionInit.Enable = MPU_REGION_ENABLE;
-  MPU_RegionInit.Number = 0;
-  MPU_RegionInit.AttributesIndex  = 0;
-  MPU_RegionInit.BaseAddress = SRAM6_BASE;
-  MPU_RegionInit.LimitAddress = SRAM6_BASE + SRAM6_SIZE - 1;
-  MPU_RegionInit.AccessPermission = MPU_REGION_ALL_RW;
-  MPU_RegionInit.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_RegionInit.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-  HAL_MPU_ConfigRegion(&MPU_RegionInit);
-
-  HAL_MPU_Enable(MPU_HFNMI_PRIVDEF);
+  /* Do not remove, it prevents hardfault in OT stack */
+  ConfigureMPU();
   
   /* USER CODE END MspInit 1 */
 }

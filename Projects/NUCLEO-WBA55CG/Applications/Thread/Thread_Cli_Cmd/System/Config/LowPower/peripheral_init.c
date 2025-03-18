@@ -30,6 +30,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern CRYP_HandleTypeDef hcryp;
+extern HASH_HandleTypeDef hhash;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern UART_HandleTypeDef hlpuart1;
@@ -66,6 +67,7 @@ void MX_StandbyExit_PeripheralInit(void)
   }
 
   memset(&hcryp, 0, sizeof(hcryp));
+  memset(&hhash, 0, sizeof(hhash));
   memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
   memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
   memset(&hlpuart1, 0, sizeof(hlpuart1));
@@ -98,3 +100,4 @@ void MX_StandbyExit_PeripheralInit(void)
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

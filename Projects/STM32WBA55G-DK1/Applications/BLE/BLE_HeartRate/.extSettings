@@ -5,6 +5,7 @@ HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1;..\..\..\..\..\..\Drive
 
 [Groups]
 Doc=../README.md;
-Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c;;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_bus.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_lcd.c;
+Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_bus.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_lcd.c;
 Drivers/Components=../../../../../../Drivers/BSP/Components/cs42l51/cs42l51.c;../../../../../../Drivers/BSP/Components/cs42l51/cs42l51_reg.c;../../../../../../Drivers/BSP/Components/ssd1315/ssd1315.c;../../../../../../Drivers/BSP/Components/ssd1315/ssd1315_reg.c;
-Utilities=../../../../../../Utilities/LCD/stm32_lcd.c
+Utilities=../../../../../../Utilities/LCD/stm32_lcd.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_bsp.c;

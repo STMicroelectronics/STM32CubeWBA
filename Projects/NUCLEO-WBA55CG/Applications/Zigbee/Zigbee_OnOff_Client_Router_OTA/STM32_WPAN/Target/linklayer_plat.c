@@ -66,8 +66,15 @@ uint32_t radio_sleep_timer_val = 0;
   */
 void LINKLAYER_PLAT_ClockInit()
 {
-  /* Select LSE as Sleep CLK */
-  __HAL_RCC_RADIOSLPTIM_CONFIG(RCC_RADIOSTCLKSOURCE_LSE);
+  uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
+
+  /* Get the Link Layer sleep timer clock source */
+  linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
+  if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_NONE)
+  {
+    /* If there is no clock source defined, should be selected before */
+    assert_param(0);
+  }
 
   /* Enable AHB5ENR peripheral clock (bus CLK) */
   __HAL_RCC_RADIO_CLK_ENABLE();

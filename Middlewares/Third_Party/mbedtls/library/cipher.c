@@ -123,7 +123,11 @@ const mbedtls_cipher_info_t *mbedtls_cipher_info_from_values(
 
     for (def = mbedtls_cipher_definitions; def->info != NULL; def++) {
         if (mbedtls_cipher_get_base(def->info)->cipher == cipher_id &&
-            mbedtls_cipher_info_get_key_bitlen(def->info) == (unsigned) key_bitlen &&
+#if defined(USE_HUK)
+            ((mbedtls_cipher_info_get_key_bitlen(def->info) == (unsigned) key_bitlen) || (key_bitlen == 0)) &&
+#else
+            mbedtls_cipher_info_get_key_bitlen(def->info) == (unsigned) key_bitlen  &&
+#endif /* USE_HUK */
             def->info->mode == mode) {
             return def->info;
         }

@@ -25,7 +25,9 @@
 #include "ll_intf.h"
 #include "ll_sys.h"
 
+#if MAC
 #include "ral.h"
+#endif 
 
 /* External functions ----------------------------------------------------------*/
 extern uint32_t             llhwc_cmn_is_dp_slp_enabled(void);

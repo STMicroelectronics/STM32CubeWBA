@@ -141,20 +141,21 @@
 <li>One STM32WBA55xx board loaded with application <strong>BLE_HeartRate_Zigbee</strong> </br></li>
 </ul>
 <pre>
-    
-            BLE_HeartRate_Zigbee                            Zigbee_OnOff_Server_Coord                                                     
+			BLE_HeartRate_Zigbee							Zigbee_OnOff_Server_Coord                                                     
                +--------+                                      +--------+
                |        |                                      |        |
                | OnOff  |                                      | OnOff  |        
                | Client |                                      | Server | 
                |        |                                      |        |
- Every 1 sec   |        |                                      |        |
- or PushB SW1=&gt;|        |    ZbZclOnOffClientToggleReq         |        |
-               |        | -----------------------------------&gt; |        | =&gt; RED LED Toggle
-               |        |                                      |        |              
+ PushB SW3     |        |                                      |        |
+ for Every 1   |        |                                      |        |
+ Sec           |        |                                      |        |
+ or            |        |                                      |        |
+ PushB SW1   =&gt;|        |    ZbZclOnOffClientToggleReq         |        |
+ for once      |        | -----------------------------------&gt; |        | => RED LED Toggle
+               |        |                                      |        |			   
                +--------+                                      +--------+
-                Router                                          Coord.
-                
+				Router											Coord.               
 </pre>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
@@ -165,7 +166,7 @@
 <li><p>Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_OnOff_Server_Coord application.</p></li>
 <li><p>Wait for the Blue LED ON.</p></li>
 <li><p>Start the second board, flashed with BLE_HeartRate_Zigbee application. This board is configured as Zigbee router and will be attached to the network created by the coordinator. At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.</p></li>
-<li><p>It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. It is done automatically every one second or by pressing on the SW1 push button. You must see the Red LED toggling on the Server side.</p></li>
+<li><p>It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. It is done automatically every one second by pressing on the SW3 push button. You must see the Red LED toggling on the Server side.</p></li>
 </ol></li>
 </ul>
 <p>During Zigbee activity, the BLE_HeartRate_Zigbee device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.</p>

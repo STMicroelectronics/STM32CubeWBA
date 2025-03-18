@@ -26,7 +26,7 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 #include "ral.h"
 /* USER CODE END Includes */
 
@@ -66,7 +66,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -87,9 +86,10 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+  while(1)
   {
   }
+
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -104,6 +104,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -119,6 +120,7 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -134,6 +136,7 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -149,6 +152,7 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -248,9 +252,9 @@ void RCC_IRQHandler(void)
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    scm_pllrdy_isr();
+#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -326,20 +330,6 @@ void TIM16_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -371,13 +361,27 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles HASH global interrupt.
+  * @brief This function handles PWR global WKUP pin interrupt.
   */
-void HASH_IRQHandler(void)
+void WKUP_IRQHandler(void)
 {
-  /* USER CODE BEGIN HASH_IRQn 0 */
+  /* USER CODE BEGIN WKUP_IRQn 0 */
 
-  /* USER CODE END HASH_IRQn 0 */
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles COMP1 and COMP2 through EXTI Lines interrupts.
+  */
+void COMP_IRQHandler(void)
+{
+  /* USER CODE BEGIN COMP_IRQn 0 */
+
+  /* USER CODE END COMP_IRQn 0 */
 
   /* Disable SW radio low interrupt to prevent nested calls */
   NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
@@ -395,24 +399,12 @@ void HASH_IRQHandler(void)
   /* Re-enable SW radio low interrupt */
   NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
 
-  /* USER CODE BEGIN HASH_IRQn 1 */
+  /* USER CODE BEGIN COMP_IRQn 1 */
 
-  /* USER CODE END HASH_IRQn 1 */
+  /* USER CODE END COMP_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
-
-/**
-  * @brief This function handles WKUP global interrupt.
-  */
-void WKUP_IRQHandler(void)
-{
-  /* Verif WakeUp Source */
-  
-  /* Clear all WakeUp flags*/
-  LL_PWR_ClearFlag_WU( );
-}
-
 /**
   * @brief This function handles EXTI Line6 interrupt.
   */

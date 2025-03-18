@@ -77,6 +77,8 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
 
 static void APP_THREAD_RCPInit(otInstance *aInstance);
 
+static void APP_THREAD_PersistenceStartup(void);
+
 /* USER CODE BEGIN PFP */
 static void APP_THREAD_AppInit(void);
 /* USER CODE END PFP */
@@ -161,6 +163,8 @@ void Thread_Init(void)
   size_t otInstanceBufferLength = 0;
   uint8_t *otInstanceBuffer = NULL;
 #endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  APP_THREAD_PersistenceStartup();
 
   otSysInit(0, NULL);
 
@@ -342,6 +346,18 @@ static void APP_THREAD_RCPInit(otInstance *aInstance)
 {
   UTIL_SEQ_RegTask(1U << CFG_TASK_OT_RCP_SPINEL_RX, UTIL_SEQ_RFU, ProcessRcpSpinel);
   otAppNcpInit(aInstance);
+}
+
+/**
+ * @brief  Thread persistence startup
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_PersistenceStartup(void)
+{
+  /* USER CODE BEGIN APP_THREAD_PersistenceStartup */
+
+  /* USER CODE END APP_THREAD_PersistenceStartup */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */

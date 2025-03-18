@@ -60,7 +60,7 @@ void RF_CONTROL_AntennaSwitch(rf_antenna_switch_state_t state)
   if(state == RF_ANTSW_ENABLE)
   {
 #if (SUPPORT_AOA_AOD == 1)
-    status = ll_intf_set_num_of_antennas(RADIO_NUM_OF_ANTENNAS);
+    status = ll_intf_set_num_of_antennas(CFG_RADIO_NUM_OF_ANTENNAS);
     if(status != SUCCESS)
     {
       /* Specified number of antennas is not supported */

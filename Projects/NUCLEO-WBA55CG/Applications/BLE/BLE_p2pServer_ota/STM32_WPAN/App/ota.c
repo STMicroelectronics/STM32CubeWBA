@@ -316,16 +316,15 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
             notification.EvtOpcode = OTA_CONF_EVT;
             OTA_Conf_Status = OTA_No_Pending;
             return_value = SVCCTL_EvtAckFlowEnable;
+            OTA_Notification( &notification );
           }
           else if( OTA_Conf_Status == OTA_Ready_Pending)
           {
             notification.EvtOpcode = OTA_READY_EVT;
             OTA_Conf_Status = OTA_No_Pending;
             return_value = SVCCTL_EvtAckFlowEnable;
+            OTA_Notification( &notification );
           }
-
-          OTA_Notification( &notification );
-          break;
 
           /* USER CODE END ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
           break;/* ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */

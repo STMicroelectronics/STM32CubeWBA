@@ -194,7 +194,7 @@ static uint8_t HOST_BLE_Init(void);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
+extern PBPAPP_Context_t PBPAPP_Context;
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -374,7 +374,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
           LOG_INFO_APP(">>== ACI_GAP_PROC_COMPLETE_VSEVT_CODE\n");
           /* USER CODE BEGIN EVT_GAP_PROCEDURE_COMPLETE */
-
+          if (p_gap_proc_complete->Procedure_Code == GAP_OBSERVATION_PROC)
+          {
+            PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_IDLE;
+          }
           /* USER CODE END EVT_GAP_PROCEDURE_COMPLETE */
           break; /* ACI_GAP_PROC_COMPLETE_VSEVT_CODE */
         }

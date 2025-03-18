@@ -39,7 +39,7 @@
  */
 #define BLENVM_TMAP_HDR_LEN              (12u)
 
-#define BLEAUDIO_PLAT_NVM_TYPE_TMAP      (0x0A)
+#define BLEAUDIO_PLAT_NVM_TYPE_TMAP      (0x0B)
 /* Private macros ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -65,8 +65,6 @@ void TMAP_CLT_StoreDatabase(TMAP_CltInst_t const *pTMAP_CltInst)
   uint16_t                remain_len = TMAP_GATT_DATABASE_SIZE;
   uint8_t                 temp_database[TMAP_GATT_DATABASE_SIZE]= {0};
   tBleStatus              status;
-  uint8_t                 cl_addr[6u] = {0};
-  uint8_t                 i;
   uint32_t                hdr[BLENVM_TMAP_HDR_LEN / 4];
   uint16_t                total_len = 0u;
   uint32_t                data_len = 0u;
@@ -77,99 +75,85 @@ void TMAP_CLT_StoreDatabase(TMAP_CltInst_t const *pTMAP_CltInst)
 
   if (USECASE_DEV_MGMT_GetConnInfo(pTMAP_CltInst->ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
   {
-    /* Check if the address is a resolvable private address */
-    if (((p_conn_info->Peer_Address_Type) == 1u) && ((p_conn_info->Peer_Address[5] & 0xC0U) == 0x40U))
+    if (aci_gap_check_bonded_device(p_conn_info->Peer_Address_Type,
+                                      &p_conn_info->Peer_Address[0],
+                                     (uint8_t *)&p_conn_info->Peer_Address_Type,
+                                     (uint8_t *)p_conn_info->Peer_Address) == BLE_STATUS_SUCCESS)
     {
-      status = aci_gap_resolve_private_addr( &p_conn_info->Peer_Address[0], &cl_addr[0]);
-      if (status != BLE_STATUS_SUCCESS)
+      /*Get ATT Database of the TMAS*/
+      status = TMAP_CLT_GetTMASDatabase(pTMAP_CltInst,
+                                      TELEPHONY_AND_MEDIA_AUDIO_SERVICE_UUID,
+                                      &temp_database[(TMAP_GATT_DATABASE_SIZE-remain_len)],
+                                      remain_len,&len);
+      if (status == BLE_STATUS_SUCCESS)
       {
-        BLE_DBG_TMAP_MSG("Store TMAP GATT Database is aborted because BLE Address has not been successfully resolved\n");
-        return;
+        BLE_DBG_TMAP_MSG("%d bytes of TMAS Information database to store in NVM\n",len);
+        total_len += len;
       }
-    }
-    else
-    {
-      for (i = 0; i < 6u ; i++)
+      else
       {
-        cl_addr[i] = p_conn_info->Peer_Address[i];
+        BLE_DBG_TMAP_MSG("Get ATT Database information of TMAS has failed (status 0x%02X)\n",status);
       }
-    }
-
-    /*Get ATT Database of the TMAS*/
-    status = TMAP_CLT_GetTMASDatabase(pTMAP_CltInst,
-                                    TELEPHONY_AND_MEDIA_AUDIO_SERVICE_UUID,
-                                    &temp_database[(TMAP_GATT_DATABASE_SIZE-remain_len)],
-                                    remain_len,&len);
-    if (status == BLE_STATUS_SUCCESS)
-    {
-      BLE_DBG_TMAP_MSG("%d bytes of TMAS Information database to store in NVM\n",len);
-      total_len += len;
-    }
-    else
-    {
-      BLE_DBG_TMAP_MSG("Get ATT Database information of TMAS has failed (status 0x%02X)\n",status);
-    }
-    /*Find in database the record associated to the remote device*/
-    if (TMAP_FindDatabaseRecord(cl_addr,&data_len) == BLEAUDIO_PLAT_NVM_OK)
-    {
-
-      BLE_DBG_TMAP_MSG("Compare already stored TMAP database of length %d bytes vs current MCP Database of length %d\n",
-                          data_len,
-                          total_len);
-      /* Compare data from byte 12 */
-      if ( (total_len == data_len) &&
-           (BLE_AUDIO_PLAT_NvmCompare( BLENVM_TMAP_HDR_LEN, temp_database, data_len )
-            == BLEAUDIO_PLAT_NVM_OK) )
+      /*Find in database the record associated to the remote device*/
+      if (TMAP_FindDatabaseRecord(p_conn_info->Peer_Address,&data_len) == BLEAUDIO_PLAT_NVM_OK)
       {
 
-        BLE_DBG_TMAP_MSG("TMAP database hasn't changed, no need to perform NVM Save operation\n");
-        /* Return directly as we have found the same data already in NVM */
-        return ;
+        BLE_DBG_TMAP_MSG("Compare already stored TMAP database of length %d bytes vs current MCP Database of length %d\n",
+                            data_len,
+                            total_len);
+        /* Compare data from byte 12 */
+        if ( (total_len == data_len) &&
+             (BLE_AUDIO_PLAT_NvmCompare( BLENVM_TMAP_HDR_LEN, temp_database, data_len )
+              == BLEAUDIO_PLAT_NVM_OK) )
+        {
+
+          BLE_DBG_TMAP_MSG("TMAP database hasn't changed, no need to perform NVM Save operation\n");
+          /* Return directly as we have found the same data already in NVM */
+          return ;
+        }
+
+        BLE_DBG_TMAP_MSG("TMAP database has changed\n");
+        /* Invalidate current record because data has changed */
+        BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
+      }
+      else
+      {
+        BLE_DBG_TMAP_MSG("Peer Device has no TMAP information in NVM\n");
       }
 
-      BLE_DBG_TMAP_MSG("TMAP database has changed\n");
-      /* Invalidate current record because data has changed */
-      BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
+
+      ((uint8_t*)(hdr + 0))[0] = 0xFDU;
+      ((uint8_t*)(hdr + 0))[1] = p_conn_info->Peer_Address[0];
+      ((uint8_t*)(hdr + 0))[2] = p_conn_info->Peer_Address[1];
+      ((uint8_t*)(hdr + 0))[3] = p_conn_info->Peer_Address[2];
+      ((uint8_t*)(hdr + 1))[0] = p_conn_info->Peer_Address[3];
+      ((uint8_t*)(hdr + 1))[1] = p_conn_info->Peer_Address[4];
+      ((uint8_t*)(hdr + 1))[2] = p_conn_info->Peer_Address[5];
+      ((uint8_t*)(hdr + 1))[3] = 0xFFU;
+
+      /* the last byte of the flash word containing the address will have 0xFF.
+       * The length of the database will be at the next word offset in flash.
+       */
+      hdr[2] = total_len;
+      BLE_DBG_TMAP_MSG("Store %d bytes of TMAP Information database in NVM for peer device 0x%02x%02x%02x%02x%02x%02x\n",
+                          total_len,
+                          p_conn_info->Peer_Address[5],
+                          p_conn_info->Peer_Address[4],
+                          p_conn_info->Peer_Address[3],
+                          p_conn_info->Peer_Address[2],
+                          p_conn_info->Peer_Address[1],
+                          p_conn_info->Peer_Address[0]);
+      status = BLE_AUDIO_PLAT_NvmAdd( BLEAUDIO_PLAT_NVM_TYPE_TMAP,(uint8_t*)hdr, BLENVM_TMAP_HDR_LEN, temp_database, total_len );
+      BLE_DBG_TMAP_MSG("BLE_AUDIO_PLAT_NvmAdd() returns status 0x%02X\n",status);
     }
-    else
-    {
-      BLE_DBG_TMAP_MSG("Peer Device has no TMAP information in NVM\n");
-    }
-
-
-    ((uint8_t*)(hdr + 0))[0] = 0xFDU;
-    ((uint8_t*)(hdr + 0))[1] = cl_addr[0];
-    ((uint8_t*)(hdr + 0))[2] = cl_addr[1];
-    ((uint8_t*)(hdr + 0))[3] = cl_addr[2];
-    ((uint8_t*)(hdr + 1))[0] = cl_addr[3];
-    ((uint8_t*)(hdr + 1))[1] = cl_addr[4];
-    ((uint8_t*)(hdr + 1))[2] = cl_addr[5];
-    ((uint8_t*)(hdr + 1))[3] = 0xFFU;
-
-    /* the last byte of the flash word containing the address will have 0xFF.
-     * The length of the database will be at the next word offset in flash.
-     */
-    hdr[2] = total_len;
-    BLE_DBG_TMAP_MSG("Store %d bytes of TMAP Information database in NVM for peer device 0x%02x%02x%02x%02x%02x%02x\n",
-                        total_len,
-                        cl_addr[5],
-                        cl_addr[4],
-                        cl_addr[3],
-                        cl_addr[2],
-                        cl_addr[1],
-                        cl_addr[0]);
-    status = BLE_AUDIO_PLAT_NvmAdd( BLEAUDIO_PLAT_NVM_TYPE_TMAP,(uint8_t*)hdr, BLENVM_TMAP_HDR_LEN, temp_database, total_len );
-    BLE_DBG_TMAP_MSG("BLE_AUDIO_PLAT_NvmAdd() returns status 0x%02X\n",status);
   }
 }
 
 
 tBleStatus TMAP_CLT_RestoreDatabase(TMAP_CltInst_t *pTMAP_CltInst)
 {
-  uint8_t                 cl_addr[6u] = {0};
   tBleStatus              status = BLE_STATUS_SUCCESS;
   uint8_t                 temp_database[TMAP_GATT_DATABASE_SIZE];
-  uint8_t                 i;
   uint32_t                dataLen = 0u;
   const UseCaseConnInfo_t *p_conn_info;
 
@@ -177,61 +161,53 @@ tBleStatus TMAP_CLT_RestoreDatabase(TMAP_CltInst_t *pTMAP_CltInst)
 
   if (USECASE_DEV_MGMT_GetConnInfo(pTMAP_CltInst->ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
   {
-    /* Check if the address is a resolvable private address */
-    if (((p_conn_info->Peer_Address_Type) == 1u) && ((p_conn_info->Peer_Address[5] & 0xC0U) == 0x40U))
+    if (aci_gap_check_bonded_device(p_conn_info->Peer_Address_Type,
+                                    &p_conn_info->Peer_Address[0],
+                                    (uint8_t *)&p_conn_info->Peer_Address_Type,
+                                    (uint8_t *)p_conn_info->Peer_Address) == BLE_STATUS_SUCCESS)
     {
-      status = aci_gap_resolve_private_addr( &p_conn_info->Peer_Address[0], &cl_addr[0]);
-      if (status != BLE_STATUS_SUCCESS)
+      /*Find in database the record associated to the remote device*/
+      if (TMAP_FindDatabaseRecord(p_conn_info->Peer_Address,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
       {
-        BLE_DBG_TMAP_MSG("Restore TMAP Profile is aborted because BLE Address has not been successfully resolved\n");
-        return status;
-      }
-    }
-    else
-    {
-      for (i = 0; i < 6u ; i++)
-      {
-        cl_addr[i] = p_conn_info->Peer_Address[i];
-      }
-    }
+        BLE_DBG_TMAP_MSG("Peer Device has TMAP information (%d bytes) in NVM\n",dataLen);
 
-    /*Find in database the record associated to the remote device*/
-    if (TMAP_FindDatabaseRecord(cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-    {
-      BLE_DBG_TMAP_MSG("Peer Device has TMAP information (%d bytes) in NVM\n",dataLen);
+        /* If len in header is bigger than given length, we will be out of memory */
+        if ( dataLen > TMAP_GATT_DATABASE_SIZE )
+        {
+          BLE_DBG_TMAP_MSG("Error length in header is bigger than TMAP Controller Database length\n");
+          return BLE_STATUS_FAILED;
+        }
 
-      /* If len in header is bigger than given length, we will be out of memory */
-      if ( dataLen > TMAP_GATT_DATABASE_SIZE )
-      {
-        BLE_DBG_TMAP_MSG("Error length in header is bigger than TMAP Controller Database length\n");
-        return BLE_STATUS_FAILED;
-      }
+        /*get TMAP Database*/
+        (void)BLE_AUDIO_PLAT_NvmGet( BLEAUDIO_PLAT_NVM_CURRENT, BLEAUDIO_PLAT_NVM_TYPE_TMAP,BLENVM_TMAP_HDR_LEN, temp_database, dataLen );
+        BLE_DBG_TMAP_MSG("BLE_AUDIO_PLAT_NvmGet of TMAP Controller Database : len %d \n",dataLen);
 
-      /*get TMAP Database*/
-      (void)BLE_AUDIO_PLAT_NvmGet( BLEAUDIO_PLAT_NVM_CURRENT, BLEAUDIO_PLAT_NVM_TYPE_TMAP,BLENVM_TMAP_HDR_LEN, temp_database, dataLen );
-      BLE_DBG_TMAP_MSG("BLE_AUDIO_PLAT_NvmGet of TMAP Controller Database : len %d \n",dataLen);
+        /*Restore the TMAP */
+        status = TMAP_CLT_SetDatabase((TMAP_CltInst_t *)pTMAP_CltInst,&temp_database[0],dataLen);
+        BLE_DBG_TMAP_MSG("Restore TMAP Database returns status 0x%02X\n",status);
 
-      /*Restore the TMAP */
-      status = TMAP_CLT_SetDatabase((TMAP_CltInst_t *)pTMAP_CltInst,&temp_database[0],dataLen);
-      BLE_DBG_TMAP_MSG("Restore TMAP Database returns status 0x%02X\n",status);
-
-      if (status == BLE_STATUS_SUCCESS)
-      {
-        TMAP_Notification_Evt_t evt;
-        evt.Status = BLE_STATUS_SUCCESS;
-        pTMAP_CltInst->LinkupState = TMAP_LINKUP_COMPLETE;
-        evt.EvtOpcode = TMAP_LINKUP_COMPLETE_EVT;
-        evt.ConnHandle = pTMAP_CltInst->ConnHandle;
-        TMAP_Notification(&evt);
+        if (status == BLE_STATUS_SUCCESS)
+        {
+          TMAP_Notification_Evt_t evt;
+          evt.Status = BLE_STATUS_SUCCESS;
+          pTMAP_CltInst->LinkupState = TMAP_LINKUP_COMPLETE;
+          evt.EvtOpcode = TMAP_LINKUP_COMPLETE_EVT;
+          evt.ConnHandle = pTMAP_CltInst->ConnHandle;
+          TMAP_Notification(&evt);
+        }
+        else
+        {
+          status = BLE_STATUS_FAILED;
+        }
       }
       else
       {
+        BLE_DBG_TMAP_MSG("Peer Device has no TMAP information in NVM\n");
         status = BLE_STATUS_FAILED;
       }
     }
     else
     {
-      BLE_DBG_TMAP_MSG("Peer Device has no TMAP information in NVM\n");
       status = BLE_STATUS_FAILED;
     }
   }
@@ -254,39 +230,28 @@ tBleStatus TMAP_CLT_RestoreDatabase(TMAP_CltInst_t *pTMAP_CltInst)
 tBleStatus TMAP_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6])
 {
   uint8_t cl_addr[6u] = {0};
+  uint8_t type;
   tBleStatus status = BLE_STATUS_SUCCESS;
-  uint8_t i;
   uint32_t dataLen = 0u;
 
-  /* Check if the address is a resolvable private address */
-  if (((PeerIdentityAddressType) == 1u) && ((PeerIdentityAddress[5] & 0xC0U) == 0x40U))
+  status = aci_gap_check_bonded_device(PeerIdentityAddressType,
+                                         &PeerIdentityAddress[0],
+                                         &type,
+                                         &cl_addr[0]);
+  if (status == BLE_STATUS_SUCCESS)
   {
-    status = aci_gap_resolve_private_addr( &PeerIdentityAddress[0], &cl_addr[0]);
-    if (status != BLE_STATUS_SUCCESS)
+    /*Find in database the record associated to the remote device*/
+    if (TMAP_FindDatabaseRecord(cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
     {
-      BLE_DBG_TMAP_MSG("Remove TMAP Services Record fails because BLE Address has not been successfully resolved\n");
-      return status;
+      BLE_DBG_TMAP_MSG("Peer Device has TMAP information (%d bytes) in NVM, remove it\n",dataLen);
+      /* Invalidate current record because data has changed */
+      BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
     }
-  }
-  else
-  {
-    for (i = 0; i < 6u ; i++)
+    else
     {
-      cl_addr[i] = PeerIdentityAddress[i];
+      BLE_DBG_TMAP_MSG("Peer Device has not TMAP information in NVM\n");
+      status = BLE_STATUS_DEV_NOT_BONDED;
     }
-  }
-
-  /*Find in database the record associated to the remote device*/
-  if (TMAP_FindDatabaseRecord(cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-  {
-    BLE_DBG_TMAP_MSG("Peer Device has TMAP information (%d bytes) in NVM, remove it\n",dataLen);
-    /* Invalidate current record because data has changed */
-    BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
-  }
-  else
-  {
-    BLE_DBG_TMAP_MSG("Peer Device has not TMAP information in NVM\n");
-    status = BLE_STATUS_DEV_NOT_BONDED;
   }
 
   return status;
@@ -301,26 +266,18 @@ tBleStatus TMAP_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const ui
 uint8_t TMAP_DB_IsPresent(uint8_t Peer_Address_Type,const uint8_t Peer_Address[6])
 {
   uint8_t       cl_addr[6u] = {0u};
+  uint8_t       type;
   tBleStatus    status = BLE_STATUS_SUCCESS;
-  uint8_t       i;
   uint32_t      dataLen = 0u;
 
-  /* Check if the address is a resolvable private address */
-  if (((Peer_Address_Type) == 1u) && ((Peer_Address[5] & 0xC0U) == 0x40U))
-  {
-    status = aci_gap_resolve_private_addr( &Peer_Address[0], &cl_addr[0]);
+  status = aci_gap_check_bonded_device(Peer_Address_Type,
+                                       &Peer_Address[0],
+                                       &type,
+                                       &cl_addr[0]);
   if (status != BLE_STATUS_SUCCESS)
   {
     BLE_DBG_TMAP_MSG("Check TMAP Services Record fails because BLE Address has not been successfully resolved\n");
     return status;
-  }
-  }
-  else
-  {
-    for (i = 0; i < 6u ; i++)
-    {
-      cl_addr[i] = Peer_Address[i];
-    }
   }
   /*Find in database the record associated to the remote device*/
   if (TMAP_FindDatabaseRecord(cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)

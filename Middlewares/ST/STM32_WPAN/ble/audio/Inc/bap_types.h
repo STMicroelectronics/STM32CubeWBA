@@ -868,6 +868,9 @@ typedef struct
   const uint8_t *pAdvAddress;
   uint8_t       AdvAddressType;
   uint16_t      SyncHandle;
+  uint8_t       AdvPhy;
+  uint16_t      PAInterval;
+  uint8_t       AdvClockAccuracy;
 } BAP_PA_Sync_Established_Data_t;
 
 
@@ -886,6 +889,8 @@ typedef struct
 {
   const uint8_t *pAdvAddress;
   uint8_t       AdvAddressType;
+  const uint8_t *pAdvertisingData;
+  uint8_t       AdvertisingDataLength;
 } BAP_Soliciting_Scan_Delegator_Data_t;
 
 #ifdef __cplusplus

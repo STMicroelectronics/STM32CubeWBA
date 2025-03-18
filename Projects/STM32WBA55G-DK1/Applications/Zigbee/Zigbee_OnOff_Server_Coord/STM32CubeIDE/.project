@@ -98,6 +98,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/zigbee_sys_if.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/CRC_Ctrl/crc_ctrl_conf.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/System/Config/Debug_GPIO/app_debug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Config/Debug_GPIO/app_debug.c</locationURI>

@@ -57,7 +57,11 @@ typedef enum {
 } LC3_Status;
 
 /* Exported define -----------------------------------------------------------*/
-#define LC3_SESSION_STRUCT_SIZE (604u)
+#define LC3_SESSION_STRUCT_SIZE           LC3_SESSION_STRUCT_SIZE_48kHz
+
+#define LC3_SESSION_STRUCT_SIZE_24kHz     (364u)   /* up to 24kHz only */
+#define LC3_SESSION_STRUCT_SIZE_48kHz     (652u)   /* full feature */
+
 
 /* Exported functions ------------------------------------------------------- */
 /**
@@ -105,5 +109,20 @@ void* lc3_get_session_from_channel(void* hChannel);
   * @retval number of bytes
   */
 uint16_t lc3_get_bytes_from_channel(void* hChannel);
+
+/**
+  * @brief Get the direction of a channel 
+  * @param hChannel : pointer to the channel handler
+  * @retval 0 for encoder, 1 for decoder
+  */
+uint8_t lc3_get_direction_from_channel(void *hChannel);
+
+/**
+  * @brief Update the session pointer inside a channel pointer
+  * @note This function does not reinitalise the channel and may be used for memory management only
+  * @param hChannel : pointer to the channel handler to be updated
+  * @param hSession : pointer to the session handler
+  */
+void lc3_update_session_pointer(void *hChannel, void *hSession);
 
 #endif /* __LC3_H__ */

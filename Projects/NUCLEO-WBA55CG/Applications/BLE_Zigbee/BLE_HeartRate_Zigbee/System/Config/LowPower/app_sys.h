@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -37,9 +37,7 @@
 
 /* Exported functions prototypes ---------------------------------------------*/
 
-void APP_SYS_LPM_EnterLowPowerMode(void);
 void APP_SYS_BLE_EnterDeepSleep(void);
-void APP_SYS_LinkLayer_BackgroundProcessInit(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

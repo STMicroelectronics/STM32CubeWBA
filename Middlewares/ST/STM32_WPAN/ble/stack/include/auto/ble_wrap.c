@@ -5,7 +5,7 @@
  *****************************************************************************
  * @attention
  *
- * Copyright (c) 2018-2024 STMicroelectronics.
+ * Copyright (c) 2018-2025 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -1994,16 +1994,6 @@
 #define BLE_WRAP_ACI_GAP_SEND_PAIRING_REQ_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GAP_RESOLVE_PRIVATE_ADDR pre-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_PREPROC
-#define BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GAP_RESOLVE_PRIVATE_ADDR post-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_POSTPROC
-#define BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
 /* ACI_GAP_SET_BROADCAST_MODE pre-processing macro */
 #ifndef BLE_WRAP_ACI_GAP_SET_BROADCAST_MODE_PREPROC
 #define BLE_WRAP_ACI_GAP_SET_BROADCAST_MODE_PREPROC BLE_WRAP_PREPROC
@@ -2034,14 +2024,14 @@
 #define BLE_WRAP_ACI_GAP_GET_BONDED_DEVICES_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GAP_IS_DEVICE_BONDED pre-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_PREPROC
-#define BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_PREPROC BLE_WRAP_PREPROC
+/* ACI_GAP_CHECK_BONDED_DEVICE pre-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_PREPROC
+#define BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* ACI_GAP_IS_DEVICE_BONDED post-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_POSTPROC
-#define BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_POSTPROC BLE_WRAP_POSTPROC
+/* ACI_GAP_CHECK_BONDED_DEVICE post-processing macro */
+#ifndef BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_POSTPROC
+#define BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_GAP_NUMERIC_COMPARISON_VALUE_CONFIRM_YESNO pre-processing macro */
@@ -5526,17 +5516,6 @@ tBleStatus aci_gap_send_pairing_req( uint16_t Connection_Handle,
   return status;
 }
 
-/* ACI_GAP_RESOLVE_PRIVATE_ADDR wrapper function */
-tBleStatus aci_gap_resolve_private_addr( const uint8_t* Address,
-                                         uint8_t* Actual_Address )
-{
-  BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_PREPROC( );
-  tBleStatus status = ACI_GAP_RESOLVE_PRIVATE_ADDR( Address,
-                                                    Actual_Address );
-  BLE_WRAP_ACI_GAP_RESOLVE_PRIVATE_ADDR_POSTPROC( );
-  return status;
-}
-
 /* ACI_GAP_SET_BROADCAST_MODE wrapper function */
 tBleStatus aci_gap_set_broadcast_mode( uint16_t Advertising_Interval_Min,
                                        uint16_t Advertising_Interval_Max,
@@ -5590,14 +5569,18 @@ tBleStatus aci_gap_get_bonded_devices( uint8_t* Num_of_Addresses,
   return status;
 }
 
-/* ACI_GAP_IS_DEVICE_BONDED wrapper function */
-tBleStatus aci_gap_is_device_bonded( uint8_t Peer_Address_Type,
-                                     const uint8_t* Peer_Address )
+/* ACI_GAP_CHECK_BONDED_DEVICE wrapper function */
+tBleStatus aci_gap_check_bonded_device( uint8_t Peer_Address_Type,
+                                        const uint8_t* Peer_Address,
+                                        uint8_t* Id_Address_Type,
+                                        uint8_t* Id_Address )
 {
-  BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_PREPROC( );
-  tBleStatus status = ACI_GAP_IS_DEVICE_BONDED( Peer_Address_Type,
-                                                Peer_Address );
-  BLE_WRAP_ACI_GAP_IS_DEVICE_BONDED_POSTPROC( );
+  BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_PREPROC( );
+  tBleStatus status = ACI_GAP_CHECK_BONDED_DEVICE( Peer_Address_Type,
+                                                   Peer_Address,
+                                                   Id_Address_Type,
+                                                   Id_Address );
+  BLE_WRAP_ACI_GAP_CHECK_BONDED_DEVICE_POSTPROC( );
   return status;
 }
 
@@ -6814,8 +6797,8 @@ tBleStatus aci_l2cap_coc_tx_data( uint8_t Channel_Index,
 /* Event tables */
 
 #define HCI_EVENT_TABLE_SIZE 8
-#define HCI_LE_EVENT_TABLE_SIZE 35
-#define HCI_VS_EVENT_TABLE_SIZE 55
+#define HCI_LE_EVENT_TABLE_SIZE 36
+#define HCI_VS_EVENT_TABLE_SIZE 54
 
 typedef struct
 {
@@ -6867,14 +6850,14 @@ static tBleStatus hci_le_path_loss_threshold_event_process( const uint8_t* in );
 static tBleStatus hci_le_transmit_power_reporting_event_process( const uint8_t* in );
 static tBleStatus hci_le_biginfo_advertising_report_event_process( const uint8_t* in );
 static tBleStatus hci_le_subrate_change_event_process( const uint8_t* in );
+static tBleStatus hci_le_cis_established_v2_event_process( const uint8_t* in );
 static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in );
-static tBleStatus aci_hal_fw_error_event_process( const uint8_t* in );
+static tBleStatus aci_hal_warning_event_process( const uint8_t* in );
 static tBleStatus aci_hal_sync_event_process( const uint8_t* in );
 static tBleStatus aci_gap_limited_discoverable_event_process( const uint8_t* in );
 static tBleStatus aci_gap_pairing_complete_event_process( const uint8_t* in );
 static tBleStatus aci_gap_pass_key_req_event_process( const uint8_t* in );
 static tBleStatus aci_gap_authorization_req_event_process( const uint8_t* in );
-static tBleStatus aci_gap_peripheral_security_initiated_event_process( const uint8_t* in );
 static tBleStatus aci_gap_bond_lost_event_process( const uint8_t* in );
 static tBleStatus aci_gap_proc_complete_event_process( const uint8_t* in );
 static tBleStatus aci_gap_addr_not_resolved_event_process( const uint8_t* in );
@@ -6974,19 +6957,19 @@ static const hci_event_table_t hci_le_event_table[HCI_LE_EVENT_TABLE_SIZE] =
   { 0x0021U, hci_le_transmit_power_reporting_event_process },
   { 0x0022U, hci_le_biginfo_advertising_report_event_process },
   { 0x0023U, hci_le_subrate_change_event_process },
+  { 0x002AU, hci_le_cis_established_v2_event_process },
 };
 
 /* HCI VS event process functions table */
 static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
 {
   { 0x0004U, aci_hal_end_of_radio_activity_event_process },
-  { 0x0006U, aci_hal_fw_error_event_process },
+  { 0x0006U, aci_hal_warning_event_process },
   { 0x0008U, aci_hal_sync_event_process },
   { 0x0400U, aci_gap_limited_discoverable_event_process },
   { 0x0401U, aci_gap_pairing_complete_event_process },
   { 0x0402U, aci_gap_pass_key_req_event_process },
   { 0x0403U, aci_gap_authorization_req_event_process },
-  { 0x0404U, aci_gap_peripheral_security_initiated_event_process },
   { 0x0405U, aci_gap_bond_lost_event_process },
   { 0x0407U, aci_gap_proc_complete_event_process },
   { 0x0408U, aci_gap_addr_not_resolved_event_process },
@@ -7966,6 +7949,61 @@ static tBleStatus hci_le_subrate_change_event_process( const uint8_t* in )
                                       rp0->Supervision_Timeout );
 }
 
+/* HCI_LE_CIS_ESTABLISHED_V2_EVENT callback function */
+__WEAK tBleStatus hci_le_cis_established_v2_event( uint8_t Status,
+                                                   uint16_t Connection_Handle,
+                                                   const uint8_t* CIG_Sync_Delay,
+                                                   const uint8_t* CIS_Sync_Delay,
+                                                   const uint8_t* Transport_Latency_C_To_P,
+                                                   const uint8_t* Transport_Latency_P_To_C,
+                                                   uint8_t PHY_C_To_P,
+                                                   uint8_t PHY_P_To_C,
+                                                   uint8_t NSE,
+                                                   uint8_t BN_C_To_P,
+                                                   uint8_t BN_P_To_C,
+                                                   uint8_t FT_C_To_P,
+                                                   uint8_t FT_P_To_C,
+                                                   uint16_t Max_PDU_C_To_P,
+                                                   uint16_t Max_PDU_P_To_C,
+                                                   uint16_t ISO_Interval,
+                                                   const uint8_t* Sub_Interval,
+                                                   uint16_t Max_SDU_C_To_P,
+                                                   uint16_t Max_SDU_P_To_C,
+                                                   const uint8_t* SDU_Interval_C_To_P,
+                                                   const uint8_t* SDU_Interval_P_To_C,
+                                                   uint8_t Framing )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CIS_ESTABLISHED_V2_EVENT process function */
+static tBleStatus hci_le_cis_established_v2_event_process( const uint8_t* in )
+{
+  hci_le_cis_established_v2_event_rp0 *rp0 = (void*)in;
+  return hci_le_cis_established_v2_event( rp0->Status,
+                                          rp0->Connection_Handle,
+                                          rp0->CIG_Sync_Delay,
+                                          rp0->CIS_Sync_Delay,
+                                          rp0->Transport_Latency_C_To_P,
+                                          rp0->Transport_Latency_P_To_C,
+                                          rp0->PHY_C_To_P,
+                                          rp0->PHY_P_To_C,
+                                          rp0->NSE,
+                                          rp0->BN_C_To_P,
+                                          rp0->BN_P_To_C,
+                                          rp0->FT_C_To_P,
+                                          rp0->FT_P_To_C,
+                                          rp0->Max_PDU_C_To_P,
+                                          rp0->Max_PDU_P_To_C,
+                                          rp0->ISO_Interval,
+                                          rp0->Sub_Interval,
+                                          rp0->Max_SDU_C_To_P,
+                                          rp0->Max_SDU_P_To_C,
+                                          rp0->SDU_Interval_C_To_P,
+                                          rp0->SDU_Interval_P_To_C,
+                                          rp0->Framing );
+}
+
 /* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT callback function */
 __WEAK tBleStatus aci_hal_end_of_radio_activity_event( uint8_t Last_State,
                                                        uint8_t Next_State,
@@ -7987,21 +8025,21 @@ static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in
                                               rp0->Next_State_Slot );
 }
 
-/* ACI_HAL_FW_ERROR_EVENT callback function */
-__WEAK tBleStatus aci_hal_fw_error_event( uint8_t FW_Error_Type,
-                                          uint8_t Data_Length,
-                                          const uint8_t* Data )
+/* ACI_HAL_WARNING_EVENT callback function */
+__WEAK tBleStatus aci_hal_warning_event( uint8_t Warning_Type,
+                                         uint8_t Data_Length,
+                                         const uint8_t* Data )
 {
   return HCI_SUCCESS_ERR_CODE;
 }
 
-/* ACI_HAL_FW_ERROR_EVENT process function */
-static tBleStatus aci_hal_fw_error_event_process( const uint8_t* in )
+/* ACI_HAL_WARNING_EVENT process function */
+static tBleStatus aci_hal_warning_event_process( const uint8_t* in )
 {
-  aci_hal_fw_error_event_rp0 *rp0 = (void*)in;
-  return aci_hal_fw_error_event( rp0->FW_Error_Type,
-                                 rp0->Data_Length,
-                                 rp0->Data );
+  aci_hal_warning_event_rp0 *rp0 = (void*)in;
+  return aci_hal_warning_event( rp0->Warning_Type,
+                                rp0->Data_Length,
+                                rp0->Data );
 }
 
 /* ACI_HAL_SYNC_EVENT callback function */
@@ -8078,20 +8116,8 @@ static tBleStatus aci_gap_authorization_req_event_process( const uint8_t* in )
   return aci_gap_authorization_req_event( rp0->Connection_Handle );
 }
 
-/* ACI_GAP_PERIPHERAL_SECURITY_INITIATED_EVENT callback function */
-__WEAK tBleStatus aci_gap_peripheral_security_initiated_event( void )
-{
-  return HCI_SUCCESS_ERR_CODE;
-}
-
-/* ACI_GAP_PERIPHERAL_SECURITY_INITIATED_EVENT process function */
-static tBleStatus aci_gap_peripheral_security_initiated_event_process( const uint8_t* in )
-{
-  return aci_gap_peripheral_security_initiated_event( );
-}
-
 /* ACI_GAP_BOND_LOST_EVENT callback function */
-__WEAK tBleStatus aci_gap_bond_lost_event( void )
+__WEAK tBleStatus aci_gap_bond_lost_event( uint16_t Connection_Handle )
 {
   return HCI_SUCCESS_ERR_CODE;
 }
@@ -8099,7 +8125,8 @@ __WEAK tBleStatus aci_gap_bond_lost_event( void )
 /* ACI_GAP_BOND_LOST_EVENT process function */
 static tBleStatus aci_gap_bond_lost_event_process( const uint8_t* in )
 {
-  return aci_gap_bond_lost_event( );
+  aci_gap_bond_lost_event_rp0 *rp0 = (void*)in;
+  return aci_gap_bond_lost_event( rp0->Connection_Handle );
 }
 
 /* ACI_GAP_PROC_COMPLETE_EVENT callback function */

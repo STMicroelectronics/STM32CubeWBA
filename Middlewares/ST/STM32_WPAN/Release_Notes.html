@@ -98,6 +98,7 @@
 <li><em>ZigbeeProR22_FFD.a</em> (R22 Full Functional Device)</li>
 <li><em>ZigbeeProR22_RFD.a</em> (R22 Reduced Functional Device)</li>
 <li><em>ZigBeeProR22_SE_FFD.a</em> (R22 SE Full Functional Device)</li>
+<li><em>ZigBeeProR23_ZDD.a</em> (R23 Zigbee Direct)</li>
 </ul></li>
 <li>Clusters:
 <ul>
@@ -176,9 +177,172 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section7" checked aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.5.0 / 29-October-2024</label>
+<input type="checkbox" id="collapse-section8" checked aria-hidden="true"> <label for="collapse-section8" aria-hidden="false">V2.6.0 / 04-February-2025</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>BLE:
+<ul>
+<li>Update the BLE stack in compliance with the 2024-2 TCRL</li>
+<li>Update the duplicate filter policy to replace the oldest address in the list once full.<br />
+</li>
+<li>Implementation of the optional HCI_LE_CIS_Established [v2] event<br />
+</li>
+<li>Update HCI_Hardware_Error event’s returned HW_code parameter.</li>
+<li>The Connection Handle has been added to the ACI_GAP_BOND_LOST_EVENT parameters.</li>
+<li>ACI_GAP_PERIPHERAL_SECURITY_INITIATED_EVENT has been removed.</li>
+<li>The application can now call HCI_LE_GENERATE_DHKEY in BLE stack variants with host.</li>
+<li>Add a check for ACI commands used in the Extended/Legacy mode</li>
+<li>Issues fixed :
+<ul>
+<li>ID 195808: Wrong RSSI calculation while doing a CIS</li>
+<li>ID 191485: An occasional conflict between the scanning and initiating states might lead to an ACL connection creation failure<br />
+</li>
+<li>ID 195596: ASSERT failed raised when a disconnection happens while initializing 2 CIS</li>
+<li>ID 196330: Issue with creating an advertising set when the memory is exceeded</li>
+<li>ID 184833: Add a check for NULL ISO Intervals</li>
+<li>ID 176696: Key refresh failed due to a wrong timer state after a failed encryption</li>
+<li>ID 198896: The commands ACI_GAP_RESOLVE_PRIVATE_ADDR and ACI_GAP_IS_DEVICE_BONDED are removed and replaced by only one new enhanced command called ACI_GAP_CHECK_BONDED_DEVICE</li>
+<li>ID 199855: The channel number reported by ACI_L2CAP_COC_CONNECT_EVENT is now the number of channels that are effectively created rather than the number of channels requested by the initiator</li>
+<li>ID 196368: A new BLE stack warning event is now generated on peripheral side when an unpaired central device attempts to encrypt the link</li>
+<li>ID 189781: An unoptimized mechanism of sending ACL packets might lead to giving the priority to empty packets</li>
+<li>ID 185281: The Central should disconnect right after acknowledging the LL_TERMINATE_IND PDU sent by the peripheral</li>
+<li>ID 195788: Wrong iso_data_path allocation when ISO events return a FAILED status</li>
+</ul></li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>New ‘CachingEn’ field in BAP_AudioStreamCtrlSrvConfig_t allowing to enable/disable Audio Stream Endpoint State Caching in Unicast Server role</li>
+<li>Add flags in BAP_PA_Sync_Established_Data_t structure : additional info to Periodic Advertising Synced notification</li>
+<li>Defined new Macro CAP_ACC_ATT_VALUE_ARRAY_SIZE in cap_types.h used to calculate ATT Value Array size requested in CAP Acceptor registering many CSIP Set Member Instances ( ref CAP_RegisterCoordinatedSetMember())</li>
+<li>New constant CCP_SRV_MEM_CALL_STATE_INFO_PER_CALL_SIZE_BYTES defined in the ccp_types.h and used in the BLE_CCP_SRV_TOTAL_BUFFER_SIZE Macro</li>
+<li>LC3 codec V1.5 : ram management optimization with dedicated stack for processing and object size depending on codec frequency.</li>
+<li>Codec Manager V1.7 : change default mode to CODEC_MODE_FLOW_CTRL</li>
+<li>Codec Manager : change initialization parameters for new RAM management</li>
+<li>Issues Fixed :
+<ul>
+<li>ID 187013 : ACI_GATT_NOTIFICATION_COMPLETE_VSEVT_CODE event is not generated after MCP_SERVER_SetTrackTitle() is called</li>
+<li>ID 192029 : Add process during CAP Audio Unicast Start procedure to fix remote Unicast Server’s issue when remote Unicast Server doesn’t notify Sink ASE change from ENABLING State to STREAMING state</li>
+<li>ID 193036 : Fix issue in PAC Records reporting : PACS Records are not read correcly</li>
+<li>ID 192029 : CAP Unicast Audio Start procedure is not aborted in Telephony mode (only one ASE out of 2 went to streaming state)</li>
+<li>ID 192711 : start audio telephony is using 2 sink ASEs on 1 earbud instead of 1 Source ASE + 1 Sink ASE</li>
+<li>ID 193397 : Unicast Client releases ASE if Enabling Notification is received when associated CIS already up</li>
+<li>ID 196820 : CAP Unicast Audio Start Procedure is not correctly aborted in CAP Initiator if disconnection occurs during the procedure</li>
+<li>ID 197413 : VCP Audio location not checked on update and update on PACS to accept audio location to 0x00000000</li>
+<li>ID 197417 : CAP Unicast Audio Stop not done correctly on 2 remote CSIP members</li>
+<li>ID 198730 : In CAP Initiator role, the CAP_UNICAST_AUDIO_DATA_PATH_SETUP_REQ_EVT event not received for Source ASE in ENABLING State if associated CIS already connected</li>
+<li>ID 198862 : CAP_VolumeController_StartSetVolumeOffsetProcedure() function is not working on only one remote member of a group. The event CAP_SET_VOLUME_OFFSET_PROCEDURE_COMPLETE_EVT is not notified once the procedure is complete</li>
+<li>ID 196580 : Codec Manager V1.7 : fix message queue reinitialization</li>
+</ul></li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>Issues Fixed :
+<ul>
+<li>ID 191800 &amp; 192786 : During association sequence, don’t received association confirm</li>
+<li>ID 188986: Assert in RxEnable MAC API on WBA<br />
+</li>
+<li>ID 192786: Not received association.confirm when beacon request is received during the association sequence<br />
+</li>
+<li>ID 189839 &amp; 191232: Information Element compatible with Zigbee standard</li>
+<li>ID 190388: Send beacon frame coherence with BSN suppression enable</li>
+<li>ID 191444: Malformed Beacon frame is rejected ow</li>
+<li>ID 192162: Broadcast frame is not acknowledged anymore (depending to this frame version)</li>
+<li>ID 192320: Indirect data are more stable</li>
+<li>ID 194921: Fix several issues in disassociation primitive</li>
+<li>ID 194955: Missing addressing information in COMM-STATUS.ind following an unsuccessful association</li>
+<li>ID 198108: RSSI field is prensent in data.indication callback</li>
+<li>ID 195607: Invalid scan status in case of channel access failure</li>
+<li>ID 195704: Empty panDescriptorList after an enhanced scan</li>
+</ul></li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>A new stack library is available adressing ZigbeeDirect: <em>ZigBeeProR23_ZDD.a</em>. Zigbee Direct is a new communication protocol designed to enable direct communication between Zigbee devices and smartphones.</li>
+<li>MISRA compliancy corrections.</li>
+<li>Zigbee Touchlink :
+<ul>
+<li>Zigbee Touchlink interoperability improved.</li>
+</ul></li>
+<li>Zigbee Smart Energy R22 :
+<ul>
+<li>Zigbee Smart Energy minor bug fixing.</li>
+</ul></li>
+<li>Zigbee Miscellaneous R23 :
+<ul>
+<li>Zigbee BDB moving to version 3.1.</li>
+<li>Clusters code cleanup (mainly Poll Control cluster).</li>
+<li>Sleepy End Device keep alive enhancements for realistic use corner cases scenarios.</li>
+<li>Added ZB_NWK_STATUS_CODE_PANID_UPDATE filter message support for when the PAN Id is updated.</li>
+</ul></li>
+<li>Issue fixed:
+<ul>
+<li>ID 193402 : Router.Neighbor timed-out Removing from NNT of SED happen too early. Better handling of EDKA by parent.</li>
+<li>ID 183768 : TOUCHLINK Initiator configured as SED not able to commission</li>
+<li>ID 202291 : Zigbee direct updates and Smart Energy bug fixing and BDB 3.1 and Clusters updates and PANID updates</li>
+</ul></li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>Add support of NVM in platform/flash.c (Demonstration application in Thread_Coap_Generic_NVM)</li>
+<li>Add support of SHA256 HW accelerator (crypto acceleration during commissioning)</li>
+<li>New OT lib dedicated to matter optimized in footprint : stm32wba_mtd_light_no_tcp_matter_lib.a</li>
+<li>Issue fixed:
+<ul>
+<li>ID 191203 : SSED do not update CSL IE phase after retries leading to desynchronization<br />
+</li>
+<li>ID 190279 : SHA256 mbedtls is still executed in software and not with hardware accelerator.</li>
+</ul></li>
+</ul></li>
+<li>BLE Thread:
+<ul>
+<li>Issue fixed:
+<ul>
+<li>ID 192199, 192192, 192486, 192653 : CSL feature unstable in noisy environment</li>
+<li>ID 191905 : SED crash after several hours in noisy environment</li>
+<li>ID 197494 : OT Discovery requests stopped when LinkLayer returns OT_ERROR_ABORT</li>
+</ul></li>
+</ul></li>
+<li><strong>Known limitations</strong>:
+<ul>
+<li>BLE:
+<ul>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>Information Element and Enhanced beacon implemented according the Zigbee standard (annex D)</li>
+<li>ID 191973: Impossible to send beacon with a payload length greater than 52 bytes</li>
+<li>ID 194748: Incorrect TX power in the zigbee IE of an EBR</li>
+<li>ID 195186: Out of range TX power power IE in enhanced beacon</li>
+<li>ID 195939: Receiving Corrupted Data Indication after received a frame with extended type</li>
+<li>ID 195702: Invalid coordinator short address after an association with an extended address</li>
+<li>ID 196397 &amp; 197903 &amp; 197909: Buffer deleted in a very rare case</li>
+<li>ID 197948: Association is cancelled when purging handle 0</li>
+<li>ID 197959: Frame pending field is not set to 1 when multiple data are pending</li>
+<li>ID 197976: Memory corruption when purging a frame between data request and data</li>
+<li>ID 188347: [WBA6] Too high PER (&gt; 1%) observed for Packet size modulo 16</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ZigbeeDirect stack (ZigBeeProR23_ZDD.a) certification has not been executed.</li>
+</ul></li>
+<li>BLE Thread:
+<ul>
+<li>ID 198973 : Under 802.15.4 noisy environment, some BLE events could be missed.</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.5.0 / 29-October-2024</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -323,7 +487,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -432,7 +596,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li><p>Productive RF-PHY settings.</p></li>
 <li>Zigbee:
@@ -502,7 +666,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="false">V2.3.0 / 05-Feb-2024</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li><p>Adding support of BLE-Thread and BLE-Zigbee Dynamic Concurrent Modes.</p></li>
 <li><p>All libraries are now compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
@@ -616,7 +780,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 22-Sept-2023</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -686,7 +850,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -714,7 +878,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
 <div>
-<h2 id="main-changes-6">Main Changes</h2>
+<h2 id="main-changes-7">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

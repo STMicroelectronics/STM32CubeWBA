@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 #ifndef APP_SYS_H
 #define APP_SYS_H
+
+#include "main.h"
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -34,6 +36,7 @@
 /* USER CODE END EC */
 
 /* Exported functions prototypes ---------------------------------------------*/
+
 void APP_SYS_BLE_EnterDeepSleep(void);
 /* USER CODE BEGIN EFP */
 

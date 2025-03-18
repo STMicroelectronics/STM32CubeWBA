@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/ll_error.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_error.h#1 $*/
 /**
  ********************************************************************************
  * @file    error.h
@@ -39,6 +39,21 @@
 
 #ifndef ERROR_H_
 #define ERROR_H_
+
+typedef enum _HW_ERROR_CODES
+{
+	HW_ERROR_CODE_UNDEFINED_ERROR,
+	HW_ERROR_CODE_BL_SEARCH, /* this error code indicates an issue while searching in the HW Black list */
+	HW_ERROR_CODE_RL_SEARCH, /* this error code indicates an issue while searching in the HW Resolving list */
+	HW_ERROR_CODE_WL_SEARCH, /* this error code indicates an issue while searching in the HW White list */
+	HW_ERROR_CODE_PDU_PARSING, /* this error code indicates an issue while Parsing PDU */
+	HW_ERROR_CODE_PDU_RECEIVING, /* this error code indicates an unexpected PDU type received */
+	HW_ERROR_CODE_SM_UPDATE, /* this error code indicates an update in the state machine */
+	HW_ERROR_CODE_UNREGISTERING_EVENT, /* this error code indicates an issue while unregistering an event */
+	HW_ERROR_CODE_STARTING_CONNECTION, /* this error code indicates an issue while starting a connection  */
+	HW_ERROR_CODE_MEMORY_EXCEEDED, /* this error code indicates an issue in allocating */
+	HW_ERROR_CODE_UNEXPECTED_ADV_STATE /* this error code indicates unexpected adv state */
+}HW_ERROR_CODES;
 
 /* Includes ---------------------------------------------------------------------*/
 
@@ -184,7 +199,29 @@
 #error PAWR feature shall be enabled only if PAST recipient feature is enabled
 #endif /* #error */
 
+#if ((SUPPORT_FRAME_SPACE_UPDATE) && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION))
+#error Frame Space update feature shall be enabled only when the master role or slave role is enabled
+#endif /* #error */
 
+#if ((SUPPORT_FRAME_SPACE_UPDATE) && (!SUPPORT_EXT_FEATURE_SET))
+#error Frame Space update feature shall be enabled only when the extended feature set is enabled.
+#endif /* #error */
+
+#if (SUPPORT_CHANNEL_SOUNDING && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION))
+#error Channel Sounding feature can be enabled only if the master role or slave role is enabled
+#endif /* #error */
+
+#if (SUPPORT_EXT_FEATURE_SET && (!SUPPORT_MASTER_CONNECTION && !SUPPORT_SLAVE_CONNECTION))
+#error Extended Feature Set Exchange feature can be enabled only if the master role or slave role is enabled
+#endif /* #error */
+
+#if ((SUPPORT_LE_ADVERTISERS_MONITORING) && (!SUPPORT_EXPLCT_OBSERVER_ROLE))
+#error Advertisers Monitoring feature can be enabled when the device is an observer.
+#endif /* ((SUPPORT_LE_ADVERTISERS_MONITORING) && (!SUPPORT_EXPLCT_OBSERVER_ROLE)) */
+
+#if ((SUPPORT_PHY_SHUTDOWN_MODE) && !(defined(PHY_40nm_3_60_a_tc) || defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a)))
+#error Phy Shutdown feature is only supported on PHY_40nm_3_60_a_tc, PHY_40nm_3_00_a and PHY_40nm_3_40_a
+#endif /* ((SUPPORT_PHY_SHUTDOWN_MODE) && !(defined(PHY_40nm_3_60_a_tc) || defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a))) */
 
 /* Exported macros ------------------------------------------------------------*/
 

@@ -68,7 +68,6 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel7;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
@@ -275,20 +274,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles GPDMA1 Channel 7 global interrupt.
-  */
-void GPDMA1_Channel7_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel7_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel7_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel7);
-  /* USER CODE BEGIN GPDMA1_Channel7_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel7_IRQn 1 */
-}
-
-/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -326,21 +311,6 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles ADC4 (12bits) global interrupt.
-  */
-void ADC4_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC4_IRQn 0 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  BSP_JOY_IRQHandler(JOY1,(JOYPin_TypeDef) 0);
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
-  /* USER CODE END ADC4_IRQn 0 */
-  /* USER CODE BEGIN ADC4_IRQn 1 */
-
-  /* USER CODE END ADC4_IRQn 1 */
 }
 
 /**

@@ -222,7 +222,7 @@ void SystemInit(void)
   while (READ_BIT(ADC4->ISR, ADC_ISR_ADRDY) == 0U)
   {
     timeout_cpu_cycles--;
-    if(timeout_cpu_cycles == 0U)
+    if(timeout_cpu_cyclers == 0U)
     {
       break;
     }

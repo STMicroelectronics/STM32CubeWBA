@@ -1,0 +1,31 @@
+#! armclang --target=arm-arm-none-eabi -march=armv8-m.main -E -xc
+/*************************************************************************************************/
+#include "loader_region_defs.h"
+/*************************************************************************************************/
+
+LR_VENEER NSC_LOADER_START {
+ER_IROM3 NSC_LOADER_START  NSC_LOADER_SIZE {  ; load address = execution address
+   *(Veneer$$CMSE)                   ; check with partition.h
+   }
+}
+LR_CODE LOADER_S_CODE_START {
+    ER_CODE (LOADER_S_CODE_START) (LOADER_S_CODE_SIZE){
+        *.o (RESET +First)
+        .ANY (+RO)
+    }
+
+    ER_DATA (LOADER_S_DATA_START ) (LOADER_S_DATA_SIZE) {
+        .ANY (+ZI +RW)
+    }
+
+    /* MSP */
+    ARM_LIB_STACK_MSP +0 ALIGN 32 EMPTY LOADER_S_MSP_STACK_SIZE {
+    }
+
+    /* PSP */
+    ARM_LIB_STACK +0 ALIGN 32 EMPTY LOADER_S_PSP_STACK_SIZE {
+    }
+
+    ARM_LIB_HEAP +0 ALIGN 8 EMPTY LOADER_S_HEAP_SIZE {
+    }
+}

@@ -40,12 +40,7 @@
 #include "dis_app.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wba55g_discovery.h"
-
-#if (CFG_LCD_SUPPORTED == 1)
-#include "stm32wba55g_discovery_lcd.h"
-#include "stm32_lcd.h"
-#endif /* CFG_LCD_SUPPORTED */
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -227,9 +222,7 @@ static void APP_BLE_AdvLowPower(void);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-extern JOYPin_TypeDef Joystick_Event;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -366,16 +359,16 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
       UTIL_TIMER_StartWithPeriod(&bleAppContext.TimerAdvLowPower_Id, ADV_TIMEOUT_MS);
 #if (CFG_LCD_SUPPORTED == 1)
-      BSP_LCD_Clear(0,LCD_COLOR_BLACK);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Clear(LCD1, LCD_COLOR_BLACK);
+      BSP_LCD_Refresh(LCD1);
       p_bd_addr= BleGetBdAddress();
       sprintf(BdAddress, "BD_ad=%02x%02x%02x%02x%02x%02x", p_bd_addr[5], p_bd_addr[4], p_bd_addr[3], p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
       UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", CENTER_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"Heart Rate", CENTER_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(3), (uint8_t *)BdAddress, LEFT_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"ADVERTISING", LEFT_MODE);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
 #endif /* CFG_LCD_SUPPORTED */
       /* USER CODE END EVT_DISCONN_COMPLETE */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -527,12 +520,12 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           const uint8_t *p_bd_addr;  
           p_bd_addr= BleGetBdAddress();
           sprintf(BdAddress, "BD_ad=%02x%02x%02x%02x%02x%02x", p_bd_addr[5], p_bd_addr[4], p_bd_addr[3], p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
-          BSP_LCD_Refresh(0);
+          BSP_LCD_Refresh(LCD1);
           UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", CENTER_MODE);
           UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"Heart Rate", CENTER_MODE);
           UTIL_LCD_DisplayStringAt(0, LINE(3), (uint8_t *)BdAddress, LEFT_MODE);
           UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"CONNECTED  ", LEFT_MODE);
-          BSP_LCD_Refresh(0);
+          BSP_LCD_Refresh(LCD1);
 #endif /* CFG_LCD_SUPPORTED */
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
@@ -1195,12 +1188,12 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   char BdAddress[20];
   p_bd_addr= BleGetBdAddress();
   sprintf(BdAddress, "BD_ad=%02x%02x%02x%02x%02x%02x", p_bd_addr[5], p_bd_addr[4], p_bd_addr[3], p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
   UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"Heart Rate", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(3), (uint8_t *)BdAddress, LEFT_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"ADVERTISING", LEFT_MODE);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
 #endif /* CFG_LCD_SUPPORTED */
   /* USER CODE END Role_Mngt */
 
@@ -1749,80 +1742,73 @@ void NVMCB_Store( const uint32_t* ptr, uint32_t size )
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
-
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-void Joystick_ActionHandle(void)
+
+void APP_BSP_JoystickUpAction( void )
 {
-  if (Joystick_Event == JOY_SEL)
+  /* Equivalent to button 3 action of Nucleo HR project */
+  if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
   {
-  }
-  else if (Joystick_Event == JOY_UP)
-  {
-    /* Equivalent to button 3 action of Nucleo HR project */
-    if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
-    {
-      
-    }
-    else
-    {
-      APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_CONN_PARAM_UPDATE);
-    }
-  }
-  else if (Joystick_Event == JOY_DOWN)
-  {
-  }
-  else if (Joystick_Event == JOY_LEFT)
-  {
-    /* Equivalent to button 1 action of Nucleo HR project */
-    if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
-    {
-      /* Relaunch fast advertising */
-      if (bleAppContext.Device_Connection_Status != APP_BLE_IDLE)
-      {
-        APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
-      }
-      APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-      UTIL_TIMER_StartWithPeriod(&bleAppContext.TimerAdvLowPower_Id, ADV_TIMEOUT_MS);
-    }
-    else
-    {
-      APP_BLE_Procedure_Gap_General(PROC_GAP_GEN_PHY_TOGGLE);
-    }
-  }
-  else if (Joystick_Event == JOY_RIGHT)
-  {
-    /* Equivalent to button 2 action of Nucleo HR project */
-    tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
     
-    if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
+  }
+  else
+  {
+    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_CONN_PARAM_UPDATE);
+  }
+}
+
+void APP_BSP_JoystickRightAction( void )
+{
+  /* Equivalent to button 2 action of Nucleo HR project */
+  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+  
+  if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
+  {
+    /* Clear Security Database */
+    ret = aci_gap_clear_security_db();
+    if (ret != BLE_STATUS_SUCCESS)
     {
-      /* Clear Security Database */
-      ret = aci_gap_clear_security_db();
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("==>> aci_gap_clear_security_db - Fail, result: %d \n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("==>> aci_gap_clear_security_db - Success\n");
-      }
+      LOG_INFO_APP("==>> aci_gap_clear_security_db - Fail, result: %d \n", ret);
     }
     else
     {
-      /* Security Request */
-      ret = aci_gap_slave_security_req(bleAppContext.BleApplicationContext_legacy.connectionHandle);
-      
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("==>> aci_gap_slave_security_req() Fail , result: %d \n", ret);
-      }
-      else
-      {
-        LOG_INFO_APP("===>> aci_gap_slave_security_req - Success\n");
-      }
+      LOG_INFO_APP("==>> aci_gap_clear_security_db - Success\n");
+    }
+  }
+  else
+  {
+    /* Security Request */
+    ret = aci_gap_slave_security_req(bleAppContext.BleApplicationContext_legacy.connectionHandle);
+    
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("==>> aci_gap_slave_security_req() Fail , result: %d \n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("===>> aci_gap_slave_security_req - Success\n");
     }
   }
 }
+
+void APP_BSP_JoystickLeftAction( void )
+{
+  /* Equivalent to button 1 action of Nucleo HR project */
+  if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
+  {
+    /* Relaunch fast advertising */
+    if (bleAppContext.Device_Connection_Status != APP_BLE_IDLE)
+    {
+      APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
+    }
+    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
+    UTIL_TIMER_StartWithPeriod(&bleAppContext.TimerAdvLowPower_Id, ADV_TIMEOUT_MS);
+  }
+  else
+  {
+    APP_BLE_Procedure_Gap_General(PROC_GAP_GEN_PHY_TOGGLE);
+  }
+}
+
 #endif  /* CFG_JOYSTICK_SUPPORTED */
 /* USER CODE END FD_WRAP_FUNCTIONS */

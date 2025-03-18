@@ -147,7 +147,7 @@ void APP_MAC_Init(void)
   ST_MAC_init(&macCallback);
   
   /* Execute once at startup */
-  UTIL_SEQ_SetTask(TASK_RFD, TASK_MAC_APP_PRIO);
+  UTIL_SEQ_SetTask(TASK_RFD, CFG_SEQ_PRIO_1);
 }
 
 void APP_RFD_MAC_802_15_4_SetupTask(void)
@@ -235,12 +235,7 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
   APP_RFD_MAC_802_15_4_SendData(DATA);
   
 #ifdef APP_MAC_PERIODIC_TRANSMIT
-  
-#if !(CFG_BUTTON_SUPPORTED == 1)  
-  /* register task if buttons not supported */
-  UTIL_SEQ_RegTask(1U << TASK_BUTTON_1, UTIL_SEQ_RFU, APP_BSP_Button1Action);
-#endif
-  
+
   /* Create timer to handle periodic OnOff 'Toggle' transmission */
   UTIL_TIMER_Create(&APP_MAC_transmitTimerId,
                     0,

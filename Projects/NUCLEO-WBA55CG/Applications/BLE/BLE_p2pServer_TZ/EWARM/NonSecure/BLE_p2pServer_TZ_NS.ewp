@@ -346,7 +346,6 @@
           <state>$PROJ_DIR$/../../NonSecure/System/Config/Log</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/LowPower</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/Debug_GPIO</state>
-          <state>$PROJ_DIR$/../../NonSecure/System/Config/Flash</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/CRC_Ctrl</state>
           <state>$PROJ_DIR$/../../NonSecure/STM32_WPAN/App</state>
           <state>$PROJ_DIR$/../../NonSecure/STM32_WPAN/Target</state>
@@ -377,7 +376,6 @@
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
-          <state>$PROJ_DIR$/../../NonSecure/System/Config/ADC_Ctrl</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Interfaces</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
@@ -387,6 +385,8 @@
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Log</state>
+          <state>$PROJ_DIR$/../../NonSecure/System/Config/Flash</state>
+          <state>$PROJ_DIR$/../../NonSecure/System/Config/ADC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1564,6 +1564,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>

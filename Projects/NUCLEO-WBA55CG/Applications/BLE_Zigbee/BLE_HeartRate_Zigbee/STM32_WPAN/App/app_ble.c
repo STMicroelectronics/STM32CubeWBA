@@ -132,6 +132,10 @@ typedef struct
   APP_BLE_ConnStatus_t Device_Connection_Status;
   /* USER CODE BEGIN PTD_1 */
   UTIL_TIMER_Object_t           TimerAdvLowPower_Id;
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)  
+  /* Led Timeout timerID */
+  UTIL_TIMER_Object_t SwitchOffLed_timer_Id;
+#endif  
   uint8_t connIntervalFlag;
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
@@ -162,6 +166,9 @@ do {\
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
 #define COPY_DEVINFO_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+#define LED_ON_TIMEOUT                 (5)          
+#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -226,6 +233,9 @@ static uint8_t HOST_BLE_Init(void);
 static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t*p_bd_addr);
 static void APP_BLE_AdvLowPower_timCB(void *arg);
 static void APP_BLE_AdvLowPower(void);
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+static void Switch_OFF_Led(void *arg);
+#endif
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -238,7 +248,9 @@ static void APP_BLE_AdvLowPower(void);
 void APP_BLE_Init(void)
 {
   /* USER CODE BEGIN APP_BLE_Init_1 */
-
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+#endif
   /* USER CODE END APP_BLE_Init_1 */
 
   LST_init_head(&BleAsynchEventQueue);
@@ -295,6 +307,25 @@ void APP_BLE_Init(void)
     LOG_INFO_APP("\n");
 
     /* USER CODE BEGIN APP_BLE_Init_3 */
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+    ret = aci_hal_set_radio_activity_mask(0x0006);
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      APP_DBG_MSG("  Fail   : aci_hal_set_radio_activity_mask command, result: 0x%2X\n", ret);
+    }
+    else
+    {
+      APP_DBG_MSG("  Success: aci_hal_set_radio_activity_mask command\n\r");
+    }
+    
+    /* Create timer to handle the Led Switch OFF */
+    UTIL_TIMER_Create(&(bleAppContext.SwitchOffLed_timer_Id),
+                      0,
+                      UTIL_TIMER_ONESHOT,
+                      &Switch_OFF_Led,
+                      0);
+#endif
+    
     /* Start to Advertise to accept a connection */
     APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
 
@@ -564,7 +595,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE:
         {
           /* USER CODE BEGIN RADIO_ACTIVITY_EVENT */
-
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+          BSP_LED_On(LED_GREEN);
+          UTIL_TIMER_StartWithPeriod(&bleAppContext.SwitchOffLed_timer_Id, LED_ON_TIMEOUT);
+#endif
           /* USER CODE END RADIO_ACTIVITY_EVENT */
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
         }
@@ -918,7 +952,7 @@ void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId)
       status = aci_gap_set_discoverable(paramD,
                                         paramA,
                                         paramB,
-                                        CFG_BD_ADDRESS_DEVICE,
+                                        CFG_BD_ADDRESS_TYPE,
                                         ADV_FILTER,
                                         0, 0, 0, 0, 0, 0);
       if (status != BLE_STATUS_SUCCESS)
@@ -1023,6 +1057,15 @@ void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId)
 
   /* USER CODE END Procedure_Gap_Peripheral_3 */
   return;
+}
+
+const uint8_t* BleGetBdAddress(void)
+{
+  const uint8_t *p_bd_addr;
+
+  p_bd_addr = (const uint8_t *)a_BdAddr;
+
+  return p_bd_addr;
 }
 
 /* USER CODE BEGIN FD */
@@ -1323,7 +1366,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
 
   LOG_INFO_APP("---------------------------------------------\n");
-  /* Device ID: WBA5x, ... */
+  /* Device ID: WBA5x, WBA6x... */
   a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
   a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);
@@ -1819,3 +1862,15 @@ void NVMCB_Store( const uint32_t* ptr, uint32_t size )
   SNVMA_Write (APP_BLE_NvmBuffer,
                BLE_NvmCallback);
 }
+
+/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+
+#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
+static void Switch_OFF_Led(void *arg)
+{
+  BSP_LED_Off(LED_GREEN);
+  return;
+}
+#endif
+
+/* USER CODE END FD_WRAP_FUNCTIONS */

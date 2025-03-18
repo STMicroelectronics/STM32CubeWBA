@@ -1,2 +1,0 @@
-mainProject = TFM_Appli
-compilingOrder = TFM_SBSFU_Boot, TFM_Appli, TFM_Loader

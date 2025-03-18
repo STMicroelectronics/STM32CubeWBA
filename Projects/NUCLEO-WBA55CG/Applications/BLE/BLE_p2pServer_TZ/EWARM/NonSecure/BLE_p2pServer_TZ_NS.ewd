@@ -1095,7 +1095,7 @@ tegdcudgf
 				</option>
 				<option>
 					<name>CCCpuClockEdit</name>
-					<state>16.0</state>
+					<state>32.0</state>
 				</option>
 				<option>
 					<name>CCSwoClockAuto</name>

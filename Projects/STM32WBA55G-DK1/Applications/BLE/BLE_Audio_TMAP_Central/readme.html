@@ -20,8 +20,9 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_audio_tmap_central-application-description"><strong>BLE_Audio_TMAP_Central Application Description</strong></h2>
-<p>How to use the Telephony and Media Profile profile in Unicast Client role (Call Gateway and/or Unicast Media Sender) and Broadcast Source role (Broadcast Media Sender) as specified by the Bluetooth SIG.</p>
-<p>The TMAP Central application, in Unicast Client role, scans, connects to a remote Unicast Servers (Call Terminal and/or Unicast Media Receiver) and initiate Isochronous Connection. The TMAP Central supports Volume Control, Call Control and Media Control features. The TMAP Peripheral application, in Broadcast role, advertises and broadcasts audio streams to remote Broadcast Sinks.</p>
+<p>How to use the Telephony and Media Audio Profile (TMAP) in Unicast Client role (Call Gateway and/or Unicast Media Sender) and Broadcast Source role (Broadcast Media Sender) as specified by the Bluetooth SIG.</p>
+<p>The TMAP Central application, in <strong>Unicast Client role</strong>, performs the following actions:<br> - Scans and connects to remote Unicast Servers (Call Terminal and/or Unicast Media Receiver).<br> - Initiate Isochronous Connection.<br> - Supports Volume Control, Call Control, and Media Control features.<br></p>
+<p>The TMAP Central application, in <strong>Broadcast Source role</strong>, advertises and broadcasts audio streams to remote Broadcast Sinks.<br> <br></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio</p>
 <h3 id="directory-contents"><strong>Directory contents</strong></h3>
@@ -71,6 +72,7 @@
 <li>BLE_Audio_TMAP_Central/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
 <li>BLE_Audio_TMAP_Central/Core/Src/stm32wbaxx_it.c Interrupt Service Routines.</li>
 <li>BLE_Audio_TMAP_Central/Core/Src/system_stm32wbaxx.c CMSIS Cortex-M33 Device Peripheral Access Layer System Source File</li>
+<li>BLE_Audio_TMAP_Central/STM32_WPAN/App/app_bsp.c Application to manage BSP</li>
 <li>BLE_Audio_TMAP_Central/STM32_WPAN/App/app_ble.c BLE Application</li>
 <li>BLE_Audio_TMAP_Central/STM32_WPAN/App/app_menu.c Initialize the Menu module</li>
 <li>BLE_Audio_TMAP_Central/STM32_WPAN/App/app_menu_cfg.c Initialize and setup the menu</li>
@@ -100,36 +102,54 @@
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This example runs on STM32WBA55xx devices with SMPS. Connect the Discovery Board to your PC with a USB cable type C. Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3. Connect Audio Input on Jack Connector CN4 for Media streaming</li>
+<li>This example runs on STM32WBA55xx devices with SMPS. <br>Connect the Discovery Board to your PC with a USB cable type C <br>Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3. <br>Connect Audio Input on Jack Connector CN4 for Media streaming</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
 <li>Open your preferred toolchain</li>
 <li>Rebuild all files and load your image into target memory</li>
-<li><p>Run the example</p></li>
-<li>At startup, after pressing the Right direction on the joystick, the user enters in a menu offering following actions:
+<li>Run the example <br> <br></li>
+<li><strong>At Startup</strong> <br>After pressing the Right direction on the joystick, the user accesses a menu offering following actions:
 <ul>
-<li>“Start Unicast” : the application starts the features associated to the TMAP Unicast Client role (Unicast Client, Media Control, Call Control, Volume Control).</li>
-<li>“Start Broadcast” : the application starts the features associated to the TMAP Broadcast Source role.</li>
-<li>“Clear Sec. DB” : clear all the information of the bonded devices</li>
+<li><strong>Start Unicast</strong> : the application starts the features associated to the TMAP Unicast Client role (Unicast Client, Media Control, Call Control, Volume Control).<br></li>
+<li><strong>Start Broadcast</strong> : the application starts the features associated to the TMAP Broadcast Source role.<br></li>
+<li><strong>Clear Sec. DB</strong> : clear all the information of the bonded devices <br></li>
 </ul></li>
-<li>Once “Start Unicast” in TMAP Central is executed, the TMAP Central starts scanning nearby Unicast Servers
+<li><strong>Start Unicast</strong> <br>Once “Start Unicast” in TMAP Central is executed, the TMAP Central starts scanning of nearby Unicast Servers
 <ul>
-<li>Select the Unicast Server you want to connect with the Right direction on the joystick. Pairing and Link-up are initiated automatically. If the remote TMAP Peripheral is a Set member of a Coordinated Set, the application starts discovery and linkup of the other Set member of a Coordinated Set (if CFG_BLE_NUM_LINK &gt; 1 and APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY = 1)</li>
+<li>Select the Unicast Server you want to connect with the Right direction on the joystick. Pairing and Link-up are initiated automatically.<br> If the remote TMAP Peripheral is a Set member of a Coordinated Set, the application starts discovery and linkup of the other Set members of a Coordinated Set (if CFG_BLE_NUM_LINK &gt; 1 and APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY = 1)</li>
 <li>Once connected to the Unicast Server, use the Right direction on the joystick to access the menu:
 <ul>
-<li>Select Audio Stream to access a a submenu where you can Start Media (48KHz unidirectional stereo stream), Start Telephony (32KHz bidirectional mono stream) or Stop the current stream.</li>
-<li>Select Remote Volume to access a panel where the volume of the remote device can be adjusted using the VCP as VCP Controller role (Volume Up / Volume Down / Mute)</li>
-<li>Select Local Volume Control to access a panel where the local volume can be adjusted (Volume Up / Volume Down / Mute)</li>
-<li>Select Media Control to access a panel where the local media tracks can be controlled and displayed using the MCP as Media Control Server (Next Track / Previous Track / Play|Pause)</li>
-<li>Select Call Control to access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call)</li>
-<li>Select Disconnect to disconnect from the device</li>
-</ul></li>
-</ul></li>
-<li>Once “Start Broadcast” in TMAP Central is executed, the application first offers to select a Streaming frequency configuration in a menu.
+<li><strong>Select Audio Stream</strong>: Access a submenu where you can :
 <ul>
-<li>Once Streaming frequency selected by using Up/down direction, push the joystick in the right direction to start Audio Stream Broadcast.</li>
+<li>Start Media (48KHz unidirectional stereo stream).</li>
+<li>Start Telephony (32KHz bidirectional mono stream if connected to one audio device ; 16KHz when connected to 2 Set members of a Coordinated Set).</li>
+<li>Stop the current stream.</li>
+</ul></li>
+<li><strong>Select Remote Volume</strong>: Access a panel where the volume of the remote device can be adjusted using the VCP as VCP Controller role (Volume Up / Volume Down / Mute)<br></li>
+<li><strong>Select Local Volume Control</strong>: Access a panel where the local volume can be adjusted (Volume Up / Volume Down / Mute)<br></li>
+<li><strong>Select Media Control</strong>: Access a panel where the local media tracks can be controlled and displayed using the MCP as Media Control Server (Next Track / Previous Track / Play|Pause)<br></li>
+<li><strong>Select Call Control</strong>: Access a panel where the local calls can be controlled and displayed using the CCP as Call Control Server (Incoming Call / Answer Call / Terminate Call)<br></li>
+<li><strong>Select Disconnect</strong>: Disconnect the connected devices <br></li>
+</ul></li>
+</ul></li>
+<li><strong>Start Broadcast</strong> <br>Once “Start Broadcast” in TMAP Central is executed, the application first offers to select a Streaming frequency configuration in a menu.
+<ul>
+<li>Once Streaming frequency selected by using Up/Down direction, push the joystick in the Right direction to start Audio Stream Broadcast.</li>
+<li>Once Broadcasting is started, to stop broadcasting, push the joystick in the Left direction. <br></li>
+</ul></li>
+<li><strong>Clear Security Database</strong> <br>Once “Clear Sec. DB” in TMAP Central is executed, all the information stored in Non-Volatile Memory related to bonded devices are removed.</li>
+</ul>
+<h3 id="documentation"><strong>Documentation</strong></h3>
+<ul>
+<li>Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+<ul>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Telephony_%26_Media_Audio_Profile"> Bluetooth® Low Energy audio - Telephony &amp; Media Audio Profile</a></li>
 </ul></li>
 </ul>
 </div>

@@ -30,9 +30,12 @@
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
+#include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+
 /* USER CODE BEGIN Includes */
 #include "codec_if.h"
+#include "ll_sys_if.h"
 /* USER CODE END Includes */
 
 #define max(a,b) ((a) > (b) ? a : b)
@@ -482,16 +485,15 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   */
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_DisableSleepMode();
+  /* Disabling stop mode prevents also from entering in standby */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -501,16 +503,14 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
   */
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+  PWR_EnableSleepMode();
   UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -560,9 +560,15 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
 void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
   /* USER CODE BEGIN LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT_0 */
-  if ((p_evnt_timing->exec_time == DEFAULT_EXEC_TIME) \
-      && (p_evnt_timing->schdling_time == DEFAULT_SCHDL_TIME) \
-      && (p_evnt_timing->drift_time == DEFAULT_DRIFT_TIME))
+#if defined(__GNUC__) && defined(DEBUG)
+  if ((p_evnt_timing->exec_time == (EXEC_TIME_DEFAULT + EXEC_TIME_EXTRA_GCC_DEBUG)) \
+      && (p_evnt_timing->schdling_time == SCHDL_TIME_DEFAULT) \
+      && (p_evnt_timing->drift_time == (DRIFT_TIME_DEFAULT + DRIFT_TIME_EXTRA_GCC_DEBUG)))
+#else
+  if ((p_evnt_timing->exec_time == EXEC_TIME_DEFAULT) \
+      && (p_evnt_timing->schdling_time == SCHDL_TIME_DEFAULT) \
+      && (p_evnt_timing->drift_time == DRIFT_TIME_DEFAULT))
+#endif /* defined(__GNUC__) && defined(DEBUG) */
   {
     PLL_Exit();
   }

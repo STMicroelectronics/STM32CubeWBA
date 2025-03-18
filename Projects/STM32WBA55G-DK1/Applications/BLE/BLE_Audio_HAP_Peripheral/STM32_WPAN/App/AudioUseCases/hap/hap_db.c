@@ -46,9 +46,9 @@
  */
 #define BLENVM_HAP_HDR_LEN              (12u)
 
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HA   (0x0B)
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC (0x0C)
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC  (0x0D)
+#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HA   (0x0C)
+#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC (0x0D)
+#define BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC  (0x0E)
 /* Private macros ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -702,7 +702,8 @@ tBleStatus HAP_DB_GetRemoteAddress(uint8_t Peer_Address_Type, const uint8_t Peer
   /* Check if the address is a resolvable private address */
   if (((Peer_Address_Type) == 1u) && ((Peer_Address[5] & 0xC0U) == 0x40U))
   {
-    status = aci_gap_resolve_private_addr( &Peer_Address[0], Address);
+    uint8_t type;
+    status = aci_gap_check_bonded_device(1,&Peer_Address[0],&type,Address);
   }
   else
   {

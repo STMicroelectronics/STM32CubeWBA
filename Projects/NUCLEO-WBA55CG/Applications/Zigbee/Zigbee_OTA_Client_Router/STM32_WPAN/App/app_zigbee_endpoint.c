@@ -891,10 +891,13 @@ static bool APP_ZIGBEE_OTAGetBinInfo( uint32_t lBaseAddress, uint32_t lOTATagAdd
   uint32_t              lBinaryMagicKeyword;
   uint32_t              lBinaryEndAddress;
 
+  LOG_ERROR_APP( "[OTA] Sanity check before starting the OTA in case a previous OTA took place");
+  LOG_ERROR_APP( "[OTA] Whatever the value of the MagicKeywordAddress another OTA can be started. Don't take into account next Warning line, if any");
+
   /* Check if the magic keyword address is inside the flash region */
   if ( lMagicKeywordAddress < lBaseAddress || lMagicKeywordAddress > lFlashEndAddress - sizeof( lBinaryMagicKeyword ) )
   {
-    LOG_ERROR_APP( "[OTA] Error, magic keyword address is outside the flash region (0x%08" PRIX32 ").", lMagicKeywordAddress );
+    LOG_ERROR_APP( "[OTA] Warning, keyword address is outside the flash region (0x%08" PRIX32 ").", lMagicKeywordAddress );
     return false;
   }
 
@@ -902,7 +905,7 @@ static bool APP_ZIGBEE_OTAGetBinInfo( uint32_t lBaseAddress, uint32_t lOTATagAdd
   lBinaryMagicKeyword = * ( uint32_t * )( lMagicKeywordAddress );
   if ( lBinaryMagicKeyword != lMagicKeyword )
   {
-    LOG_ERROR_APP( "[OTA] Error, magic keyword is incorrect (0x%08" PRIX32 " != 0x%08" PRIX32 ").", lBinaryMagicKeyword, lMagicKeyword );
+    LOG_ERROR_APP( "[OTA] Warning, keyword is incorrect (0x%08" PRIX32 " != 0x%08" PRIX32 ").", lBinaryMagicKeyword, lMagicKeyword );
     return false;
   }
 

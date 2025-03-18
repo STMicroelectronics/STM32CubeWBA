@@ -167,7 +167,7 @@ FM_Cmd_Status_t FM_Write(uint32_t *Src, uint32_t *Dest, int32_t Size, FM_Callbac
     FM_ProcessRequest();
   }
 
-  LOG_INFO_SYSTEM("\r\nFM_Write - Returned value : %d", status);
+  LOG_DEBUG_SYSTEM("\r\nFM_Write - Returned value : %d", status);
 
   return status;
 }
@@ -216,7 +216,7 @@ FM_Cmd_Status_t FM_Erase(uint32_t FirstSect, uint32_t NbrSect, FM_CallbackNode_t
     FM_ProcessRequest();
   }
 
-  LOG_INFO_SYSTEM("\r\nFM_Erase - Returned value : %d", status);
+  LOG_DEBUG_SYSTEM("\r\nFM_Erase - Returned value : %d", status);
 
   return status;
 }
@@ -237,11 +237,11 @@ void FM_BackgroundProcess (void)
   {
     case FM_BKGND_NOWINDOW_FLASHOP:
     {
-      LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP");
+      LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP");
 
       if (fm_flashop == FM_WRITE_OP)
       {
-        LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP - Write operation");
+        LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP - Write operation");
 
         /* Update duration time value */
         duration = TIME_WINDOW_WRITE_REQUEST;
@@ -275,7 +275,7 @@ void FM_BackgroundProcess (void)
       }
       else
       {
-        LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP - Erase operation");
+        LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_NOWINDOW_FLASHOP - Erase operation");
 
         /* Update duration time value */
         duration = TIME_WINDOW_ERASE_REQUEST;
@@ -309,23 +309,23 @@ void FM_BackgroundProcess (void)
 
     case FM_BKGND_WINDOWED_FLASHOP:
     {
-      LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP");
+      LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP");
 
       if (fm_window_granted == false)
       {
-        LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - No time window granted yet, request one");
+        LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - No time window granted yet, request one");
 
         /* No time window granted yet, request one */
         RFTS_ReqWindow(duration, &FM_WindowAllowed_Callback);
       }
       else
       {
-        LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Time window granted");
+        LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Time window granted");
 
         if (fm_flashop == FM_WRITE_OP)
         {
           /* Flash Write operation */
-          LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Write operation");
+          LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Write operation");
 
           HAL_FLASH_Unlock();
 
@@ -349,7 +349,7 @@ void FM_BackgroundProcess (void)
     else
     {
       /* Flash Erase operation */
-      LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Erase operation");
+      LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Case FM_BKGND_WINDOWED_FLASHOP - Erase operation");
 
       HAL_FLASH_Unlock();
 
@@ -414,7 +414,7 @@ void FM_BackgroundProcess (void)
   else
   {
     /* Flash operation not complete yet */
-    LOG_INFO_SYSTEM("\r\nFM_BackgroundProcess - Flash operation not complete yet, request a new time window");
+    LOG_DEBUG_SYSTEM("\r\nFM_BackgroundProcess - Flash operation not complete yet, request a new time window");
 
     /* Request a new time window */
     RFTS_ReqWindow(duration, &FM_WindowAllowed_Callback);
@@ -505,7 +505,7 @@ static void FM_WindowAllowed_Callback(void)
 {
   fm_window_granted = true;
 
-  LOG_INFO_SYSTEM("\r\nFM_WindowAllowed_Callback");
+  LOG_DEBUG_SYSTEM("\r\nFM_WindowAllowed_Callback");
 
   /* Flash operation to be executed in background */
   FM_ProcessRequest();

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -78,12 +78,11 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   htim2.Instance = TIM2;
 
   /* Initialize TIMx peripheral as follow:
-
-  + Period = [(TIM_CNT_FREQ/TIM_FREQ) - 1]. to have a (1/TIM_FREQ) s time base.
-  + Prescaler = (uwTimclock/TIM_CNT_FREQ - 1) to have a TIM_CNT_FREQ counter clock.
-  + ClockDivision = 0
-  + Counter direction = Up
-  */
+   * Period = [(TIM_CNT_FREQ/TIM_FREQ) - 1]. to have a (1/TIM_FREQ) s time base.
+   * Prescaler = (uwTimclock/TIM_CNT_FREQ - 1) to have a TIM_CNT_FREQ counter clock.
+   * ClockDivision = 0
+   * Counter direction = Up
+   */
   htim2.Init.Period = (TIM_CNT_FREQ / TIM_FREQ) - 1U;
   htim2.Init.Prescaler = uwPrescalerValue;
   htim2.Init.ClockDivision = 0;
@@ -96,18 +95,18 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
     Status = HAL_TIM_Base_Start_IT(&htim2);
     if (Status == HAL_OK)
     {
-        if (TickPriority < (1UL << __NVIC_PRIO_BITS))
-        {
-          /* Enable the TIM2 global Interrupt */
-          HAL_NVIC_SetPriority(TIM2_IRQn, TickPriority, 0U);
-          uwTickPrio = TickPriority;
+      if (TickPriority < (1UL << __NVIC_PRIO_BITS))
+      {
+        /* Enable the TIM2 global Interrupt */
+        HAL_NVIC_SetPriority(TIM2_IRQn, TickPriority, 0U);
+        uwTickPrio = TickPriority;
       }
       else
       {
         Status = HAL_ERROR;
       }
     }
-}
+  }
 #if (USE_HAL_TIM_REGISTER_CALLBACKS == 1U)
   HAL_TIM_RegisterCallback(&htim2, HAL_TIM_PERIOD_ELAPSED_CB_ID, TimeBase_TIM_PeriodElapsedCallback);
 #endif

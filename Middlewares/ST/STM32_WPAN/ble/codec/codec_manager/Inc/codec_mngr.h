@@ -46,26 +46,28 @@
   #define MAX_LC3_NBYTES        155     /* LC3 maximum encoded frame */
 
   /* Codec max Million Cycle Per Second for each frequency listed codec capabilities LTV structure, 0 if unsupported
-   * Values for codec V1.4
+   * Values for codec V1.5
    *                   kHz:      8,     N/A,    16,     N/A,    24,     32,     44.1,    48,    N/A----------
    */
-  #define LC3_MCPS_ENC_75MS     {15,     0,     19,     0,      23,     27,     35,      34,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_ENC_10MS     {13,     0,     17,     0,      22,     26,     30,      30,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_DEC_75MS     {6,      0,     9,      0,      13,     18,     23,      23,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_DEC_10MS     {5,      0,     8,      0,      12,     17,     22,      22,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_ENC_75MS     {14,     0,     18,     0,      22,     26,     33,      33,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_ENC_10MS     {13,     0,     17,     0,      21,     25,     31,      32,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_DEC_75MS     {5,      0,     8,      0,      12,     17,     22,      22,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_DEC_10MS     {5,      0,     8,      0,      12,     16,     21,      21,     0, 0, 0, 0, 0}
 
   #include "LC3.h"
-  #define CODEC_GET_TOTAL_SESSION_BUFFER_SIZE(num_session)      (num_session * LC3_SESSION_STRUCT_SIZE)
+  #define CODEC_GET_TOTAL_SESSION_BUFFER_SIZE(num_session, band)      (num_session * ((band <= CODEC_SSWB) ? LC3_SESSION_STRUCT_SIZE_24kHz : LC3_SESSION_STRUCT_SIZE_48kHz))
 
   #if SUPPORT_LC3_ENCODER != 0
   #include "LC3_encoder.h"
-  #define CODEC_GET_TOTAL_ENCODER_CH_BUFFER_SIZE(num_enc_ch)    (num_enc_ch * LC3_ENCODER_STRUCT_SIZE)
-  #endif
+  #define CODEC_GET_TOTAL_ENCODER_CH_BUFFER_SIZE(num_enc_ch, band)    (num_enc_ch * ((band <= CODEC_SSWB) ? LC3_ENCODER_STRUCT_SIZE_24kHz : LC3_ENCODER_STRUCT_SIZE_48kHz))
+  #define CODEC_GET_ENCODER_STACK_SIZE(band)                          ((band <= CODEC_SSWB) ? LC3_ENCODER_STACK_SIZE_24kHz : LC3_ENCODER_STACK_SIZE_48kHz)
+  #endif /* SUPPORT_LC3_ENCODER */
 
   #if SUPPORT_LC3_DECODER != 0
   #include "LC3_decoder.h"
-  #define CODEC_GET_TOTAL_DECODER_CH_BUFFER_SIZE(num_dec_ch)    (num_dec_ch * LC3_DECODER_STRUCT_SIZE)
-  #endif
+  #define CODEC_GET_TOTAL_DECODER_CH_BUFFER_SIZE(num_dec_ch, band)    (num_dec_ch * ((band <= CODEC_SSWB) ? LC3_DECODER_STRUCT_SIZE_24kHz : LC3_DECODER_STRUCT_SIZE_48kHz))
+  #define CODEC_GET_DECODER_STACK_SIZE(band)                          ((band <= CODEC_SSWB) ? LC3_DECODER_STACK_SIZE_24kHz : LC3_DECODER_STACK_SIZE_48kHz)
+  #endif /* SUPPORT_LC3_DECODER */
 
 #endif /*SUPPORT_LC3*/
 
@@ -73,7 +75,7 @@
 
 #define LL_SETUP_TIME_WINDOWS_US        50  /* Margin given to the setup time for defining a forbidden windows */
 
-#define ISO_DATA_PACK_MAX_SIZE          300 /* MAX value of an SDU supported by the controller before fragmentation */
+#define ISO_DATA_PACK_MAX_SIZE          310 /* MAX value of an SDU supported by the controller before fragmentation */
 
 #define USE_SW_SYNC_METHOD              1   /* Synchronization method used */
 
@@ -92,19 +94,21 @@ typedef struct
 
 /* Codec Mode */
 typedef uint8_t CODEC_Mode_t;
-#define CODEC_MODE_DEFAULT      (0x00)
+#define CODEC_MODE_DEFAULT      (CODEC_MODE_FLOW_CTRL)
+
 #define CODEC_MODE_FLOW_CTRL    (0x01)
+#define CODEC_MODE_WAIT_SYNC    (0x02)
 
 /* Structure for allocating RAM used by the LC3 codec */
 typedef struct
 {
-  uint8_t NumSession;           /* number of supported LC3 session */
-  uint8_t NumDecChannel;         /* number of supported LC3 decoding channel */
-  uint8_t NumEncChannel;        /* number of supported LC3 encoding channel */
+  uint32_t SessionSize;         /* size of pSessionStart */
+  uint32_t ChannelSize;         /* size of pSessionStart */
+  uint32_t StackSize;           /* szie of pStack */
 
   void *pSessionStart;          /* pointer to the allocated RAM for sessions */
-  void *pDecChannelStart;       /* pointer to the allocated RAM for decoding channels */
-  void *pEncChannelStart;       /* pointer to the allocated RAM for encoding channels */
+  void *pChannelStart;          /* pointer to the allocated RAM for channels */
+  void *pStackStart;            /* pointer to the allocated RAM for LC3 stack */
 } CODEC_LC3Config_t;
 
 /* Structure containing clock tree information needed for the frequency corrector */
@@ -160,6 +164,18 @@ typedef enum
   CODEC_RCV_STATUS_BUSY =  2
 } codec_rcv_status_t;
 
+/* bandwith */
+typedef enum
+{
+  CODEC_NB =    1, /* narrow band,          sampling at 8kHz */
+  CODEC_WB =    2, /* wide band,            sampling at 16kHz */
+  CODEC_SSWB =  3, /* semi super wide band, sampling at 24kHz */
+  CODEC_SWB =   4, /* super wide band,      sampling at 32kHz */
+  CODEC_FBCD =  5, /* full band CD,         sampling at 44.1kHz */
+  CODEC_FB =    6, /* full band,            sampling at 48kHz */
+  CODEC_FBHR =  7, /* full band high res    sampling at 48kHz */
+  CODEC_UBHR =  8, /* ultra band high res   sampling at 96kHz */
+} codec_band_t;
 
 /*********************************************************************************************/
 /******************************** interface with local application ***************************/

@@ -1146,6 +1146,9 @@
         <group>
           <name>App</name>
           <file>
+            <name>$PROJ_DIR$/../STM32_WPAN/App/app_bsp.c</name>
+          </file>
+          <file>
             <name>$PROJ_DIR$\..\STM32_WPAN\App\app_ble.c</name>
           </file>
           <file>
@@ -1247,10 +1250,10 @@
     <group>
       <name>BSP</name>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1\stm32wba55g_discovery.c</name>
+        <name>$PROJ_DIR$/</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1\stm32wba55g_discovery.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1\stm32wba55g_discovery_bus.c</name>
@@ -1289,10 +1292,10 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</name>
@@ -1380,6 +1383,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>

@@ -1,6 +1,6 @@
 /**
  * @file zcl.keepalive.h
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
  * @heading Keep Alive
  * @brief ZCL Keep Alive cluster header
  *
@@ -56,15 +56,9 @@ enum ZbZclKeepAliveSvrAttrT {
 #define ZCL_KEEPALIVE_CLIENT_JITTER_DEFAULT     30U /* seconds */
 
 /**
- * Create a new instance of the Keep Alive Server cluster
- * @param zb Zigbee stack instance
- * @param endpoint Endpoint on which to create cluster
- * @return Cluster pointer, or NULL if there is an error
- */
-struct ZbZclClusterT * ZbZclKeepAliveServerAlloc(struct ZigBeeT *zb, uint8_t endpoint);
-
-/**
  * Write a Keep Alive Server attribute
+ * @note Use this API only if Keep-Alive is enabled and Keep-Alive server cluster allocated using the
+ * startup configuration.
  * @param zb Zigbee instance
  * @param attrId The attribute Id to write
  * @param value Attribute data to be writen.
@@ -73,56 +67,20 @@ struct ZbZclClusterT * ZbZclKeepAliveServerAlloc(struct ZigBeeT *zb, uint8_t end
 enum ZclStatusCodeT ZbZclKeepAliveServerWriteDirect(struct ZigBeeT *zb, uint16_t attrId, uint16_t value);
 
 /**
- * Create a new instance of the Keep Alive Client cluster
- * @param zb Zigbee stack instance
- * @param endpoint Endpoint on which to create cluster
- * @param tcso_callback Callback function that will be invoked when the TCSO is ever started
- * (ZB_TCSO_STATUS_DISCOVERY_UNDERWAY), and when it completes, with the resultant status.
- * The return value for this callback determines whether the stack starts or continues with TCSO (true),
- * or if the stack should not start or continue with TCSO (false).
- * @param tcso_arg Pointer to application data that will included in the callback when invoked.
- * @return Cluster pointer, or NULL if there is an error
- */
-struct ZbZclClusterT * ZbZclKeepAliveClientAlloc(struct ZigBeeT *zb, uint8_t endpoint,
-    bool (*tcso_callback)(enum ZbTcsoStatusT status, void *arg), void *tcso_arg);
-
-/**
- * Start Keep Alive
+ * Start the Keep Alive process. This is ignored if the cluster has not been allocated.
+ * The Keep Alive cluster is allocated based on the ZbStartupT configuration given to ZbStartup.
  * @param zb Zigbee stack instance
  * @return Void
  */
 void ZbZclKeepAliveClientStart(struct ZigBeeT *zb);
 
 /**
- * Stop Keep Alive and abort the TCSO
+ * Stop the Keep Alive process and abort the TCSO if running. This is ignored if the cluster
+ * has not been allocated. The Keep Alive cluster is allocated based on the ZbStartupT
+ * configuration given to ZbStartup.
  * @param zb Zigbee stack instance
  * @return Void
  */
 void ZbZclKeepAliveClientStop(struct ZigBeeT *zb);
 
-/**
- * Sends a ZCL read attribute request to read Keep-Alive server attributes.
- * @param zb Zigbee stack instance
- * @param attr_id Attribute id of the Keep-Alive server to read.
- * @param callback Callback function that will be invoked on receiving read attribute response
- * or on read attribute timeout.
- * @param arg Callback argument
- * @return ZCL_STATUS_SUCCESS if read is started successfuly, ZCL_STATUS_FAILURE otherwise.
- */
-enum ZclStatusCodeT ZbZclKeepAliveClientReadReq(struct ZigBeeT *zb, uint16_t attr_id,
-    void (*callback)(const struct ZbZclReadRspT *rspPtr, void *arg), void *arg);
-
-/**
- * Sends a ZCL write attribute request to write Keep-Alive server attributes.
- * @param zb Zigbee stack instance
- * @param attr_id Attribute id of the Keep-Alive server to write.
- * @param attr_val Value to be written to attribute.
- * @param callback Callback function that will be invoked on receiving write attribute response
- * or on write attribute timeout.
- * @param arg Callback argument
- * @return ZCL_STATUS_SUCCESS if write is started successfuly, ZCL_STATUS_FAILURE otherwise.
- */
-enum ZclStatusCodeT ZbZclKeepAliveClientWriteReq(struct ZigBeeT *zb, uint16_t attr_id, uint8_t *attr_val,
-    void (*callback)(const struct ZbZclWriteRspT *rspPtr, void *arg), void *arg);
-
-#endif /* __ZCL_KEEPALIVE_H */
+#endif

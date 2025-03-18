@@ -141,6 +141,8 @@ static void APP_THREAD_CliInit(otInstance *aInstance);
 static void APP_THREAD_ProcessUart(void);
 #endif // OT_CLI_USE
 
+static void APP_THREAD_PersistenceStartup(void);
+
 /* USER CODE BEGIN PFP */
 static void APP_THREAD_AppInit(void);
 static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
@@ -177,7 +179,8 @@ static void APP_THREAD_FuotaSetParamApp(void);
 static APP_THREAD_StatusTypeDef APP_THREAD_SetOtaContext(void);
 static void APP_THREAD_FuotaProvisioning(void);
 static void APP_THREAD_FuotaSend(void);
-static bool APP_THREAD_GetBinSize(uint32_t * fuotaBinarySize, uint32_t * fuotaBinaryCrcAddress );
+static bool APP_THREAD_GetBinInfo(uint32_t * fuotaBinarySize);
+static bool APP_THREAD_SetBinCrc(uint32_t *fuotaBinaryCrcAddress);
 static void APP_THREAD_FuotaParameters(void);
 static void APP_THREAD_FuotaReboot(void);
 static void APP_THREAD_FuotaInit(void);
@@ -297,6 +300,8 @@ void Thread_Init(void)
   size_t otInstanceBufferLength = 0;
   uint8_t *otInstanceBuffer = NULL;
 #endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  APP_THREAD_PersistenceStartup();
 
   otSysInit(0, NULL);
 
@@ -624,6 +629,18 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
 }
 #endif /* OT_CLI_USE */
 
+/**
+ * @brief  Thread persistence startup
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_PersistenceStartup(void)
+{
+  /* USER CODE BEGIN APP_THREAD_PersistenceStartup */
+
+  /* USER CODE END APP_THREAD_PersistenceStartup */
+}
+
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
 static void APP_THREAD_FuotaInit(void)
@@ -867,10 +884,17 @@ static APP_THREAD_StatusTypeDef APP_THREAD_SetOtaContext(void)
   OtaContext.magicKeyword = FUOTA_MAGIC_KEYWORD_M33_APP;
 
   /* Set binary size */
-  result = APP_THREAD_GetBinSize(&binarySize, &binaryCrcAddress);
+  result = APP_THREAD_GetBinInfo(&binarySize);
   if (result == false)
   {
     LOG_ERROR_APP("ERROR : failed to get the binary info");
+    return APP_THREAD_ERROR;
+  }
+  
+  result = APP_THREAD_SetBinCrc(&binaryCrcAddress);
+  if (result == false)
+  {
+    LOG_ERROR_APP("ERROR : failed to Set the binary Crc");
     return APP_THREAD_ERROR;
   }
   
@@ -951,7 +975,7 @@ static inline APP_THREAD_StatusTypeDef APP_THREAD_OTA_WriteWordToFlash( uint32_t
   return eStatus;
 }
 
-static bool APP_THREAD_GetBinSize(uint32_t * fuotaBinarySize, uint32_t * fuotaBinaryCrcAddress )
+static bool APP_THREAD_GetBinInfo(uint32_t * fuotaBinarySize)
 {
   uint32_t       lBinaryMagicKeyword;
   const uint32_t lOtaTagAddress  =  OtaContext.baseAddress + stOtaServerInfo.lOtaTagOffset;
@@ -963,17 +987,11 @@ static bool APP_THREAD_GetBinSize(uint32_t * fuotaBinarySize, uint32_t * fuotaBi
   uint32_t       *lBinaryEndAddress;
 
   lCrcAddress = APP_THREAD_getCrCAddress(lMagicKeywordAddress);
+  
     /* Check if the magic keyword address is inside the flash region */
   if ( lMagicKeywordAddress < OtaContext.baseAddress || lMagicKeywordAddress > lFlashEndAddress - sizeof( lBinaryMagicKeyword ) )
   {
     LOG_ERROR_APP( "[OTA] Error, magic keyword address is outside the flash region (0x%08X).", lMagicKeywordAddress );
-    return false;
-  }
-
-  /* Check if the CRC is inside the flash region */
-  if ( lCrcAddress < OtaContext.baseAddress  || lCrcAddress > lFlashEndAddress - sizeof(lCrc) )
-  {
-    LOG_ERROR_APP( "[OTA] Error, CRC address is outside the flash region (0x%08X ).", lCrcAddress );
     return false;
   }
 
@@ -985,6 +1003,32 @@ static bool APP_THREAD_GetBinSize(uint32_t * fuotaBinarySize, uint32_t * fuotaBi
     return false;
   }
  
+
+  lBinaryEndAddress = (uint32_t *)((uint32_t)lCrcAddress + sizeof(lCrc));
+  *fuotaBinarySize = (uint32_t)lBinaryEndAddress - OtaContext.baseAddress;
+
+
+  return true;
+}
+
+static bool APP_THREAD_SetBinCrc(uint32_t *fuotaBinaryCrcAddress)
+{
+  const uint32_t lOtaTagAddress  =  OtaContext.baseAddress + stOtaServerInfo.lOtaTagOffset;
+  const uint32_t lMagicKeywordAddress = *(uint32_t *)lOtaTagAddress;
+  uint32_t lCrcAddress;
+  uint32_t lCrc;
+  const uint32_t lFlashEndAddress = FLASH_BASE + FLASH_SIZE;
+
+  lCrcAddress = APP_THREAD_getCrCAddress(lMagicKeywordAddress);
+  
+  
+    /* Check if the CRC is inside the flash region */
+  if ( lCrcAddress < OtaContext.baseAddress  || lCrcAddress > lFlashEndAddress - sizeof(lCrc) )
+  {
+    LOG_ERROR_APP( "[OTA] Error, CRC address is outside the flash region (0x%08X ).", lCrcAddress );
+    return false;
+  }
+  
   if ( *(uint32_t*) lCrcAddress == 0xffffffff )
   {
      /* Calculate the Image CRC and attach it at the end of the image*/
@@ -1006,13 +1050,9 @@ static bool APP_THREAD_GetBinSize(uint32_t * fuotaBinarySize, uint32_t * fuotaBi
     lCrc = *(uint32_t*) lCrcAddress;
   }
   
-  lBinaryEndAddress = (uint32_t *)((uint32_t)lCrcAddress + sizeof(lCrc));
-  *fuotaBinarySize = (uint32_t)lBinaryEndAddress - OtaContext.baseAddress;
-  *fuotaBinaryCrcAddress = lCrcAddress;;
-
+  *fuotaBinaryCrcAddress =  lCrcAddress;
   return true;
 }
-
 
 /**
  * @brief Task associated to FUOTA parameters to be sent.

@@ -26,7 +26,7 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wba55g_discovery.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 

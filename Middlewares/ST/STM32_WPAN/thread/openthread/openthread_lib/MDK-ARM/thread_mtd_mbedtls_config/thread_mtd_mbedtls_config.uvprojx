@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-mtd-config.h&gt;,OPENTHREAD_MTD,STM32WBA55xx</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\stack\src;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\..\..\..\mbedtls_alt\include;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\stack\src\core;..\..\..\config;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\include\hal;..\..\..\..\..\..\..\Third_Party\mbedtls\library</IncludePath>
+              <IncludePath>..\..\..\stack\src;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\stack\src\core;..\..\..\config;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns;..\..\..\..\..\..\..\Third_Party\mbedtls\library</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -932,47 +932,47 @@
             <File>
               <FileName>aes_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\aes_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\aes_alt.c</FilePath>
             </File>
             <File>
               <FileName>ecdh_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\ecdh_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecdh_alt.c</FilePath>
             </File>
             <File>
               <FileName>ecdsa_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\ecdsa_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecdsa_alt.c</FilePath>
             </File>
             <File>
               <FileName>ecp_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\ecp_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecp_alt.c</FilePath>
             </File>
             <File>
               <FileName>ecp_curves_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\ecp_curves_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\ecp_curves_alt.c</FilePath>
             </File>
             <File>
               <FileName>entropy_hardware_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\entropy_hardware_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\entropy_hardware_alt.c</FilePath>
             </File>
             <File>
               <FileName>gcm_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\gcm_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\gcm_alt.c</FilePath>
             </File>
             <File>
               <FileName>rsa_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\rsa_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\rsa_alt.c</FilePath>
             </File>
             <File>
               <FileName>sha256_alt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\mbedtls_alt\source\hal\sha256_alt.c</FilePath>
+              <FilePath>..\..\..\..\..\..\mbedtls_alt\interfaces\patterns\sha256_alt.c</FilePath>
             </File>
           </Files>
         </Group>

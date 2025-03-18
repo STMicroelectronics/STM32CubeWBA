@@ -810,6 +810,11 @@
               <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_lptim.c</FilePath>
             </File>
             <File>
+              <FileName>stm32wbaxx_ll_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_ll_tim.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</FilePath>

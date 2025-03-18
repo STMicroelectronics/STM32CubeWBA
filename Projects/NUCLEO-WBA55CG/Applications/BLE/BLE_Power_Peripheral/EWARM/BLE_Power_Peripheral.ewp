@@ -343,7 +343,6 @@
           <state>$PROJ_DIR$/../System/Config/Log</state>
           <state>$PROJ_DIR$/../System/Config/LowPower</state>
           <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
-          <state>$PROJ_DIR$/../System/Config/Flash</state>
           <state>$PROJ_DIR$/../STM32_WPAN/App</state>
           <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
           <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
@@ -369,7 +368,6 @@
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\include\auto</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Inc</state>
           <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
-          <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
@@ -381,6 +379,8 @@
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../System/Modules</state>
           <state>$PROJ_DIR$/../System/Interfaces</state>
+          <state>$PROJ_DIR$/../System/Config/Flash</state>
+          <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1171,21 +1171,9 @@
         <group>
           <name>Config</name>
           <group>
-            <name>Flash</name>
-            <file>
-              <name>$PROJ_DIR$/../System/Config/Flash/simple_nvm_arbiter_conf.c</name>
-            </file>
-          </group>
-          <group>
             <name>CRC_Ctrl</name>
             <file>
               <name>$PROJ_DIR$/../System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>
-            </file>
-          </group>
-          <group>
-            <name>ADC_Ctrl</name>
-            <file>
-              <name>$PROJ_DIR$/../System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
             </file>
           </group>
           <group>
@@ -1201,6 +1189,18 @@
             <name>Debug_GPIO</name>
             <file>
               <name>$PROJ_DIR$/../System/Config/Debug_GPIO/app_debug.c</name>
+            </file>
+          </group>
+          <group>
+            <name>Flash</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/Flash/simple_nvm_arbiter_conf.c</name>
+            </file>
+          </group>
+          <group>
+            <name>ADC_Ctrl</name>
+            <file>
+              <name>$PROJ_DIR$/../System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
             </file>
           </group>
         </group>
@@ -1315,6 +1315,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>

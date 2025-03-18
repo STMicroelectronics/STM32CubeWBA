@@ -156,7 +156,7 @@ uint8_t queueMgmt_enqueue ( st_mac_queue_t* p_queue_name, uint8_t buffer_id );
  *                      dequeued
  *
  * @return returns the current buffer id in the queue else returns
- *         g_QUEUE_EMPTY_c if there are no buffer id's in the queue
+ *         QUEUE_FAIL if there are no buffer id's in the queue
  */
 
 uint8_t queueMgmt_dequeue ( st_mac_queue_t* p_queue_name );

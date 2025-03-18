@@ -2,7 +2,7 @@
 
 How to use the OTA cluster on a device acting as a Client within a Centralized Zigbee network.
 
-The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the OTA cluster. Once the Zigbee mesh network is created, the user can send requests from the Client to the Server or vice-versa through push button SW1 on the Client or Server respecfully in order to initiate an OTA upgrade. The Client will reboot and jump to the OTA image immediately after a successful upgrade by undergoing a soft reset.
+The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the OTA cluster. Once the Zigbee mesh network is created, the user can send requests from the Client to the Server or vice-versa through push button SW1 on the Client or Server respecfully in order to initiate an OTA upgrade. The Client will jump to the OTA image with SW2.
 
 ### __Keywords__
 
@@ -13,42 +13,53 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, OTA cluster
 For this application it is requested to have at least:
 
 * One STM32WBA55xx Nucleo board loaded with applications:
-  * **Zigbee_OTA_Server_Coord** at **0x08000000** and
+  * **Zigbee_OTA_Server_Coord** at **0x08000000** and 
   * **Zigbee_OnOff_Client_Router_OTA** at **0x08080000** (this application is transmitted in the OTA transfer)
-* One or more STM32WBA55xx board loaded with application **Zigbee_OTA_Client_Router**
+* One or more STM32WBA55xx board loaded with application **Zigbee_OTA_Client_Router** also called ZR_OTA in this readme
 </br>
 
 <pre>
 
                                     Router                                                               Coord.
                                   +--------+                                                           +--------+
+                                  | ZR_OTA |                                                           |        |
+                                  | Client |                                                           | OTA    |
+                                  |        |                                                           | Server |
+                                  |        |                                               Push SW2 =&gt; |        | =&gt; Print Available Images for OTA Transfer
                                   |        |                                                           |        |
-                      PushB SW1=> | OnOff  | => Green LED Start Toggling                               | OnOff  |
-                                  | Client |                                                           | Server |
+                      PushB SW1=> | Client | => Green LED Start Toggling                               |        |
+                                  |        |                                                           |        |
                                   |        |               ZbZclOtaClientQueryNextImageReq             |        |
                                   |        | --------------------------------------------------------> |        |
                                   |        |                                                           |        |
-  Reboot and Jump to OTA Image <= |        |                            Start OTA Upgrade Procedure <= |        |
-                                  |        |                    (Section 11.12 OTA Upgrade Diagram)    |        |
-                                  |        |                                                           |        |
-                         Reset => |        | => Reboot and Jump to Original Downloaded Image           |        |
+                                  |        |                                    Start OTA Procedure <= |        |
                                   |        |                                                           |        |
                                   |        |               ZbZclOtaServerImageNotifyReq                |        |
       Green LED Start Toggling <= |        | <-------------------------------------------------------- |        |
                                   |        |               ZbZclOtaClientQueryNextImageReq             |        |
                                   |        | --------------------------------------------------------> |        |
                                   |        |                                                           |        |
-  Reboot and Jump to OTA Image <= |        |                            Start OTA Upgrade Procedure <= |        |
-                                  |        |                    (Section 11.12 OTA Upgrade Diagram)    |        |
-								  |        |                                                           |        |
-								  |        |                                                           |        |
-								  |        |                                                           |        |
-                                  |        |                                                           |        |
-                         Reset => |        | => Reboot and Jump to Original Downloaded Image           |        |
+                                  |        |                           OTA OnGoing till OTA Upgrade <= |        |
+     binary is valid - log end <= |        |                    (Section 11.12 OTA Upgrade Diagram)    |        |
+                                  | ZR_OTA |                                                           |        |
+                                  | and    |                                                           |        |
+                                  |(image) |                                                           |        |
                                   |        |                                                           |        |
                      PushB SW2 => |        | => Reboot and Jump to OTA Image                           |        |
+                                  |        |     Image will connect if Coord get reset        Reset => |        | => Allow OTAImage (OnOff Router) to connect
+                                  |OTAImage|                                                           |        |
+                                  |  and   |                                                           |        |
+                                  |(ZR_OTA)|                                                           |        |
                                   |        |                                                           |        |
-                                  |        |                                              PushB SW2 => |        | => Print Availible Images for OTA Transfer
+                                  |        |                                                           |        |
+                                  |OTAImage|                                                           |        |
+                                  |  and   |                                                           |        |
+                                  |(ZR_OTA)|                                                           |        |
+                         Reset => |        | => Reboot and Jump to ZR_OTA                              |        |
+                                  |        |     Image will connect if Coord get reset        Reset => |        | =>; Allow ZR_OTA to connect
+                                  | ZR_OTA |                                                           |        |
+                                  | and    |                                                           |        |
+                                  |(image) |                                                           |        |
                                   |        |                                                           |        |
                                   +--------+                                                           +--------+
                                   
@@ -65,13 +76,12 @@ For this application it is requested to have at least:
     3. Start the second board. This board is configured as Zigbee router and will be attached to the network created by the Coordinator. Do the same for the other boards if applicable.
 &rarr; At this stage, the Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED turn ON before pushing buttons.
 
-    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully.
-	You shall see the Green LED toggling on the Client. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by an immediate soft reset. The Client will jump to the OTA image.
+    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully. You will see the Green LED toggling on the Client during OTA. Note that ZR_OTA is deleting the OTAImage - if any OTAImage was existing - before processing to OTA process. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by validation of the image on the Uart log, endding by: image is valid. The Client will NOT jump to the OTA image.
+    
+    5. Once the Client has received the OTA image, it is possible to soft reset using push button SW2 on the Client to jump to the OTA image. 
 
-    5. Once the Client soft resets and jumps to the OTA image, it is possible to hard reset using the Reset push button on the Client to restore the OTA Client.  
-
-    6. Once the Client hard resets and restores the original downloaded image, it is possible to soft reset using push button SW2 on the Client to jump to the OTA image.
-
+    6. Once the Client has received the OTA image, it is also possible to hard reset using the Reset push button on the Client to restore the OTA Client and if existing it will NOT delete the OTA image to be abble to later switch to OTAImage with SW2.
+    
     7. By pressing the SW2 push button on the Server, all availible images for download on the Server will be logged.
 
 **Note:** When the Red, Green, and Blue LED are toggling, it is indicates an error has occurred in the application.

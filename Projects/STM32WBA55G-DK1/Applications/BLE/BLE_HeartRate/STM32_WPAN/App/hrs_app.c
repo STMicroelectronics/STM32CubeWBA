@@ -34,10 +34,8 @@
 /* USER CODE BEGIN Includes */
 #include "stm32_timer.h"
 #include "host_stack_if.h"
-#if (CFG_LCD_SUPPORTED == 1)
-#include "stm32wba55g_discovery_lcd.h"
-#include "stm32_lcd.h"
-#endif /* CFG_LCD_SUPPORTED */
+#include "app_bsp.h"
+
 
 /* USER CODE END Includes */
 
@@ -455,8 +453,8 @@ static void HRS_APP_Measurements(void)
   LOG_INFO_APP("Heart Rate value = %d bpm \n", HRS_APP_Context.MeasurementVal.MeasurementValue);
   LOG_INFO_APP("Energy expended = %d kJ \n", HRS_APP_Context.MeasurementVal.EnergyExpended);
 #if (CFG_LCD_SUPPORTED == 1)
-  BSP_LCD_Clear(0,LCD_COLOR_BLACK);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Clear(LCD1, LCD_COLOR_BLACK);
+  BSP_LCD_Refresh(LCD1);
   sprintf(measurementText, "%d bpm", HRS_APP_Context.MeasurementVal.MeasurementValue);
   UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)measurementText, RIGHT_MODE);
   sprintf(measurementText, "%d kJ", HRS_APP_Context.MeasurementVal.EnergyExpended);
@@ -464,12 +462,12 @@ static void HRS_APP_Measurements(void)
 
   /* ---- Display HEART ---- */
   LCD_DrawIcon(0, 0 , 64, 64, (uint8_t *)heart);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
   HAL_Delay(300);
 
   /* ---- Display SMALL HEART ---- */
   LCD_DrawIcon(0, 0 , 64, 64, (uint8_t *)heart_small);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
 #endif   /* CFG_LCD_SUPPORTED */
 
   /**

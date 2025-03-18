@@ -95,7 +95,7 @@ void APP_MAC_Init(void)
   ST_MAC_init(&macCallback);
   
   /* Execute once at startup */
-  UTIL_SEQ_SetTask(TASK_FFD, TASK_MAC_APP_PRIO);
+  UTIL_SEQ_SetTask(TASK_FFD, CFG_SEQ_PRIO_1);
 }
 
 void APP_FFD_MAC_802_15_4_SetupTask(void)

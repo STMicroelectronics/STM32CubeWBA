@@ -39,7 +39,7 @@
 #define HAL_CRC_MODULE_ENABLED
 #define HAL_CRYP_MODULE_ENABLED
 /*#define HAL_GTZC_MODULE_ENABLED   */
-/*#define HAL_HASH_MODULE_ENABLED   */
+#define HAL_HASH_MODULE_ENABLED
 /*#define HAL_HSEM_MODULE_ENABLED   */
 /*#define HAL_I2C_MODULE_ENABLED   */
 #define HAL_ICACHE_MODULE_ENABLED
@@ -181,7 +181,7 @@
 
 /* ################## HASH peripheral configuration ########################## */
 
-#define USE_HAL_HASH_SUSPEND_RESUME    0U
+#define USE_HAL_HASH_SUSPEND_RESUME    1U
 
 /* ################## CRYP peripheral configuration ########################## */
 

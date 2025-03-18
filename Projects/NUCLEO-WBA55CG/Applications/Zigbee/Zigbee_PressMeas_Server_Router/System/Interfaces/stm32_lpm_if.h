@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -104,6 +104,16 @@ void PWR_EnterSleepMode( void );
   * @brief Exits Low Power Sleep Mode
   */
 void PWR_ExitSleepMode( void );
+
+/**
+  * @brief Enable Low Power Sleep Mode
+  */
+void PWR_EnableSleepMode( void );
+
+/**
+  * @brief Disable Low Power Sleep Mode
+  */
+void PWR_DisableSleepMode( void );
 
 /**
   * @brief Check if the system is waking-up from standby low power mode.

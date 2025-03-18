@@ -138,7 +138,7 @@ enum
 {
   BOARD_ID_NUCLEO_WBA5X =  0x8B,
   BOARD_ID_DK_WBA5X     =  0x8C,
-  /* Device ID: WBA5x, ... */
+  BOARD_ID_NUCLEO_WBA6X =  0x8E
 };
 
 /** 

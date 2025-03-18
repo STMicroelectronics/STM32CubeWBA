@@ -36,6 +36,12 @@
 #define ADCCTRL_HWADDR   ADC4
 
 /**
+ * @brief Set ADC Clock source
+ */
+#define ADCTCTRL_SET_CLOCK_SOURCE() \
+   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_HCLK)
+
+/**
  * @brief Peripheral clock enable for ADC
  */
 #define ADCCTRL_ENABLE_CLOCK()  \

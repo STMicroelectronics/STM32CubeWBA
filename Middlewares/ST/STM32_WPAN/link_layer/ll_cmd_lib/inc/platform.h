@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/platform.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/platform.h#1 $*/
 /**
  ********************************************************************************
  * @file    platform.h
@@ -537,6 +537,25 @@ otError radio_set_default_ant_id(otInstance *aInstance, uint8_t default_ant_id);
 otError radio_set_ant_div_rssi_threshold(otInstance *aInstance, int8_t rssi_threshold);
 #endif /* SUPPORT_ANT_DIV */
 
+#if SUPPORT_CONFIGURABLE_GAIN_FIX
+/**
+ * @brief  initialize rssi gain fix region and select resistor measured percentage that affects pre-emphasis sequence.
+ *
+ * @param[in]  region_0x1f_val: absolute gain fix for region 0x1F in dbm.
+ * @param[in]  region_0x0f_val: absolute gain fix for region 0x0F in dbm.
+ * @param[in]  region_0x0b_val: absolute gain fix for region 0x0B in dbm.
+ * @param[in]  region_0x09_val: absolute gain fix for region 0x09 in dbm.
+ * @param[in]  r_msur_percent: percentage of the measured resistor value that will be used
+ * 				to select the update values in pre-emphasis sequence (range: 0 to 99).
+ * 
+ * @retval NONE
+ */
+void radio_gain_fix_init(
+		uint8_t region_0x1f_val, uint8_t region_0x0f_val,
+		uint8_t region_0x0b_val, uint8_t region_0x09_val,
+		uint8_t r_msur_percent);
+
+#endif /* SUPPORT_CONFIGURABLE_GAIN_FIX */
 
 #endif /* INCLUDE_PLATFORM_H_ */
 /**

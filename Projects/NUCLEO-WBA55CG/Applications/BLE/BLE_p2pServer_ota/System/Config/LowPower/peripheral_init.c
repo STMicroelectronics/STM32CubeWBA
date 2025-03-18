@@ -97,3 +97,4 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

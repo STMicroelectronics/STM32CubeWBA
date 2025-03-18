@@ -2,7 +2,8 @@
 
 How to use the OnOff cluster on a device acting as a Server within a Centralized Zigbee network.
 
-The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the OnOff cluster. Once the Zigbee mesh network is created, the user can send requests from the Client to the Server through push button SW1 in order to make the LED toggling.
+The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the OnOff cluster. Once the Zigbee mesh network is created, the user can send requests from the Client to the Server through push button SW1 in order to make the LED toggling.  
+The application runs under ThreadX operating system.
 
 ### __Keywords__
 

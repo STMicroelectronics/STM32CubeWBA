@@ -135,10 +135,8 @@ enum ZbApsCmdIdT {
     ZB_APS_CMD_TUNNEL = 0x0e, /**< Tunnel */
     ZB_APS_CMD_VERIFY_KEY = 0x0f, /**< Verify Key */
     ZB_APS_CMD_CONFIRM_KEY = 0x10, /**< Confirm Key */
-#if (CONFIG_ZB_REV >= 23)
-    ZB_APS_CMD_RELAY_DOWNSTREAM = 0x11, /**< Relay Downstream */
-    ZB_APS_CMD_RELAY_UPSTREAM = 0x12 /**< Relay Upstream */
-#endif
+    ZB_APS_CMD_RELAY_DOWNSTREAM = 0x11, /**< Relay Downstream. R23 addition. */
+    ZB_APS_CMD_RELAY_UPSTREAM = 0x12 /**< Relay Upstream. R23 addition. */
 };
 
 /*---------------------------------------------------------------
@@ -154,8 +152,7 @@ enum ZbApsAddrModeT {
     ZB_APSDE_ADDRMODE_IPGROUP /**< InterPAN */
 };
 
-#if (CONFIG_ZB_REV >= 23)
-/** APS relay information data structure */
+/** APS relay information data structure. R23 addition. */
 struct ZbApsRelayInfoT {
     bool relayMsg; /**< If true, APS packet shall be relayed. */
     uint64_t relayExtAddr;
@@ -166,7 +163,7 @@ struct ZbApsRelayInfoT {
      * or TC (single-hop) for upstream. */
 };
 
-#ifdef CONFIG_ZB_DIAGNOSTICS
+/** Zigbee APS Diagnostics */
 struct ZbApsStatTableT {
     uint16_t aps_tx_ucast_success;
     /**< The total number of successful APS unicast messages. APS messages without APS Acks SHALL be
@@ -224,9 +221,6 @@ struct ZbApsStatTableT {
      * and not just the final MCPS result.
      * Same as, ZCL_DIAG_SVR_ATTR_MAC_TX_UCAST_FAIL.*/
 };
-#endif
-
-#endif
 
 /** APS address information data structure */
 struct ZbApsAddrT {
@@ -246,11 +240,9 @@ struct ZbApsAddrT {
 
     uint64_t extAddr; /**< Destination extended address when mode == ZB_APSDE_ADDRMODE_EXT */
 
-#if (CONFIG_ZB_REV >= 23)
     uint16_t nwkBcastAddr;
     /**< nwkBcastAddr - This indicates the broadcast address used for groupcast messages
-     * (DstAddrMode = 0x01). Valid range: 0xFFFC - 0xFFFF */
-#endif
+     * (DstAddrMode = 0x01). Valid range: 0xFFFC - 0xFFFF. R23 addition. */
 };
 
 /** Helper struct to send using binding */
@@ -261,7 +253,8 @@ static inline void
 zb_aps_dst_loopback(struct ZigBeeT *zb, struct ZbApsAddrT *dst, uint8_t endpoint)
 {
     dst->mode = ZB_APSDE_ADDRMODE_EXT;
-    dst->extAddr = ZbExtendedAddress(zb);
+    dst->nwkAddr = 0xffffU; /* ZB_NWK_ADDR_UNDEFINED */
+    dst->extAddr = 0U; /* ZbExtendedAddress(zb) */
     dst->endpoint = endpoint;
 }
 
@@ -330,9 +323,7 @@ struct ZbApsdeDataReqT {
     uint8_t radius; /**< Radius - Network radius. If 0, default value is used */
     uint16_t aliasAddr; /**< AliasSrcAddr - Requires ZB_APSDE_DATAREQ_TXOPTIONS_ALIAS to be enabled */
     uint8_t aliasSeqnum; /**< AliasSeqNumb - Requires ZB_APSDE_DATAREQ_TXOPTIONS_ALIAS to be enabled */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains required information to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains required information to relay the APS packet. R23 addition. */
 };
 
 /**
@@ -374,9 +365,7 @@ struct ZbApsdeDataIndT {
 
     uint16_t linkAddr; /**< Exegin Addon for Inter-PAN portability */
 
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains required information to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains required information to relay the APS packet. R23 addition. */
 };
 
 /**
@@ -424,11 +413,9 @@ enum ZbApsmeIbAttrIdT {
     /**< apsMaxWindow Size (type: uint8_t, reset: no, persist: no) */
     /* Removed -- 0xce (ZB_APS_IB_ID_PARENT_ANNOUNCE_TIMER) */
     ZB_APS_IB_ID_ZDO_RESTRICTED_MODE = 0xcf,
-    /**< R23 (type: uint8_t, reset: yes, persist: no) */
-#if (CONFIG_ZB_REV >= 23)
+    /**< R23 addition (type: uint8_t, reset: yes, persist: no) */
     ZB_APS_IB_ID_STAT_TABLE = 0xd0,
-    /**< R23 (type: uint8_t, reset: no, persist: no) */
-#endif
+    /**< R23 addition. (type: uint8_t, reset: no, persist: no) */
 
     /*** Security attributes ***/
     ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET = 0xaa,
@@ -455,21 +442,19 @@ enum ZbApsmeIbAttrIdT {
 
     /* Reserved 0xae */
     ZB_APS_IB_ID_SUPPORTED_KEY_NEGO_METHODS = 0xaf,
-    /**< apsSupportedKeyNegotiationMethods (R23)
+    /**< apsSupportedKeyNegotiationMethods. R23 addition.
      * (type: uint8_t, reset: no, persist: no) */
-    /* Removed -- 0xb0 (type: uint8_t) apsChallengePeriodTimeoutSeconds (R23) */
-    /* Removed -- 0xb1 (type: uint8_t) apsChallengePeriodRemainingSeconds (R23) */
     ZB_APS_IB_ID_CHALLENGE_VALUE = 0xb2,
-    /**< apsChallengeValue (R23) (type: uint64_t, reset: no, persist: no) */
+    /**< apsChallengeValue. R23 addition. (type: uint64_t, reset: no, persist: no) */
     ZB_APS_IB_ID_CHALLENGE_TARGET_EUI64 = 0xb3,
-    /**< apsChallengeTargetEui64 (R23) (type: uint64_t, reset: no, persist: no) */
+    /**< apsChallengeTargetEui64. R23 addition. (type: uint64_t, reset: no, persist: no) */
     ZB_APS_IB_ID_DEVICE_INTERVIEW_TIMEOUT_PERIOD = 0xb4,
-    /**< apsDeviceInterviewTimeoutPeriod (R23), seconds
-     * (type: uint8_t, reset: no, persist: no).
+    /**< apsDeviceInterviewTimeoutPeriod, in seconds. R23 addition.
      * The TC will refresh the Device Interview Timeout for each APS Downstream Relay
      * sent to the joining device.
      * The joining device will refresh the Device Interview Timeout for each
-     * APS Downstream Relay it receives from the TC. */
+     * APS Downstream Relay it receives from the TC.
+     * (type: uint8_t, reset: no, persist: no). */
 
     /* Exegin extensions (0x0500 to 0x05ff reserved for custom AIBs) */
     ZB_APS_IB_ID_SCAN_COUNT = 0x0500,
@@ -497,7 +482,7 @@ enum ZbApsmeIbAttrIdT {
     /**< apsFragmentationThresh. Fragmentation Threshold
      * (type: uint8_t, reset: no, persist: no) */
     ZB_APS_IB_ID_SUPPORTED_PSK_SECRETS = 0x0509,
-    /**< apsSupportedPreSharedSecrets (R23)
+    /**< apsSupportedPreSharedSecrets. R23 addition.
      * (type: uint8_t, reset: no, persist: no) */
     ZB_APS_IB_ID_MAX_IN_QUEUED_PACKETS = 0x050a,
     /**< Maximum number of incoming packets the APS is allowed to queue.
@@ -668,14 +653,15 @@ void ZbApsmeUnbindReq(struct ZigBeeT *zb, struct ZbApsmeUnbindReqT *unbindReqPtr
 void ZbApsUnbindAllReq(struct ZigBeeT *zb);
 
 /**
- * Returns true if there's a binding entry in the Binding Table that matches the
- * local device as the source address, and a matching source endpoint and cluster Id.
+ * Returns the count of binding entries in the Binding Table that match the local device
+ * as the source address and source endpoint, and the matching Cluster Id.
+ * Useful for the sender of a message to know how many devices will be sent a given message.
  * @param zb Zigbee stack instance
  * @param endpoint Source endpoint
  * @param clusterId Cluster Id
- * @return Returns true if binding exists, false otherwise.
+ * @return Number of matching bindings.
  */
-bool ZbApsBindSrcExists(struct ZigBeeT *zb, uint8_t endpoint, uint16_t clusterId);
+unsigned int ZbApsBindSrcCount(struct ZigBeeT *zb, uint8_t endpoint, uint16_t clusterId);
 
 /**
  * Add an entry to the group table.
@@ -936,10 +922,8 @@ struct ZbApsmeUpdateDeviceReqT {
     uint64_t devExtAddr; /**< DeviceAddress */
     enum ZbApsmeDeviceStatusT status; /**< Status - Device status values */
     uint16_t devShortAddr; /**< DeviceShortAddress */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbJoinerTLVsT joinerTLVs;
-    /**< TLVs of the joining device as relayed during Network Commissioning */
-#endif
+    /**< TLVs of the joining device as relayed during Network Commissioning. R23 addition. */
 };
 
 /** APSME-UPDATE-DEVICE.indication */
@@ -948,11 +932,9 @@ struct ZbApsmeUpdateDeviceIndT {
     uint64_t devExtAddr; /**< DeviceAddress */
     uint16_t devShortAddr; /**< DeviceShortAddress */
     enum ZbApsmeDeviceStatusT status; /**< Status - Device status values */
-    enum ZbSecEncryptT encryptKeyType; /* key used to encrypt the incoming command */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbJoinerTLVsT joinerTLVs; /* (R23+) */
-    /**< TLVs of the joining device as relayed during Network Commissioning */
-#endif
+    enum ZbSecEncryptT encryptKeyType; /**< key used to encrypt the incoming command */
+    struct ZbJoinerTLVsT joinerTLVs;
+    /**< TLVs of the joining device as relayed during Network Commissioning. R23 addition. */
 };
 
 /** APSME-REMOVE-DEVICE.request */
@@ -1022,9 +1004,7 @@ struct ZbApsmeSwitchKeyIndT {
 struct ZbApsmeVerifyKeyReqT {
     uint64_t dstExtAddr; /**< DestAddress */
     enum ZbSecKeyTypeT keyType; /**< StandardKeyType */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** APSME-VERIFY-KEY.indication */
@@ -1033,9 +1013,7 @@ struct ZbApsmeVerifyKeyIndT {
     enum ZbSecKeyTypeT keyType; /**< StandardKeyType */
     uint8_t hash[ZB_SEC_KEYSIZE]; /**< ReceivedInitiatorHashValue */
     enum ZbSecEncryptT encryptKeyType; /* Key used to encrypt the incoming command */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** APSME-CONFIRM-KEY.request */
@@ -1043,9 +1021,7 @@ struct ZbApsmeConfirmKeyReqT {
     enum ZbStatusCodeT status; /**< Status */
     uint64_t dstExtAddr; /**< DestAddress */
     enum ZbSecKeyTypeT keyType; /**< StandardKeyType */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** APSME-CONFIRM-KEY.indication */
@@ -1054,13 +1030,10 @@ struct ZbApsmeConfirmKeyIndT {
     uint64_t srcExtAddr; /**< SrcAddress */
     enum ZbSecKeyTypeT keyType; /**< StandardKeyType */
     enum ZbSecEncryptT encryptKeyType; /* Key used to encrypt the incoming command */
-#if (CONFIG_ZB_REV >= 23)
-    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. */
-#endif
+    struct ZbApsRelayInfoT relayInfo; /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
-#if (CONFIG_ZB_REV >= 23)
-/** Initial join authentication method used with DLK. */
+/** Initial join authentication method used with DLK. R23 addition. */
 enum ZbApsInitialJoinAuthMethodT {
     ZB_APS_INITIAL_JOIN_AUTH_NONE = 0U,
     /**< Initial join authentication - none. */
@@ -1105,7 +1078,6 @@ enum ZbApsPreSharedKeyTypeT {
     ZB_APS_PRE_SHARED_KEY_TYPE_PASSCODE = 2U
         /**< APS pre-shared key type variable length passcode. */
 };
-#endif
 
 /** APSME-ADD-KEY.request - Exegin Custom */
 struct ZbApsmeAddKeyReqT {
@@ -1120,32 +1092,33 @@ struct ZbApsmeAddKeyReqT {
     uint64_t partnerAddr;
     /**< Partner address of the key added to APS KeyPair table. */
     uint32_t outgoingCounter;
-    /* Outgoing frame counter, for link keys only. */
+    /**< Outgoing frame counter, for link keys only. */
     uint32_t incomingCounter;
     /* Incoming frame counter, for link keys only. */
-#if (CONFIG_ZB_REV >= 23)
+
+    /*
+     * R23 additions
+     */
     enum ZbApsInitialJoinAuthMethodT joinAuthMethod;
-    /* Initial join authentication method. (R23+) */
+    /* Initial join authentication method. */
     enum ZbApsPostJoinKeyUpdateMethodT keyUpdateMethod;
-    /**< Post join key update method. (R23+) */
+    /**< Post join key update method. */
     enum ZbSelKeyNegoMethodT selKeyNegoMethod;
-    /**< Selected key negotiation method. (R23+) */
+    /**< Selected key negotiation method. */
     enum ZbApsKeyNegoStateT keyNegoState;
-    /**< APS key negotiation state. (R23+) */
+    /**< APS key negotiation state. */
     enum ZbApsPreSharedKeyTypeT preSharedKeyType;
-    /**< APS pre-shared key type. (R23+) */
+    /**< APS pre-shared key type. */
     uint8_t passphrase[ZB_SEC_PASSPHRASE_SIZE];
-    /**< Passphrase to use for authentication DLK. (R23+) */
+    /**< Passphrase to use for authentication DLK. */
     bool passphraseUpdateAllowed;
-    /**< APS passphrase update allowed. (R23+) */
+    /**< APS passphrase update allowed. */
     bool verifiedFrameCounter;
     /**< Indicates whether the incoming frame counter value has been verified through
      * a challenge response. Frame counters are implicitly verified after join, i.e,
-     * TCLK/DLK etc. However, after reboot FC shall be verified using ZDO Security_Challenge_req/rsp
-     * (R23+) */
+     * TCLK/DLK etc. However, after reboot FC shall be verified using ZDO Security_Challenge_req/rsp */
     uint8_t capabilities;
     /**< Link key features and capabilities e.g, ZB_APS_SEC_CAPABILITY_FC_SYNC_SUPPORT. */
-#endif
 };
 
 /** APSME-ADD-KEY.confirm - Exegin Custom */
@@ -1179,23 +1152,25 @@ struct ZbApsmeGetKeyConfT {
     uint32_t outgoingCounter; /**< outgoingCounter */
     uint32_t incomingCounter; /**< incomingCounter */
     uint8_t apsKeyAttribute; /**< apsKeyAttribute - Only valid if req.keyType != ZB_SEC_KEYTYPE_STANDARD_NWK */
-#if (CONFIG_ZB_REV >= 23)
+
+    /*
+     * R23 additions
+     */
     enum ZbApsInitialJoinAuthMethodT joinAuthMethod;
-    /**< Initial join authentication method. (R23+) */
+    /**< Initial join authentication method. */
     enum ZbApsPostJoinKeyUpdateMethodT keyUpdateMethod;
     /**< Post join key update method. */
     enum ZbSelKeyNegoMethodT selKeyNegoMethod;
-    /**< Selected key negotiation method. (R23+) */
+    /**< Selected key negotiation method. */
     enum ZbApsPreSharedKeyTypeT preSharedKeyType;
-    /**< APS pre-shared key type. (R23+) */
+    /**< APS pre-shared key type. */
     uint8_t passphrase[ZB_SEC_PASSPHRASE_SIZE];
-    /**< Passphrase to use for authentication DLK. (R23+) */
+    /**< Passphrase to use for authentication DLK. */
     bool verifiedFrameCounter;
     /**< Indicates whether the incoming frame counter value has been verified through
-     * a challenge response.. (R23+) */
+     * a challenge response. */
     uint8_t capabilities;
     /**< Link key features and capabilities e.g, ZB_APS_SEC_CAPABILITY_FC_SYNC_SUPPORT. */
-#endif
 };
 
 /** APSME-REMOVE-KEY.request - Exegin Custom */
@@ -1209,8 +1184,7 @@ struct ZbApsmeRemoveKeyConfT {
     enum ZbStatusCodeT status; /**< Status */
 };
 
-#if (CONFIG_ZB_REV >= 23)
-/* APSME-KEY-NEGOTIATION.request (R23) */
+/* APSME-KEY-NEGOTIATION.request. R23 addition. */
 struct ZbApsmeKeyNegoReqT {
     enum ZbSelKeyNegoMethodT requestedKeyNegoMethod;
     /**< Selected/Requested key negotiation method. */
@@ -1224,7 +1198,7 @@ struct ZbApsmeKeyNegoReqT {
     /**< Extended address of intermediate relay device. */
 };
 
-/** APSME-KEY-NEGOTIATION.Confirm */
+/** APSME-KEY-NEGOTIATION.Confirm. R23 addition. */
 struct ZbApsmeKeyNegoConfirmT {
     enum ZbStatusCodeT status;
     /**< ZDO status. */
@@ -1238,7 +1212,7 @@ struct ZbApsmeKeyNegoConfirmT {
     /**< Extended address of intermediate relay device. */
 };
 
-/** APSME-KEY-NEGOTIATION.indication (R23) */
+/** APSME-KEY-NEGOTIATION.indication. R23 addition. */
 struct ZbApsmeKeyNegoIndT {
     uint64_t partnerLongAddr;
     /**< Partner extended address. */
@@ -1252,7 +1226,7 @@ struct ZbApsmeKeyNegoIndT {
     /**< Extended address of intermediate relay device. */
 };
 
-/** APSME-SEC-CHALLENGE.request (R23 - Exegin add-on) */
+/** APSME-SEC-CHALLENGE.request. R23 addition. */
 struct ZbApsmeSecChallengeReqT {
     uint16_t devShortAddr;
     /**< Device short address. */
@@ -1260,14 +1234,13 @@ struct ZbApsmeSecChallengeReqT {
     /**< Extended address of partner device to perform APS Frame counter synchronization. */
 };
 
-/** APSME-SEC-CHALLENGE.indication (R23 - Exegin add-on) */
+/** APSME-SEC-CHALLENGE.indication. R23 addition. */
 struct ZbApsmeSecChallengeIndT {
     uint16_t devShortAddr;
     /**< Device short address. */
     uint64_t devExtAddr;
     /**< Extended address of partner device to perform APS Frame counter synchronization. */
 };
-#endif
 
 /* APS Key/Pair Descriptor - used with ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET */
 struct ZbApsmeKeyPairT {
@@ -1287,34 +1260,36 @@ struct ZbApsmeKeyPairT {
     /**< APS Key attribute e.g, ZB_APSME_KEY_ATTR_VERIFIED */
     ZbUptimeT cooldown;
     /**< APS frame counter cooldown period. */
-#if (CONFIG_ZB_REV >= 23)
+
+    /*
+     * R23 additions
+     */
     enum ZbApsInitialJoinAuthMethodT joinAuthMethod;
-    /**< Initial join authentication method. (R23+) */
+    /**< Initial join authentication method. */
     enum ZbApsPostJoinKeyUpdateMethodT keyUpdateMethod;
     /**< Post join key update method. */
     enum ZbSelKeyNegoMethodT selKeyNegoMethod;
-    /**< Selected key negotiation method. (R23+) */
+    /**< Selected key negotiation method. */
     enum ZbSelPreSharedSecretT selPreSharedSecret;
-    /**< Selected pre-Shared secret. (R23+) */
+    /**< Selected pre-Shared secret. */
     enum ZbApsKeyNegoStateT keyNegoState;
-    /**< APS key negotiation state. (R23+) */
+    /**< APS key negotiation state. */
     enum ZbApsPreSharedKeyTypeT preSharedKeyType;
-    /**< APS pre-shared key type. (R23+) */
+    /**< APS pre-shared key type. */
     uint8_t passphrase[ZB_SEC_PASSPHRASE_SIZE];
-    /**< Passphrase to use for authentication DLK. (R23+) */
+    /**< Passphrase to use for authentication DLK. */
     uint16_t keyTimeout;
-    /**< APS key timeout duration. Default, 0xFFFF - key does not expire. (R23+) */
+    /**< APS key timeout duration. Default, 0xFFFF - key does not expire. */
     bool passphraseUpdateAllowed;
-    /**< APS passphrase update allowed. (R23+) */
+    /**< APS passphrase update allowed. */
     bool verifiedFrameCounter;
     /**< Indicates whether the incoming frame counter value has been verified through
-     * a challenge response.. (R23+) */
+     * a challenge response.. */
     uint32_t challengeFrameCounter;
     /**< The AES-CCM-128 outgoing frame counter used to generate the MIC using
      * the special nonce and AES-128 key for frame counter synchronization */
     uint8_t capabilities;
     /**< Link key features and capabilities e.g, ZB_APS_SEC_CAPABILITY_FC_SYNC_SUPPORT. */
-#endif
 };
 
 /**

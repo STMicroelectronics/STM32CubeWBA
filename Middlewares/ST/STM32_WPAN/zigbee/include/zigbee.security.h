@@ -243,7 +243,6 @@ struct ZbZclCbke2InfoT {
 
 /**
  * Performs an AES MMO hash on the selected data
- * @param zb Zigbee stack instance
  * @param data data to hash
  * @param length length of data to hash
  * @param digest hash must be AES_BLOCK_SIZE in size!

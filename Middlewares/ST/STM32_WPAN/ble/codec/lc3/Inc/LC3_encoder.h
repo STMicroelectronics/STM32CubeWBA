@@ -23,7 +23,14 @@
 #include "LC3.h"
 
 /* Exported define ------------------------------------------------------------*/
-#define LC3_ENCODER_STRUCT_SIZE (4820u)
+#define LC3_ENCODER_STRUCT_SIZE          LC3_ENCODER_STRUCT_SIZE_48kHz
+
+#define LC3_ENCODER_STRUCT_SIZE_24kHz    (3260u)
+#define LC3_ENCODER_STRUCT_SIZE_48kHz    (4820u)
+
+#define LC3_ENCODER_STACK_SIZE_24kHz     (3428u)
+#define LC3_ENCODER_STACK_SIZE_48kHz     (4368u)
+
 
 /* Exported functions ------------------------------------------------------- */
 /**
@@ -54,6 +61,7 @@ LC3_Status lc3_encoder_update_bitrate(void *handle,
   * @brief  Process the LC3 encoding
   * @note   This function must be called after the channel has been initialized
   * @param  handle : Channel handle pointer
+  * @param  stack : pointer to a buffer for local data allocation
   * @param  input : pointer to the input samples array that must be formatted as defined at the channel initialization
             see s_bits format
   * @note   The buffer has to contain Nf samples where Nf = Frequency * Nms
@@ -62,6 +70,7 @@ LC3_Status lc3_encoder_update_bitrate(void *handle,
   * @retval LC3 status
   */
 LC3_Status lc3_encoder_process(void *handle,
+                               void *stack,
                                void *input,
                                uint32_t decimation,
                                uint8_t *bytes);

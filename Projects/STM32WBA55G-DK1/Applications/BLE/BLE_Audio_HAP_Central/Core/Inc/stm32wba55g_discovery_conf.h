@@ -40,6 +40,8 @@ extern "C" {
 #define BSP_AUDIO_OUT_IT_PRIORITY           15U
 #define BSP_AUDIO_IN_IT_PRIORITY            15U
 
+#define I2C_VALID_TIMING_NBR                16U
+
 #ifdef __cplusplus
 }
 #endif

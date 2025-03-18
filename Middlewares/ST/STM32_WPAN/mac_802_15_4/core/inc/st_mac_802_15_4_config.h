@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,17 +23,17 @@
 /**************************** Public Macro Definitions ***********************/
 
 /** @brief  Defines the max num of PAN descriptors supported */
-#define g_MAX_PAN_DESC_SUPPORTED_c  6
+#define g_MAX_PAN_DESC_SUPPORTED_c  6 // Even number as STM32WB55
 
 /** @brief  Defines the max num of sounding devices */
-#define g_MAX_SOUNDING_LIST_SUPPORTED_c 1
+#define g_MAX_SOUNDING_LIST_SUPPORTED_c 1 // Mandatory to have at least one
 
 /** @brief  Defines the max num of target device in beacon indication in case
 of pending data*/
-#define  g_MAX_PENDING_ADDRESS_c 1
+#define  g_MAX_PENDING_ADDRESS_c 1 // Mandatory to have at least one
 
 /** @brief  Defines the max num of ED scan results supported */
-#define g_MAX_ED_SCAN_RESULTS_SUPPORTED_c   16
+#define g_MAX_ED_SCAN_RESULTS_SUPPORTED_c   16 // Depending to the number of channel available 
 
 /**
  * The maximum size of an MPDU, in octets, that can be
@@ -57,10 +57,10 @@ of pending data*/
 #define NOBUFFER                      255
 #define g_LONG_ADDRESS_LENGTH_c       8
 
-#define g_TX_OPTION_DIRECT_c          0x00
-#define g_TX_OPTION_ACK_c             0x01
-#define g_TX_OPTION_INDIRECT_c            0x04
-#define g_TX_OPTION_INDIRECT_WITH_ACK_c   0x05
+#define g_TX_OPTION_DIRECT_c                0x00
+#define g_TX_OPTION_ACK_c                   0x01
+#define g_TX_OPTION_INDIRECT_c              0x04
+#define g_TX_OPTION_INDIRECT_WITH_ACK_c     0x05
 #define g_aResponse_Time_c                  0x01EB
 #define g_SWITCH_OFF_RECIEVER_c             0x00
 #define g_SWITCH_ON_RECIEVER_c              0x01
@@ -68,6 +68,10 @@ of pending data*/
 #define g_TRUE      0x01
 #define g_FALSE     0x00
 
+/*!  Two first bits (strong bit) for major version
+ *  three next bits for the middle version
+ *  and three last bits for the minor version.
+ **/ 
 #define ST_PIB_REVISION 0x01000100 // version: 1.0.1
 
 /**************************** Public Enum Definitions ************************/

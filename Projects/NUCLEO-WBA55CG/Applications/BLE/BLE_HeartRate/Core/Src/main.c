@@ -247,7 +247,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  
+
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -568,29 +568,27 @@ void MX_USART1_UART_Init(void)
   */
 void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*RT DEBUG GPIO_Init */
-  RT_DEBUG_GPIO_Init();
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 void ConfigureStandbyWakeupPins(void)
 {
- /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* B1 --> PC13 */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
   
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_C, GPIO_PIN_13);
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
   HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);

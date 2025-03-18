@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -28,20 +28,12 @@
 #define MAX_SIZE_PIB 127
 
 /* Exported types ------------------------------------------------------------*/
-
-typedef struct mac_radio_msg_tag {
-  uint8_t type;
-  uint8_t payload_len;
-  uint64_t timestamp;
-  uint8_t payload[1];// Struct associated to the type
-}mac_radio_msg_t;
-
 /* Exported constants --------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
-/* general */
+/* General */
 
 
 /* Request */

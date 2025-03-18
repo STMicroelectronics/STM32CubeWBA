@@ -14,8 +14,10 @@ define symbol __region_SRAM1_start__       = 0x20000000;
 define symbol __region_SRAM1_end__         = 0x2000FFFF;
 define symbol __region_SRAM2_start__       = 0x20010000;
 define symbol __region_SRAM2_end__         = 0x2001FFFF;
+define symbol __region_RAM_NS_start__      = 0x20010000;
+define symbol __region_RAM_NS_end__        = 0x2001FFFF;
 
-define symbol __size_heap__                = 0x3000;
+define symbol __size_heap__                = 0x0000;
 define symbol __size_cstack__              = 0x1000;
 define symbol __intvec_start__             = __region_FLASH_start__;
 
@@ -26,6 +28,7 @@ define region FLASH_region    = mem:[from __region_FLASH_start__ to __region_FLA
 define region SRAM1_region    = mem:[from __region_SRAM1_start__ to __region_SRAM1_end__];
 define region SRAM2_region    = mem:[from __region_SRAM2_start__ to __region_SRAM2_end__];
 define region SRAM_region     = SRAM1_region | SRAM2_region;
+define region RAM_NS_region   = mem:[from __region_RAM_NS_start__ to __region_RAM_NS_end__];
 
 /*-Blocks-*/
 define block HEAP      with alignment = 8, size = __size_heap__   { };
@@ -42,5 +45,6 @@ place in NVM_region         { };
 place in FLASH_region       { readonly };
 
 place in SRAM1_region       { };
-place in SRAM2_region       { readwrite, block HEAP, block CSTACK };
+place in SRAM2_region       { };
 place in SRAM_region        { };
+place in RAM_NS_region      { readwrite, block HEAP, block CSTACK };

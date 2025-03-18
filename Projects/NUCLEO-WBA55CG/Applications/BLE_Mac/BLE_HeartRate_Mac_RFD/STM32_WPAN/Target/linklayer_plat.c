@@ -18,20 +18,21 @@
   */
 /* USER CODE END Header */
 
-#include "app_common.h"
 #include "stm32wbaxx_hal.h"
-#include "linklayer_plat.h"
 #include "stm32wbaxx_hal_conf.h"
 #include "stm32wbaxx_ll_rcc.h"
+
+#include "app_common.h"
 #include "app_conf.h"
+#include "linklayer_plat.h"
 #include "scm.h"
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-#include "adc_ctrl.h"
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
+#include "log_module.h"
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
+#include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -44,11 +45,6 @@ void (*low_isr_callback)(void) = NULL;
 
 /* RNG handle */
 extern RNG_HandleTypeDef hrng;
-
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-/* Link Layer temperature request from background */
-extern void ll_sys_bg_temperature_measurement(void);
-#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -93,12 +89,12 @@ void LINKLAYER_PLAT_ClockInit()
   */
 void LINKLAYER_PLAT_DelayUs(uint32_t delay)
 {
-__IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
-	do
-	{
-		__NOP();
-	}
-	while (Delay --);
+  __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
+  do
+  {
+    __NOP();
+  }
+  while (Delay --);
 }
 
 /**
@@ -118,7 +114,7 @@ void LINKLAYER_PLAT_Assert(uint8_t condition)
   */
 void LINKLAYER_PLAT_WaitHclkRdy(void)
 {
-/* Wait on radio bus clock readiness if it has been turned of */
+  /* Wait on radio bus clock readiness if it has been turned of */
   if (AHB5_SwitchedOff == 1)
   {
     AHB5_SwitchedOff = 0;
@@ -156,7 +152,7 @@ void LINKLAYER_PLAT_NotifyWFIEnter(void)
   */
 void LINKLAYER_PLAT_NotifyWFIExit(void)
 {
- /* Check if AHB5 clock has been turned of and needs resynchronisation */
+  /* Check if AHB5 clock has been turned of and needs resynchronisation */
   if (AHB5_SwitchedOff)
   {
     /* Read sleep register as earlier as possible */
@@ -179,7 +175,7 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
     SCM_HSE_WaitUntilReady();
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
-	/* SCM HSE END */
+    /* SCM HSE END */
 #else
     /* Enable RADIO baseband clock (active CLK) */
     HAL_RCCEx_EnableRadioBBClock();
@@ -339,9 +335,9 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
     {
       /* When specific counter for link layer high ISR reaches 0, interrupt is enabled */
       HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
-      /* USER CODE BEGIN LINKLAYER_PLAT_EnableSpecificIRQ_1*/
+      /* USER CODE BEGIN LINKLAYER_PLAT_EnableSpecificIRQ_1 */
 
-      /* USER CODE END LINKLAYER_PLAT_EnableSpecificIRQ_1*/
+      /* USER CODE END LINKLAYER_PLAT_EnableSpecificIRQ_1 */
     }
   }
 
@@ -384,9 +380,9 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
     prio_high_isr_counter++;
     if(prio_high_isr_counter == 1)
     {
-      /* USER CODE BEGIN LINKLAYER_PLAT_DisableSpecificIRQ_1*/
+      /* USER CODE BEGIN LINKLAYER_PLAT_DisableSpecificIRQ_1 */
 
-      /* USER CODE END LINKLAYER_PLAT_DisableSpecificIRQ_1*/
+      /* USER CODE END LINKLAYER_PLAT_DisableSpecificIRQ_1 */
       /* When specific counter for link layer high ISR value is 1, interrupt is disabled */
       HAL_NVIC_DisableIRQ(RADIO_INTR_NUM);
     }
@@ -423,15 +419,15 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
   */
 void LINKLAYER_PLAT_EnableRadioIT(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableRadioIT_1*/
+  /* USER CODE BEGIN LINKLAYER_PLAT_EnableRadioIT_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableRadioIT_1*/
+  /* USER CODE END LINKLAYER_PLAT_EnableRadioIT_1 */
 
   HAL_NVIC_EnableIRQ((IRQn_Type) RADIO_INTR_NUM);
 
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableRadioIT_2*/
+  /* USER CODE BEGIN LINKLAYER_PLAT_EnableRadioIT_2 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableRadioIT_2*/
+  /* USER CODE END LINKLAYER_PLAT_EnableRadioIT_2 */
 }
 
 /**
@@ -441,15 +437,15 @@ void LINKLAYER_PLAT_EnableRadioIT(void)
   */
 void LINKLAYER_PLAT_DisableRadioIT(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableRadioIT_1*/
+  /* USER CODE BEGIN LINKLAYER_PLAT_DisableRadioIT_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableRadioIT_1*/
+  /* USER CODE END LINKLAYER_PLAT_DisableRadioIT_1 */
 
   HAL_NVIC_DisableIRQ((IRQn_Type) RADIO_INTR_NUM);
 
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableRadioIT_2*/
+  /* USER CODE BEGIN LINKLAYER_PLAT_DisableRadioIT_2 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableRadioIT_2*/
+  /* USER CODE END LINKLAYER_PLAT_DisableRadioIT_2 */
 }
 
 /**
@@ -487,16 +483,15 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   */
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  PWR_DisableSleepMode();
+  /* Disabling stop mode prevents also from entering in standby */
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -506,16 +501,14 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
   */
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
-#if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
+  PWR_EnableSleepMode();
+  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+#if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
   while (LL_PWR_IsActiveFlag_VOS() == 0);
-#endif /* CFG_SCM_SUPPORTED */
+#endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
 /**
@@ -525,9 +518,6 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
   */
 void LINKLAYER_PLAT_RequestTemperature(void)
 {
-#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
-  ll_sys_bg_temperature_measurement();
-#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**
@@ -537,6 +527,12 @@ void LINKLAYER_PLAT_RequestTemperature(void)
   */
 void LINKLAYER_PLAT_EnableOSContextSwitch(void)
 {
+  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_0 */
+
+  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_1 */
+
+  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_1 */
 }
 
 /**
@@ -546,6 +542,12 @@ void LINKLAYER_PLAT_EnableOSContextSwitch(void)
   */
 void LINKLAYER_PLAT_DisableOSContextSwitch(void)
 {
+  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_0 */
+
+  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_1 */
+
+  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_1 */
 }
 
 /**
@@ -555,6 +557,9 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
  */
 void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
+  /* USER CODE BEGIN LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT_0 */
+
+  /* USER CODE END LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT_0 */
 }
 
 /**
@@ -576,3 +581,7 @@ uint32_t LINKLAYER_PLAT_GetUDN(void)
 {
   return LL_FLASH_GetUDN();
 }
+
+/* USER CODE BEGIN LINKLAYER_PLAT 0 */
+
+/* USER CODE END LINKLAYER_PLAT 0 */

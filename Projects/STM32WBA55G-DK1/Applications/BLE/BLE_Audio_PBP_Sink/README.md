@@ -1,23 +1,16 @@
-
----
-pagetitle: Readme
-lang: en
----
-::: {.row}
-::: {.col-sm-12 .col-lg-8}
-
 ## __BLE_Audio_PBP_Sink Application Description__
 
 How to use the Public Broadcast profile in Sink role as specified by the Bluetooth SIG.
 
-PBP Sink application scans and synchronizes audio streams from remote PBP Sources.
+
+The PBP Sink application scans and synchronizes audio streams from remote PBP Sources.
+<br>
 
 ### __Keywords__
 
 Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
 
 ### __Directory contents__
-
   - BLE_Audio_PBP_Sink/Core/Inc/app_common.h                                        App Common application configuration file for STM32WPAN Middleware. 
   - BLE_Audio_PBP_Sink/Core/Inc/app_conf.h                                          Application configuration file for STM32WPAN Middleware. 
   - BLE_Audio_PBP_Sink/Core/Inc/app_entry.h                                         Interface to the application 
@@ -58,6 +51,7 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
   - BLE_Audio_PBP_Sink/Core/Src/stm32wbaxx_hal_msp.c                                This file provides code for the MSP Initialization and de-Initialization codes.
   - BLE_Audio_PBP_Sink/Core/Src/stm32wbaxx_it.c                                     Interrupt Service Routines. 
   - BLE_Audio_PBP_Sink/Core/Src/system_stm32wbaxx.c                                 CMSIS Cortex-M33 Device Peripheral Access Layer System Source File 
+  - BLE_Audio_PBP_Sink/STM32_WPAN/App/app_bsp.c                                     BApplication to manage BSP
   - BLE_Audio_PBP_Sink/STM32_WPAN/App/app_ble.c                                     BLE Application 
   - BLE_Audio_PBP_Sink/STM32_WPAN/App/pbp_app.c                                     Public Broadcast Profile Application 
   - BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp.c                       This file contains Public Broadcast Profile feature 
@@ -79,12 +73,14 @@ Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio
   - BLE_Audio_PBP_Sink/System/Config/LowPower/user_low_power_config.c               Low power related user configuration. 
   - BLE_Audio_PBP_Sink/System/Interfaces/stm32_lpm_if.c                             Low layer function to enter/exit low power modes (stop, sleep) 
   - BLE_Audio_PBP_Sink/System/Modules/ble_timer.c                                   This module implements the timer core functions
- 
+
+
 ### __Hardware and Software environment__
 
-  - This example runs on STM32WBA55xx devices.
-    Connect the Discovery Board to your PC with a USB cable type C.
-	Connect Audio Output on Jack Connector CN3.
+  - This example runs on STM32WBA55xx devices with SMPS.
+  <br>Connect the Discovery Board to your PC with a USB cable type C
+  <br>Connect a headset on Jack Connector CN3.
+
   - Another Discovery board may be necessary to run PBP Source application.
 
 ### __How to use it?__
@@ -94,23 +90,22 @@ In order to make the program work, you must do the following:
  - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Run the example
-
- - Target PBP Source ID is configurable thanks to the aSourceIdList[] table in pbp_app.c
-   - At startup, PBP Sink starts BLE Scanning and look for remote PBP Source Device associated to the first Source ID.
-   - SCAN_INTERVAL and SCAN_WINDOW of the scanning are configurable in pbp_app.c file.
-     If CFG_DEBUG_APP_TRACE in app_conf.h is set to 0, the STM32WBA will enter in Low Power while application is scanning when BLE Radio RX/TX activity is OFF.
-   - PBP Sink starts automatically the Audio Synchronization process once PBP Source is found.
-   - Joystick Up/Down will cycle through the list of IDs
-     Note : Joystick action could be not detected by application because the Joystick is based on ADC peripheral and the ADC interrupt can only happen when the device has been wakeup by the radio
-   - Target Source ID is displayed on the LCD interface
-
-
+<br>
+<br>
+ - Target PBP Source ID is configurable thanks to the aSourceIdList[] table in pbp_app.c.
+<br>
+ - __At Startup__, PBP Sink starts BLE Scanning and look for remote PBP Source Device associated to the first Source ID (SCAN_INTERVAL and SCAN_WINDOW of the scanning are configurable in pbp_app.c file.).<br>PBP Sink starts automatically the Audio Synchronization process once PBP Source is found.
+ - On the PBP Sink device, use Up/Down direction of the Joystick to change the Source ID to synchronize to. Target Source ID is displayed on the LCD interface.
  - Power up PBP Source device with Source ID matching with one of the ID listed in PBP Sink application
- - Once PBP Source application is started :
-    - On the PBP Sink device, select with the Joystick the Source ID of the remote PBP Source to synchronize to.
+ - Once PBP Source application is started, on the PBP Sink device, select with the joystick the Source ID of the remote PBP Source to synchronize to.
  - Once PBP Sink device is synchronized to PBP Source and Audio Stream is received, Audio is available on Jack Connector.
- - On the PBP Sink device, you can switch the target PBP Source by changing the Source ID using the Joystick.
 
-:::
-:::
+### __Documentation__
+
+   - Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a>
+	 - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a>
+     - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Public_Broadcast_Profile"> Bluetooth® Low Energy audio - STM32WBA Public broadcast profile</a>
 

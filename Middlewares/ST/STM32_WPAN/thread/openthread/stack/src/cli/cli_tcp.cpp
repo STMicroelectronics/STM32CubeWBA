@@ -54,14 +54,8 @@
 
 /* ST modification */
 #ifdef STM32WB55xx
-extern otTcpDisconnected otTcpDisconnectedCb;
-extern otTcpEstablished otTcpEstablishedCb;
-extern otTcpReceiveAvailable otTcpReceiveAvailableCb;
-extern otTcpSendDone otTcpSendDoneCb;
-extern otTcpForwardProgress otTcpForwardProgressCb;
-extern otTcpAcceptReady otTcpAcceptReadyCb;
-extern otTcpAcceptDone otTcpAcceptDoneCb;
-#endif
+#include "stm32wbxx_core_interface_def.h"
+#endif /* STM32WB55xx */
 
 namespace ot {
 namespace Cli {
@@ -229,28 +223,14 @@ template <> otError TcpExample::Process<Cmd("init")>(Arg aArgs[])
 
         ClearAllBytes(endpointArgs);
         endpointArgs.mEstablishedCallback = HandleTcpEstablishedCallback;
-        
-        /* ST modification */
-#ifdef STM32WB55xx
-        otTcpEstablishedCb = HandleTcpEstablishedCallback;
-#endif
+
         if (mUseCircularSendBuffer)
         {
             endpointArgs.mForwardProgressCallback = HandleTcpForwardProgressCallback;
-            
-            /* ST modification */
-#ifdef STM32WB55xx
-            otTcpForwardProgressCb = HandleTcpForwardProgressCallback;
-#endif
         }
         else
         {
             endpointArgs.mSendDoneCallback = HandleTcpSendDoneCallback;
-            
-            /* ST modification */
-#ifdef STM32WB55xx
-            otTcpSendDoneCb = HandleTcpSendDoneCallback;
-#endif
         }
 
         endpointArgs.mReceiveAvailableCallback = HandleTcpReceiveAvailableCallback;
@@ -258,12 +238,7 @@ template <> otError TcpExample::Process<Cmd("init")>(Arg aArgs[])
         endpointArgs.mContext                  = this;
         endpointArgs.mReceiveBuffer            = mReceiveBufferBytes;
         endpointArgs.mReceiveBufferSize        = receiveBufferSize;
-        
-        /* ST modification */
-#ifdef STM32WB55xx
-        otTcpReceiveAvailableCb = HandleTcpReceiveAvailableCallback;
-        otTcpDisconnectedCb     = HandleTcpDisconnectedCallback;
-#endif
+
         SuccessOrExit(error = otTcpEndpointInitialize(GetInstancePtr(), &mEndpoint, &endpointArgs));
     }
 
@@ -274,12 +249,7 @@ template <> otError TcpExample::Process<Cmd("init")>(Arg aArgs[])
         listenerArgs.mAcceptReadyCallback = HandleTcpAcceptReadyCallback;
         listenerArgs.mAcceptDoneCallback  = HandleTcpAcceptDoneCallback;
         listenerArgs.mContext             = this;
-        
-        /* ST modification */
-#ifdef STM32WB55xx
-        otTcpAcceptReadyCb = HandleTcpAcceptReadyCallback;
-        otTcpAcceptDoneCb  = HandleTcpAcceptDoneCallback;
-#endif
+
         error = otTcpListenerInitialize(GetInstancePtr(), &mListener, &listenerArgs);
 
         if (error != OT_ERROR_NONE)
@@ -827,7 +797,7 @@ void TcpExample::HandleTcpEstablishedCallback(otTcpEndpoint *aEndpoint)
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aEndpoint->mContext)->HandleTcpEstablished(aEndpoint);
+    static_cast<TcpExample *>((static_cast<STTcpEndpointHandlerContextType *>(aEndpoint->mContext))->mContext)->HandleTcpEstablished(aEndpoint);
 #else
     static_cast<TcpExample *>(otTcpEndpointGetContext(aEndpoint))->HandleTcpEstablished(aEndpoint);
 #endif
@@ -837,7 +807,7 @@ void TcpExample::HandleTcpSendDoneCallback(otTcpEndpoint *aEndpoint, otLinkedBuf
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aEndpoint->mContext)->HandleTcpSendDone(aEndpoint, aData);
+    static_cast<TcpExample *>((static_cast<STTcpEndpointHandlerContextType *>(aEndpoint->mContext))->mContext)->HandleTcpSendDone(aEndpoint, aData);
 #else
     static_cast<TcpExample *>(otTcpEndpointGetContext(aEndpoint))->HandleTcpSendDone(aEndpoint, aData);
 #endif
@@ -847,7 +817,7 @@ void TcpExample::HandleTcpForwardProgressCallback(otTcpEndpoint *aEndpoint, size
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aEndpoint->mContext)
+    static_cast<TcpExample *>((static_cast<STTcpEndpointHandlerContextType *>(aEndpoint->mContext))->mContext)
         ->HandleTcpForwardProgress(aEndpoint, aInSendBuffer, aBacklog);
 #else
     static_cast<TcpExample *>(otTcpEndpointGetContext(aEndpoint))
@@ -862,7 +832,7 @@ void TcpExample::HandleTcpReceiveAvailableCallback(otTcpEndpoint *aEndpoint,
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aEndpoint->mContext)
+    static_cast<TcpExample *>((static_cast<STTcpEndpointHandlerContextType *>(aEndpoint->mContext))->mContext)
         ->HandleTcpReceiveAvailable(aEndpoint, aBytesAvailable, aEndOfStream, aBytesRemaining);
 #else
     static_cast<TcpExample *>(otTcpEndpointGetContext(aEndpoint))
@@ -874,7 +844,7 @@ void TcpExample::HandleTcpDisconnectedCallback(otTcpEndpoint *aEndpoint, otTcpDi
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aEndpoint->mContext)->HandleTcpDisconnected(aEndpoint, aReason);
+    static_cast<TcpExample *>((static_cast<STTcpEndpointHandlerContextType *>(aEndpoint->mContext))->mContext)->HandleTcpDisconnected(aEndpoint, aReason);
 #else
     static_cast<TcpExample *>(otTcpEndpointGetContext(aEndpoint))->HandleTcpDisconnected(aEndpoint, aReason);
 #endif
@@ -886,7 +856,7 @@ otTcpIncomingConnectionAction TcpExample::HandleTcpAcceptReadyCallback(otTcpList
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    return static_cast<TcpExample *>(aListener->mContext)
+    return static_cast<TcpExample *>((static_cast<STTcpListenerHandlerContextType *>(aListener->mContext))->mContext)
         ->HandleTcpAcceptReady(aListener, aPeer, aAcceptInto);
 #else
     return static_cast<TcpExample *>(otTcpListenerGetContext(aListener))
@@ -900,7 +870,7 @@ void TcpExample::HandleTcpAcceptDoneCallback(otTcpListener    *aListener,
 {
   /* ST modification */
 #ifdef STM32WB55xx
-    static_cast<TcpExample *>(aListener->mContext)->HandleTcpAcceptDone(aListener, aEndpoint, aPeer);
+    static_cast<TcpExample *>((static_cast<STTcpListenerHandlerContextType *>(aListener->mContext))->mContext)->HandleTcpAcceptDone(aListener, aEndpoint, aPeer);
 #else
     static_cast<TcpExample *>(otTcpListenerGetContext(aListener))->HandleTcpAcceptDone(aListener, aEndpoint, aPeer);
 #endif

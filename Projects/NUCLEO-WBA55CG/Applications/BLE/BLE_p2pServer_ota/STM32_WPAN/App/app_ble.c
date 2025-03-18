@@ -598,7 +598,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE:
         {
           /* USER CODE BEGIN RADIO_ACTIVITY_EVENT */
+          #if (CFG_LED_SUPPORTED == 1)
           BSP_LED_On(LED_GREEN);
+          #endif
           UTIL_TIMER_StartWithPeriod(&bleAppContext.SwitchOffGPIO_timer_Id, LED_ON_TIMEOUT_MS);
           /* USER CODE END RADIO_ACTIVITY_EVENT */
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
@@ -1337,7 +1339,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   /* Add a new characterisitc */
   Char_UUID_t  uuid;
   uint16_t gap_DevInfoChar_handle = 0U;
-  
+
   /* Add new characteristic to GAP service */
   uint16_t SizeDeviceInfoChar = 22;
   COPY_DEVINFO_UUID(uuid.Char_UUID_128);
@@ -1365,26 +1367,26 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   * Initialize Device Info Characteristic
   */
   uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
-  
+
   LOG_INFO_APP("---------------------------------------------\n");
-  /* Device ID: WBA5x, ... */
+  /* Device ID: WBA5x, WBA6x... */
   a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
   a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);
-  
+
   /* Rev ID: RevA, RevB... */
   a_GATT_DevInfoData[2] = (uint8_t)(LL_DBGMCU_GetRevisionID() & 0xff);
   a_GATT_DevInfoData[3] = (uint8_t)((LL_DBGMCU_GetRevisionID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Revision ID = 0x%02X %02X\n",a_GATT_DevInfoData[3],a_GATT_DevInfoData[2]);
-  
+
   /* Board ID: Nucleo WBA, DK1 WBA... */
   a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA5X;
   LOG_INFO_APP("-- DEVICE INFO CHAR : Board ID = 0x%02X\n",a_GATT_DevInfoData[4]);
-  
+
   /* HW Package: QFN32, QFN48... */
   a_GATT_DevInfoData[5] = (uint8_t)LL_GetPackageType();
   LOG_INFO_APP("-- DEVICE INFO CHAR : HW Package = 0x%02X\n",a_GATT_DevInfoData[5]);
-    
+
   /* FW version: v1.3.0, v1.4.0... */
   a_GATT_DevInfoData[6] = CFG_FW_MAJOR_VERSION;
   a_GATT_DevInfoData[7] = CFG_FW_MINOR_VERSION;
@@ -1392,11 +1394,11 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   a_GATT_DevInfoData[9] = CFG_FW_BRANCH;
   a_GATT_DevInfoData[10] = CFG_FW_BUILD;
   LOG_INFO_APP("-- DEVICE INFO CHAR : FW Version = v%d.%d.%d - branch %d - build %d\n",a_GATT_DevInfoData[6],a_GATT_DevInfoData[7],a_GATT_DevInfoData[8],a_GATT_DevInfoData[9],a_GATT_DevInfoData[10]);
-  
+
   /* Application ID: p2pServer, HeartRate... */
   a_GATT_DevInfoData[11] = FW_ID_P2P_SERVER;
   LOG_INFO_APP("-- DEVICE INFO CHAR : Application ID = 0x%02X\n",a_GATT_DevInfoData[11]);
-  
+
   /* Host Stack Version: 0.15, 0.16... */
   uint8_t HCI_Version = 0;
   uint16_t HCI_Subversion = 0;
@@ -1406,17 +1408,17 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   hci_read_local_version_information(&HCI_Version, &HCI_Subversion, &LMP_Version, &Company_Identifier, &LMP_Subversion);
   a_GATT_DevInfoData[12] = (uint8_t)((uint16_t)HCI_Subversion & 0xff);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Host Stack version = 0x%02X\n",a_GATT_DevInfoData[12]);
-  
+
   /* Host Stack Type: Full, Basic, Basic Plus... */
   a_GATT_DevInfoData[13] = (uint8_t)(((uint16_t)HCI_Subversion & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Host Stack Type = 0x%02X\n",a_GATT_DevInfoData[13]);
-  
+
   /* RESERVED */
   a_GATT_DevInfoData[14] = 0xFF; /* reserved */
   a_GATT_DevInfoData[15] = 0xFF; /* reserved */
   a_GATT_DevInfoData[16] = 0xFF; /* reserved */
   a_GATT_DevInfoData[17] = 0xFF; /* reserved */
-  
+
   /* Audio Lib */
   a_GATT_DevInfoData[18] = 0xFF; /* NA */
   a_GATT_DevInfoData[19] = 0xFF; /* NA */
@@ -1726,13 +1728,17 @@ static void Adv_Cancel_Req(void *arg)
 
 static void Switch_OFF_GPIO(void *arg)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
   return;
 }
 
 static void Adv_Cancel(void)
 {
+  #if (CFG_LED_SUPPORTED == 1)
   BSP_LED_Off(LED_GREEN);
+  #endif
 
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
 
@@ -1886,9 +1892,10 @@ void APP_BSP_Button1Action(void)
 void APP_BSP_Button2Action(void)
 {
   tBleStatus ret;
-  
+
   if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
   {
+    /* Clear Security Database */
     ret = aci_gap_clear_security_db();
     if (ret != BLE_STATUS_SUCCESS)
     {

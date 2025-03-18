@@ -1230,27 +1230,6 @@
       <group>
         <name>Interface</name>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_otp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka_p256.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</name>
         </file>
         <file>
@@ -1277,15 +1256,6 @@
         <group>
           <name>BasicAES</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
           </file>
           <file>
@@ -1297,18 +1267,6 @@
         </group>
         <group>
           <name>Flash</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\flash_driver.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\flash_manager.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\rf_timing_synchro.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\simple_nvm_arbiter.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</name>
           </file>
@@ -1325,20 +1283,11 @@
         <group>
           <name>Log</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Log\log_module.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
           </file>
         </group>
         <group>
           <name>MemoryManager</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</name>
           </file>
@@ -1349,26 +1298,11 @@
         <group>
           <name>Nvm</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Nvm\nvm_emul.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Nvm/nvm_emul.c</name>
           </file>
         </group>
         <group>
-          <name>RFControl</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
-          </file>
-        </group>
-        <group>
           <name>RTDebug</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
           </file>
@@ -1379,33 +1313,9 @@
         <group>
           <name>SerialCmdInterpreter</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
-          </file>
-          <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
           </file>
         </group>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\adc_ctrl.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\crc_ctrl.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_list.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\temp_measurement.c</name>
-        </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/adc_ctrl.c</name>
         </file>
@@ -1433,9 +1343,6 @@
       </group>
       <group>
         <name>Startup</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
-        </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Startup/stm32wbaxx_ResetHandler_EWARM.s</name>
         </file>
@@ -1553,6 +1460,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>

@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/1.32a-lca02/firmware/public_inc/mac_host_intf.h#2 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/mac_host_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    mac_host_intf.h
@@ -67,8 +67,7 @@
 #define MAC_KEY_TBL_STRUCT_SIZE_PLUS_OVERHEAD	(sizeof(key_dscrp_st_t) + 7) /*adding 7 bytes for header parameters ( 1 opcode + 2 length + 1 mac_handle + 1 pib_attributes + 1 pib_attribute_index + 1 pib_attribute_length )*/
 #endif /*SUPPORT_SEC */
 
-/* Size in octets of extended address used in security processing */
-#define EXT_ADDRESS_LENGTH						8
+
 /* The maximum number of octets that can be transmitted in the MAC Payload field (MAX_PHY_PACKET_SIZE  MIN_PDU_OVERHEAD)*/
 #define MAX_MAC_SAFE_PAYLOAD_SIZE       118
 #define	MAX_HDR_IE_SIZE				3
@@ -486,6 +485,8 @@ typedef struct {
 	uint8_t dsn;
 	/* link quality value */
 	uint8_t mpdu_link_qlty;
+	/* RSSI */
+	uint8_t mpdu_rssi;
 	/* The security level purportedly used by the received data frame */
 	sec_level_enum_t enum_mcps_security_level;
 #if SUPPORT_SEC
@@ -543,10 +544,10 @@ typedef struct mlme_assoc_req_params_e {
  * @brief structure represents MLME-DISASSOCIATE.Request input parameters
  **/
 typedef struct mlme_disassoc_req_params_e {
-	uint32_t tx_indirect; /**<set to one if the Disassociation Notification command is to be sent indirectly */
 	prim_sec_param_st sec_params; /**< security information */
 	uint8_t dev_addr[EXT_ADDRESS_LENGTH]; /**<The address of the device to which to send the command */
 	uint16_t dev_pan_id; /**<The PAN ID of the device to which to send the command */
+	uint8_t tx_indirect; /**<set to one if the Disassociation Notification command is to be sent indirectly */
 	mac_addrs_mode_enum_t addr_mod; /**<The addressing mode of the device to which to send the command */
 	uint8_t reason; /**<The reason for the disassociation */
 } mlme_disassoc_req_param_st;

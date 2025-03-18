@@ -1332,7 +1332,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
 
   LOG_INFO_APP("---------------------------------------------\n");
-  /* Device ID: WBA5x, ... */
+  /* Device ID: WBA5x, WBA6x... */
   a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
   a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);
@@ -1898,6 +1898,10 @@ void APP_BSP_Button3Action(void)
   }
 
   return;
+}
+void HAL_PWR_WKUP2_Callback(void)
+{
+  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B1, CFG_SEQ_PRIO_0);
 }
 
 void HAL_PWR_WKUP3_Callback(void)

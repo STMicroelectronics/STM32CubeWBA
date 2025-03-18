@@ -166,8 +166,10 @@ void HAP_AclDisconnection(uint16_t ConnHandle)
     if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
     {
       /*Check if the remote device is bonded in order to save PACS and ASCS characteristics values*/
-      if (aci_gap_is_device_bonded( p_conn_info->Peer_Address_Type,
-                                    &p_conn_info->Peer_Address[0]) == BLE_STATUS_SUCCESS)
+      if (aci_gap_check_bonded_device(p_conn_info->Peer_Address_Type,
+                                      &p_conn_info->Peer_Address[0],
+                                     (uint8_t *)&p_conn_info->Peer_Address_Type,
+                                     (uint8_t *)p_conn_info->Peer_Address) == BLE_STATUS_SUCCESS)
       {
         BLE_DBG_HAP_MSG("Peer Device 0x%02x%02x%02x%02x%02x%02x is bonded, store HAP information values in NVM\n",
                         p_conn_info->Peer_Address[5],

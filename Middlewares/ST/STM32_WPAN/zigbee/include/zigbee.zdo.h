@@ -378,10 +378,8 @@ struct ZbZdoNwkAddrReqT {
     uint64_t extAddr; /**< IEEEAddr */
     enum ZbZdoAddrReqTypeT reqType; /**< RequestType */
     uint8_t startIndex; /**< StartIndex */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** NWK_addr_rsp */
@@ -392,10 +390,8 @@ struct ZbZdoNwkAddrRspT {
     uint8_t deviceCount; /**< NumAssocDev */
     uint8_t startIndex; /**< StartIndex */
     uint16_t deviceList[ZB_ZDO_ADDRRSP_DEVLIST_MAX]; /**< NWKAddrAssocDevList */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** IEEE_addr_req */
@@ -404,10 +400,8 @@ struct ZbZdoIeeeAddrReqT {
     uint16_t nwkAddrOfInterest; /**< NWKAddrOfInterest */
     enum ZbZdoAddrReqTypeT reqType; /**< RequestType */
     uint8_t startIndex; /**< StartIndex */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** IEEE_addr_rsp (Same as NWK_addr_rsp) */
@@ -419,16 +413,18 @@ struct ZbZdoNodeDescReqT {
     /**< Destination network address. */
     uint16_t nwkAddrOfInterest;
     /**< Network address on interest. */
-#if (CONFIG_ZB_REV >= 23)
+
+    /*
+     * R23 additions
+     */
     uint64_t joinerExtAddr;
-    /**< Extended address of joiner. (R23+) */
+    /**< Extended address of joiner. */
     uint8_t suppKeyNegoMethod;
-    /**< Supported key negotiation method. (R23+) */
+    /**< Supported key negotiation method. */
     uint8_t suppPreSharedSecrets;
-    /**< Supported Pre-Shared secrets. (R23+) */
+    /**< Supported Pre-Shared secrets. */
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. */
 };
 
 /** Node_Desc_rsp */
@@ -439,24 +435,24 @@ struct ZbZdoNodeDescRspT {
     /**< short address. */
     struct ZbNodeDescriptorT nodeDesc;
     /**< Node descriptor structure. */
-#if (CONFIG_ZB_REV >= 23)
+
+    /*
+     * R23 additions
+     */
     enum ZbSelKeyNegoMethodT selKeyNegoMethod;
-    /**< Selected key negotiation method. (R23+) */
+    /**< Selected key negotiation method. */
     enum ZbSelPreSharedSecretT selPreSharedSecret;
-    /**< Selected Pre-Shared secret. (R23+) */
+    /**< Selected Pre-Shared secret. */
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. */
 };
 
 /** Power_Desc_req */
 struct ZbZdoPowerDescReqT {
     uint16_t dstNwkAddr; /**< Destination network address */
     uint16_t nwkAddrOfInterest; /**< NWKAddrOfInterest */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Power_Desc_rsp */
@@ -464,10 +460,8 @@ struct ZbZdoPowerDescRspT {
     enum ZbStatusCodeT status; /**< Status */
     uint16_t nwkAddr; /**< NWKAddrOfInterest */
     struct ZbPowerDescriptorT powerDesc; /**< PowerDescriptor */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Simple_Desc_req */
@@ -475,10 +469,8 @@ struct ZbZdoSimpleDescReqT {
     uint16_t dstNwkAddr; /**< Destination network address */
     uint16_t nwkAddrOfInterest; /**< NWKAddrOfInterest */
     uint8_t endpt; /**< Endpoint */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Simple_Desc_rsp */
@@ -486,20 +478,16 @@ struct ZbZdoSimpleDescRspT {
     enum ZbStatusCodeT status; /**< Status */
     uint16_t nwkAddr; /**< NWKAddrOfInterest */
     struct ZbSimpleDescriptorT simpleDesc; /**< SimpleDescriptor */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Active_EP_req */
 struct ZbZdoActiveEpReqT {
     uint16_t dstNwkAddr; /**< Destination network address */
     uint16_t nwkAddrOfInterest; /**< NWKAddrOfInterest */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Active_EP_rsp */
@@ -508,10 +496,8 @@ struct ZbZdoActiveEpRspT {
     uint16_t nwkAddr; /**< NWKAddrOfInterest */
     uint8_t activeEpCount; /**< ActiveEPCount */
     uint8_t activeEpList[ZB_ZDO_ENDPOINT_LIST_MAXSZ]; /**< ActiveEPList */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Match_Desc_req */
@@ -523,10 +509,8 @@ struct ZbZdoMatchDescReqT {
     uint16_t inClusterList[ZB_ZDO_CLUSTER_LIST_MAX_SZ]; /**< InClusterList */
     uint8_t numOutClusters; /**< NumOutClusters */
     uint16_t outClusterList[ZB_ZDO_CLUSTER_LIST_MAX_SZ]; /**< OutClusterList */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Match_Desc_rsp */
@@ -535,10 +519,8 @@ struct ZbZdoMatchDescRspT {
     uint16_t nwkAddr; /**< NWKAddrOfInterest */
     uint8_t matchLength; /**< MatchLength */
     uint8_t matchList[ZB_ZDO_ENDPOINT_LIST_MAXSZ]; /**< MatchList */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
-    /**< Contains information required to relay the APS packet. (R23+) */
-#endif
+    /**< Contains information required to relay the APS packet. R23 addition. */
 };
 
 /** Device_annce (ZB_ZDO_DEVICE_ANNCE) */
@@ -560,12 +542,10 @@ struct ZbZdoBindReqT {
      * dst.panId not used, dst.nwkAddr is only for the group address,
      * and dst.endpoint only used if mode == ZB_APSDE_ADDRMODE_EXT */
     struct ZbApsAddrT dst; /**< DstAddrMode, DstAddress, DstEndp */
-#if (CONFIG_ZB_REV >= 23)
     struct ZbApsRelayInfoT relayInfo;
     /**< Contains information required to relay the APS packet.
      * NOTE: Only required for Golden Unit behaviour and if stack was built with
-     * CONFIG_ZB_ENABLE_GU condition enabled, otherwise it's ignored. (R23+) */
-#endif
+     * CONFIG_ZB_ENABLE_GU condition enabled, otherwise it's ignored. R23 addition. */
 };
 
 /** Bind_rsp */
@@ -625,13 +605,11 @@ struct ZbZdoPermitJoinReqT {
     uint16_t destAddr; /**< Short dst addr */
     uint8_t duration; /**< Permit join duration */
     uint8_t tcSignificance; /**< Boolean flag which if TRUE, indicates request to change TC policy. */
-#if (CONFIG_ZB_REV >= 23)
     uint8_t tlvData[ZB_ZDO_PERMIT_JOIN_TLV_DATA_MAX_SZ];
     /**< Optional TLV data in case of R23 devices. In case of TC,
-     * it shall be beacon appendix encapsulation TLV. (R23+) */
+     * it shall be beacon appendix encapsulation TLV. R23 addition. */
     uint8_t tlvDataLen;
-    /**< Length of TLV data, if present. (R23+) */
-#endif
+    /**< Length of TLV data, if present. R23 addition. */
 };
 
 /** ZDO Mgmt_Permit_Join_rsp */
@@ -704,10 +682,7 @@ struct ZbZdoNwkIeeeJoinListRspT {
     uint64_t ieeeJoiningList[ZDP_JOINING_LIST_MAX_LEN]; /**< IeeeJoiningList */
 };
 
-#if (CONFIG_ZB_REV >= 23)
-/**
- * Mgmt_Beacon_Survey_Req.
- */
+/** Mgmt_Beacon_Survey_Req. R23 addition. */
 struct ZbZdoBcnSurveyReqT {
     uint16_t dest_addr;
     /**< destination address. */
@@ -719,9 +694,7 @@ struct ZbZdoBcnSurveyReqT {
      *   bit 1 - 7: reserved. */
 };
 
-/**
- * Mgmt_Beacon_Survey_Rsp.
- */
+/** Mgmt_Beacon_Survey_Rsp. R23 addition. */
 struct ZbZdoBcnSurveyRspT {
     enum ZbStatusCodeT status;
     /**< Status. */
@@ -753,7 +726,7 @@ struct ZbZdoBcnSurveyRspT {
 };
 
 /**
- * Clear_All_Bindings_req
+ * Clear_All_Bindings_req. R23 addition.
  */
 struct ZbZdoClearAllBindingsReqT {
     uint16_t destAddr;
@@ -765,14 +738,14 @@ struct ZbZdoClearAllBindingsReqT {
 };
 
 /*
- * Clear_All_Bindings_rsp (R23)
+ * Clear_All_Bindings_rsp. R23 addition.
  */
 struct ZbZdoClearAllBindingsRspT {
     enum ZbStatusCodeT status; /**< Status */
 };
 
 /*
- * Security_Get_Authentication_Level_Req (R23)
+ * Security_Get_Authentication_Level_Req. R23 addition.
  */
 struct ZbZdoSecGetAuthLevelReqT {
     uint16_t destAddr;
@@ -787,7 +760,7 @@ struct ZbZdoSecGetAuthLevelReqT {
 };
 
 /*
- * Security_Get_Authentication_Level_Rsp (R23)
+ * Security_Get_Authentication_Level_Rsp. R23 addition.
  */
 struct ZbZdoSecGetAuthLevelRspT {
     enum ZbStatusCodeT status;
@@ -801,7 +774,7 @@ struct ZbZdoSecGetAuthLevelRspT {
 };
 
 /*
- * Security_Set_Configuration_Req (R23)
+ * Security_Set_Configuration_Req. R23 addition.
  */
 struct ZbZdoSecSetConfigReqT {
     uint16_t destAddr; /**< Destination address */
@@ -814,7 +787,7 @@ struct ZbZdoSecSetConfigReqT {
 };
 
 /*
- * Security_Set_Configuration_Rsp (R23)
+ * Security_Set_Configuration_Rsp. R23 addition.
  */
 struct ZbZdoSecSetConfigRspT {
     enum ZbStatusCodeT status;
@@ -871,14 +844,14 @@ struct ZbZdoSecKeyUpdateReqT {
 };
 
 /*
- * Security_Start_Key_Update_Rsp (R23)
+ * Security_Start_Key_Update_Rsp. R23 addition.
  */
 struct ZbZdoSecKeyUpdateRspT {
     enum ZbStatusCodeT status; /**< Status. */
 };
 
 /*
- * Security_Decommission_req (R23)
+ * Security_Decommission_req. R23 addition.
  */
 struct ZbZdoSecDecommissionReqT {
     uint16_t destAddr;
@@ -890,14 +863,14 @@ struct ZbZdoSecDecommissionReqT {
 };
 
 /*
- * Security_Decommission_rsp (R23)
+ * Security_Decommission_rsp. R23 addition.
  */
 struct ZbZdoSecDecommissionRspT {
     enum ZbStatusCodeT status; /**< Status. */
 };
 
 /*
- * Security_Challenge_req (R23)
+ * Security_Challenge_req. R23 addition.
  */
 struct ZbZdoSecChallengeReqT {
     uint16_t destAddr;
@@ -912,7 +885,7 @@ struct ZbZdoSecChallengeReqT {
 };
 
 /*
- * Security_Challenge_rsp (R23)
+ * Security_Challenge_rsp. R23 addition.
  */
 struct ZbZdoSecChallengeRspT {
     enum ZbStatusCodeT status;
@@ -935,7 +908,7 @@ struct ZbZdoSecChallengeRspT {
 
 /*
  * Internal structure used to notify the NHLE on receiving
- * the Security_Key_Update_Req command (R23)
+ * the Security_Key_Update_Req command. R23 addition.
  */
 struct ZbZdoSecKeyUpdateIndT {
     uint64_t srcExtAddr;
@@ -953,7 +926,6 @@ struct ZbZdoSecKeyUpdateIndT {
     struct ZbApsRelayInfoT relayInfo;
     /**< Contains required information to relay the APS packet. */
 };
-#endif
 
 /**
  * Return and increment the next ZDO sequence number.
@@ -1107,9 +1079,8 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoBindReq(struct ZigBeeT *zb, struct ZbZdoB
 enum ZbStatusCodeT ZB_WARN_UNUSED ZbZdoUnbindReq(struct ZigBeeT *zb, struct ZbZdoBindReqT *req,
     void (*callback)(struct ZbZdoBindRspT *rsp, void *cb_arg), void *arg);
 
-#if (CONFIG_ZB_REV >= 23)
 /**
- * Send a ZDO Security Clear all bindings request command.
+ * Send a ZDO Security Clear all bindings request command. R23 addition.
  * @param zb Zigbee stack instance
  * @param req clear all bindings req struct
  * @param callback callback function pointer
@@ -1120,7 +1091,7 @@ enum ZbStatusCodeT ZbZdoClearAllBindingsReq(struct ZigBeeT *zb, struct ZbZdoClea
     void (*callback)(struct ZbZdoClearAllBindingsRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Send a ZDO Security get authentication level request command.
+ * Send a ZDO Security get authentication level request command. R23 addition.
  * @param zb Zigbee stack instance
  * @param req get authentication level req struct
  * @param callback Function to call on completion
@@ -1131,7 +1102,7 @@ enum ZbStatusCodeT ZbZdoSecGetAuthLevelReq(struct ZigBeeT *zb, struct ZbZdoSecGe
     void (*callback)(struct ZbZdoSecGetAuthLevelRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Send a ZDO Security set configuration request command.
+ * Send a ZDO Security set configuration request command. R23 addition.
  * @param zb Zigbee stack instance
  * @param req set configuration req struct.
  * @param callback Function to call on completion
@@ -1142,8 +1113,7 @@ enum ZbStatusCodeT ZbZdoSecSetConfigReq(struct ZigBeeT *zb, struct ZbZdoSecSetCo
     void (*callback)(struct ZbZdoSecSetConfigRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Sends ZDO Security get configuration request command.
- *
+ * Sends ZDO Security get configuration request command. R23 addition.
  * @param zb ZigBee stack structure.
  * @param req get configuration req struct.
  * @param callback callback function pointer.
@@ -1154,8 +1124,7 @@ enum ZbStatusCodeT ZbZdoSecGetConfigReq(struct ZigBeeT *zb, struct ZbZdoSecGetCo
     void (*callback)(struct ZbZdoSecGetConfigRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Sends ZDO Security_Decommission_req command.
- *
+ * Sends ZDO Security_Decommission_req command. R23 addition.
  * @param zb ZigBee stack structure.
  * @param req decommission req struct.
  * @param callback callback function pointer.
@@ -1166,8 +1135,7 @@ enum ZbStatusCodeT ZbZdoSecDecommissionReq(struct ZigBeeT *zb, struct ZbZdoSecDe
     void (*callback)(struct ZbZdoSecDecommissionRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Sends ZDO Security_Challenge_req command.
- *
+ * Sends ZDO Security_Challenge_req command. R23 addition.
  * @param zb ZigBee stack structure.
  * @param req challenge req struct.
  * @param callback callback function pointer.
@@ -1178,8 +1146,7 @@ enum ZbStatusCodeT ZbZdoSecChallengeReq(struct ZigBeeT *zb, struct ZbZdoSecChall
     void (*callback)(struct ZbZdoSecChallengeRspT *rsp, void *cb_arg), void *arg);
 
 /**
- * Sends ZDO Mgmt_Beacon_Survey_req command.
- *
+ * Sends ZDO Mgmt_Beacon_Survey_req command. R23 addition.
  * @param zb ZigBee stack structure.
  * @param req Beacon survey req struct.
  * @param callback callback function pointer.
@@ -1188,7 +1155,6 @@ enum ZbStatusCodeT ZbZdoSecChallengeReq(struct ZigBeeT *zb, struct ZbZdoSecChall
  */
 enum ZbStatusCodeT ZbZdoBcnSurveyReq(struct ZigBeeT *zb, struct ZbZdoBcnSurveyReqT *req,
     void (*callback)(struct ZbZdoBcnSurveyRspT *rsp, void *cb_arg), void *arg);
-#endif
 
 /**
  * Perform a Mgmt_Lqi_req command.
@@ -1342,9 +1308,8 @@ unsigned int ZbZdoNwkIeeeJoinListRsp(struct ZigBeeT *zb, uint16_t dstNwkAddr,
  */
 unsigned int ZbZdoNwkIeeeJoinListBcastAll(struct ZigBeeT *zb);
 
-#if (CONFIG_ZB_REV >= 23)
 /**
- * Send a ZDO Security Key Update Request.
+ * Send a ZDO Security Key Update Request. R23 addition.
  * @param zb Zigbee stack instance
  * @param req security key update req struct
  * @param callback Function to call on completion
@@ -1353,7 +1318,5 @@ unsigned int ZbZdoNwkIeeeJoinListBcastAll(struct ZigBeeT *zb);
  */
 enum ZbStatusCodeT ZbZdoSecKeyUpdateReq(struct ZigBeeT *zb, struct ZbZdoSecKeyUpdateReqT *req,
     void (*callback)(struct ZbZdoSecKeyUpdateRspT *rsp, void *cb_arg), void *arg);
-
-#endif
 
 #endif

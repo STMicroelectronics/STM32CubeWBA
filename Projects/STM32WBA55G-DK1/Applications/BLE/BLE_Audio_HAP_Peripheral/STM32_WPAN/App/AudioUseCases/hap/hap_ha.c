@@ -573,7 +573,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
     if (pData[2] != HAP_Context.HA.ActivePreset)
     {
       /* Notify new Active Preset */
-      BLE_DBG_HAP_HA_MSG("Active Preset Index value has changed since last connection with ConnHandle 0x%02X\n",
+      BLE_DBG_HAP_HA_MSG("Active Preset Index value has changed since last connection with ConnHandle 0x%04X\n",
                          ConnHandle);
       status = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, ConnHandle, HAP_Context.HA.ActivePreset);
 
@@ -611,7 +611,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
         if (preset_to_notify == 0u)
         {
           /* Notify new preset */
-          BLE_DBG_HAP_HA_MSG("Preset index %d has been added since last connection with ConnHandle 0x%02X\n",
+          BLE_DBG_HAP_HA_MSG("Preset index %d has been added since last connection with ConnHandle 0x%04X\n",
                              p_restore_context->pPreset->Index, ConnHandle);
           preset_to_notify = 1u;
           p_preset = p_restore_context->pPreset;
@@ -634,7 +634,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
         if (preset_to_notify == 0u)
         {
           /* Notify preset deleted */
-          BLE_DBG_HAP_HA_MSG("Preset index %d has been deleted since last connection with ConnHandle 0x%02X\n",
+          BLE_DBG_HAP_HA_MSG("Preset index %d has been deleted since last connection with ConnHandle 0x%04X\n",
                              pData[p_restore_context->ParseIndex], ConnHandle);
           preset_to_notify = 1u;
           preset_deleted = 1u;
@@ -662,7 +662,7 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
           if (preset_to_notify == 0u)
           {
             /* Notify preset update */
-            BLE_DBG_HAP_HA_MSG("Preset index %d has been updated since last connection with ConnHandle 0x%02X\n",
+            BLE_DBG_HAP_HA_MSG("Preset index %d has been updated since last connection with ConnHandle 0x%04X\n",
                                p_restore_context->pPreset->Index, ConnHandle);
             preset_to_notify = 1u;
             p_preset = p_restore_context->pPreset;

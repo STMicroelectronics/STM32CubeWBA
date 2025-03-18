@@ -300,6 +300,7 @@ enum ZbNwkNibAttrIdT {
      * (CONFIG_ZB_ENABLE_GU) with special abilities.
      * Default value is ZB_NWK_PARENT_INFO_KEEP_ALIVE (0x02).
      * (type: uint8_t, reset: yes, persist: no) */
+
     ZB_NWK_NIB_ID_AllowLostParentFlag = 0x04a3,
     /**< If true, then a stack internal flag is set when a
      * ZB_NWK_STATUS_CODE_PARENT_LINK_FAILURE event is generated via NLME-NWK-STATUS.indication.
@@ -514,21 +515,25 @@ enum ZbNwkNeighborRelT {
 #define ZB_NWK_NEIGHBOR_TIMEOUT_MAX                 14U
 #define ZB_NWK_NEIGHBOR_IFINDEX_UNKNOWN             0xffU
 
+/**
+ * Network Neighbor Table Entry
+ */
 struct ZbNwkNeighborT {
-    /*** Mandatory Neighbor Table Entries */
-    uint64_t extAddr;
-    uint16_t nwkAddr; /* Set to ZB_NWK_ADDR_UNDEFINED to invalidate entry */
-    uint8_t capability;
-    enum ZbNwkNeighborTypeT deviceType;
-    enum ZbNwkNeighborRelT relationship;
-    uint8_t txFailure;
-    uint8_t lqi; /* Average LQI. */
-    int8_t unicastRssi; /* Average RSSI when sent as unicast. For power control. */
-    uint8_t outgoingCost; /* ZigBee 2007. */
-    uint8_t age; /* ZigBee 2007. */
-    uint8_t interval; /* R21 draft. */
-    ZbUptimeT timeout; /* R21 draft. End-device keep-alive timeout. Disabled if zero. */
-    uint8_t ifc_index; /* R22 - set to ZB_NWK_NEIGHBOR_IFINDEX_UNKNOWN if not known (e.g. after persistence) */
+    uint64_t extAddr; /**< Extended address, or zero if unknown.*/
+    uint16_t nwkAddr; /**< Network address, or ZB_NWK_ADDR_UNDEFINED to invalidate entry */
+    uint8_t capability; /**< Capability bits*/
+    enum ZbNwkNeighborTypeT deviceType; /**< Device Type */
+    enum ZbNwkNeighborRelT relationship; /**< Relationship */
+    uint8_t txFailure; /**< Transmit Failure count */
+    uint8_t lqi; /**< Average LQI. */
+    int8_t unicastRssi; /**< Average RSSI when sent as unicast. For power control, if applicable. */
+    uint8_t outgoingCost; /**< Outgoing Cost */
+    uint8_t age; /**< Age */
+    uint8_t interval; /**< End-device Keep Alive interval */
+    ZbUptimeT timeout;
+    /**< End-device keep-alive timeout, based on the interval value. Internal-use only. */
+    uint8_t ifc_index;
+    /**< Interface Index. Set to ZB_NWK_NEIGHBOR_IFINDEX_UNKNOWN if unknown (e.g. after persistence) */
 };
 
 /*

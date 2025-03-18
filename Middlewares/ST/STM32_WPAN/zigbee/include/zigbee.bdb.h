@@ -208,7 +208,7 @@ enum ZbBdbAttrIdT {
     ZB_BDB_PrimaryChannelSet = 0x1008,
     /**< bdbPrimaryChannelSet (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_ScanDuration = 0x1009,
-    /**< bdbScanDuration (type: uint8_t, reset: no, persist: no) */
+    /**< bdbcfScanDuration (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_SecondaryChannelSet = 0x100a,
     /**< bdbSecondaryChannelSet (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttempts = 0x100b,
@@ -216,7 +216,7 @@ enum ZbBdbAttrIdT {
      * to keep track of number of TCLK exchange attempts made.
      * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttemptsMax = 0x100c,
-    /**< bdbTCLKExchangeAttempts (type: uint8_t, reset: no, persist: no) */
+    /**< bdbcfTCExchangeAttemptsMax (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLinkKeyExchangeMethod = 0x100d,
     /**< bdbTCLinkKeyExchangeMethod - Deprecated in BDB 3.1
      * (type: uint8_t / enum ZbBdbLinkKeyExchMethodT, reset: no, persist: no) */
@@ -358,8 +358,12 @@ enum ZbBdbAttrIdT {
     /**< Seconds (type: uint8_t, reset: no, persist: no) */
     ZB_BDBC_TLRxWindowDuration = 0x1205,
     /**< Seconds (type: uint8_t, reset: no, persist: no) */
-    ZB_BDBC_TLScanTimeBaseDuration = 0x1206
-        /**< Milliseconds (type: uint8_t, reset: no, persist: no) */
+    ZB_BDBC_TLScanTimeBaseDuration = 0x1206,
+    /**< Milliseconds (type: uint8_t, reset: no, persist: no) */
+
+    ZB_BDB_RequireCBKESuccess = 0x1308
+        /**< A boolean flag to indicate how to handle CBKE failure as part of startup join.
+         * (type: uint8_t, reset: no, persist: no) */
 };
 
 /**

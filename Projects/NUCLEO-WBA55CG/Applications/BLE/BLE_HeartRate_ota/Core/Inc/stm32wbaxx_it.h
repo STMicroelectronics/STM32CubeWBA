@@ -22,7 +22,7 @@
 #define __STM32WBAxx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Private includes ----------------------------------------------------------*/
@@ -67,7 +67,7 @@ void HASH_IRQHandler(void);
 void EXTI6_IRQHandler(void);
 void EXTI7_IRQHandler(void);
 void EXTI13_IRQHandler(void);
-
+void WKUP_IRQHandler(void);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

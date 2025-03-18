@@ -524,7 +524,7 @@ SNVMA_Cmd_Status_t SNVMA_Register (const SNVMA_BufferId_t BufferId,
     }
   }
 
-  LOG_ERROR_SYSTEM("\r\nSNVMA_Register returned %d", (uint8_t)error);
+  LOG_DEBUG_SYSTEM("\r\nSNVMA_Register returned 0x%02X", (uint8_t)error);
 
   return error;
 }
@@ -646,7 +646,7 @@ SNVMA_Cmd_Status_t SNVMA_Restore (const SNVMA_BufferId_t BufferId)
     UTILS_EXIT_CRITICAL_SECTION ();
   }
 
-  LOG_ERROR_SYSTEM("\r\nSNVMA_Restore returned %d", (uint8_t)error);
+  LOG_DEBUG_SYSTEM("\r\nSNVMA_Restore returned 0x%02X", (uint8_t)error);
 
   return error;
 }
@@ -682,12 +682,12 @@ SNVMA_Cmd_Status_t SNVMA_Write (const SNVMA_BufferId_t BufferId,
     /* Set the impacted NVM */
     SNVMA_IdBitmask |= (1u << nvmId);
 
-    LOG_INFO_SYSTEM("\r\nSNVMA_Write - Impacted NVM : %d", SNVMA_IdBitmask);
+    LOG_DEBUG_SYSTEM("\r\nSNVMA_Write - Impacted NVM : %d", SNVMA_IdBitmask);
 
     /* Store the pending buffer ... */
     SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp |= (1u << idxBuf);
 
-    LOG_INFO_SYSTEM("\r\nSNVMA_Write - Pending buffer : %d", (uint8_t)(1u << idxBuf));
+    LOG_DEBUG_SYSTEM("\r\nSNVMA_Write - Pending buffer : %d", (uint8_t)(1u << idxBuf));
 
     /* ... and the callback - Can be NULL */
     SNVMA_NvmConfiguration[nvmId].a_Callback[idxBuf] = Callback;
@@ -703,6 +703,15 @@ SNVMA_Cmd_Status_t SNVMA_Write (const SNVMA_BufferId_t BufferId,
 
       /* Set that a command is pending */
       SNVMA_CommandPending = TRUE;
+      
+      /* Flash op started */
+      SNVMA_FlashInfo.NvmId = nvmId;
+      SNVMA_FlashInfo.BufferId = idxBuf;
+      SNVMA_FlashInfo.FlashOpState = SNVMA_HEADER_WRITE;
+
+      /* Set request active */
+      SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp =
+        (SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp << SNVMA_MAX_NUMBER_BUFFER) & 0xF0u;
 
       /* Leave critical section */
       UTILS_EXIT_CRITICAL_SECTION ();
@@ -719,6 +728,11 @@ SNVMA_Cmd_Status_t SNVMA_Write (const SNVMA_BufferId_t BufferId,
         /* Clean flags */
         SNVMA_IdBitmask &= ~(1u << nvmId);
         SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp = 0u;
+        
+        /* Clean flash operation information */
+        memset ((void *)&SNVMA_FlashInfo,
+                0x00,
+                sizeof (SNVMA_FlashOpInfo_t));
 
         for (uint8_t cnt = 0x00;
              cnt < SNVMA_MAX_NUMBER_BUFFER;
@@ -733,23 +747,8 @@ SNVMA_Cmd_Status_t SNVMA_Write (const SNVMA_BufferId_t BufferId,
         error = SNVMA_ERROR_FLASH_ERROR;
       }
       else
-      {
-        /* Enter critical section */
-        UTILS_ENTER_CRITICAL_SECTION();
-
-        /* Flash op started */
-        SNVMA_FlashInfo.NvmId = nvmId;
-        SNVMA_FlashInfo.BufferId = idxBuf;
-        SNVMA_FlashInfo.FlashOpState = SNVMA_HEADER_WRITE;
-
-        /* Set request active */
-        SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp =
-          (SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp << SNVMA_MAX_NUMBER_BUFFER) & 0xF0u;
-
-        /* Leave critical section */
-        UTILS_EXIT_CRITICAL_SECTION ();
-
-        LOG_INFO_SYSTEM("\r\nSNVMA_Write - Flash operation started (Header write request) : %d", (uint8_t)SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp);
+      {  
+        LOG_DEBUG_SYSTEM("\r\nSNVMA_Write - Flash operation started (Header write request) : %d", (uint8_t)SNVMA_NvmConfiguration[nvmId].PendingBufferWriteOp);
 
         error = SNVMA_ERROR_OK;
       }
@@ -766,7 +765,7 @@ SNVMA_Cmd_Status_t SNVMA_Write (const SNVMA_BufferId_t BufferId,
 
 /* Callback Definition ------------------------------------------------------*/
 void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
-{
+{  
   FM_Cmd_Status_t flashFunRet = FM_ERROR;
 
   static uint8_t buffCnt = 0x00;
@@ -778,7 +777,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
   {
     case SNVMA_HEADER_WRITE:
     {
-      LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_HEADER_WRITE");
+      LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_HEADER_WRITE");
 
       /* Check flash operation status */
       if (Status == FM_OPERATION_COMPLETE)
@@ -826,7 +825,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
         {
           /* Enter critical section */
           UTILS_ENTER_CRITICAL_SECTION();
-
+          
           /* Header has been properly written, update operation information */
           SNVMA_FlashInfo.FlashOpState = SNVMA_BUFFER_WRITE;
 
@@ -866,7 +865,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
       /* Status == FM_OPERATION_AVAILABLE */
       else
       {
-        LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE - Retry write operation");
+        LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE - Retry write operation");
 
         /* Retry write operation of the header */
         flashFunRet = FM_Write ((uint32_t *)&SNVMA_WriteBankHeader,
@@ -899,7 +898,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
     case SNVMA_BUFFER_WRITE:
     {
-      LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE");
+      LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE");
 
       /* Check flash operation status */
       if (Status == FM_OPERATION_COMPLETE)
@@ -1045,10 +1044,10 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
               /* Update flash operation information */
               SNVMA_FlashInfo.FlashOpState = SNVMA_ERASE_BANK;
-
+			  
               /* Leave critical section */
               UTILS_EXIT_CRITICAL_SECTION ();
-
+              
               flashFunRet = FM_Erase ((((uint32_t)tmpBank->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
                                                   SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].BankSize,
                                                   &SNVMA_FlashCallback);
@@ -1127,7 +1126,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
                   }
                 }
 
-                LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE - Start the pending write operation");
+                LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE - Start the pending write operation");
 
                 /* Start the pending write operation */
                 flashFunRet = StartFlashWrite (SNVMA_FlashInfo.NvmId);
@@ -1185,7 +1184,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
       /* Status == FM_OPERATION_AVAILABLE */
       else
       {
-        LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE - Retry write operation");
+        LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_BUFFER_WRITE - Retry write operation");
 
         /* Retry the buffer write */
         flashFunRet = FM_Write (
@@ -1218,14 +1217,14 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
     case SNVMA_ERASE_BANK:
     {
-      LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_ERASE_BANK");
+      LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_ERASE_BANK");
 
       /* Check flash operation status */
       if (Status == FM_OPERATION_COMPLETE)
       {
         /* Notify buffers callbacks */
         InvokeBufferCallback (SNVMA_FlashInfo.NvmId, SNVMA_OPERATION_COMPLETE);
-
+        
         /* Is there any new request ? */
         if (SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].PendingBufferWriteOp == 0x00)
         {
@@ -1255,7 +1254,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
               /* Update flash information */
               SNVMA_FlashInfo.NvmId = cnt;
               SNVMA_FlashInfo.FlashOpState = SNVMA_HEADER_WRITE;
-
+              
               /* Determine which buffer is impacted */
               for (uint8_t idx = 0x00;
                    idx < SNVMA_MAX_NUMBER_BUFFER;
@@ -1276,7 +1275,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
             }
           }
 
-          LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_ERASE_BANK - Start the pending write operation");
+          LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_ERASE_BANK - Start the pending write operation");
 
           /* Start the pending write operation */
           flashFunRet = StartFlashWrite (SNVMA_FlashInfo.NvmId);
@@ -1360,7 +1359,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
     case SNVMA_RETRY_WRITE:
     {
-      LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE");
+      LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE");
 
       /* Check flash operation status */
       if (Status == FM_OPERATION_COMPLETE)
@@ -1428,7 +1427,7 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
       /* Status == FM_OPERATION_AVAILABLE */
       else
       {
-        LOG_INFO_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE - Retry erase operation");
+        LOG_DEBUG_SYSTEM("\r\nSNVMA_FlashManagerCallback - Flash operation state : SNVMA_RETRY_WRITE - Retry erase operation");
 
         /* Retry erase operation */
         flashFunRet = FM_Erase ((((uint32_t)SNVMA_NvmConfiguration[SNVMA_FlashInfo.NvmId].p_BankForWrite->p_StartAddr -
@@ -1520,7 +1519,7 @@ uint8_t IsHeaderOk (const uint32_t * const p_BankStartAddress, const uint8_t Nvm
     /* Header can be good */
     error = TRUE;
   }
-
+  
   return error;
 }
 
@@ -1534,7 +1533,7 @@ uint8_t IsCrcOk (const uint32_t * const p_BankStartAddress)
   uint32_t cnt = 0x00;
   CRCCTRL_Cmd_Status_t eReturn;
 
-  LOG_INFO_SYSTEM("\r\nStart of CRC computation");
+  LOG_DEBUG_SYSTEM("\r\nStart of CRC computation");
 
   /* Compute CRC for every buffer */
   while (cnt < SNVMA_MAX_NUMBER_BUFFER)
@@ -1679,7 +1678,7 @@ uint8_t IsCrcOk (const uint32_t * const p_BankStartAddress)
     error = TRUE;
   }
 
-  LOG_INFO_SYSTEM("\r\nEnd of CRC computation, value : %d", crcComputedValue);
+  LOG_DEBUG_SYSTEM("\r\nEnd of CRC computation, value : %d", crcComputedValue);
 
   return error;
 }
@@ -1856,7 +1855,7 @@ FM_Cmd_Status_t StartFlashWrite (const uint8_t NvmId)
 
   /* Leave critical section */
   UTILS_EXIT_CRITICAL_SECTION ();
-
+    
   /* Write the header */
   error = FM_Write ((uint32_t *)&SNVMA_WriteBankHeader,
                                 SNVMA_NvmConfiguration[NvmId].p_BankForWrite->p_StartAddr,
@@ -1890,7 +1889,7 @@ void InvokeBufferCallback (const uint8_t NvmId, const SNVMA_Callback_Status_t Ca
           /* Invoke callback */
           SNVMA_NvmConfiguration[NvmId].a_Callback[pendingShift] (CallbackStatus);
 
-          LOG_INFO_SYSTEM("\r\nSNVMA - InvokeBufferCallback for NVM ID : %d\n", NvmId);
+          LOG_DEBUG_SYSTEM("\r\nSNVMA - InvokeBufferCallback for NVM ID : %d\n", NvmId);
 
           /* Enter critical section */
           UTILS_ENTER_CRITICAL_SECTION();

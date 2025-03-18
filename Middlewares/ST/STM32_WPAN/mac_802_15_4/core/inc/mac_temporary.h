@@ -1,13 +1,30 @@
+/******************************************************************************
+ * @file    mac_temporary.h
+ * @author
+ * @brief   Header for mac interface.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+
 #ifndef MAC_TEMPORARY_H
 #define MAC_TEMPORARY_H
 
 
 //#include "cmsis_iccarm.h" // Must be remove
 #include "cmsis_compiler.h"
-
+#include "mem_intf.h"
 #include "string.h"
 #include "bsp.h"
-#include "log_module.h" // MAC log
+//#include "log_module.h" // MAC log
 
 #ifndef ASSERT
 /*
@@ -23,12 +40,11 @@
 #endif /* LOGGER_ENABLE */
 #endif /* ASSERT*/
 
-// Debug Buffer Management 
-
+/* Debug Buffer Management */
 #define ST_MAC_HANDLE_INCOMING_MAC_CMD 0x00
 #define ST_MAC_HANDLE_OUTGOING_MAC_MSG 0x01
 
-/* Maybe we need to change this for WBA2 */
+/* For Keil compilateur need to used ble_memcpy, otherwise issue with 32-bit alignment */
 #if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
 #define MAC_MEMSET  ble_memset
 #define MAC_MEMCPY  ble_memcpy
@@ -75,6 +91,16 @@
                 ((uint8_t *)pckt)[pos + 3] = (uint8_t) ((var) >> 24);\
 	} while(0)
     
+          
+/** @brief  For log, fill even if 0x00 */
+#define MAC_READ_8_BYTES(pckt, pos) (((uint64_t) (pckt)[pos]) | \
+		                      (((uint32_t) (pckt)[pos+1])<< 8) | \
+				       (((uint32_t) (pckt)[pos+2])<< 16) | \
+                                       (((uint32_t) (pckt)[pos+3])<< 24) | \
+                                       (((uint32_t) (pckt)[pos+4])<< 32) | \
+                                       (((uint32_t) (pckt)[pos+5])<< 40) | \
+                                       (((uint32_t) (pckt)[pos+6])<< 48) | \
+                                       (((uint32_t) (pckt)[pos+7])<< 56))
           
 /* LOG_REGION_MAC */
 #ifdef CFG_LOG_SUPPORTED

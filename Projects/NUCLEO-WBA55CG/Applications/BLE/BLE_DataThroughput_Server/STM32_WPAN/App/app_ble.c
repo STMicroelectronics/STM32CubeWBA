@@ -581,8 +581,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           if ((p_gap_proc_complete->Procedure_Code == GAP_GENERAL_DISCOVERY_PROC) && 
               (p_gap_proc_complete->Status == 0x00))
           {
-            LOG_INFO_APP("-- GAP_GENERAL_DISCOVERY_PROC completed\n");              
+            LOG_INFO_APP("-- GAP_GENERAL_DISCOVERY_PROC completed\n");
+            #if (CFG_LED_SUPPORTED == 1)
             BSP_LED_Off(LED_BLUE);
+            #endif
           }
           /* USER CODE END EVT_GAP_PROCEDURE_COMPLETE */
           break; /* ACI_GAP_PROC_COMPLETE_VSEVT_CODE */
@@ -1358,7 +1360,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   uint8_t * p_device_info_payload = (uint8_t*)a_GATT_DevInfoData;
   
   LOG_INFO_APP("---------------------------------------------\n");
-  /* Device ID: WBA5x, ... */
+  /* Device ID: WBA5x, WBA6x... */
   a_GATT_DevInfoData[0] = (uint8_t)(LL_DBGMCU_GetDeviceID() & 0xff);
   a_GATT_DevInfoData[1] = (uint8_t)((LL_DBGMCU_GetDeviceID() & 0xff00)>>8);
   LOG_INFO_APP("-- DEVICE INFO CHAR : Device ID = 0x%02X %02X\n",a_GATT_DevInfoData[1],a_GATT_DevInfoData[0]);

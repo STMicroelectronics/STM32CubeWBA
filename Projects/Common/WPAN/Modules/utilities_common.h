@@ -139,8 +139,11 @@ extern "C" {
            } while(0)
 
 #define STM32WBA5x_DEFAULT_SCA_RANGE          (0)
-#define STM32WBA5x_REV_ID_A_SCA_RANGE         (STM32WBA5x_DEFAULT_SCA_RANGE)
-#define STM32WBA5x_REV_ID_B_SCA_RANGE         (4)
+#define STM32WBA5x_REV_ID_A_SCA_RANGE         (0)
+#define STM32WBA5x_REV_ID_B_SCA_RANGE         (0)
+#ifdef STM32WBA65xx
+#define STM32WBA6x_SCA_RANGE                  (0)
+#endif
 
 /* Macro helper for optimizing by speed specific functions.
  * For IAR only: The functions with this definition will be optimized

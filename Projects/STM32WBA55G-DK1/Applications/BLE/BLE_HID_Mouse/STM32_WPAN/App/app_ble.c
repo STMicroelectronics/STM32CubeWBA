@@ -42,12 +42,7 @@
 #include "bas_app.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wba55g_discovery.h"
-
-#if (CFG_LCD_SUPPORTED == 1)
-#include "stm32wba55g_discovery_lcd.h"
-#include "stm32_lcd.h"
-#endif /* CFG_LCD_SUPPORTED */
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -230,9 +225,7 @@ static void APP_BLE_AdvLowPower(void);
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-extern JOYPin_TypeDef Joystick_Event;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -373,16 +366,16 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
       UTIL_TIMER_StartWithPeriod(&bleAppContext.TimerAdvLowPower_Id, ADV_TIMEOUT_MS);
 #if (CFG_LCD_SUPPORTED == 1)
-      BSP_LCD_Clear(0,LCD_COLOR_BLACK);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Clear(LCD1, LCD_COLOR_BLACK);
+      BSP_LCD_Refresh(LCD1);
       p_bd_addr= BleGetBdAddress();
       sprintf(BdAddress, "BD_ad=%02x%02x%02x%02x%02x%02x", p_bd_addr[5], p_bd_addr[4], p_bd_addr[3], p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
       UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", CENTER_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"HID Mouse", CENTER_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(3), (uint8_t *)BdAddress, CENTER_MODE);
       UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"ADVERTISING", CENTER_MODE);
-      BSP_LCD_Refresh(0);
+      BSP_LCD_Refresh(LCD1);
 #endif /* CFG_LCD_SUPPORTED */
       /* USER CODE END EVT_DISCONN_COMPLETE */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -1195,12 +1188,12 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   char BdAddress[20];
   p_bd_addr= BleGetBdAddress();
   sprintf(BdAddress, "BD_ad=%02x%02x%02x%02x%02x%02x", p_bd_addr[5], p_bd_addr[4], p_bd_addr[3], p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
   UTIL_LCD_DisplayStringAt(0, LINE(0), (uint8_t *)"ST BLE", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(1), (uint8_t *)"HID Mouse", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(3), (uint8_t *)BdAddress, CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, LINE(4), (uint8_t *)"ADVERTISING", CENTER_MODE);
-  BSP_LCD_Refresh(0);
+  BSP_LCD_Refresh(LCD1);
 #endif /* CFG_LCD_SUPPORTED */
   /* USER CODE END Role_Mngt */
 

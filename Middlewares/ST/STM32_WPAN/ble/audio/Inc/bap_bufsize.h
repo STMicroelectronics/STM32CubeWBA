@@ -147,9 +147,11 @@
  * @param num_ble_links: Maximum number of simultaneous connections that the device will support.
  *
  * @param max_metadata_length_per_bsrc: Maximum Metadata length per Broadcast Source
+ *
+ * @param max_num_subgroups: Maximum Number of subgroups supported
  */
-#define BAP_BASS_SRV_ATT_VALUE_ARRAY_SIZE(max_num_bsrc_info,num_ble_links,max_metadata_length_per_bsrc) \
-                                (26u + max_metadata_length_per_bsrc + \
+#define BAP_BASS_SRV_ATT_VALUE_ARRAY_SIZE(max_num_bsrc_info,num_ble_links,max_metadata_length_per_bsrc, max_num_subgroups) \
+                                (20u + max_num_subgroups*5u + max_metadata_length_per_bsrc + \
                                  (max_num_bsrc_info * (41u+(2u*num_ble_links)+max_metadata_length_per_bsrc)))
 
 
@@ -236,7 +238,7 @@
  * BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES: memory size used per Connection PACS Server Instance by Unicast Server
  *                                            and Scan Delegator
  */
-#define BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES       (8u)
+#define BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES       (12u)
 
 /*
  * BAP_NVM_INST_PER_CONN_SIZE_BYTES: memory size used for Non-Volatile Memory Management and BAP Services restoration
@@ -248,7 +250,7 @@
  * BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES: memory size used per Connection BASS Client Instance
  *                                            by Broadcast Assistant
  */
-#define BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (52u)
+#define BAP_BASS_CLT_INST_MEM_PER_CONN_SIZE_BYTES       (48u)
 
 /*
  * BAP_BASS_CLT_MEM_CONTEXT_SIZE_BYTES: memory size used for BASS Client Context Allocation by Broadcast Assistant
@@ -392,7 +394,10 @@
  */
 #define BAP_PACS_SRV_TOTAL_BUFFER_SIZE(num_ble_links,max_num_snk_pac_records,max_num_src_pac_records) \
           ((BAP_PACS_SRV_INST_MEM_PER_CONN_SIZE_BYTES * num_ble_links) \
-           + DIVC(((max_num_snk_pac_records+max_num_src_pac_records) * BAP_SRV_MEM_PER_PAC_RECORD_SIZE_BYTES),4u) * 4u)
+           + (DIVC(((max_num_snk_pac_records+max_num_src_pac_records) * BAP_SRV_MEM_PER_PAC_RECORD_SIZE_BYTES),4u) * 4u) \
+           + (num_ble_links * ( BAP_SRV_MEM_PER_PAC_RECORD_SIZE_BYTES * (2u + (max_num_snk_pac_records+max_num_src_pac_records) \
+                                                       + (((max_num_snk_pac_records) > (0x00)) ? (1) : (0)) \
+                                                       + (((max_num_src_pac_records) > (0x00)) ? (1) : (0))))))
 
 /*
  * BAP_PACS_CLT_TOTAL_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage of the

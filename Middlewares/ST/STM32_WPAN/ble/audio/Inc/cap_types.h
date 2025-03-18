@@ -48,15 +48,31 @@ extern "C" {
  */
 #define CAP_ACC_COM_NUM_GATT_SERVICES                           (1u)
 
+/*
+ * CAP_ACC_ATT_VALUE_ARRAY_SIZE: this macro returns the size of the storage area for Attribute values
+ * in CAP, in Acceptor role, according to the number of CSIP Set Member Instance registration.
+ *
+ * @param num_csip_set_member_instances: Maximum number of supported Coordinated Set Member Instances
+ */
+#define CAP_ACC_ATT_VALUE_ARRAY_SIZE(num_csip_set_member_instances) (6u * num_csip_set_member_instances)
+
 /* #############################################################################
    #       Defines and MACRO used to allocate memory resource of               #
    #       Common Audio Profile in CAP_Config_t                                #
    # (CAP_INITIATOR_MEM_TOTAL_BUFFER_SIZE , CAP_ACCEPTOR_MEM_TOTAL_BUFFER_SIZE)#
    ############################################################################# */
 /*
- * CAP_MEM_PER_ASE_SIZE_BYTES: memory size used per Audio Stream Endpoint
+ * CAP_MEM_PER_ASE_SIZE_BYTES: memory size used per Audio Stream Endpoint by CAP Initiator
+ *                             supporting Unicast Client role
  */
-#define CAP_MEM_PER_ASE_SIZE_BYTES                              (3u)
+#define CAP_INITIATOR_MEM_PER_ASE_SIZE_BYTES                    (12u)
+
+/*
+ * CAP_MEM_PER_ASE_SIZE_BYTES: memory size used per Audio Stream Endpoint by CAP Acceptor
+ *                             supporting Unicast Server role
+ */
+#define CAP_ACCEPTOR_MEM_PER_ASE_SIZE_BYTES                     (3u)
+
 
 /*
  * CAP_MEM_PER_CIG_SIZE_BYTES: memory size used per CIG in CAP Initiator
@@ -78,7 +94,19 @@ extern "C" {
 /*
  * CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES: memory size used by CAP Initiator Context Allocation
  */
-#define CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES                    (60u)
+#define CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES                    (108u)
+
+/*
+ * CAP_MEM_PER_ASE_SIZE_BYTES: memory size used during CAP Unicast procedures per Audio Stream Endpoint by CAP Initiator
+ *                             supporting Unicast Client role
+ */
+#define CAP_INITIATOR_UNICAST_PROC_MEM_PER_ASE_SIZE_BYTES       (24u)
+
+/*
+ * CAP_COMMANDER_MEM_CTXT_SIZE_BYTES: memory size used by CAP Commander Context Allocation
+ *
+ */
+#define CAP_COMMANDER_MEM_CONTEXT_SIZE_BYTES                    (56u)
 
 /*
  * CAP_VCP_MEM_PER_AIC_INSTANCES: memory size used per an AIC Instance for VCP in CAP Commander
@@ -163,18 +191,20 @@ extern "C" {
         + (((cap_role & CAP_ROLE_INITIATOR) == CAP_ROLE_INITIATOR) ?  \
           (CAP_INITIATOR_MEM_CONTEXT_SIZE_BYTES \
           + ((CAP_MEM_PER_CIG_SIZE_BYTES + (CAP_MEM_PER_CIS_SIZE_BYTES * ucl_max_num_cis_per_cig))*ucl_max_num_cig) \
-          + num_ble_links * (CAP_INITIATOR_MEM_UNICAST_CTXT_PER_CONN_SIZE_BYTES + DIVC(((ucl_max_num_snk_ase_per_link + ucl_max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
+          + (CAP_INITIATOR_UNICAST_PROC_MEM_PER_ASE_SIZE_BYTES * (ucl_max_num_snk_ase_per_link + ucl_max_num_src_ase_per_link)) \
+          + num_ble_links * (CAP_INITIATOR_MEM_UNICAST_CTXT_PER_CONN_SIZE_BYTES + DIVC(((ucl_max_num_snk_ase_per_link + ucl_max_num_src_ase_per_link) * CAP_INITIATOR_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
         + (((cap_role & CAP_ROLE_ACCEPTOR) == CAP_ROLE_ACCEPTOR) ?  \
-          (num_ble_links * (DIVC(((usr_max_num_snk_ase_per_link+usr_max_num_src_ase_per_link) * CAP_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
+          (num_ble_links * (DIVC(((usr_max_num_snk_ase_per_link+usr_max_num_src_ase_per_link) * CAP_ACCEPTOR_MEM_PER_ASE_SIZE_BYTES),4u) * 4u)) : (0)) \
         + (((cap_role & (CAP_ROLE_ACCEPTOR)) != 0x00) ?  \
           (num_ble_links * \
           (((ccp_clt_feature_support == 1u ) ?  (DIVC((2u *(max_num_bearer_instances + 1u)),4u) * 4u) : (0)) \
           + ((mcp_clt_feature_support == 1u ) ?  (DIVC((2u *(max_num_media_player_instances + 1u)),4u) * 4u) : (0)))) : (0)) \
         + (((cap_role & CAP_ROLE_COMMANDER) != 0x00) ?  \
-          (num_ble_links * \
+          (CAP_COMMANDER_MEM_CONTEXT_SIZE_BYTES \
+           + (num_ble_links * \
           (((vcp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_VCP_MEM_PER_AIC_INSTANCES * max_num_vcp_aic_instances),4u) * 4u) : (0)) \
           + ((vcp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_VCP_MEM_PER_VOC_INSTANCES * max_num_vcp_voc_instances),4u) * 4u) : (0)) \
-          + ((micp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_MICP_MEM_PER_AIC_INSTANCES * max_num_micp_aic_instances),4u) * 4u) : (0)))) : (0)) \
+          + ((micp_ctlr_feature_support == 1u ) ?  (DIVC((CAP_MICP_MEM_PER_AIC_INSTANCES * max_num_micp_aic_instances),4u) * 4u) : (0))))) : (0)) \
         )
 
 /* Types ---------------------------------------------------------------------*/
@@ -343,6 +373,9 @@ typedef enum
                                                  */
   CAP_BROADCAST_PA_SYNC_ESTABLISHED_EVT,        /* This event is notified by Acceptor when when synchronization to a
                                                  * periodic advertising train has been established
+                                                 * It is advised that the application terminates the scanning by using
+                                                 * the BAP_BSNK_StopAdvReportParsing and aci_gap_terminate_gap_proc
+                                                 * uppon reception of this event
                                                  * The pInfo field indicates the details about the Periodic Advertising
                                                  * train through the BAP_PA_Sync_Established_Data_t type
                                                  */
@@ -397,6 +430,13 @@ typedef enum
                                                  * The pInfo field indicates the BIG Handle of the BIG through the
                                                  * uint8_t type
                                                  */
+  CAP_BROADCAST_SDE_START_SCAN_REQ_EVT,         /* Event notified by Scan Delegator when it requires the application to
+                                                 * start scanning using the CAP_Broadcast_StartAdvReportParsing and
+                                                 * aci_gap_ext_start_scan() (with Scan Procedure GAP_OBSERVATION_PROC)
+                                                 * functions.
+                                                 * The pInfo field contain a pointer to a status which the application
+                                                 * should set to BLE_STATUS_SUCCESS if it suceeded to start the scanning
+                                                 * or to any other status value otherwise */
 
 /* #############################################################################
    #                          BROADCAST ASSISTANT Events                       #
@@ -781,8 +821,9 @@ typedef struct
                                                   * bis_sync field should be set to zero
                                                   */
 
-  uint8_t  Release;                              /* 0x00: Do not remove source from remote acceptor(s)
-                                                    0x01: Remove source from remote acceptor(s)
+  uint8_t  Release;                              /* 0x00: Only modify source from remote acceptor(s)
+                                                    0x01: Modify then remove source from remote acceptor(s)
+                                                    0x02: Only remove source from remote acceptor(s)
                                                   */
 } CAP_Broadcast_AudioReceptionStop_Params_t;
 

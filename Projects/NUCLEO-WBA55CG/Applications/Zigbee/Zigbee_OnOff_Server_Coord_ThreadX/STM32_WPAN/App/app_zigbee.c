@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,6 +23,7 @@
 
 #include "app_common.h"
 #include "app_conf.h"
+#include "main.h"
 #include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
@@ -73,7 +74,6 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 /* USER CODE END PD */
 
 /* Private constants ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -103,7 +103,7 @@ static UTIL_TIMER_Object_t      stNwkFormWaitTimer, stNwkFormWaitJoinTimer;
 TX_SEMAPHORE                    NwkFormStartSemaphore;
 TX_SEMAPHORE                    StartupWaitEndSemaphore;
 TX_SEMAPHORE                    NwkFormWaitEndSemaphore;
-TX_THREAD                       NwkFormThread;
+TX_THREAD                       NwkFormJoinTask;
 
 /* USER CODE BEGIN PV */
 
@@ -152,7 +152,7 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
   }
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus |= tx_thread_create(  &NwkFormThread, "NwkFormThread", APP_ZIGBEE_NwkFormOrJoinTask, 0, pStack,
+    ThreadXStatus |= tx_thread_create(  &NwkFormJoinTask, "NwkFormJoinTask", APP_ZIGBEE_NwkFormOrJoinTask, 0, pStack,
                                         TASK_STACK_SIZE_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM,
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
   }
@@ -160,8 +160,8 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
   /* Verify if it's OK */
   if ( ThreadXStatus != TX_SUCCESS )
   {
-    LOG_ERROR_APP( "ERROR THREADX : NETWORK JOIN THREAD CREATION FAILED (%d)", ThreadXStatus );
-    while(1);
+    LOG_ERROR_APP( "Network Join ThreadX objects creation FAILED (%d)", ThreadXStatus );
+    Error_Handler();
   }
 
   /* launch the startup of the mesh network setup */
@@ -323,9 +323,6 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
   {
     /* Application configure Startup */
     APP_ZIGBEE_GetStartupConfig( &stConfig );
-
-    /* Using the default HA preconfigured Link Key */
-    memcpy( stConfig.security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
     /* Using ZbStartupWait (blocking) */
     stZigbeeAppInfo.eJoinStatus = ZbStartupWait( stZigbeeAppInfo.pstZigbee, &stConfig );

@@ -107,6 +107,7 @@
 #error "HW_CRYPTO_DPA_GCM and HW_CRYPTO_DPA_CTR_FOR_GCM cannot be defined simultaneously"
 #endif /* HW_CRYPTO_DPA_GCM && HW_CRYPTO_DPA_CTR_FOR_GCM */
 
+#ifndef OT_LIGHT /* Issue with light configuration of mbedtls and ST hardware accelerator */
 /**
   * @brief MBEDTLS_HAL_SHA256_ALT Enables ST SHA-224 and SHA-256 alternative
   *        modules to replace mbed TLS SHA-224 and SHA-256 modules by ST SHA-224
@@ -116,8 +117,8 @@
   *        Uncomment a macro to enable ST SHA256 hardware alternative module.
   *        Requires: MBEDTLS_SHA256_C, MBEDTLS_SHA256_ALT.
   */
-//#define MBEDTLS_SHA256_ALT
-//#define MBEDTLS_HAL_SHA256_ALT
+#define MBEDTLS_SHA256_ALT
+#define MBEDTLS_HAL_SHA256_ALT
 
 /**
   * @brief ST_HW_CONTEXT_SAVING Enables ST HASH save context
@@ -125,11 +126,13 @@
   *        registers to memory, and then be restored from memory to the HASH
   *        registers.
   *
+	*        Shall be activated if mbedtls_sha256_clone() is used => Y for OT comissionning
+	*
   *        Uncomment a macro to enable ST HASH save context.
   *        Requires: MBEDTLS_SHA256_ALT.
   */
-//#define ST_HW_CONTEXT_SAVING
-
+#define ST_HW_CONTEXT_SAVING
+#endif /* OT_LIGHT */
 #if defined(ST_HW_CONTEXT_SAVING) && (USE_HAL_HASH_SUSPEND_RESUME != 1U)
 #error "Enable USE_HAL_HASH_SUSPEND_RESUME flag to save HASH context"
 #endif /* ST_HW_CONTEXT_SAVING && USE_HAL_HASH_SUSPEND_RESUME */

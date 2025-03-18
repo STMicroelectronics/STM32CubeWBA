@@ -49,12 +49,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wba55g_discovery.h"
-#if (CFG_LCD_SUPPORTED == 1)
-#include "stm32wba55g_discovery_lcd.h"
-#include "stm32_lcd.h"
-#endif /* CFG_LCD_SUPPORTED */
-
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,7 +80,18 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -114,18 +120,12 @@ static AMM_InitParameters_t ammInitConfig =
 };
 
 /* USER CODE BEGIN PV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-JOYPin_TypeDef Joystick_Event;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-uint8_t JOY_StandbyExitFlag = 0;
-uint32_t ADC_High_Threshold;
-uint32_t ADC_Low_Threshold;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -144,15 +144,7 @@ static void APPE_FLASH_MANAGER_Init( void );
 static void APPE_BPKA_Init( void );
 
 /* USER CODE BEGIN PFP */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init( void );
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_LCD_SUPPORTED == 1)
-static void LCD_Init( void );
-#endif /* CFG_LCD_SUPPORTED */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-static void Joystick_Init( uint8_t wkup_mode );
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -195,24 +187,16 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
 
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  Led_Init();
-#endif
+#if (CFG_LED_SUPPORTED == 1)  
+  APP_BSP_LedInit();
+#endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_LCD_SUPPORTED == 1)
-  LCD_Init();
+  APP_BSP_LcdInit();
 #endif /* CFG_LCD_SUPPORTED */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-  Joystick_Init(0);
+  APP_BSP_JoystickInit();
 #endif
-
   /* USER CODE END APPE_Init_1 */
 
   /* Initialize the Ble Public Key Accelerator module */
@@ -230,10 +214,7 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* USER CODE BEGIN APPE_Init_2 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  /* Register Button Tasks */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_JOYSTICK_ID, UTIL_SEQ_RFU, Joystick_ActionHandle);
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
   /* USER CODE END APPE_Init_2 */
 
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
@@ -253,17 +234,7 @@ void MX_APPE_Process(void)
 }
 
 /* USER CODE BEGIN FD */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-__WEAK void Joystick_ActionHandle(void)
-{
-}
 
-void BSP_JOY_Callback(JOY_TypeDef JOY, JOYPin_TypeDef JoyPin)
-{
-  Joystick_Event = JoyPin;
-  UTIL_SEQ_SetTask( 1U << CFG_TASK_JOYSTICK_ID, CFG_SEQ_PRIO_0);
-}
-#endif /* CFG_JOYSTICK_SUPPORTED */
 /* USER CODE END FD */
 
 /*************************************************************
@@ -300,6 +271,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -320,9 +292,14 @@ static void System_Init( void )
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -363,15 +340,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -397,6 +374,15 @@ static void APPE_FLASH_MANAGER_Init(void)
 {
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
+  return;
 }
 
 /**
@@ -421,76 +407,7 @@ static void APPE_AMM_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-#if (CFG_LED_SUPPORTED == 1)
-static void Led_Init( void )
-{
-  /* Leds Initialization */
-  BSP_LED_Init(LED_BLUE);
-}
 
-#endif /* CFG_LED_SUPPORTED */
-#if (CFG_LCD_SUPPORTED == 1)
-  
-static void LCD_Init( void )
-{
-  int32_t   iStatus;
-  
-  /* LCD Initialisation */
-  iStatus = BSP_LCD_Init( 0, LCD_ORIENTATION_LANDSCAPE );
-  if ( iStatus == BSP_ERROR_NONE )
-  {
-    iStatus = BSP_LCD_DisplayOn( 0 );
-  }
-    
-  if ( iStatus == BSP_ERROR_NONE )
-  {      
-    /* LCD Management Initialisation */
-    UTIL_LCD_SetFuncDriver( &LCD_Driver );
-
-    /* Clear the Background Layer */
-    UTIL_LCD_Clear( LCD_COLOR_BLACK );
-
-    /* Select font and Color */
-    UTIL_LCD_SetFont( &Font12 );
-    UTIL_LCD_SetBackColor( LCD_COLOR_BLACK );
-    UTIL_LCD_SetTextColor( LCD_COLOR_WHITE );
-  }
-}
-
-#endif /* CFG_LCD_SUPPORTED */
-
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-static void Joystick_Init( uint8_t wkup_mode )
-{
-  if (wkup_mode == 1)
-  {
-    /* configuration as a WKUP Pin */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin       = JOY1_CHANNEL_GPIO_PIN;
-    GPIO_InitStruct.Mode      = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(JOY1_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
-
-    HAL_NVIC_SetPriority(EXTI1_IRQn, 15, 0);
-    HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-  }
-  else
-  {
-    BSP_JOY_Init(JOY1, JOY_MODE_IT, JOY_ALL);
-    /* reconfiguration of the ADC4 interrupt priority */
-    HAL_NVIC_DisableIRQ(ADC4_IRQn);
-    HAL_NVIC_SetPriority(ADC4_IRQn, 15, 0);
-    HAL_NVIC_EnableIRQ(ADC4_IRQn);
-
-    /* remove end of conversion interrupt */
-    LL_ADC_REG_StopConversion(hjoy_adc[JOY1].Instance);
-    while(LL_ADC_REG_IsConversionOngoing(hjoy_adc[JOY1].Instance) != 0);
-    __HAL_ADC_DISABLE_IT(&hjoy_adc[JOY1], ADC_IT_EOC);
-    LL_ADC_REG_StartConversion(hjoy_adc[JOY1].Instance);
-  }
-}
-#endif  /* CFG_JOYSTICK_SUPPORTED */
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
 /*************************************************************
@@ -561,16 +478,8 @@ void UTIL_SEQ_PostIdle( void )
   UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
-#if ( CFG_LPM_STDBY_SUPPORTED == 1)
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  if(JOY_StandbyExitFlag == 1){
-    BSP_JOY_Init(JOY1, JOY_MODE_IT, JOY_ALL);
-    JOY_StandbyExitFlag = 0;
-  }
-  ADC_Low_Threshold = LL_ADC_GetAnalogWDThresholds(ADC4, LL_ADC_AWD1, LL_ADC_AWD_THRESHOLD_LOW);
-  ADC_High_Threshold = LL_ADC_GetAnalogWDThresholds(ADC4, LL_ADC_AWD1, LL_ADC_AWD_THRESHOLD_HIGH);
-#endif /* CFG_JOYSTICK_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  APP_BSP_PostIdle();
+
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }
@@ -684,6 +593,9 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
+
+  /* Simulate button press from UART commands. */
+  (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
 }

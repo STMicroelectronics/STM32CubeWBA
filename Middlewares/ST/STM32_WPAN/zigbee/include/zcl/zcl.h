@@ -21,9 +21,11 @@ extern "C" {
  * ZCL Debug Logging
  *---------------------------------------------------------------
  */
+#if ((ZB_LOG_MASK_ZCL & CONFIG_ZB_LOG_ALLOWED_MASK) != 0U)
 /*lint -e{762} "Redundantly declared symbol [LINT]" */
 /*lint -e{9004} "previously declared [MISRA Rule 8.5 (REQUIRED)]" */
 extern void ZbLogPrintf(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, ...);
+#endif
 
 /* If not defined, then disable debugging (minimal Flash size) */
 #ifndef CONFIG_ZB_LOG_ALLOWED_MASK
@@ -38,6 +40,7 @@ extern void ZbLogPrintf(struct ZigBeeT *zb, uint32_t mask, const char *hdr, cons
 #define ZCL_LOG_MASK_DEBUG                  0x02 /* General debug (more verbose than INFO) */
 #define ZCL_LOG_MASK_ATTR                   0x04 /* ZCL attributes */
 #define ZCL_LOG_MASK_REPORTS                0x08 /* ZCL reporting */
+#define ZCL_LOG_MASK_SLEEPY                 0x10
 
 /*lint -emacro(506,ZCL_LOG_PRINTF) "Constant value boolean [MISRA Rule 2.1 (REQUIRED)]" */
 /*lint -emacro(774,ZCL_LOG_PRINTF) [ LINT Boolean within 'if' always evaluates to False ] */
@@ -413,6 +416,8 @@ struct ZbZclClusterT {
 
         /* ZbZclClusterReportsSend */
         bool send_all;
+        ZbUptimeT last_send_all;
+
         /**< Set to true if application called ZbZclClusterReportsSend. Otherwise, only send reports based
          * on the attribute's reporting interval and change threshold.  */
         void (*callback)(struct ZbZclClusterT *cluster, unsigned int next_timeout, void *arg);
@@ -882,9 +887,16 @@ enum ZclStatusCodeT ZbZclDiscoverAttrReq(struct ZbZclClusterT *cluster, struct Z
  * Attribute Persistence
  *---------------------------------------------------------------
  */
-/* If an attribute is modified outside of the normal ZCL Write
- * mechanism, the application must call this function to inform
- * the stack to persist the new attribute data. */
+
+/**
+ * The application must call this function to inform the stack to persist the new attribute data,
+ * if the attribute is modified outside of the normal ZCL Write mechanism,
+ * It will be included in the data the next time ZbPersistGet is called.
+ * @param cluster Cluster instance
+ * @param attr_id Attribute causing the persistence update.
+ * @return True if persistence will be updated, false otherwise (e.g. attribute
+ * does not have ZCL_ATTR_FLAG_PERSISTABLE flag set.
+ */
 bool ZbZclAttrPersist(struct ZbZclClusterT *cluster, uint16_t attr_id);
 
 /*---------------------------------------------------------------

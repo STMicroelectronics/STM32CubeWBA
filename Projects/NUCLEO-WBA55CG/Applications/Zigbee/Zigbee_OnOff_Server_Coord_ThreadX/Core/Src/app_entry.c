@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -72,9 +72,23 @@ extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
+#if ( CFG_LPM_LEVEL != 0)
+static bool system_startup_done = FALSE;
+#endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -110,8 +124,11 @@ static TX_SEMAPHORE   AmmSemaphore;
 static TX_THREAD      RngTaskHandle;
 static TX_SEMAPHORE   RngSemaphore;
 
-static TX_THREAD      AppliStartThread;
+static TX_THREAD      AppliTaskHandle;
 
+#if (CFG_LPM_STDBY_SUPPORTED >0)
+static TX_THREAD      IdleTaskHandle;
+#endif
 
 /* USER CODE BEGIN PV */
 
@@ -141,12 +158,17 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 void MX_APPE_InitTask(ULONG lArgument);
 static void RNG_Task_Entry(ULONG lArgument);
 
+#if (CFG_LPM_STDBY_SUPPORTED >0)
+static void IDLE_Task_Entry(ULONG lArgument);
+#endif
+
 #ifndef TX_LOW_POWER_USER_ENTER
 void ThreadXLowPowerUserEnter( void );
 #endif
 #ifndef TX_LOW_POWER_USER_EXIT
 void ThreadXLowPowerUserExit( void );
 #endif
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -192,7 +214,7 @@ void MX_APPE_InitTask( ULONG lArgument )
   MX_APPE_LinkLayerInit();
 
   /* Initialization of the Zigbee Application */
-  /* Must be called in thread context
+  /* Must be called in RTOS context
      due to dependency of ZbInit() on MAC layer semaphore */
   APP_ZIGBEE_ApplicationInit();
 
@@ -200,7 +222,7 @@ void MX_APPE_InitTask( ULONG lArgument )
   /* USER CODE END APPE_Init_Task_2 */
 
   /* Free allocated stack before entering completed state */
-  tx_byte_release(AppliStartThread.tx_thread_stack_start);
+  tx_byte_release(AppliTaskHandle.tx_thread_stack_start);
 }
 
 /**
@@ -236,7 +258,7 @@ uint32_t MX_APPE_Init(void *p_param)
   TXstatus = tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_ZIGBEE_APP_START, TX_NO_WAIT);
   if ( TXstatus == TX_SUCCESS )
   {
-    TXstatus = tx_thread_create( &AppliStartThread, "AppliStart Thread", MX_APPE_InitTask, 0, pStack,
+    TXstatus = tx_thread_create( &AppliTaskHandle, "AppliStart Thread", MX_APPE_InitTask, 0, pStack,
                                        TASK_STACK_SIZE_ZIGBEE_APP_START, TASK_PRIO_ZIGBEE_APP_START, TASK_PREEMP_ZIGBEE_APP_START,
                                        TX_NO_TIME_SLICE, TX_AUTO_START);
   }
@@ -293,6 +315,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -315,6 +338,15 @@ static void System_Init( void )
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
+
+#if ( CFG_LPM_LEVEL != 0)
+  system_startup_done = TRUE;
+  UNUSED(system_startup_done);
+#endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
 }
@@ -359,17 +391,35 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+
+#if (CFG_LPM_STDBY_SUPPORTED >0)
+  UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&IdleTaskHandle, "IDLE Task", IDLE_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_IDLE,
+                                 TASK_PRIO_IDLE, TASK_PREEMP_IDLE,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+  }
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "IDLE ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+#endif /* (CFG_LPM_STDBY_SUPPORTED >0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -463,6 +513,25 @@ static void AMM_Task_Entry(ULONG lArgument)
     tx_thread_relinquish();
   }
 }
+
+#if (CFG_LPM_STDBY_SUPPORTED >0)
+static void IDLE_Task_Entry(ULONG lArgument)
+{
+  UNUSED(lArgument);
+
+  while(1)
+  {
+    /* When no other activities to be done we decide to go in low power
+       This mechansim is in charge to mange low power at application level
+       without the support of ThreadX low power framework */
+    UTILS_ENTER_CRITICAL_SECTION();
+    ThreadXLowPowerUserEnter();
+    ThreadXLowPowerUserExit();
+    UTILS_EXIT_CRITICAL_SECTION();
+    tx_thread_relinquish();
+  }
+}
+#endif
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
@@ -596,14 +665,31 @@ void ThreadXLowPowerUserEnter( void )
 #if ( CFG_LPM_LEVEL != 0 )
   LL_PWR_ClearFlag_STOP();
 
+#if (CFG_LPM_STDBY_SUPPORTED >0)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+  {
+    APP_SYS_BLE_EnterDeepSleep();
+  }
+#endif
+
   LL_RCC_ClearResetFlags();
 
+#if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
-  while ( LL_RCC_HSE_IsReady() == 0 );
+#if (CFG_SCM_SUPPORTED == 1)
+  /* SCM HSE BEGIN */
+  SCM_HSE_WaitUntilReady();
+  /* SCM HSE END */
+#else
+  while (LL_RCC_HSE_IsReady() == 0);
+#endif /* CFG_SCM_SUPPORTED */
 
-  UTILS_ENTER_LIMITED_CRITICAL_SECTION( RCC_INTR_PRIO << 4U );
+  UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO << 4U);
+
   scm_hserdy_isr();
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();
+#endif /* STM32WBAXX_SI_CUT1_0 */
+
   HAL_SuspendTick();
 
   /* Disable SysTick Interrupt */

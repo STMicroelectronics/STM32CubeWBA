@@ -19,11 +19,9 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<div class="row">
-<div class="col-sm-12 col-lg-8">
 <h2 id="ble_audio_pbp_sink-application-description"><strong>BLE_Audio_PBP_Sink Application Description</strong></h2>
 <p>How to use the Public Broadcast profile in Sink role as specified by the Bluetooth SIG.</p>
-<p>PBP Sink application scans and synchronizes audio streams from remote PBP Sources.</p>
+<p>The PBP Sink application scans and synchronizes audio streams from remote PBP Sources. <br></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio</p>
 <h3 id="directory-contents"><strong>Directory contents</strong></h3>
@@ -68,6 +66,7 @@
 <li>BLE_Audio_PBP_Sink/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
 <li>BLE_Audio_PBP_Sink/Core/Src/stm32wbaxx_it.c Interrupt Service Routines.</li>
 <li>BLE_Audio_PBP_Sink/Core/Src/system_stm32wbaxx.c CMSIS Cortex-M33 Device Peripheral Access Layer System Source File</li>
+<li>BLE_Audio_PBP_Sink/STM32_WPAN/App/app_bsp.c BApplication to manage BSP</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/app_ble.c BLE Application</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/pbp_app.c Public Broadcast Profile Application</li>
 <li>BLE_Audio_PBP_Sink/STM32_WPAN/App/AudioUseCases/pbp/pbp.c This file contains Public Broadcast Profile feature</li>
@@ -92,33 +91,33 @@
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This example runs on STM32WBA55xx devices. Connect the Discovery Board to your PC with a USB cable type C. Connect Audio Output on Jack Connector CN3.</li>
-<li>Another Discovery board may be necessary to run PBP Source application.</li>
+<li><p>This example runs on STM32WBA55xx devices with SMPS. <br>Connect the Discovery Board to your PC with a USB cable type C <br>Connect a headset on Jack Connector CN3.</p></li>
+<li><p>Another Discovery board may be necessary to run PBP Source application.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
 <li>Open your preferred toolchain</li>
 <li>Rebuild all files and load your image into target memory</li>
-<li><p>Run the example</p></li>
-<li>Target PBP Source ID is configurable thanks to the aSourceIdList[] table in pbp_app.c
-<ul>
-<li>At startup, PBP Sink starts BLE Scanning and look for remote PBP Source Device associated to the first Source ID.</li>
-<li>SCAN_INTERVAL and SCAN_WINDOW of the scanning are configurable in pbp_app.c file. If CFG_DEBUG_APP_TRACE in app_conf.h is set to 0, the STM32WBA will enter in Low Power while application is scanning when BLE Radio RX/TX activity is OFF.</li>
-<li>PBP Sink starts automatically the Audio Synchronization process once PBP Source is found.</li>
-<li>Joystick Up/Down will cycle through the list of IDs Note : Joystick action could be not detected by application because the Joystick is based on ADC peripheral and the ADC interrupt can only happen when the device has been wakeup by the radio</li>
-<li>Target Source ID is displayed on the LCD interface</li>
-</ul></li>
+<li>Run the example <br> <br></li>
+<li>Target PBP Source ID is configurable thanks to the aSourceIdList[] table in pbp_app.c. <br></li>
+<li><strong>At Startup</strong>, PBP Sink starts BLE Scanning and look for remote PBP Source Device associated to the first Source ID (SCAN_INTERVAL and SCAN_WINDOW of the scanning are configurable in pbp_app.c file.).<br>PBP Sink starts automatically the Audio Synchronization process once PBP Source is found.</li>
+<li>On the PBP Sink device, use Up/Down direction of the Joystick to change the Source ID to synchronize to. Target Source ID is displayed on the LCD interface.</li>
 <li>Power up PBP Source device with Source ID matching with one of the ID listed in PBP Sink application</li>
-<li>Once PBP Source application is started :
-<ul>
-<li>On the PBP Sink device, select with the Joystick the Source ID of the remote PBP Source to synchronize to.</li>
-</ul></li>
+<li>Once PBP Source application is started, on the PBP Sink device, select with the joystick the Source ID of the remote PBP Source to synchronize to.</li>
 <li>Once PBP Sink device is synchronized to PBP Source and Audio Stream is received, Audio is available on Jack Connector.</li>
-<li><p>On the PBP Sink device, you can switch the target PBP Source by changing the Source ID using the Joystick.</p></li>
 </ul>
-</div>
-</div>
+<h3 id="documentation"><strong>Documentation</strong></h3>
+<ul>
+<li>Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+<ul>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Public_Broadcast_Profile"> Bluetooth® Low Energy audio - STM32WBA Public broadcast profile</a></li>
+</ul></li>
+</ul>
 </div>
 </div>
 </body>

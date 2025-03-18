@@ -66,6 +66,16 @@ extern "C" {
 #define HW_CRYPTO_DPA_AES
 
 /**
+  * @brief MBEDTLS_HAL_CCM_ALT Enables ST CCM alternative module to replace mbed
+  *        TLS CCM module by ST CCM alternative implementation based on STM32
+  *        AES hardware accelerator.
+  *
+  *        Uncomment a macro to enable ST CCM hardware alternative module.
+  *        Requires: MBEDTLS_AES_C, MBEDTLS_CCM_C, MBEDTLS_CCM_ALT.
+  */
+#define MBEDTLS_HAL_CCM_ALT
+
+/**
   * @brief MBEDTLS_HAL_GCM_ALT Enables ST GCM alternative module to replace mbed
   *        TLS GCM module by ST GCM alternative implementation based on STM32
   *        AES hardware accelerator.
@@ -105,6 +115,16 @@ extern "C" {
 #if defined(HW_CRYPTO_DPA_GCM) && defined(HW_CRYPTO_DPA_CTR_FOR_GCM)
 #error "HW_CRYPTO_DPA_GCM and HW_CRYPTO_DPA_CTR_FOR_GCM cannot be defined simultaneously"
 #endif /* HW_CRYPTO_DPA_GCM && HW_CRYPTO_DPA_CTR_FOR_GCM */
+
+/**
+  * @brief MBEDTLS_HAL_SHA1_ALT Enables ST SHA-1 alternative module to replace
+  *        mbed TLS SHA-1 module by ST SHA-1 alternative implementation based
+  *        on STM32 HASH hardware accelerator.
+  *
+  *        Uncomment a macro to enable ST SHA1 hardware alternative module.
+  *        Requires: MBEDTLS_SHA1_C, MBEDTLS_SHA1_ALT.
+  */
+#define MBEDTLS_HAL_SHA1_ALT
 
 /**
   * @brief MBEDTLS_HAL_SHA256_ALT Enables ST SHA-224 and SHA-256 alternative

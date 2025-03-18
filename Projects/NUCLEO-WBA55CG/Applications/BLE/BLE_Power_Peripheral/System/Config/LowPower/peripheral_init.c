@@ -106,13 +106,13 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&hrng, 0, sizeof(hrng));
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
-#if(CFG_LPM_LEVEL == 0 )
+#if(CFG_LPM_LEVEL != 2 )
   MX_GPIO_Init();
 #endif
   MX_RNG_Init();
-#if (CFG_SW_HSE_WORKAROUND == 1)
-  MX_TIM16_Init();
-#endif /* CFG_SW_HSE_WORKAROUND */
+
+
+
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
@@ -131,3 +131,4 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

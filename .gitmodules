@@ -26,3 +26,15 @@
 	path = Drivers/BSP/Components/ssd1315
 	url = https://github.com/STMicroelectronics/stm32-ssd1315.git
 	branch = main
+[submodule "Drivers/BSP/Components/ism330dhcx"]
+	path = Drivers/BSP/Components/ism330dhcx
+	url = https://github.com/STMicroelectronics/stm32-ism330dhcx
+	branch = main
+[submodule "Drivers/BSP/Components/m24256"]
+	path = Drivers/BSP/Components/m24256
+	url = https://github.com/STMicroelectronics/stm32-m24256
+	branch = main
+[submodule "Drivers/BSP/Components/wm8904"]
+	path = Drivers/BSP/Components/wm8904
+	url = https://github.com/STMicroelectronics/stm32-wm8904
+	branch = main

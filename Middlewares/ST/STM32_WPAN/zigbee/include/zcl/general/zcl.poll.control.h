@@ -2,7 +2,7 @@
  * @file zcl.poll.control.h
  * @heading Poll Control
  * @brief ZCL Poll Control cluster header
- * @copyright Copyright [2019 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2019 - 2024] Exegin Technologies Limited. All rights reserved.
  *
  * ZCL 8 section 3.16
  *
@@ -65,14 +65,33 @@
 
 /** Poll Control Server Attribute IDs */
 enum ZbZclPollControlSvrAttrT {
-    ZCL_POLL_CHECK_IN_INTERVAL = 0x0000, /**< Check-inInterval */
-    ZCL_POLL_LONG_POLL_INTERVAL = 0x0001, /**< LongPollInterval */
-    ZCL_POLL_SHORT_POLL_INTERVAL = 0x0002, /**< ShortPollInterval */
-    ZCL_POLL_FAST_POLL_TIMEOUT = 0x0003, /**< FastPollTimeout */
-    ZCL_POLL_CHECK_IN_INTERVAL_MIN = 0x0004, /**< Check-inIntervalMin (Optional) */
-    ZCL_POLL_LONG_POLL_INTERVAL_MIN = 0x0005, /**< LongPollIntervalMin (Optional) */
-    ZCL_POLL_FAST_POLL_TIMEOUT_MAX = 0x0006, /**< FastPollTimeoutMax (Optional) */
+    ZCL_POLL_CHECK_IN_INTERVAL = 0x0000,
+    /**< Check-inInterval. Range is (0, 0x6E0000), where 0 means disabled.
+     * 0x6E0000 = 7208960 qs = ~500 hours.
+     * Other than 0, the Min value is also governed by ZCL_POLL_CHECK_IN_INTERVAL_MIN. */
+
+    ZCL_POLL_LONG_POLL_INTERVAL = 0x0001,
+    /**< LongPollInterval. Range is (0x04, 0x6E0000) = (1 sec, ~500 hours).
+     * Min value is also governed by the value of ZCL_POLL_LONG_POLL_INTERVAL_MIN. */
+
+    ZCL_POLL_SHORT_POLL_INTERVAL = 0x0002,
+    /**< ShortPollInterval. Range is (1, 4) = (250 ms, 1 sec) */
+
+    ZCL_POLL_FAST_POLL_TIMEOUT = 0x0003,
+    /**< FastPollTimeout. Range is (0x0001, 0xffff) = (250 ms, 4.55 hours).
+     * Max value is also governed by the value of ZCL_POLL_FAST_POLL_TIMEOUT_MAX. */
+
+    ZCL_POLL_CHECK_IN_INTERVAL_MIN = 0x0004,
+    /**< Check-inIntervalMin (Optional). Range is (0, 0x6E0000) */
+
+    ZCL_POLL_LONG_POLL_INTERVAL_MIN = 0x0005,
+    /**< LongPollIntervalMin (Optional). Range is (0x4, 0x6E0000) */
+
+    ZCL_POLL_FAST_POLL_TIMEOUT_MAX = 0x0006,
+    /**< FastPollTimeoutMax (Optional). Range is (0x2, 0xffff) */
+
     /* discontinuity */
+
     ZCL_POLL_LONG_POLL_FROM_CLUSTER = 0x7ffe,
     /**< If True, the Poll Server cluster will perform the NLME-SYNC.request (polling)
      * at the interval given by the 'LongPollInterval' (ZCL_POLL_LONG_POLL_INTERVAL).
@@ -81,13 +100,14 @@ enum ZbZclPollControlSvrAttrT {
      * responsible for any long polling it wants to do.
      * Default is False (disabled), meaning the cluster will not perform an
      * NLME-SYNC.request at the long poll intervals. */
+
     ZCL_POLL_CHECK_IN_RSP_WAIT_AFTER = 0x7fff,
     /**< If True, then wait for the full check-in response timeout before
      * stopping fast-polling for responses. If False, then as soon as the
      * number of received check-in responses matches the number of bound
      * clients, then stop fast-polling immediately.
      * Note that this is an Exegin custom attribute and not exposed to
-     * the network. (Optional) */
+     * the network. */
 
 };
 

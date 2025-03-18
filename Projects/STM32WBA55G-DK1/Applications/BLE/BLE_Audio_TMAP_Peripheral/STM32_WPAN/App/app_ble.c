@@ -64,6 +64,14 @@ typedef struct
   uint16_t                      ServiceChangedCharDescHandle;
   uint16_t                      ServiceChangedCharEndHandle;
 }GattService_t;
+
+typedef struct
+{
+  uint16_t         ConnHandle;
+  uint8_t          RemoteAddressType;
+  uint8_t          aRemoteAddress[6u];
+  GattService_t    GattService;
+} BleConn_t;
 /* USER CODE END PTD */
 
 /* Security parameters structure */
@@ -133,12 +141,10 @@ typedef struct
 {
   BleGlobalContext_t BleApplicationContext_legacy;
   /* USER CODE BEGIN PTD_1 */
-  uint16_t         ConnHandle;
-  uint8_t          RemoteAddressType;
-  uint8_t          aRemoteAddress[6u];
-  GattService_t    GattService;
-  uint16_t         GapServiceHandle;
-  uint16_t         GapAppearanceCharHandle;
+  BleConn_t          BleConn[CFG_BLE_NUM_LINK];
+  uint16_t           ConnHandle;
+  uint16_t           GapServiceHandle;
+  uint16_t           GapAppearanceCharHandle;
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
 
@@ -161,7 +167,7 @@ typedef struct
 #define ADV_TIMEOUT_MS                 (60 * 1000)
 #define GATTSERVICE_GATT_DATABASE_SIZE (8u)
 #define BLENVM_GATTSERVICE_HDR_LEN     (12u)
-#define GATTSERVICE_NVM_TYPE           (0x0B)
+#define GATTSERVICE_NVM_TYPE           (0x0A)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -212,9 +218,10 @@ static const uint8_t* BleGenerateERValue(void);
 static void BLE_NvmCallback (SNVMA_Callback_Status_t);
 static uint8_t HOST_BLE_Init(void);
 /* USER CODE BEGIN PFP */
+static BleConn_t *Ble_GetConn(uint16_t ConnHandle);
 static char Hex_To_Char(uint8_t Hex);
-static void GATTService_RestoreDatabase(void);
-static void GATTService_StoreDatabase(void);
+static void GATTService_RestoreDatabase(BleConn_t *pConn);
+static void GATTService_StoreDatabase(BleConn_t *pConn);
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -301,6 +308,17 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       LOG_INFO_APP("     - Connection Handle:   0x%04X\n     - Reason:    0x%02X\n",
                   p_disconnection_complete_event->Connection_Handle,
                   p_disconnection_complete_event->Reason);
+      BleConn_t *p_conn = Ble_GetConn( p_disconnection_complete_event->Connection_Handle);
+      if (p_conn != 0)
+      {
+        p_conn->ConnHandle = 0xFFFFu;
+        p_conn->GattService.StartHandle = 0;
+        p_conn->GattService.EndHandle = 0;
+        p_conn->GattService.LinkupState = GATT_SERVICE_LINKUP_IDLE;
+        p_conn->GattService.ServiceChangedCharHandle = 0;
+        p_conn->GattService.ServiceChangedCharEndHandle = 0;
+        p_conn->GattService.ServiceChangedCharHandle = 0;
+      }
       TMAPAPP_LinkDisconnected(p_disconnection_complete_event->Connection_Handle,
                                p_disconnection_complete_event->Reason);
 
@@ -365,6 +383,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_enhanced_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
           uint16_t conn_interval_us = 0;
+          uint8_t type, a_address[6];
           conn_interval_us = p_enhanced_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n", p_enhanced_conn_complete->Connection_Handle);
           LOG_INFO_APP("     - Connection established with @:%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -380,8 +399,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_enhanced_conn_complete->Conn_Latency,
                       p_enhanced_conn_complete->Supervision_Timeout * 10
                      );
-          if (aci_gap_is_device_bonded(p_enhanced_conn_complete->Peer_Address_Type,
-                                      &p_enhanced_conn_complete->Peer_Address[0]) == BLE_STATUS_SUCCESS)
+          if (aci_gap_check_bonded_device(p_enhanced_conn_complete->Peer_Address_Type,
+                                      &p_enhanced_conn_complete->Peer_Address[0],
+                                      &type,
+                                      a_address ) == BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP(">>== device is already bonded\n");
           }
@@ -391,6 +412,16 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           }
           if (p_enhanced_conn_complete->Status == 0)
           {
+            BleConn_t *p_conn;
+            for (uint8_t conn = 0; conn < CFG_BLE_NUM_LINK ; conn++)
+            {
+              if (bleAppContext.BleConn[conn].ConnHandle == 0xFFFF)
+              {
+                p_conn = &bleAppContext.BleConn[conn];
+                bleAppContext.BleConn[conn].ConnHandle = p_enhanced_conn_complete->Connection_Handle;
+                break;
+              }
+            }
             if (p_enhanced_conn_complete->Role == 0x01)
             {
               uint8_t status;
@@ -402,9 +433,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
               }
             }
 
-            bleAppContext.RemoteAddressType = p_enhanced_conn_complete->Peer_Address_Type;
-            MEMCPY(bleAppContext.aRemoteAddress, p_enhanced_conn_complete->Peer_Address, 6u);
-            GATTService_RestoreDatabase();
+            p_conn->RemoteAddressType = p_enhanced_conn_complete->Peer_Address_Type;
+            MEMCPY(p_conn->aRemoteAddress, p_enhanced_conn_complete->Peer_Address, 6u);
+            GATTService_RestoreDatabase(p_conn);
 
             TMAPAPP_AclConnected(p_enhanced_conn_complete->Connection_Handle,
                                 p_enhanced_conn_complete->Peer_Address_Type,
@@ -426,6 +457,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
           uint16_t conn_interval_us = 0;
+          uint8_t type, a_address[6];
           conn_interval_us = p_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n", p_conn_complete->Connection_Handle);
           LOG_INFO_APP("     - Connection established with @:%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -441,8 +473,10 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
                       p_conn_complete->Conn_Latency,
                       p_conn_complete->Supervision_Timeout * 10
                      );
-          if (aci_gap_is_device_bonded(p_conn_complete->Peer_Address_Type,
-                        &p_conn_complete->Peer_Address[0]) == BLE_STATUS_SUCCESS)
+          if (aci_gap_check_bonded_device(p_conn_complete->Peer_Address_Type,
+                                          &p_conn_complete->Peer_Address[0],
+                                          &type,
+                                          a_address ) == BLE_STATUS_SUCCESS)
           {
             LOG_INFO_APP(">>== device is already bonded\n");
           }
@@ -452,6 +486,16 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           }
           if (p_conn_complete->Status == 0)
           {
+            BleConn_t *p_conn;
+            for (uint8_t conn = 0; conn < CFG_BLE_NUM_LINK ; conn++)
+            {
+              if (bleAppContext.BleConn[conn].ConnHandle == 0xFFFF)
+              {
+                p_conn = &bleAppContext.BleConn[conn];
+                bleAppContext.BleConn[conn].ConnHandle = p_conn_complete->Connection_Handle;
+                break;
+              }
+            }
             if (p_conn_complete->Role == 0x01)
             {
               uint8_t status;
@@ -463,9 +507,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
               }
             }
 
-            bleAppContext.RemoteAddressType = p_conn_complete->Peer_Address_Type;
-            MEMCPY(bleAppContext.aRemoteAddress, p_conn_complete->Peer_Address, 6u);
-            GATTService_RestoreDatabase();
+            p_conn->RemoteAddressType = p_conn_complete->Peer_Address_Type;
+            MEMCPY(p_conn->aRemoteAddress, p_conn_complete->Peer_Address, 6u);
+            GATTService_RestoreDatabase(p_conn);
 
             TMAPAPP_AclConnected(p_conn_complete->Connection_Handle,
                                 p_conn_complete->Peer_Address_Type,
@@ -506,6 +550,34 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
             }
         }
         break;
+        case HCI_LE_CIS_ESTABLISHED_V2_SUBEVT_CODE:
+        {
+            hci_le_cis_established_v2_event_rp0 *p_cis_established_event;
+            p_cis_established_event = (hci_le_cis_established_v2_event_rp0 *) p_meta_evt->data;
+            LOG_INFO_APP(">>== HCI_LE_CIS_ESTABLISHED_V2_SUBEVT_CODE - CIS Connection handle: 0x%04X  - Status 0x%02X\n",
+                         p_cis_established_event->Connection_Handle,
+                         p_cis_established_event->Status);
+            if (p_cis_established_event->Status == BLE_STATUS_SUCCESS)
+            {
+              TMAPAPP_CISConnected(p_cis_established_event->Connection_Handle);
+            }
+        }
+        break;
+#if ((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)
+        case HCI_LE_PERIODIC_ADVERTISING_SYNC_TRANSFER_RECEIVED_SUBEVT_CODE:
+        {
+          hci_le_periodic_advertising_sync_transfer_received_event_rp0 *past_received_event =
+          (hci_le_periodic_advertising_sync_transfer_received_event_rp0 *) p_meta_evt->data;
+          LOG_INFO_APP(">>== HCI_LE_PERIODIC_ADVERTISING_SYNC_TRANSFER_RECEIVED_SUBEVT_CODE - ACL Connection handle: 0x%04X  - Status 0x%02X\n",
+                       past_received_event->Connection_Handle,
+                       past_received_event->Status);
+          if (past_received_event->Status == BLE_STATUS_SUCCESS)
+          {
+            TMAPAPP_Context.BSNK.PASyncState = APP_PA_SYNC_STATE_SYNCHRONIZED;
+          }
+        }
+        break;
+#endif /* ((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) */
 
         /* USER CODE END SUBEVENT */
         default:
@@ -598,30 +670,34 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
           if (p_pairing_complete->Status == BLE_STATUS_SUCCESS)
           {
+            BleConn_t *p_conn = Ble_GetConn( p_pairing_complete->Connection_Handle);
             const UUID_t uuid = {GENERIC_ATTRIBUTE_SERVICE_UUID};
             tBleStatus status;
             LOG_INFO_APP("Pairing Complete with connection handle 0x%04X\n", p_pairing_complete->Connection_Handle);
             Menu_SetNoStreamPage();
 
-            if (bleAppContext.GattService.StartHandle == 0x0000)
+            if (p_conn != 0)
             {
-              /* Start Gatt Service Discovery */
-              status = aci_gatt_disc_primary_service_by_uuid(p_pairing_complete->Connection_Handle, 0x01, &uuid);
-              LOG_INFO_APP(">>== aci_gatt_disc_primary_service_by_uuid with status %02X\n", status);
-
-              if (status == BLE_STATUS_SUCCESS)
+              if (p_conn->GattService.StartHandle == 0x0000)
               {
-                bleAppContext.GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_SERVICE;
+                /* Start Gatt Service Discovery */
+                status = aci_gatt_disc_primary_service_by_uuid(p_pairing_complete->Connection_Handle, 0x01, &uuid);
+                LOG_INFO_APP(">>== aci_gatt_disc_primary_service_by_uuid with status %02X\n", status);
+
+                if (status == BLE_STATUS_SUCCESS)
+                {
+                  p_conn->GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_SERVICE;
+                }
+                else
+                {
+                  TMAPAPP_Linkup(p_pairing_complete->Connection_Handle);
+                }
               }
               else
               {
+                /* Start TMAP App Linkup */
                 TMAPAPP_Linkup(p_pairing_complete->Connection_Handle);
               }
-            }
-            else
-            {
-              /* Start TMAP App Linkup */
-              TMAPAPP_Linkup(p_pairing_complete->Connection_Handle);
             }
           }
           break;
@@ -685,17 +761,21 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           aci_gatt_indication_event_rp0 *p_indication;
           tBleStatus ret;
           p_indication = (aci_gatt_indication_event_rp0*)p_blecore_evt->data;
+          BleConn_t *p_conn = Ble_GetConn( p_indication->Connection_Handle);
           LOG_INFO_APP(">>== ACI_GATT_INDICATION_VSEVT_CODE\n");
           LOG_INFO_APP(">>== Connection_Handle : 0x%04X\n", p_indication->Connection_Handle);
           LOG_INFO_APP(">>== Attribute_Handle : 0x%04X\n", p_indication->Attribute_Handle);
           LOG_INFO_APP(">>== Attribute_Value_Length : 0x%02X\n", p_indication->Attribute_Value_Length);
           LOG_INFO_APP(">>== ACI_GATT_INDICATION_VSEVT_CODE\n");
 
-          if (p_indication->Attribute_Handle == bleAppContext.GattService.ServiceChangedCharDescHandle)
+          if (p_conn != 0)
           {
-          	LOG_INFO_APP(">>== Service Changed Notified\n");
-            /* Remote device notifies Service Changed : perform complete linkup */
-            TMAPAPP_BondLost(p_indication->Connection_Handle);
+            if (p_indication->Attribute_Handle == p_conn->GattService.ServiceChangedCharDescHandle)
+            {
+              LOG_INFO_APP(">>== Service Changed Notified\n");
+              /* Remote device notifies Service Changed : perform complete linkup */
+              TMAPAPP_BondLost(p_indication->Connection_Handle);
+            }
           }
 
           ret = aci_gatt_confirm_indication(p_indication->Connection_Handle);
@@ -752,27 +832,32 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_ATT_FIND_BY_TYPE_VALUE_RESP_VSEVT_CODE:
         {
           aci_att_find_by_type_value_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
+          BleConn_t *p_conn = Ble_GetConn( pr->Connection_Handle);
           LOG_INFO_APP(">>== ACI_ATT_FIND_BY_TYPE_VALUE_RESP_VSEVT_CODE\n");
-
-          if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_SERVICE && pr->Num_of_Handle_Pair == 1)
+          if (p_conn != 0)
           {
-            /* Retrieve Gatt Service Handles */
-            bleAppContext.GattService.StartHandle = pr->Attribute_Group_Handle_Pair[0].Found_Attribute_Handle;
-            bleAppContext.GattService.EndHandle = pr->Attribute_Group_Handle_Pair[0].Group_End_Handle;
+            if (p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_SERVICE && pr->Num_of_Handle_Pair == 1)
+            {
+              /* Retrieve Gatt Service Handles */
+              p_conn->GattService.StartHandle = pr->Attribute_Group_Handle_Pair[0].Found_Attribute_Handle;
+              p_conn->GattService.EndHandle = pr->Attribute_Group_Handle_Pair[0].Group_End_Handle;
+            }
           }
-
           break;
         }
 
         case ACI_GATT_DISC_READ_CHAR_BY_UUID_RESP_VSEVT_CODE:
         {
           aci_gatt_disc_read_char_by_uuid_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
+          BleConn_t *p_conn = Ble_GetConn( pr->Connection_Handle);
           LOG_INFO_APP(">>== ACI_GATT_DISC_READ_CHAR_BY_UUID_RESP_VSEVT_CODE\n");
-
-          if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR)
+          if (p_conn != 0)
           {
-            /* Retrieve Service Changed Characteristic Handle */
-            bleAppContext.GattService.ServiceChangedCharHandle = pr->Attribute_Handle;
+            if (p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR)
+            {
+              /* Retrieve Service Changed Characteristic Handle */
+              p_conn->GattService.ServiceChangedCharHandle = pr->Attribute_Handle;
+            }
           }
           break;
         }
@@ -780,14 +865,18 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         case ACI_ATT_FIND_INFO_RESP_VSEVT_CODE:
         {
           aci_att_find_info_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
+          BleConn_t *p_conn = Ble_GetConn( pr->Connection_Handle);
           LOG_INFO_APP(">>== ACI_ATT_FIND_INFO_RESP_VSEVT_CODE\n");
 
-          if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR_DESC
-              && pr->Event_Data_Length >= 4
-                && (pr->Handle_UUID_Pair[2] + (pr->Handle_UUID_Pair[3] << 8) == SERVICE_CHANGED_CHARACTERISTIC_UUID))
+          if (p_conn != 0)
           {
-            /* Retrieve Service Changed Characteristic Descriptor Handle */
-            bleAppContext.GattService.ServiceChangedCharDescHandle = pr->Handle_UUID_Pair[0] + (pr->Handle_UUID_Pair[1] << 8);
+            if ((p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR_DESC) \
+                && (pr->Event_Data_Length >= 4) \
+                && (pr->Handle_UUID_Pair[2] + (pr->Handle_UUID_Pair[3] << 8) == SERVICE_CHANGED_CHARACTERISTIC_UUID))
+            {
+              /* Retrieve Service Changed Characteristic Descriptor Handle */
+              p_conn->GattService.ServiceChangedCharDescHandle = pr->Handle_UUID_Pair[0] + (pr->Handle_UUID_Pair[1] << 8);
+            }
           }
           break;
         }
@@ -796,79 +885,80 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         {
           tBleStatus status;
           aci_gatt_proc_complete_event_rp0 *pr = (void*)p_blecore_evt->data;
+          BleConn_t *p_conn = Ble_GetConn( pr->Connection_Handle);
           LOG_INFO_APP(">>== ACI_GATT_PROC_COMPLETE_VSEVT_CODE\n");
 
-          if (pr->Connection_Handle == bleAppContext.ConnHandle
-              && pr->Error_Code == BLE_STATUS_SUCCESS)
+
+          if ((p_conn != 0) && (pr->Error_Code == BLE_STATUS_SUCCESS))
           {
-            if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_SERVICE)
+            if (p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_SERVICE)
             {
-              if (bleAppContext.GattService.StartHandle != 0)
+              if (p_conn->GattService.StartHandle != 0)
               {
                 const UUID_t uuid = { SERVICE_CHANGED_CHARACTERISTIC_UUID };
                 /* Start Service Changed Characteristic Discovery */
-                status = aci_gatt_disc_char_by_uuid(bleAppContext.ConnHandle,
-                                                    bleAppContext.GattService.StartHandle,
-                                                    bleAppContext.GattService.EndHandle,
+                status = aci_gatt_disc_char_by_uuid(p_conn->ConnHandle,
+                                                    p_conn->GattService.StartHandle,
+                                                    p_conn->GattService.EndHandle,
                                                     0x01, &uuid);
                 LOG_INFO_APP(">>== aci_gatt_disc_char_by_uuid with status %02X\n", status);
 
                 if (status == BLE_STATUS_SUCCESS)
                 {
-                  bleAppContext.GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_CHAR;
+                  p_conn->GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_CHAR;
                 }
                 else
                 {
-                  TMAPAPP_Linkup(bleAppContext.ConnHandle);
+                  TMAPAPP_Linkup(p_conn->ConnHandle);
                 }
               }
               else
               {
                 /* No Gatt Service found */
-                TMAPAPP_Linkup(bleAppContext.ConnHandle);
+                TMAPAPP_Linkup(p_conn->ConnHandle);
               }
             }
-            else if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR)
+            else if (p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR)
             {
-              if (bleAppContext.GattService.ServiceChangedCharHandle != 0)
+              if (p_conn->GattService.ServiceChangedCharHandle != 0)
               {
                 tBleStatus status;
                 /* Start Service Changed Characteristic Descriptor */
-                status  = aci_gatt_disc_all_char_desc(bleAppContext.ConnHandle,
-                                                      bleAppContext.GattService.ServiceChangedCharHandle,
-                                                      bleAppContext.GattService.EndHandle);
+                status  = aci_gatt_disc_all_char_desc(p_conn->ConnHandle,
+                                                      p_conn->GattService.ServiceChangedCharHandle,
+                                                      p_conn->GattService.EndHandle);
                 LOG_INFO_APP(">>== aci_gatt_disc_all_char_desc with status %02X\n", status);
 
                 if (status == BLE_STATUS_SUCCESS)
                 {
-                  bleAppContext.GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_CHAR_DESC;
+                  p_conn->GattService.LinkupState = GATT_SERVICE_LINKUP_DISC_CHAR_DESC;
                 }
                 else
                 {
                   /* No Service changed characteristic */
-                  TMAPAPP_Linkup(bleAppContext.ConnHandle);
+                  TMAPAPP_Linkup(p_conn->ConnHandle);
                 }
               }
               else
               {
-                TMAPAPP_Linkup(bleAppContext.ConnHandle);
+                TMAPAPP_Linkup(p_conn->ConnHandle);
               }
             }
-            else if (bleAppContext.GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR_DESC)
+            else if (p_conn->GattService.LinkupState == GATT_SERVICE_LINKUP_DISC_CHAR_DESC)
             {
               /* End of Gatt Service Linkup: Store database and start TMAP App Linkup */
-              if (bleAppContext.GattService.ServiceChangedCharDescHandle != 0)
+              if (p_conn->GattService.ServiceChangedCharDescHandle != 0)
               {
-                bleAppContext.GattService.LinkupState = GATT_SERVICE_LINKUP_COMPLETE;
-                GATTService_StoreDatabase();
+                p_conn->GattService.LinkupState = GATT_SERVICE_LINKUP_COMPLETE;
+                GATTService_StoreDatabase(p_conn);
 
                 LOG_INFO_APP("Discovered GATT Service\n");
-                LOG_INFO_APP("StartHandle=%04d\n", bleAppContext.GattService.StartHandle);
-                LOG_INFO_APP("EndHandle=%04d\n", bleAppContext.GattService.EndHandle);
-                LOG_INFO_APP("ServiceChangedCharHandle=%04d\n", bleAppContext.GattService.ServiceChangedCharHandle);
-                LOG_INFO_APP("ServiceChangedCharDescHandle=%04d\n", bleAppContext.GattService.ServiceChangedCharDescHandle);
+                LOG_INFO_APP("StartHandle=%04d\n", p_conn->GattService.StartHandle);
+                LOG_INFO_APP("EndHandle=%04d\n", p_conn->GattService.EndHandle);
+                LOG_INFO_APP("ServiceChangedCharHandle=%04d\n", p_conn->GattService.ServiceChangedCharHandle);
+                LOG_INFO_APP("ServiceChangedCharDescHandle=%04d\n", p_conn->GattService.ServiceChangedCharDescHandle);
               }
-              TMAPAPP_Linkup(bleAppContext.ConnHandle);
+              TMAPAPP_Linkup(p_conn->ConnHandle);
             }
           }
 
@@ -977,7 +1067,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   tBleStatus ret;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init */
-  uint8_t a_hci_commandParams[8] = {0xFFu,0xF7u,0x06u,0xBFu,0x03u,0x00u,0x00u,0x00u};
+  uint8_t a_hci_commandParams[8] = {0xFFu,0xF7u,0x86u,0xBFu,0x03u,0x00u,0x00u,0x00u};
   /* Mask the HAL Events*/
   aci_hal_set_event_mask(0x00000000);
 
@@ -1190,6 +1280,16 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   }
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2 */
+  for (uint8_t conn = 0; conn < CFG_BLE_NUM_LINK ; conn++)
+  {
+    bleAppContext.BleConn[conn].ConnHandle = 0xFFFFu;
+    bleAppContext.BleConn[conn].GattService.StartHandle = 0;
+    bleAppContext.BleConn[conn].GattService.EndHandle = 0;
+    bleAppContext.BleConn[conn].GattService.LinkupState = GATT_SERVICE_LINKUP_IDLE;
+    bleAppContext.BleConn[conn].GattService.ServiceChangedCharHandle = 0;
+    bleAppContext.BleConn[conn].GattService.ServiceChangedCharEndHandle = 0;
+    bleAppContext.BleConn[conn].GattService.ServiceChangedCharHandle = 0;
+  }
 
   /* USER CODE END Ble_Hci_Gap_Gatt_Init_2 */
 
@@ -1457,6 +1557,17 @@ static void BLE_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
+static BleConn_t *Ble_GetConn(uint16_t ConnHandle)
+{
+  for (uint8_t conn = 0; conn < CFG_BLE_NUM_LINK ; conn++)
+  {
+    if (bleAppContext.BleConn[conn].ConnHandle == ConnHandle)
+    {
+      return &bleAppContext.BleConn[conn];
+    }
+  }
+  return 0;
+}
 
 static char Hex_To_Char(uint8_t Hex)
 {
@@ -1470,148 +1581,140 @@ static char Hex_To_Char(uint8_t Hex)
   }
 }
 
-static void GATTService_StoreDatabase(void)
+static void GATTService_StoreDatabase(BleConn_t *pConn)
 {
+#if (CFG_LOG_SUPPORTED != 0)
   tBleStatus status;
+#endif /*(CFG_LOG_SUPPORTED != 0)*/
   uint8_t addr[6u];
+  uint8_t type;
   uint8_t temp_database[GATTSERVICE_GATT_DATABASE_SIZE];
   uint32_t hdr[BLENVM_GATTSERVICE_HDR_LEN / 4];
   uint8_t mode = NVM_FIRST;
   int res;
 
-  if (bleAppContext.RemoteAddressType == 1u && ((bleAppContext.aRemoteAddress[5] & 0xC0U) == 0x40U))
+  if (aci_gap_check_bonded_device(pConn->RemoteAddressType,
+                                  &pConn->aRemoteAddress[0],
+                                  &type,
+                                  addr) == BLE_STATUS_SUCCESS)
   {
-    status = aci_gap_resolve_private_addr( &bleAppContext.aRemoteAddress[0], &addr[0]);
-    if (status != BLE_STATUS_SUCCESS)
-    {
-      return;
-    }
-  }
-  else
-  {
-    MEMCPY(addr, bleAppContext.aRemoteAddress, 6u);
-  }
+    temp_database[0] = pConn->GattService.StartHandle & 0xFF;
+    temp_database[1] = (pConn->GattService.StartHandle >> 8) & 0xFF;
+    temp_database[2] = pConn->GattService.EndHandle & 0xFF;
+    temp_database[3] = (pConn->GattService.EndHandle >> 8) & 0xFF;
+    temp_database[4] = pConn->GattService.ServiceChangedCharHandle & 0xFF;
+    temp_database[5] = (pConn->GattService.ServiceChangedCharHandle >> 8) & 0xFF;
+    temp_database[6] = pConn->GattService.ServiceChangedCharDescHandle & 0xFF;
+    temp_database[7] = (pConn->GattService.ServiceChangedCharDescHandle >> 8) & 0xFF;
 
-  temp_database[0] = bleAppContext.GattService.StartHandle & 0xFF;
-  temp_database[1] = (bleAppContext.GattService.StartHandle >> 8) & 0xFF;
-  temp_database[2] = bleAppContext.GattService.EndHandle & 0xFF;
-  temp_database[3] = (bleAppContext.GattService.EndHandle >> 8) & 0xFF;
-  temp_database[4] = bleAppContext.GattService.ServiceChangedCharHandle & 0xFF;
-  temp_database[5] = (bleAppContext.GattService.ServiceChangedCharHandle >> 8) & 0xFF;
-  temp_database[6] = bleAppContext.GattService.ServiceChangedCharDescHandle & 0xFF;
-  temp_database[7] = (bleAppContext.GattService.ServiceChangedCharDescHandle >> 8) & 0xFF;
-
-  while (1)
-  {
-    /* Get the header part of each record in order to find if there is already in NVM some data corresponding
-     * to the same remote device address
-     */
-    res = NVM_Get(mode, GATTSERVICE_NVM_TYPE, 0, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN);
-    mode = NVM_NEXT;
-    if (res == NVM_EOF)
+    while (1)
     {
-      /* Reached EOF */
-      break;
+      /* Get the header part of each record in order to find if there is already in NVM some data corresponding
+       * to the same remote device address
+       */
+      res = NVM_Get(mode, GATTSERVICE_NVM_TYPE, 0, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN);
+      mode = NVM_NEXT;
+      if (res == NVM_EOF)
+      {
+        /* Reached EOF */
+        break;
+      }
+
+      if (MEMCMP(&((uint8_t*)hdr)[1], addr, 6u) == 0)
+      {
+        break;
+      }
     }
 
-    if (MEMCMP(&((uint8_t*)hdr)[1], addr, 6u) == 0)
+    if (res != NVM_EOF)
     {
-      break;
+      if (NVM_Compare(BLENVM_GATTSERVICE_HDR_LEN, temp_database, GATTSERVICE_GATT_DATABASE_SIZE) == 0)
+      {
+        /* No Database change */
+        LOG_INFO_APP("No change in Gatt Service database\n");
+        return;
+      }
+
+      /* Invalidate current record because data has changed */
+      NVM_Discard(2);
+      LOG_INFO_APP("Discard Gatt Service NVM Record\n");
     }
-  }
 
-  if (res != NVM_EOF)
-  {
-    if (NVM_Compare(BLENVM_GATTSERVICE_HDR_LEN, temp_database, GATTSERVICE_GATT_DATABASE_SIZE) == 0)
-    {
-      /* No Database change */
-      LOG_INFO_APP("No change in Gatt Service database\n", status);
-      return;
-    }
+    ((uint8_t*)(hdr + 0))[0] = 0xFDU;
+    ((uint8_t*)(hdr + 0))[1] = addr[0];
+    ((uint8_t*)(hdr + 0))[2] = addr[1];
+    ((uint8_t*)(hdr + 0))[3] = addr[2];
+    ((uint8_t*)(hdr + 1))[0] = addr[3];
+    ((uint8_t*)(hdr + 1))[1] = addr[4];
+    ((uint8_t*)(hdr + 1))[2] = addr[5];
+    ((uint8_t*)(hdr + 1))[3] = 0xFFU;
 
-    /* Invalidate current record because data has changed */
-    NVM_Discard(2);
-    LOG_INFO_APP("Discard Gatt Service NVM Record\n", status);
-  }
-
-  ((uint8_t*)(hdr + 0))[0] = 0xFDU;
-  ((uint8_t*)(hdr + 0))[1] = addr[0];
-  ((uint8_t*)(hdr + 0))[2] = addr[1];
-  ((uint8_t*)(hdr + 0))[3] = addr[2];
-  ((uint8_t*)(hdr + 1))[0] = addr[3];
-  ((uint8_t*)(hdr + 1))[1] = addr[4];
-  ((uint8_t*)(hdr + 1))[2] = addr[5];
-  ((uint8_t*)(hdr + 1))[3] = 0xFFU;
-
-  hdr[2] = GATTSERVICE_GATT_DATABASE_SIZE;
+    hdr[2] = GATTSERVICE_GATT_DATABASE_SIZE;
 
 #if (CFG_LOG_SUPPORTED != 0)
-  status =
+    status =
 #endif /*(CFG_LOG_SUPPORTED != 0)*/
-  NVM_Add( GATTSERVICE_NVM_TYPE, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN, temp_database,
-                   GATTSERVICE_GATT_DATABASE_SIZE );
-  LOG_INFO_APP("Added Gatt Service NVM record with status 0x%02X\n", status);
+    NVM_Add( GATTSERVICE_NVM_TYPE,
+            (uint8_t*)hdr,
+            BLENVM_GATTSERVICE_HDR_LEN,
+            temp_database,
+            GATTSERVICE_GATT_DATABASE_SIZE );
+    LOG_INFO_APP("Added Gatt Service NVM record with status 0x%02X\n", status);
+  }
 }
 
-static void GATTService_RestoreDatabase(void)
+static void GATTService_RestoreDatabase(BleConn_t *pConn)
 {
-  tBleStatus status;
+  uint8_t type;
   uint8_t addr[6u];
   uint8_t temp_database[GATTSERVICE_GATT_DATABASE_SIZE] = {0};
   int res;
   uint8_t mode = NVM_FIRST;
   uint32_t hdr[BLENVM_GATTSERVICE_HDR_LEN / 4];
 
-  /* Resolve address if address is random */
-  if (bleAppContext.RemoteAddressType == 1u && ((bleAppContext.aRemoteAddress[5] & 0xC0U) == 0x40U))
+  if (aci_gap_check_bonded_device(pConn->RemoteAddressType,
+                                  &pConn->aRemoteAddress[0],
+                                  &type,
+                                  addr) == BLE_STATUS_SUCCESS)
   {
-    status = aci_gap_resolve_private_addr( &bleAppContext.aRemoteAddress[0], &addr[0]);
-    if (status != BLE_STATUS_SUCCESS)
+
+    while (1)
     {
-      return;
-    }
-  }
-  else
-  {
-    MEMCPY(addr, bleAppContext.aRemoteAddress, 6u);
-  }
+      /* Get the header part of each record in order to find if there is already in NVM some data corresponding
+       * to the same remote device address
+       */
+      res = NVM_Get( mode, GATTSERVICE_NVM_TYPE,0, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN );
+      mode = NVM_NEXT;
+      if (res == NVM_EOF)
+      {
+        /* Reached EOF */
+        break;
+      }
 
-  while (1)
-  {
-    /* Get the header part of each record in order to find if there is already in NVM some data corresponding
-     * to the same remote device address
-     */
-    res = NVM_Get( mode, GATTSERVICE_NVM_TYPE,0, (uint8_t*)hdr, BLENVM_GATTSERVICE_HDR_LEN );
-    mode = NVM_NEXT;
-    if (res == NVM_EOF)
+      if (MEMCMP(&((uint8_t*)hdr)[1], addr, 6u) == 0)
+      {
+        /* Found Record */
+        break;
+      }
+    }
+
+    if (res != NVM_EOF)
     {
-      /* Reached EOF */
-      break;
+      (void) NVM_Get(0, GATTSERVICE_NVM_TYPE, BLENVM_GATTSERVICE_HDR_LEN, temp_database, GATTSERVICE_GATT_DATABASE_SIZE);
+
+      pConn->GattService.StartHandle = temp_database[0] + (temp_database[1] << 8);
+      pConn->GattService.EndHandle = temp_database[2] + (temp_database[3] << 8);
+      pConn->GattService.ServiceChangedCharHandle = temp_database[4] + (temp_database[5] << 8);
+      pConn->GattService.ServiceChangedCharDescHandle = temp_database[6] + (temp_database[7] << 8);
+
+      LOG_INFO_APP("Restored GATT Service\n");
+      LOG_INFO_APP("StartHandle=%04d\n", pConn->GattService.StartHandle);
+      LOG_INFO_APP("EndHandle=%04d\n", pConn->GattService.EndHandle);
+      LOG_INFO_APP("ServiceChangedCharHandle=%04d\n", pConn->GattService.ServiceChangedCharHandle);
+      LOG_INFO_APP("ServiceChangedCharDescHandle=%04d\n", pConn->GattService.ServiceChangedCharDescHandle);
+
+      pConn->GattService.LinkupState = GATT_SERVICE_LINKUP_COMPLETE;
     }
-
-    if (MEMCMP(&((uint8_t*)hdr)[1], addr, 6u) == 0)
-    {
-      /* Found Record */
-      break;
-    }
-  }
-
-  if (res != NVM_EOF)
-  {
-    (void) NVM_Get(0, GATTSERVICE_NVM_TYPE, BLENVM_GATTSERVICE_HDR_LEN, temp_database, GATTSERVICE_GATT_DATABASE_SIZE);
-
-    bleAppContext.GattService.StartHandle = temp_database[0] + (temp_database[1] << 8);
-    bleAppContext.GattService.EndHandle = temp_database[2] + (temp_database[3] << 8);
-    bleAppContext.GattService.ServiceChangedCharHandle = temp_database[4] + (temp_database[5] << 8);
-    bleAppContext.GattService.ServiceChangedCharDescHandle = temp_database[6] + (temp_database[7] << 8);
-
-    LOG_INFO_APP("Restored GATT Service\n");
-    LOG_INFO_APP("StartHandle=%04d\n", bleAppContext.GattService.StartHandle);
-    LOG_INFO_APP("EndHandle=%04d\n", bleAppContext.GattService.EndHandle);
-    LOG_INFO_APP("ServiceChangedCharHandle=%04d\n", bleAppContext.GattService.ServiceChangedCharHandle);
-    LOG_INFO_APP("ServiceChangedCharDescHandle=%04d\n", bleAppContext.GattService.ServiceChangedCharDescHandle);
-
-    bleAppContext.GattService.LinkupState = GATT_SERVICE_LINKUP_COMPLETE;
   }
 }
 

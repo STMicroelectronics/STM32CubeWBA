@@ -106,6 +106,16 @@ void PWR_EnterSleepMode( void );
 void PWR_ExitSleepMode( void );
 
 /**
+  * @brief Enable Low Power Sleep Mode
+  */
+void PWR_EnableSleepMode( void );
+
+/**
+  * @brief Disable Low Power Sleep Mode
+  */
+void PWR_DisableSleepMode( void );
+
+/**
   * @brief Check if the system is waking-up from standby low power mode.
   */
 uint32_t is_boot_from_standby(void);

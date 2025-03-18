@@ -395,17 +395,23 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           }
         }
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
+        tBleStatus aci_status = BLE_STATUS_ERROR;
+
         charPropVal = 0x0001;
         if(a_ClientContext[index].PWR_CO_NotificationDescHdl != 0x0000)
         {
-          result |= aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].PWR_CO_NotificationDescHdl,
-                                            2,
-                                            (uint8_t *) &charPropVal);
-          gatt_cmd_resp_wait();
-          APP_DBG_MSG(" LPWR_CO_NotificationDescHdl =0x%04X\n",a_ClientContext[index].PWR_CO_NotificationDescHdl);
+          aci_status = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].PWR_CO_NotificationDescHdl,
+                                                2,
+                                                (uint8_t *) &charPropVal);
+          if(aci_status == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+          }
+          LOG_INFO_APP(" PWR_CO_NotificationDescHdl =0x%04X, status =0x%02X\n",a_ClientContext[index].PWR_CO_NotificationDescHdl, aci_status);
         }
 
+        result |= aci_status;
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (result == BLE_STATUS_SUCCESS)

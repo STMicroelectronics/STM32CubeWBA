@@ -189,17 +189,17 @@ void APP_BSP_StandbyExit( void )
   BSP_JOY_Init( JOY1, JOY_MODE_EXTI, JOY_ALL );
 #endif /* CFG_BSP_ON_DISCOVERY */
 
-#ifdef APPLICATION_ON_CEB
+#ifdef CFG_BSP_ON_CEB
   /* Button HW Initialization */
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-#endif /* APPLICATION_ON_CEB */
+#endif /* CFG_BSP_ON_CEB */
 
-#ifdef APPLICATION_ON_NUCLEO
+#ifdef CFG_BSP_ON_NUCLEO
   /* Buttons HW Initialization */
   BSP_PB_Init( B1, BUTTON_MODE_EXTI );
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
   BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-#endif /* APPLICATION_ON_NUCLEO */
+#endif /* CFG_BSP_ON_NUCLEO */
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 }
 

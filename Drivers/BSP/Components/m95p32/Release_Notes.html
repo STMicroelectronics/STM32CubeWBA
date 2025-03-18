@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Release Notes for M95P32 Component Driver</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="_htmresc/mini-st_2020.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png" />
+</head>
+<body>
+<div class="row">
+<div class="col-sm-12 col-lg-4">
+<center>
+<h1 id="release-notes-for">Release Notes for</h1>
+<h1 id="m95p32-based-eeprom-series-driver"><mark>M95P32 Based EEPROM Series Driver</mark></h1>
+<p>Copyright © 2024 STMicroelectronics<br />
+</p>
+<a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
+</center>
+<h1 id="purpose">Purpose</h1>
+<p>The M95P32 Component Driver is a driver for the STM32Cube. This software implements a Component Driver running on STM32 for M95P32 page EEPROM. It is built on top of STM32Cube software technology that ease portability across different STM32 micro-controllers</p>
+<p>Here is the list of references to user documents:</p>
+<ul>
+<li><span style="font-color: blue;"><a href="https://www.st.com/resource/en/datasheet/m95p32-i.pdf">M95P32 Ultra low-power 32 Mbit Serial SPI Page EEPROM</a></span></li>
+</ul>
+</div>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
+<div class="collapse">
+<input type="checkbox" id="collapse-section6" checked aria-hidden="true"> <label for="collapse-section6" aria-hidden="true"><strong>V3.0.0 / 30-September-2024</strong></label>
+<div>
+<h2 id="main-changes">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>Component adaptation to the STM32Cube BSP drivers development guidelines (UM2298)</li>
+<li>Export M95P32_RegisterBusIO() in mp93p32.h header file</li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="backward-compatibility">Backward Compatibility</h2>
+<p>This release breaks compatibility with previous versions.</p>
+<h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.14.0</li>
+</ul>
+<h2 id="supported-devices-and-boards">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+<li>NUCLEO-WBA65RI</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true"><strong>V2.2.0 / January-2024</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>Removed EEPROMEX_CTRL_HIGH and EEPROMEX_CTRL_LOW functions from component driver</li>
+<li>Removed Page_Prog_BUFF functions from component driver, specific API for buffer mode implemented in user application</li>
+<li>Comply with BSPv2 rules</li>
+</ul>
+<h2 id="known-limitations-1">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-1">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.14.0</li>
+</ul>
+<h2 id="supported-devices-and-boards-1">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true"><strong>V2.1.0 / November-2023</strong></label>
+<div>
+<h2 id="main-changes-2">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>Removed application dependency from drivers</li>
+<li>Comply with BSPv2 rules</li>
+</ul>
+<h2 id="known-limitations-2">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-2">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.13.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-2">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="true"><strong>V2.0.0 / October-2023</strong></label>
+<div>
+<h2 id="main-changes-3">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>Optimized Page_Write and Page_Prog routines for SPI mode</li>
+<li>Comply with BSPv2 rules</li>
+<li>Updated mask configuration for AutoPolling routine for QUADSPI</li>
+</ul>
+<h2 id="known-limitations-3">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-3">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.13.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-3">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="true"><strong>V1.1.0 / November-2022</strong></label>
+<div>
+<h2 id="main-changes-4">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>Updated SPI/QUADSPI dependency on connectivity protocol</li>
+</ul>
+<h2 id="known-limitations-4">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.10.1</li>
+</ul>
+<h2 id="supported-devices-and-boards-4">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="true"><strong>V1.0.0 / August-2022</strong></label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<p>Product update</p>
+<ul>
+<li>First official release</li>
+</ul>
+<h2 id="known-limitations-5">Known Limitations</h2>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR System Workbench v9.20.1</li>
+<li>ARM Keil v5.37.0.0</li>
+<li>STM32CubeIDE v1.10.1</li>
+</ul>
+<h2 id="supported-devices-and-boards-5">Supported Devices and Boards</h2>
+<ul>
+<li>X-NUCLEO-F401RE</li>
+<li>X-NUCLEO-G474RE</li>
+<li>X-NUCLEO-L053R8</li>
+<li>X-NUCLEO-H743ZI</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky">
+For complete documentation on <strong>M95P32</strong> , visit: <span style="font-color: blue;"><a href="http://www.st.com/en/memories/m95p32-i.html">M95P32</a></span>
+</footer>
+</body>
+</html>

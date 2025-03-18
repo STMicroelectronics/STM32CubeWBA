@@ -388,29 +388,32 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
   else if (opcode == 0x2062U) /*HCI_LE_Set_CIG_Parameters*/
   {
     /* HCI_LE_Set_CIG_Parameters (cig_id and ConnectionHandle)*/
-    int32_t i;
+    uint8_t i;
+
     for (i = 0 ; i<num_connection_handles ; i++)
     {
-      APP_DBG_MSG("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n", cig_id, iso_con_handle[i]);
+      LOG_INFO_APP("     - CIG ID:   %d     - cis_conn_handle:   0x%04X\n", cig_id, iso_con_handle[i]);
 
-      CIS_Conf[i].CIS_Conn_Handle = iso_con_handle[i];
-      CIS_Conf[i].CIG_ID = cig_id;
-      CIS_Conf[i].is_peripheral = 0;
-      CIS_Conf[i].is_cis_active = 0;
-    }
-
-    /* clear all others unused slots */
-    for( ; i<BLE_PLAT_NUM_CIS ; i++)
-    {
-      CIS_Conf[i].CIS_Conn_Handle = 0xFFFFu;
-      CIS_Conf[i].CIG_ID = 0xFFu;
-      CIS_Conf[i].is_peripheral = 0;
-      CIS_Conf[i].is_cis_active = 0;
+      if (BLE_GetExistingCISConfSlot(iso_con_handle[i], &p_cis_conf) != 0)
+      {
+        if (BLE_GetFreeCISConfSlot(&p_cis_conf) == 0)
+        {
+          p_cis_conf->CIS_Conn_Handle = iso_con_handle[i];
+          p_cis_conf->CIG_ID = cig_id;
+          p_cis_conf->is_peripheral = 0;
+          p_cis_conf->is_cis_active = 0;
+        }
+        else
+        {
+          /* should not be reached */
+          LOG_INFO_APP("     - ERROR in slot allocation\n");
+        }
+      }
     }
   }
-  else if (opcode == 0x0019U)
+  else if (opcode == 0x0019U || opcode == 0x002AU)
   {
-    /*HCI_LE_CIS_ESTABLISHED_EVENT  (iso_interval and ConnectionHandle)*/
+    /*HCI_LE_CIS_ESTABLISHED_EVENT || HCI_LE_CIS_ESTABLISHED_EVENT_V2 (iso_interval and ConnectionHandle) */
     type = 0;
     LOG_INFO_APP("     - cis_conn_handle:   0x%04X    - iso_interval:   %d\n", iso_con_handle[0], iso_interval);
 	if ((status == 0) &&
@@ -444,6 +447,21 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
     {
       LOG_INFO_APP("==>> AUDIO_UnregisterGroup()\n");
       AUDIO_UnregisterGroup(0, l_cig_id);
+    }
+  }
+  else if (opcode == 0x2065u)
+  {
+    /*HCI_LE_REMOVE_CIG*/
+    int32_t i;
+    for (i=0 ; i<BLE_PLAT_NUM_CIS ; i++)
+    {
+      if ((status == 0) && CIS_Conf[i].CIG_ID == cig_id)
+      {
+        CIS_Conf[i].CIS_Conn_Handle = 0xFFFFu;
+        CIS_Conf[i].CIG_ID = 0xFFu;
+        CIS_Conf[i].is_peripheral = 0;
+        CIS_Conf[i].is_cis_active = 0;
+      }
     }
   }
 }

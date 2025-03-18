@@ -2,12 +2,12 @@
  ******************************************************************************
  * @file    st_mac_802_15_4_sys_svc.h
  * @author  MCD Application Team
- * @brief   Contains STM32WB specificities requested to debug the 802.15.4
- *          MAC interface.
+ * @brief   Contains STM32WBA specificities requested for antenna diversity.
+ *
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * <h2><center>&copy; Copyright (c) 2024 STMicroelectronics.
  * All rights reserved.</center></h2>
  *
  * This software component is licensed by ST under Ultimate Liberty license

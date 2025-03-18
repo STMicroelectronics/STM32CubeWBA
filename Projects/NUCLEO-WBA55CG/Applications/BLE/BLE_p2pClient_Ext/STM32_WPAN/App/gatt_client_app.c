@@ -391,16 +391,22 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         /* USER CODE BEGIN PROC_GATT_PROPERTIES_ENABLE_ALL */
         /* Enable P2P notification */
         uint16_t enable = 0x0001;
+        tBleStatus aci_status = BLE_STATUS_ERROR;
+
         if(a_ClientContext[index].P2PNotificationDescHdl != 0x0000)
         {
-          result |= aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].P2PNotificationDescHdl,
-                                            2,
-                                            (uint8_t *) &enable);
-          gatt_cmd_resp_wait();
-          APP_DBG_MSG(" P2PNotificationDescHdl =0x%04X\n",a_ClientContext[index].P2PNotificationDescHdl);
+          aci_status = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].P2PNotificationDescHdl,
+                                                2,
+                                                (uint8_t *) &enable);
+          if(aci_status == BLE_STATUS_SUCCESS)
+          {
+            gatt_cmd_resp_wait();
+          }
+          LOG_INFO_APP(" P2PNotificationDescHdl =0x%04X, status =0x%02X\n",a_ClientContext[index].P2PNotificationDescHdl, aci_status);
         }
 
+        result |= aci_status;
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (result == BLE_STATUS_SUCCESS)
@@ -551,12 +557,16 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
 
       if (P2PLedLevel == 0x00)
       {
+        #if (CFG_LED_SUPPORTED == 1)
         BSP_LED_Off(LED_BLUE);
+        #endif
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED OFF \n");
       }
       else
       {
+        #if (CFG_LED_SUPPORTED == 1)
         BSP_LED_On(LED_BLUE);
+        #endif
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED ON\n");
       }
       break;

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -58,8 +58,10 @@ typedef struct ZigbeeAppInfoT
   enum ZbStatusCodeT    eJoinStatus;
   uint32_t              lPersistNumWrites;
   uint32_t              lJoinDelay;
-  /* USER CODE BEGIN ZigbeeAppInfo_t */
+  uint64_t              dlExtendedAddress;
   struct ApsInfoT       stApsInfo;
+
+  /* USER CODE BEGIN ZigbeeAppInfo_t */
 
   /* USER CODE END ZigbeeAppInfo_t */
 

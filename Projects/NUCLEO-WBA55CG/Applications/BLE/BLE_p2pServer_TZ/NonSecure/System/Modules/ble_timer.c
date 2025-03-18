@@ -57,9 +57,6 @@ void BLE_TIMER_Init(void)
   /* This function initializes the timer Queue */
   LST_init_head(&BLE_TIMER_List);
 
-  /* Initialize the Timer Server */
-  UTIL_TIMER_Init();
-
   /* Register BLE Timer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
 }

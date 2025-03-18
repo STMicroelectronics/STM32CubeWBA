@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -17,13 +17,17 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-#include "app_conf.h"
+
 #include "main.h"
-#include "stm32_seq.h"
-#include "st_mac_802_15_4_core.h"
+#include "app_common.h"
+#include "app_conf.h"
+#include "log_module.h"
+#include "stm32_rtos.h"
+#include "st_mac_802_15_4_sys.h"
+
+extern void mac_baremetal_run(void);
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -34,13 +38,11 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -48,7 +50,7 @@
 /* Functions Definition ------------------------------------------------------*/
 
 /**
-  * @brief  Mac Layer Sequencer Initialisation
+  * @brief  Mac Layer Initialisation
   * @param  None
   * @retval None
   */
@@ -58,9 +60,8 @@ void MacSys_Init(void)
   UTIL_SEQ_RegTask( TASK_MAC_LAYER, UTIL_SEQ_RFU, mac_baremetal_run);
 }
 
-
 /**
-  * @brief  Mac Layer Sequencer Resume
+  * @brief  Mac Layer Resume
   * @param  None
   * @retval None
   */
@@ -69,43 +70,43 @@ void MacSys_Resume(void)
   UTIL_SEQ_ResumeTask( TASK_MAC_LAYER );
 }
 
-
 /**
-  * @brief  MAC Layer set Task. 
+  * @brief  MAC Layer set Task.
   * @param  None
   * @retval None
   */
 void MacSys_SemaphoreSet(void)
 {
-  UTIL_SEQ_SetTask( TASK_MAC_LAYER, TASK_MAC_LAYER_PRIO );
+  UTIL_SEQ_SetTask( TASK_MAC_LAYER, TASK_PRIO_MAC_LAYER );
 }
 
-
 /**
-  * @brief  MAC Layer Task wait. Not used with Sequencer.
+  * @brief  MAC Layer Task wait.
   * @param  None
   * @retval None
   */
 void MacSys_SemaphoreWait( void )
 {
+  /* Not used */
 }
 
-/* Not used in this application, Zigbee layer */
 /**
-  * @brief  MAC Layer set Event. 
+  * @brief  MAC Layer set Event.
   * @param  None
   * @retval None
   */
 void MacSys_EventSet( void )
 {
+  UTIL_SEQ_SetEvt( EVENT_MAC_LAYER );
 }
 
-
 /**
-  * @brief  MAC Layer wait Event. 
+  * @brief  MAC Layer wait Event.
   * @param  None
   * @retval None
   */
 void MacSys_EventWait( void )
 {
+  UTIL_SEQ_WaitEvt( EVENT_MAC_LAYER );
 }
+

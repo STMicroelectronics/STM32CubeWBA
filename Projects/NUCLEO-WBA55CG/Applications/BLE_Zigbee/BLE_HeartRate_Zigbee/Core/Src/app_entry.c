@@ -38,14 +38,16 @@
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "app_ble.h"
+#include "ll_sys.h"
 #include "ll_sys_if.h"
+#include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
 #include "bpka.h"
-#include "ll_sys.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
+#include "app_debug.h"
 #include "stm32wbaxx_ll_rcc.h"
 #include "assert.h"
 
@@ -53,7 +55,6 @@
 extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,7 +85,18 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -121,8 +133,6 @@ static AMM_InitParameters_t ammInitConfig =
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
-
-
 
 /* USER CODE BEGIN PV */
 
@@ -202,29 +212,29 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
 
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
   /* USER CODE BEGIN APPE_Init_1 */
-  /* Initialize Peripherals */
-  APP_BSP_Init();
+#if (CFG_LED_SUPPORTED == 1)  
+  APP_BSP_LedInit();
+#endif /* (CFG_LED_SUPPORTED == 1) */
+#if (CFG_BUTTON_SUPPORTED == 1)
+  APP_BSP_ButtonInit();
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
 
   /* USER CODE END APPE_Init_1 */
+
   /* Initialize the Ble Public Key Accelerator module */
   APPE_BPKA_Init();
-  BPKA_Reset( );
-  
-  APP_BLE_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
   {
     Error_Handler();
-  }  
+  }
+
+  APP_BLE_Init();
+
+  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* Initialization of the low level : link layer and MAC */
   MX_APPE_LinkLayerInit();
@@ -290,6 +300,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -300,22 +311,24 @@ static void System_Init( void )
 
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
-  Log_Module_Set_Region( LOG_REGION_APP );
-  Log_Module_Add_Region( LOG_REGION_ZIGBEE );
 
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
 #endif  /* (CFG_LOG_SUPPORTED != 0) */
-
 
 #if(CFG_RT_DEBUG_DTB == 1)
   /* DTB initialization and configuration */
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -352,12 +365,6 @@ static void SystemPower_Config(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
 
-  /* Configure Vcore supply */
-  if ( HAL_PWREx_ConfigSupply( CFG_CORE_SUPPLY ) != HAL_OK )
-  {
-    Error_Handler();
-  }
-
 #if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
@@ -367,20 +374,21 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
-
-  /* Disable LowPower during Init */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
+
+  /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
+  LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
 
   /* USER CODE END SystemPower_Config */
 }
@@ -403,6 +411,15 @@ static void APPE_FLASH_MANAGER_Init(void)
 {
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
+
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
+  return;
 }
 
 /**
@@ -461,13 +478,10 @@ void UTIL_SEQ_PreIdle( void )
 
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
-    APP_SYS_LPM_EnterLowPowerMode();
+    APP_SYS_BLE_EnterDeepSleep();
   }
 
   LL_RCC_ClearResetFlags();
-
-  /* Wait until System clock is not on HSI */
-  while (LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_HSI);
 
 #if defined(STM32WBAXX_SI_CUT1_0)
   /* Wait until HSE is ready */
@@ -498,6 +512,7 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   ll_sys_dp_slp_exit();
+  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -547,7 +562,7 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
   UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
 }
 
-void FM_ProcessRequest (void)
+void FM_ProcessRequest(void)
 {
   /* Trigger to call Flash Manager process function */
   UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER, CFG_SEQ_PRIO_0);
@@ -615,7 +630,7 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
   
-  /* Threat USART Command to simulate button press for instance. */
+  /* Simulate button press from UART commands. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */

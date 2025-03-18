@@ -584,7 +584,9 @@ static void P2PR_Connect_Request(void)
   {
     if (P2PR_APP_Context.P2PR_device_status[device_index] == P2PR_DEV_FOUND)
     {
+      #if (CFG_LED_SUPPORTED == 1)
       BSP_LED_On(LED_BLUE);
+      #endif
       LOG_INFO_APP("Create connection to p2pServer stored in table at index %d\n",device_index);
       
       P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTING;
@@ -622,9 +624,11 @@ static void P2PR_Connect_Request(void)
         P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_DISCOVERING;
         GATT_CLIENT_APP_Discover_services(device_index);
 
-        P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTED;        
+        P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTED;
+        #if (CFG_LED_SUPPORTED == 1)
         BSP_LED_Off(LED_BLUE);
-        
+        #endif
+
         P2PR_notifDevInfo(device_index);
       }
       else

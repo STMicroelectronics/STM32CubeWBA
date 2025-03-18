@@ -1,8 +1,0 @@
-[ProjectFiles]
-HeaderPath=
-[Others]
-Define=
-HALModule=
-[Groups]
-Application/User=../Src/main.c;../Src/stm32wbaxx_it.c;
-Doc=../README.md;

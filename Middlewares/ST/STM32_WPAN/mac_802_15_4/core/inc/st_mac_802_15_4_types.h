@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -46,14 +46,9 @@ typedef uint8_t  MAC_handle;
 
 /** @brief  Defines the value for NULL */
 #define g_NULL_c                       0 //( void* ) ( 0 )
+
 /** @brief  Defines the value for Reset */
 #define g_RESET_c                      0x00
-
-/** @brief  Defines the value for Success */
-// #define g_SUCCESS_c                    0x00
-
-/** @brief  Defines the value for Failure */
-// #define g_FAILURE_c                    0xFF
 
 /** @brief  Defines the length of the 64 - bit Address or IEEE MAC Address */
 #define g_EXTENDED_ADDRESS_LENGTH_c    0x08
@@ -130,6 +125,7 @@ typedef struct {
 /******************************************************************************/
 /** @brief  Defines a structure for MAC PAN Descriptor which contains the
  network details of the device from which the beacon is received */
+
 typedef struct {
     /*! PAN identifier of the coordinator */
     uint8_t a_coord_PAN_id[2];

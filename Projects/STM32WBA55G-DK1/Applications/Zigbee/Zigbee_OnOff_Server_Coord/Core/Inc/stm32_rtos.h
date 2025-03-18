@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -48,6 +48,7 @@ extern "C" {
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define CFG_TASK_PRIO_BUTTON_Bx                 CFG_SEQ_PRIO_0
+#define CFG_TASK_PRIO_JOYSTICK_x                CFG_SEQ_PRIO_0
 #define TASK_PRIO_FUOTA_SEND                    CFG_SEQ_PRIO_1
 
 /* USER CODE END TASK_Priority_Define */

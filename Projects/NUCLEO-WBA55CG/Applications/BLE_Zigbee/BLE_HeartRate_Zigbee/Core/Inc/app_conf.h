@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,7 +44,7 @@
  * Definition of public BD Address,
  * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0000000000000)
+#define CFG_BD_ADDRESS                    (0x000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -220,12 +220,13 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
+ *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  *
  * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
  *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
+ *   - 0 : Stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (0)
@@ -257,15 +258,9 @@ typedef enum
 
 /* USER CODE END Low_Power 1 */
 
-/* Core voltage supply selection, it can be PWR_LDO_SUPPLY or PWR_SMPS_SUPPLY */
-#define CFG_CORE_SUPPLY          (PWR_LDO_SUPPLY)
-
 /******************************************************************************
  * RTC
  ******************************************************************************/
-//#define RTC_N_PREDIV_S (10)
-//#define RTC_PREDIV_S ((1<<RTC_N_PREDIV_S)-1)
-//#define RTC_PREDIV_A ((1<<(15-RTC_N_PREDIV_S))-1)
 
 /* USER CODE BEGIN RTC */
 
@@ -284,11 +279,15 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
 /* Usart used by LOG */
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
+extern UART_HandleTypeDef           huart1;
+#define LOG_UART_HANDLER            huart1
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
@@ -322,8 +321,20 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
@@ -339,19 +350,15 @@ extern UART_HandleTypeDef           huart1;
  */
 typedef enum
 {
-  CFG_TASK_HW_RNG,                /* Task linked to chip internal peripheral. */
-  CFG_TASK_LINK_LAYER,            /* Tasks linked to Communications Layers. */
+  CFG_TASK_HW_RNG,
+  CFG_TASK_LINK_LAYER,
   CFG_TASK_HCI_ASYNCH_EVT_ID,
-  CFG_TASK_LINK_LAYER_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
-  CFG_TASK_BPKA,
   CFG_TASK_AMM,
+  CFG_TASK_BPKA,
   CFG_TASK_BLE_TIMER_BCKGND,
-  /* USER CODE BEGIN CFG_Task_Id_t */
-  
-  /* Zigbee Tasks */
-  CFG_TASK_MAC_LAYER,
   CFG_TASK_FLASH_MANAGER,
+  CFG_TASK_MAC_LAYER,
   CFG_TASK_ZIGBEE_LAYER,
   CFG_TASK_ZIGBEE_NETWORK_FORM,   /* Tasks linked to Zigbee Start. */
   CFG_TASK_ZIGBEE_APP_START,
@@ -360,9 +367,10 @@ typedef enum
   CFG_TASK_ZIGBEE_APP3,
   CFG_TASK_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_B1,            /* Task linked to push-button. */
+  CFG_TASK_BUTTON_B1,
   CFG_TASK_BUTTON_B2,
   CFG_TASK_BUTTON_B3,
+
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
@@ -389,6 +397,7 @@ typedef enum
 
 /* Sequencer configuration */
 #define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
+
 /**
  * This is a bit mapping over 32bits listing all events id supported in the application
  */
@@ -403,8 +412,8 @@ typedef enum
 /* Sequencer defines */
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
-#define TASK_MAC_LAYER                      ( 1u << CFG_TASK_MAC_LAYER )
 #define TASK_FLASH_MNGR                     ( 1u << CFG_TASK_FLASH_MANAGER )
+#define TASK_MAC_LAYER                      ( 1u << CFG_TASK_MAC_LAYER )
 #define TASK_ZIGBEE_LAYER                   ( 1u << CFG_TASK_ZIGBEE_LAYER )
 #define TASK_ZIGBEE_NETWORK_FORM            ( 1u << CFG_TASK_ZIGBEE_NETWORK_FORM )
 #define TASK_ZIGBEE_APP_START               ( 1u << CFG_TASK_ZIGBEE_APP_START )
@@ -417,6 +426,8 @@ typedef enum
 #define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
 
+#define TASK_MEAS_REQ_ID                    ( 1u << CFG_TASK_MEAS_REQ_ID )
+#define TASK_ADV_LP_REQ_ID                  ( 1u << CFG_TASK_ADV_LP_REQ_ID )
 /* USER CODE END TASK_ID_Define */
 
 /**
@@ -434,6 +445,7 @@ typedef enum
   CFG_EVENT_ZIGBEE_APP3,
   CFG_EVENT_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Event_Id_t */
+
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -448,8 +460,6 @@ typedef enum
 #define EVENT_ZIGBEE_APP3               ( 1U << CFG_EVENT_ZIGBEE_APP3 )
 #define EVENT_ZIGBEE_APP4               ( 1U << CFG_EVENT_ZIGBEE_APP4 )
 /* USER CODE BEGIN EVENT_ID_Define */
-//#define EVENT_ZIGBEE_STARTUP_PERSISTENCE_ENDED  ( 1U << CFG_EVENT_ZIGBEE_STARTUP_PERSISTENCE_ENDED )
-//#define EVENT_ZIGBEE_SNVMA_WRITE_ENDED          ( 1U << CFG_EVENT_ZIGBEE_SNVMA_WRITE_ENDED )
 
 /* USER CODE END EVENT_ID_Define */
 
@@ -457,10 +467,17 @@ typedef enum
  * NVM configuration
  ******************************************************************************/
 
-#define CFG_SNVMA_SECTOR_NB_ID        (7u)
-#define CFG_SNVMA_START_SECTOR_ID     (FLASH_PAGE_NB - CFG_SNVMA_SECTOR_NB_ID)
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - 2u)
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
+
+  /**
+   * This is the max size of data the THREAD Stack needs to write in NVM
+   * This is different to the size allocated in the EEPROM emulator
+   * The THREAD Stack shall write all data at an address in the range of [0 : (y-1)]
+   * The size is a number of 32bits values
+   */
+#define CFG_NVMA_THREAD_NVM_SIZE                    ( 0u )
 
 /* USER CODE BEGIN NVM_Configuration */
 
@@ -503,23 +520,12 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Do not modify - must be 1 */
-#define USE_RADIO_LOW_ISR                   (1)
-
-/* Do not modify - must be 1 */
-#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
-#endif /* USE_RADIO_LOW_ISR */
-
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (4)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
@@ -529,12 +535,8 @@ typedef enum
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
-/* Custom LSE sleep clock accuracy to use if both conditions are met:
- * - LSE is selected as Link Layer sleep clock source
- * - the LSE used is different from the default one.
- */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
-
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -555,48 +557,44 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (60000)  /* bytes */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (4u)
-
+#define CFG_MM_POOL_SIZE                                  (60000U)  /* bytes */
+#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (4U)
 #define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE             (400U)   /* words (32 bits) */
-
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE               (200U)   /* words (32 bits) */
-
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (3U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10500U)  /* words (32 bits) */
-
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (4U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (3000U)  /* words (32 bits) */
-
-#define CFG_AMM_POOL_SIZE                         DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                  + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER)
+#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
+                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
+#define CFG_BSP_ON_SEQUENCER                    (1)
+#define CFG_BSP_ON_NUCLEO                       (1)
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
-
-#define CFG_BSP_ON_NUCLEO           (1)
-#define CFG_BSP_ON_SEQUENCER        (1)
-
-#define CFG_LED_SUPPORTED           (1)
-#define CFG_BUTTON_SUPPORTED        (1)
+#define CFG_LED_SUPPORTED                       (1)
+#define CFG_BUTTON_SUPPORTED                    (1)
 
 /**
- * If CFG_LPM_LEVEL at 2, make sure LED are disabled
+ * Overwrite some configuration imposed by Low Power level selected.
  */
 #if (CFG_LPM_LEVEL > 1)
-  #undef  CFG_LED_SUPPORTED
-  #define CFG_LED_SUPPORTED         (0)
-#endif /* CFG_FULL_LOW_POWER */
+  #if CFG_LED_SUPPORTED
+    #undef  CFG_LED_SUPPORTED
+    #define CFG_LED_SUPPORTED      (0)
+  #endif /* CFG_LED_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
 
 #if ( CFG_LED_SUPPORTED == 1 )
 #define APP_LED_ON( LED )           BSP_LED_On( LED )
@@ -624,13 +622,14 @@ typedef enum
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
     #define CFG_LOG_SUPPORTED       (0)
   #endif /* CFG_LOG_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
+/* USER CODE BEGIN Defines_2 */
 /**
  * Switch to enable/disable BLE radio activity shown on green LED
  * 0 : disable / 1 : enable
@@ -640,10 +639,7 @@ typedef enum
 #if (CFG_LED_SUPPORTED == 0)
 #undef BLE_RADIO_ACTIVITY_ON_LED_SUPPORT
 #define BLE_RADIO_ACTIVITY_ON_LED_SUPPORT               (0)
-#endif                                                      
-                                                    
-/* USER CODE BEGIN Defines_2 */
-
+#endif 
 /* USER CODE END Defines_2 */
 
 #endif /*APP_CONF_H */

@@ -58,6 +58,7 @@ struct WpanPublicT;
 #define ZB_CHANNELMASK_GETPAGE(x)       (uint8_t)(((x) >> WPAN_PAGE_CHANNELS_MAX) & 0x1FU)
 #define ZB_CHANNELMASK(mask, page)      ((mask) | ((((uint32_t)page) & 0x1FU) << WPAN_PAGE_CHANNELS_MAX))
 
+#define ZB_PANID_MIN                    0x0000U
 /* A value of 0xffff means the device is not associated. */
 #define ZB_PANID_MAX                    0xfffeU
 
@@ -615,6 +616,29 @@ unsigned int ZbStateGet(struct ZigBeeT *zb, uint8_t *buf, unsigned int maxlen);
  */
 void ZbShutdown(struct ZigBeeT *zb);
 
+/*---------------------------------------------------------
+ * Pause
+ *---------------------------------------------------------
+ */
+/**
+ * Pauses the stack by stopping any active timers and tasks. The 802.15.4 MAC
+ * interface is also disconnected from the stack. This allows something else to
+ * use the MAC/Radio interface while the stack is paused, for example Bluetooth.
+ * @param zb Pointer to Zigbee stack instance
+ * @param callback Callback gets called once pausing the stack is complete.
+ * Callback is only called if this function returns ZB_STATUS_SUCCESS
+ * @param cbarg Callback argument
+ * @return Returns ZB_STATUS_SUCCESS on success, other status code on failure
+ */
+enum ZbStatusCodeT ZbStatePause(struct ZigBeeT *zb, void (*callback)(void *arg), void *arg);
+
+/**
+ * Resumes stack operation after calling ZbStatePause.
+ * @param zb Pointer to Zigbee stack instance
+ * @return Returns ZB_STATUS_SUCCESS on success, other status code on failure
+ */
+enum ZbStatusCodeT ZbStateResume(struct ZigBeeT *zb);
+
 /*---------------------------------------------------------------
  * Misc. Helper Functions
  *---------------------------------------------------------------
@@ -638,6 +662,27 @@ uint16_t ZbShortAddress(struct ZigBeeT *zb);
  * Sets '*first_channel' to the first channel found in the mask. */
 
 /* Returns the amount of memory allocated from the zigbee stack heap. */
+
+/*---------------------------------------------------------------
+ * Zigbee Heap
+ *---------------------------------------------------------------
+ */
+
+/* NOTE: ZbHeapAlloc and ZbHeapFree are for internal use only, and allocate memory
+ * from the Zigbee stack memory pool. Some of the ZCL clusters need to make use of
+ * these functions, so their prototypes have to be included here.
+ */
+void * zb_heap_alloc(struct ZigBeeT *zb, unsigned int sz, const char *funcname, unsigned int linenum);
+void zb_heap_free(struct ZigBeeT *zb, void *ptr, const char *funcname, unsigned int linenum);
+
+#if defined(CONFIG_ZB_MEMORY_DEBUG) || defined(CONFIG_ZB_MEMPOOL_HISTORY)
+# define ZbHeapAlloc(_zb_, _sz_)             zb_heap_alloc(_zb_, _sz_, __func__, __LINE__)
+# define ZbHeapFree(_zb_, _ptr_)             zb_heap_free(_zb_, _ptr_, __func__, __LINE__)
+#else
+/* To reduce binary size */
+# define ZbHeapAlloc(_zb_, _sz_)             zb_heap_alloc(_zb_, _sz_, "", 0)
+# define ZbHeapFree(_zb_, _ptr_)             zb_heap_free(_zb_, _ptr_, "", 0)
+#endif
 
 /**
  * Current size of memory allocated from the zigbee stack heap
@@ -669,10 +714,8 @@ unsigned long ZbHeapHighWaterMark(struct ZigBeeT *zb);
 #include "zigbee.filter.h"
 #include "zigbee.security.h"
 #include "zigbee.hash.h"
-#if (CONFIG_ZB_REV >= 23)
-# include "zigbee.tlv.h"
-# include "zigbee.dlk.h"
-#endif
+#include "zigbee.tlv.h"
+#include "zigbee.dlk.h"
 #include "zigbee.bdb.h"
 #include "zigbee.aps.h"
 #include "zigbee.nwk.h"

@@ -124,20 +124,21 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 {
   (void)(aInstance);
   uint64_t alarm_expire_step = 0;
-  uint32_t curr_time_ms = otPlatAlarmMilliGetNow();
+  uint32_t curr_time_ms = 0;
   uint32_t ret = 0;
   uint32_t alarm_expire_ms;
 
+  /* Start critical section */
+  LINKLAYER_PLAT_DisableIRQ();
+  
   milli_alarm_struct_st[0].expires = aT0 + aDt;
   milli_alarm_struct_st[0].sIsRunning = 1;
 
   /* Stop Alarm */
-  LINKLAYER_PLAT_DisableIRQ();
-
   os_timer_stop(milli_timer_id);
 
-  LINKLAYER_PLAT_EnableIRQ();
-
+  curr_time_ms = otPlatAlarmMilliGetNow();
+  
   /* check if Alarm in the Past */
   if (curr_time_ms > (aT0 + aDt))
   {
@@ -181,10 +182,9 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
     }
     else
     {
-      LINKLAYER_PLAT_DisableIRQ();
       /* Start Sleeptimer to schedule alarm */
       ret = os_timer_start(milli_timer_id, (uint32_t)alarm_expire_step);
-      LINKLAYER_PLAT_EnableIRQ();
+
       if (ret != 0)
       {
         /* os_timer_start shouldn't return error */
@@ -192,6 +192,10 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
       }
     }
   }
+  
+  /* end critical section */
+  LINKLAYER_PLAT_EnableIRQ();
+  
 }
 
 void otPlatAlarmMilliStop(otInstance *aInstance)

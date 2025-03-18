@@ -68,11 +68,7 @@
 
 #include "zcl/zcl.h"
 
-/* Protocal Ids less than this value do not pertain to manufacturer specific protocols.
- * For values greater than or equal to this value, the Protocol Id and Manufacturer Code must match. */
-#define ZCL_TUNNEL_PROTO_ID_MANUF_MIN               200U
-
-/** Manufacturer code unused. If Protocal Id is less than ZCL_TUNNEL_PROTO_ID_MANUF_MIN,
+/** Manufacturer code unused. If Protocal Id is less than ZCL_TUNNEL_PROTO_MANUF_MIN,
  * this special manufacturer code should be used. */
 #define ZCL_TUNNEL_MANUFACTURER_CODE_UNUSED         0xffffU
 
@@ -121,7 +117,9 @@ enum ZbZclTunnelProtocolT {
     ZCL_TUNNEL_PROTO_GB_HRGP = 6, /**< GB-HRGP */
     ZCL_TUNNEL_PROTO_IPV4 = 7, /**< IP v4 */
     ZCL_TUNNEL_PROTO_IPV6 = 8, /**< IP v6 */
-    ZCL_TUNNEL_PROTO_MANUFACTURER = 200, /**< Manufacturer-defined protocols */
+    ZCL_TUNNEL_PROTO_MANUF_MIN = 200,
+    /**< Start of manufacturer specific protocols. For values greater than or
+     * equal to this value, the Protocol Id and Manufacturer Code must match. */
     ZCL_TUNNEL_PROTO_RESERVED = 0xff /**< Reserved */
 };
 

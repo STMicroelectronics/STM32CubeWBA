@@ -554,7 +554,7 @@ static void Button_InitTask( void )
 #ifdef CFG_BSP_ON_CEB
   /* Task associated with push button B2 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
-#else // CFG_BSP_ON_CEB
+#else /* CFG_BSP_ON_CEB */
   /* Task associated with push button B1 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B1, UTIL_SEQ_RFU, APP_BSP_Button1Action );
 
@@ -648,7 +648,6 @@ static void Button_TriggerActions( void * arg )
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
 
 #ifdef CFG_BSP_ON_CEB
-  /* For B-WBA5M-WPAN board, Button B2 as same task as Button B1 on other boards */
   if ( p_buttonDesc->button == B2 )
   {
 #ifdef CFG_BSP_ON_FREERTOS
@@ -725,7 +724,6 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 
   /* Parse received frame */
 #ifdef CFG_BSP_ON_CEB
-  /* For Board B_WBA5M_WPAN, the only button (same as B1 on other board) is named B2. */
   if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
        (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
   {

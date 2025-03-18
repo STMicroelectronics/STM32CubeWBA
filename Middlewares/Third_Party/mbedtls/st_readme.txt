@@ -20,6 +20,21 @@
   @Note Mbed-TLS release
    For additional information on the Mbed-TLS release, consult the changelog file.
 
+### 24-January-2025 ###
+========================
+    + Add CODE_OF_CONDUCT.md
+    + Renamed README.md to MBEDTLS_README.md
+    + Add ST README.md
+    + Add HUK feature to allow cipher operation using the hardware unique key on STM32
+    + Set MBEDTLS_PRIVATE for pk in mbedtls_pk_get_ec_group_id
+    + Update st_readme.txt
+
+### 25-November-2024 ###
+========================
+    + Move to Mbed-TLS V3.6.2 to get fix for CVE-2024-49195
+    + Keep ST patchs from Mbed TLS V3.6.1
+    + Update st_readme.txt
+
 ### 10-september-2024 ###
 ========================
     + Move to Mbed-TLS V3.6.1

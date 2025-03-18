@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -66,6 +66,9 @@ extern "C" {
 #define TASK_PRIO_ZIGBEE_APP_START              (17u)
 #define TASK_PREEMP_ZIGBEE_APP_START            (0u)
 
+#define TASK_PRIO_IDLE                          (31u)
+#define TASK_PREEMP_IDLE                        (0u)
+
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     (13u)
 #define TASK_PREEMP_BUTTON_Bx                   (13u)
@@ -90,8 +93,9 @@ extern "C" {
 #define TASK_STACK_SIZE_ZIGBEE_LAYER            RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_ZIGBEE_NETWORK_FORM     RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_ZIGBEE_APP_START        RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
-#define TASK_BUTTON_Bx_STACK_SIZE               RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 
 /* USER CODE END TASK_Size_Define */
 

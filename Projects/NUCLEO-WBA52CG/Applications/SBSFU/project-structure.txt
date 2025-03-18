@@ -1,2 +1,0 @@
-mainProject = SBSFU_Appli
-compilingOrder = SBSFU_Boot, SBSFU_Appli, SBSFU_Loader

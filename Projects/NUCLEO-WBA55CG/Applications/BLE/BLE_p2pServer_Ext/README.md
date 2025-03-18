@@ -1,6 +1,6 @@
 ## __BLE_p2pServer_Ext Application Description__
 
-Demonstrate STM32WBA using BLE stack full version to use several extended advertising sets.
+Demonstrate STM32WBA using BLE basic plus stack version to use several extended advertising sets.
 
 p2pServer_Ext application advertise several extended advertising sets:
 

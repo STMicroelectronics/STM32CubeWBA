@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,7 +32,7 @@
 void ST_MAC_preInit(void);
 MAC_Status_t ST_MAC_init(ST_MAC_callbacks_t * macCallback);
 
-/* Request */
+/* Request Primitive */
 MAC_Status_t ST_MAC_MLMEAssociateReq( MAC_handle st_mac_hndl , const  ST_MAC_associateReq_t * pAssociateReq );
 MAC_Status_t ST_MAC_MLMEDisassociateReq( MAC_handle st_mac_hndl , const  ST_MAC_disassociateReq_t * pDisassiociateReq );
 MAC_Status_t ST_MAC_MLMEGetReq( MAC_handle  st_mac_hndl ,const  ST_MAC_getReq_t * pGetReq );
@@ -53,7 +53,7 @@ MAC_Status_t ST_MAC_MLMESetPwrInfoTableReq( MAC_handle  st_mac_hndl, const ST_MA
 MAC_Status_t ST_MAC_MCPSDataReq( MAC_handle  st_mac_hndl ,const ST_MAC_dataReq_t * pDataReq );
 MAC_Status_t ST_MAC_MCPSPurgeReq( MAC_handle  st_mac_hndl ,const ST_MAC_purgeReq_t * pPurgeReq );
 
-/* Response */
+/* Response Primitive */
 MAC_Status_t ST_MAC_MLMEAssociateRes(MAC_handle st_mac_hndl ,const ST_MAC_associateRes_t * pAssociateRes);
 MAC_Status_t ST_MAC_MLMEOrphanRes(MAC_handle st_mac_hndl ,const ST_MAC_orphanRes_t * pOrphanRes);
 

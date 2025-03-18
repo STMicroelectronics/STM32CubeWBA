@@ -224,6 +224,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_adc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</locationURI>
+		</link> 
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
@@ -276,12 +281,12 @@
 		<link>
 			<name>Application/User/STM32_WPAN/App/app_mac.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/src/app_mac.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/Src/app_mac.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/app_mac_802_15_4_process.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/src/app_mac_802_15_4_process.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/Src/app_mac_802_15_4_process.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/bpka.c</name>

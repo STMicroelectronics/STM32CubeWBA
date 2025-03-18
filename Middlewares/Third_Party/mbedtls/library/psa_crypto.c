@@ -706,6 +706,12 @@ MBEDTLS_STATIC_TESTABLE psa_status_t psa_mac_key_can_do(
 psa_status_t psa_allocate_buffer_to_slot(psa_key_slot_t *slot,
                                          size_t buffer_length)
 {
+#if defined(USE_HUK)
+    if ((buffer_length == 0) && (slot->key.data == NULL)) {
+        return PSA_SUCCESS;
+    }
+#endif /* USE_HUK */
+
     if (slot->key.data != NULL) {
         return PSA_ERROR_ALREADY_EXISTS;
     }
@@ -742,10 +748,23 @@ psa_status_t psa_import_key_into_slot(
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_type_t type = attributes->type;
 
+#if defined(USE_HUK)
+    if ((data_length == 0) && (data == NULL)) {
+        return PSA_SUCCESS;
+    }
+    else
+    {
+        /* zero-length keys are never supported. */
+        if (data_length == 0){
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+    }
+#else
     /* zero-length keys are never supported. */
     if (data_length == 0) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
+#endif /* USE_HUK */
 
     if (key_type_is_raw_bytes(type)) {
         *bits = PSA_BYTES_TO_BITS(data_length);
@@ -2073,12 +2092,14 @@ psa_status_t psa_import_key(const psa_key_attributes_t *attributes,
 
     *key = MBEDTLS_SVC_KEY_ID_INIT;
 
+#if !defined (USE_HUK)
     /* Reject zero-length symmetric keys (including raw data key objects).
      * This also rejects any key which might be encoded as an empty string,
      * which is never valid. */
     if (data_length == 0) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
+#endif /* ! USE_HUK */
 
     /* Ensure that the bytes-to-bits conversion cannot overflow. */
     if (data_length > SIZE_MAX / 8) {

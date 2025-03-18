@@ -26,18 +26,17 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wba55g_discovery.h"
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM2;
 extern RNG_HandleTypeDef hrng;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel7;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel6;
 
 /* USER CODE BEGIN EV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-extern uint8_t JOY_StandbyExitFlag;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -67,7 +66,7 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&hramcfg_SRAM2, 0, sizeof(hramcfg_SRAM2));
   memset(&hrng, 0, sizeof(hrng));
-  memset(&handle_GPDMA1_Channel7, 0, sizeof(handle_GPDMA1_Channel7));
+  memset(&handle_GPDMA1_Channel6, 0, sizeof(handle_GPDMA1_Channel6));
 
   MX_GPIO_Init();
   MX_RAMCFG_Init();
@@ -90,8 +89,7 @@ void MX_StandbyExit_PeripheralInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-  JOY_StandbyExitFlag = 1;
-#endif /* CFG_JOYSTICK_SUPPORTED */
+  APP_BSP_StandbyExit();
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+
