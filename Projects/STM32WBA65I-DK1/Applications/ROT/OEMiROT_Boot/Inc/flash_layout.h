@@ -29,26 +29,22 @@
 /*#define OEMUROT_ENABLE*/                 /* Do not edit. Automatically configured by
                                           ROT provisioning script, depending on bootpath selected.
                                           Defined: the project is used for OEMuRoT boot stage
-                                          Undefined: the project is used for OEMuRoT boot stage */
+                                          Undefined: the project is used for OEMiRoT boot stage */
 
 /* Flash layout configuration : begin */
 #if !defined (OEMUROT_ENABLE)
 /*#define OEMIROT_FIRST_BOOT_STAGE*/ /* Undefined: the project is used to generate OEMiRoT for OEMiRoT boot path
                                         Defined: the project is used to generate OEMiRoT as first boot stage for OEMiRoT_OEMuRoT boot path */
 
+/*#define OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP*/   /* Defined: The first boot stage jump to oemurot in swap mode.
+                                                   UnDefined: The first boot stage jump to oemurot in overwrite mode. */
 #endif /* OEMUROT_ENABLE */
 
 #define MCUBOOT_OVERWRITE_ONLY          /* Defined: the FW installation uses overwrite method.
                                            UnDefined: The FW installation uses swap mode. */
 
-#define MCUBOOT_EXT_LOADER              /* Defined: Add external local loader application.
-                                               To enter it, press user button at reset.
-                                           Undefined: No external local loader application. */
-
-#if defined (OEMUROT_ENABLE)
-/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/   /* Defined: External OSPI flash used only for all secondary slots.
+/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/   /* Defined: External OSPI flash used for all secondary slots.
                                                Undefined: External OSPI flash not used. */
-#endif /* OEMUROT_ENABLE */
 
 #define MCUBOOT_APP_IMAGE_NUMBER 2      /* 1: S application only if FLASH_NS_PARTITION_SIZE = 0 ,
                                               else S and NS application binaries assembled in one single image.
@@ -75,6 +71,14 @@
 
 /* Total number of images */
 #define MCUBOOT_IMAGE_NUMBER (MCUBOOT_APP_IMAGE_NUMBER + MCUBOOT_S_DATA_IMAGE_NUMBER + MCUBOOT_NS_DATA_IMAGE_NUMBER)
+
+/* IMAGE_CODE_SIZE is the space available for the software binary image.
+ * It is less than the FLASH_PARTITION_SIZE because we reserve space
+ * for the image header and trailer introduced by the bootloader.
+ */
+#define BL2_HEADER_SIZE                         (0x400) /*!< Appli image header size */
+#define BL2_DATA_HEADER_SIZE                    (0x20)  /*!< Data image header size */
+#define BL2_TRAILER_SIZE                        (0x2000)
 
 /* Use image hash reference to reduce boot time (signature check bypass) */
 #define MCUBOOT_USE_HASH_REF
@@ -140,20 +144,32 @@
 #if defined(OEMIROT_FIRST_BOOT_STAGE) || defined(OEMUROT_ENABLE)
 
 /*
- * Those values are defined for OEMIROT_FIRST_BOOT_STAGE, but 
+ * Those values are defined for OEMIROT_FIRST_BOOT_STAGE, but
  * we also need some of them for OEMuROT provisioning.
  */
 #if defined(STM32WBA65xx)
-#define OEMIROT_AREA_1_SIZE             (0x1B8000)      /* 1760K */
-#define OEMIROT_AREA_2_OFFSET           (0x0C1E8000)    /* slot 2 address when flash size: 2 MBytes */
+#define OEMIROT_AREA_0_SIZE             (0x16000)       /* 88K */
+#if defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
+#define OEMIROT_AREA_1_SIZE             (0x1A4000)      /* 1680K */
+#else
+#define OEMIROT_AREA_1_SIZE             (0x1B4000)      /* 1744K */
+#endif
+#define OEMIROT_AREA_2_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_2_OFFSET           (0x1E8000)      /* slot 2 address when flash size: 2 MBytes */
 #elif defined(STM32WBA52xx) || defined(STM32WBA55xx)
-#define OEMIROT_AREA_1_SIZE             (0xB8000)       /* 736K */
-#define OEMIROT_AREA_2_OFFSET           (0x0C0E8000),   /* slot 2 address when flash size: 1 MBytes */
+#define OEMIROT_AREA_0_SIZE             (0x16000)       /* 88K */
+#if defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
+#define OEMIROT_AREA_1_SIZE             (0xA4000)       /* 656K */
+#else
+#define OEMIROT_AREA_1_SIZE             (0xB4000)       /* 720K */
+#endif
+#define OEMIROT_AREA_2_SIZE             (0x16000)       /* 88K */
+#define OEMIROT_AREA_2_OFFSET           (0xE8000)       /* slot 2 address when flash size: 1 MBytes */
 #else
 #error "Offset and size not defined for another target"
 #endif
 #define OEMIROT_AREA_BEGIN_OFFSET       (0x18000)
-#define OEMIROT_AREA_BL2_OFFSET         (0x0C006000)
+#define OEMIROT_AREA_BL2_OFFSET         (0x6000)
 #define OEMIROT_BL2_WRP_START           (0x4000)
 
 #endif  /* OEMIROT_FIRST_BOOT_STAGE || OEMUROT_ENABLE */
@@ -207,16 +223,37 @@
 
 /* area for BL2 code protected by hdp */
 #define FLASH_AREA_BL2_OFFSET           (FLASH_AREA_PERSO_OFFSET+FLASH_AREA_PERSO_SIZE)
+#if defined(OEMUROT_ENABLE)
+#define FLASH_AREA_BL2_SIZE             (0x11C00)
+
+/* Control area */
+#if ((FLASH_AREA_BL2_SIZE + BL2_HEADER_SIZE + BL2_TRAILER_SIZE) % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
+#error "FLASH_AREA_BL2_SIZE not compatible with OEMIROT_AREA_0_SIZE"
+#endif /* (FLASH_AREA_BL2_SIZE  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
+#else /*OEMUROT_ENABLE */
+
 #if !defined(MCUBOOT_OVERWRITE_ONLY)
 #define FLASH_AREA_BL2_SIZE             (0x12000)
 #else
 #define FLASH_AREA_BL2_SIZE             (0x10000)
 #endif
+/* Control area */
+#if (FLASH_AREA_BL2_SIZE  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
+#error "FLASH_AREA_BL2_SIZE  not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
+#endif /* (FLASH_AREA_BL2_SIZE  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
+#endif /*OEMUROT_ENABLE */
 
+#if defined(OEMUROT_ENABLE)
 /* HDP area end at this address */
-#define FLASH_BL2_HDP_END               (FLASH_AREA_BL2_OFFSET+FLASH_AREA_BL2_SIZE-1)
+#define FLASH_BL2_HDP_END               (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE + BL2_HEADER_SIZE -1)
 /* area for BL2 code not protected by hdp */
-#define FLASH_AREA_BL2_NOHDP_OFFSET     (FLASH_AREA_BL2_OFFSET+FLASH_AREA_BL2_SIZE)
+#define FLASH_AREA_BL2_NOHDP_OFFSET     (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE + BL2_HEADER_SIZE)
+#else /* OEMUROT_ENABLE */
+/* HDP area end at this address */
+#define FLASH_BL2_HDP_END               (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE -1)
+/* area for BL2 code not protected by hdp */
+#define FLASH_AREA_BL2_NOHDP_OFFSET     (FLASH_AREA_BL2_OFFSET + FLASH_AREA_BL2_SIZE)
+#endif /* OEMUROT_ENABLE */
 #define FLASH_AREA_BL2_NOHDP_SIZE       (FLASH_AREA_IMAGE_SECTOR_SIZE)
 /* control area for BL2 code protected by hdp */
 #if (FLASH_AREA_BL2_NOHDP_OFFSET % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
@@ -242,7 +279,7 @@
 
 #if  defined(OEMIROT_FIRST_BOOT_STAGE)
 /* For OEMIROT_FIRST_BOOT_STAGE we need 72K KB for S partition (FLASH_AREA_BL2_SIZE+FLASH_AREA_BL2_NOHDP_SIZE) */
-#define FLASH_S_PARTITION_SIZE          (FLASH_AREA_BL2_SIZE + 0x2000)
+#define FLASH_S_PARTITION_SIZE          (OEMIROT_AREA_0_SIZE)
 
 #elif (MCUBOOT_APP_IMAGE_NUMBER == 1) && (FLASH_NS_PARTITION_SIZE == 0)
 /* For FULL SECURE case, we need at least 32 KB for S partition */
@@ -289,10 +326,10 @@
 #define OEMUROT_HASH_REF_SIZE           (0x2000)
 #define OEMUROT_BL2_NVCNT_SIZE          (0x2000)
 
-#if defined(MCUBOOT_OVERWRITE_ONLY)
-#define OEMUROT_SCRATCH_SIZE            (0x0) /* Not used in MCUBOOT_OVERWRITE_ONLY mode */
-#else
+#if !defined(MCUBOOT_OVERWRITE_ONLY) || defined(OEMIROT_FIRST_BOOT_STAGE_FOR_SWAP)
 #define OEMUROT_SCRATCH_SIZE            (0x10000) /* 64 KB */
+#else
+#define OEMUROT_SCRATCH_SIZE            (0x0) /* Not used in MCUBOOT_OVERWRITE_ONLY mode */
 #endif /* MCUBOOT_OVERWRITE_ONLY */
 
 #define OEMUROT_PERSO_SIZE              (0x2000)
@@ -300,8 +337,12 @@
                                          OEMUROT_HASH_REF_SIZE + OEMUROT_BL2_NVCNT_SIZE + \
                                          OEMUROT_SCRATCH_SIZE + OEMUROT_PERSO_SIZE)
 #else /* OEMIROT_FIRST_BOOT_STAGE */
-#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE)
+#define OEMIROT_AREA_0_OFFSET           (OEMIROT_AREA_BEGIN_OFFSET + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_IMAGE_SECTOR_SIZE + FLASH_AREA_SCRATCH_SIZE)
+#if defined (OEMUROT_ENABLE)
+#define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE + BL2_TRAILER_SIZE)
+#else /* OEMUROT_ENABLE */
 #define FLASH_AREA_BEGIN_OFFSET         (FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE)
+#endif /* OEMUROT_ENABLE */
 #endif /* OEMIROT_FIRST_BOOT_STAGE */
 
 #define FLASH_AREAS_DEVICE_ID           (FLASH_DEVICE_ID - FLASH_DEVICE_ID)
@@ -487,12 +528,19 @@
 #define FLASH_AREA_7_SIZE               (0x0)
 #endif /* FLASH_AREA_7_ID */
 
+#if defined (OEMIROT_EXTERNAL_FLASH_ENABLE)
+/* flash areas end offset */
+#define FLASH_AREA_END_OFFSET           (FLASH_AREA_BEGIN_OFFSET + FLASH_AREA_4_SIZE + \
+                                         FLASH_AREA_0_SIZE + FLASH_AREA_1_SIZE + \
+                                         FLASH_AREA_5_SIZE)
+#else
 /* flash areas end offset */
 #define FLASH_AREA_END_OFFSET           (FLASH_AREA_BEGIN_OFFSET + FLASH_AREA_4_SIZE + \
                                          FLASH_AREA_0_SIZE + FLASH_AREA_1_SIZE + \
                                          FLASH_AREA_5_SIZE + FLASH_AREA_2_SIZE + \
                                          FLASH_AREA_3_SIZE + FLASH_AREA_6_SIZE + \
                                          FLASH_AREA_7_SIZE)
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 /* Control flash area end */
 #if (FLASH_AREA_END_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
 #error "FLASH_AREA_END_OFFSET  not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"

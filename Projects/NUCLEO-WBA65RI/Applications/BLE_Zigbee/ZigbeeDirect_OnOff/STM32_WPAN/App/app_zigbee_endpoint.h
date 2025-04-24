@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -33,13 +33,46 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* Exported defines ------------------------------------------------------------*/
+#define CLUSTER_NB_MAX                          6u          /* Maximum number of Clusters in this application */
 
+/* USER CODE BEGIN ED */
 
+/* USER CODE END ED */
+
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
+
+/* USER CODE END ET */
+
+/* Exported constants ------------------------------------------------------- */
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* External variables ------------------------------------------------------- */
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
+
+/* Exported macros -----------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
 
 /* Exported functions prototypes -------------------------------- */
-extern void       APP_ZIGBEE_ApplicationInit(void);
-extern void       APP_ZIGBEE_App_UartRxCallback(uint8_t *pData, uint16_t iSize, uint8_t cError);
-extern void       cli_port_print_fmt(const char *hdr, const char *fmt, ...);
+extern void       APP_ZIGBEE_ApplicationInit              ( void );
+extern void       APP_ZIGBEE_ApplicationStart             ( void );
+extern void       APP_ZIGBEE_PersistenceStartup           ( void );
+extern void       APP_ZIGBEE_ConfigEndpoints              ( void );
+extern bool       APP_ZIGBEE_ConfigGroupAddr              ( void );
+
+extern void       APP_ZIGBEE_GetStartupConfig             ( struct ZbStartupT * pstConfig );
+extern void       APP_ZIGBEE_SetNewDevice                 ( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability );
+
+/* USER CODE BEGIN EFP */
+extern void APP_ZIGBEE_DirectInit(void);
+/* USER CODE END EFP */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

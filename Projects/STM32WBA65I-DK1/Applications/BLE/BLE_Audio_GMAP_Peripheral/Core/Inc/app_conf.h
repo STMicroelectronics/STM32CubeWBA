@@ -516,8 +516,8 @@ typedef enum
 
 /**
  * When CFG_JOYSTICK_TYPE_BUTTON is:
- *   - set to 1, Joystick callback is called only when Joystick state change
- *   - set to 0, Joystick callback is called every 100 ms to report current state, except NONE state
+ *   - set to 1, Joystick state is checked periodically (ref JOYSTICK_PRESS_SAMPLE_MS) and Joystick callback is called only when Joystick state change
+ *   - set to 0, Joystick callback is called periodically (ref JOYSTICK_PRESS_SAMPLE_MS) to report current state, except NONE state
  */
 #define CFG_JOYSTICK_TYPE_BUTTON                (1)
 

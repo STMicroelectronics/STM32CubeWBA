@@ -30,6 +30,7 @@ extern "C" {
 #include "cmsis_os2.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -98,6 +99,8 @@ typedef enum
   PROC_GAP_PERIPH_ADVERTISE_STOP,
   PROC_GAP_PERIPH_ADVERTISE_DATA_UPDATE,
   PROC_GAP_PERIPH_CONN_PARAM_UPDATE,
+
+  PROC_GAP_PERIPH_SET_BROADCAST_MODE,
   /* USER CODE BEGIN ProcGapPeripheralId_t */
 
   /* USER CODE END ProcGapPeripheralId_t */

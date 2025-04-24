@@ -73,6 +73,7 @@ FLASH_BBAttributesTypeDef BBSecInitStruct;
 /* Private function prototypes -----------------------------------------------*/
 static void NonSecure_Init(void);
 static void MX_GTZC_S_Init(void);
+static void MX_SAU_Init(void);
 /* USER CODE BEGIN PFP */
 static uint32_t GetPage(uint32_t Address);
 
@@ -121,6 +122,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_SAU_Init();
   /* USER CODE BEGIN 2 */
   /* Initialize LD2 */
   BSP_LED_Init(LD2);
@@ -283,6 +285,27 @@ static void MX_GTZC_S_Init(void)
   /* USER CODE BEGIN GTZC_S_Init 2 */
 
   /* USER CODE END GTZC_S_Init 2 */
+
+}
+
+/**
+  * @brief SAU Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SAU_Init(void)
+{
+
+  /* USER CODE BEGIN SAU_Init 0 */
+
+  /* USER CODE END SAU_Init 0 */
+
+  /* USER CODE BEGIN SAU_Init 1 */
+
+  /* USER CODE END SAU_Init 1 */
+  /* USER CODE BEGIN SAU_Init 2 */
+
+  /* USER CODE END SAU_Init 2 */
 
 }
 

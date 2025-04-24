@@ -47,7 +47,7 @@
 	</Param>
 	<Param>
 		<Name>Firmware area size</Name>
-		<Value>0x9000</Value>
+		<Value>0x8000</Value>
 		<Type>Data</Type>
 		<Command>-S</Command>
 		<Hidden>1</Hidden>
@@ -108,7 +108,7 @@
 	</Param>
 	<Output>
 		<Name>Image output file</Name>
-		<Value>..\..\..\Applications\ROT\OEMiROT_Appli_TrustZone\Binary\oemurot_tz_s_app_enc_sign.bin</Value>
+		<Value>..\..\..\Applications\ROT\OEMiROT_Appli_TrustZone\Binary\oemurot_tz_s_app_init_sign.bin</Value>
 		<Default>../../../Applications/ROT/OEMiROT_Appli_TrustZone/Binary/oemurot_tz_s_app_enc_sign.bin</Default>
 	</Output>
   </McubootFormat>

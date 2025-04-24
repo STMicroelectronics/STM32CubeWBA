@@ -312,7 +312,7 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestRawValue (const ADCCTRL_Handle_t * co
 }
 
 __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t * const p_Handle,
-                                                        uint16_t * const p_ReadValue)
+                                                        int16_t * const p_ReadValue)
 {
   ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
 

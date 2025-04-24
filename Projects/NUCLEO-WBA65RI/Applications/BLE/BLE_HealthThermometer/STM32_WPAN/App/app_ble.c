@@ -1318,7 +1318,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   LOG_INFO_APP("-- DEVICE INFO CHAR : Revision ID = 0x%02X %02X\n",a_GATT_DevInfoData[3],a_GATT_DevInfoData[2]);
   
   /* Board ID: Nucleo WBA, DK1 WBA... */
-  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA5X;
+  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA6X;
   LOG_INFO_APP("-- DEVICE INFO CHAR : Board ID = 0x%02X\n",a_GATT_DevInfoData[4]);
 
   /* HW Package: QFN32, QFN48... */
@@ -1707,7 +1707,7 @@ static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p
         p_adv_data[i+2] = ST_MANUF_ID;
         p_adv_data[i+3] = 0x00;
         p_adv_data[i+4] = BLUESTSDK_V2; /* blueST SDK version */
-        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA5X; /* Board ID */
+        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA6X; /* Board ID */
         p_adv_data[i+6] = FW_ID_HEALTH_THERMO; /* FW ID */
         p_adv_data[i+7] = 0x00; /* FW data 1 */
         p_adv_data[i+8] = 0x00; /* FW data 2 */

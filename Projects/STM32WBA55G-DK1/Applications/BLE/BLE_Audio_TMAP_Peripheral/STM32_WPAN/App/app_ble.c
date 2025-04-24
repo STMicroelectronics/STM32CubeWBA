@@ -353,7 +353,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           UNUSED(p_conn_update_complete);
 
           /* USER CODE BEGIN EVT_LE_CONN_UPDATE_COMPLETE */
-          uint16_t conn_interval_us = 0;
+          uint32_t conn_interval_us = 0;
           conn_interval_us = p_conn_update_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_UPDATE_COMPLETE_SUBEVT_CODE\n");
           LOG_INFO_APP("     - Connection Interval:   %d.%02d ms\n     - Connection latency:    %d\n     - Supervision Timeout:   %d ms\n",
@@ -382,7 +382,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           p_enhanced_conn_complete = (hci_le_enhanced_connection_complete_event_rp0 *) p_meta_evt->data;
           UNUSED(p_enhanced_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
-          uint16_t conn_interval_us = 0;
+          uint32_t conn_interval_us = 0;
           uint8_t type, a_address[6];
           conn_interval_us = p_enhanced_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n", p_enhanced_conn_complete->Connection_Handle);
@@ -456,7 +456,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           p_conn_complete = (hci_le_connection_complete_event_rp0 *) p_meta_evt->data;
           UNUSED(p_conn_complete);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-          uint16_t conn_interval_us = 0;
+          uint32_t conn_interval_us = 0;
           uint8_t type, a_address[6];
           conn_interval_us = p_conn_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n", p_conn_complete->Connection_Handle);

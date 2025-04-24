@@ -82,11 +82,36 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+/**
+  * @brief Init PBP Sink Application
+  * @retval Status of the operation
+  */
 uint8_t PBPAPP_InitSink(void);
+
+/**
+  * @brief Start PBP Sink
+  * @retval Status of the operation
+  */
 uint8_t PBPAPP_StartSink(void);
+
+/**
+  * @brief Stop PBP Sink
+  * @retval Status of the operation
+  */
 uint8_t PBPAPP_StopSink(void);
-void PBPAPP_SwitchBrdSource(uint8_t next, uint32_t *pSourceID);
-uint32_t PBPAPP_GetBrdSource(void);
+
+/**
+  * @brief Switch to the following Broadcast Source of the list
+  * @param next: 1 to switch to next source, 0 to switch to previous one
+  * @retval Name of the new Broadcast Source
+  */
+char* PBPAPP_SwitchBrdSource(uint8_t next);
+
+/**
+  * @brief Returns the name of the current Broadcast Source
+  * @retval Name of the current Broadcast Source
+  */
+char* PBPAPP_GetBrdSourceName(void);
 
 #ifdef __cplusplus
 }

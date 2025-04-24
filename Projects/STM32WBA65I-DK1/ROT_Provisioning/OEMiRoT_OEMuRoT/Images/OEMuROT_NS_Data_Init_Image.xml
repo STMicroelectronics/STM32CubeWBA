@@ -122,7 +122,7 @@
 	</Param>
 	<Output>
 		<Name>Image output file</Name>
-		<Value>../Binary/ns_data_enc_sign.bin</Value>
+		<Value>..\Binary\ns_data_init_sign.bin</Value>
 		<Default>../Binary/ns_data_enc_sign.bin</Default>
 	</Output>
   </McubootFormat>

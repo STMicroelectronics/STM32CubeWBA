@@ -31,8 +31,6 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-#define BAP_BROADCAST_SOURCE_ID                         (0x000001) /* 3 Bytes Source ID */
-
 /*Audio Profiles Roles configuration*/
 #define APP_BAP_ROLE_UNICAST_SERVER_SUPPORT             (0u)
 #define APP_BAP_ROLE_UNICAST_CLIENT_SUPPORT             (0u)

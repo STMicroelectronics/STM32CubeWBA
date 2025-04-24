@@ -85,12 +85,10 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-
 /* OnOff Server Callbacks */
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOffCallback               ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOnCallback                ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerToggleCallback            ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
-
 static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
 {
   .off = APP_ZIGBEE_OnOffServerOffCallback,

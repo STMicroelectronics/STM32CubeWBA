@@ -59,17 +59,18 @@ extern osThreadId_t HRSAPPMeasurementsTaskHandle;
 extern osTimerId_t advLowPowerTimerHandle;
 extern osTimerId_t HRSAPPMeasurementsTimerHandle;
 extern osMessageQueueId_t advertisingCmdQueueHandle;
-extern osSemaphoreId_t HRSAPPMeasurementsSemaphoreHandle;
+extern osSemaphoreId_t    HRSAPPMeasurementsSemaphoreHandle;
+
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
-/* USER CODE END FunctionPrototypes */
 
 void advertisingTask_Entry(void *argument);
 void HRSAPPMeasurementsTask_Entry(void *argument);
 void advLowPowerTimer_cb(void *argument);
 void HRSAPPMeasurementsTimer_cb(void *argument);
+
+/* USER CODE END FunctionPrototypes */
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 

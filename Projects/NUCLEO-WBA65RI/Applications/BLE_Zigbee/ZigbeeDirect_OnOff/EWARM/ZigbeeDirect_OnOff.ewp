@@ -424,11 +424,12 @@
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/zd</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zgp</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite\src\include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/src/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/zd</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/sha/include</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/mac</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/stm32wba</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/mac</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee//include_zd/ble_interface</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
                 </option>
@@ -1198,6 +1199,36 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_endpoint.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\dis.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\dis_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\hrs.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\hrs_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\tunneling.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\tunneling_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zddsecurity.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zddsecurity_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zigbeedirectcomm.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zigbeedirectcomm_app.c</name>
                     </file>
                 </group>
                 <group>

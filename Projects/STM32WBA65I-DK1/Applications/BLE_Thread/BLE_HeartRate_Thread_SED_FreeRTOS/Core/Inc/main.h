@@ -80,6 +80,7 @@ void ConfigureStandbyWakeupPins(void);
 
 /* USER CODE END Private defines */
 
+
 #ifdef __cplusplus
 }
 #endif

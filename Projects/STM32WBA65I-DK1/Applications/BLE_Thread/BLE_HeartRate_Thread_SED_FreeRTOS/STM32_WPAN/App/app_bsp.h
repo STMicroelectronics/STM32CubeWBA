@@ -84,7 +84,7 @@ extern osSemaphoreId_t      ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaph
 extern TX_SEMAPHORE         JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore;
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_FREERTOS
-extern osSemaphoreId_t      JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore;
+extern osSemaphoreId_t      JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore, JoystickNoneSemaphore, JoystickNoneThread;
 #endif /* CFG_BSP_ON_FREERTOS */
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
@@ -119,12 +119,16 @@ void      BSP_PB_Callback                 ( Button_TypeDef button );
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )
 void      APP_BSP_JoystickInit            ( void );
+uint8_t   APP_BSP_JoystickIsLongPressed   ( void );
+uint8_t   APP_BSP_JoystickIsShortReleased ( void );
+uint8_t   APP_BSP_JoystickIsInitialPress  ( void );
 
 void      APP_BSP_JoystickUpAction        ( void );
 void      APP_BSP_JoystickRightAction     ( void );
 void      APP_BSP_JoystickDownAction      ( void );
 void      APP_BSP_JoystickLeftAction      ( void );
 void      APP_BSP_JoystickSelectAction    ( void );
+void      APP_BSP_JoystickNoneAction      ( void );
 
 void      BSP_JOY_Callback                ( JOY_TypeDef joyNb, JOYPin_TypeDef joyPin );
 

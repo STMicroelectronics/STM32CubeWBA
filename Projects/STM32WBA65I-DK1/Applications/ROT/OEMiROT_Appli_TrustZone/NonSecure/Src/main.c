@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include "com.h"
 #include "common.h"
-#include "appli_flash_layout.h"
+#include "appli_region_defs.h"
 #include "secure_nsc.h"
 #include "Driver_Flash.h"
 #if defined(USE_STM32WBA65I_DK1)

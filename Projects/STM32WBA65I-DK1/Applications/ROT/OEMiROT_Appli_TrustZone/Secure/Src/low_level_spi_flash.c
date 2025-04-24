@@ -24,14 +24,7 @@
 #include <inttypes.h>
 
 #if defined (OEMIROT_EXTERNAL_FLASH_ENABLE)
-#include "stm32wba65i_discovery_eeprom.h"
-#ifdef OEMIROT_DEV_MODE
-#define BOOT_LOG_LEVEL BOOT_LOG_LEVEL_INFO
-#else
-#define BOOT_LOG_LEVEL BOOT_LOG_LEVEL_OFF
-#endif /* OEMIROT_DEV_MODE  */
-#include "bootutil/bootutil_log.h"
-
+#include "stm32wba65i_discovery_conf.h"
 
 char StatusRegRxBuffer[1] = {0xFF};
 
@@ -279,9 +272,7 @@ static int32_t Spi_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
   /* Check Flash memory boundaries */
   if (!is_range_valid(&ARM_SPI_FLASH0_DEV, addr + cnt - 1))
   {
-#ifdef DEBUG_SPI_FLASH_ACCESS
     printf("read spi not allowed 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
-#endif
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
@@ -353,9 +344,7 @@ static int32_t Spi_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 
   if (err != BSP_ERROR_NONE)
   {
-#ifdef DEBUG_SPI_FLASH_ACCESS
     printf("failed read spi 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
-#endif /* DEBUG_SPI_FLASH_ACCESS */
     return ARM_DRIVER_ERROR;
   }
 
@@ -381,9 +370,7 @@ static int32_t Spi_Flash_ProgramData(uint32_t addr,
       (!is_write_allow(&ARM_SPI_FLASH0_DEV, addr, cnt))
      )
   {
-#ifdef DEBUG_SPI_FLASH_ACCESS
     printf("write spi not allowed 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
-#endif
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
@@ -406,10 +393,7 @@ static int32_t Spi_Flash_ProgramData(uint32_t addr,
 
   if (err != BSP_ERROR_NONE)
   {
-    BOOT_LOG_ERR("->>> Failed to write 0x%" PRIx32 " bytes at 0x%" PRIx32 " (Error 0x%" PRIx32 ")", cnt, (uint32_t)(SPI_FLASH_BASE_ADDRESS + addr), err);
-#ifdef DEBUG_SPI_FLASH_ACCESS
-    printf("failed write spi 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
-#endif /* DEBUG_SPI_FLASH_ACCESS */
+    printf("->>> Failed to write 0x%" PRIx32 " bytes at 0x%" PRIx32 " (Error 0x%" PRIx32 ")", cnt, (uint32_t)(SPI_FLASH_BASE_ADDRESS + addr), err);
     return ARM_DRIVER_ERROR;
   }
   return ARM_DRIVER_OK;
@@ -428,32 +412,34 @@ static int32_t Spi_Flash_EraseSector(uint32_t addr)
       !(is_erase_aligned(&ARM_SPI_FLASH0_DEV, addr)) ||
       !(is_erase_allow(&ARM_SPI_FLASH0_DEV, addr)))
   {
-#ifdef DEBUG_SPI_FLASH_ACCESS
     printf("erase spi not allowed 0x%x\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
-#endif
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
 
   ARM_SPI_FLASH0_STATUS.busy = DRIVER_STATUS_BUSY;
 
-  if (ARM_SPI_FLASH0_DEV.data->sector_size == SPI_FLASH0_SECTOR_SIZE)
+  if (BSP_EEPROM_WriteEnable(BSP_EEPROM_0) == M95_OK)
   {
-    err = BSP_EEPROM_EraseSector(0, addr);
+    if (ARM_SPI_FLASH0_DEV.data->sector_size == SPI_FLASH0_SECTOR_SIZE)
+    {
+      err = BSP_EEPROM_EraseSector(0, addr);
+    }
+    else
+    {
+      err = BSP_ERROR_WRONG_PARAM;
+    }
   }
   else
   {
-    err = BSP_ERROR_WRONG_PARAM;
+    err = BSP_ERROR_FEATURE_NOT_SUPPORTED;
   }
 
   ARM_SPI_FLASH0_STATUS.busy = DRIVER_STATUS_IDLE;
 
   if (err != BSP_ERROR_NONE)
   {
-    BOOT_LOG_ERR("->>> Erase failed at 0x%" PRIx32 " (Error 0x%" PRIx32 ")", (uint32_t)(SPI_FLASH_BASE_ADDRESS + addr), err);
-#ifdef DEBUG_SPI_FLASH_ACCESS
-    printf("erase spi failed 0x%x\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
-#endif
+    printf("->>> Erase failed at 0x%" PRIx32 " (Error 0x%" PRIx32 ")", (uint32_t)(SPI_FLASH_BASE_ADDRESS + addr), err);
     return ARM_DRIVER_ERROR;
   }
   return ARM_DRIVER_OK;
@@ -461,7 +447,13 @@ static int32_t Spi_Flash_EraseSector(uint32_t addr)
 
 static int32_t Spi_Flash_EraseChip(void)
 {
-  return ARM_DRIVER_ERROR_UNSUPPORTED;
+  /* Write enable is required before erasing chip */
+  if (BSP_EEPROM_WriteEnable(BSP_EEPROM_0) != M95_OK)
+    return ARM_DRIVER_ERROR;
+
+  if (BSP_EEPROM_EraseChip(BSP_EEPROM_0) != BSP_ERROR_NONE)
+    return ARM_DRIVER_ERROR;
+  return ARM_DRIVER_OK;
 }
 
 static ARM_FLASH_STATUS Spi_Flash_GetStatus(void)

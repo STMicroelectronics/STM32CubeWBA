@@ -53,7 +53,7 @@ extern "C" {
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     osPriorityNormal
-#define TASK_PRIO_JOYSTICK_x                   osPriorityNormal
+#define TASK_PRIO_JOYSTICK_x                    osPriorityLow
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
@@ -91,6 +91,12 @@ extern "C" {
 #define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
 #define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
 #define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
+
+
+#define CFG_TASK_PRIO_ADVERTISING               osPriorityNormal
+#define TASK_ADVERTISING_STACK_SIZE             RTOS_STACK_SIZE_MODERATE
+#define CFG_TASK_PRIO_HRS_APP_MEAS              osPriorityNormal
+#define TASK_HRS_APP_MEAS_STACK_SIZE            RTOS_STACK_SIZE_MODERATE
 
 
 /* USER CODE END TASK_Size_Define */

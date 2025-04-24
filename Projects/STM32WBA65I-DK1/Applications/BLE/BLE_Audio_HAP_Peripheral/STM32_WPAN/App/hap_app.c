@@ -2012,8 +2012,8 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
       LOG_INFO_APP("Failed to set the Supported Source Audio Locations\n");
       return status;
     }
-  }
 #endif  /* (APP_NUM_SRC_ASE >= 1) */
+  }
 
   /* Set supported Audio Contexts for reception and transmission */
   status = CAP_SetSupportedAudioContexts(supported_snk_context, supported_src_context);
@@ -4620,7 +4620,7 @@ tBleStatus CSIPAPP_RegisterCSIS(uint8_t instance_id,
 
   tBleStatus status;
   uint8_t inst_id = instance_id;
-  CSIS_ServiceInit_t pInit;
+  CSIS_ServiceInit_t pInit = {0};
   Audio_Location_t audio_locations;
 
   pInit.SIRK_type = SIRK_type;

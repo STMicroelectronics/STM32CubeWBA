@@ -79,7 +79,7 @@ void MX_CRC_Init(void);
 void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN EFP */
-void ConfigureStandbyWakeupPins(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

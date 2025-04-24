@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -99,6 +99,7 @@ typedef enum
   PROC_GAP_PERIPH_CONN_PARAM_UPDATE,
   /* USER CODE BEGIN ProcGapPeripheralId_t */
   PROC_GAP_PERIPH_SET_BROADCAST_MODE_LP,
+
   /* USER CODE END ProcGapPeripheralId_t */
 }ProcGapPeripheralId_t;
 
@@ -153,6 +154,7 @@ void APP_BLE_Key_Button1_Action(void);
 void APP_BLE_Key_Button2_Action(void);
 void APP_BLE_Key_Button3_Action(void);
 void Check_Button(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

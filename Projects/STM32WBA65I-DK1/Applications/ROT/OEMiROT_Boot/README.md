@@ -102,7 +102,6 @@ For more details, refer to STM32WBA Wiki articles:
 
 By default the anti-tamper is enabled for internal tamper events only. It is possible to change this configuration with
 OEMIROT_TAMPER_ENABLE define in Inc\\boot_hal_cfg.h.
-External tamper is TAMP_IN4 (PC13, user button) on STM32WBA65I-DK1 board.
 
 ```
 #define NO_TAMPER            (0)                   /*!< No tamper activated */
@@ -111,9 +110,10 @@ External tamper is TAMP_IN4 (PC13, user button) on STM32WBA65I-DK1 board.
 #define OEMIROT_TAMPER_ENABLE INTERNAL_TAMPER_ONLY /*!< TAMPER configuration flag  */
 ```
 
-If OEMIROT_TAMPER_ENABLE is changed to ALL_TAMPER, the anti-tamper protection is enabled with active tamper pins usage.
-Moreover, no warning message about anti-tamper detection will be displayed if the RDP level is set to 2,
-even with OEMIROT_DEV_MODE enabled.
+If OEMIROT_TAMPER_ENABLE is changed to ALL_TAMPER, the anti-tamper protection is enabled with passive tamper pin usage.
+It is needed to connect TAMP_IN4 (PC13 on CN8 pin 4) to VCC on the STM32WBA65I-DK1 board and reset the board to trigger a tamper event.
+When nothing is connected to TAMP_IN4, the application is running.
+Moreover, no warning message about anti-tamper detection will be displayed if OEMIROT_DEV_MODE enabled.
 
 ### <b>Restrictions:</b>
 

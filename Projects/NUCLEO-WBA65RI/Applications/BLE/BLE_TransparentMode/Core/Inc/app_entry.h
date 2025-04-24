@@ -60,7 +60,8 @@ extern "C" {
 #define CFG_FW_MAJOR_VERSION      (1)
 
 /* USER CODE BEGIN EC */
-
+#undef CFG_FW_SUBVERSION
+#define CFG_FW_SUBVERSION         (1)
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/

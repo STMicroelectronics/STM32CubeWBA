@@ -1,5 +1,10 @@
 /*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/bsp.h#1 $*/
-
+/**
+ * Version Info:
+ * V1: Original Version
+ * V2: LL timing profiling clarification [01800999]
+ */
+ 
 /**
  ********************************************************************************
  * @file    bsp.h
@@ -342,6 +347,7 @@ typedef enum Debug_GPIO_e{
 	DBG_IO_RAL_AD_SET_MEASUREMENT_STATE							,
     DBG_IO_PROFILE_CS_GEN                                       ,
     DBG_IO_PROFILE_CS_CHNL_SHUFFLING                            ,
+	DBG_IO_BACK_FROM_DEEP_SLEEP									,
 	Debug_GPIO_num
 
 }Debug_GPIO_t;

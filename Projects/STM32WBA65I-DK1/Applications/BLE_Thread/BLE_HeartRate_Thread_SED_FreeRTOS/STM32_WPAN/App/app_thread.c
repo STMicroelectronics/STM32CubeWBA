@@ -104,6 +104,7 @@ static void APP_THREAD_CoapRequestHandler(void                * pContext,
     const otMessageInfo * pMessageInfo);
 
 
+static void APP_THREAD_SendCoapMsgWithNoConf(void);
 
 
 #if (OT_CLI_USE == 1)
@@ -569,6 +570,21 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
 }
 
 /**
+ * @brief Send a non-confirmable CoAp message.
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_SendCoapMsgWithNoConf(void)
+{
+  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  
+  /* Send a NON-CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULICAST_FTD_MED,
+                              NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
+
+}
+
+/**
   * @brief Send a COAP multicast request to all the devices which are connected
   *        on the Thread network
   * @param None
@@ -936,7 +952,7 @@ static void APP_THREAD_Child_Role_Handler(void)
  */
 void APP_BSP_JoystickRightAction(void)
 {
-
+  APP_THREAD_SendCoapMsgWithNoConf();
 }
 
 /**

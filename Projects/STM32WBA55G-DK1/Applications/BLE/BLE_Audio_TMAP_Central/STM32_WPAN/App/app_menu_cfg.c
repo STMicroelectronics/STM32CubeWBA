@@ -631,7 +631,6 @@ static void Menu_Disconnect(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Disconnect\n");
   TMAPAPP_Disconnect();
-  Menu_SetActivePage(p_scan_menu);
 }
 
 /**

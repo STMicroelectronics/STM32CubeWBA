@@ -1,5 +1,11 @@
 /*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/common_types.h#1 $*/
 /**
+ * Version Info
+ * V1: Original 2.00a-lca01
+ * V2: CTE degradation api from case 01772304
+ * V3: fix Sequencer RAM segmentation issue
+ */
+/**
  ********************************************************************************
  * @file    common_types.h
  * @brief   This file contains common includes for BLE FW LL.
@@ -531,9 +537,11 @@ typedef enum {
 #endif /* SUPPORT_CONFIGURABLE_GAIN_FIX */
 
 #if SUPPORT_CONFIGURABLE_GAIN_FIX
+#define SUPPORT_DYNAMIC_PREEMPH_COEFF				1 			/* Enable\Disable dynamic preemphasis coefficients support */
 #define PREEMPH_GAIN_COEFF_STEP_SIZE				10 			/* percentage margin of single step */
 #define GAIN_FIX_WAKEUP_TIME_OVERHEAD				4 			/* in sleep timer units, the added time overhead from patching all pre-emphasis coefficients */
 #else
+#define SUPPORT_DYNAMIC_PREEMPH_COEFF				0
 #define GAIN_FIX_WAKEUP_TIME_OVERHEAD				0
 #endif /* SUPPORT_CONFIGURABLE_GAIN_FIX */
 
@@ -550,6 +558,16 @@ typedef enum {
 #else
 #define PHY_SHUTDOWN_WAKEUP_TIME_OVERHEAD			0
 #endif /* SUPPORT_PHY_SHUTDOWN_MODE */
+
+#ifndef SUPPORT_CTE_DEGRADATION_API
+#define SUPPORT_CTE_DEGRADATION_API					0 /* Enable\Disable CTE PHY Degradation fix support */
+#endif /* SUPPORT_CTE_DEGRADATION_API */
+
+#if (defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a))
+#define CTE_DEGRADATION_API_PHY_SUPPORT				SUPPORT_CTE_DEGRADATION_API
+#else
+#define CTE_DEGRADATION_API_PHY_SUPPORT				0
+#endif /* defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a) */
 
 #ifndef SUPPORT_GNRC_SCHDLR_IF
 #define SUPPORT_GNRC_SCHDLR_IF				1

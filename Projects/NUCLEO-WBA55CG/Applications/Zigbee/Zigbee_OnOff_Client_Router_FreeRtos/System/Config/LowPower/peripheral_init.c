@@ -22,7 +22,6 @@
 #include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
-
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
@@ -88,3 +87,4 @@ void MX_StandbyExit_PeripheralInit(void)
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

@@ -64,22 +64,12 @@
  */
 #define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (250) /* 156 mS , NOTE was 128 (80 mS) */
-#define ADV_INTERVAL_MAX                  (1920) /* 1.2 Sec */
+#define ADV_INTERVAL_MIN                  (0x00FA)
+#define ADV_INTERVAL_MAX                  (0x0780)
 #define ADV_LP_INTERVAL_MIN               (0x0640)
 #define ADV_LP_INTERVAL_MAX               (0x0FA0)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
-
- /* Zigbee Direct Spec recommends a connection interval between 7.5 mS and 100 mS.
- * A shorter connection interval means the BLE side uses more radio resources,
- * where a longer connection interval means BLE messages take longer to be sent.
- * Zigbee tunneling should work fine with a connection interval on the order of
- * 100 mS. */
-/* connIntervalmax = Conn_Interval_Max x 1.25ms */
-#define ADV_CONN_INTVL_MIN                  16 /* 20 mS */
-#define ADV_CONN_INTVL_MAX                  80 /* 100 mS - this is the ZD recommended max */
-
 
 /**
  * Define IO Authentication
@@ -103,9 +93,7 @@
 /**
  * Define Secure Connections Support
  */
-#define CFG_SECURE_NOT_SUPPORTED          (0x00)
-#define CFG_SECURE_OPTIONAL               (0x01)
-#define CFG_SC_SUPPORT                    (CFG_SECURE_OPTIONAL)
+#define CFG_SC_SUPPORT                    (SC_PAIRING_OPTIONAL)
 
 /**
  * Define Keypress Notification Support
@@ -123,6 +111,15 @@
 #define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
 
 /* USER CODE BEGIN Generic_Parameters */
+
+/* Zigbee Direct Spec recommends a connection interval between 7.5 mS and 100 mS.
+ * A shorter connection interval means the BLE side uses more radio resources,
+ * where a longer connection interval means BLE messages take longer to be sent.
+ * Zigbee tunneling should work fine with a connection interval on the order of
+ * 100 mS. */
+/* connIntervalmax = Conn_Interval_Max x 1.25ms */
+#define ADV_CONN_INTVL_MIN                  16 /* 20 mS */
+#define ADV_CONN_INTVL_MAX                  80 /* 100 mS - this is the ZD recommended max */
 
 /* USER CODE END Generic_Parameters */
 
@@ -186,7 +183,7 @@
  *  - 2, if extended properties is used
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (2 * 1024)
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (2048)
 
 /**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
@@ -232,12 +229,13 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
+ *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  *
  * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
  *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
+ *   - 0 : Stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (0)
@@ -290,7 +288,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -332,6 +330,18 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
@@ -359,8 +369,6 @@ typedef enum
   CFG_TASK_FLASH_MANAGER,
   CFG_TASK_MAC_LAYER,
   CFG_TASK_ZIGBEE_LAYER,
-  CFG_TASK_AMM_BCKGND,
-  CFG_TASK_ZIGBEE_ZDD,
   CFG_TASK_ZIGBEE_NETWORK_FORM,   /* Tasks linked to Zigbee Start. */
   CFG_TASK_ZIGBEE_APP_START,
   CFG_TASK_ZIGBEE_APP1,           /* Tasks linked to Zigbee Application. */
@@ -371,7 +379,7 @@ typedef enum
   CFG_TASK_BUTTON_B1,
   CFG_TASK_BUTTON_B2,
   CFG_TASK_BUTTON_B3,
-
+  CFG_TASK_ZIGBEE_ZDD,
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
@@ -536,11 +544,8 @@ typedef enum
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
-/* Custom LSE sleep clock accuracy to use if both conditions are met:
- * - LSE is selected as Link Layer sleep clock source
- * - the LSE used is different from the default one.
- */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -564,7 +569,7 @@ typedef enum
 #define CFG_MM_POOL_SIZE                                  (60000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (4U)
 #define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE             (400U) /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
 #define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (3U)
@@ -626,12 +631,12 @@ typedef enum
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
     #define CFG_LOG_SUPPORTED       (0)
   #endif /* CFG_LOG_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN Defines_2 */
 /**

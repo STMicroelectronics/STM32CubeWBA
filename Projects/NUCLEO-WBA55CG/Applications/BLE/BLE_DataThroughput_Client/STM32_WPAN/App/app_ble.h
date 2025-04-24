@@ -148,6 +148,7 @@ void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen );
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

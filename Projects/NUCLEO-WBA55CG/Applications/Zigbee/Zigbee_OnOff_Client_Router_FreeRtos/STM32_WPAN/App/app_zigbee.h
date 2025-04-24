@@ -59,7 +59,6 @@ typedef struct ZigbeeAppInfoT
   uint32_t              lPersistNumWrites;
   uint32_t              lJoinDelay;
   uint64_t              dlExtendedAddress;
-
   /* USER CODE BEGIN ZigbeeAppInfo_t */
 
   /* USER CODE END ZigbeeAppInfo_t */

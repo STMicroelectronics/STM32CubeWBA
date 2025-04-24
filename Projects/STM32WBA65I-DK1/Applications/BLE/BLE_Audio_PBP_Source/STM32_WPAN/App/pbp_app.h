@@ -115,8 +115,19 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+/**
+  * @brief Initialize PBP Source and Start Broadcast Audio Procedure.
+  */
 uint8_t PBPAPP_InitSource(void);
+
+/**
+  * @brief   Start PBP Source
+  */
 uint8_t PBPAPP_StartSource(void);
+
+/**
+  * @brief   Stop PBP Source
+  */
 uint8_t PBPAPP_StopSource(void);
 
 #ifdef __cplusplus

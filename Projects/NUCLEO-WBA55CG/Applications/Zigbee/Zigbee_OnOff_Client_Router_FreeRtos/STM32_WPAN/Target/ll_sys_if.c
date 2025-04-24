@@ -70,12 +70,12 @@ const osSemaphoreAttr_t LinkLayerSemaphore_attributes = {
   .cb_size      = TASK_DEFAULT_CB_SIZE
 };
 
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -213,3 +213,4 @@ void ll_sys_sleep_clock_source_selection(void)
   }
   ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
 }
+

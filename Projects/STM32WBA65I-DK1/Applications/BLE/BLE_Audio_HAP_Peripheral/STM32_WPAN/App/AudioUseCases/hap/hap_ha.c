@@ -1047,7 +1047,7 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
           else if ((HAP_Context.HA.Features & HAP_WRITABLE_PRESETS_SUPPORTED) == 0)
           {
             BLE_DBG_HAP_HA_MSG("Writable Presets records are not supported\n");
-            err_code = ATT_ERR_INVALID_OPCODE;
+            err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
           }
           else
           {

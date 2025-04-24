@@ -1,9 +1,9 @@
 [ProjectFiles]
-HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo
 [Others]
 Define=
-HALModule=ADC
+HALModule=EXTI
 [Groups]
 Doc=../README.md;
-Drivers/BSP/STM32WBA55G-DK1=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c;
-Drivers/STM32WBAxx_HAL_Driver=../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c;
+Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Drivers/STM32WBAxx_HAL_Driver=../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c;

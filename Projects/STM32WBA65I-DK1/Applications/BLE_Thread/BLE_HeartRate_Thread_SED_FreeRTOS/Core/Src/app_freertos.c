@@ -19,13 +19,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_freertos.h"
-
+#include "stm32_rtos.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_ble.h"
 #include "hrs_app.h"
 #include "ll_sys_if.h"
 #include "timer_if.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,15 +52,15 @@
 osThreadId_t advertisingTaskHandle;
 const osThreadAttr_t advertisingTask_attributes = {
   .name = "advertisingTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512 * 4
+  .priority = CFG_TASK_PRIO_ADVERTISING,
+  .stack_size = TASK_ADVERTISING_STACK_SIZE
 };
 /* Definitions for HRSAPPMeasurementsTask */
 osThreadId_t HRSAPPMeasurementsTaskHandle;
 const osThreadAttr_t HRSAPPMeasurementsTask_attributes = {
   .name = "HRSAPPMeasurementsTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .priority = CFG_TASK_PRIO_HRS_APP_MEAS,
+  .stack_size = TASK_HRS_APP_MEAS_STACK_SIZE
 };
 /* Definitions for advLowPowerTimer */
 osTimerId_t advLowPowerTimerHandle;
@@ -218,9 +219,7 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
   for(;;)
   {
     osSemaphoreAcquire(HRSAPPMeasurementsSemaphoreHandle, osWaitForever);
-
     HRS_APP_Measurements();
-
     osThreadYield();
   }
   /* USER CODE END HRSAPPMeasurementsTask */

@@ -50,10 +50,12 @@
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
 #if defined(__ICCARM__) || defined(__ARMCC_VERSION) || defined(__GNUC__)
 #include <stdint.h>
+#include "stm32wba65xx.h"
 extern uint32_t SystemCoreClock;
 /* USER CODE BEGIN 0 */
 extern void configureTimerForRunTimeStats(void);
 extern unsigned long getRunTimeCounterValue(void);
+void Error_Handler(void);
 /* USER CODE END 0 */
 #endif
 #ifndef CMSIS_device_header
@@ -75,10 +77,10 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configTICK_RATE_HZ                       ((TickType_t)100)
 #define configMAX_PRIORITIES                     ( 56 )
 #define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
-#define configTOTAL_HEAP_SIZE                    ((size_t)32768)
+#define configTOTAL_HEAP_SIZE                    ((size_t)34000)
 #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP 0
 #define configMAX_TASK_NAME_LEN                  ( 32 )
-#define configGENERATE_RUN_TIME_STATS            1
+#define configGENERATE_RUN_TIME_STATS            0
 #define configUSE_TRACE_FACILITY                 1
 #define configUSE_STATS_FORMATTING_FUNCTIONS     1
 #define configUSE_16_BIT_TICKS                   0
@@ -153,11 +155,11 @@ function. */
 routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
 INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
 PRIORITY THAN THIS! (higher priorities are lower numeric values. */
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY 5
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY 4
 
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
 to all Cortex-M ports, and do not rely on any particular library functions. */
-#define configKERNEL_INTERRUPT_PRIORITY 		( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+#define configKERNEL_INTERRUPT_PRIORITY 	( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
@@ -183,4 +185,12 @@ header file. */
 #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP     3
 /* USER CODE END Defines */
 
+#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() do{ \
+                                                       if ( __get_IPSR() != 0 ){ \
+                                                         if ( NVIC_GetPriority( __get_IPSR() - 16 ) \
+                                                              < configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY ){ \
+                                                           Error_Handler();\
+                                                         } \
+                                                       } \
+                                                     }while(0);
 #endif /* FREERTOS_CONFIG_H */

@@ -19,73 +19,131 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<h2 id="ZigbeeDirect_OnOff-application-description"><strong>ZigbeeDirect_OnOff Application Description</strong></h2>
-<p>Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones or tablets without the need for a dedicated Zigbee hub or gateway.</p>
-<p>Inside the Zigbee Direct ecosystem, you have two main actors : the ZVD (Zigbee Virtual Device) and the ZDD (Zigbee Direct Device). On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by sending On and Off commands.</p>
-<h3 id="keywords"><strong>Keywords</strong></h3>
+<h2 id="__zigbeedirect_onoff-application-description__"><strong>ZigbeeDirect_OnOff Application Description</strong></h2>
+</br>
+<p>Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones 
+or tablets without the need for a dedicated Zigbee hub or gateway.
+Inside the Zigbee Direct ecosystem, you have two main actors : the ZVD (Zigbee Virtual Device) and the ZDD 
+(Zigbee Direct Device). On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by 
+sending On and Off commands.</p>
+<h3 id="__keywords__"><strong>Keywords</strong></h3>
 <p>Connectivity, ZigbeeDirect, Zigbee protocol, BLE, 802.15.4 protocol</p>
-<h3 id="hardware-requirements"><strong>Hardware Requirements</strong></h3>
+<h3 id="__hardware-requirements__"><strong>Hardware Requirements</strong></h3>
 <p>For this application it is requested to have at least:</p>
 <ul>
-<li>One STM32WBA55xx or STM32WBA65xx Nucleo board loaded with the application <strong>ZigbeeDirect_OnOff</strong></li>
-<li>One IOS device loaded with Ubisys Smart Home application</strong> </br></li>
+<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff</strong></li>
+<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong> (Use case 2 only)</li>
+<li>One IOS device loaded with Ubisys Smart Home application</li>
 </ul>
-<h3 id="Demo_use_case"><strong>Demo use case</strong></h3>
+<h3 id="__demo-use-case-1__"><strong>Demo use case 1</strong></h3>
+<p></br></p>
 <pre>
 
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)
+
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)                                                       
                    +-------------------------------+           +-----------------+
                    |                               |           |                 |
                    | Ubisys Smart Home Application |           | WBA5 or WBA6    |
-                   |      (running on IOS)         |           | Nucleo board    | 
+                   |      (running on IOS)         |           | Nucleo board    |
                    |                               |           |                 |
  Use the dedicated |                               |           |                 |
- smartphone apps =&gt;|                               | --------&gt; |                 |=&gt; LED toggle
+ smartphone apps =>|                               | --------> |                 |=> LED toggle
  to control the    |                               |           |                 |
  LED on the ZDD    |                               |           |                 |
  switch item       |                               |           |                 |
-                   +-------------------------------+           +-----------------+
+                   |-------------------------------|           |-----------------|
 
 
-</pre>
-<h3 id="application-setup"><strong>Application Setup</strong></h3>
+</pre> 
+
+<h3 id="__application-setup__"><strong>Application Setup</strong></h3>
 <ul>
-<li>First, open the project, build it and load your generated application on your STM32WBAxx device.</li>
-<li>To run the application :
-<ol type="1">
-<li><p>Start the board. This board is configured and is acting as a Zigbee Direct Device.</p></li>
-<li><p>Launch the Ubisys Application and follow the instructions described inside the following wiki page :</p>
-<p>https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</p></li>
-</ol></li>
-</ul>
-<h3 id="Help_Commands"><strong>Help Commands</strong></h3>
-<ul>
-<li><p>To get help, please have a look a the following commands. Open an HyperTerminal connected to the WBA board and enter the command Help. You will get access to the following commands:</p>
-<p></p>
-<p>APP_ZIGBEE_App_Task :    adv      ; Re-enable BLE advertisements</p>
-<p>APP_ZIGBEE_App_Task :    help     ; Print this help</p>
-<p>APP_ZIGBEE_App_Task :    on       ; Turn OnOff cluster LED ON</p>
-<p>APP_ZIGBEE_App_Task :    off      ; Turn OnOff cluster LED OFF</p>
-<p>APP_ZIGBEE_App_Task :    pjoin    ; Enable permit-join via ZDO broadcast</p>
-<p>APP_ZIGBEE_App_Task :    status   ; print overall status</p>
-<p>APP_ZIGBEE_App_Task :    swreset  ; board reset</p>
+<li>First, open the project, build it and load your generated application on your STM32WBA55xx or STM32WBA65xx device </li>
+<li><p>To run the application :</p>
+<ol>
+<li>Start the board. This board is configured and is acting as a Zigbee Direct Device. </li>
+<li>Launch the Ubisys Application and follow the instructions described in the chapter &quot; Demo 1 procedure&quot; of following wiki page :
+<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup">https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</a></li>
+</ol>
 </li>
 </ul>
-<h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
+<h3 id="__demo-use-case-2__"><strong>Demo use case 2</strong></h3>
+<p></br></p>
+<pre>
+
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)                ZD (Zigbee Device)                                                       
+                   +-------------------------------+           +-----------------+                +-----------------+
+                   |                               |           |                 |                |                 |
+                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |                | WBA5 or WBA6    |
+                   |      (running on IOS)         |           | Nucleo board    |                | Nucleo board    |
+                   |                               |           |                 |                |                 |
+     Use the    => |                               | --------> |                 |=> LED toggle   |                 |
+    dedicated      |                               |           |                 |                |                 |
+ smartphone apps   |                               |           |                 |                |                 |
+  to control the   |                               |           |                 |                |                 |
+  LED on the ZDD   |                               |           |                 |                |                 |
+   switch item  => |                               | --------> |                 | ----------->   |                 |=> LED toggle
+                   |                               |           |                 |                |                 |
+                   |-------------------------------|           |-----------------|                |-----------------|
+
+</pre> 
+
+<h3 id="__application-setup__"><strong>Application Setup</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA55xx and STM32WBA65xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo and STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
-<li><p>On STM32WBA55CGA_Nucleo or on STM32WBA65xx_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows: <br><br />
-<strong>JP1:</strong></br> 1-2: [ON]</br> 3-4: [OFF]</br> 5-6: [OFF]</br> 7-8: [OFF]</br> 9-10: [OFF]</br> <br> <strong>JP2:</strong></br> 1-2: [ON]</p></li>
+<li>First, open the ZDD project, build it and load your generated application on your STM32WBA55xx or STM32WBA65xx devices.</li>
+<li>To run the application :<ol>
+<li>Start the first board. This board is configured as Zigbee Direct Device. 
+Launch the Ubisys Application and follow the instructions described in the chapter &quot; Demo 2 procedure&quot; of following wiki page :
+<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup">https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</a></li>
+</ol>
+</li>
 </ul>
-<h3 id="traces"><strong>Traces</strong></h3>
+<h3 id="__help-commands__"><strong>Help Commands</strong></h3>
 <ul>
-<li><p>To get more information on the subject, please take a look at our ST Wiki page : https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</p></li>
-<li><p>To get the traces you need to connect your Board to the Hyperterminal (through the STLink Virtual COM Port).</p></li>
-<li><p>The UART must be configured as follows:<br />
-<br> BaudRate = 115200 baud</br> Word Length = 8 Bits</br> Stop Bit = 1 bit</br> Parity = none</br> Flow control = none</br> Terminal “Go to the Line” : &lt;LF&gt;</p></li>
+<li><p>To get help, please have a look a the following commands.
+Open an HyperTerminal connected to the WBA board and enter the command Help :
+You will get access to the following commands :  </p>
+<pre><code>     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    adv      ; Re-enable BLE advertisements
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    help     ; Print <span class="hljs-keyword">this</span> help
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    on       ; Turn OnOff cluster LED ON
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    off      ; Turn OnOff cluster LED OFF
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    pjoin    ; Enable permit-join via ZDO broadcast
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    status   ; print overall status
+     <span class="hljs-string">APP_ZIGBEE_App_Task :</span>    swreset  ; board reset
+</code></pre></li>
 </ul>
-</div>
-</div>
-</body>
-</html>
+<h3 id="__hardware-and-software-environment__"><strong>Hardware and Software environment</strong></h3>
+<ul>
+<li><p>This example runs on STM32WBA55xx and STM32WBA65xx devices.  </p>
+</li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo and STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.</p>
+</li>
+<li><p>On STM32WBA55CGA_Nucleo or on STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+<br><br><strong>JP1:</strong></br>
+1-2:  [ON]</br>
+3-4:  [OFF]</br>
+5-6:  [OFF]</br>
+7-8:  [OFF]</br>
+9-10: [OFF]</br>
+<br>
+<strong>JP2:</strong></br>
+1-2:  [ON]  </p>
+</li>
+</ul>
+<h3 id="__traces__"><strong>Traces</strong></h3>
+<ul>
+<li>To get more information on the subject, please take a look at our ST Wiki page : <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup">https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</a></li>
+</ul>
+<ul>
+<li><p>To get the traces and having access to the &#39;help&#39; function you need to connect your Board to the HyperTerminal (through the STLink Virtual COM Port).  </p>
+</li>
+<li><p>The UART must be configured as follows:<br><br>
+BaudRate       = 115200 baud</br>
+Word Length    = 8 Bits</br>
+Stop Bit       = 1 bit</br>
+Parity         = none</br>
+Flow control   = none</br>
+Terminal   &quot;Go to the Line&quot; </br> </p>
+</li>
+</ul>
+</body></html>

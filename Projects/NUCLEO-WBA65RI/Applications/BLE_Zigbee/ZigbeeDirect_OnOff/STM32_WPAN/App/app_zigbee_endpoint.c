@@ -1,9 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    app_zigbee_endpoint.c
-  * @author  MCD Application Team
-  * @brief   Zigbee Direct  Application
+  * File Name          : app_zigbee_endpoint.c
+  * Description        : Zigbee Application to manage endpoints and these clusters.
   ******************************************************************************
   * @attention
   *
@@ -18,30 +17,53 @@
   */
 /* USER CODE END Header */
 
+/* Includes ------------------------------------------------------------------*/
 #include <assert.h>
-#include <stdarg.h>
+#include <stdint.h>
 
 #include "app_common.h"
-#include "app_entry.h"
-#include "stm32_rtos.h"
-#include "app_zigbee.h"
-#include "app_zigbee_endpoint.h"
-#include "app_zigbee_debug_zd.h"
 #include "app_conf.h"
-#include "stm32_adv_trace.h"
-#include "stm32wbaxx_nucleo.h" /* LEDs */
-#include "main.h"
+#include "log_module.h"
+#include "app_entry.h"
+#include "app_zigbee.h"
+#include "dbg_trace.h"
+#include "ieee802154_enums.h"
+#include "mcp_enums.h"
+
+#include "stm32_lpm.h"
+#include "stm32_rtos.h"
+#include "stm32_timer.h"
 
 #include "zigbee.h"
-#include "zigbee.zd.h"
+#include "zigbee.nwk.h"
+#include "zigbee.security.h"
+
+/* Private includes -----------------------------------------------------------*/
 #include "zcl/zcl.h"
 #include "zcl/general/zcl.onoff.h"
-#include "zcl/general/zcl.identify.h"
 
+/* USER CODE BEGIN PI */
+#include "app_bsp.h"
+#include "stm32_adv_trace.h"
+#include "app_zigbee_debug_zd.h"
+/* USER CODE END PI */
 
-/* #define COND_USE_PERSISTENCE */
+/* Private defines -----------------------------------------------------------*/
+#define APP_ZIGBEE_CHANNEL                14u
+#define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
+#define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
 
-#define APP_ENDPOINT                        1U
+#define APP_ZIGBEE_ENDPOINT               1u
+#define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
+#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_ONOFF_LIGHT
+#define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
+
+#define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_ONOFF
+#define APP_ZIGBEE_CLUSTER_NAME           "OnOff Server"
+
+/* USER CODE BEGIN PD */
+#define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME " ZDD"
+#define APP_ZIGBEE_APPLICATION_OS_NAME    ""
 
 #define APP_ONOFF_LED                       LED_RED
 #define APP_RADIO_LED                       LED_GREEN
@@ -49,498 +71,361 @@
 # error "CFG_USB_INTERFACE_ENABLE is not supported by this application"
 #endif
 
+#define APP_ZIGBEE_PERMIT_JOIN_DELAY      60u   /* 60s */
+/* USER CODE END PD */
 
-struct app_info_t app_info;
+// -- Redefine Clusters to better code read --
+#define OnOffServer                       pstZbCluster[0]
 
-static const char *cli_prompt_str = "zdd > ";
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 
-#ifdef COND_USE_PERSISTENCE
-static void APP_ZIGBEE_App_Persist_Cb(struct ZigBeeT *zb, void *cbarg);
-#endif
+/* USER CODE END PTD */
 
-void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp);
-static void cli_port_print_msg(const char *pMessage);
-static void cli_port_print_prompt(bool bSendCr);
-static void APP_ZIGBEE_App_Task(void);
-static void APP_ZIGBEE_App_Kick(void);
+/* Private constants ---------------------------------------------------------*/
+/* USER CODE BEGIN PC */
 
+/* USER CODE END PC */
 
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN PV */
 
-#ifdef COND_USE_PERSISTENCE
-static bool persist_save(struct ZigBeeT *zb);
-static const void * persist_load(unsigned int *bufLen);
-#endif
+/* USER CODE END PV */
 
-static enum ZclStatusCodeT app_onoff_cb_off(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg);
-static enum ZclStatusCodeT app_onoff_cb_on(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg);
-static enum ZclStatusCodeT app_onoff_cb_toggle(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg);
-static void app_identify_cb_identify(struct ZbZclClusterT *cluster, enum ZbZclIdentifyServerStateT state, void *arg);
+/* OnOff Server Callbacks */
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOffCallback               ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOnCallback                ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerToggleCallback            ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
+{
+  .off = APP_ZIGBEE_OnOffServerOffCallback,
+  .on = APP_ZIGBEE_OnOffServerOnCallback,
+  .toggle = APP_ZIGBEE_OnOffServerToggleCallback,
+};
 
+/* USER CODE BEGIN PFP */
 
+/* USER CODE END PFP */
+
+/* Functions Definition ------------------------------------------------------*/
+
+/**
+ * @brief  Zigbee application initialization
+ * @param  None
+ * @retval None
+ */
 void APP_ZIGBEE_ApplicationInit(void)
 {
+  LOG_INFO_APP( "ZIGBEE Application Init" );
 
-#ifdef COND_USE_PERSISTENCE
-    unsigned int persist_len;
-    const uint8_t *persist_data;
-#endif
-    struct ZbApsmeAddEndpointReqT add_ep_req;
-    struct ZbApsmeAddEndpointConfT add_ep_conf;
-    uint16_t inputClusterList[1] = {
-        ZCL_CLUSTER_ONOFF
-    };
-    struct ZbZclOnOffServerCallbacksT onoff_callbacks;
-    struct zb_zdd_config_t zdd_config;
+  /* Initialization of the Zigbee stack */
+  APP_ZIGBEE_Init();
 
-    /* -- Register Task -- */
-    UTIL_SEQ_RegTask(1u << CFG_TASK_ZIGBEE_APP1, 0x00, APP_ZIGBEE_App_Task);
+  /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
+  stZigbeeAppInfo.eStartupControl = ZbStartTypeJoin;
+  stZigbeeAppInfo.bPersistNotification = false;
+  stZigbeeAppInfo.bNwkStartup = true;
 
+  /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
+  stZigbeeAppInfo.bNwkStartup = false; /* Override */
+  
+  /* Register a dedicated task for displaying infos */
+  APP_ZIGBEE_InitStatusDebug();
+  
+  /* USER CODE END APP_ZIGBEE_ApplicationInit */
 
-    APP_ZIGBEE_StackLayersInit();
-
-    /*-----------------------------------------------------
-     * Endpoint and OnOff Cluster
-     *-----------------------------------------------------
-     */
-    memset(&add_ep_req, 0, sizeof(add_ep_req));
-    add_ep_req.endpoint = APP_ENDPOINT;
-    add_ep_req.profileId = ZCL_PROFILE_HOME_AUTOMATION;
-    add_ep_req.deviceId = ZCL_DEVICE_ONOFF_OUTPUT;
-    add_ep_req.version = 1;
-    add_ep_req.inputClusterCount = 1;
-    add_ep_req.inputClusterList = inputClusterList;
-    add_ep_req.outputClusterCount = 0;
-    add_ep_req.outputClusterList = NULL;
-    add_ep_req.bdbCommissioningGroupID = DEFAULT_EP_BDB_COMMISSION_GRP_ID;
-    ZbZclAddEndpoint(app_info.zb, &add_ep_req, &add_ep_conf);
-
-    memset(&onoff_callbacks, 0, sizeof(onoff_callbacks));
-    onoff_callbacks.off = app_onoff_cb_off;
-    onoff_callbacks.on = app_onoff_cb_on;
-    onoff_callbacks.toggle = app_onoff_cb_toggle;
-    app_info.onoff_server = ZbZclOnOffServerAlloc(app_info.zb, APP_ENDPOINT, &onoff_callbacks, NULL);
-    if (app_info.onoff_server == NULL) {
-        APP_LOG_PRINTF("Error, ZbZclOnOffServerAlloc failed");
-        return;
-    }
-
-#ifdef COND_USE_PERSISTENCE
-    /*-----------------------------------------------------
-     * Persistence
-     *-----------------------------------------------------
-     */
-    APP_LOG_PRINTF("Reading persistence data from Flash");
-    persist_len = 0;
-    persist_data = persist_load(&persist_len);
-    APP_LOG_PRINTF("Persistence data length = %d", persist_len);
-    /* EXEGIN - call ZbStartupPersist */
-    (void)persist_len;
-    (void)persist_data;
-#endif
-
-    /*-----------------------------------------------------
-     * Zigbee Direct ZDD
-     *-----------------------------------------------------
-     */
-    APP_LOG_PRINTF("Enabling ZDD");
-    memset(&zdd_config, 0, sizeof(zdd_config));
-    zdd_config.open_tunnel = true;
-    zdd_config.zdd_server_endpt = APP_ENDPOINT;
-    zdd_config.identify_callbacks.identify = app_identify_cb_identify;
-    zdd_config.identify_callbacks.trigger_effect = NULL;
-    if (!zb_zdd_init(app_info.zb, &zdd_config)) {
-        APP_LOG_PRINTF("Error, zb_zdd_init failed");
-        return;
-    }
-
-    /* Make sure the OnOff LED is off */
-    /* APP_LED_OFF(APP_ONOFF_LED); */
-    app_onoff_cb_off(app_info.onoff_server, NULL, NULL);
-
-    APP_LOG_PRINTF("Initialization of ZDD Application complete.\n");
-
-    /* Print the zbcli prompt */
-    cli_port_print_prompt(false);
+  /* Initialize Zigbee stack layers */
+  APP_ZIGBEE_StackLayersInit();
 }
 
 /**
- * @brief   Reception of UART data until a CR occurs.
- *
- * @param   pData   Received character(s).
- * @param   iSize   Number of received characters
- * @param   cError  USART error transmission during reception.
+ * @brief  Zigbee application start
+ * @param  None
+ * @retval None
  */
-void APP_ZIGBEE_App_UartRxCallback(uint8_t *pData, uint16_t iSize, uint8_t cError)
+void APP_ZIGBEE_ApplicationStart( void )
 {
-    uint8_t cData;
-    uint16_t iIndex = 0x00;
-    struct zbcli_buf_t *bufp = &app_info.buf_ring[app_info.buf_wr_idx];
+  /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
 
-    /* -- Copy received Data until UserBuffer Overflow of 'CR' Reception -- */
-    do {
-        cData = pData[iIndex++];
+  /* Display Short Address */
+  LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
+  LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
-        if (bufp->status == BUF_STATUS_READY) {
-            /* All buffers full */
-            break;
-        }
+  /* USER CODE END APP_ZIGBEE_ApplicationStart */
 
-        if (bufp->status == BUF_STATUS_OVERFLOW) {
-            if (cData == (uint8_t)'\r') {
-                bufp->status = BUF_STATUS_EMPTY;
-            }
-            break;
-        }
-
-        if (cData == (uint8_t)'\r') {
-            if (bufp->len > 0) {
-                /* Flag this buffer as ready and move to the next buffer in the ring. */
-                bufp->buf[bufp->len] = 0x00;
-                bufp->status = BUF_STATUS_READY;
-                app_info.buf_wr_idx = (app_info.buf_wr_idx + 1U) % CLI_CMD_QUEUE_SZ;
-                bufp = &app_info.buf_ring[app_info.buf_wr_idx];
-                APP_ZIGBEE_App_Kick();
-            }
-        }
-        else if (cData == (uint8_t)'\n') {
-            /* Skip newline characters */
-        }
-        else if (cData == (uint8_t)'\b') {
-            /* Handle backspaces */
-            if (bufp->len > 0) {
-                bufp->len--;
-            }
-        }
-        /* EXEGIN - handle up-arrow for history?  1b '.', 5b '[', 41 'A' */
-        else {
-            bufp->buf[bufp->len++] = cData;
-            if (bufp->len >= CLI_MAX_LINE_LEN) {
-                /* Overflow. Erase this command and wait for terminating end-of-line. */
-                bufp->status = BUF_STATUS_OVERFLOW;
-                bufp->len = 0;
-            }
-        }
-    } while (iIndex < iSize);
+#if ( CFG_LPM_LEVEL != 0)
+  /* Authorize LowPower now */
+  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
+  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
 }
 
-
-#ifdef COND_USE_PERSISTENCE
-static void
-APP_ZIGBEE_App_Persist_Cb(struct ZigBeeT *zb, void *cbarg)
-{
-    app_info.savePersistence = true;
-    /* EXEGIN - kick task? */
-}
-
-#endif
-
-static void APP_ZIGBEE_App_Task(void)
-{
-    struct zbcli_buf_t *bufp = &app_info.buf_ring[app_info.buf_rd_idx];
-
-#ifdef COND_USE_PERSISTENCE
-    /* Check if we need to save persistence */
-    if (app_info.savePersistence) {
-        app_info.savePersistence = false;
-        if (!persist_save(app_info.zb)) {
-            /* EXEGIN handle error? */
-        }
-    }
-#endif
-
-    /* Check for user command */
-    if (bufp->status == BUF_STATUS_READY) {
-        const char *cmd_str = (const char *)bufp->buf;
-
-        if (strcmp(cmd_str, "help") == 0) {
-            APP_LOG_PRINTF("Available commands total:");
-            APP_LOG_PRINTF("   adv      ; re-enable BLE advertisements");
-            APP_LOG_PRINTF("   help     ; print this help");
-            APP_LOG_PRINTF("   on       ; Turn OnOff cluster LED ON");
-            APP_LOG_PRINTF("   off      ; Turn OnOff cluster LED OFF");
-            APP_LOG_PRINTF("   pjoin    ; enable permit-join via ZDO broadcast");
-            APP_LOG_PRINTF("   status   ; print status");
-            APP_LOG_PRINTF("   swreset  ; board reset");
-            APP_LOG_PRINTF("   whoAmI   ; simpleDesReq");
-            APP_LOG_PRINTF("   match    ; match");
-        }
-        else if (strcmp(cmd_str, "adv") == 0) {
-            APP_LOG_PRINTF("Enabling BLE advertisements");
-            zb_zdd_update_advert(app_info.zb, true);
-        }
-        else if (strcmp(cmd_str, "on") == 0) {
-            app_onoff_cb_on(app_info.onoff_server, NULL, NULL);
-        }
-        else if (strcmp(cmd_str, "off") == 0) {
-            app_onoff_cb_off(app_info.onoff_server, NULL, NULL);
-        }
-        else if (strcmp(cmd_str, "pjoin") == 0) {
-            struct ZbZdoPermitJoinReqT req;
-            enum ZbStatusCodeT status;
-
-            memset(&req, 0, sizeof(req));
-            req.destAddr = ZB_NWK_ADDR_BCAST_ROUTERS;
-            req.duration = 180;
-
-            APP_LOG_PRINTF("Enabling Permit-Join for 180 seconds via ZDO broadcast");
-            status = ZbZdoPermitJoinReq(app_info.zb, &req, NULL, NULL);
-            if (status != ZB_STATUS_SUCCESS) {
-                APP_LOG_PRINTF("Error, Permit-Join request failed (status = 0x%02x)", status);
-            }
-        }
-        else if (strcmp(cmd_str, "status") == 0) {
-            cli_status_zdo();
-            cli_print_aps_channel_mask();
-            cli_status_nwk();
-            cli_status_nnt();
-            cli_security_dump();
-            zdd_sec_print_session(app_info.zb);
-
-            /* OnOff Cluster State */
-            APP_LOG_PRINTF("");
-            APP_LOG_PRINTF("On/Off state = %s", app_info.onoff_state ? "on" : "off");
-        }
-        else if (strcmp(cmd_str, "swreset") == 0) {
-            HAL_NVIC_SystemReset();
-        }
-        else {
-            APP_LOG_PRINTF("Error, unknown command: %s", cmd_str);
-        }
-
-        /* We're done with this buffer. Clear it and move to the next one. */
-        bufp->len = 0;
-        bufp->status = BUF_STATUS_EMPTY;
-        app_info.buf_rd_idx = (app_info.buf_rd_idx + 1U) % CLI_CMD_QUEUE_SZ;
-
-        /* Print a new prompt */
-        cli_port_print_prompt(false);
-    }
-}
-/*-----------------------------------------------------------------------------
- * OnOff Server Callbacks
- *-----------------------------------------------------------------------------
+/**
+ * @brief  Zigbee persistence startup
+ * @param  None
+ * @retval None
  */
-static enum ZclStatusCodeT app_onoff_cb_off(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg)
+void APP_ZIGBEE_PersistenceStartup(void)
 {
-    APP_LOG_PRINTF("");
-    APP_LOG_PRINTF("OFF Command (was = %s)", app_info.onoff_state ? "on" : "off");
-    APP_LOG_PRINTF("");
+  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
 
-    APP_LED_OFF(APP_ONOFF_LED);
-    ZbZclAttrIntegerWrite(app_info.onoff_server, ZCL_ONOFF_ATTR_ONOFF, 0);
-
-    if (!app_info.onoff_state) {
-        /* Already off */
-        return ZCL_STATUS_SUCCESS;
-    }
-    app_info.onoff_state = false;
-    return ZCL_STATUS_SUCCESS;
+  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
-static enum ZclStatusCodeT app_onoff_cb_on(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg)
-{
-    APP_LOG_PRINTF("");
-    APP_LOG_PRINTF("ON Command (was = %s)", app_info.onoff_state ? "on" : "off");
-    APP_LOG_PRINTF("");
-
-    APP_LED_ON(APP_ONOFF_LED);
-    ZbZclAttrIntegerWrite(app_info.onoff_server, ZCL_ONOFF_ATTR_ONOFF, 1);
-
-    if (app_info.onoff_state) {
-        /* Already on */
-        return ZCL_STATUS_SUCCESS;
-    }
-    app_info.onoff_state = true;
-    return ZCL_STATUS_SUCCESS;
-}
-
-static enum ZclStatusCodeT app_onoff_cb_toggle(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo, void *arg)
-{
-    APP_LOG_PRINTF("");
-    APP_LOG_PRINTF("TOGGLE Command (was = %s)", app_info.onoff_state ? "on" : "off");
-    APP_LOG_PRINTF("");
-
-    if (app_info.onoff_state) {
-        app_info.onoff_state = false;
-        APP_LED_OFF(APP_ONOFF_LED);
-        ZbZclAttrIntegerWrite(app_info.onoff_server, ZCL_ONOFF_ATTR_ONOFF, 0);
-    }
-    else {
-        app_info.onoff_state = true;
-        APP_LED_ON(APP_ONOFF_LED);
-        ZbZclAttrIntegerWrite(app_info.onoff_server, ZCL_ONOFF_ATTR_ONOFF, 1);
-    }
-    return ZCL_STATUS_SUCCESS;
-}
-
-/*-----------------------------------------------------------------------------
- * Identify Server Callbacks
- *-----------------------------------------------------------------------------
+/**
+ * @brief  Configure Zigbee application endpoints
+ * @param  None
+ * @retval None
  */
-static void app_identify_cb_identify(struct ZbZclClusterT *cluster, enum ZbZclIdentifyServerStateT state, void *arg)
+void APP_ZIGBEE_ConfigEndpoints(void)
 {
-    APP_LOG_PRINTF("IDENTIFY Command (%s)", (state == ZCL_IDENTIFY_START) ? "start" : "stop");
+  struct ZbApsmeAddEndpointReqT   stRequest;
+  struct ZbApsmeAddEndpointConfT  stConfig;
+  uint16_t ausInputClusterList[1] = {
+    ZCL_CLUSTER_ONOFF
+  };
+  /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints1 */
+
+  /* USER CODE END APP_ZIGBEE_ConfigEndpoints1 */
+
+  /* Add EndPoint */
+  memset( &stRequest, 0, sizeof( stRequest ) );
+  memset( &stConfig, 0, sizeof( stConfig ) );
+
+  stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
+  stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
+  stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
+  stRequest.version = 1;
+  stRequest.inputClusterCount = 1;
+  stRequest.inputClusterList = ausInputClusterList;
+  stRequest.outputClusterCount = 0;
+  stRequest.outputClusterList = NULL;
+  stRequest.bdbCommissioningGroupID = DEFAULT_EP_BDB_COMMISSION_GRP_ID;
+
+  ZbZclAddEndpoint( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
+  assert( stConfig.status == ZB_STATUS_SUCCESS );
+
+  /* Add OnOff Server Cluster */
+  stZigbeeAppInfo.OnOffServer = ZbZclOnOffServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stOnOffServerCallbacks, NULL );
+  assert( stZigbeeAppInfo.OnOffServer != NULL );
+  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer );
+
+  /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
+
+  /* USER CODE END APP_ZIGBEE_ConfigEndpoints2 */
 }
 
-#ifdef COND_USE_PERSISTENCE
-/*-----------------------------------------------------------------------------
- * Persistence
- *-----------------------------------------------------------------------------
+/**
+ * @brief  Set Group Addressing mode (if used)
+ * @param  None
+ * @retval 'true' if Group Address used else 'false'.
  */
-static bool
-persist_save(struct ZigBeeT *zb)
+bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
-    uint32_t len;
-    uint8_t *buf_p;
+  struct ZbApsmeAddGroupReqT  stRequest;
+  struct ZbApsmeAddGroupConfT stConfig;
 
-    /* clear the RAM cache before saving */
-    APP_DBG("Clear cache");
-    APP_ZIGBEE_Persistence_ClearCache();
+  memset( &stRequest, 0, sizeof( stRequest ) );
 
-    /* get length to store */
-    len = ZbPersistGet(zb, NULL, 0);
+  stRequest.endpt = APP_ZIGBEE_ENDPOINT;
+  stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
+  ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
 
-    if (len == 0U) {
-        /* if the persistence length was zero then no data available. */
-        APP_DBG("APP_ZIGBEE_persist_save: no persistence data to save !");
-        return true;
-    }
-    if (len > (uint32_t)APP_ZIGBEE_Persistence_GetCacheSize()) {
-        APP_DBG("APP_ZIGBEE_persist_save: persist size too large for storage (%d)", len);
-        return false;
-    }
-
-    /* get pointer to RAM persistent data buffer */
-    buf_p = APP_ZIGBEE_Persistence_GetCacheBuffer();
-
-    /* populate buffer */
-    len = ZbPersistGet(zb, buf_p, len);
-
-    /* store data length in cache */
-    APP_ZIGBEE_Persistence_SetLength((uint16_t)(len & 0xFFFF));
-
-    /* and finally save */
-    if (APP_ZIGBEE_Persistence_Save() == false) {
-        return false;
-    }
-
-#ifdef CFG_PERSISTENCE_ENABLED
-    APP_DBG("APP_persistence_Save: Persistent data saved in FLASH (%d bytes)", len);
-#else
-    APP_DBG("APP_persistence_Save: Persistent data saved in RAM (%d bytes)", len);
-#endif
-
-    return true;
+  return true;
 }
 
-static const void * persist_load(unsigned int *bufLen)
-{
-#ifdef CFG_PERSISTENCE_ENABLED
-    APP_DBG("Retrieving persistent data from FLASH");
-#else
-    APP_DBG("Retrieving persistent data from RAM cache");
-#endif
-
-    /* load persistent data */
-    if (APP_ZIGBEE_Persistence_Load() == false) {
-        *bufLen = 0;
-        return NULL;
-    }
-    else {
-        /* returns pointer to RAM buffer and length of retrieved data */
-        *bufLen = APP_ZIGBEE_Persistence_GetLength();
-        return APP_ZIGBEE_Persistence_GetCacheBuffer();
-    }
-}
-
-#endif
-
-static void APP_ZIGBEE_App_Kick(void)
-{
-    UTIL_SEQ_SetTask(1u << CFG_TASK_ZIGBEE_APP1, CFG_SEQ_PRIO_1);
-}
-
-/*-----------------------------------------------------------------------------
- * Logging
- *-----------------------------------------------------------------------------
+/**
+ * @brief  Return the Startup Configuration
+ * @param  pstConfig  Configuration structure to fill
+ * @retval None
  */
-#define LOG_MSG_SZ_MAX                      256U
-
-static char log_msg_str[LOG_MSG_SZ_MAX];
-// TODO 
-void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp)
+void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-    (void)zb;
-    (void)mask;
-    int len = 0;
+  /* Attempt to join a zigbee network */
+  ZbStartupConfigGetProDefaults( pstConfig );
 
-#if 0 /* needed? */
-    if (cli_p->args->log_timestamp) {
-        /* Get the relative timestamp for this message */
-        unsigned int secs, ms;
+  /* Using the default HA preconfigured Link Key */
+  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
-        ms = cli_port_uptime_ms();
-        secs = ms / 1000;
-        ms = ms % 1000;
+  /* Setting up additional startup configuration parameters */
+  pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;
+  pstConfig->channelList.count = 1;
+  pstConfig->channelList.list[0].page = 0;
+  pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
 
-        /* Format the message */
-        len += snprintf(&log_msg_str[len], LOG_MSG_SZ_MAX - (size_t)len, "%03d.%03d ", secs, ms);
-    }
-#endif
+  /* Set the TX-Power */
+  if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
+  {
+    LOG_ERROR_APP( "Switching to %d dB failed.", APP_ZIGBEE_TX_POWER );
+    return;
+  }
 
-    if (fmt != NULL) {
-        if (hdr) {
-            len += snprintf(&log_msg_str[len], LOG_MSG_SZ_MAX - (size_t)len, "%30s : ", hdr);
-        }
-        len += vsnprintf(&log_msg_str[len], LOG_MSG_SZ_MAX - (size_t)len, (char *)fmt, argp);
-        if (len >= LOG_MSG_SZ_MAX) {
-            len = LOG_MSG_SZ_MAX - 6;
-            len += snprintf(&log_msg_str[len], LOG_MSG_SZ_MAX - (size_t)len, ". . .");
-        }
-    }
-    else if (hdr != NULL) {
-        len += snprintf(&log_msg_str[len], LOG_MSG_SZ_MAX - (size_t)len, "%s", hdr);
-    }
+  /* USER CODE BEGIN APP_ZIGBEE_GetStartupConfig */
 
-    cli_port_print_msg(log_msg_str);
+  /* USER CODE END APP_ZIGBEE_GetStartupConfig */
 }
 
-void cli_port_print_fmt(const char *hdr, const char *fmt, ...)
+/**
+ * @brief  Manage a New Device on Network (called only if Coord or Router).
+ * @param  iShortAddress      Short Address of new Device
+ * @param  dlExtendedAddress  Extended Address of new Device
+ * @param  cCapability        Capability of new Device
+ * @retval Group Address
+ */
+void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress, uint8_t cCapability )
 {
-    va_list argptr;
+  LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
-    va_start(argptr, fmt);
-    cli_log_zigbee_callback(app_info.zb, 0U, hdr, fmt, argptr);
-    va_end(argptr);
+  /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
+
+  /* USER CODE END APP_ZIGBEE_SetNewDevice */
 }
 
-static void cli_port_print_msg(const char *pMessage)
+/**
+ * @brief  Print application information to the console
+ * @param  None
+ * @retval None
+ */
+void APP_ZIGBEE_PrintApplicationInfo(void)
 {
-    UTIL_ADV_TRACE_Status_t eReturn;
+  LOG_INFO_APP( "**********************************************************" );
+  LOG_INFO_APP( "Network config : CENTRALIZED ROUTER" );
 
-    if (pMessage != NULL) {
-        do {
-            eReturn = UTIL_ADV_TRACE_Send((uint8_t *)pMessage, strlen(pMessage));
-        } while (eReturn != UTIL_ADV_TRACE_OK);
-        /* -- Add a CR at the end of message -- */
-        UTIL_ADV_TRACE_Send((uint8_t *)"\r\n", 0x02u);
+  /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
+  LOG_INFO_APP( "Application Flashed : Zigbee %s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
+
+  /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
+  LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
+
+  APP_ZIGBEE_PrintGenericInfo();
+
+  LOG_INFO_APP( "Clusters allocated are:" );
+  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+
+  /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
+
+  /* USER CODE END APP_ZIGBEE_PrintApplicationInfo2 */
+
+  LOG_INFO_APP( "**********************************************************" );
+}
+
+/**
+ * @brief  OnOff Server 'Off' command Callback
+ */
+static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
+{
+  enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
+  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOffCallback */
+  uint8_t cEndpoint;
+
+  cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
+  if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
+  {
+    LOG_INFO_APP( "[ONOFF] Red Led 'OFF'" );
+    APP_LED_OFF( LED_RED );
+    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
+  }
+  else
+  {
+    /* Unknown endpoint */
+    eStatus = ZCL_STATUS_FAILURE;
+  }
+
+  /* USER CODE END APP_ZIGBEE_OnOffServerOffCallback */
+  return eStatus;
+}
+
+/**
+ * @brief  OnOff Server 'On' command Callback
+ */
+static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
+{
+  enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
+  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOnCallback */
+  uint8_t   cEndpoint;
+
+  cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
+  if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
+  {
+    LOG_INFO_APP( "[ONOFF] Red Led 'ON'" );
+    APP_LED_ON( LED_RED );
+    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
+  }
+  else
+  {
+    /* Unknown endpoint */
+    eStatus = ZCL_STATUS_FAILURE;
+  }
+
+  /* USER CODE END APP_ZIGBEE_OnOffServerOnCallback */
+  return eStatus;
+}
+
+/**
+ * @brief  OnOff Server 'Toggle' command Callback
+ */
+static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
+{
+  enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
+  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerToggleCallback */
+  uint8_t   cAttrVal;
+
+  if ( ZbZclAttrRead( pstCluster, ZCL_ONOFF_ATTR_ONOFF, NULL, &cAttrVal, sizeof(cAttrVal), false) != ZCL_STATUS_SUCCESS )
+  {
+    eStatus =  ZCL_STATUS_FAILURE;
+  }
+  else
+  { 
+    if ( cAttrVal != 0u )
+    {
+      eStatus = APP_ZIGBEE_OnOffServerOffCallback( pstCluster, pstSrcInfo, arg );
     }
+    else
+    {
+      eStatus = APP_ZIGBEE_OnOffServerOnCallback( pstCluster, pstSrcInfo, arg );
+    } 
+  }
+
+  /* USER CODE END APP_ZIGBEE_OnOffServerToggleCallback */
+  return eStatus;
 }
 
-void cli_port_print_mac_debug(void *null_p, const char *pMessage)
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+
+/**
+ * @brief  Zigbee Direct initialization
+ * @param  None
+ * @retval None
+ */
+void APP_ZIGBEE_DirectInit(void)
 {
-    cli_port_print_msg(pMessage);
+  struct zb_zdd_config_t stZddConfig;
+
+  /* Initialization of Zigbee Direct */
+  memset(&stZddConfig, 0, sizeof(stZddConfig));
+  stZddConfig.open_tunnel = true;
+  stZddConfig.zdd_server_endpt = APP_ZIGBEE_ENDPOINT;
+  stZddConfig.identify_callbacks.identify = NULL;
+  stZddConfig.identify_callbacks.trigger_effect = NULL;
+  if (!zb_zdd_init(stZigbeeAppInfo.pstZigbee, &stZddConfig))
+  {
+      LOG_ERROR_APP("Error, zb_zdd_init failed");
+      return;
+  }
 }
 
-static void cli_port_print_prompt(bool bSendCr)
+/**
+ * @brief  Management of the SW1 button : Start a period to authorize a Join.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button1Action(void)
 {
-    if (bSendCr) {
-        UTIL_ADV_TRACE_Send((uint8_t *)"\r\n", 0x02u);
-    }
-    UTIL_ADV_TRACE_Send((uint8_t *)cli_prompt_str, strlen(cli_prompt_str));
+  /* Permit Join during few seconds */
+  APP_ZIGBEE_PermitJoin( APP_ZIGBEE_PERMIT_JOIN_DELAY );
 }
 
 
-
-
-
+/* USER CODE END FD_LOCAL_FUNCTIONS */

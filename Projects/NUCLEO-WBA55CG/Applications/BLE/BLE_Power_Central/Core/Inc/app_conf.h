@@ -229,7 +229,10 @@
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
-
+#if !defined(__GNUC__) || !defined(DEBUG)
+    #undef  CFG_LPM_STDBY_WAKEUP_TIME
+    #define CFG_LPM_STDBY_WAKEUP_TIME (950)
+#endif
 /* USER CODE END Low_Power 0 */
 
 /**
@@ -466,7 +469,7 @@ typedef enum
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* Radio sleep clock LSE accuracy configuration */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x04)
 
 /* USER CODE BEGIN Radio_Configuration */
 

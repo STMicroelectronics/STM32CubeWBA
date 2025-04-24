@@ -39,6 +39,22 @@ to create RoT examples for STM32WBA55</a>.</li>
 </ul>
 <p>Refer to STM32WBA65I-DK1/Applications/ROT wiki page for more
 information.</p>
+<h4 id="notes"><b>Notes:</b></h4>
+<p>By default the anti-tamper is enabled for internal tamper events
+only. It is possible to change this configuration with
+OEMIROT_TAMPER_ENABLE define in Inc_hal_cfg.h.</p>
+<pre><code>#define NO_TAMPER            (0)                   /*!&lt; No tamper activated */
+#define INTERNAL_TAMPER_ONLY (1)                   /*!&lt; Only Internal tamper activated */
+#define ALL_TAMPER           (2)                   /*!&lt; Internal and External tamper activated */
+#define OEMIROT_TAMPER_ENABLE INTERNAL_TAMPER_ONLY /*!&lt; TAMPER configuration flag  */</code></pre>
+<p>If OEMIROT_TAMPER_ENABLE is changed to ALL_TAMPER, the anti-tamper
+protection is enabled with passive tamper pin usage.It is needed to
+connect TAMP_IN4 (PC13 on CN10 pin 4) to VCC on the STM32WBA55G-DK1 board
+and reset the board to trigger a tamper event.
+When nothing is connected to TAMP_IN4, the application is running.
+Moreover, no warning message about anti-tamper detection
+will be displayed if OEMIROT_DEV_MODE is enabled.</p>
+
 </section>
 </div>
 </body>

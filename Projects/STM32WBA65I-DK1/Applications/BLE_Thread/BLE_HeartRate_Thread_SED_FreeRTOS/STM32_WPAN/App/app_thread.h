@@ -39,6 +39,9 @@ void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
 
+void Joystick_Left(void);
+void Joystick_Right(void);
+
 /* ipv6-addressing defines        */
 /*------------------------------------*/
 /* Key Point: A major difference between FTDs and MTDs are that FTDs subscribe to the ff03::2 multicast address.

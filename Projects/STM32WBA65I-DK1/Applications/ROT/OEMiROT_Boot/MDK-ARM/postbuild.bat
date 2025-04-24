@@ -28,8 +28,6 @@ set "preprocess_bl2_file=%projectdir%\image_macros_preprocessed_bl2.c"
 set "appli_dir=..\..\..\..\%oemirot_appli_path_project%"
 set "postbuild_appli=%appli_dir%\MDK-ARM\postbuild.bat"
 set appli_flash_layout="%appli_dir%\Secure_nsclib\appli_flash_layout.h"
-set loader_flash_layout="%projectdir%\..\..\..\..\%oemirot_loader_trustzone_path_project%\Secure_nsclib\loader_flash_layout.h"
-set "postbuild_loader=%projectdir%\..\..\..\..\%oemirot_loader_trustzone_path_project%\MDK-ARM\postbuild.bat"
 
 set "ob_flash_programming=%provisioningdir%\%bootpath%\ob_flash_programming.bat"
 set "img_config=%provisioningdir%\%bootpath%\img_config.bat"
@@ -151,14 +149,6 @@ set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b secboota
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b loaderaddress -m RE_IMAGE_FLASH_LOADER_ADDRESS %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b cfg_loader -m RE_EXT_LOADER --decimal %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b flashsectnbr -m RE_FLASH_PAGE_NBR %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
 %command%
 IF %errorlevel% NEQ 0 goto :error
@@ -215,24 +205,16 @@ set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b hdp_end 
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_a_bank2_start -m RE_LOADER_WRP_START -d 0x2000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b wrp_a_bank2_end -m RE_LOADER_WRP_END -d 0x2000 %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b external_flash -m RE_EXTERNAL_FLASH_ENABLE --decimal %ob_flash_programming% --vb >> %current_log_file% 2>>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b select_wba_target -m  RE_SELECT_WBA_TARGET --vb %ob_flash_programming% >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
 IF "%oemurot_enabled%" NEQ "1" (goto no_second_boot_stage)
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b is_wba_board_dk -m  RE_IS_WBA_BOARD_DK --decimal --vb %ob_flash_programming% >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b overwrite -m  RE_OVER_WRITE --decimal --vb %ob_flash_programming% >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 :no_second_boot_stage
@@ -330,6 +312,10 @@ IF !errorlevel! NEQ 0 goto :error
 
 :: ============================================================ Update %appli_flash_layout% ============================================================
 set "command=%python%%applicfg% setdefine --layout %preprocess_bl2_file% -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% setdefine --layout %preprocess_bl2_file% -m RE_EXTERNAL_FLASH_ENABLE -n OEMIROT_EXTERNAL_FLASH_ENABLE -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
@@ -433,117 +419,27 @@ set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-:: ============================================================ Update %postbuild_loader% ============================================================
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b loader_ns_size -m RE_LOADER_NS_CODE_SIZE %postbuild_loader% --vb >> %current_log_file% 2>>&1"
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_OFFSET -n OEMIROT_AREA_0_OFFSET %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b loader_s_size -m RE_LOADER_IMAGE_S_CODE_SIZE %postbuild_loader% --vb >> %current_log_file% 2>>&1"
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_0_SIZE -n OEMIROT_AREA_0_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-:: ============================================================ Update %loader_flash_layout% ============================================================
-set "command=%python%%applicfg% setdefine --layout %preprocess_bl2_file% -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 %loader_flash_layout% --vb >> %current_log_file% 2>&1"
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_OFFSET -n OEMIROT_AREA_2_OFFSET %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_APP_IMAGE_NUMBER -n MCUBOOT_APP_IMAGE_NUMBER %loader_flash_layout% --vb >> %current_log_file% 2>&1"
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_OEMIROT_DOWNLOAD_IMAGE_AREA_2_SIZE -n OEMIROT_AREA_2_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_S_DATA_IMAGE_NUMBER -n MCUBOOT_S_DATA_IMAGE_NUMBER %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_NS_DATA_IMAGE_NUMBER -n MCUBOOT_NS_DATA_IMAGE_NUMBER %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_0_OFFSET -n FLASH_AREA_0_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_0_SIZE -n FLASH_AREA_0_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_1_OFFSET -n FLASH_AREA_1_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_1_SIZE -n FLASH_AREA_1_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_2_OFFSET -n FLASH_AREA_2_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_2_SIZE -n FLASH_AREA_2_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_3_OFFSET -n FLASH_AREA_3_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_3_SIZE -n FLASH_AREA_3_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_4_OFFSET -n FLASH_AREA_4_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_4_SIZE -n FLASH_AREA_4_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_5_OFFSET -n FLASH_AREA_5_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_5_SIZE -n FLASH_AREA_5_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_6_OFFSET -n FLASH_AREA_6_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_6_SIZE -n FLASH_AREA_6_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_7_OFFSET -n FLASH_AREA_7_OFFSET %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_AREA_7_SIZE -n FLASH_AREA_7_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_S_NS_PARTITION_SIZE -n FLASH_PARTITION_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_NON_SECURE_IMAGE_SIZE -n FLASH_NS_PARTITION_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_SECURE_IMAGE_SIZE -n FLASH_S_PARTITION_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -n FLASH_S_DATA_PARTITION_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -n FLASH_NS_DATA_PARTITION_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
-%command%
-IF !errorlevel! NEQ 0 goto :error
-
-set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_FLASH_B_SIZE -n FLASH_B_SIZE %loader_flash_layout% --vb >> %current_log_file% 2>&1"
+IF "%oemurot_enabled%" == "1" (
+set "command=%python%%applicfg% setdefine -a uncomment -n OEMUROT_ENABLE -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+) else (
+set "command=%python%%applicfg% setdefine -a comment -n OEMUROT_ENABLE -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+)
 %command%
 IF !errorlevel! NEQ 0 goto :error
 

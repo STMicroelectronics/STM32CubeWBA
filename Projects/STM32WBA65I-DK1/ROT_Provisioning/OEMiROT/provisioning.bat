@@ -199,12 +199,6 @@ if !errorlevel! neq 0 goto :step_error
 if !errorlevel! neq 0 goto :step_error
 :no_ns_data
 
-echo    * Loader firmware image generation
-echo        Open the OEMiROT_Loader project with preferred toolchain and rebuild all files.
-echo        Press any key to continue...
-echo.
-if [%1] neq [AUTO] pause >nul
-
 :: ============================================================== Provisioning steps =======================================================
 echo Step 3 : Provisioning
 
@@ -227,7 +221,7 @@ echo.
 :: ================================================== Option Bytes and flash programming ===================================================
 set "action=Programming the option bytes and flashing the images..."
 set current_log_file=%ob_flash_log%
-set "command=start /w /b call %ob_flash_programming% AUTO"
+set "command=start /w /b call %ob_flash_programming% AUTO %RDP_level%"
 echo    * %action%
 %command% > %ob_flash_log%
 

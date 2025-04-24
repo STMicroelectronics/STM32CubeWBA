@@ -118,42 +118,40 @@ typedef enum
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-/** 
-  * ST Manufacturer ID
-**/
+/* ST Manufacturer ID */
 #define ST_MANUF_ID  0x30
 
-/** 
-  * BlueSTSDK Version
-**/
+/* BlueSTSDK Version */
 enum
 {
   BLUESTSDK_V1 =  0x01,
   BLUESTSDK_V2 =  0x02
 };
 
-/** 
-  * BOARD ID 
-**/
+/* BOARD ID */
 enum
 {
-  BOARD_ID_NUCLEO_WBA5X =  0x8B,
-  BOARD_ID_DK_WBA5X     =  0x8C,
-  BOARD_ID_NUCLEO_WBA6X =  0x8E
+  BOARD_ID_NUCLEO_WBA5X = 0x8B,
+  BOARD_ID_DK_WBA5X     = 0x8C,
+  BOARD_ID_B_WBA5M_WPAN = 0x8D,
+  BOARD_ID_NUCLEO_WBA6X = 0x8E,
+  BOARD_ID_DK_WBA6X     = 0x8F
 };
 
-/** 
-  * FIRMWARE ID 
-**/
+/* FIRMWARE ID */
 enum
 {
-  FW_ID_P2P_SERVER =  0x83,
-  FW_ID_P2P_ROUTER =  0x85,
-  FW_ID_DT_SERVER  =  0x88,
-  FW_ID_COC_PERIPH =  0x87,
-  FW_ID_HEART_RATE =  0x89,
-  FW_ID_HEALTH_THERMO = 0x8A
+  FW_ID_P2P_SERVER            = 0x83,
+  FW_ID_P2P_ROUTER            = 0x85,
+  FW_ID_DT_SERVER             = 0x88,
+  FW_ID_COC_PERIPH            = 0x87,
+  FW_ID_HEART_RATE            = 0x89,
+  FW_ID_HEALTH_THERMO         = 0x8A,
+  FW_ID_HID                   = 0x8B,
+  FW_ID_SENSOR                = 0x9C,
+  FW_ID_GENERIC_HEALTH_SENSOR = 0x9D
 };
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
@@ -191,6 +189,7 @@ const uint8_t* BleGetBdAddress(void);
 void APP_BLE_AdvStart(void);
 void APP_BLE_AdvLowPower(void);
 void APP_BLE_AdvStop(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

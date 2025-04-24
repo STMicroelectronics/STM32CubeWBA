@@ -20,6 +20,24 @@
 #define __APPLI_REGION_DEFS_H__
 #include "appli_flash_layout.h"
 
+/* Board selection for each STM32WBA device. By default, discovery board is selected for the device. User can change this configuration. */
+#if defined(STM32WBA65xx)
+#define USE_STM32WBA65I_DK1
+/* #define USE_NUCLEO_64 */
+#elif defined(STM32WBA55xx)
+#define USE_STM32WBA55G_DK1
+/* #define USE_NUCLEO_64 */
+#else
+#error “unsupported target”
+#endif
+
+#if defined(USE_STM32WBA65I_DK) && defined(USE_NUCLEO_64)
+#error “only 1 board type allowed”
+#endif
+#if defined(USE_STM32WBA55I_DK) && defined(USE_NUCLEO_64)
+#error “only 1 board type allowed”
+#endif
+
 #if defined(STM32WBA65xx)
 #define _SRAM1_SIZE_MAX         (0x70000)  /*!< SRAM1=448k*/
 #define _SRAM2_SIZE_MAX         (0x10000)  /*!< SRAM2=64k*/
@@ -34,10 +52,10 @@
 #define _SRAM2_BASE_S           (0x30070000) /*!< SRAM2(64 KB) base address */
 
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-/* External OSPI Flash base addresses - Non secure and secure aliased */
-#define _OSPI_FLASH_BASE        (OSPI_FLASH_BASE_ADDRESS) /*!< OSPI FLASH(up to 64 MB) base address */
+/* External SPI Flash base addresses - Non secure and secure aliased */
+#define _SPI_FLASH_BASE        (SPI_FLASH_BASE_ADDRESS) /*!< SPI FLASH(up to 64 MB) base address */
 #endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
-#elif defined(STM32WBA52xx)
+#elif defined(STM32WBA52xx) || defined(STM32WBA55xx)
 #define _SRAM1_SIZE_MAX         (0x10000)  /*!< SRAM1=64k*/
 #define _SRAM2_SIZE_MAX         (0x10000)  /*!< SRAM2=64k*/
 
@@ -85,6 +103,19 @@
 #define S_CODE_SIZE                         (IMAGE_S_CODE_SIZE - NSC_CODE_SIZE)
 #define S_RAM_START                         (_SRAM2_BASE_S)
 #define S_RAM_SIZE                          (S_TOTAL_RAM_SIZE)
+
+/* Non-secure regions */
+#define NS_IMAGE_PRIMARY_AREA_OFFSET        (NS_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
+#define NS_CODE_START                       (NS_ROM_ALIAS(NS_IMAGE_PRIMARY_AREA_OFFSET))
+#define NS_CODE_SIZE                        (IMAGE_NS_CODE_SIZE)
+#define NS_RAM_START                        (_SRAM1_BASE_NS)
+#define NS_RAM_SIZE                         (_SRAM1_SIZE_MAX)
+
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
+/* S DATA image layout */
+#define S_DATA_IMAGE_IAT_PRIV_KEY_OFFSET    (BL2_DATA_HEADER_SIZE)
+#define S_DATA_IMAGE_PRIMARY_AREA_OFFSET    (S_DATA_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_DATA_HEADER_SIZE)
+#endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 
 #define NSC_CODE_START                      (S_ROM_ALIAS(S_IMAGE_PRIMARY_PARTITION_OFFSET) + FLASH_S_PARTITION_SIZE - NSC_CODE_SIZE - PARTITION_RESERVED)
 

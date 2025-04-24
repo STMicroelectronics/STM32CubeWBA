@@ -90,7 +90,26 @@ void MX_StandbyExit_PeripheralInit(void)
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
-  APP_BSP_StandbyExit();
+  
+#if (CFG_LED_SUPPORTED == 1)
+  /* Leds Initialization */
+  BSP_LED_Init(LED_BLUE);
+#ifdef CFG_BSP_ON_NUCLEO
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_RED);
+#endif /* CFG_BSP_ON_NUCLEO */
+#endif /* (CFG_LED_SUPPORTED == 1) */
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+  /* Buttons HW Initialization */
+  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
+  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
+#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  
+  /*Enable NVIC for Wkup pins*/
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
 

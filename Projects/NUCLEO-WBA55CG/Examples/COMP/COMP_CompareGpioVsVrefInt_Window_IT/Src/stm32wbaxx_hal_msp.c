@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -63,6 +62,7 @@
   */
 void HAL_MspInit(void)
 {
+
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
@@ -79,19 +79,19 @@ void HAL_MspInit(void)
 static uint32_t HAL_RCC_COMP_CLK_ENABLED=0;
 
 /**
-* @brief COMP MSP Initialization
-* This function configures the hardware resources used in this example
-* @param hcomp: COMP handle pointer
-* @retval None
-*/
+  * @brief COMP MSP Initialization
+  * This function configures the hardware resources used in this example
+  * @param hcomp: COMP handle pointer
+  * @retval None
+  */
 void HAL_COMP_MspInit(COMP_HandleTypeDef* hcomp)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(hcomp->Instance==COMP1)
   {
-  /* USER CODE BEGIN COMP1_MspInit 0 */
+    /* USER CODE BEGIN COMP1_MspInit 0 */
 
-  /* USER CODE END COMP1_MspInit 0 */
+    /* USER CODE END COMP1_MspInit 0 */
     /* Peripheral clock enable */
     HAL_RCC_COMP_CLK_ENABLED++;
     if(HAL_RCC_COMP_CLK_ENABLED==1){
@@ -110,15 +110,15 @@ void HAL_COMP_MspInit(COMP_HandleTypeDef* hcomp)
     /* COMP1 interrupt Init */
     HAL_NVIC_SetPriority(COMP_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(COMP_IRQn);
-  /* USER CODE BEGIN COMP1_MspInit 1 */
+    /* USER CODE BEGIN COMP1_MspInit 1 */
 
-  /* USER CODE END COMP1_MspInit 1 */
+    /* USER CODE END COMP1_MspInit 1 */
   }
   else if(hcomp->Instance==COMP2)
   {
-  /* USER CODE BEGIN COMP2_MspInit 0 */
+    /* USER CODE BEGIN COMP2_MspInit 0 */
 
-  /* USER CODE END COMP2_MspInit 0 */
+    /* USER CODE END COMP2_MspInit 0 */
     /* Peripheral clock enable */
     HAL_RCC_COMP_CLK_ENABLED++;
     if(HAL_RCC_COMP_CLK_ENABLED==1){
@@ -127,26 +127,26 @@ void HAL_COMP_MspInit(COMP_HandleTypeDef* hcomp)
     /* COMP2 interrupt Init */
     HAL_NVIC_SetPriority(COMP_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(COMP_IRQn);
-  /* USER CODE BEGIN COMP2_MspInit 1 */
+    /* USER CODE BEGIN COMP2_MspInit 1 */
 
-  /* USER CODE END COMP2_MspInit 1 */
+    /* USER CODE END COMP2_MspInit 1 */
   }
 
 }
 
 /**
-* @brief COMP MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param hcomp: COMP handle pointer
-* @retval None
-*/
+  * @brief COMP MSP De-Initialization
+  * This function freeze the hardware resources used in this example
+  * @param hcomp: COMP handle pointer
+  * @retval None
+  */
 void HAL_COMP_MspDeInit(COMP_HandleTypeDef* hcomp)
 {
   if(hcomp->Instance==COMP1)
   {
-  /* USER CODE BEGIN COMP1_MspDeInit 0 */
+    /* USER CODE BEGIN COMP1_MspDeInit 0 */
 
-  /* USER CODE END COMP1_MspDeInit 0 */
+    /* USER CODE END COMP1_MspDeInit 0 */
     /* Peripheral clock disable */
     HAL_RCC_COMP_CLK_ENABLED--;
     if(HAL_RCC_COMP_CLK_ENABLED==0){
@@ -159,23 +159,23 @@ void HAL_COMP_MspDeInit(COMP_HandleTypeDef* hcomp)
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
 
     /* COMP1 interrupt DeInit */
-  /* USER CODE BEGIN COMP1:COMP_IRQn disable */
+    /* USER CODE BEGIN COMP1:COMP_IRQn disable */
     /**
     * Uncomment the line below to disable the "COMP_IRQn" interrupt
     * Be aware, disabling shared interrupt may affect other IPs
     */
     /* HAL_NVIC_DisableIRQ(COMP_IRQn); */
-  /* USER CODE END COMP1:COMP_IRQn disable */
+    /* USER CODE END COMP1:COMP_IRQn disable */
 
-  /* USER CODE BEGIN COMP1_MspDeInit 1 */
+    /* USER CODE BEGIN COMP1_MspDeInit 1 */
 
-  /* USER CODE END COMP1_MspDeInit 1 */
+    /* USER CODE END COMP1_MspDeInit 1 */
   }
   else if(hcomp->Instance==COMP2)
   {
-  /* USER CODE BEGIN COMP2_MspDeInit 0 */
+    /* USER CODE BEGIN COMP2_MspDeInit 0 */
 
-  /* USER CODE END COMP2_MspDeInit 0 */
+    /* USER CODE END COMP2_MspDeInit 0 */
     /* Peripheral clock disable */
     HAL_RCC_COMP_CLK_ENABLED--;
     if(HAL_RCC_COMP_CLK_ENABLED==0){
@@ -183,17 +183,17 @@ void HAL_COMP_MspDeInit(COMP_HandleTypeDef* hcomp)
     }
 
     /* COMP2 interrupt DeInit */
-  /* USER CODE BEGIN COMP2:COMP_IRQn disable */
+    /* USER CODE BEGIN COMP2:COMP_IRQn disable */
     /**
     * Uncomment the line below to disable the "COMP_IRQn" interrupt
     * Be aware, disabling shared interrupt may affect other IPs
     */
     /* HAL_NVIC_DisableIRQ(COMP_IRQn); */
-  /* USER CODE END COMP2:COMP_IRQn disable */
+    /* USER CODE END COMP2:COMP_IRQn disable */
 
-  /* USER CODE BEGIN COMP2_MspDeInit 1 */
+    /* USER CODE BEGIN COMP2_MspDeInit 1 */
 
-  /* USER CODE END COMP2_MspDeInit 1 */
+    /* USER CODE END COMP2_MspDeInit 1 */
   }
 
 }

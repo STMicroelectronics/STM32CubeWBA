@@ -169,7 +169,6 @@ static void APPE_BPKA_Init( void );
 #if (CFG_LCD_SUPPORTED == 1)
 static void LCD_Init(void);
 static int32_t LCD_DrawBitmapArray(uint8_t xpos, uint8_t ypos, uint8_t xlen, uint8_t ylen, uint8_t *data);
-static void SourceIDToString(uint32_t SourceID, uint8_t *pString);
 static void DrawSpeakerStateTask(void);
 static void DrawSpeakerState(void);
 #endif /* CFG_LCD_SUPPORTED */
@@ -445,7 +444,6 @@ static void APPE_AMM_Init(void)
 static void LCD_Init( void )
 {
   extern uint8_t wav_2[];
-  uint8_t source_id_string[19] = "source ID 0xXXXXXX";
   
   BSP_SPI3_Init();
 
@@ -469,10 +467,7 @@ static void LCD_Init( void )
   mute = 1;
   DrawSpeakerState();
 
-  UTIL_LCD_DisplayStringAt(0, 5, (uint8_t *)"AURACAST DEMO", CENTER_MODE);
-
-  SourceIDToString(BAP_BROADCAST_SOURCE_ID, &(source_id_string[12]));
-  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  UTIL_LCD_DisplayStringAt(0, 5, (uint8_t *)"AURACAST SOURCE", CENTER_MODE);
 
   BSP_LCD_Refresh(0);
 
@@ -519,22 +514,6 @@ static int32_t LCD_DrawBitmapArray(uint8_t xpos, uint8_t ypos, uint8_t xlen, uin
   return 0;
 }
 
-static void SourceIDToString(uint32_t SourceID, uint8_t *pString)
-{
-  uint8_t i;
-  for (i = 0; i < 6; i++)
-  {
-    uint8_t digit = (SourceID >> ((5-i)*4)) & 0xF;
-    if (digit < 0xA)
-    {
-      pString[i] = digit + 0x30;
-    }
-    else
-    {
-      pString[i] = digit + 0x37;
-    }
-  }
-}
 static void DrawSpeakerStateTask(void)
 {
   BSP_SPI3_Init();

@@ -243,7 +243,7 @@ void Menu_Config(void)
 #if (CFG_LOG_SUPPORTED != 0)
   uint8_t status =
 #endif /*(CFG_LOG_SUPPORTED != 0)*/
-  HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_HEADPHONES);
+  HAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, 0, GAP_APPEARANCE_GENERIC_HEARING_AID);
   LOG_INFO_APP("HAPAPP_StartAdvertising() returns status 0x%02X\n",status);
   Menu_SetActivePage(p_waitcon_menu);
 #endif /*(CFG_JOYSTICK_SUPPORTED == 1)*/
@@ -606,7 +606,6 @@ static void Menu_Disconnect(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Disconnect\n");
   HAPAPP_Disconnect();
-  Menu_SetActivePage(p_waitcon_menu);
 }
 
 /**

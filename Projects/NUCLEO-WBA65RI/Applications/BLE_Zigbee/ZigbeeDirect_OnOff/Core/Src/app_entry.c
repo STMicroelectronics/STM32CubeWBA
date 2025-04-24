@@ -242,6 +242,9 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE BEGIN APPE_Init_2 */
 
+  /* Initialization of Zigbee Direct */
+  APP_ZIGBEE_DirectInit();
+
   /* USER CODE END APPE_Init_2 */
 
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);

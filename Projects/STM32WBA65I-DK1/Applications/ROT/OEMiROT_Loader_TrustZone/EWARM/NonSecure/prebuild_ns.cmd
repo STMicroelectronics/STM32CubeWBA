@@ -1,1 +1,0 @@
-iccarm.exe --cpu=Cortex-M33 -D%2 -I%1\..\..\..\..\..\..\..\Drivers\CMSIS\Include -I%1\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include -I%1\..\..\Secure_nsclib %1\stm32wbaxx_flash_ns.icf --silent --preprocess=ns %1\flash_ns.icf.i >> %1\prebuild.log 2>&1

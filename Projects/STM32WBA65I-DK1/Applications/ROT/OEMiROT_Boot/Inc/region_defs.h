@@ -27,14 +27,14 @@
 #define USE_STM32WBA55G_DK1
 /* #define USE_NUCLEO_64 */
 #else
-#error “unsupported target”
+#error "unsupported target"
 #endif
 
 #if defined(USE_STM32WBA65I_DK) && defined(USE_NUCLEO_64)
-#error “only 1 board type allowed”
+#error "only 1 board type allowed"
 #endif
 #if defined(USE_STM32WBA55I_DK) && defined(USE_NUCLEO_64)
-#error “only 1 board type allowed”
+#error "only 1 board type allowed"
 #endif
 
 #define BL2_HEAP_SIZE           0x0000000
@@ -121,9 +121,6 @@
 #define S_ROM_ALIAS(x)                      (S_ROM_ALIAS_BASE + (x))
 #define NS_ROM_ALIAS(x)                     (NS_ROM_ALIAS_BASE + (x))
 
-#define LOADER_NS_ROM_ALIAS(x)              (_FLASH_BASE_NS + (x))
-#define LOADER_S_ROM_ALIAS(x)               (_FLASH_BASE_S + (x))
-
 #define S_RAM_ALIAS(x)                      (S_RAM_ALIAS_BASE + (x))
 #define NS_RAM_ALIAS(x)                     (NS_RAM_ALIAS_BASE + (x))
 
@@ -164,55 +161,15 @@
 
 #endif /* BL2 */
 
-#define LOADER_IMAGE_S_CODE_SIZE            (0x4000) /* 16 Kbytes */
-#define LOADER_NS_CODE_SIZE                 (0x6000) /* 24 Kbytes  */
-
-#if defined(MCUBOOT_PRIMARY_ONLY)
-/*  Secure Loader Image */
-#define FLASH_AREA_LOADER_BANK_OFFSET       (FLASH_B_SIZE - LOADER_IMAGE_S_CODE_SIZE - LOADER_NS_CODE_SIZE)
-#define FLASH_AREA_LOADER_OFFSET            (FLASH_TOTAL_SIZE - LOADER_IMAGE_S_CODE_SIZE - LOADER_NS_CODE_SIZE)
-/* Control  Secure Loader Image */
-#if (FLASH_AREA_LOADER_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
-#error "FLASH_AREA_LOADER_OFFSET  not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
-#endif /* (FLASH_AREA_LOADER_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0  */
-
-/* Non-Secure Loader Image */
-#define LOADER_NS_CODE_START                (LOADER_NS_ROM_ALIAS(FLASH_AREA_LOADER_OFFSET + LOADER_IMAGE_S_CODE_SIZE))
-/* Control Non-Secure Loader Image */
-#if (LOADER_NS_CODE_START  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
-#error "LOADER_NS_CODE_START  not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
-#endif /*  (LOADER_NS_CODE_START  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
-
-/* define used for checking possible overlap */
-#define LOADER_CODE_SIZE                    (LOADER_NS_CODE_SIZE + LOADER_IMAGE_S_CODE_SIZE)
-#else
-/*  Loader Image  */
-#define FLASH_AREA_LOADER_BANK_OFFSET       (FLASH_B_SIZE-LOADER_NS_CODE_SIZE)
-#define FLASH_AREA_LOADER_OFFSET            (FLASH_TOTAL_SIZE-LOADER_NS_CODE_SIZE)
-/* Control  Loader Image   */
-#if (FLASH_AREA_LOADER_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0
-#error "FLASH_AREA_LOADER_OFFSET  not aligned on FLASH_AREA_IMAGE_SECTOR_SIZE"
-#endif /* (FLASH_AREA_LOADER_OFFSET  % FLASH_AREA_IMAGE_SECTOR_SIZE) != 0 */
-
-#define LOADER_NS_CODE_START                (LOADER_NS_ROM_ALIAS(FLASH_AREA_LOADER_OFFSET))
-/* define used for checking possible overlap */
-#define LOADER_CODE_SIZE                    (LOADER_NS_CODE_SIZE)
-#endif /* MCUBOOT_PRIMARY_ONLY */
-
-/*  Secure and Non-Secure Loader Image */
-#define LOADER_NS_DATA_START                (NS_RAM_ALIAS(0x0))
-#define LOADER_NS_DATA_SIZE                 (_SRAM1_SIZE_MAX)
+/* Definition for mcuboot for fast wake-up from low power feature */
+#define S_CODE_START                        S_ROM_ALIAS(S_IMAGE_PRIMARY_PARTITION_OFFSET + BL2_HEADER_SIZE)
 
 /* OEMiROT non volatile data (NVCNT/PS/ITS) region */
 #define OEMIROT_NV_DATA_START                   (S_ROM_ALIAS(FLASH_NV_COUNTERS_AREA_OFFSET))
 #define OEMIROT_NV_DATA_SIZE                    (FLASH_NV_COUNTER_AREA_SIZE + \
                                                  FLASH_PS_AREA_SIZE + FLASH_ITS_AREA_SIZE)
 /* Additional Check to detect flash download slot overlap or overflow */
-#if defined(MCUBOOT_EXT_LOADER)
-#define FLASH_AREA_END_OFFSET_MAX FLASH_AREA_LOADER_OFFSET
-#else
 #define FLASH_AREA_END_OFFSET_MAX (FLASH_TOTAL_SIZE)
-#endif /* defined(MCUBOOT_EXT_LOADER) */
 
 #if FLASH_AREA_END_OFFSET > FLASH_AREA_END_OFFSET_MAX
 #error "Flash memory overflow"

@@ -8,27 +8,25 @@ Connectivity, BLE, BLE protocol, BLE profile
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA5mxx device.
-* Connect the B-WBA5M-WPAN Board to your PC with a USB cable type C. To flash and debug, connect an STLink v3 to the STDC14 connector.
+* This example runs on STM32WBA5M device.
+* Connect the B-WBA5M-WPAN Board to your PC with a USB cable type C.  
+* To flash and debug, connect an STLink v3 to the CN3 connector  
+for more details <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration#How_can_I_program_my_WBA-board--"> Program the B-WBA5M-WPAN Board</a>  
 
 ### __How to use it?__
 
-In order to make the program work, you must do the following: 
- - Open IAR toolchain 
- - Rebuild all files and flash the board with the executable file
+In order to make the program work:
+ - Open your prefered toolchain
+ - Rebuild all files and flash the board at the address 0x08000000 with the binary file
 
-On the android/ios device, enable the Bluetooth communications, and if not done before:
+Use one of the following remote interface to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA</a>
 
-* Install the ST BLE Toolbox application on the android device:
-    * [ST BLE Toolbox Android](https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox)
-    * [ST BLE Toolbox iOS](https://apps.apple.com/us/app/st-ble-toolbox/id1531295550)
-* You can also install the ST BLE Sensor application on the android/ios device:
-    * [ST BLE Sensor Android](https://play.google.com/store/apps/details?id=com.st.bluems)
-    * [ST BLE Sensor iOS](https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8)
+Reset the B-WBA5M-WPAN Nucleo board and launch remote interface on PC/android/ios device. 
 
-Power on the B-WBA5M-WPAN board with the BLE_Sensor application.
+* click on WBA5M_xx to connect the board
+* select Environmental Data to display temperature and humidity
+* display Plot Data and play the accelerometer data (moving the board will modify the displayed values) 
 
-* Then, click on the App icon, ST BLE Sensor (android/ios device), You can either open application ST BLE Toolbox (android/ios device).
-    
-* Open Plot data panel to display the sensor's values
-* Open Enrironmental panel to display available temperature and humidity
+For more informations, please refer to 
+<a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA5M-WPAN ST BLE Sensor application</a>  

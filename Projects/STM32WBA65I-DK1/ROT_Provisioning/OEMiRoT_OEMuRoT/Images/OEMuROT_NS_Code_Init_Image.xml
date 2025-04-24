@@ -107,7 +107,7 @@
 	</Param>
 	<Output>
 		<Name>Image output file</Name>
-		<Value>..\..\..\Applications\ROT\OEMiROT_Appli_TrustZone\Binary\oemurot_tz_ns_app_enc_sign.bin</Value>
+		<Value>..\..\..\Applications\ROT\OEMiROT_Appli_TrustZone\Binary\oemurot_tz_ns_app_init_sign.bin</Value>
 		<Default>../../../Applications/ROT/OEMiROT_Appli_TrustZone/Binary/oemurot_tz_ns_app_enc_sign.bin</Default>
 	</Output>
   </McubootFormat>

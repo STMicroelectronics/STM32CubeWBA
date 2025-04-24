@@ -214,7 +214,7 @@ ADCCTRL_Cmd_Status_t ADCCTRL_RequestRawValue (const ADCCTRL_Handle_t * const p_H
   * @retval Operation state
   */
 ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t * const p_Handle,
-                                                 uint16_t * const p_ReadValue);
+                                                 int16_t * const p_ReadValue);
 
 /**
   * @brief  Read Voltage from ADC

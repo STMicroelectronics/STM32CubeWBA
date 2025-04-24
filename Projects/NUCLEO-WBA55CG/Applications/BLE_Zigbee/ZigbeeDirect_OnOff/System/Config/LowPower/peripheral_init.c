@@ -22,7 +22,7 @@
 #include "app_conf.h"
 #include "peripheral_init.h"
 #include "main.h"
-
+#include "crc_ctrl.h"
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
@@ -30,8 +30,6 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
-extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
-extern RNG_HandleTypeDef hrng;
 
 /* USER CODE BEGIN EV */
 
@@ -61,13 +59,12 @@ void MX_StandbyExit_PeripheralInit(void)
     assert_param(0);
   }
 
-  memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
-  memset(&hrng, 0, sizeof(hrng));
-
   MX_GPIO_Init();
-  MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RNG_Init();
+  MX_ICACHE_Init();
+  MX_TIM16_Init();
+  CRCCTRL_Init();
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
@@ -88,3 +85,4 @@ void MX_StandbyExit_PeripheralInit(void)
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+

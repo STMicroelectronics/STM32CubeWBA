@@ -1168,9 +1168,6 @@ void APP_BSP_JoystickInit( void )
   /* Button task initialisation */
   Joystick_InitTask();
 
-  /* StandBy WakeUp via Joystick */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_HIGH_1);              /* JOY-PA1. */
-
   /* Create periodic timer for joystick position reading */
   UTIL_TIMER_Create(&joystickTimer, JOYSTICK_PRESS_SAMPLE_MS, UTIL_TIMER_ONESHOT, &APP_BSP_JoystickTimerCallback, 0);
   UTIL_TIMER_Start(&joystickTimer);

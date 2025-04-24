@@ -357,21 +357,21 @@ OPTIMIZED void PWR_EnterOffMode( void )
   __set_PSPLIM(backup_PSPLIM);
   __set_PSP(backup_PSP);
   __set_CONTROL(backup_CONTROL); /* SP may switch back to PSP */
-  
+
   if ( 1UL == boot_after_standby )
   {
 #if(CFG_RT_DEBUG_DTB == 1)
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  Standby_Restore_GPIO();
+    Standby_Restore_GPIO();
 
-  RT_DEBUG_DTBInit();
-  RT_DEBUG_DTBConfig();
+    RT_DEBUG_DTBInit();
+    RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)
-  RT_DEBUG_GPIO_Init();
+    RT_DEBUG_GPIO_Init();
 #endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
   }
 

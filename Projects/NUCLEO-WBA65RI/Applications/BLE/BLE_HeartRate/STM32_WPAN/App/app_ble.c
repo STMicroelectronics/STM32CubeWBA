@@ -1343,7 +1343,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   LOG_INFO_APP("-- DEVICE INFO CHAR : Revision ID = 0x%02X %02X\n",a_GATT_DevInfoData[3],a_GATT_DevInfoData[2]);
 
   /* Board ID: Nucleo WBA, DK1 WBA... */
-  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA5X;
+  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA6X;
   LOG_INFO_APP("-- DEVICE INFO CHAR : Board ID = 0x%02X\n",a_GATT_DevInfoData[4]);
 
   /* HW Package: QFN32, QFN48... */
@@ -1899,10 +1899,7 @@ void APP_BSP_Button3Action(void)
 
   return;
 }
-void HAL_PWR_WKUP2_Callback(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B1, CFG_SEQ_PRIO_0);
-}
+
 #endif
 
 /* USER CODE END FD_WRAP_FUNCTIONS */

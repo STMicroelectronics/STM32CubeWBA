@@ -309,7 +309,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>00000000</state>
+                    <state>11111110</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -376,7 +376,6 @@
                     <state>$PROJ_DIR$/../System/Config/LowPower</state>
                     <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
                     <state>$PROJ_DIR$/../System/Config/Flash</state>
-                    <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
                     <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/App</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
@@ -389,7 +388,6 @@
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Nvm</state>
-                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RFControl</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
@@ -414,6 +412,7 @@
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/clusters_zd/se</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/ble_interface</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/general</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/key</state>
@@ -748,7 +747,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>1</hasPrio>
+                <hasPrio>0</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -1197,6 +1196,30 @@
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_endpoint.c</name>
                     </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\dis.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\dis_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\tunneling.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\tunneling_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zddsecurity.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zddsecurity_app.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zigbeedirectcomm.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\zigbeedirectcomm_app.c</name>
+                    </file>
                 </group>
                 <group>
                     <name>Target</name>
@@ -1355,12 +1378,6 @@
                     </file>
                 </group>
                 <group>
-                    <name>RFControl</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
-                    </file>
-                </group>
-                <group>
                     <name>RTDebug</name>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
@@ -1375,12 +1392,6 @@
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
                     </file>
                 </group>
-                <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\adc_ctrl.c</name>
-                    <excluded>
-                        <configuration>ZigbeeDirect_OnOff</configuration>
-                    </excluded>
-                </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
                 </file>
@@ -1398,9 +1409,6 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_queue.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\temp_measurement.c</name>
                 </file>
             </group>
             <group>
@@ -1471,9 +1479,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr.c</name>

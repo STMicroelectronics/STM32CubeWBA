@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -98,12 +98,55 @@ void LINKLAYER_PLAT_ClockInit()
   */
 void LINKLAYER_PLAT_DelayUs(uint32_t delay)
 {
-  __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
-  do
+  static uint8_t lock = 0;
+  uint32_t t0;
+  uint32_t primask_bit;
+
+  /* Enter critical section */
+  primask_bit= __get_PRIMASK();
+  __disable_irq();
+
+  if (lock == 0U)
   {
-    __NOP();
+    /* Initialize counter */
+    /* Reset cycle counter to prevent overflow
+       As a us counter, it is assumed than even with re-entrancy,
+       overflow will never happen before re-initializing this counter */
+    DWT->CYCCNT = 0U;
+    /* Enable DWT by safety but should be useless (as already set) */
+    SET_BIT(DCB->DEMCR, DCB_DEMCR_TRCENA_Msk);
+    /* Enable counter */
+    SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
   }
-  while (Delay --);
+  /* Increment 're-entrance' counter */
+  lock++;
+  /* Get starting time stamp */
+  t0 = DWT->CYCCNT;
+  /* Exit critical section */
+ __set_PRIMASK(primask_bit);
+
+  /* Turn us into cycles */
+  delay = delay * (SystemCoreClock / 1000000U);
+  delay += t0;
+
+  /* Busy waiting loop */
+  while (DWT->CYCCNT < delay)
+  {
+  };
+
+  /* Enter critical section */
+  primask_bit= __get_PRIMASK();
+  __disable_irq();
+  if (lock == 1U)
+  {
+    /* Disable counter */
+    CLEAR_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
+  }
+  /* Decrement 're-entrance' counter */
+  lock--;
+  /* Exit critical section */
+ __set_PRIMASK(primask_bit);
+
 }
 
 /**
@@ -542,7 +585,6 @@ void LINKLAYER_PLAT_EnableOSContextSwitch(void)
   /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_0 */
 
   /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_0 */
-  osKernelUnlock();
   /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_1 */
 
   /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_1 */
@@ -558,7 +600,6 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
   /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_0 */
 
   /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_0 */
-  osKernelLock();
   /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_1 */
 
   /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_1 */

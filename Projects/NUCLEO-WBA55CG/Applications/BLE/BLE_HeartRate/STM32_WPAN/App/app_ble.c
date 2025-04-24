@@ -1899,20 +1899,7 @@ void APP_BSP_Button3Action(void)
 
   return;
 }
-void HAL_PWR_WKUP2_Callback(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B1, CFG_SEQ_PRIO_0);
-}
-
-void HAL_PWR_WKUP3_Callback(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B2, CFG_SEQ_PRIO_0);
-}
-
-void HAL_PWR_WKUP5_Callback(void)
-{
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B3, CFG_SEQ_PRIO_0);
-}
 
 #endif
+
 /* USER CODE END FD_WRAP_FUNCTIONS */

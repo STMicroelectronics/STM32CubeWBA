@@ -181,7 +181,6 @@ void GPDMA1_Channel1_IRQHandler(void)
     SPI1_TransferError_Callback();
   }
   /* USER CODE END GPDMA1_Channel1_IRQn 0 */
-
   /* USER CODE BEGIN GPDMA1_Channel1_IRQn 1 */
 
   /* USER CODE END GPDMA1_Channel1_IRQn 1 */
@@ -205,7 +204,6 @@ void GPDMA1_Channel2_IRQHandler(void)
     SPI1_TransferError_Callback();
   }
   /* USER CODE END GPDMA1_Channel2_IRQn 0 */
-
   /* USER CODE BEGIN GPDMA1_Channel2_IRQn 1 */
 
   /* USER CODE END GPDMA1_Channel2_IRQn 1 */

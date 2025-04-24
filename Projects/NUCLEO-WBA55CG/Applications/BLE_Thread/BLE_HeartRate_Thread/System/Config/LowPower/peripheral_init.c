@@ -29,6 +29,11 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern CRYP_HandleTypeDef hcryp;
+extern HASH_HandleTypeDef hhash;
+extern PKA_HandleTypeDef hpka;
+extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
+extern RNG_HandleTypeDef hrng;
 
 /* USER CODE BEGIN EV */
 
@@ -57,6 +62,12 @@ void MX_StandbyExit_PeripheralInit(void)
   {
     assert_param(0);
   }
+
+  memset(&hcryp, 0, sizeof(hcryp));
+  memset(&hhash, 0, sizeof(hhash));
+  memset(&hpka, 0, sizeof(hpka));
+  memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&hrng, 0, sizeof(hrng));
 
   MX_GPIO_Init();
   MX_RAMCFG_Init();

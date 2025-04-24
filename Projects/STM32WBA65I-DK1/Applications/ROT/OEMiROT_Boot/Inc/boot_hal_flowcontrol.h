@@ -52,18 +52,10 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_EN_R4     0x0000cccdU        /*!< Step MPU Secure Region 4 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R5     0x0000d2d3U        /*!< Step MPU Secure Region 5 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R6     0x00043d7aU        /*!< Step MPU Secure Region 6 Init enable value */
-#if defined(MCUBOOT_EXT_LOADER) && defined(MCUBOOT_PRIMARY_ONLY)
-#define FLOW_STEP_MPU_S_I_EN_R7     0x0001cf0eU        /*!< Step MPU Secure Region 7 Init enable value */
-#else
 #define FLOW_STEP_MPU_S_I_EN_R7     0x00000000U        /*!< No effect on control flow */
-#endif /* MCUBOOT_EXT_LOADER && MCUBOOT_PRIMARY_ONLY */
 #define FLOW_STEP_MPU_S_I_EN        0x0000e3dcU        /*!< Step MPU Secure Init enable value */
 #define FLOW_STEP_MPU_NS_I_EN_R0    0x0000fdc2U        /*!< Step MPU NonSecure Region 0 Init enable value */
-#if defined(MCUBOOT_EXT_LOADER)
-#define FLOW_STEP_MPU_NS_I_EN_R1    0x00012cd3U        /*!< Step MPU NonSecure Region 1 Init enable value */
-#else
 #define FLOW_STEP_MPU_NS_I_EN_R1    0x00000000U        /*!< No effect on control flow */
-#endif /* MCUBOOT_EXT_LOADER */
 #define FLOW_STEP_MPU_NS_I_EN_R2    0x000132cdU        /*!< Step MPU NonSecure Region 2 Init enable value */
 #define FLOW_STEP_MPU_NS_I_EN_R3    0x00014aabU        /*!< Step MPU NonSecure Region 3 Init enable value */
 #define FLOW_STEP_MPU_NS_I_EN_R4    0x00000000U        /*!< No effect on control flow */
@@ -90,11 +82,7 @@ extern "C" {
 #define FLOW_STEP_SAU_I_EN_R0       0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_SAU_I_EN_R1       0x00017ba4U        /*!< Step SAU Region 1 Init enable value */
 #define FLOW_STEP_SAU_I_EN_R2       0x00018799U        /*!< Step SAU Region 2 Init enable value */
-#if defined(MCUBOOT_EXT_LOADER)
-#define FLOW_STEP_SAU_I_EN_R3       0x00019987U        /*!< Step SAU Region 3 Init enable value */
-#else
 #define FLOW_STEP_SAU_I_EN_R3       0x00000000U        /*!< No effect on control flow */
-#endif /* MCUBOOT_EXT_LOADER */
 #define FLOW_STEP_SAU_I_EN          0x0001b696U        /*!< Step SAU enable Init value */
 
 #if  (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
@@ -129,19 +117,11 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_CH_R4     0x00025dafU        /*!< Step MPU Secure Region 4 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R5     0x00029cf6U        /*!< Step MPU Secure Region 5 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R6     0x0003da37U        /*!< Step MPU Secure Region 6 Init check value */
-#if defined(MCUBOOT_EXT_LOADER) && defined(MCUBOOT_PRIMARY_ONLY)
-#define FLOW_STEP_MPU_S_I_CH_R7      0x0001fe01U        /*!< Step MPU Secure Region 7 Init check value */
-#else
 #define FLOW_STEP_MPU_S_I_CH_R7      0x00000000U        /*!< No effect on control flow */
-#endif /* #if defined(MCUBOOT_EXT_LOADER) && defined(MCUBOOT_PRIMARY_ONLY) */
 
 #define FLOW_STEP_MPU_S_I_CH        0x0002e8fbU        /*!< Step MPU Secure Init check value */
 #define FLOW_STEP_MPU_NS_I_CH_R0    0x0002f71bU        /*!< Step MPU NonSecure Region 0 Init check value */
-#if defined(MCUBOOT_EXT_LOADER)
-#define FLOW_STEP_MPU_NS_I_CH_R1    0x0002fb70U        /*!< Step MPU NonSecure Region 1 Init check value */
-#else
 #define FLOW_STEP_MPU_NS_I_CH_R1    0x00000000U        /*!< No effect on control flow */
-#endif /* #if defined(MCUBOOT_EXT_LOADER) */
 #define FLOW_STEP_MPU_NS_I_CH_R2    0x00031b6eU        /*!< Step MPU NonSecure Region 2 Init check value */
 #define FLOW_STEP_MPU_NS_I_CH_R3    0x00036e9dU        /*!< Step MPU NonSecure Region 3 Init check value */
 #define FLOW_STEP_MPU_NS_I_CH_R4    0x00000000U        /*!< No effect on control flow */
@@ -167,17 +147,13 @@ extern "C" {
 #define FLOW_STEP_SAU_I_CH_R0       0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_SAU_I_CH_R1       0x0003ae3aU        /*!< Step SAU Region 1 Init check value */
 #define FLOW_STEP_SAU_I_CH_R2       0x0003b1daU        /*!< Step SAU Region 2 Init check value */
-#if defined(MCUBOOT_EXT_LOADER)
-#define FLOW_STEP_SAU_I_CH_R3       0x0003bdb1U        /*!< Step SAU Region 3 Init check value */
-#else
 #define FLOW_STEP_SAU_I_CH_R3       0x00000000U        /*!< No effect on control flow */
-#endif /* MCUBOOT_EXT_LOADER */
 #define FLOW_STEP_SAU_I_CH          0x0003c9bcU        /*!< Step SAU Init check value */
 
 #if  (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
 #define FLOW_STEP_TAMP_ACT_CH       0x0006ca19U        /*!< Step Tamper active check value */
 #else
-#define FLOW_STEP_TAMP_ACT_CH       0x00000000U        /*!< No effect on control flow */    
+#define FLOW_STEP_TAMP_ACT_CH       0x00000000U        /*!< No effect on control flow */
 #endif /*(OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
 #if  (OEMIROT_TAMPER_ENABLE != NO_TAMPER)
 #define FLOW_STEP_TAMP_INT_CH       0x0006d407U        /*!< Step Tamper internal check value */
@@ -267,9 +243,7 @@ extern "C" {
 #define FLOW_CTRL_MPU_NS_I_EN_R0    (FLOW_CTRL_MPU_S_I_EN ^      FLOW_STEP_MPU_NS_I_EN_R0)
 #define FLOW_CTRL_MPU_NS_I_EN_R1    (FLOW_CTRL_MPU_NS_I_EN_R0 ^  FLOW_STEP_MPU_NS_I_EN_R1)
 #define FLOW_CTRL_MPU_NS_I_EN_R2    (FLOW_CTRL_MPU_NS_I_EN_R1 ^  FLOW_STEP_MPU_NS_I_EN_R2)
-#define FLOW_CTRL_MPU_NS_I_EN_R3    (FLOW_CTRL_MPU_NS_I_EN_R2 ^  FLOW_STEP_MPU_NS_I_EN_R3)
-#define FLOW_CTRL_MPU_NS_I_EN_R4    (FLOW_CTRL_MPU_NS_I_EN_R3 ^  FLOW_STEP_MPU_NS_I_EN_R4)
-#define FLOW_CTRL_MPU_NS_I_EN       (FLOW_CTRL_MPU_NS_I_EN_R4 ^  FLOW_STEP_MPU_NS_I_EN)
+#define FLOW_CTRL_MPU_NS_I_EN       (FLOW_CTRL_MPU_NS_I_EN_R2 ^  FLOW_STEP_MPU_NS_I_EN)
 
 #define FLOW_CTRL_SAU_I_EN_R0       (FLOW_CTRL_MPU_NS_I_EN ^     FLOW_STEP_SAU_I_EN_R0)
 #define FLOW_CTRL_SAU_I_EN_R1       (FLOW_CTRL_SAU_I_EN_R0 ^     FLOW_STEP_SAU_I_EN_R1)
@@ -300,9 +274,7 @@ extern "C" {
 #define FLOW_CTRL_MPU_NS_I_CH_R0    (FLOW_CTRL_MPU_S_I_CH ^      FLOW_STEP_MPU_NS_I_CH_R0)
 #define FLOW_CTRL_MPU_NS_I_CH_R1    (FLOW_CTRL_MPU_NS_I_CH_R0 ^  FLOW_STEP_MPU_NS_I_CH_R1)
 #define FLOW_CTRL_MPU_NS_I_CH_R2    (FLOW_CTRL_MPU_NS_I_CH_R1 ^  FLOW_STEP_MPU_NS_I_CH_R2)
-#define FLOW_CTRL_MPU_NS_I_CH_R3    (FLOW_CTRL_MPU_NS_I_CH_R2 ^  FLOW_STEP_MPU_NS_I_CH_R3)
-#define FLOW_CTRL_MPU_NS_I_CH_R4    (FLOW_CTRL_MPU_NS_I_CH_R3 ^  FLOW_STEP_MPU_NS_I_CH_R4)
-#define FLOW_CTRL_MPU_NS_I_CH       (FLOW_CTRL_MPU_NS_I_CH_R4 ^  FLOW_STEP_MPU_NS_I_CH)
+#define FLOW_CTRL_MPU_NS_I_CH       (FLOW_CTRL_MPU_NS_I_CH_R2 ^  FLOW_STEP_MPU_NS_I_CH)
 
 #define FLOW_CTRL_SAU_I_CH_R0       (FLOW_CTRL_MPU_NS_I_CH ^     FLOW_STEP_SAU_I_CH_R0)
 #define FLOW_CTRL_SAU_I_CH_R1       (FLOW_CTRL_SAU_I_CH_R0 ^     FLOW_STEP_SAU_I_CH_R1)

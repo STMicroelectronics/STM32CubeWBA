@@ -1,5 +1,7 @@
 #!/bin/bash
 if [ $# -ge 1 ]; then script_mode=$1; else script_mode=MANUAL; fi
+param2=$2
+rdp_lev=$param2
 source ../env.sh
 # Get config updated by OEMuROT_Boot
 source img_config.sh
@@ -23,8 +25,6 @@ wrp_a_bank1_end=0xB
 wrp_b_bank1_start=0x0
 wrp_b_bank1_end=0x0
 hdp_end=0x16
-wrp_a_bank2_start=0x7D
-wrp_a_bank2_end=0x7F
 secbootadd0=0x1800C0
 flashsectnbr=0x7F
 
@@ -39,12 +39,10 @@ slot7=0x0
 
 keyaddress=0xC01C000
 bootaddress=0xC006000
-oemirot_oemurot_slot0=0xC1E8000
-loaderaddress=0xC1FA000
-cfg_loader=1
-external_flash=0
+oemirot_oemurot_slot0=0xC01E000
 select_wba_target=0x65
 is_wba_board_dk=1
+overwrite=1
 
 s_code_image=$oemurot_appli_secure
 ns_code_image=$oemurot_appli_non_secure
@@ -59,17 +57,24 @@ connect_no_reset="-c port=SWD mode=Hotplug"
 # Get config updated by OEMiROT_Boot
 appli_dir="../../$oemirot_appli_path_project"
 boot_dir="../../$oemirot_boot_path_project"
-loader_dir="../../$oemirot_loader_trustzone_path_project"
 
 # =============================================== Remove protections and initialize Option Bytes ==========================================
 remove_protect_init="SRAM2_RST=0"
+# lock write protection when rdp level >= 1
+wrp_protect=
 if [ "$select_wba_target" == "0x55" ]; then
   remove_bank1_protect="-ob SECWM_PSTRT=$flashsectnbr SECWM_PEND=0 WRPA_PSTRT=$flashsectnbr WRPA_PEND=0 WRPB_PSTRT=$flashsectnbr WRPB_PEND=0 $remove_protect_init"
   remove_hdp_protection="-ob HDP_PEND=0 HDPEN=0"
+  if [ "$rdp_lev" -ge 1 ]; then
+    wrp_protect="UNLOCK_A=0 UNLOCK_B=0"
+  fi
 elif [ "$select_wba_target" == "0x65" ]; then
   remove_bank1_protect="-ob SECWM1_PSTRT=$flashsectnbr SECWM1_PEND=0 WRP1A_PSTRT=$flashsectnbr WRP1A_PEND=0 WRP1B_PSTRT=$flashsectnbr WRP1B_PEND=0 $remove_protect_init"
   remove_bank2_protect="-ob SECWM2_PSTRT=$flashsectnbr SECWM2_PEND=0 WRP2A_PSTRT=$flashsectnbr WRP2A_PEND=0 WRP2B_PSTRT=$flashsectnbr WRP2B_PEND=0"
   remove_hdp_protection="-ob HDP1_PEND=0 HDP1EN=0 HDP2_PEND=0 HDP2EN=0"
+  if [ "$rdp_lev" -ge 1 ]; then
+	wrp_protect="UNLOCK_1A=0 UNLOCK_1B=0 UNLOCK_2A=0 UNLOCK_2B=0"
+  fi
 else
   echo "No target selected"
   error;
@@ -78,18 +83,14 @@ erase_all="-e all"
 remove_boot_lock="-ob BOOT_LOCK=0"
 
 # =============================================================== Hardening ===============================================================
-boot_address="-ob SECBOOTADD0=$secbootadd0"
+boot_address="-ob SECBOOTADD0=$secbootadd0 NSBOOTADD0=$secbootadd0 NSBOOTADD1=$secbootadd0"
 boot_lock="BOOT_LOCK=1"
 if [ "$select_wba_target" == "0x55" ]; then
-  wrp_oemirot="WRPA_PSTRT=$wrp_a_bank1_start WRPA_PEND=$wrp_a_bank1_end"
-  wrp_loader=WRPB_PSTRT="$wrp_a_bank2_start WRPB_PEND=$wrp_a_bank2_end"
-  write_protect="$wrp_oemirot $wrp_loader"
+  write_protect="WRPA_PSTRT=$wrp_a_bank1_start WRPA_PEND=$wrp_a_bank1_end"
   hide_protect="HDP_PEND=$hdp_end HDPEN=1"
   sec_water_mark="SECWM_PSTRT=$sec1_start SECWM_PEND=$sec1_end"
 else
-  wrp_oemirot="WRP1A_PSTRT=$wrp_a_bank1_start WRP1A_PEND=$wrp_a_bank1_end"
-  wrp_loader=WRP1B_PSTRT="$wrp_a_bank2_start WRP1B_PEND=$wrp_a_bank2_end"
-  write_protect="$wrp_oemirot $wrp_loader"
+  write_protect="WRP1A_PSTRT=$wrp_a_bank1_start WRP1A_PEND=$wrp_a_bank1_end"
   hide_protect="HDP1_PEND=$hdp_end HDP1EN=1"
   sec_water_mark="SECWM1_PSTRT=$sec1_start SECWM1_PEND=$sec1_end"
 fi
@@ -137,7 +138,6 @@ if [ $? -ne 0 ]; then error; return 1; fi
 echo "Application images programming in download slots"
 
 if [ "$app_image_number" == "2" ]; then
-  if [ "$external_flash" == "0" ]; then
     action="Write Appli Secure"
     echo "$action $appli_dir/Binary/$s_code_image"
     "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
@@ -148,18 +148,15 @@ if [ "$app_image_number" == "2" ]; then
     "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$ns_code_image" $slot1 -v --skipErase
     if [ $? -ne 0 ]; then error; return 1; fi
     echo "TZ Appli NonSecure Written"
-  fi
 fi
 
 if [ "$app_image_number" == "1" ]; then
     if [ "$app_full_secure" == "1" ]; then
-      if [ "$external_flash" == "0" ]; then
         action="Write Appli Full Secure"
         echo "$action $appli_dir/Binary/$s_code_image"
         "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
         if [ $? -ne 0 ]; then error; return 1; fi
         echo "Appli Full Secure Written"
-      fi
     else
         action="Write One image Appli"
         echo "$action"
@@ -194,15 +191,6 @@ if [ "$ns_data_image_number" == "1" ]; then
     if [ $? -ne 0 ]; then error; return 1; fi
 fi
 
-# write loader if config loader is active
-if [ "$cfg_loader" == "1" ]; then
-action="Write OEMuROT_Loader_TrustZone"
-echo "$action"
-"$stm32programmercli" "$connect_no_reset" -d "$loader_dir/Binary/Loader.bin" $loaderaddress -v --skipErase
-if [ $? -ne 0 ]; then error; return 1; fi
-echo "OEMuROT_Loader Written"
-fi
-
 action="Write Binary Keys of first boot Stage"
 echo "$action"
 "$stm32programmercli" "$connect_no_reset" -d "$rot_provisioning_path/OEMiRoT_OEMuRoT/Binary/OEMiRoT_Keys.bin" 0xC004000 -v --skipErase
@@ -213,20 +201,37 @@ action="Write the first boot stage OEMiROT_Boot"
 echo "$action"
 # write the first boot stage specifically for the board
 if [ "$is_wba_board_dk" == "0" ] && [ "$select_wba_target" == "0x55" ]; then
-  first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG.bin
+  if [ "$overwrite" == "1" ]; then
+    first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG_OVERWRITE.bin
+  else
+    first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG_SWAP.bin
+  fi
   if [ $? -ne 0 ]; then error; return 1; fi
 
 elif [ "$is_wba_board_dk" == "1" ] && [ "$select_wba_target" == "0x55" ]; then
-  first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1.bin
+  if [ "$overwrite" == "1" ]; then
+    first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1_OVERWRITE.bin
+  else
+    first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1_SWAP.bin
+  fi
   if [ $? -ne 0 ]; then error; return 1; fi
 
 elif [ "$is_wba_board_dk" == "0" ] && [ "$select_wba_target" == "0x65" ]; then
-  first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI.bin
+  if [ "$overwrite" == "1" ]; then
+    first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI_OVERWRITE.bin
+  else
+    first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI_SWAP.bin
+  fi
   if [ $? -ne 0 ]; then error; return 1; fi
 
 elif [ "$is_wba_board_dk" == "1" ] && [ "$select_wba_target" == "0x65" ]; then
-  first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1.bin
+  if [ "$overwrite" == "1" ]; then
+    first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_OVERWRITE.bin
+  else
+    first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_SWAP.bin
+  fi
   if [ $? -ne 0 ]; then error; return 1; fi
+
 else
   echo "No board selected"
   error;
@@ -251,8 +256,8 @@ echo "OEMuROT_Boot Written"
 # ======================================================= Extra board protections =========================================================
 action="Configure Option Bytes"
 echo "$action"
-echo "Configure Secure option Bytes: Write Protection, Hide Protection and boot lock"
-"$stm32programmercli" $connect_no_reset -ob $sec_water_mark $write_protect $hide_protect $boot_lock
+echo "Configure Secure option Bytes: Write Protection, Hide Protection, boot lock and Write protection"
+"$stm32programmercli" $connect_no_reset -ob $sec_water_mark $write_protect $hide_protect $boot_lock $wrp_protect
 if [ $? -ne 0 ]; then error; return 1; fi
 
 echo "Programming success"

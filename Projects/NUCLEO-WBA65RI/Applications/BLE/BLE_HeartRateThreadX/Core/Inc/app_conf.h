@@ -230,7 +230,7 @@
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (2)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_STDBY_SUPPORTED  (1)
 
 /**
  * If Standby is enabled we need to disable ThreadX low power Framework,

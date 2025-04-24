@@ -4,7 +4,7 @@
  * @brief ZCL Metering cluster header
  * ZCL 7 section 10.4
  * ZCL 8 section 10.4
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 /* EXEGIN - removed '@'PICS escape sequence, since these are not the
@@ -1178,7 +1178,7 @@ struct ZbZclMeterClientSetSupplyStatusReqT {
     uint32_t issuer_event_id; /**< Issuer Event ID */
     enum ZbZclMeterSetSupplyStatusT supply_tamper_state; /**< SupplyTamperState */
     enum ZbZclMeterSetSupplyStatusT supply_depletion_state; /**< SupplyDepletionState */
-    enum ZbZclMeterSetSupplyStatusT supply_uncont_flow_tate; /**< SupplyUncontrolledFlowState */
+    enum ZbZclMeterSetSupplyStatusT supply_uncont_flow_state; /**< SupplyUncontrolledFlowState */
     enum ZbZclMeterSetSupplyStatusT load_limit_supply_state; /**< LoadLimitSupplyState */
     bool to_bomd; /**< If true, the timeout for this command is extended since it's
      * being sent to a BOMD via a Mirror device. */
@@ -1209,9 +1209,6 @@ struct ZbZclMeterClientMirrorReportAttrRspT {
  * Metering Server Functions
  *-----------------------------------------------------------------------------
  */
-
-extern const struct ZbZclAttrT zcl_metering_server_mandatory_attr_list[];
-extern const unsigned int zcl_metering_server_mandatory_attr_list_len;
 
 /**< Metering Server callbacks configuration */
 struct ZbZclMeterServerCallbacksT {

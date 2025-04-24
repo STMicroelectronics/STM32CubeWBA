@@ -1,69 +1,126 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * File Name          : app_zigbee_zbcli.h
- * Description        : Header for Zigbee CLI Application.
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under Ultimate Liberty license
- * SLA0044, the "License"; You may not use this file except in compliance with
- * the License. You may obtain a copy of the License at:
- *                             www.st.com/SLA0044
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * File Name          : app_zigbee.h
+  * Description        : Header for Zigbee Application.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef APP_ZIGBEE_H
 #define APP_ZIGBEE_H
 
-#include "zigbee.h"
-#include "zigbee.zd.h"
-
-#define CLI_MAX_LINE_LEN                    384U /* was C_SIZE_CMD_STRING (256) */
-
-#define CLI_CMD_QUEUE_SZ                    4U
-
-enum zbcli_buf_status_t {
-    BUF_STATUS_EMPTY,
-    BUF_STATUS_READY,
-    BUF_STATUS_OVERFLOW
-};
-
-struct zbcli_buf_t {
-    uint8_t buf[CLI_MAX_LINE_LEN];
-    uint16_t len;
-    enum zbcli_buf_status_t status;
-};
-
-struct app_info_t {
-    struct ZigBeeT *zb;
-    uint64_t eui64;
-    bool savePersistence;
-
-    struct ZbZclClusterT *onoff_server;
-    bool onoff_state;
-
-    /* UART */
-    struct zbcli_buf_t buf_ring[CLI_CMD_QUEUE_SZ];
-    unsigned int buf_wr_idx;
-    unsigned int buf_rd_idx;
-};
-
-extern struct app_info_t app_info;
-
-extern void     APP_ZIGBEE_StackLayersInit(void);
-extern void     APP_ZIGBEE_Init(void);
-extern  void    APP_ZIGBEE_Task(void);
-
-#define APP_LOG_PRINTF(...) \
-    do { \
-        cli_port_print_fmt(__func__, __VA_ARGS__); \
-    } while (false)
-
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/* Includes ------------------------------------------------------------------*/
+#include "app_common.h"
+#include "app_zigbee_endpoint.h"
+#include "zigbee.h"
+/* USER CODE BEGIN Includes */
+#include "zigbee.zd.h"
+#include "app_zigbee_debug_zd.h"
+/* USER CODE END Includes */
+
+/* Exported defines ----------------------------------------------------------*/
+/* USER CODE BEGIN ED */
+#define CLI_CMD_QUEUE_SZ                    4U
+
+/* USER CODE END ED */
+
+/* Exported types ------------------------------------------------------------*/
+/* --- Zigbee Application status --- */
+typedef enum
+{
+  APP_ZIGBEE_OK       = 0x00u,
+  APP_ZIGBEE_ERROR    = 0x01u,
+} APP_ZIGBEE_StatusTypeDef;
+
+/* --- Zigbee Application Information --- */
+typedef struct ZigbeeAppInfoT
+{
+  bool                  bHasInit;
+  bool                  bInitAfterJoin;
+  bool                  bPersistNotification;
+  bool                  bNwkStartup;
+  struct ZigBeeT        * pstZigbee;
+  enum ZbStartType      eStartupControl;
+  enum ZbStatusCodeT    eJoinStatus;
+  uint32_t              lPersistNumWrites;
+  uint32_t              lJoinDelay;
+  uint64_t              dlExtendedAddress;
+  /* USER CODE BEGIN ZigbeeAppInfo_t */
+  
+  struct zbcli_buf_t buf_ring[CLI_CMD_QUEUE_SZ];
+  unsigned int buf_wr_idx;
+  unsigned int buf_rd_idx;
+  
+  bool onoff_state;
+  /* USER CODE END ZigbeeAppInfo_t */ 
+  
+  struct ZbZclClusterT  * pstZbCluster[CLUSTER_NB_MAX];
+} ZigbeeAppInfo_t;
+
+/* USER CODE BEGIN ET */
+
+/* USER CODE END ET */
+
+/* Exported constants ------------------------------------------------------- */
+extern const uint8_t                      sec_key_distrib_uncert[ZB_SEC_KEYSIZE];
+extern const uint8_t                      sec_key_ha[ZB_SEC_KEYSIZE];
+
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* External variables ------------------------------------------------------- */
+extern ZigbeeAppInfo_t                    stZigbeeAppInfo;
+
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
+
+/* Exported macros -----------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
+/* Exported functions prototypes ---------------------------------------------*/
+extern void       APP_ZIGBEE_Init                         ( void );
+extern void       APP_ZIGBEE_Task                         ( void );
+extern void       APP_ZIGBEE_StackLayersInit              ( void );
+extern void       APP_ZIGBEE_NwkFormOrJoinTaskInit        ( void );
+extern void       APP_ZIGBEE_NwkFormOrJoin                ( void );
+
+extern void       APP_ZIGBEE_PermitJoin                   ( uint8_t cPermitJoinDelay );
+extern bool       APP_ZIGBEE_IsAppliJoinNetwork           ( void );
+extern void       APP_ZIGBEE_AddDeviceWithInstallCode     ( uint64_t dlExtendedAddress, uint8_t * szInstallCode, uint8_t cPermitJoinDelay );
+extern bool       APP_ZIGBEE_GetCurrentChannel            ( uint8_t * cCurrentChannel );
+extern bool       APP_ZIGBEE_SetTxPower                   ( uint8_t cTxPower );
+extern char *     APP_ZIGBEE_GetDisplaySecKey             ( const uint8_t * szCode, uint16_t iLength, bool bSpace );
+extern void       APP_ZIGBEE_PrintGenericInfo             ( void );
+extern void       APP_ZIGBEE_PrintApplicationInfo         ( void );
+extern void       APP_ZIGBEE_Error                        ( uint32_t ErrId, uint32_t ErrCode );
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* APP_ZIGBEE_H */
+

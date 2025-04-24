@@ -20,169 +20,65 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_heartrate_ota-application-description"><strong>BLE_HeartRate_ota Application Description</strong></h2>
-<p>How to use the Heart Rate and OTA profile as specified by the BLE SIG.</p>
+<p>How to use the BLE HeartRate with Over The Air Firmware Update feature.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE firmware update over the air, BLE profile</p>
-<h3 id="directory-contents"><strong>Directory contents</strong></h3>
-<ul>
-<li>BLE_HeartRate_ota/Core/Inc/app_common.h App Common application configuration file for STM32WPAN Middleware.</li>
-<li>BLE_HeartRate_ota/Core/Inc/app_conf.h Application configuration file for STM32WPAN Middleware.</li>
-<li>BLE_HeartRate_ota/Core/Inc/app_entry.h Interface to the application</li>
-<li>BLE_HeartRate_ota/Core/Inc/main.h Header for main.c file. This file contains the common defines of the application.</li>
-<li>BLE_HeartRate_ota/Core/Inc/stm32wbaxx_hal_conf.h HAL configuration file.</li>
-<li>BLE_HeartRate_ota/Core/Inc/stm32wbaxx_it.h This file contains the headers of the interrupt handlers.</li>
-<li>BLE_HeartRate_ota/Core/Inc/stm32wbaxx_nucleo_conf.h STM32WBAXX nucleo board configuration file. This file should be copied to the application folder and renamed to stm32wbaxx_nucleo_conf.h .</li>
-<li>BLE_HeartRate_ota/Core/Inc/utilities_conf.h Header for configuration file for STM32 Utilities.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/app_ble.h Header for ble application</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ble_conf.h Configuration file for BLE Middleware.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ble_dbg_conf.h Debug configuration file for BLE Middleware.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/dis.h Header for service2.c</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/dis_app.h Header for service2_app.c</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/hrs.h Header for service1.c</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/hrs_app.h Header for service1_app.c</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ota.h Header for STM32_WPAN</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ota_app.h Header for STM32_WPAN</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/bpka.h This file contains the interface of the BLE PKA module.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/host_stack_if.h This file contains the interface for the stack tasks</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/ll_sys_if.h Header file for ll_sys_if.c</li>
-<li>BLE_HeartRate_ota/System/Config/ADC_Ctrl/adc_ctrl_conf.h Configuration Header for ADC controller module</li>
-<li>BLE_HeartRate_ota/System/Config/CRC_Ctrl/crc_ctrl_conf.h Configuration Header for CRC controller module</li>
-<li>BLE_HeartRate_ota/System/Config/Debug_GPIO/app_debug.h Real Time Debug module application APIs and signal table</li>
-<li>BLE_HeartRate_ota/System/Config/Debug_GPIO/app_debug_signal_def.h Real Time Debug module application signal definition</li>
-<li>BLE_HeartRate_ota/System/Config/Debug_GPIO/debug_config.h Real Time Debug module general configuration file</li>
-<li>BLE_HeartRate_ota/System/Config/Flash/simple_nvm_arbiter_conf.h Configuration header for simple_nvm_arbiter.c module</li>
-<li>BLE_HeartRate_ota/System/Config/Log/log_module.h Configuration Header for log module</li>
-<li>BLE_HeartRate_ota/System/Config/LowPower/app_sys.h Header for app_sys.c</li>
-<li>BLE_HeartRate_ota/System/Config/LowPower/peripheral_init.h Header for peripheral init module</li>
-<li>BLE_HeartRate_ota/System/Config/LowPower/user_low_power_config.h Header for user_low_power_config.c</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw.h This file contains the interface of STM32 HW drivers.</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw_if.h Hardware Interface</li>
-<li>BLE_HeartRate_ota/System/Interfaces/stm32_lpm_if.h Header for stm32_lpm_if.c module (device specific LP management)</li>
-<li>BLE_HeartRate_ota/System/Interfaces/timer_if.h configuration of the timer_if.c instances</li>
-<li>BLE_HeartRate_ota/System/Interfaces/usart_if.h Header file for stm32_adv_trace interface file</li>
-<li>BLE_HeartRate_ota/System/Modules/adc_ctrl.h Header for ADC client manager module</li>
-<li>BLE_HeartRate_ota/System/Modules/ble_timer.h This header defines the timer functions used by the BLE stack</li>
-<li>BLE_HeartRate_ota/System/Modules/crc_ctrl.h Header for CRC client manager module</li>
-<li>BLE_HeartRate_ota/System/Modules/dbg_trace.h Header for dbg_trace.c</li>
-<li>BLE_HeartRate_ota/System/Modules/otp.h Header file for One Time Programmable (OTP) area</li>
-<li>BLE_HeartRate_ota/System/Modules/scm.h Header for scm.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/stm_list.h Header file for linked list library.</li>
-<li>BLE_HeartRate_ota/System/Modules/temp_measurement.h Header file for temperature measurement module</li>
-<li>BLE_HeartRate_ota/System/Modules/utilities_common.h Common file to utilities</li>
-<li>BLE_HeartRate_ota/System/Modules/baes/baes.h This file contains the interface of the basic AES software module.</li>
-<li>BLE_HeartRate_ota/System/Modules/baes/baes_global.h This file contains the internal definitions of the AES software module.</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/flash_driver.h Header for flash_driver.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/flash_manager.h Header for flash_manager.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/rf_timing_synchro.h Header for rf_timing_synchro.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/simple_nvm_arbiter.h Header for simple_nvm_arbiter.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/simple_nvm_arbiter_common.h Common header of simple_nvm_arbiter.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/MemoryManager/advanced_memory_manager.h Header for advance_memory_manager.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/MemoryManager/stm32_mm.h Header for stm32_mm.c module</li>
-<li>BLE_HeartRate_ota/System/Modules/Nvm/nvm.h This file contains the interface of the NVM manager.</li>
-<li>BLE_HeartRate_ota/System/Modules/RFControl/rf_antenna_switch.h RF related module to handle dedictated GPIOs for antenna switch</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/debug_signals.h Real Time Debug module System and Link Layer signal definition</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/local_debug_tables.h Real Time Debug module System and Link Layer signal</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/RTDebug.h Real Time Debug module API declaration</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/RTDebug_dtb.h Real Time Debug module API declaration for DTB usage</li>
-<li>BLE_HeartRate_ota/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.h Header file for the serial commands interpreter module</li>
-<li>BLE_HeartRate_ota/Core/Src/app_entry.c Entry point of the application</li>
-<li>BLE_HeartRate_ota/Core/Src/main.c Main program body</li>
-<li>BLE_HeartRate_ota/Core/Src/stm32wbaxx_hal_msp.c This file provides code for the MSP Initialization and de-Initialization codes.</li>
-<li>BLE_HeartRate_ota/Core/Src/stm32wbaxx_it.c Interrupt Service Routines.</li>
-<li>BLE_HeartRate_ota/Core/Src/system_stm32wbaxx.c CMSIS Cortex-M33 Device Peripheral Access Layer System Source File</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/app_ble.c BLE Application</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/dis.c service2 definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/dis_app.c service2_app application definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/hrs.c service1 definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/hrs_app.c service1_app application definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ota.c STM32_WPAN definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/App/ota_app.c STM32_WPAN application definition.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/bleplat.c This file implements the platform functions for BLE stack library.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/bpka.c This file implements the BLE PKA module.</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/host_stack_if.c Source file for the stack tasks</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/linklayer_plat.c Source file for the linklayer plateform adaptation layer</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/ll_sys_if.c Source file for initiating the system sequencer</li>
-<li>BLE_HeartRate_ota/STM32_WPAN/Target/power_table.c This file contains supported power tables</li>
-<li>BLE_HeartRate_ota/System/Config/ADC_Ctrl/adc_ctrl_conf.c Source for ADC client controller module configuration file</li>
-<li>BLE_HeartRate_ota/System/Config/CRC_Ctrl/crc_ctrl_conf.c Source for CRC client controller module configuration file</li>
-<li>BLE_HeartRate_ota/System/Config/Debug_GPIO/app_debug.c Real Time Debug module application side APIs</li>
-<li>BLE_HeartRate_ota/System/Config/Log/log_module.c Source file of the log module</li>
-<li>BLE_HeartRate_ota/System/Config/LowPower/user_low_power_config.c Low power related user configuration</li>
-<li>BLE_HeartRate_ota/System/Config/LowPower/peripheral_init.c Source for peripheral init module</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw_aes.c This file contains the AES driver for STM32WBA</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw_otp.c This file contains the OTP driver.</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw_pka.c This file contains the PKA driver for STM32WBA</li>
-<li>BLE_HeartRate_ota/System/Interfaces/hw_rng.c This file contains the RNG driver for STM32WBA</li>
-<li>BLE_HeartRate_ota/System/Interfaces/pka_p256.c This file is an optional part of the PKA driver for STM32WBA. It is dedicated to the P256 elliptic curve.</li>
-<li>BLE_HeartRate_ota/System/Interfaces/stm32_lpm_if.c Low layer function to enter/exit low power modes (stop, sleep)</li>
-<li>BLE_HeartRate_ota/System/Interfaces/timer_if.c Configure RTC Alarm, Tick and Calendar manager</li>
-<li>BLE_HeartRate_ota/System/Interfaces/usart_if.c Source file for interfacing the stm32_adv_trace to hardware</li>
-<li>BLE_HeartRate_ota/System/Modules/adc_ctrl.c Header for ADC client manager module</li>
-<li>BLE_HeartRate_ota/System/Modules/app_sys.c Application system for STM32WPAN Middleware.</li>
-<li>BLE_HeartRate_ota/System/Modules/ble_timer.c This module implements the timer core functions</li>
-<li>BLE_HeartRate_ota/System/Modules/crc_ctrl.c Source for CRC client controller module</li>
-<li>BLE_HeartRate_ota/System/Modules/otp.c Source file for One Time Programmable (OTP) area</li>
-<li>BLE_HeartRate_ota/System/Modules/scm.c Functions for the System Clock Manager.</li>
-<li>BLE_HeartRate_ota/System/Modules/stm_list.c TCircular Linked List Implementation.</li>
-<li>BLE_HeartRate_ota/System/Modules/temp_measurement.c Temperature measurement module</li>
-<li>BLE_HeartRate_ota/System/Modules/baes/baes_cmac.c This file contains the AES CMAC implementation.</li>
-<li>BLE_HeartRate_ota/System/Modules/baes/baes_ecb.c This file contains the AES ECB functions implementation.</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/flash_driver.c The Flash Driver module is the interface layer between Flash management modules and HAL Flash drivers</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/flash_manager.c The Flash Manager module provides an interface to write raw data from SRAM to FLASH</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/rf_timing_synchro.c The RF Timing Synchronization module provides an interface to synchronize the flash processing versus the RF activity to make sure the RF timing is not broken</li>
-<li>BLE_HeartRate_ota/System/Modules/Flash/simple_nvm_arbiter.c The Simple NVM arbiter module provides an interface to write and/or restore data from SRAM to FLASH with use of NVMs.</li>
-<li>BLE_HeartRate_ota/System/Modules/MemoryManager/advanced_memory_manager.c Memory Manager</li>
-<li>BLE_HeartRate_ota/System/Modules/MemoryManager/stm32_mm.c Memory Manager</li>
-<li>BLE_HeartRate_ota/System/Modules/Nvm/nvm_emul.c This file implements the RAM version of the NVM manager for STM32WBX. It is made for test purpose.</li>
-<li>BLE_HeartRate_ota/System/Modules/RFControl/rf_antenna_switch.c RF related module to handle dedictated GPIOs for antenna switch</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/RTDebug.c Real Time Debug module API definition</li>
-<li>BLE_HeartRate_ota/System/Modules/RTDebug/RTDebug_dtb.c Real Time Debug module API definition for DTB usage</li>
-<li>BLE_HeartRate_ota/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c Source file for the serial commands interpreter module</li>
-</ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65 Nucleo board.</li>
+<li>This application runs on STM32WBA65xx Nucleo board.</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following:</p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Verify that the Maximum supported ATT_MTU size configured in app_conf.h file is 251 bytes.</li>
-<li>Open your preferred toolchain</li>
-<li><p>Rebuild all files and load your image into target memory: BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000 BLE_HeartRate_ota binary is downloaded at the memory address 0x08006000</p></li>
-<li><p>Run the example</p></li>
+<li>Open your prefered toolchain</li>
+<li>Rebuild all files and flash the board:
+<ul>
+<li>BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000</li>
+<li>BLE_HeartRate_ota binary is downloaded at the memory address 0x08006000</li>
+</ul></li>
+<li>Run the example</li>
 </ul>
-<p>You can interact with HeartRate_ota application with a smartphone:</p>
+<p>Use one of the following remote application to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA</a></p>
 <ul>
-<li>Install and launch ST BLE Toolbox or ST BLE Sensor applications on android or iOS smartphone
+<li><p>Power on the STM32WBAxx Nucleo board.</p></li>
+<li>Open remote interface:
 <ul>
-<li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
-<li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
-<li><a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a></li>
-<li><a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a></li>
-</ul></li>
-<li>Power on the Nucleo board with the BLE_ApplicationInstallManager and BLE_HeartRate_ota applications.</li>
-<li>You can open ST BLE Toolbox application (android device): select the HR_xx in the device list, where xx is the 2 last digits of the BD ADDRESS.</li>
-<li><p>Connect to the selected STM32WBA device.</p></li>
-<li><p>Scroll right and select either the Heart Rate interface or the Over The Air Update Server interface</p></li>
-<li>In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs, you can reset the energy measurement.
-<ul>
-<li>Pairing is supported: Button B2 clears the security database when the device is not connected. When connected, Button B2 send the slave pairing request, here a popup asks you to associate your device. You can either bond from the smartphone by clicking on Bond Button.</li>
-<li>This example supports switch to 2Mbits PHY, pressing Button B1 while connected allows to switch between 1Mbits PHY and 2Mbits PHY.</li>
-<li>After 60s of advertising, the application switch from fast advertising to low power advertising, pressing Button B1 while advertising allows to restart fast advertising.</li>
-</ul></li>
-<li>In the Over The Air Update Server interface, select the STM32WBA device type
-<ul>
-<li>The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary</li>
-<li>Memory mapping is defined as following: the sectors 0 and 1 is reserved for the BLE_ApplicationInstallManager application, sector 3 to sector 127 are dedicated to BLE_HeartRate_ota application, sector 128 to sector 252 are dedicated for the new application, sector 123 is dedicated to User Configuration Data, sector 124 to sector 127 reserved for NVM and Static<br />
+<li>Select the HR__xx in the device list, where xx is the 2 last digits of the BD ADDRESS.<br />
 </li>
-<li>When selecting Application Binary the default Address offset 0x100000 is displayed, the download address of the new application is then: 0x08100000.</li>
-<li>When selecting the User Conf Binary, the Address offset to choose is the address offset of the configured User Configuration Data area defined in the app_conf.h header file, 0x1FA000 in the current BLE_HearRate_ota application example.</li>
-<li>With SELECT FILE you can choose the binary of the new application with OTA or the binary of the User Configuration Data to download</li>
-<li>After this binary choice, a calculated Number of sectors to erase is displayed resulting of the size in sectors of the application or the user configuration data to download</li>
-<li>With the Force it choice, the Number of sectors to erase can be forced or not</li>
-<li>After selecting download icon, the download is in progress</li>
-<li>In the case of a new application download, a reboot on this new application is done at the end of the download</li>
+<li>Connect it.<br />
+</li>
+<li>Select the Heart Rate service.</li>
+</ul>
+<p>HearRate value and Energy Expanded measurements are displayed in graphs.<br />
+Energy Expanded can be reset.</p></li>
+</ul>
+<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board, is associated to the following functions:</p>
+<p>B1 : - not connected : launch fast advertising - connected : switch between 1Mbits and 2Mbits PHY</p>
+<p>B2 : - not connected : clear security database - connected : security request, pairing</p>
+<p>B3 : - not connected : not - connected : update connection interval</p>
+<p>For more information, please refer to Bluetooth LE - Heart Rate Sensor ST wiki<br />
+<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Heart Rate Profile</a></p>
+<p>The firmware update over the air (FUOTA) service provides the possibility to receive a new application to be installed, while the current application is running, for more details please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_FUOTA#Firmware_update_over_the_air_profile"> Firmware update over the air profile</a></p>
+<p>To change the application downloading Firmware Other The Air - Select the Over The Air Update Server service panel in remote interface,<br />
+- select the STM32WBA device type - The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary - Memory mapping is defined as following:<br />
+- pages 0 to 2 are reserved for the BLE_ApplicationInstallManager application, - pages 3 to 127 are dedicated to BLE_HeartRate_ota application,<br />
+- pages 128 to 252 are dedicated for the new application, - page 253 is dedicated to User Configuration Data, - pages 254 to 255 reserved for NVM</p>
+<ul>
+<li>Offset configuration
+<ul>
+<li>if Application Binary is selected<br />
+Address offset is set to 0x100000 to download the new application at address 0x08100000.</li>
+<li>if User Conf Binary is selected Address offset is set to 0x0F6000 to download the new application at address 0x080F6000.</li>
 </ul></li>
+<li>Select the binary file to download
+<ul>
+<li>Number of pages to erase is displayed resulting of the size in pages of the file</li>
+<li>The Number of pages may be over written is needed</li>
+</ul></li>
+<li>Download the file</li>
+<li>When done, a reboot of the application is done.</li>
 </ul>
 </div>
 </div>

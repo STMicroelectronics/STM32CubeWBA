@@ -30,7 +30,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ble_const.h"  
+#include "ble_const.h"
 
 /* USER CODE END Includes */
 
@@ -107,7 +107,7 @@ typedef struct
   uint16_t Initial_Credits;
   uint16_t SPSM;
   uint8_t Channel_Number;
-  uint8_t Channel_Index_List; 
+  uint8_t Channel_Index_List;
   uint8_t cocFlag;
 }BleCoCContext_t;
 
@@ -148,6 +148,7 @@ typedef struct
 
 /* USER CODE BEGIN EV */
 extern BleCoCContext_t BleCoCContextCentral;
+
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -175,6 +176,7 @@ const uint8_t* BleGetBdAddress(void);
 /* USER CODE BEGIN EFP */
 void COC_CENTRAL_APP_Notification(COC_APP_ConnHandle_Not_evt_t *pNotification);
 void BLE_SVC_L2CAP_Conn_Update(uint16_t ConnectionHandle, uint16_t conn1, uint16_t conn2);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

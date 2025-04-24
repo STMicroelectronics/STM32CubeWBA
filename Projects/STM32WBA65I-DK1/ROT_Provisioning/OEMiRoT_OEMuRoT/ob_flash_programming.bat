@@ -2,6 +2,8 @@ call ../env.bat
 :: Get config updated by OEMuROT_Boot
 call ./img_config.bat
 
+set param2=%2
+set rdp_lev=%param2%
 set rot_provisioning_path=%rot_provisioning_path:"=%
 :: Enable delayed expansion
 setlocal EnableDelayedExpansion
@@ -16,8 +18,6 @@ set wrp_a_bank1_end=0xB
 set wrp_b_bank1_start=0x0
 set wrp_b_bank1_end=0x0
 set hdp_end=0x16
-set wrp_a_bank2_start=0x7D
-set wrp_a_bank2_end=0x7F
 set secbootadd0=0x1800C0
 set flashsectnbr=0x7F
 
@@ -32,12 +32,10 @@ set slot7=0x0
 
 set keyaddress=0xC01C000
 set bootaddress=0xC006000
-set oemirot_oemurot_slot0=0xC000000
-set loaderaddress=0xC1FA000
-set cfg_loader=1
-set external_flash=0
+set oemirot_oemurot_slot0=0xC01E000
 set select_wba_target=0x65
 set is_wba_board_dk=1
+set overwrite=1
 
 set s_code_image=%oemurot_appli_secure%
 set ns_code_image=%oemurot_appli_non_secure%
@@ -52,18 +50,26 @@ set connect_no_reset=-c port=SWD mode=Hotplug
 :: Get config updated by OEMiROT_Boot
 set appli_dir=..\..\%oemirot_appli_path_project%
 set boot_dir=..\..\%oemirot_boot_path_project%
-set loader_dir=..\..\%oemirot_loader_trustzone_path_project%
 
 :: =============================================== Remove protections and initialize Option Bytes ==========================================
 set remove_protect_init=SRAM2_RST=0
+:: lock write protection when rdp level >= 1
+set wrp_protect=
 IF "%select_wba_target%" == "0x65" (goto ob_stm32wba65xx)
 set remove_bank1_protect=-ob SECWM_PSTRT=%flashsectnbr% SECWM_PEND=0 WRPA_PSTRT=%flashsectnbr% WRPA_PEND=0 WRPB_PSTRT=%flashsectnbr% WRPB_PEND=0 %remove_protect_init%
 set remove_hdp_protection=-ob HDP_PEND=0 HDPEN=0
+if %rdp_lev% GEQ 1 (
+echo "Configure wrp_protect"
+	set wrp_protect=UNLOCK_A=0 UNLOCK_B=0
+)
 goto ob_stm32wba55xx
 :ob_stm32wba65xx
 set remove_bank1_protect=-ob SECWM1_PSTRT=%flashsectnbr% SECWM1_PEND=0 WRP1A_PSTRT=%flashsectnbr% WRP1A_PEND=0 WRP1B_PSTRT=%flashsectnbr% WRP1B_PEND=0 %remove_protect_init%
 set remove_bank2_protect=-ob SECWM2_PSTRT=%flashsectnbr% SECWM2_PEND=0 WRP2A_PSTRT=%flashsectnbr% WRP2A_PEND=0 WRP2B_PSTRT=%flashsectnbr% WRP2B_PEND=0
 set remove_hdp_protection=-ob HDP1_PEND=0 HDP1EN=0 HDP2_PEND=0 HDP2EN=0
+if %rdp_lev% GEQ 1 (
+	set wrp_protect=UNLOCK_1A=0 UNLOCK_1B=0 UNLOCK_2A=0 UNLOCK_2B=0
+)
 :ob_stm32wba55xx
 :: Check if the target is selected
 IF "%remove_hdp_protection%"=="" (
@@ -74,19 +80,15 @@ set erase_all=-e all
 set remove_boot_lock=-ob BOOT_LOCK=0
 
 :: =============================================================== Hardening ===============================================================
-set boot_address=-ob SECBOOTADD0=%secbootadd0%
+set boot_address=-ob SECBOOTADD0=%secbootadd0% NSBOOTADD0=%secbootadd0% NSBOOTADD1=%secbootadd0%
 set boot_lock=BOOT_LOCK=1
 IF "%select_wba_target%" == "0x65" (goto ob_stm32wba65xx)
-set wrp_oemirot=WRPA_PSTRT=%wrp_a_bank1_start% WRPA_PEND=%wrp_a_bank1_end%
-set wrp_loader=WRPB_PSTRT=%wrp_a_bank2_start% WRPB_PEND=%wrp_a_bank2_end%
-set write_protect=%wrp_oemirot% %wrp_loader%
+set write_protect=WRPA_PSTRT=%wrp_a_bank1_start% WRPA_PEND=%wrp_a_bank1_end%
 set hide_protect=HDP_PEND=%hdp_end% HDPEN=1
 set sec_water_mark=SECWM_PSTRT=%sec1_start% SECWM_PEND=%sec1_end%
 goto ob_stm32wba55xx
 :ob_stm32wba65xx
-set wrp_oemirot=WRP1A_PSTRT=%wrp_a_bank1_start% WRP1A_PEND=%wrp_a_bank1_end%
-set wrp_loader=WRP1B_PSTRT=%wrp_a_bank2_start% WRP1B_PEND=%wrp_a_bank2_end%
-set write_protect=%wrp_oemirot% %wrp_loader%
+set write_protect=WRP1A_PSTRT=%wrp_a_bank1_start% WRP1A_PEND=%wrp_a_bank1_end%
 set hide_protect=HDP1_PEND=%hdp_end% HDP1EN=1
 set sec_water_mark=SECWM1_PSTRT=%sec1_start% SECWM1_PEND=%sec1_end%
 :ob_stm32wba55xx
@@ -134,7 +136,6 @@ IF !errorlevel! NEQ 0 goto :error
 echo "Application images programming in download slots"
 
 IF  "%app_image_number%" == "2" (
-IF  "%external_flash%" == "0" (
 set "action=Write Appli Secure"
 echo %action%
 %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
@@ -146,17 +147,14 @@ echo %action%
 IF !errorlevel! NEQ 0 goto :error
 echo "TZ Appli NonSecure Written"
 )
-)
 
 IF  "%app_image_number%" == "1" (
 IF  "%app_full_secure%" == "1" (
-IF  "%external_flash%" == "0" (
 set "action=Write Appli Full Secure"
 echo %action%
 %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "Appli Full Secure Written"
-)
 ) else (
 set "action=Write One image Appli"
 echo %action%
@@ -191,15 +189,6 @@ goto :error
 IF !errorlevel! NEQ 0 goto :error
 )
 
-:: write loader if config loader is active
-IF  "%cfg_loader%" == "1" (
-set "action=Write OEMuROT_Loader_TrustZone"
-echo %action%
-%stm32programmercli% %connect_no_reset% -d %loader_dir%\Binary\Loader.bin %loaderaddress% -v --skipErase
-IF !errorlevel! NEQ 0 goto :error
-echo "OEMuROT_Loader Written"
-)
-
 set "action=Write Binary Keys of first boot Stage"
 echo %action%
 %stm32programmercli% %connect_no_reset% -d %rot_provisioning_path%\%bootpath%\Binary\OEMiRoT_Keys.bin 0xC004000 -v --skipErase
@@ -211,25 +200,41 @@ echo %action%
 :: write the first boot stage specifically for the board
 IF "%is_wba_board_dk%"  == "0" (
 IF "%select_wba_target%" == "0x55" (
-set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG.bin
+IF "%overwrite%" == "1" (
+set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG_OVERWRITE.bin
+) else (
+set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA55CG_SWAP.bin
+)
 )
 )
 
 IF "%is_wba_board_dk%"  == "1" (
 IF "%select_wba_target%" == "0x55" (
-set first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1.bin
+IF "%overwrite%" == "1" (
+set first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1_OVERWRITE.bin
+) else (
+set first_boot_stage_binary=OEMiROT_Boot_STM32WBA55G_DK1_SWAP.bin
+)
 )
 )
 
 IF "%is_wba_board_dk%"  == "0" (
 IF "%select_wba_target%" == "0x65" (
-set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI.bin
+IF "%overwrite%" == "1" (
+set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI_OVERWRITE.bin
+) else (
+set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI_SWAP.bin
+)
 )
 )
 
 IF "%is_wba_board_dk%"  == "1" (
 IF "%select_wba_target%" == "0x65" (
-set first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1.bin
+IF "%overwrite%" == "1" (
+set first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_OVERWRITE.bin
+) else (
+set first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_SWAP.bin
+)
 )
 )
 
@@ -252,8 +257,8 @@ echo "OEMuROT_Boot Written"
 :: ======================================================= Extra board protections =========================================================
 set "action=Configure Option Bytes"
 echo %action%
-echo "Configure Secure option Bytes: Write Protection, Hide Protection and boot lock"
-%stm32programmercli% %connect_no_reset% -ob %sec_water_mark% %write_protect% %hide_protect% %boot_lock%
+echo "Configure Secure option Bytes: Write Protection, Hide Protection, boot lock and Write protection"
+%stm32programmercli% %connect_no_reset% -ob %sec_water_mark% %write_protect% %hide_protect% %boot_lock% %wrp_protect%
 IF !errorlevel! NEQ 0 goto :error
 
 echo Programming success

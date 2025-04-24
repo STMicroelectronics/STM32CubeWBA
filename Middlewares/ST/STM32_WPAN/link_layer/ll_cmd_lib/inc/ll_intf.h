@@ -1,5 +1,11 @@
 /*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_intf.h#1 $*/
 /**
+ * Version Info
+ * V1: Original 2.00a-lca01
+ * V2: CTE degradation api from case 01772304
+ * V3: fix Sequencer RAM segmentation issue
+ */
+/**
  ********************************************************************************
  * @file    ll_intf_cmds.h
  * @brief   This file contains all the functions prototypes for the LL interface component.
@@ -5518,6 +5524,16 @@ void ll_intf_gain_fix_init(
 		uint8_t r_msur_percent);
 
 #endif /* SUPPORT_CONFIGURABLE_GAIN_FIX */
+
+#if CTE_DEGRADATION_API_PHY_SUPPORT
+/**
+ * @brief  replace the contents of the wakeup and interpacket
+ * 			sequences to apply the CTE Degradation fix.
+ *
+ * @retval None.
+ */
+void ll_intf_apply_cte_degrad_change(void);
+#endif /* CTE_DEGRADATION_API_PHY_SUPPORT */
 
 /**@}
 */

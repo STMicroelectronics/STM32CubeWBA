@@ -23,7 +23,8 @@
 
 #define S_HEAP_SIZE                    0x0000200  /* EWARM / MDK-ARM / STM32CubeIDE */
 #define S_C_STACK_SIZE                 0x0000400  /* EWARM / STM32CubeIDE */
-#define NS_HEAP_SIZE                   0x0001000  /* EWARM / MDK-ARM / STM32CubeIDE */
+#define S_MSP_STACK_SIZE               0x0000200  /* MDK-ARM */
+#define S_PSP_STACK_SIZE               0x0000700  /* MDK-ARM */
 
 #define NSC_CODE_SIZE                  0x400
 
@@ -33,8 +34,14 @@
 
 /********** All define are updated automatically from ROT_BOOT project : begin **********/
 
+/*#define OEMUROT_ENABLE*/                         /* Defined: the project is used for OEMuRoT boot stage
+                                                  Undefined: the project is used for OEMuRoT boot stage */
+
 #define MCUBOOT_OVERWRITE_ONLY                 /* Defined: the FW installation uses overwrite method.
                                                   UnDefined: The FW installation uses swap mode. */
+
+/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/          /* Defined: External OSPI flash used for all secondary slots.
+                                                  Undefined: External OSPI flash not used. */
 
 #define MCUBOOT_APP_IMAGE_NUMBER       0x1      /* 1: S and NS application binaries are assembled in one single image.
                                                    2: Two separated images for S and NS application binaries. */
@@ -89,12 +96,32 @@
 
 #define FLASH_B_SIZE                   0x100000   /* flash bank size: 1 MBytes*/
 
+#define OEMIROT_AREA_0_OFFSET          0x0   /* Secure app image primary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_0_SIZE            0x0   /* Secure app image primary slot size for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_2_OFFSET          0x0   /* Secure app image secondary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_2_SIZE            0x0   /* Secure app image secondary slot size for OEMuRoT boot stage */
+
 /********** All define are updated automatically from ROT_BOOT project : End **********/
 
-#define FLASH_TOTAL_SIZE               (FLASH_B_SIZE+FLASH_B_SIZE) /* total flash size: 2 MBytes */
+#if defined(STM32WBA65xx)
+#define FLASH_TOTAL_SIZE               (FLASH_B_SIZE + FLASH_B_SIZE) /* total flash size: 2 MBytes */
+#elif defined(STM32WBA52xx) || defined(STM32WBA55xx)
+#define FLASH_TOTAL_SIZE               (FLASH_B_SIZE) /* total flash size: 1 MBytes */
+#else
+#error "Unknown target."
+#endif
+
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+/* External SPI Flash layout info for BL2 bootloader */
+#define SPI_FLASH_TOTAL_SIZE           (0x400000)  /* 32 Mbits */
+#define SPI_FLASH_BASE_ADDRESS         (0x00000000)
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define LOADER_FLASH_DEV_NAME             Driver_OSPI_FLASH0
+#define LOADER_FLASH_DEV_NAME             Driver_SPI_FLASH0
 #else
 #define LOADER_FLASH_DEV_NAME             Driver_FLASH0
 #endif  /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
@@ -102,7 +129,7 @@
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2)
 /* Flash Driver Used to Confirm Secure App Image */
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_OSPI_FLASH0
+#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_SPI_FLASH0
 #else
 #define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_FLASH0
 #endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
@@ -111,7 +138,7 @@
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 /* Flash Driver Used to Confirm Secure Data Image */
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_OSPI_FLASH0
+#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_SPI_FLASH0
 #else
 #define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_FLASH0
 #endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */

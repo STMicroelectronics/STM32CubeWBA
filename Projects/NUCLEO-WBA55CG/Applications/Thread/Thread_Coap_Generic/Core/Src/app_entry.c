@@ -154,7 +154,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Thread Initialisation */
   APP_THREAD_Init();
 
-
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */

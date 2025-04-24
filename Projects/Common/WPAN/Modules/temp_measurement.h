@@ -24,6 +24,14 @@
 #include "utilities_common.h"
 
 /* Exported defines ----------------------------------------------------------*/
+/**
+ * @brief Minimum operating temperature limit absolute value
+ *
+ * @details I.e.: Operating temperature is between -40C and 105degC,
+ *          Minimum value expected is 40u.
+ */
+#define TEMPMEAS_MIN_TEMP_LIMIT     ((uint32_t)40u)
+
 /* Exported types ------------------------------------------------------------*/
 /**
  * @brief Temperature Measurement command status codes

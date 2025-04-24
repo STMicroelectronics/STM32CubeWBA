@@ -27,6 +27,7 @@
 #include "pbp.h"
 #include "log_module.h"
 #include "app_ble.h"
+#include "stm32_lcd.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -76,7 +77,6 @@ typedef struct
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-
 #define SOURCE_ID_LIST_SIZE                     (3u)
 
 /* Broadcast Source Config
@@ -105,7 +105,13 @@ typedef struct
 #define APPEARANCE                              (APPEARANCE_GENERIC_AUDIO_SOURCE)
 
 /* Length of the aPBPAPP_BroadcastName String */
-#define BROADCAST_NAME_LENGTH                   12
+#define BROADCAST_NAME_LENGTH                   15
+
+/* Length of the Complete Local Name String: PBP_WBA_XXXX */
+#define COMPLETE_LOCAL_NAME_LENGTH              12
+
+/* Length of the ST Manufacturer Data */
+#define MANUFACTURER_DATA_LENGTH                11
 
 #define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
 
@@ -204,7 +210,7 @@ uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000001, 0x00000002, 0x00000003, 0x0000
 uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 #endif /*(BAP_BROADCAST_ENCRYPTION == 1)*/
 
-uint8_t aPBPAPP_BroadcastName[BROADCAST_NAME_LENGTH] = "PBP_WBA_0000";
+uint8_t aPBPAPP_BroadcastName[BROADCAST_NAME_LENGTH] = "STM32Auracast_1";
 
 /* Advertising Parameters */
 BAP_Extended_Advertising_Params_t extended_adv_params = {
@@ -241,7 +247,6 @@ static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen);
 static int32_t start_audio_source(void);
 static int32_t start_audio_sink(void);
-static char Hex_To_Char(uint8_t Hex);
 /* Exported functions --------------------------------------------------------*/
 extern void APP_NotifyToRun(void);
 
@@ -381,26 +386,29 @@ uint8_t PBPAPP_InitSource(void)
   return ret;
 }
 
+/**
+  * @brief   Start PBP Source
+  */
 uint8_t PBPAPP_StartSource(void)
 {
   uint8_t ret;
-  uint8_t a_additional_adv_data[6 +16] = {5u,
-                                         AD_TYPE_COMPLETE_LOCAL_NAME,
-                                         (uint8_t) 'P',
-                                         (uint8_t) 'B',
-                                         (uint8_t) 'P',
-                                         (uint8_t) '1'};
+  uint8_t a_additional_adv_data[COMPLETE_LOCAL_NAME_LENGTH + 2 + MANUFACTURER_DATA_LENGTH + 1] = \
+                                                                                    {COMPLETE_LOCAL_NAME_LENGTH + 1,
+                                                                                    AD_TYPE_COMPLETE_LOCAL_NAME};
   PBP_PBS_BroadcastAudioStart_Params_t pbp_audio_start_params;
   CAP_Broadcast_AudioStart_Params_t cap_audio_start_params;
+  char broadcast_name_string[BROADCAST_NAME_LENGTH+1];
+  char source_id_string[COMPLETE_LOCAL_NAME_LENGTH+1];
+  
   uint8_t Pb_Addr_Len;
   uint8_t Pb_Addr[6] = {0x00};
-
+  
   aci_hal_read_config_data(CONFIG_DATA_PUBADDR_OFFSET, &Pb_Addr_Len, &Pb_Addr[0]);
-  aPBPAPP_BroadcastName[8] = Hex_To_Char((Pb_Addr[1] & 0xF0) >> 4);
-  aPBPAPP_BroadcastName[9] = Hex_To_Char(Pb_Addr[1] & 0x0F);
-  aPBPAPP_BroadcastName[10] = Hex_To_Char((Pb_Addr[0] & 0xF0) >> 4);
-  aPBPAPP_BroadcastName[11] = Hex_To_Char(Pb_Addr[0] & 0x0F);
+  snprintf(source_id_string, COMPLETE_LOCAL_NAME_LENGTH+1, "PBP_WBA_%02X%02X", Pb_Addr[1], Pb_Addr[0]);
+  MEMCPY(&a_additional_adv_data[2], source_id_string, COMPLETE_LOCAL_NAME_LENGTH);
 
+  snprintf(broadcast_name_string, BROADCAST_NAME_LENGTH+1, "%s", aPBPAPP_BroadcastName);
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) broadcast_name_string, CENTER_MODE);
 
   pbp_audio_start_params.pBroadcastAudioStartParams = &cap_audio_start_params;
   pbp_audio_start_params.StandardQuality = 0;
@@ -429,7 +437,7 @@ uint8_t PBPAPP_StartSource(void)
   cap_audio_start_params.pExtendedAdvParams = &extended_adv_params;
   cap_audio_start_params.pPeriodicAdvParams = &periodic_adv_params;
   cap_audio_start_params.pAdditionalAdvData = &a_additional_adv_data[0];
-  cap_audio_start_params.AdditionalAdvDataLen = 6;
+  cap_audio_start_params.AdditionalAdvDataLen = 18;
 
 
   if (BROADCAST_SOURCE_BAP_CONFIG%16 == 3 || BROADCAST_SOURCE_BAP_CONFIG%16 == 5)
@@ -443,7 +451,7 @@ uint8_t PBPAPP_StartSource(void)
 
   cap_audio_start_params.AdditionalAdvDataLen += PBPAPP_BuildManufacturerAvertisingData(
                                                  &(a_additional_adv_data[cap_audio_start_params.AdditionalAdvDataLen]),
-                                                 16);
+                                                 MANUFACTURER_DATA_LENGTH);
 
   LOG_INFO_APP("  Start Broadcast Audio\n");
   ret = PBP_PBS_BroadcastAudioStart(&pbp_audio_start_params);
@@ -460,6 +468,9 @@ uint8_t PBPAPP_StartSource(void)
   return ret;
 }
 
+/**
+  * @brief   Stop PBP Source
+  */
 uint8_t PBPAPP_StopSource(void)
 {
   uint8_t ret;
@@ -851,13 +862,13 @@ static int32_t start_audio_sink(void)
 
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen)
 {
-  if (AdvDataLen >= 16)
+  if (AdvDataLen >= MANUFACTURER_DATA_LENGTH + 1)
   {
     uint8_t bd_addr[6];
     uint8_t length;
 
     /* Length */
-    pAdvData[0] = 15;
+    pAdvData[0] = MANUFACTURER_DATA_LENGTH;
 
     /* Type: Manufacturer Data */
     pAdvData[1] = 0xFF;
@@ -875,37 +886,20 @@ static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t
     /* Firmware ID: Public Broadcast Source */
     pAdvData[6] = 0x90;
 
-    /* Source ID*/
-    pAdvData[7] = BAP_BROADCAST_SOURCE_ID & 0xFF;
-    pAdvData[8] = (BAP_BROADCAST_SOURCE_ID >> 8) & 0xFF;
-    pAdvData[9] = (BAP_BROADCAST_SOURCE_ID >> 16) & 0xFF;
-
     /* BD Address */
     aci_hal_read_config_data(CONFIG_DATA_PUBADDR_OFFSET, &length, &(bd_addr[0]));
-    pAdvData[10] = bd_addr[0];
-    pAdvData[11] = bd_addr[1];
-    pAdvData[12] = bd_addr[2];
-    pAdvData[13] = bd_addr[3];
-    pAdvData[14] = bd_addr[4];
-    pAdvData[15] = bd_addr[5];
+    pAdvData[7] = bd_addr[0];
+    pAdvData[8] = bd_addr[1];
+    pAdvData[9] = bd_addr[2];
+    pAdvData[9] = bd_addr[3];
+    pAdvData[10] = bd_addr[4];
+    pAdvData[11] = bd_addr[5];
 
-    return 16;
+    return MANUFACTURER_DATA_LENGTH + 1;
   }
   else
   {
     /* Advertising Data size insufficient */
     return 0;
-  }
-}
-
-static char Hex_To_Char(uint8_t Hex)
-{
-  if (Hex < 0xA)
-  {
-    return (char) Hex + 48;
-  }
-  else
-  {
-    return (char) Hex + 55;
   }
 }

@@ -297,7 +297,7 @@ static VCP_AIC_InitInst_t aAICInst[APP_VCP_RDR_NUM_AIC_INSTANCES];
 #if (APP_VCP_RDR_NUM_VOC_INSTANCES > 0)
 static VCP_VOC_InitInst_t aVOCInst[APP_VCP_RDR_NUM_VOC_INSTANCES];
 #endif /*(APP_VCP_RDR_NUM_VOC_INSTANCES > 0)*/
-uint8_t Volume = 0x7F;
+uint8_t Volume = 0x80;
 uint8_t Mute = 0x00;
 #endif /*(APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
 
@@ -3470,11 +3470,32 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
     case CAP_BROADCAST_PA_SYNC_ESTABLISHED_EVT:
     {
+      tBleStatus ret;
       LOG_INFO_APP(">>== CAP_BROADCAST_PA_SYNC_ESTABLISHED_EVT\n");
       BAP_PA_Sync_Established_Data_t *data = (BAP_PA_Sync_Established_Data_t*) pNotification->pInfo;
       LOG_INFO_APP("     - SyncHandle : 0x%02x\n",data->SyncHandle);
       GMAPAPP_Context.BSNK.PASyncHandle = data->SyncHandle;
       GMAPAPP_Context.BSNK.PASyncState = APP_PA_SYNC_STATE_SYNCHRONIZED;
+
+      ret = CAP_Broadcast_StopAdvReportParsing();
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("  Fail   : CAP_Broadcast_StopAdvReportParsing() function, result: 0x%02X\n", ret);
+      }
+      else
+      {
+        LOG_INFO_APP("  Success: CAP_Broadcast_StopAdvReportParsing() function\n");
+      }
+      ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc() function, result: 0x%02X\n", ret);
+      }
+      else
+      {
+        GMAPAPP_Context.BSNK.ScanState = APP_SCAN_STATE_IDLE;
+        LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc() function\n");
+      }
     }
     break;
 
@@ -3726,26 +3747,6 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                          (data->NumBISes * sizeof(uint16_t)));
           GMAPAPP_Context.BSNK.current_num_bis = data->NumBISes;
           GMAPAPP_Context.BSNK.BIGSyncState = APP_BIG_SYNC_STATE_SYNCHRONIZED;
-
-          ret = CAP_Broadcast_StopAdvReportParsing();
-          if (ret != BLE_STATUS_SUCCESS)
-          {
-            LOG_INFO_APP("  Fail   : CAP_Broadcast_StopAdvReportParsing() function, result: 0x%02X\n", ret);
-          }
-          else
-          {
-            LOG_INFO_APP("  Success: CAP_Broadcast_StopAdvReportParsing() function\n");
-          }
-          ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
-          if (ret != BLE_STATUS_SUCCESS)
-          {
-            LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc() function, result: 0x%02X\n", ret);
-          }
-          else
-          {
-            GMAPAPP_Context.BSNK.ScanState = APP_SCAN_STATE_IDLE;
-            LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc() function\n");
-          }
 
           if (GMAPAPP_Context.BroadcastMode == APP_BROADCAST_MODE_SINK_ONLY)
           {
@@ -4918,7 +4919,7 @@ tBleStatus CSIPAPP_RegisterCSIS(uint8_t instance_id,
 
   tBleStatus status;
   uint8_t inst_id = instance_id;
-  CSIS_ServiceInit_t pInit;
+  CSIS_ServiceInit_t pInit = {0};
   Audio_Location_t audio_locations;
 
   pInit.SIRK_type = SIRK_type;

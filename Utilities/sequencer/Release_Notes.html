@@ -11,8 +11,11 @@
     div.columns{display: flex; gap: min(4vw, 1.5em);}
     div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
     ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
       width: 0.8em;
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
@@ -21,9 +24,6 @@
   </style>
   <link rel="stylesheet" href="_htmresc/mini-st.css" />
   <link rel="icon" type="image/x-icon" href="_htmresc/favicon.png" />
-  <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
 </head>
 <body>
 <div class="row">
@@ -43,30 +43,22 @@ inside a system without OS.</p>
 <section id="update-history" class="col-sm-12 col-lg-8">
 <h1>Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section11" checked aria-hidden="true">
-<label for="collapse-section11" aria-hidden="true">v1.7.0 /
-27-February-2023</label>
+<input type="checkbox" id="collapse-section14" checked aria-hidden="true">
+<label for="collapse-section14" aria-hidden="true">v1.11.0 /
+20-Februrary-2025</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
 <h3 id="maintenance-release">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Ticket 141828 - UTIL_SEQ_PreIdle() and
-UTIL_SEQ_PostIdle() should not be executed when an event is set</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Ticket 140590 - [Sequencer]:Request to add
-a new API to check if the task is registered</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Ticket 158248 - [stm32_seq.c] Wrong #error
-control implementation</td>
+<tr>
+<td style="text-align: left;">fix : udpate SEQ_Run to avoid wrong task
+id detected in the issue 184738</td>
 </tr>
 </tbody>
 </table>
@@ -86,29 +78,22 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section10" aria-hidden="true">
-<label for="collapse-section10" aria-hidden="true">v1.6.0 /
-26-October-2021</label>
+<input type="checkbox" id="collapse-section13" aria-hidden="true">
+<label for="collapse-section13" aria-hidden="true">v1.10.0 /
+16-December-2024</label>
 <div>
 <h2 id="main-changes-1">Main Changes</h2>
 <h3 id="maintenance-release-1">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Ticket 104404 - Some events may be lost
-due to race conditions (rework)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Ticket 115234 - [Licensing] Update the way
-to declare licenses in Cube and X-CUBE components</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Documentation update</td>
+<tr>
+<td style="text-align: left;">fix: Ticket 195100 - Hardfault could be
+generated in some cases</td>
 </tr>
 </tbody>
 </table>
@@ -128,22 +113,22 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section9" aria-hidden="true">
-<label for="collapse-section9" aria-hidden="true">v1.5.2 /
-10-June-2021</label>
+<input type="checkbox" id="collapse-section12" aria-hidden="true">
+<label for="collapse-section12" aria-hidden="true">v1.9.0 /
+01-October-2024</label>
 <div>
 <h2 id="main-changes-2">Main Changes</h2>
 <h3 id="maintenance-release-2">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Ticket 104404 - Some events may be lost
-due to race conditions</td>
+<tr>
+<td style="text-align: left;">Ticket 184738 - STM32WB55 sequencer issue
+- async stack event no more received at M4</td>
 </tr>
 </tbody>
 </table>
@@ -163,22 +148,22 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section8" aria-hidden="true">
-<label for="collapse-section8" aria-hidden="true">v1.5.1 /
-10-Sept-2020</label>
+<input type="checkbox" id="collapse-section11" aria-hidden="true">
+<label for="collapse-section11" aria-hidden="true">v1.8.0 /
+9-April-2024</label>
 <div>
 <h2 id="main-changes-3">Main Changes</h2>
 <h3 id="maintenance-release-3">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Ticket 86948 - CodeSpell : Correct some
-english words typo</td>
+<tr>
+<td style="text-align: left;">Ticket 158094 - Add UTIL_SEQ_PreTask() and
+UTIL_SEQ_PostTask() for each task</td>
 </tr>
 </tbody>
 </table>
@@ -198,31 +183,30 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section7" aria-hidden="true">
-<label for="collapse-section7" aria-hidden="true">v1.5.0 /
-5-Sept-2020</label>
+<input type="checkbox" id="collapse-section11" aria-hidden="true">
+<label for="collapse-section11" aria-hidden="true">v1.7.0 /
+27-February-2023</label>
 <div>
 <h2 id="main-changes-4">Main Changes</h2>
 <h3 id="maintenance-release-4">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Ticket 91315 - Four lines of code should
-be under a __weak function to allow overcharge it for unprivileged
-mode</td>
+<tr>
+<td style="text-align: left;">Ticket 141828 - UTIL_SEQ_PreIdle() and
+UTIL_SEQ_PostIdle() should not be executed when an event is set</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">Ticket 89624 - Utilities Releases Notes
-improvements - Link on openorg BSD-3-Clause</td>
+<tr>
+<td style="text-align: left;">Ticket 140590 - [Sequencer]:Request to add
+a new API to check if the task is registered</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">Ticket 86948 - CodeSpell : Correct some
-english words typo</td>
+<tr>
+<td style="text-align: left;">Ticket 158248 - [stm32_seq.c] Wrong #error
+control implementation</td>
 </tr>
 </tbody>
 </table>
@@ -242,34 +226,29 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section6" aria-hidden="true">
-<label for="collapse-section6" aria-hidden="true">v1.4.0 /
-19-Dec-2019</label>
+<input type="checkbox" id="collapse-section10" aria-hidden="true">
+<label for="collapse-section10" aria-hidden="true">v1.6.0 /
+26-October-2021</label>
 <div>
 <h2 id="main-changes-5">Main Changes</h2>
 <h3 id="maintenance-release-5">Maintenance release</h3>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;">Doxygen update</td>
+<tr>
+<td style="text-align: left;">Ticket 104404 - Some events may be lost
+due to race conditions (rework)</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">[78010][UTILITIES][SEQ] update the
-function UTIL_SEQ_EvtIdle to allow the run of all tasks except the task
-waiting for an event</td>
+<tr>
+<td style="text-align: left;">Ticket 115234 - [Licensing] Update the way
+to declare licenses in Cube and X-CUBE components</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">[78143][UTILITIES][SEQ] UTIL_SEQ_RFU
-definition has been wrongly removed from UTIL_Seq.h</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">[77834][UTILITIES][SEQ] Allow call of
-WaitEvent in the context of PreIdle/PostIdle</td>
+<tr>
+<td style="text-align: left;">Documentation update</td>
 </tr>
 </tbody>
 </table>
@@ -289,38 +268,28 @@ V5.25</li>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section5"  aria-hidden="false">
-<label for="collapse-section5" aria-hidden="true">V1.3.0 /
-25-Sept-2019</label>
+<input type="checkbox" id="collapse-section9" aria-hidden="true">
+<label for="collapse-section9" aria-hidden="true">v1.5.2 /
+10-June-2021</label>
 <div>
 <h2 id="main-changes-6">Main Changes</h2>
-<h3 id="release-v1.3.0">release V1.3.0</h3>
-<h2 id="contents">Contents</h2>
+<h3 id="maintenance-release-6">Maintenance release</h3>
 <table>
-<caption>Fixed bugs list<br />
-</caption>
 <thead>
-<tr class="header">
-<th>Headline</th>
+<tr>
+<th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>doxygen tag insertion</td>
-</tr>
-<tr class="even">
-<td>doxygen documentation html\index.html</td>
-</tr>
-<tr class="odd">
-<td>MISRA 2012 test</td>
-</tr>
-<tr class="even">
-<td>Ticket 72443 - Scheduler: CurrentTaskIdx it is not correctly
-handled.</td>
+<tr>
+<td style="text-align: left;">Ticket 104404 - Some events may be lost
+due to race conditions</td>
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-6">known limitations</h2>
+<h2 id="known-limitations-6">Known Limitations</h2>
+<p>Outstanding bugs list : None</p>
+<p>Requirements not met or planned in a forthcoming release : None</p>
 <h2 id="development-toolchains-and-compilers-6">Development Toolchains
 and Compilers</h2>
 <ul>
@@ -329,35 +298,33 @@ and Compilers</h2>
 V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
-<h2 id="supported-devices-and-boards">Supported Devices and boards</h2>
-<h2 id="backward-compatibility-6">backward compatibility</h2>
-<h2 id="dependencies">Dependencies</h2>
+<h2 id="backward-compatibility-6">Backward compatibility</h2>
+<p>No compatibility break with previous version</p>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section4" aria-hidden="true">
-<label for="collapse-section4" aria-hidden="true">V1.2.1 /
-19-Sept-2019</label>
+<input type="checkbox" id="collapse-section8" aria-hidden="true">
+<label for="collapse-section8" aria-hidden="true">v1.5.1 /
+10-Sept-2020</label>
 <div>
 <h2 id="main-changes-7">Main Changes</h2>
-<h3 id="release-v1.2.1">release V1.2.1</h3>
-<h2 id="contents-1">Contents</h2>
+<h3 id="maintenance-release-7">Maintenance release</h3>
 <table>
-<caption>Fixed bugs list<br />
-</caption>
 <thead>
-<tr class="header">
-<th>Headline</th>
+<tr>
+<th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>Ticket 72443 - Scheduler: CurrentTaskIdx it is not correctly
-handled.</td>
+<tr>
+<td style="text-align: left;">Ticket 86948 - CodeSpell : Correct some
+english words typo</td>
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-7">known limitations</h2>
+<h2 id="known-limitations-7">Known Limitations</h2>
+<p>Outstanding bugs list : None</p>
+<p>Requirements not met or planned in a forthcoming release : None</p>
 <h2 id="development-toolchains-and-compilers-7">Development Toolchains
 and Compilers</h2>
 <ul>
@@ -366,36 +333,42 @@ and Compilers</h2>
 V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
-<h2 id="supported-devices-and-boards-1">Supported Devices and
-boards</h2>
-<h2 id="backward-compatibility-7">backward compatibility</h2>
-<h2 id="dependencies-1">Dependencies</h2>
+<h2 id="backward-compatibility-7">Backward compatibility</h2>
+<p>No compatibility break with previous version</p>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section3" aria-hidden="true">
-<label for="collapse-section3" aria-hidden="true">V1.2.0 /
-24-June-2019</label>
+<input type="checkbox" id="collapse-section7" aria-hidden="true">
+<label for="collapse-section7" aria-hidden="true">v1.5.0 /
+5-Sept-2020</label>
 <div>
 <h2 id="main-changes-8">Main Changes</h2>
-<h3 id="release-v1.2.0">release V1.2.0</h3>
-<h2 id="contents-2">Contents</h2>
+<h3 id="maintenance-release-8">Maintenance release</h3>
 <table>
-<caption>Fixed bugs list<br />
-</caption>
 <thead>
-<tr class="header">
-<th>Headline</th>
+<tr>
+<th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>Fixed to avoid infinite loop when a task is waiting for an
-event.</td>
+<tr>
+<td style="text-align: left;">Ticket 91315 - Four lines of code should
+be under a __weak function to allow overcharge it for unprivileged
+mode</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ticket 89624 - Utilities Releases Notes
+improvements - Link on openorg BSD-3-Clause</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ticket 86948 - CodeSpell : Correct some
+english words typo</td>
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-8">known limitations</h2>
+<h2 id="known-limitations-8">Known Limitations</h2>
+<p>Outstanding bugs list : None</p>
+<p>Requirements not met or planned in a forthcoming release : None</p>
 <h2 id="development-toolchains-and-compilers-8">Development Toolchains
 and Compilers</h2>
 <ul>
@@ -404,38 +377,45 @@ and Compilers</h2>
 V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
-<h2 id="supported-devices-and-boards-2">Supported Devices and
-boards</h2>
-<h2 id="backward-compatibility-8">backward compatibility</h2>
-<h2 id="dependencies-2">Dependencies</h2>
+<h2 id="backward-compatibility-8">Backward compatibility</h2>
+<p>No compatibility break with previous version</p>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section2" aria-hidden="true">
-<label for="collapse-section2" aria-hidden="true">V1.1.0 /
-06-June-2019</label>
+<input type="checkbox" id="collapse-section6" aria-hidden="true">
+<label for="collapse-section6" aria-hidden="true">v1.4.0 /
+19-Dec-2019</label>
 <div>
 <h2 id="main-changes-9">Main Changes</h2>
-<h3 id="release-v1.1.0">release V1.1.0</h3>
-<h2 id="contents-3">Contents</h2>
+<h3 id="maintenance-release-9">Maintenance release</h3>
 <table>
-<caption>Fixed bugs list<br />
-</caption>
 <thead>
-<tr class="header">
-<th>Headline</th>
+<tr>
+<th style="text-align: left;">Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>License correction.</td>
+<tr>
+<td style="text-align: left;">Doxygen update</td>
 </tr>
-<tr class="even">
-<td>change __weak symbol by __WEAK to be compliant with AC6.</td>
+<tr>
+<td style="text-align: left;">[78010][UTILITIES][SEQ] update the
+function UTIL_SEQ_EvtIdle to allow the run of all tasks except the task
+waiting for an event</td>
+</tr>
+<tr>
+<td style="text-align: left;">[78143][UTILITIES][SEQ] UTIL_SEQ_RFU
+definition has been wrongly removed from UTIL_Seq.h</td>
+</tr>
+<tr>
+<td style="text-align: left;">[77834][UTILITIES][SEQ] Allow call of
+WaitEvent in the context of PreIdle/PostIdle</td>
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-9">known limitations</h2>
+<h2 id="known-limitations-9">Known Limitations</h2>
+<p>Outstanding bugs list : None</p>
+<p>Requirements not met or planned in a forthcoming release : None</p>
 <h2 id="development-toolchains-and-compilers-9">Development Toolchains
 and Compilers</h2>
 <ul>
@@ -444,31 +424,39 @@ and Compilers</h2>
 V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
-<h2 id="supported-devices-and-boards-3">Supported Devices and
-boards</h2>
-<h2 id="backward-compatibility-9">backward compatibility</h2>
-<h2 id="dependencies-3">Dependencies</h2>
+<h2 id="backward-compatibility-9">Backward compatibility</h2>
+<p>No compatibility break with previous version</p>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section1" aria-hidden="true">
-<label for="collapse-section1" aria-hidden="true">V1.0.0 /
-15-May-2019</label>
+<input type="checkbox" id="collapse-section5"  aria-hidden="false">
+<label for="collapse-section5" aria-hidden="true">V1.3.0 /
+25-Sept-2019</label>
 <div>
 <h2 id="main-changes-10">Main Changes</h2>
-<h3 id="first-release">first release</h3>
-<h2 id="contents-4">Contents</h2>
+<h3 id="release-v1.3.0">release V1.3.0</h3>
+<h2 id="contents">Contents</h2>
 <table>
 <caption>Fixed bugs list<br />
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Headline</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>first version.</td>
+<tr>
+<td>doxygen tag insertion</td>
+</tr>
+<tr>
+<td>doxygen documentation html\index.html</td>
+</tr>
+<tr>
+<td>MISRA 2012 test</td>
+</tr>
+<tr>
+<td>Ticket 72443 - Scheduler: CurrentTaskIdx it is not correctly
+handled.</td>
 </tr>
 </tbody>
 </table>
@@ -481,9 +469,161 @@ and Compilers</h2>
 V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
+<h2 id="supported-devices-and-boards">Supported Devices and boards</h2>
+<h2 id="backward-compatibility-10">backward compatibility</h2>
+<h2 id="dependencies">Dependencies</h2>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true">
+<label for="collapse-section4" aria-hidden="true">V1.2.1 /
+19-Sept-2019</label>
+<div>
+<h2 id="main-changes-11">Main Changes</h2>
+<h3 id="release-v1.2.1">release V1.2.1</h3>
+<h2 id="contents-1">Contents</h2>
+<table>
+<caption>Fixed bugs list<br />
+</caption>
+<thead>
+<tr>
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket 72443 - Scheduler: CurrentTaskIdx it is not correctly
+handled.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-11">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-11">Development Toolchains
+and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-1">Supported Devices and
+boards</h2>
+<h2 id="backward-compatibility-11">backward compatibility</h2>
+<h2 id="dependencies-1">Dependencies</h2>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section3" aria-hidden="true">
+<label for="collapse-section3" aria-hidden="true">V1.2.0 /
+24-June-2019</label>
+<div>
+<h2 id="main-changes-12">Main Changes</h2>
+<h3 id="release-v1.2.0">release V1.2.0</h3>
+<h2 id="contents-2">Contents</h2>
+<table>
+<caption>Fixed bugs list<br />
+</caption>
+<thead>
+<tr>
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fixed to avoid infinite loop when a task is waiting for an
+event.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-12">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-12">Development Toolchains
+and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-2">Supported Devices and
+boards</h2>
+<h2 id="backward-compatibility-12">backward compatibility</h2>
+<h2 id="dependencies-2">Dependencies</h2>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section2" aria-hidden="true">
+<label for="collapse-section2" aria-hidden="true">V1.1.0 /
+06-June-2019</label>
+<div>
+<h2 id="main-changes-13">Main Changes</h2>
+<h3 id="release-v1.1.0">release V1.1.0</h3>
+<h2 id="contents-3">Contents</h2>
+<table>
+<caption>Fixed bugs list<br />
+</caption>
+<thead>
+<tr>
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>License correction.</td>
+</tr>
+<tr>
+<td>change __weak symbol by __WEAK to be compliant with AC6.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-13">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-13">Development Toolchains
+and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-3">Supported Devices and
+boards</h2>
+<h2 id="backward-compatibility-13">backward compatibility</h2>
+<h2 id="dependencies-3">Dependencies</h2>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true">
+<label for="collapse-section1" aria-hidden="true">V1.0.0 /
+15-May-2019</label>
+<div>
+<h2 id="main-changes-14">Main Changes</h2>
+<h3 id="first-release">first release</h3>
+<h2 id="contents-4">Contents</h2>
+<table>
+<caption>Fixed bugs list<br />
+</caption>
+<thead>
+<tr>
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>first version.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-14">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-14">Development Toolchains
+and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain
+V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
 <h2 id="supported-devices-and-boards-4">Supported Devices and
 boards</h2>
-<h2 id="backward-compatibility-10">backward compatibility</h2>
+<h2 id="backward-compatibility-14">backward compatibility</h2>
 <h2 id="dependencies-4">Dependencies</h2>
 </div>
 </div>

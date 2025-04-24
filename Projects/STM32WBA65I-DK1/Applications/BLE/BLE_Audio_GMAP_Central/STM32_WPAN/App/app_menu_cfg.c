@@ -586,7 +586,6 @@ static void Menu_Disconnect(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Disconnect\n");
   GMAPAPP_Disconnect();
-  Menu_SetActivePage(p_scan_menu);
 }
 
 /**

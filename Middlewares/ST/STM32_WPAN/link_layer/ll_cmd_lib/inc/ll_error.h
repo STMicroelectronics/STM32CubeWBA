@@ -1,5 +1,11 @@
 /*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_error.h#1 $*/
 /**
+ * Version Info
+ * V1: Original 2.00a-lca01
+ * V2: CTE degradation api from case 01772304
+ * V3: fix Sequencer RAM segmentation issue
+ */
+/**
  ********************************************************************************
  * @file    error.h
  * @brief   This file contains error defines across BLE FW LL.
@@ -222,6 +228,10 @@ typedef enum _HW_ERROR_CODES
 #if ((SUPPORT_PHY_SHUTDOWN_MODE) && !(defined(PHY_40nm_3_60_a_tc) || defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a)))
 #error Phy Shutdown feature is only supported on PHY_40nm_3_60_a_tc, PHY_40nm_3_00_a and PHY_40nm_3_40_a
 #endif /* ((SUPPORT_PHY_SHUTDOWN_MODE) && !(defined(PHY_40nm_3_60_a_tc) || defined(PHY_40nm_3_00_a) || defined(PHY_40nm_3_40_a))) */
+
+#if (SUPPORT_DYNAMIC_PREEMPH_COEFF && CTE_DEGRADATION_API_PHY_SUPPORT)
+#error "Dynamic Preemphasis coefficients feature cannot be enabled while the CTE degradation API is enabled"
+#endif /* SUPPORT_DYNAMIC_PREEMPH_COEFF && CTE_DEGRADATION_API_PHY_SUPPORT */
 
 /* Exported macros ------------------------------------------------------------*/
 

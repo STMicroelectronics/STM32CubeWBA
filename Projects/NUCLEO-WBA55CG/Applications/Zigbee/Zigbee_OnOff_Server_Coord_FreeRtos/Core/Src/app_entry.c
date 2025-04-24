@@ -172,7 +172,7 @@ static const osSemaphoreAttr_t RngSemaphore_attributes = {
 
 osThreadId_t          AppliTaskHandle;
 
-const osThreadAttr_t AppliTask_attributes = 
+const osThreadAttr_t AppliTask_attributes =
 {
   .name         = "Application Task",
   .priority     = TASK_PRIO_ZIGBEE_APP_START,
@@ -182,7 +182,6 @@ const osThreadAttr_t AppliTask_attributes =
   .cb_size      = TASK_DEFAULT_CB_SIZE,
   .stack_mem    = TASK_DEFAULT_STACK_MEM,
 };
-
 
 /* USER CODE BEGIN PV */
 
@@ -210,7 +209,6 @@ static void RNG_Task_Entry(void* argument);
 
 static void TimerOStickCB(void *arg);
 static void TimerOSwakeupCB(void *arg);
-
 #if ( CFG_LPM_LEVEL != 0)
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
@@ -447,7 +445,6 @@ static void SystemPower_Config(void)
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -545,7 +542,6 @@ static uint32_t getCurrentTime(void)
 {
   return TIMER_IF_GetTimerValue();
 }
-
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -679,7 +675,6 @@ void vPortSetupTimerInterrupt( void )
   /* USER CODE END vPortSetupTimerInterrupt */
   return;
 }
-
 #if ( CFG_LPM_LEVEL != 0)
 void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
 {
@@ -782,7 +777,6 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   return;
 }
 #endif /* ( CFG_LPM_LEVEL != 0) */
-
 
 /**
  * @brief Function Assert AEABI in case of not described on 'libc' libraries.

@@ -56,6 +56,7 @@ static void NonSecure_Init(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
 static void MX_GTZC_S_Init(void);
+static void MX_SAU_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -107,6 +108,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ICACHE_Init();
+  MX_SAU_Init();
   /* USER CODE BEGIN 2 */
 
   /* Wait for EXTI line 13 interrupt (User button key press) */
@@ -239,6 +241,27 @@ static void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
+
+}
+
+/**
+  * @brief SAU Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SAU_Init(void)
+{
+
+  /* USER CODE BEGIN SAU_Init 0 */
+
+  /* USER CODE END SAU_Init 0 */
+
+  /* USER CODE BEGIN SAU_Init 1 */
+
+  /* USER CODE END SAU_Init 1 */
+  /* USER CODE BEGIN SAU_Init 2 */
+
+  /* USER CODE END SAU_Init 2 */
 
 }
 

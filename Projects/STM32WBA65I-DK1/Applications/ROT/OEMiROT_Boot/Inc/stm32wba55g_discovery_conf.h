@@ -30,7 +30,7 @@ extern "C" {
 #include "stm32wbaxx_hal.h"
 
 /* Usage of STM32WBA55G_DK1 board */
-#define USE_STM32WBA55G_DK1      1U
+//#define USE_STM32WBA55G_DK1      1U
 
 /* COM define */
 #define USE_BSP_COM_FEATURE                  1U

@@ -381,8 +381,8 @@ extern UART_HandleTypeDef           huart1;
 #define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
-#define RADIO_INTR_PRIO_HIGH                (5)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_HIGH                (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY)            /* 2.4GHz RADIO interrupt priority when radio is Active */
+#define RADIO_INTR_PRIO_LOW                 (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 2)        /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
@@ -392,7 +392,7 @@ extern UART_HandleTypeDef           huart1;
 /* Link Layer supported number of antennas */
 #define RADIO_NUM_OF_ANTENNAS               (4)
 
-#define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
+#define RCC_INTR_PRIO                       (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm
@@ -441,7 +441,7 @@ extern UART_HandleTypeDef           huart1;
 
 /* USER CODE BEGIN Defines */
 #define CFG_BSP_ON_FREERTOS                    (1)
-#define CFG_BSP_ON_NUCLEO                       (1)
+#define CFG_BSP_ON_NUCLEO                      (1)
                                                  
 /**
  * User interaction

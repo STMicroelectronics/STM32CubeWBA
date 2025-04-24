@@ -110,7 +110,7 @@ int main(void)
   MX_RNG_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
-  ConfigureStandbyWakeupPins();
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -565,14 +565,7 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void ConfigureStandbyWakeupPins(void)
-{
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   /*B1 --> PC13 */
-  
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_C, GPIO_PIN_13);
-  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(WKUP_IRQn);
-}
+
 
 /* USER CODE END 4 */
 

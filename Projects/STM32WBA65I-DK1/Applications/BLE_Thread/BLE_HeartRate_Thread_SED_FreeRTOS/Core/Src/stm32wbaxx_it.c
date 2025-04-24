@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -184,7 +185,7 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
-
+  HAL_RTCEx_SSRUIRQHandler(&hrtc);
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -353,6 +354,18 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief This function handles WKUP global interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* Verif WakeUp Source */
+  
+  /* Clear all WakeUp flags*/
+  LL_PWR_ClearFlag_WU( );
+}
+
 /**
   * @brief This function handles ADC4 interrupt.
   */

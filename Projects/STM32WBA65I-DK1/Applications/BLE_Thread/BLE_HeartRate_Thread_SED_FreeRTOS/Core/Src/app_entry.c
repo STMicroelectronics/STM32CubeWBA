@@ -90,10 +90,6 @@ extern void vPortSetupTimerInterrupt(void);
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
-#if ( CFG_LPM_LEVEL != 0)
-/* Holds maximum number of FreeRTOS tick periods that can be suppressed */
-static uint32_t maximumPossibleSuppressedTicks = 0;
-#endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
@@ -135,10 +131,22 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-/* Timers for FreeRTOS declaration */
+#if ( CFG_LPM_LEVEL != 0)
+/* Holds maximum number of FreeRTOS tick periods that can be suppressed */
+static uint32_t maximumPossibleSuppressedTicks = 0;
 
-static UTIL_TIMER_Object_t  TimerOStick_Id;
+/* Timer OS wakeup low power declaration */
 static UTIL_TIMER_Object_t  TimerOSwakeup_Id;
+
+/* Time remaining variables to correct next OS tick */
+static uint32_t timeDiffRemaining = 0;
+static uint32_t lowPowerTimeDiffRemaining = 0;
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
+/* Timer for OS tick declaration */
+static UTIL_TIMER_Object_t  TimerOStick_Id;
+
+/* USER CODE BEGIN PV */
 
 /* FreeRTOS objects declaration */
 
@@ -242,15 +250,11 @@ static const osMutexAttr_t adcCtrlMutex_attributes = {
 };
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
-/* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
-#if (CFG_JOYSTICK_SUPPORTED == 1)
-uint8_t JOY_StandbyExitFlag = 0;
-#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+
 /* USER CODE END GV */
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -274,8 +278,8 @@ static void APPE_BPKA_Init( void );
 static void BPKA_Task_Entry(void* argument);
 
 static void TimerOStickCB(void *arg);
-static void TimerOSwakeupCB(void *arg);
 #if ( CFG_LPM_LEVEL != 0)
+static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
 
@@ -329,6 +333,8 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_FLASH_MANAGER_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
+  /* Initialize Peripherals */
+  APP_BSP_Init();
 #if (CFG_LED_SUPPORTED == 1)  
   APP_BSP_LedInit();
 #endif /* (CFG_LED_SUPPORTED == 1) */
@@ -363,21 +369,28 @@ uint32_t MX_APPE_Init(void *p_param)
     Error_Handler();
   }
 
+  /* Disable flash before any use - RFTS */
+  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
+  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
+  /* Enable flash system flag */
+  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
+
   APP_BLE_Init();
 
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
-
+#if ( CFG_LPM_LEVEL != 0)
   /* create a SW timer to wakeup system from low power */
   UTIL_TIMER_Create(&TimerOSwakeup_Id,
                     0,
                     UTIL_TIMER_ONESHOT,
                     &TimerOSwakeupCB, 0);
-#if ( CFG_LPM_LEVEL != 0)
-  maximumPossibleSuppressedTicks = UINT32_MAX;
+
+  maximumPossibleSuppressedTicks = UINT32_MAX;// TODO check this value
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   
+  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
+  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* Thread Initialisation */
   APP_THREAD_Init();
@@ -442,11 +455,11 @@ static void System_Init( void )
 #if (CFG_LOG_SUPPORTED != 0)
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
-#endif /* CFG_LOG_SUPPORTED || (OT_CLI_USE == 1) */
-  
+#endif /* CFG_LOG_SUPPORTED */
+
   /* Initialize the Command Interpreter */
   Serial_CMD_Interpreter_Init();
-#endif  /* (CFG_LOG_SUPPORTED != 0) */
+#endif  /* (CFG_LOG_SUPPORTED != 0) || (OT_CLI_USE == 1) */ 
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init ();
@@ -569,15 +582,6 @@ static void APPE_FLASH_MANAGER_Init(void)
     LOG_ERROR_APP( "FLASH FreeRTOS objects creation FAILED");
     Error_Handler();
   }
-
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
-  return;
 }
 
 /**
@@ -664,6 +668,7 @@ static void TimerOStickCB(void *arg)
   return;
 }
 
+#if ( CFG_LPM_LEVEL != 0)
 /* OS wakeup callback */
 static void TimerOSwakeupCB(void *arg)
 {
@@ -673,7 +678,6 @@ static void TimerOSwakeupCB(void *arg)
   return;
 }
 
-#if ( CFG_LPM_LEVEL != 0)
 /* return current time since boot, continue to count in standby low power mode */
 static uint32_t getCurrentTime(void)
 {
@@ -842,7 +846,7 @@ void vPortSetupTimerInterrupt( void )
 #if ( CFG_LPM_LEVEL != 0)
 void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
 {
-  uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep;
+  uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep, lowPowerTimeDiff, timeDiff;
   eSleepModeStatus eSleepStatus;
 
   /* Stop the timer that is generating the OS tick interrupt. */
@@ -913,8 +917,18 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
      execute until this function completes. */
     lowPowerTimeAfterSleep = getCurrentTime();
 
+    /* Compute time spent in low power state and report precision loss */
+    lowPowerTimeDiff = (lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) + lowPowerTimeDiffRemaining;
+    /* Store precision loss during RTC time conversion to report it for next OS tick. */
+    timeDiff = TIMER_IF_Convert_Tick2ms(lowPowerTimeDiff);
+    lowPowerTimeDiffRemaining = lowPowerTimeDiff - TIMER_IF_Convert_ms2Tick(timeDiff);
+    /* Report precision loss */
+    timeDiff += timeDiffRemaining;
+    /* Store precision loss during OS tick time conversion to report it for next OS tick. */
+    timeDiffRemaining = timeDiff % portTICK_PERIOD_MS;
+
     /* Correct the kernel tick count to account for the time spent in its low power state. */
-    vTaskStepTick( TIMER_IF_Convert_Tick2ms(lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) / portTICK_PERIOD_MS );
+    vTaskStepTick( timeDiff / portTICK_PERIOD_MS );
 
     /* Re-enable interrupts to allow the interrupt that brought the MCU
      * out of sleep mode to execute immediately.  See comments above

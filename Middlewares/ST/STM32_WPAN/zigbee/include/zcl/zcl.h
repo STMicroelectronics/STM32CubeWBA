@@ -3,7 +3,7 @@
  * @heading Zigbee ZCL Core
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_H
@@ -1021,7 +1021,6 @@ ZbUptimeT ZbZclUptime(struct ZigBeeT *zb);
 uint8_t ZbZclGetNextSeqnum(struct ZigBeeT *zb);
 
 void ZbZclClusterSetProfileId(struct ZbZclClusterT *cluster, uint16_t profileId);
-uint16_t ZbZclClusterGetProfileId(struct ZbZclClusterT *cluster);
 
 /* Sets the minimum security level for incoming frames, and also adjusts
  * the tx options to match (assuming symmetrical security).
@@ -1132,6 +1131,13 @@ static inline enum ZbZclClusterIdT
 ZbZclClusterGetClusterId(struct ZbZclClusterT *cluster)
 {
     return cluster->clusterId;
+}
+
+/* WARNING: This API is deprecated. Just access the cluster parameters directly. */
+static inline uint16_t
+ZbZclClusterGetProfileId(struct ZbZclClusterT *cluster)
+{
+    return cluster->profileId;
 }
 
 /* WARNING: This API is deprecated. Just access the cluster parameters directly. */

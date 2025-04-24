@@ -383,6 +383,56 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_zigbee_endpoint.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/STM32_WPAN/App/dis.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/dis_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis_app.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/hrs.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hrs.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/hrs_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hrs_app.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/tunneling.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/tunneling.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/tunneling_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/tunneling_app.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/zddsecurity.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/zddsecurity.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/zddsecurity_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/zddsecurity_app.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/zigbeedirectcomm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/zigbeedirectcomm.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/zigbeedirectcomm_app.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/zigbeedirectcomm_app.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/STM32_WPAN/Target/bleplat.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bleplat.c</locationURI>

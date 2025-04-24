@@ -1170,7 +1170,20 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   tBleStatus ret;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init */
+  /* Add number of record for Device Info Characteristic */
+  static const uint8_t additional_svc_record = 0x03;
 
+  ret = aci_hal_write_config_data(CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET,
+                                  CONFIG_DATA_GAP_ADD_REC_NBR_LEN,
+                                  &additional_svc_record);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET, result: 0x%02X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET\n");
+  }
   /* USER CODE END Ble_Hci_Gap_Gatt_Init */
 
   LOG_INFO_APP("==>> Start Ble_Hci_Gap_Gatt_Init function\n");
@@ -1416,7 +1429,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   LOG_INFO_APP("-- DEVICE INFO CHAR : Revision ID = 0x%02X %02X\n",a_GATT_DevInfoData[3],a_GATT_DevInfoData[2]);
 
   /* Board ID: Nucleo WBA, DK1 WBA... */
-  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA5X;
+  a_GATT_DevInfoData[4] = BOARD_ID_NUCLEO_WBA6X;
   LOG_INFO_APP("-- DEVICE INFO CHAR : Board ID = 0x%02X\n",a_GATT_DevInfoData[4]);
 
   /* HW Package: QFN32, QFN48... */

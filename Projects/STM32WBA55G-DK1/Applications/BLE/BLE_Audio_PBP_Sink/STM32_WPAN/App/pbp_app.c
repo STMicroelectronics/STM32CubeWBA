@@ -61,7 +61,7 @@
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
 
-#define SOURCE_ID_LIST_SIZE                     (3u)
+#define SOURCE_LIST_SIZE                     (3u)
 
 #define SCAN_INTERVAL                           (0x40) /* Scan Interval (*0.625ms): 40ms */
 #define SCAN_WINDOW                             (0x20) /* Scan Window (*0.625ms): 20ms */
@@ -136,7 +136,7 @@ uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000001, 0x00000002, 0x00000003, 0x0000
 uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000000, 0x00000000, 0x00000000, 0x00000000};
 #endif /*(BAP_BROADCAST_ENCRYPTION == 1)*/
 
-uint32_t aSourceIdList[SOURCE_ID_LIST_SIZE] = {0x000001, 0x000002, 0x000003};
+char aSourceList[SOURCE_LIST_SIZE][20] = {"STM32Auracast_1", "STM32Auracast_2", "STM32Auracast_3"};
 uint8_t CurrentID = 0u;
 
 /* Private functions prototypes-----------------------------------------------*/
@@ -258,52 +258,76 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
       if(PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_IDLE
          && PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
       {
-        uint8_t index = 0;
-        while (index + 8 < data->pBAPReport->AdvertisingDataLength)
+        uint8_t parse_index = 0;
+        char name[30] = "Unknown";
+        char bid[12] = "ID:0x\0";
+        const uint8_t* name_ptr = 0;
+        uint8_t name_len = 0;
+
+        while (parse_index + 3 < data->pBAPReport->AdvertisingDataLength)
         {
-          if (data->pBAPReport->pAdvertisingData[index+1] == 0xFF)
+          /* First priority to the Broadcast Name */
+          if (data->pBAPReport->pAdvertisingData[parse_index + 1] == 0x30)
           {
-            /* Found Manufacturer Data */
-            if (data->pBAPReport->pAdvertisingData[index+7] == (aSourceIdList[CurrentID] & 0xFF)
-                && data->pBAPReport->pAdvertisingData[index+8] == ((aSourceIdList[CurrentID] >> 8) & 0xFF)
-                  && data->pBAPReport->pAdvertisingData[index+9] == ((aSourceIdList[CurrentID] >> 16) & 0xFF))
-            {
-              /* Matching Broadcast Source ID */
-              uint8_t status;
-              PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_SYNCHRONIZING;
-              status = PBP_PBK_StartPASync(data->pBAPReport->AdvSID,
-                                           data->pBAPReport->pAdvAddress,
-                                           data->pBAPReport->AdvAddressType,
-                                           PA_EVENT_SKIP,
-                                           PA_SYNC_TIMEOUT);
-              LOG_INFO_APP("==>> Starting Broadcasting DiscoveryDevice with Source %02X:%02X:%02X:%02X:%02X:%02X\n",
-                                data->pBAPReport->pAdvAddress[5],
-                                data->pBAPReport->pAdvAddress[4],
-                                data->pBAPReport->pAdvAddress[3],
-                                data->pBAPReport->pAdvAddress[2],
-                                data->pBAPReport->pAdvAddress[1],
-                                data->pBAPReport->pAdvAddress[0]);
-              if (status != BLE_STATUS_SUCCESS)
-              {
-                LOG_INFO_APP("  Fail   : PBP_PBK_StartPASync() function, result: 0x%02X\n", status);
-              }
-              else
-              {
-                LOG_INFO_APP("  Success: PBP_PBK_StartPASync() function\n");
-              }
-              break;
-            }
-            else
-            {
-              /* Search next */
-              index += data->pBAPReport->pAdvertisingData[index] + 1;
-            }
+            name_ptr = &data->pBAPReport->pAdvertisingData[parse_index + 2];
+            name_len = MIN(data->pBAPReport->pAdvertisingData[parse_index] - 1, 29);
+            break;
+          }
+          /* Second priority to the Complete Local Name */
+          else if (data->pBAPReport->pAdvertisingData[parse_index + 1] == AD_TYPE_COMPLETE_LOCAL_NAME)
+          {
+            name_ptr = &data->pBAPReport->pAdvertisingData[parse_index + 2];
+            name_len = MIN(data->pBAPReport->pAdvertisingData[parse_index] - 1, 29);
+          }
+          /* Thrid priority to the Broadcast ID */
+          else if (data->pBAPReport->pAdvertisingData[parse_index + 1] == AD_TYPE_SERVICE_DATA &&
+              data->pBAPReport->pAdvertisingData[parse_index + 2] == 0x52 &&
+              data->pBAPReport->pAdvertisingData[parse_index + 3] == 0x18)
+          {
+            sprintf(&bid[5],"%X", data->pBAPReport->pAdvertisingData[parse_index + 6]);
+            sprintf(&bid[7],"%X", data->pBAPReport->pAdvertisingData[parse_index + 5]);
+            sprintf(&bid[9],"%X",data->pBAPReport->pAdvertisingData[parse_index + 4]);
+          }
+          parse_index += data->pBAPReport->pAdvertisingData[parse_index] + 1;
+        }
+        
+        if (name_ptr != 0)
+        {
+          UTIL_MEM_cpy_8(&name[0], name_ptr, name_len);
+          name[name_len] = '\0';
+        }
+        else if (bid[5] != '\0')
+        {
+          UTIL_MEM_cpy_8(&name[0], bid, 11);
+          name[11] = '\0';
+        }
+        
+        if (strcmp(&name[0], aSourceList[CurrentID]) == 0)
+        {
+          /* Matching Name */
+          uint8_t status;
+          PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_SYNCHRONIZING;
+          status = PBP_PBK_StartPASync(data->pBAPReport->AdvSID,
+                                       data->pBAPReport->pAdvAddress,
+                                       data->pBAPReport->AdvAddressType,
+                                       PA_EVENT_SKIP,
+                                       PA_SYNC_TIMEOUT);
+          LOG_INFO_APP("==>> Starting Broadcasting DiscoveryDevice with Source %02X:%02X:%02X:%02X:%02X:%02X\n",
+                            data->pBAPReport->pAdvAddress[5],
+                            data->pBAPReport->pAdvAddress[4],
+                            data->pBAPReport->pAdvAddress[3],
+                            data->pBAPReport->pAdvAddress[2],
+                            data->pBAPReport->pAdvAddress[1],
+                            data->pBAPReport->pAdvAddress[0]);
+          if (status != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : PBP_PBK_StartPASync() function, result: 0x%02X\n", status);
           }
           else
           {
-            /* Search next */
-            index += data->pBAPReport->pAdvertisingData[index] + 1;
+            LOG_INFO_APP("  Success: PBP_PBK_StartPASync() function\n");
           }
+          break;
         }
       }
     }
@@ -311,11 +335,34 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 
     case PBP_PBK_PA_SYNC_ESTABLISHED_EVT:
     {
+      tBleStatus ret;
+      
       LOG_INFO_APP(">>== PBP_PBK_PA_SYNC_ESTABLISHED_EVT\n");
       BAP_PA_Sync_Established_Data_t *data = (BAP_PA_Sync_Established_Data_t*) pNotification->pInfo;
       LOG_INFO_APP("     - SyncHandle : 0x%02x\n",data->SyncHandle);
       PBPAPP_Context.PASyncHandle = data->SyncHandle;
       PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_SYNCHRONIZED;
+
+      ret = PBP_PBK_StopAdvReportParsing();
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("  Fail   : PBP_PBK_StopAdvReportParsing() function, result: 0x%02X\n", ret);
+      }
+      else
+      {
+        LOG_INFO_APP("  Success: PBP_PBK_StopAdvReportParsing() function\n");
+      }
+      
+      ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc() function, result: 0x%02X\n", ret);
+      }
+      else
+      {
+        PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_IDLE;
+        LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc() function\n");
+      }
     }
     break;
 
@@ -506,26 +553,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
                        (data->NumBISes * sizeof(uint16_t)));
         PBPAPP_Context.current_num_bis = data->NumBISes;
         PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_SYNCHRONIZED;
-
-        ret = PBP_PBK_StopAdvReportParsing();
-        if (ret != BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("  Fail   : PBP_PBK_StopAdvReportParsing() function, result: 0x%02X\n", ret);
-        }
-        else
-        {
-          LOG_INFO_APP("  Success: PBP_PBK_StopAdvReportParsing() function\n");
-        }
-        ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
-        if (ret != BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc() function, result: 0x%02X\n", ret);
-        }
-        else
-        {
-          PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_IDLE;
-          LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc() function\n");
-        }
+        
         ret = PBP_PBK_StopPASync(PBPAPP_Context.PASyncHandle);
         if (ret != BLE_STATUS_SUCCESS)
         {
@@ -563,6 +591,9 @@ void BLE_AUDIO_STACK_NotifyToRun(void)
   APP_NotifyToRun();
 }
 
+/**
+  * @brief Init PBP Sink Application
+  */
 uint8_t PBPAPP_InitSink(void)
 {
   uint8_t ret = 0;
@@ -618,6 +649,9 @@ uint8_t PBPAPP_InitSink(void)
   return ret;
 }
 
+/**
+  * @brief Start PBP Sink
+  */
 uint8_t PBPAPP_StartSink(void)
 {
   uint8_t ret;
@@ -667,6 +701,10 @@ uint8_t PBPAPP_StartSink(void)
   return ret;
 }
 
+/**
+  * @brief Stop PBP Sink
+  * @retval Status of the operation
+  */
 uint8_t PBPAPP_StopSink(void)
 {
   uint8_t ret = BLE_STATUS_SUCCESS;
@@ -737,7 +775,12 @@ uint8_t PBPAPP_StopSink(void)
   return ret;
 }
 
-void PBPAPP_SwitchBrdSource(uint8_t next, uint32_t *pSourceID)
+/**
+  * @brief Switch to the following Broadcast Source of the list
+  * @param next: 1 to switch to next source, 0 to switch to previous one
+  * @retval Name of the new Broadcast Source
+  */
+char* PBPAPP_SwitchBrdSource(uint8_t next)
 {
   uint8_t ret;
   LOG_INFO_APP(">>==  Start Switch Broadcast Source\n");
@@ -745,12 +788,12 @@ void PBPAPP_SwitchBrdSource(uint8_t next, uint32_t *pSourceID)
   if (next == 1)
   {
     /* Get next ID */
-    CurrentID = (CurrentID + 1) % SOURCE_ID_LIST_SIZE;
+    CurrentID = (CurrentID + 1) % SOURCE_LIST_SIZE;
   }
   else
   {
     /* Get previous ID */
-    CurrentID = (CurrentID + SOURCE_ID_LIST_SIZE - 1) % SOURCE_ID_LIST_SIZE;
+    CurrentID = (CurrentID + SOURCE_LIST_SIZE - 1) % SOURCE_LIST_SIZE;
   }
 
   if (PBPAPP_Context.PASyncState != PBPAPP_PA_SYNC_STATE_IDLE)
@@ -827,13 +870,17 @@ void PBPAPP_SwitchBrdSource(uint8_t next, uint32_t *pSourceID)
     }
   }
 
-  *pSourceID = aSourceIdList[CurrentID];
   LOG_INFO_APP(">>==  End Switch Broadcast Source\n");
+  return aSourceList[CurrentID];
 }
 
-uint32_t PBPAPP_GetBrdSource(void)
+/**
+  * @brief Returns the name of the current Broadcast Source
+  * @retval Name of the current Broadcast Source
+  */
+char* PBPAPP_GetBrdSourceName(void)
 {
-  return aSourceIdList[CurrentID];
+  return aSourceList[CurrentID];
 }
 
 void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize)

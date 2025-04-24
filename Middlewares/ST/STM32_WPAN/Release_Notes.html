@@ -177,9 +177,86 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section8" checked aria-hidden="true"> <label for="collapse-section8" aria-hidden="false">V2.6.0 / 04-February-2025</label>
+<input type="checkbox" id="collapse-section9" checked aria-hidden="true"> <label for="collapse-section9" aria-hidden="false">V2.6.1 / 14-April-2025</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>BLE:
+<ul>
+<li>ID 198218 : LL drops BIS iso data when conflicts with PA events</li>
+<li>ID 205162 : Hardfault might occur when CIS and ACL disconnections conflict with pending PHY calibration.</li>
+<li>ID 203456 : Add a new API(ll_intf_apply_cte_degrad_change) to switch from the default RF configuration without CTE support to a configuration supporting CTE. This API shall be called right after the LL initialization.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Changes :
+<ul>
+<li>ID 201613 : Update Scan Delegator role to handle 2 subgroups : BAP_BASS_SRV_ATT_VALUE_ARRAY_SIZE() macro defined in bap_bufsize.h has a new parameter ‘max_num_subgroups’</li>
+<li>ID 202429 : SnkAudioLocations and SrcAudioLocations values in BAP_Unicast_Server_Info_t structure associated to CAP_UNICAST_LINKUP_EVT event could be not set to 0x00000000 in case of associated GATT characteristic is not present in remote device</li>
+<li>ID 205009 : Add SnkAudioLocations and SuppAudioContexts flags in the BAP_Broadcast_Assistant_Info_t information associated to the CAP_BA_LINKUP_EVT event</li>
+<li>ID 207200 : Add new fields ‘SIRK_notifiable’ and ‘size_notifiable’ in the CSIS_ServiceInit_t structure used in parameter of the CSIP_SET_MEMBER_RegisterServiceInstance() function</li>
+<li>ID 207415 : Improve timestamp management in codec manager</li>
+</ul></li>
+<li>Issues fixed:
+<ul>
+<li>ID 203284 : Fix issue in case of CIS Established Event is received with a failure status, retry create CIS if the coupled ASEs are not in compliant state</li>
+<li>ID 203286 : Create CIS is performed even if one of its coupled ASE is under releasing operation</li>
+<li>ID 203291 : Abort CAP Unicast Audio Start Procedure performs Release Operation with ASE in RELEASING or IDLE State</li>
+</ul></li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 205242 : Fix warning in build of RFD</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ID 200283 : Fixed potential race condition when restoring from persistence and trying to send packets as router device and no parent device</li>
+<li>ZCL response struct pre-allocated with request state. If not enough memory to send request, response can be returned immediately without having to wait for timeout. [enhancement]</li>
+<li>Removed erroneous log message about ‘MSDU handle not tracked’ [enhancement]</li>
+<li>ID 207145 : Meter Server removed optional ZCL_METER_SVR_ATTR_DEFAULT_UPDATE_PERIOD and ZCL_METER_SVR_ATTR_FAST_POLL_UPDATE_PERIOD attributes. Can be added by app as needed.</li>
+<li>ID 207152 : Fixed bug with OTA Client not able to write ZCL_OTA_STATUS_WAIT_UPGRADE_EXT</li>
+<li>ID 207156 : [ZIGBEE_DIRECT] Expose mandatory BLE services requested by ZigbeeDirect to the Application.</li>
+</ul></li>
+<li><strong>Known limitations</strong>:
+<ul>
+<li>BLE:
+<ul>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 195186: Information Element and Enhanced beacon implemented according the Zigbee standard (annex D)</li>
+<li>ID 194748: Incorrect TX power in the zigbee IE of an EBR</li>
+<li>ID 195186: Out of range TX power power IE in enhanced beacon</li>
+<li>ID 195939: Receiving Corrupted Data Indication after received a frame with extended type</li>
+<li>ID 195702: Invalid coordinator short address after an association with an extended address</li>
+<li>ID 196397 &amp; 197903 &amp; 197909: Buffer deleted in a very rare case</li>
+<li>ID 197948: Association is cancelled when purging handle 0</li>
+<li>ID 197959: Frame pending field is not set to 1 when multiple data are pending</li>
+<li>ID 197976: Memory corruption when purging a frame between data request and data</li>
+<li>ID 188347: [WBA6] Too high PER (&gt; 1%) observed for Packet size modulo 16</li>
+<li>ID 195653: Deadlock after several days</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ZigbeeDirect stack (ZigBeeProR23_ZDD.a) certification has not been executed.</li>
+</ul></li>
+<li>BLE Thread:
+<ul>
+<li>ID 198973 : Under 802.15.4 noisy environment, some BLE events could be missed.</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section8" aria-hidden="true"> <label for="collapse-section8" aria-hidden="false">V2.6.0 / 04-February-2025</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -342,7 +419,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.5.0 / 29-October-2024</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -487,7 +564,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -596,7 +673,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li><p>Productive RF-PHY settings.</p></li>
 <li>Zigbee:
@@ -666,7 +743,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="false">V2.3.0 / 05-Feb-2024</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <ul>
 <li><p>Adding support of BLE-Thread and BLE-Zigbee Dynamic Concurrent Modes.</p></li>
 <li><p>All libraries are now compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
@@ -780,7 +857,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 22-Sept-2023</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -850,7 +927,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
-<h2 id="main-changes-6">Main Changes</h2>
+<h2 id="main-changes-7">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -878,7 +955,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
 <div>
-<h2 id="main-changes-7">Main Changes</h2>
+<h2 id="main-changes-8">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

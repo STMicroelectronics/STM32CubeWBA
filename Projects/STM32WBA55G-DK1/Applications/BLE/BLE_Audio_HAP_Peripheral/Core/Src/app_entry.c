@@ -146,6 +146,9 @@ uint32_t Source_frame_size = 0;
 static uint8_t Record_Req_Pause = 0;
 static uint8_t Play_Req_Pause = 0;
 static uint32_t Current_Volume = 50;
+#if (CFG_TEST_VALIDATION == 1u)
+JOYPin_TypeDef Joy_PreviousState = JOY_NONE;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -445,6 +448,7 @@ void APP_BSP_JoystickNoneAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
   LOG_INFO_APP("JOY_NONE\n");
+  Joy_PreviousState = JOY_NONE;
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 /**
@@ -455,9 +459,17 @@ void APP_BSP_JoystickNoneAction( void )
 void APP_BSP_JoystickUpAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
-  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_UP);
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_UP);
+    Joy_PreviousState = JOY_UP;
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
-  Menu_Up();
+
+    Menu_Up();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -468,9 +480,17 @@ void APP_BSP_JoystickUpAction( void )
 void APP_BSP_JoystickRightAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
-  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_RIGHT);
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_RIGHT);
+    Joy_PreviousState = JOY_RIGHT;
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
-  Menu_Right();
+
+    Menu_Right();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -481,9 +501,17 @@ void APP_BSP_JoystickRightAction( void )
 void APP_BSP_JoystickDownAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
-  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_DOWN);
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_DOWN);
+    Joy_PreviousState = JOY_DOWN;
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
-  Menu_Down();
+
+    Menu_Down();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -494,9 +522,17 @@ void APP_BSP_JoystickDownAction( void )
 void APP_BSP_JoystickLeftAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
-  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_LEFT);
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_LEFT);
+    Joy_PreviousState = JOY_LEFT;
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
-  Menu_Left();
+
+    Menu_Left();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -507,7 +543,13 @@ void APP_BSP_JoystickLeftAction( void )
 void APP_BSP_JoystickSelectAction( void )
 {
 #if (CFG_TEST_VALIDATION == 1u)
-  LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_SEL);
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_SEL);
+    Joy_PreviousState = JOY_SEL;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+#if (CFG_TEST_VALIDATION == 1u)
+  }
 #endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 

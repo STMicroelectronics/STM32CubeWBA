@@ -77,6 +77,7 @@ static __IO uint32_t SecureToSecureTransferCompleteDetected; /* Set to 1 if tran
 static void NonSecure_Init(void);
 static void MX_GPDMA1_Init(void);
 static void MX_GTZC_S_Init(void);
+static void MX_SAU_Init(void);
 /* USER CODE BEGIN PFP */
 static void SecureToSecureTransferComplete(DMA_HandleTypeDef *hdma_memtomem_dma1_channel1);
 static void SecureToSecureTransferError(DMA_HandleTypeDef *hdma_memtomem_dma1_channel1);
@@ -126,6 +127,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPDMA1_Init();
+  MX_SAU_Init();
   /* USER CODE BEGIN 2 */
   /* Initialize LEDs for secure */
   BSP_LED_Init(LD2);
@@ -380,6 +382,27 @@ static void MX_GTZC_S_Init(void)
   /* USER CODE BEGIN GTZC_S_Init 2 */
 
   /* USER CODE END GTZC_S_Init 2 */
+
+}
+
+/**
+  * @brief SAU Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SAU_Init(void)
+{
+
+  /* USER CODE BEGIN SAU_Init 0 */
+
+  /* USER CODE END SAU_Init 0 */
+
+  /* USER CODE BEGIN SAU_Init 1 */
+
+  /* USER CODE END SAU_Init 1 */
+  /* USER CODE BEGIN SAU_Init 2 */
+
+  /* USER CODE END SAU_Init 2 */
 
 }
 

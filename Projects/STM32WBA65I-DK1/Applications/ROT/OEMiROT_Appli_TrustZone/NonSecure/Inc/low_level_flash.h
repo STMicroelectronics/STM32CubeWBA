@@ -37,19 +37,15 @@ struct low_level_device
 {
   struct flash_vect erase;
   struct flash_vect write;
-#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) && !defined(LOCAL_LOADER_CONFIG)
+#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
   struct flash_vect secure;
 #endif
-#if  !defined(LOCAL_LOADER_CONFIG)
   uint32_t read_error;
-#endif /* !defined(LOCAL_LOADER_CONFIG) */
 };
 
 extern struct low_level_device FLASH0_DEV;
 
-#if !defined(LOCAL_LOADER_CONFIG)
 void NMI_Handler(void);
-#endif /* !defined(LOCAL_LOADER_CONFIG) */
 
 #endif /* __LOW_LEVEL_FLASH_H */
 

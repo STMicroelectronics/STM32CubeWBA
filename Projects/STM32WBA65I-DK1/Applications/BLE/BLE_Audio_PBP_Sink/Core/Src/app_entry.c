@@ -143,6 +143,9 @@ static uint32_t Sink_frame_size = 0;
 static uint32_t Source_frame_size = 0;
 static uint8_t Record_Req_Pause = 0;
 static uint8_t Play_Req_Pause = 0;
+#if (CFG_TEST_VALIDATION == 1u)
+JOYPin_TypeDef Joy_PreviousState = JOY_NONE;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -169,7 +172,6 @@ static void APPE_BPKA_Init( void );
 #if (CFG_LCD_SUPPORTED == 1)
 static void LCD_Init(void);
 static int32_t LCD_DrawBitmapArray(uint8_t xpos, uint8_t ypos, uint8_t xlen, uint8_t ylen, uint8_t *data);
-static void SourceIDToString(uint32_t SourceID, uint8_t *pString);
 static void DrawSpeakerStateTask(void);
 static void DrawSpeakerState(void);
 #endif /* CFG_LCD_SUPPORTED */
@@ -268,17 +270,14 @@ void MX_APPE_Process(void)
 /* USER CODE BEGIN FD */
 void App_Menu_Up_Right(void)
 {
-  uint32_t source_id;
-  uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
-  PBPAPP_SwitchBrdSource(1, &source_id);
+  char *pSourceName;
+  pSourceName = PBPAPP_SwitchBrdSource(1);
 #if (CFG_LCD_SUPPORTED == 1)
   BSP_SPI3_Init();
   /*reset the string line with black*/
   UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
 
-  SourceIDToString(source_id, &(source_id_string[10]));
-
-  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) pSourceName, CENTER_MODE);
   BSP_LCD_Refresh(0);
   BSP_SPI3_DeInit();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
@@ -286,17 +285,14 @@ void App_Menu_Up_Right(void)
 
 void App_Menu_Down_Left(void)
 {
-  uint32_t source_id;
-  uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
-  PBPAPP_SwitchBrdSource(0, &source_id);
+  char *pSourceName;
+  pSourceName = PBPAPP_SwitchBrdSource(0);
 #if (CFG_LCD_SUPPORTED == 1)
   BSP_SPI3_Init();
   /*reset the string line with black*/
   UTIL_LCD_FillRect(0,5+12+2,128,12,SSD1315_COLOR_BLACK);
 
-  SourceIDToString(source_id, &(source_id_string[10]));
-
-  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) pSourceName, CENTER_MODE);
   BSP_LCD_Refresh(0);
   BSP_SPI3_DeInit();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
@@ -473,8 +469,19 @@ static void APPE_AMM_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
 #if (CFG_JOYSTICK_SUPPORTED == 1)
+/**
+ * @brief  Action of Joystick NONE when Joystick state changes to None state, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickNoneAction( void )
+{
+#if (CFG_TEST_VALIDATION == 1u)
+  LOG_INFO_APP("JOY_NONE\n");
+  Joy_PreviousState = JOY_NONE;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+}
 /**
  * @brief  Action of Joystick UP when pressed, to be implemented by user.
  * @param  None
@@ -482,7 +489,17 @@ static void APPE_AMM_Init(void)
  */
 void APP_BSP_JoystickUpAction( void )
 {
+#if (CFG_TEST_VALIDATION == 1u)
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_UP);
+    Joy_PreviousState = JOY_UP;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
   App_Menu_Up_Right();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -492,7 +509,17 @@ void APP_BSP_JoystickUpAction( void )
  */
 void APP_BSP_JoystickRightAction( void )
 {
+#if (CFG_TEST_VALIDATION == 1u)
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_RIGHT);
+    Joy_PreviousState = JOY_RIGHT;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
   App_Menu_Up_Right();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -502,7 +529,17 @@ void APP_BSP_JoystickRightAction( void )
  */
 void APP_BSP_JoystickDownAction( void )
 {
+#if (CFG_TEST_VALIDATION == 1u)
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_DOWN);
+    Joy_PreviousState = JOY_DOWN;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
   App_Menu_Down_Left();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 /**
@@ -512,7 +549,35 @@ void APP_BSP_JoystickDownAction( void )
  */
 void APP_BSP_JoystickLeftAction( void )
 {
+#if (CFG_TEST_VALIDATION == 1u)
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_LEFT);
+    Joy_PreviousState = JOY_LEFT;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
   App_Menu_Down_Left();
+
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+}
+
+/**
+ * @brief  Action of Joystick SELECT when pressed, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_JoystickSelectAction( void )
+{
+#if (CFG_TEST_VALIDATION == 1u)
+  if (Joy_PreviousState == JOY_NONE)
+  {
+    LOG_INFO_APP("JOY 0x%02X\nOK\n",JOY_SEL);
+    Joy_PreviousState = JOY_SEL;
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
+#if (CFG_TEST_VALIDATION == 1u)
+  }
+#endif /*(CFG_TEST_VALIDATION == 1u)*/
 }
 
 #endif  /* CFG_JOYSTICK_SUPPORTED */
@@ -522,8 +587,7 @@ void APP_BSP_JoystickLeftAction( void )
 static void LCD_Init( void )
 {
   extern uint8_t wav_2[];
-  uint32_t source_id;
-  uint8_t source_id_string[17] = "sink ID 0xXXXXXX";
+  char *pSourceName;
   
   BSP_SPI3_Init();
 
@@ -547,12 +611,11 @@ static void LCD_Init( void )
   mute = 1;
   DrawSpeakerState();
 
-  UTIL_LCD_DisplayStringAt(0, 5, (uint8_t *)"AURACAST DEMO", CENTER_MODE);
+  UTIL_LCD_DisplayStringAt(0, 5, (uint8_t *)"AURACAST SINK", CENTER_MODE);
 
-  source_id = PBPAPP_GetBrdSource();
-  SourceIDToString(source_id, &(source_id_string[10]));
+  pSourceName = PBPAPP_GetBrdSourceName();
 
-  UTIL_LCD_DisplayStringAt(0, 5+12+2, source_id_string, CENTER_MODE);
+  UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) pSourceName, CENTER_MODE);
 
   BSP_LCD_Refresh(0);
 
@@ -599,22 +662,6 @@ static int32_t LCD_DrawBitmapArray(uint8_t xpos, uint8_t ypos, uint8_t xlen, uin
   return 0;
 }
 
-static void SourceIDToString(uint32_t SourceID, uint8_t *pString)
-{
-  uint8_t i;
-  for (i = 0; i < 6; i++)
-  {
-    uint8_t digit = (SourceID >> ((5-i)*4)) & 0xF;
-    if (digit < 0xA)
-    {
-      pString[i] = digit + 0x30;
-    }
-    else
-    {
-      pString[i] = digit + 0x37;
-    }
-  }
-}
 static void DrawSpeakerStateTask(void)
 {
   BSP_SPI3_Init();
@@ -886,6 +933,8 @@ void MX_AudioInit(Audio_Role_t role,
     __HAL_RCC_I2C1_CLK_DISABLE();
     return;
   }
+  
+  BSP_AUDIO_OUT_SetVolume(0x00, 90);
 
   /* Start SAI clock without DMA interrupt */
   uint8_t channel_at_src = 0;

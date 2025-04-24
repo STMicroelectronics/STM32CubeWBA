@@ -581,10 +581,20 @@ void APP_BSP_ButtonInit( void )
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
 #endif /* CFG_BSP_ON_CEB */
 #ifdef CFG_BSP_ON_NUCLEO
-  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-  BSP_PB_Init( B3, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
+  BSP_PB_Init( B2, BUTTON_MODE_GPIO );
+  BSP_PB_Init( B3, BUTTON_MODE_GPIO );
 #endif /* CFG_BSP_ON_NUCLEO */
+
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* B1 --> PC13 */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_HIGH_2);   /* B2 --> PB6 */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_HIGH_2);   /* B3 --> PB7 */
+  
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_C, GPIO_PIN_13);
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
 
   /* Button task initialisation */
   Button_InitTask();
@@ -826,4 +836,18 @@ void BSP_PB_Callback( Button_TypeDef button )
   UTIL_TIMER_StartWithPeriod( &buttonDesc[button].longTimerId, BUTTON_LONG_PRESS_SAMPLE_MS );
 }
 
+void HAL_PWR_WKUP2_Callback(void)
+{
+  BSP_PB_Callback(B1);
+}
+
+void HAL_PWR_WKUP3_Callback(void)
+{
+  BSP_PB_Callback(B2);
+}
+
+void HAL_PWR_WKUP5_Callback(void)
+{
+  BSP_PB_Callback(B3);
+}
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */

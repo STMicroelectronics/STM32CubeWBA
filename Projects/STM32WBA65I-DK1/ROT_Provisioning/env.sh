@@ -33,11 +33,6 @@ fi
 oemirot_appli_path_project="Applications/ROT/OEMiROT_Appli_TrustZone"
 
 # ==============================================================================
-#                            OEMiROT Loader path
-# ==============================================================================
-oemirot_loader_trustzone_path_project="Applications/ROT/OEMiROT_Loader_TrustZone"
-
-# ==============================================================================
 #                            OEMiROT Boot path
 # ==============================================================================
 # Select OEMiROT Boot project below

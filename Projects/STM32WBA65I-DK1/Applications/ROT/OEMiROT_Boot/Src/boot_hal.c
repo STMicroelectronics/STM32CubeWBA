@@ -95,9 +95,6 @@ volatile uint32_t uFlowStage = FLOW_STAGE_CFG;
 /** @defgroup BOOT_HAL_Private_Functions  Private Functions
   * @{
   */
-#ifdef MCUBOOT_EXT_LOADER
-void execute_loader(void) __NO_RETURN;
-#endif /* MCUBOOT_EXT_LOADER */
 void boot_clean_ns_ram_area(void);
 __attribute__((naked)) void boot_jump_to_ns_image(uint32_t reset_handler_addr);
 void icache_init(void);
@@ -112,184 +109,6 @@ static void SPI_Init(void);
 fih_int boot_platform_wakeup(void);
 #endif /* OEMIROT_FAST_WAKE_UP */
 
-#ifdef MCUBOOT_EXT_LOADER
-/**
-  * @brief This function manage the jump to Local loader application.
-  * @note
-  * @retval void
-  */
-void boot_platform_noimage(void)
-{
-#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-   if (SPI_FLASH_DEV_NAME.Uninitialize() != ARM_DRIVER_OK)
-   {
-     BOOT_LOG_ERR("Error while initializing spi Flash Interface");
-     Error_Handler();
-   }
-#endif /* defined(OEMIROT_EXTERNAL_FLASH_ENABLE) */
-    /* Check Flow control for dynamic protections */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_2);
-    uFlowStage = FLOW_STAGE_CFG;
-    /* unsecure all pin configuration ,non secure loader is initializing Octspi pin*/
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
-    GPIOA_S->SECCFGR = 0x0;
-    GPIOB_S->SECCFGR = 0x0;
-    GPIOC_S->SECCFGR = 0x0;
-    GPIOH_S->SECCFGR = 0x0;
-
-#if defined(MCUBOOT_PRIMARY_ONLY)
-    /* loader code is set secure after control being set successfully */
-    /* MPU allowing execution of this area is set after HDP activation */
-    LL_SECU_SetLoaderCodeSecure();
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_3_L);
-    uFlowStage = FLOW_STAGE_CHK;
-
-    /* Second function call to resist to basic hardware attacks */
-    LL_SECU_SetLoaderCodeSecure();
-#endif /* MCUBOOT_PRIMARY_ONLY */
-    execute_loader();
-}
-
-/* Place code in a specific section */
-#if defined(__ICCARM__)
-#pragma default_function_attributes = @ ".BL2_NoHdp_Code"
-#else
-__attribute__((section(".BL2_NoHdp_Code")))
-#endif /* __ICCARM__ */
-/**
-  * @brief This function activates the protection before executing local loader.
-  * @note
-  * @retval void
-  */
-void execute_loader(void)
-{
-#if defined(MCUBOOT_PRIMARY_ONLY)
-    static struct boot_arm_vector_table *vt = (struct boot_arm_vector_table *)LOADER_S_CODE_START;
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_4_L);
-    uFlowStage = FLOW_STAGE_CFG;
-
-    /* Update run time protections for application execution */
-    LL_SECU_UpdateLoaderRunTimeProtections();
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_5_L);
-    uFlowStage = FLOW_STAGE_CHK;
-
-    /* Second function call to resist to basic hardware attacks */
-    LL_SECU_UpdateLoaderRunTimeProtections();
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_6_L);
-
-    /* set the secure vector */
-    SCB->VTOR = (uint32_t)LOADER_S_CODE_START;
-
-    /* Lock Secure Vector Table */
-    SYSCFG->CSLCKR |= SYSCFG_CSLCKR_LOCKSVTAIRCR;
-    /*  change stack limit  */
-    __set_MSPLIM(0);
-    /* Restore the Main Stack Pointer Limit register's reset value
-     * before passing execution to runtime firmware to make the
-     * bootloader transparent to it.
-     */
-    __set_MSP(vt->msp);
-    __DSB();
-    __ISB();
-    boot_jump_to_next_image((uint32_t)&boot_jump_to_next_image, vt->reset);
-#else
-    static struct boot_arm_vector_table *vt = (struct boot_arm_vector_table *)LOADER_NS_CODE_START;
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_4_L);
-    uFlowStage = FLOW_STAGE_CFG;
-
-    /* Update run time protections for application execution */
-    LL_SECU_UpdateLoaderRunTimeProtections();
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_5_L);
-    uFlowStage = FLOW_STAGE_CHK;
-
-    /* Second function call to resist to basic hardware attacks */
-    LL_SECU_UpdateLoaderRunTimeProtections();
-
-    /* Check Flow control */
-    FLOW_CONTROL_CHECK(uFlowProtectValue, FLOW_CTRL_STAGE_6_L);
-
-    /* set the vector */
-    SCB_NS->VTOR = LOADER_NS_CODE_START;
-
-    /* Lock Secure Vector Table */
-    SYSCFG->CSLCKR |= SYSCFG_CSLCKR_LOCKSVTAIRCR;
-    /* Set non-secure main stack (MSP_NS) */
-    __TZ_set_MSP_NS((*(uint32_t *)LOADER_NS_CODE_START));
-    /* the function erase all internal SRAM , and unsecure all SRAM to adapt to any non secure loader mapping */
-    boot_jump_to_next_image((uint32_t)&boot_jump_to_ns_image,vt->reset);
-#endif /* defined(MCUBOOT_PRIMARY_ONLY) */
-
-    /* Avoid compiler to pop registers after having changed MSP */
-#if !defined(__ICCARM__)
-    __builtin_unreachable();
-#else
-    while (1);
-#endif /* defined(__ICCARM__) */
-}
-
-/* Continue to place code in a specific section */
-#if defined(__GNUC__)
-__attribute__((section(".BL2_NoHdp_Code")))
-#endif /* __GNUC__ */
-
-/*!
- * \brief Chain-loading the next image in the boot sequence.
- *
- * This function calls the Reset_Handler of the next image in the boot sequence,
- * usually it is the secure firmware. Before passing the execution to next image
- * there is conditional rule to remove the secrets from the memory. This must be
- * done if the following conditions are satisfied:
- *  - Memory is shared between SW components at different stages of the trusted
- *    boot process.
- *  - There are secrets in the memory: KDF parameter, symmetric key,
- *    manufacturer sensitive code/data, etc.
- */
-__attribute__((naked)) void boot_jump_to_ns_image(uint32_t reset_handler_addr)
-{
-    __ASM volatile(
-#if !defined(__ICCARM__)
-        ".syntax unified                 \n"
-#endif /* !defined(__ICCARM__) */
-        "mov     r7, r0                  \n"
-        "bl      boot_clean_ns_ram_area  \n" /* Clean all RAM and unsecure all before jump */
-        "movs    r0, #0                  \n" /* Clear registers: R0-R12, */
-        "mov     r1, r0                  \n" /* except R7 */
-        "mov     r2, r0                  \n"
-        "mov     r3, r0                  \n"
-        "mov     r4, r0                  \n"
-        "mov     r5, r0                  \n"
-        "mov     r6, r0                  \n"
-        "mov     r8, r0                  \n"
-        "mov     r9, r0                  \n"
-        "mov     r10, r0                 \n"
-        "mov     r11, r0                 \n"
-        "mov     r12, r0                 \n"
-        "mov     lr,  r0                 \n"
-        "bic.w   r7, r7, #1              \n"
-        "blxns   r7                      \n" /* Jump to non secure Reset_handler */
-    );
-}
-/* Stop placing data in specified section */
-#if defined(__ICCARM__)
-#pragma default_function_attributes =
-#endif /* __ICCARM__ */
-
-#endif /* MCUBOOT_EXT_LOADER */
 #if defined(__ICCARM__)
 #pragma default_function_attributes = @ ".BL2_NoHdp_Code"
 #elif defined(__CC_ARM)
@@ -681,9 +500,6 @@ void icache_init(void)
   */
 int32_t boot_platform_init(void)
 {
-#ifdef MCUBOOT_EXT_LOADER
-    GPIO_InitTypeDef GPIO_Init;
-#endif /* MCUBOOT_EXT_LOADER */
     /* STM32xxx HAL library initialization:
          - Systick timer is configured by default as source of time base, but user
                can eventually implement his proper time base source (a general purpose
@@ -743,7 +559,7 @@ int32_t boot_platform_init(void)
         Error_Handler();
     }
 #endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
-    
+
 #if defined(MCUBOOT_USE_HASH_REF)
     /* Load all images hash references (for mcuboot) */
     if (boot_hash_ref_load())
@@ -753,25 +569,6 @@ int32_t boot_platform_init(void)
     }
 #endif
 
-#ifdef MCUBOOT_EXT_LOADER
-    /* configure Button pin */
-    BUTTON_CLK_ENABLE;
-    GPIO_Init.Pin       = BUTTON_PIN;
-    GPIO_Init.Mode      = GPIO_MODE_INPUT;
-    GPIO_Init.Speed     = GPIO_SPEED_FREQ_HIGH;
-#if defined(STM32WBA55xx) && defined(USE_NUCLEO_64)
-    GPIO_Init.Pull      = GPIO_PULLUP;
-#else
-    GPIO_Init.Pull      = GPIO_NOPULL;
-#endif
-    GPIO_Init.Alternate = 0;
-    HAL_GPIO_Init(BUTTON_PORT, &GPIO_Init);
-    /* read pin value */
-    if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET)
-    {
-        boot_platform_noimage();
-    }
-#endif /* MCUBOOT_EXT_LOADER */
     return 0;
 }
 
@@ -835,7 +632,12 @@ __attribute__((section(".BL2_Error_Code")))
 void Error_Handler(void)
 #endif
 {
-    /* It is customizeable */
+  /* it is customizeable */
+  /* an infinite loop,  and a reset for single fault injection */
+#ifdef OEMIROT_ERROR_HANDLER_STOP_EXEC
+    static __IO int twice = 0;
+    while (!twice);
+#endif /* OEMIROT_ERROR_HANDLER_STOP_EXEC */
     NVIC_SystemReset();
 #if !defined(__ICCARM__)
     /* Avoid bx lr instruction (for fault injection) */

@@ -42,7 +42,8 @@ extern uint8_t missed_hci_event_flag;
 
 /* External function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN EFP */
-
+#undef BLE_WRAP_PREPROC
+#undef BLE_WRAP_POSTPROC
 /* USER CODE END EFP */
 
 /* Release Link Layer Mutex before calling any aci/hci functions */

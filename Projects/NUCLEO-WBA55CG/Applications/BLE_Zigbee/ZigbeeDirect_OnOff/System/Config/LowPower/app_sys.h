@@ -37,8 +37,7 @@
 
 /* Exported functions prototypes ---------------------------------------------*/
 
-void APP_SYS_LPM_EnterLowPowerMode(void);
-void APP_SYS_LinkLayer_BackgroundProcessInit(void);
+void APP_SYS_BLE_EnterDeepSleep(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

@@ -224,7 +224,7 @@ void RTC_IRQHandler(void)
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
-
+  HAL_RTCEx_SSRUIRQHandler(&hrtc);
   /* USER CODE END RTC_IRQn 1 */
 }
 

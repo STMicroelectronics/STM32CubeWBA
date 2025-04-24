@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -99,6 +99,7 @@ typedef enum
   PROC_GAP_PERIPH_CONN_PARAM_UPDATE,
   /* USER CODE BEGIN ProcGapPeripheralId_t */
   PROC_GAP_PERIPH_SET_BROADCAST_MODE_LP,
+
   /* USER CODE END ProcGapPeripheralId_t */
 }ProcGapPeripheralId_t;
 
@@ -140,6 +141,7 @@ typedef enum
                     Advertising_Report[0].Length_Data))
 /* USER CODE BEGIN EM */
 #define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -153,6 +155,7 @@ void APP_BLE_Key_Button1_Action(void);
 void APP_BLE_Key_Button2_Action(void);
 void APP_BLE_Key_Button3_Action(void);
 void Check_Button(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE,MAC,MAC_LAYER,USE_HAL_DRIVER,STM32WBA55xx,USE_FULL_ASSERT,STM32,STM32WBA,STM32WBA55xx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,PHY_2_10_a,PHY_40nm_2_30_a_A1,LOGGER_ENABLE=0,LOGUARTENABLED,MAC,MAC_LAYER,OS_BAREMETAL,BYTE_ORDER=1234,ZB_UPTIME_MAX=0x8000000,CONFIG_ZB_INIT_CUSTOM=1,CONFIG_ZB_LOG_ALLOWED_MASK=0x201F,CONFIG_ZB_BDB_DEFAULT_JOIN_SCAN_TYPE=MCP_SCAN_ACTIVE,CONFIG_ZB_ZCL_TOUCHLINK=1,CONFIG_ZB_GREENPOWER=1,ZB_NWK_NEIGHBOR_TABLE_DEFAULT_SIZE=32U,ZB_NWK_NLME_ADDRMAP_TABLE_DEFAULT_SIZE=64U,ZB_NWK_NLME_ROUTE_TABLE_DEFAULT_SIZE=16U,ZB_NWK_NLDE_BTT_TABLE_DEFAULT_SIZE=16U,ZB_NWK_NLME_RREQ_TABLE_DEFAULT_SIZE=4U,ZB_APS_DEVICE_KEY_PAIR_DEFAULT_COUNT=64U,CONFIG_ZB_DIAGNOSTICS=1,APPLICATION_USE_BAREMETAL,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,LOGFMTu64="%llu",BLE=1,CONFIG_ZB_ZIGBEE_DIRECT=1,CONFIG_ZB_ZDD=1</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE,MAC,MAC_LAYER,USE_HAL_DRIVER,STM32WBA55xx,USE_FULL_ASSERT,STM32,STM32WBA,STM32WBA55xx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,PHY_2_10_a,PHY_40nm_2_30_a_A1,LOGGER_ENABLE=0,LOGUARTENABLED,MAC,MAC_LAYER,OS_BAREMETAL,BYTE_ORDER=1234,ZB_UPTIME_MAX=0x8000000,CONFIG_ZB_INIT_CUSTOM=1,CONFIG_ZB_LOG_ALLOWED_MASK=0x201F,CONFIG_ZB_BDB_DEFAULT_JOIN_SCAN_TYPE=MCP_SCAN_ACTIVE,CONFIG_ZB_ZCL_TOUCHLINK=1,CONFIG_ZB_GREENPOWER=1,CONFIG_ZB_DIAGNOSTICS=1,APPLICATION_USE_BAREMETAL,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,LOGFMTu64="%llu",BLE=1,CONFIG_ZB_ZIGBEE_DIRECT=1,CONFIG_ZB_ZDD=1</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/Nvm;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_15_4;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/clusters_zd/se;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/general;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/key;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/se;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/security;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zgp;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/src/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/sha/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/stm32wba;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/Nvm;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_15_4;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/clusters_zd/se;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/ble_interface;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/general;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/key;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/se;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/security;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zcl/zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include_zd/zgp;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/src/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/zd;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/eclite/sha/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/port/stm32wba;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -445,6 +445,46 @@
               <FileName>app_zigbee_endpoint.c</FileName>
               <FileType>1</FileType>
               <FilePath>../STM32_WPAN/App/app_zigbee_endpoint.c</FilePath>
+            </File>
+            <File>
+              <FileName>dis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/dis.c</FilePath>
+            </File>
+            <File>
+              <FileName>dis_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/dis_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>tunneling.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/tunneling.c</FilePath>
+            </File>
+            <File>
+              <FileName>tunneling_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/tunneling_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>zddsecurity.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/zddsecurity.c</FilePath>
+            </File>
+            <File>
+              <FileName>zddsecurity_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/zddsecurity_app.c</FilePath>
+            </File>
+            <File>
+              <FileName>zigbeedirectcomm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/zigbeedirectcomm.c</FilePath>
+            </File>
+            <File>
+              <FileName>zigbeedirectcomm_app.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/zigbeedirectcomm_app.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -636,11 +676,6 @@
               <FileType>1</FileType>
               <FilePath>../../../../../Common/WPAN/Modules/stm_queue.c</FilePath>
             </File>
-            <File>
-              <FileName>temp_measurement.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../Common/WPAN/Modules/temp_measurement.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -720,16 +755,6 @@
               <FileName>nvm_emul.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../Common/WPAN/Modules/Nvm/nvm_emul.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/RFControl</GroupName>
-          <Files>
-            <File>
-              <FileName>rf_antenna_switch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../Common/WPAN/Modules/RFControl/rf_antenna_switch.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -860,11 +885,6 @@
               <FileName>stm32wbaxx_hal_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_icache.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_pwr.c</FileName>

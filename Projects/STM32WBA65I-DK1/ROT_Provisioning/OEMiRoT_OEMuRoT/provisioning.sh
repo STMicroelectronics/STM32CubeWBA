@@ -233,7 +233,7 @@ images_generation()
     echo "       Press any key to continue..."
     echo
     if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
-    
+
     if [ $ns_data_image_number != "0" ]; then
         "$stm32tpccli" -pb $ns_data_xml >> $provisioning_log 2>&1
         if [ $? != 0 ]; then step_error; fi
@@ -241,12 +241,6 @@ images_generation()
         "$stm32tpccli" -pb $ns_data_init_xml >> $provisioning_log 2>&1
         if [ $? != 0 ]; then step_error; fi
     fi
-
-    echo "   * Loader firmware image generation"
-    echo "       Open the OEMiROT_Loader project with preferred toolchain and rebuild all files."
-    echo "       Press any key to continue..."
-    echo
-    if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
 }
 
 # ================================================== Option Bytes and flash programming ===================================================
@@ -274,7 +268,7 @@ ob_programming()
 {
     action="Programming the option bytes and flashing the images..."
     current_log_file=$ob_flash_log
-    command="source $ob_flash_programming AUTO"
+    command="source $ob_flash_programming AUTO $RDP_level"
     echo "   * $action"
     $command > "$current_log_file"
 

@@ -34,8 +34,14 @@
 
 /********** All define are updated automatically from ROT_BOOT project : begin **********/
 
+/*#define OEMUROT_ENABLE*/                         /* Defined: the project is used for OEMuRoT boot stage
+                                                  Undefined: the project is used for OEMuRoT boot stage */
+
 #define MCUBOOT_OVERWRITE_ONLY                 /* Defined: the FW installation uses overwrite method.
                                                   UnDefined: The FW installation uses swap mode. */
+
+/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/          /* Defined: External OSPI flash used for all secondary slots.
+                                                  Undefined: External OSPI flash not used. */
 
 #define MCUBOOT_APP_IMAGE_NUMBER       0x1      /* 1: S and NS application binaries are assembled in one single image.
                                                    2: Two separated images for S and NS application binaries. */
@@ -90,6 +96,14 @@
 
 #define FLASH_B_SIZE                   0x100000   /* flash bank size: 1 MBytes*/
 
+#define OEMIROT_AREA_0_OFFSET          0x0   /* Secure app image primary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_0_SIZE            0x0   /* Secure app image primary slot size for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_2_OFFSET          0x0   /* Secure app image secondary slot for OEMuRoT boot stage */
+
+#define OEMIROT_AREA_2_SIZE            0x0   /* Secure app image secondary slot size for OEMuRoT boot stage */
+
 /********** All define are updated automatically from ROT_BOOT project : End **********/
 
 #if defined(STM32WBA65xx)
@@ -99,6 +113,12 @@
 #else
 #error "Unknown target."
 #endif
+
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+/* External SPI Flash layout info for BL2 bootloader */
+#define SPI_FLASH_TOTAL_SIZE           (0x400000)  /* 32 Mbits */
+#define SPI_FLASH_BASE_ADDRESS         (0x00000000)
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
 #define LOADER_FLASH_DEV_NAME             Driver_SPI_FLASH0

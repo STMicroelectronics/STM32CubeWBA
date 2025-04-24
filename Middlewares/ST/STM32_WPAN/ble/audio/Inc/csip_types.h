@@ -84,7 +84,7 @@ extern "C" {
  * CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES: memory size used by CSIP Set Member per Coordinated Set Identification
  *                                              Instances
  */
-#define CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES             (80u)
+#define CSIP_SET_MEMBER_MEM_PER_INSTANCE_SIZE_BYTES             (84u)
 
 /*
  * CSIP_SERV_INST_MEM_PER_CONN_SIZE_BYTES: memory size used to allocate Service Context per Connection Instance
@@ -217,6 +217,8 @@ typedef struct
   uint8_t SIRK[16];
   uint8_t Size;
   uint8_t Rank;
+  uint8_t SIRK_notifiable;
+  uint8_t size_notifiable;
 } CSIS_ServiceInit_t;
 
 typedef struct

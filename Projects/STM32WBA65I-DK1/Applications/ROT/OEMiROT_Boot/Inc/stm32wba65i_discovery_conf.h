@@ -34,7 +34,7 @@ extern "C" {
 
 
 /* Usage of STM32WBA65I_DK1 board */
-#define USE_STM32WBA65I_DK1      1
+/* #define USE_STM32WBA65I_DK1      1 */
 
 /* COM define */
 #define USE_BSP_COM_FEATURE                  1U

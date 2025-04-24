@@ -245,7 +245,10 @@
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
-
+#if !defined(__GNUC__) || !defined(DEBUG)
+    #undef  CFG_LPM_STDBY_WAKEUP_TIME
+    #define CFG_LPM_STDBY_WAKEUP_TIME (925)
+#endif
 /* USER CODE END Low_Power 0 */
 
 /**

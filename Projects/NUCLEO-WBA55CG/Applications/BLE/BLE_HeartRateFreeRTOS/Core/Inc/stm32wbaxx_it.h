@@ -61,9 +61,7 @@ void TIM16_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-void EXTI6_IRQHandler(void);
-void EXTI7_IRQHandler(void);
-void EXTI13_IRQHandler(void);
+void WKUP_IRQHandler(void);
 
 /* USER CODE END EFP */
 
