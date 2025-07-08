@@ -22,6 +22,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_hal.h"
+#include "stm32_board.h"
 
 
 #if defined ( __ICCARM__ )

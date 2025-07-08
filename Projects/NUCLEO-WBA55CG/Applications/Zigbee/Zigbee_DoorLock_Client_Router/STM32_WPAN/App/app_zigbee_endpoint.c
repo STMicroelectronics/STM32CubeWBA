@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -167,18 +167,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -204,12 +192,18 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Alarm Client Cluster */
   stZigbeeAppInfo.AlarmClient = ZbZclAlarmClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, APP_ZIGBEE_AlarmClientCallback, NULL );
   assert( stZigbeeAppInfo.AlarmClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.AlarmClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.AlarmClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Alarm Client Endpoint Register." );
+  }
 
   /* Add DoorLock Client Cluster */
   stZigbeeAppInfo.DoorLockClient = ZbZclDoorLockClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.DoorLockClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.DoorLockClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.DoorLockClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during DoorLock Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -325,12 +319,12 @@ static void APP_ZIGBEE_AlarmClientCallback( void * arg, uint16_t iNetworkAddress
   	  case ZCL_CLUSTER_DOOR_LOCK:
           LOG_INFO_APP( "[ALARM] Alarm received from 'DoorLock' cluster (code 0x%02X) from Address 0x%04X.", cAlarmCode, iNetworkAddress );
 
-          /* RED led on during 500ms */
-          APP_LED_ON(LED_RED);
-          LOG_INFO_APP("Red Led 'ON'");
+          /* Work led on during 500ms */
+          APP_LED_ON(LED_WORK);
+          LOG_INFO_APP("Led 'ON'");
           HAL_Delay(500);
-          APP_LED_OFF(LED_RED);
-          LOG_INFO_APP("Red Led 'OFF'");
+          APP_LED_OFF(LED_WORK);
+          LOG_INFO_APP("Led 'OFF'");
           break;
 
   	  default:

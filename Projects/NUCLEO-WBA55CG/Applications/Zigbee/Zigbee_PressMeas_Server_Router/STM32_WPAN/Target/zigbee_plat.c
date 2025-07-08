@@ -84,8 +84,8 @@ void ZIGBEE_PLAT_Init( void )
  */
 void ZIGBEE_PLAT_RngInit( void )
 {
-  // -- Init random HW driver --
-  HW_RNG_Start( );
+  // -- Init random HW driver. Not used with the new HW-RNG algorithm --
+  //HW_RNG_Start( );
 }
 
 /**

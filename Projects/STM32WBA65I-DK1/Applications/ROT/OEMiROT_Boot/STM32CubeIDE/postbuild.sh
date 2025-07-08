@@ -1,6 +1,43 @@
 #!/bin/bash
+#=================================================================================================
+# Managing HOST OS diversity : begin
+#=================================================================================================
+OS=$(uname)
+
+echo ${OS} | grep -i -e windows -e mingw >/dev/null
+if [ $? == 0 ]; then
+  echo "=================================="
+  echo "HOST OS : Windows detected"
+  echo ""
+  echo ">>> Running ../postbuild.bat $@"
+  echo ""
+  # Enable : exit immediately if any commands returns a non-zero status
+  set -e
+  cd ../
+  cmd.exe /C postbuild.bat $@
+  # Return OK if no error detected during .bat script
+  exit 0
+fi
+
+if [ "$OS" == "Linux" ]; then
+  echo "HOST OS : Linux detected"
+elif [ "$OS" == "Darwin" ]; then
+  echo "HOST OS : MacOS detected"
+else
+  echo "!!!HOST OS not supported : >$OS<!!!"
+  exit 1
+fi
+
+#=================================================================================================
+# Managing HOST OS diversity : end
+#=================================================================================================
+echo "=================================="
+echo ">>> Running $0 $@"
+echo ""
+
 # arg1 is the config type (Debug, Release)
 config=$1
+
 # Getting the Trusted Package Creator CLI path
 SCRIPT=$(readlink -f $0)
 project_dir=`dirname $SCRIPT`
@@ -143,7 +180,7 @@ $python$applicfg flash --layout $preprocess_bl2_file -b select_wba_target -m  RE
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
-# ============================================================ Update %ob_flash_programming% ============================================================
+# ============================================================ Update %ob_flash_programming% ===========================================================
 $python$applicfg flash --layout $preprocess_bl2_file -b keyaddress -m  RE_BL2_PERSO_ADDRESS $ob_flash_programming --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
@@ -230,7 +267,7 @@ if [ "$oemurot_enabled" == "1" ]; then
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ============================================================ Update %postbuild_appli% ============================================================
+# ============================================================ Update %postbuild_appli% ==============================================================
 if [ "$app_full_secure" == "0" ]; then
   $python$applicfg flash --layout $preprocess_bl2_file -b image_s_size -m  RE_IMAGE_FLASH_SECURE_IMAGE_SIZE $postbuild_appli --vb >> $current_log_file 2>&1
   ret=$?
@@ -245,7 +282,7 @@ if [ "$app_full_secure" == "0" ]; then
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ============================================================ Update %ns_code_xml% ============================================================
+# ============================================================ Update %ns_code_xml% ==================================================================
 if [ "$app_full_secure" == "0" ]; then
   $python$applicfg xmlname --layout $preprocess_bl2_file -m RE_APP_IMAGE_NUMBER -n "$auth_ns_xml_field" -sn "$auth_s_xml_field" -v 1 -c k $ns_code_xml --vb >> $current_log_file 2>&1
   ret=$?
@@ -268,7 +305,7 @@ if [ "$app_full_secure" == "0" ]; then
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ============================================================ Update %s_code_xml% ============================================================
+# ============================================================ Update %s_code_xml% ===================================================================
 $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_IMAGE_SIZE -c S $s_code_xml --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
@@ -285,7 +322,7 @@ $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_I
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
-# ============================================================ Update %ns_data_xml% ============================================================
+# ============================================================ Update %ns_data_xml% ==================================================================
 if [ "$app_full_secure" == "0" ]; then
   $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_NON_SECURE_DATA_IMAGE_SIZE -c S $ns_data_xml --vb >> $current_log_file 2>&1
   ret=$?
@@ -304,7 +341,7 @@ if [ "$app_full_secure" == "0" ]; then
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ============================================================ Update %s_data_xml% ============================================================
+# ============================================================ Update %s_data_xml% ===================================================================
 $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_DATA_IMAGE_SIZE -c S $s_data_xml --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
@@ -321,7 +358,7 @@ $python$applicfg xmlval --layout $preprocess_bl2_file -m RE_IMAGE_FLASH_SECURE_D
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
-# ============================================================ Update %appli_flash_layout% ============================================================
+# ============================================================ Update %appli_flash_layout% ===========================================================
 $python$applicfg setdefine --layout $preprocess_bl2_file -m RE_OVER_WRITE -n MCUBOOT_OVERWRITE_ONLY -v 1 $appli_flash_layout --vb >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
@@ -456,6 +493,6 @@ else
   if [ $ret != 0 ]; then error; fi
 fi
 
-# ============================================================ end ============================================================
+# ======================================================================== end =======================================================================
 exit 0
 

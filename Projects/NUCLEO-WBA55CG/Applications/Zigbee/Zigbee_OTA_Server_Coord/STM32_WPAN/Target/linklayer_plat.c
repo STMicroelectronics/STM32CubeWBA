@@ -473,20 +473,20 @@ void LINKLAYER_PLAT_RequestTemperature(void)
 }
 
 /**
-  * @brief  Enable RTOS context switch.
+  * @brief  PHY Start calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStartClbr(void)
 {
 }
 
 /**
-  * @brief  Disable RTOS context switch.
+  * @brief  PHY Stop calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStopClbr(void)
 {
 }
 

@@ -31,7 +31,7 @@
 
 
 #if BLE_DBG_PBP_ENABLE == 1
-#define BLE_DBG_PBP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("PBP: " fmt, ##__VA_ARGS__ )
+#define BLE_DBG_PBP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[PBP] " fmt, ##__VA_ARGS__ )
 #else /*BLE_DBG_PBP_ENABLE != 1*/
 #define BLE_DBG_PBP_MSG(fmt, ...)               (void)0
 #endif /* BLE_DBG_PBP_ENABLE == 1*/

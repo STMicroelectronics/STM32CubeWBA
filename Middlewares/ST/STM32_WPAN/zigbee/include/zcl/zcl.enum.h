@@ -2,7 +2,7 @@
  * @file zcl.enum.h
  * @brief Zigbee ZCL Enumerations header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_ENUM_H
@@ -100,7 +100,7 @@ enum ZbZclNoDefaultResponseT {
 #define ZCL_CHANNELMASK_SMART_ENERGY             0x318c800UL
 
 /* Profile IDs and Ranges */
-enum {
+enum ZbZclProfileIdT {
     ZCL_PROFILE_ZB_STANDARD_MIN = 0x0000,
     /* Note: Legacy profile range does not include HA (0x0104) */
     ZCL_PROFILE_LEGACY_MIN = 0x0101,
@@ -110,7 +110,7 @@ enum {
     ZCL_PROFILE_RETAIL_SERVICES = 0x010A,
     ZCL_PROFILE_TP2 = 0x7f01, /* ZigBee Test Profile #2 Profile Id */
     ZCL_PROFILE_ZB_STANDARD_MAX = 0x7fff,
-
+    ZCL_PROFILE_GREENPOWER = 0xa1e0, /* Green Power (was ZB_ZGP_PROFILE_ID) */
     ZCL_PROFILE_MFR_SPECIFIC_MIN = 0xc000,
     ZCL_PROFILE_ZLL = 0xc05e,
     ZCL_PROFILE_C4 = 0xc25d,
@@ -118,25 +118,25 @@ enum {
 };
 
 /* Device ID Ranges */
-enum {
+enum ZbZclDevIdRangeT {
     ZCL_DEVICE_ZB_STANDARD_MIN = 0x0000,
     ZCL_DEVICE_ZB_STANDARD_MAX = 0xbfff
 };
 
 /* Attribute ID Ranges */
-enum {
+enum ZbZclAttrIdRangeT {
     ZCL_ATTRIBUTE_ZB_STANDARD_MIN = 0x0000,
     ZCL_ATTRIBUTE_ZB_STANDARD_MAX = 0x3fff
 };
 
 /* Command ID Ranges */
-enum {
+enum ZbZclCmdIdRangeT {
     ZCL_COMMAND_ZB_STANDARD_MIN = 0x00,
     ZCL_COMMAND_ZB_STANDARD_MAX = 0x7f
 };
 
 /* Global Attributes */
-enum {
+enum ZbZclGlobalAttrT {
     ZCL_GLOBAL_ATTR_CLUSTER_REV = 0xfffd,
     /**< ClusterRevision. Mandatory. This attribute is automatically added to the cluster
      * when calling ZbZclClusterAlloc, and initialized to 1.
@@ -171,6 +171,17 @@ typedef uint16_t ZclAttrFlagT;
 #define ZCL_ATTR_FLAG_REPORTABLE            (ZclAttrFlagT)0x0002U
 /* attribute is persisted */
 #define ZCL_ATTR_FLAG_PERSISTABLE           (ZclAttrFlagT)0x0004U
+/* Used in conjunction with ZCL_ATTR_FLAG_PERSISTABLE. Shortens the
+ * delay before persistence notification is sent to application.
+ * Delay is determined by ZB_BDB_PersistImmedTimeoutMs.
+ *
+ * WARNING: Be careful with how often your application saves persistence data
+ * to Flash, if this is applicable to your platform.
+ * Excessive Flash writes can lead to wear and eventual failure of the memory.
+ * Minimize write operations and use wear-leveling techniques to extend the
+ * lifespan of the Flash.
+ */
+#define ZCL_ATTR_FLAG_PERSIST_IMMED         (ZclAttrFlagT)0x0008U
 /* Which callbacks does the application support */
 #define ZCL_ATTR_FLAG_CB_MASK               0x00f0U
 /* Enables ZCL_ATTR_CB_TYPE_READ for this attribute */
@@ -328,6 +339,12 @@ enum ZclDataTypeT {
 
 #define ZCL_MIN_FLOAT_SEMI                      (-65504)
 #define ZCL_MAX_FLOAT_SEMI                      (65504)
+
+#define ZCL_MIN_FLOAT_SINGLE                    -3.40282346638528859811704183484516925e+38F
+#define ZCL_MAX_FLOAT_SINGLE                    3.40282346638528859811704183484516925e+38F
+
+#define ZCL_MIN_FLOAT_DOUBLE                    -(double)1.79769313486231570814527423731704357e+308L
+#define ZCL_MAX_FLOAT_DOUBLE                    (double)1.79769313486231570814527423731704357e+308L
 
 /* ZCL Status Codes */
 enum ZclStatusCodeT {

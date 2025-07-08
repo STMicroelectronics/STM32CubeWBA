@@ -175,18 +175,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -212,7 +200,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add PowerConfig Server Cluster */
   stZigbeeAppInfo.PowerConfigServer = ZbZclPowerConfigServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.PowerConfigServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.PowerConfigServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.PowerConfigServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during PowerConfig Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -372,7 +363,7 @@ static void APP_ZIGBEE_AttributeBatteryUpdate( void )
   enum ZclStatusCodeT eStatus;
   
   /* Indicate Update start */
-  APP_LED_ON(LED_GREEN);
+  APP_LED_ON(LED_WORK);
   
 #ifdef BOARD_IS_WITH_PRESS_SENSOR
   /* Read Voltage from Battery */
@@ -420,7 +411,7 @@ static void APP_ZIGBEE_AttributeBatteryUpdate( void )
   }
   
   /* Indicate Update is finished */
-  APP_LED_OFF(LED_GREEN);
+  APP_LED_OFF(LED_WORK);
 }
 
 

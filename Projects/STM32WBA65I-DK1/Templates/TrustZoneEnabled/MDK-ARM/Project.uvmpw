@@ -5,17 +5,17 @@
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
-  <WorkspaceName>C:\git\wba_w6\Firmware\Projects\STM32WBA65I-DK1\Templates\TrustZoneEnabled\MDK-ARM\Project.uvmpw</WorkspaceName>
+  <WorkspaceName>C:\git\wba_master\Firmware\Projects\STM32WBA65I-DK1\Templates\TrustZoneEnabled\MDK-ARM\Project.uvmpw</WorkspaceName>
 
   <project>
     <PathAndName>.\NonSecure\TrustZoneEnabled_NS.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
     <NodeIsCheckedInBatchBuild>1</NodeIsCheckedInBatchBuild>
   </project>
 
   <project>
     <PathAndName>.\Secure\TrustZoneEnabled_S.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
     <NodeIsCheckedInBatchBuild>1</NodeIsCheckedInBatchBuild>
   </project>

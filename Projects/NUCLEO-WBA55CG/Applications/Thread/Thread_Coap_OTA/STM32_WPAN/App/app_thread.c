@@ -54,7 +54,6 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-#include "app_thread_data_transfer.h"
 #include "udp.h"
 #include "app_bsp.h"
 #include "logging_stm32wba.h"
@@ -87,13 +86,13 @@
 /* Following CoAP resource is requested to reboot on Thread_Ota application */
 #define C_RESSOURCE_FUOTA_REBOOT    "FUOTA_REBOOT"
 
-#define FUOTA_REBOOT_WAIT_TIME_MS   (50u) /* 50 miliseconds */
+#define FUOTA_REBOOT_WAIT_TIME_MS   (50u) /* 50 milliseconds */
 
 /**
  * Define list of reboot reason
  */
 #define CFG_REBOOT_ON_FW_APP          (0x00)
-#define CFG_REBOOT_ON_THREAD_OTA_APP  (0x01)
+#define CFG_REBOOT_ON_THREAD_OTA_APP  (0xaa)
 
 /* USER CODE END PD */
 

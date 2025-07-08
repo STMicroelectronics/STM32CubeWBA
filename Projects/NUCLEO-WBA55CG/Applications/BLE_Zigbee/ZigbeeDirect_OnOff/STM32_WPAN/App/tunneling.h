@@ -27,6 +27,10 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
+#include "zdd_ble_interface.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -36,46 +40,11 @@ extern "C" {
 
 /* USER CODE END ED */
 
-/* Exported types ------------------------------------------------------------*/
-#ifdef BLE_MULTIPLE_DEFINITION
-typedef enum
-{
-  TUNNELING_TUNNZDTSNPDU,
-  /* USER CODE BEGIN Service4_CharOpcode_t */
-
-  /* USER CODE END Service4_CharOpcode_t */
-  TUNNELING_CHAROPCODE_LAST
-} TUNNELING_CharOpcode_t;
-
-typedef enum
-{
-  TUNNELING_TUNNZDTSNPDU_WRITE_EVT,
-  TUNNELING_TUNNZDTSNPDU_INDICATE_ENABLED_EVT,
-  TUNNELING_TUNNZDTSNPDU_INDICATE_DISABLED_EVT,
-  /* USER CODE BEGIN Service4_OpcodeEvt_t */
-
-  /* USER CODE END Service4_OpcodeEvt_t */
-  TUNNELING_BOOT_REQUEST_EVT
-} TUNNELING_OpcodeEvt_t;
 
 typedef struct
 {
-  uint8_t *p_Payload;
-  uint8_t Length;
-
-  /* USER CODE BEGIN Service4_Data_t */
-
-  /* USER CODE END Service4_Data_t */
-} TUNNELING_Data_t;
-
-#else
-#include "zdd_ble_interface.h"
-#endif /* NO_SINGLE_INTERFACE */
-
-typedef struct
-{
-  TUNNELING_OpcodeEvt_t       EvtOpcode;
-  TUNNELING_Data_t             DataTransfered;
+  TUNNELING_OpcodeEvt_t   EvtOpcode;
+  TUNNELING_Data_t        DataTransfered;
   uint16_t                ConnectionHandle;
   uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;

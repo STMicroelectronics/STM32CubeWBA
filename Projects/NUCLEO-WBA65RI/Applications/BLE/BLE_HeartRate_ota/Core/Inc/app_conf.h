@@ -24,6 +24,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
+#include "ble_defs.h"
 #include "utilities_conf.h"
 
 /* USER CODE BEGIN Includes */
@@ -103,12 +104,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
+#define CFG_BLE_IR  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
+#define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -132,9 +133,8 @@
 /**
  * Define mapping of OTA messages in SRAM
  */
-#define CFG_OTA_REBOOT_VAL_MSG_ADDR             (*(uint8_t*)(SRAM1_BASE+0))
-#define CFG_OTA_START_SECTOR_IDX_VAL_MSG_ADDR   (*(uint8_t*)(SRAM1_BASE+1))
-#define CFG_OTA_NBR_OF_SECTOR_VAL_MSG_ADDR      (*(uint8_t*)(SRAM1_BASE+2))
+#define CFG_OTA_REBOOT_VAL_MSG                  (*(uint8_t*)(SRAM1_BASE+0))
+#define CFG_OTA_START_SECTOR_IDX_VAL_MSG        (*(uint8_t*)(SRAM1_BASE+1))
 /* USER CODE END Specific_Parameters */
 
 /******************************************************************************
@@ -190,7 +190,12 @@
  *  - 2, if extended properties is used
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
+
+/**
+ * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
+ */
+#define CFG_BLE_EATT_BEARER_PER_LINK  (0)
 
 /**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
@@ -248,7 +253,16 @@
 #define CFG_LPM_LEVEL            (2)
 #define CFG_LPM_STDBY_SUPPORTED  (1)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (2000)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -299,7 +313,6 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
-/* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
@@ -310,10 +323,6 @@ extern UART_HandleTypeDef           huart1;
 
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
-
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
 
 /* USER CODE BEGIN Logs */
 
@@ -360,9 +369,9 @@ typedef enum
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_B1,
-  CFG_TASK_BUTTON_B2,
-  CFG_TASK_BUTTON_B3,
+  CFG_TASK_BSP_BUTTON_B1,
+  CFG_TASK_BSP_BUTTON_B2,
+  CFG_TASK_BSP_BUTTON_B3,
 
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
@@ -428,19 +437,12 @@ typedef enum
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
 
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_NVM_SIZE_MAX          ((2048/8)-4)
+
 /* USER CODE BEGIN NVM_Configuration */
 
 /* USER CODE END NVM_Configuration */
-
-/******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
 
 /******************************************************************************
  * Debugger
@@ -462,8 +464,15 @@ typedef enum
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
-
 #define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
@@ -498,8 +507,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -559,13 +571,6 @@ typedef enum
     #define CFG_DEBUGGER_LEVEL      (0)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
-
-#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
-  #if CFG_LOG_SUPPORTED
-    #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
-  #endif /* CFG_LOG_SUPPORTED */
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN Defines_2 */
 

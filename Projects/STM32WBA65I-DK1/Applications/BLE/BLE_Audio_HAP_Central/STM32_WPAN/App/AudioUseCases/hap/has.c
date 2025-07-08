@@ -22,7 +22,7 @@
 #include "ble_gatt_aci.h"
 #include "hap_log.h"
 #include "ble_vs_codes.h"
-
+#include "usecase_dev_mgmt.h"
 /* Private defines -----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -156,14 +156,28 @@ tBleStatus HAS_SetHearingAidFeatures(HAS_ServiceContext_t *pSrvContext, uint16_t
 
   if (pSrvContext->HearingAidFeaturesHandle != 0x00u)
   {
-    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
-                                                  pSrvContext->ServiceHandle,
-                                                  pSrvContext->HearingAidFeaturesHandle,
-                                                  0x01,                           /*Notification*/
-                                                  1,                              /* Char_Length*/
-                                                  0,                              /* charValOffset */
-                                                  1,                              /* charValueLen */
-                                                  (uint8_t*) &Features);
+    if (ConnHandle != 0)
+    {
+      hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+                                                    pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidFeaturesHandle,
+                                                    0x01,                           /*Notification*/
+                                                    1,                              /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    1,                              /* charValueLen */
+                                                    (uint8_t*) &Features);
+    }
+    else
+    {
+      hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                      pSrvContext->HearingAidFeaturesHandle,
+                                                      0x01,                           /*Notification*/
+                                                      1,                              /* Char_Length*/
+                                                      0,                              /* charValOffset */
+                                                      1,                              /* charValueLen */
+                                                      (uint8_t*) &Features);
+    }
+
     if (hciCmdResult == BLE_STATUS_SUCCESS)
     {
       BLE_DBG_HAS_MSG("Hearing Aid Features Characteristic (%04X) Value updated Successfully\n",
@@ -185,7 +199,9 @@ tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext, uint16_t 
 
   if (pSrvContext->ActivePresetIndexHandle != 0x00u)
   {
-    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+    if (ConnHandle != 0)
+    {
+      hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
                                                   pSrvContext->ServiceHandle,
                                                   pSrvContext->ActivePresetIndexHandle,
                                                   0x01,                           /*Notification*/
@@ -193,6 +209,17 @@ tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext, uint16_t 
                                                   0,                              /* charValOffset */
                                                   1,                              /* charValueLen */
                                                   &ActivePresetIndex);
+    }
+    else
+    {
+      hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                      pSrvContext->ActivePresetIndexHandle,
+                                                      0x01,                           /*Notification*/
+                                                      1,                              /* Char_Length*/
+                                                      0,                              /* charValOffset */
+                                                      1,                              /* charValueLen */
+                                                      (uint8_t*) &ActivePresetIndex);
+    }
     if (hciCmdResult == BLE_STATUS_SUCCESS)
     {
       BLE_DBG_HAS_MSG("Active Preset Index Characteristic (%04X) Value updated Successfully\n",
@@ -208,8 +235,10 @@ tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext, uint16_t 
   return hciCmdResult;
 }
 
-tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle,
-                                             HAP_Preset_t* PresetRecord, uint8_t IsLast)
+tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext,
+                                      uint16_t ConnHandle,
+                                      HAP_Preset_t* PresetRecord,
+                                      uint8_t IsLast)
 {
   tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
@@ -222,22 +251,37 @@ tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext, uint16_
   a_value[3u] = PresetRecord->Properties;
   memcpy(&a_value[4u], &PresetRecord->Name[0], PresetRecord->NameLen);
 
-
-  hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
-                                                pSrvContext->ServiceHandle,
-                                                pSrvContext->HearingAidPresetControlPointHandle,
-                                                0x02,                           /*Notification*/
-                                                4 + PresetRecord->NameLen,      /* Char_Length*/
-                                                0,                              /* charValOffset */
-                                                4 + PresetRecord->NameLen,      /* charValueLen */
-                                                &a_value[0]);
+  if (ConnHandle != 0)
+  {
+    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+                                                  pSrvContext->ServiceHandle,
+                                                  pSrvContext->HearingAidPresetControlPointHandle,
+                                                  0x02,                           /*Notification*/
+                                                  4 + PresetRecord->NameLen,      /* Char_Length*/
+                                                  0,                              /* charValOffset */
+                                                  4 + PresetRecord->NameLen,      /* charValueLen */
+                                                  &a_value[0]);
+  }
+  else
+  {
+    hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidPresetControlPointHandle,
+                                                    0x02,                           /*Notification*/
+                                                    4 + PresetRecord->NameLen,      /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    4 + PresetRecord->NameLen,      /* charValueLen */
+                                                    &a_value[0]);
+  }
   BLE_DBG_HAS_MSG("Read Presets Response set with status 0x%02X\n", hciCmdResult);
 
   return hciCmdResult;
 }
 
-tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
-                                      uint8_t PrevIndex,HAP_Preset_t* PresetRecord)
+tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext,
+                                      uint16_t ConnHandle,
+                                      uint8_t IsLast,
+                                      uint8_t PrevIndex,
+                                      HAP_Preset_t* PresetRecord)
 {
   tBleStatus hciCmdResult;
   uint8_t a_value[MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE];
@@ -250,14 +294,27 @@ tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext, uint16_
   a_value[5u] = PresetRecord->Properties;
   memcpy(&a_value[6u], &PresetRecord->Name[0], PresetRecord->NameLen);
 
-  hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
-                                                pSrvContext->ServiceHandle,
-                                                pSrvContext->HearingAidPresetControlPointHandle,
-                                                0x02,                           /*Notification*/
-                                                6 + PresetRecord->NameLen,      /* Char_Length*/
-                                                0,                              /* charValOffset */
-                                                6 + PresetRecord->NameLen,      /* charValueLen */
-                                                &a_value[0]);
+  if (ConnHandle != 0)
+  {
+    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+                                                  pSrvContext->ServiceHandle,
+                                                  pSrvContext->HearingAidPresetControlPointHandle,
+                                                  0x02,                           /*Notification*/
+                                                  6 + PresetRecord->NameLen,      /* Char_Length*/
+                                                  0,                              /* charValOffset */
+                                                  6 + PresetRecord->NameLen,      /* charValueLen */
+                                                  &a_value[0]);
+  }
+  else
+  {
+    hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidPresetControlPointHandle,
+                                                    0x02,                           /*Notification*/
+                                                    6 + PresetRecord->NameLen,      /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    6 + PresetRecord->NameLen,      /* charValueLen */
+                                                    &a_value[0]);
+  }
   BLE_DBG_HAS_MSG("Preset Generic Update set with status 0x%02X\n", hciCmdResult);
 
   return hciCmdResult;
@@ -273,21 +330,35 @@ tBleStatus HAS_SetPresetRecordDeleted(HAS_ServiceContext_t *pSrvContext, uint16_
   a_value[1u] = HAP_PRESET_CHANGE_ID_PRESET_RECORD_DELETED;
   a_value[2u] = IsLast;
   a_value[3u] = Index;
-
-  hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
-                                                pSrvContext->ServiceHandle,
-                                                pSrvContext->HearingAidPresetControlPointHandle,
-                                                0x02,                           /*Notification*/
-                                                4,                              /* Char_Length*/
-                                                0,                              /* charValOffset */
-                                                4,                              /* charValueLen */
-                                                &a_value[0]);
+  if (ConnHandle != 0)
+  {
+    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+                                                  pSrvContext->ServiceHandle,
+                                                  pSrvContext->HearingAidPresetControlPointHandle,
+                                                  0x02,                           /*Notification*/
+                                                  4,                              /* Char_Length*/
+                                                  0,                              /* charValOffset */
+                                                  4,                              /* charValueLen */
+                                                  &a_value[0]);
+  }
+  else
+  {
+    hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidPresetControlPointHandle,
+                                                    0x02,                           /*Notification*/
+                                                    4,                              /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    4,                              /* charValueLen */
+                                                    &a_value[0]);
+  }
   BLE_DBG_HAS_MSG("Preset Record Deleted set with status 0x%02X\n", hciCmdResult);
 
   return hciCmdResult;
 }
 
-tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
+tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext,
+                                        uint16_t ConnHandle,
+                                        uint8_t IsLast,
                                         uint8_t Index)
 {
   tBleStatus hciCmdResult;
@@ -298,20 +369,35 @@ tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext, uint1
   a_value[2u] = IsLast;
   a_value[3u] = Index;
 
-  hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
-                                                pSrvContext->ServiceHandle,
-                                                pSrvContext->HearingAidPresetControlPointHandle,
-                                                0x02,                           /*Notification*/
-                                                4,                              /* Char_Length*/
-                                                0,                              /* charValOffset */
-                                                4,                              /* charValueLen */
-                                                &a_value[0]);
+  if (ConnHandle != 0)
+  {
+    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+                                                  pSrvContext->ServiceHandle,
+                                                  pSrvContext->HearingAidPresetControlPointHandle,
+                                                  0x02,                           /*Notification*/
+                                                  4,                              /* Char_Length*/
+                                                  0,                              /* charValOffset */
+                                                  4,                              /* charValueLen */
+                                                  &a_value[0]);
+  }
+  else
+  {
+    hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidPresetControlPointHandle,
+                                                    0x02,                           /*Notification*/
+                                                    4,                              /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    4,                              /* charValueLen */
+                                                    &a_value[0]);
+  }
   BLE_DBG_HAS_MSG("Preset Record Available set with status 0x%02X\n", hciCmdResult);
 
   return hciCmdResult;
 }
 
-tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
+tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext,
+                                          uint16_t ConnHandle,
+                                          uint8_t IsLast,
                                           uint8_t Index)
 {
   tBleStatus hciCmdResult;
@@ -322,7 +408,9 @@ tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext, uin
   a_value[2u] = IsLast;
   a_value[3u] = Index;
 
-  hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
+  if (ConnHandle != 0)
+  {
+    hciCmdResult = aci_gatt_update_char_value_ext(ConnHandle,
                                                 pSrvContext->ServiceHandle,
                                                 pSrvContext->HearingAidPresetControlPointHandle,
                                                 0x02,                           /*Notification*/
@@ -330,6 +418,17 @@ tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext, uin
                                                 0,                              /* charValOffset */
                                                 4,                              /* charValueLen */
                                                 &a_value[0]);
+  }
+  else
+  {
+    hciCmdResult = USECASE_DEV_MGMT_UpdateCharValue(pSrvContext->ServiceHandle,
+                                                    pSrvContext->HearingAidPresetControlPointHandle,
+                                                    0x02,                           /*Notification*/
+                                                    4,                              /* Char_Length*/
+                                                    0,                              /* charValOffset */
+                                                    4,                              /* charValueLen */
+                                                    &a_value[0]);
+  }
   BLE_DBG_HAS_MSG("Preset Record Unavailable set with status 0x%02X\n", hciCmdResult);
 
   return hciCmdResult;
@@ -384,7 +483,7 @@ SVCCTL_EvtAckStatus_t HAS_ATT_Event_Handler(void *pEvent)
                   write_status = 0x01;
                 }
                 /* Send Write response */
-                aci_gatt_write_resp( attribute_write_req->Connection_Handle,
+                aci_gatt_write_resp(attribute_write_req->Connection_Handle,
                                     attribute_write_req->Attribute_Handle,
                                     write_status,
                                     error_code,

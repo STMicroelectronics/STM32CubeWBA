@@ -21,7 +21,7 @@
 #include "adv_ext_app.h"
 #include "main.h"
 #include "app_common.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "dbg_trace.h"
 #include "log_module.h"
 

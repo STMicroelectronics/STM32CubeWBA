@@ -22,7 +22,9 @@
 #include "main.h"
 #include "app_common.h"
 #include "log_module.h"
-#include "ble.h"
+#include "ble_core.h"
+#include "uuid.h"
+#include "svc_ctl.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -32,7 +34,6 @@
 #include "stm_list.h"
 #include "advanced_memory_manager.h"
 #include "blestack.h"
-#include "nvm.h"
 #include "simple_nvm_arbiter.h"
 #include "dis.h"
 #include "dis_app.h"
@@ -160,7 +161,7 @@ typedef struct
                                    + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 #define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
+        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, CFG_BLE_EATT_BEARER_MAX))
 
 /* USER CODE BEGIN PD */
 #define ADV_TIMEOUT_MS                 (60 * 1000)
@@ -206,13 +207,13 @@ uint8_t a_AdvData[9] =
   4, AD_TYPE_COMPLETE_LOCAL_NAME, 'Z', 'D', 'D',  /* Complete name */
   3, AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST, 0xF7, 0xFF,
 };
-uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
 
 static AMM_VirtualMemoryCallbackFunction_t APP_BLE_ResumeFlowProcessCb;
 
 /* Host stack init variables */
 static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 static BleStack_init_t pInitParams;
 
 /* USER CODE BEGIN PV */
@@ -244,10 +245,6 @@ static void gap_cmd_resp_release(void);
 static void BLE_NvmCallback (SNVMA_Callback_Status_t);
 static uint8_t HOST_BLE_Init(void);
 /* USER CODE BEGIN PFP */
-#if 0 /* TODO: Should the device enter low power advertising? */
-static void APP_BLE_AdvLowPower_timCB(void *arg);
-static void APP_BLE_AdvLowPower(void);
-#endif
 #if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)
 static void Switch_OFF_Led(void *arg);
 #endif
@@ -275,25 +272,19 @@ void APP_BLE_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
-  /* NVM emulation in RAM initialization */
-  NVM_Init(buffer_nvm, 0, CFG_BLEPLAT_NVM_MAX_SIZE);
+  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
+  host_nvm_buffer[0] = 0;
 
   /* First register the APP BLE buffer */
   SNVMA_Register (APP_BLE_NvmBuffer,
-                  (uint32_t *)buffer_nvm,
-                  (CFG_BLEPLAT_NVM_MAX_SIZE * 2));
+                  (uint32_t *)host_nvm_buffer,
+                  (CFG_BLE_NVM_SIZE_MAX * 2));
 
   /* Realize a restore */
   SNVMA_Restore (APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
-
-  /* Check consistency */
-  if (NVM_Get (NVM_FIRST, 0xFF, 0, 0, 0) != NVM_EOF)
-  {
-    NVM_Discard (NVM_ALL);
-  }
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -346,20 +337,6 @@ void APP_BLE_Init(void)
                       0);
 #endif
 
-#if 0 /* TODO: Should advertising start here? Should the device enter low power advertising? */
-    /* Start to Advertise to accept a connection */
-    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-
-    UTIL_SEQ_RegTask(1<<CFG_TASK_ADV_LP_REQ_ID, UTIL_SEQ_RFU, APP_BLE_AdvLowPower);
-    /**
-    * Create timer to enter Low Power Advertising
-    */
-    UTIL_TIMER_Create(&(bleAppContext.TimerAdvLowPower_Id),
-                      ADV_TIMEOUT_MS,
-                      UTIL_TIMER_ONESHOT,
-                      &APP_BLE_AdvLowPower_timCB, 0);
-    UTIL_TIMER_Start(&(bleAppContext.TimerAdvLowPower_Id));
-#endif
     /* USER CODE END APP_BLE_Init_3 */
 
   }
@@ -1292,6 +1269,12 @@ bool BLE_App_Notification(BLE_App_Notification_evt_t *pNotification)
   return ret;
 }
 
+void APP_BLE_HostNvmStore(void)
+{
+  /* Start SNVMA write procedure */
+  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+}
+
 /* USER CODE END FD */
 
 /*************************************************************
@@ -1311,12 +1294,16 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
   pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
   pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
+  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_MAX;
   pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
   pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
   pInitParams.bleStartRamAddress      = (uint8_t*)buffer;
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
+  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
+  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -1932,34 +1919,9 @@ static void BLE_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
   if (CbkStatus != SNVMA_OPERATION_COMPLETE)
   {
     /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer,
-                 BLE_NvmCallback);
+    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
   }
 }
-
-/* USER CODE BEGIN FD_LOCAL_FUNCTION */
-
-#if 0 /* TODO: Should the device enter low power advertising? */
-static void APP_BLE_AdvLowPower_timCB(void *arg)
-{
-  /**
-   * The code shall be executed in the background as aci command may be sent
-   * The background is the only place where the application can make sure a new aci command
-   * is not sent if there is a pending one
-   */
-  UTIL_SEQ_SetTask(1<<CFG_TASK_ADV_LP_REQ_ID, CFG_SEQ_PRIO_0);
-
-  return;
-}
-
-static void APP_BLE_AdvLowPower(void)
-{
-  UTIL_TIMER_Stop(&(bleAppContext.TimerAdvLowPower_Id));
-  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
-  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_LP);
-}
-#endif
-/* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************
  *
@@ -2007,15 +1969,6 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   return status;
 }
 
-void NVMCB_Store( const uint32_t* ptr, uint32_t size )
-{
-  UNUSED(ptr);
-  UNUSED(size);
-
-  /* Call SNVMA for storing - Without callback */
-  SNVMA_Write (APP_BLE_NvmBuffer,
-               BLE_NvmCallback);
-}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 

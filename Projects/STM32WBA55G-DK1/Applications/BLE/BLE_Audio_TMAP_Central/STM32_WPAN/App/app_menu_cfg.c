@@ -199,7 +199,6 @@ void Menu_Config(void)
   Menu_Action_t media_control_down_action = {MENU_ACTION_CALLBACK, &previous_track_icon, &Menu_Media_PreviousTrack, 0, 0};
   Menu_Action_t media_control_right_action = {MENU_ACTION_CALLBACK, &play_pause_icon, &Menu_Media_PlayPause, 0, 0};
 
-  //Menu_Action_t broadcast_conf_up_action = {MENU_ACTION_CALLBACK, &arrow_up_icon, &Menu_Broadcast_Conf_Up, 0, 0};
   Menu_Action_t broadcast_conf_down_action = {MENU_ACTION_CALLBACK, &arrow_down_icon, &Menu_Broadcast_Conf_Down, 0, 0};
   Menu_Action_t start_broadcast_action = {MENU_ACTION_MENU_PAGE|MENU_ACTION_CALLBACK, &access_menu_icon, &Menu_Start_Broadcast, 0, 0};
 
@@ -292,7 +291,6 @@ void Menu_Config(void)
   Menu_SetControlAction(p_media_control_menu, MENU_DIRECTION_RIGHT, media_control_right_action);
 
   Menu_SetControlContent(p_broadcast_config_menu, &broadcast_config_text, 0);
-  //Menu_SetControlAction(p_broadcast_config_menu, MENU_DIRECTION_UP, broadcast_conf_up_action);
   Menu_SetControlAction(p_broadcast_config_menu, MENU_DIRECTION_DOWN, broadcast_conf_down_action);
   Menu_SetControlAction(p_broadcast_config_menu, MENU_DIRECTION_RIGHT, start_broadcast_action);
 
@@ -640,6 +638,7 @@ static void Menu_ClearSecDB(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Clear Security DB\n");
   aci_gap_clear_security_db();
+  TMAPAPP_ClearDatabase();
   Menu_SetActivePage(p_startup_menu);
 }
 

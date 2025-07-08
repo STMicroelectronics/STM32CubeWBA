@@ -32,13 +32,13 @@ For this application it is requested to have:
                |        |                                      |        |
                |        |             ZbZclReadReq             |        | <= PushB SW1
                |        | <----------------------------------- |        | 
-			   |        | -----------------------------------> |        | => Display Manufacturer Name
-               |        |                                      |        |			   
-               |        |                                      |        |			   			   
+               |        | -----------------------------------> |        | => Display Manufacturer Name
+               |        |                                      |        |   
+               |        |                                      |        |   
                |        |             ZbZclReadReq             |        | <= PushB SW2
                |        | <----------------------------------- |        | 
-			   |        | -----------------------------------> |        | => Display ZCL Version & Power Source
-               |        |                                      |        |			   			   
+               |        | -----------------------------------> |        | => Display ZCL Version & Power Source
+               |        |                                      |        |   
                +--------+                                      +--------+
 
 </pre> 

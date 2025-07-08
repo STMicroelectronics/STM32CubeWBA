@@ -161,9 +161,10 @@ void HAP_AclDisconnection(uint16_t ConnHandle)
       || HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER
         || HAP_Context.Role & HAP_ROLE_IMMEDIATE_ALERT_CLIENT)
   {
-    const UseCaseConnInfo_t *p_conn_info;
+    UseCaseConnInfo_t   *p_conn_info;
+    BleEATTBearer_t     *p_eatt_bearer;
 
-    if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
+    if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
     {
       /*Check if the remote device is bonded in order to save PACS and ASCS characteristics values*/
       if (aci_gap_check_bonded_device(p_conn_info->Peer_Address_Type,

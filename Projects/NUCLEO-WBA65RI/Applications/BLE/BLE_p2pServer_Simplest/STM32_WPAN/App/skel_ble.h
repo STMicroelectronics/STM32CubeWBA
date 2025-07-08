@@ -106,7 +106,7 @@ void BLE_Process(void);
 void ll_process(void);
 
 /* USER CODE BEGIN EFP */
-void CPU2_BLE_Service_Init(void);
+void BLE_Service_Init(void);
 void APP_BLE_Key_Button1_Action(void);
 /* USER CODE END EFP */
 

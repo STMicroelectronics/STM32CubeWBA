@@ -28,11 +28,11 @@
 #include "openthread_api_config_ftd_full.h"
 
 /* Select Openthreaad Version */
-#define OPENTHREAD_CONFIG_THREAD_VERSION OT_THREAD_VERSION_1_3
+#define OPENTHREAD_CONFIG_THREAD_VERSION OT_THREAD_VERSION_1_4
 
 /* Define to the platform name. */
 /* The platform-specific string to insert into the OpenThread version string  */
-#define OPENTHREAD_CONFIG_PLATFORM_INFO "STM32WBA V1.3.0 Thread_FTD_FULL"
+#define OPENTHREAD_CONFIG_PLATFORM_INFO "STM32WBA V1.4.0 Thread_FTD_FULL"
 
 /* Name of package */
 #define PACKAGE "openthread"
@@ -41,7 +41,7 @@
 #define PACKAGE_BUGREPORT "openthread-devel@googlegroups.com"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "OT"
+#define PACKAGE_NAME "OPENTHREAD"
 
 /* Define to the full name and version of this package. */
 #define PACKAGE_STRING "OPENTHREAD 0.01.00"
@@ -53,7 +53,7 @@
 #define PACKAGE_URL "http://github.com/openthread/openthread"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "SHA-1: 4a0d6b7b6495a1e4e2e03ab7a4f8baa064df4a6e"
+#define PACKAGE_VERSION "SHA-1: c583554263c8c88922ca45ef4c7486b9292a4f93"
 
 /* Version number of package */
 #define VERSION "FTD"

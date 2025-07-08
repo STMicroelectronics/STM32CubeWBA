@@ -93,8 +93,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
     /* USER CODE END USART1_MspInit 0 */
 
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
     PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -179,8 +179,8 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
 
     /* USER CODE END USB_OTG_HS_HCD_MspInit 0 */
 
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USBOTGHSPHY;
     PeriphClkInit.UsbOtgHsPhyClockSelection = RCC_USBOTGHSPHYCLKSOURCE_HSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -204,7 +204,6 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     {
       HAL_PWREx_EnableVddUSB();
     }
-
     HAL_SYSCFG_EnableOTGPHY(SYSCFG_OTG_HS_PHY_ENABLE);
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();

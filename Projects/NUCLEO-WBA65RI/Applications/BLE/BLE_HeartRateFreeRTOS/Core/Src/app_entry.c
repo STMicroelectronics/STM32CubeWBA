@@ -89,10 +89,6 @@ extern void vPortSetupTimerInterrupt(void);
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
-#if ( CFG_LPM_LEVEL != 0)
-/* Holds maximum number of FreeRTOS tick periods that can be suppressed */
-static uint32_t maximumPossibleSuppressedTicks = 0;
-#endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
 /* Log configuration
@@ -134,10 +130,23 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-/* Timers for FreeRTOS declaration */
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t  TimerHALtick_Id;
 
+/* Timer for OS tick declaration */
 static UTIL_TIMER_Object_t  TimerOStick_Id;
+
+#if ( CFG_LPM_LEVEL != 0)
+/* Holds maximum number of FreeRTOS tick periods that can be suppressed */
+static uint32_t maximumPossibleSuppressedTicks = 0;
+
+/* Timer OS wakeup low power declaration */
 static UTIL_TIMER_Object_t  TimerOSwakeup_Id;
+
+/* Time remaining variables to correct next OS tick */
+static uint32_t timeDiffRemaining = 0;
+static uint32_t lowPowerTimeDiffRemaining = 0;
+#endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* FreeRTOS objects declaration */
 
@@ -271,8 +280,9 @@ static void APPE_BPKA_Init( void );
 static void BPKA_Task_Entry(void* argument);
 
 static void TimerOStickCB(void *arg);
-static void TimerOSwakeupCB(void *arg);
+static void TimerHALtickCB(void *arg);
 #if ( CFG_LPM_LEVEL != 0)
+static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
 #endif /* CFG_LPM_LEVEL */
 
@@ -365,14 +375,25 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
+#if ( CFG_LPM_LEVEL != 0)
   /* create a SW timer to wakeup system from low power */
   UTIL_TIMER_Create(&TimerOSwakeup_Id,
                     0,
                     UTIL_TIMER_ONESHOT,
                     &TimerOSwakeupCB, 0);
-#if ( CFG_LPM_LEVEL != 0)
+
   maximumPossibleSuppressedTicks = UINT32_MAX;
 #endif /* ( CFG_LPM_LEVEL != 0) */
+
+  /* Create an RTC based timer to trigger HAL tick increment */
+  UTIL_TIMER_Create(&TimerHALtick_Id,
+                    HAL_TICK_FREQ_100HZ,
+                    UTIL_TIMER_PERIODIC,
+                    &TimerHALtickCB, 0);
+  uwTickFreq = HAL_TICK_FREQ_100HZ;
+
+  /* Start HAL tick timer */
+  UTIL_TIMER_StartWithPeriod(&TimerHALtick_Id, HAL_TICK_FREQ_100HZ);
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -475,19 +496,33 @@ static void SystemPower_Config(void)
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_LPM_LEVEL != 0)
@@ -526,6 +561,8 @@ static void RNG_Task_Entry(void *argument)
  */
 static void APPE_RNG_Init(void)
 {
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Create Random Number Generator FreeRTOS objects */
@@ -642,17 +679,27 @@ static void BPKA_Task_Entry(void *argument)
   }
 }
 
-/* OS tick callback */
+/* Timer OS tick callback */
 static void TimerOStickCB(void *arg)
 {
   xPortSysTickHandler();
   /* USER CODE BEGIN TimerOStickCB */
-  HAL_IncTick();
-  /* USER CODE END TimerOStickCB */
 
+  /* USER CODE END TimerOStickCB */
   return;
 }
 
+/* Timer HAL tick callback */
+static void TimerHALtickCB(void *arg)
+{
+  HAL_IncTick();
+  /* USER CODE BEGIN TimerHALtickCB */
+
+  /* USER CODE END TimerHALtickCB */
+  return;
+}
+
+#if ( CFG_LPM_LEVEL != 0)
 /* OS wakeup callback */
 static void TimerOSwakeupCB(void *arg)
 {
@@ -662,7 +709,6 @@ static void TimerOSwakeupCB(void *arg)
   return;
 }
 
-#if ( CFG_LPM_LEVEL != 0)
 /* return current time since boot, continue to count in standby low power mode */
 static uint32_t getCurrentTime(void)
 {
@@ -808,29 +854,14 @@ void vPortSetupTimerInterrupt( void )
 
   UTIL_TIMER_StartWithPeriod(&TimerOStick_Id, portTICK_PERIOD_MS);
   /* USER CODE BEGIN vPortSetupTimerInterrupt */
-  if(portTICK_PERIOD_MS == 10U)
-  {
-    uwTickFreq = HAL_TICK_FREQ_10HZ;
-  }
-  else if(portTICK_PERIOD_MS == 100U)
-  {
-    uwTickFreq = HAL_TICK_FREQ_100HZ;
-  }
-  else if(portTICK_PERIOD_MS == 1000U)
-  {
-    uwTickFreq = HAL_TICK_FREQ_1KHZ;
-  }
-  else
-  {
-    uwTickFreq = HAL_TICK_FREQ_DEFAULT;
-  }
+
   /* USER CODE END vPortSetupTimerInterrupt */
   return;
 }
 #if ( CFG_LPM_LEVEL != 0)
 void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
 {
-  uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep;
+  uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep, lowPowerTimeDiff, timeDiff;
   eSleepModeStatus eSleepStatus;
 
   /* Stop the timer that is generating the OS tick interrupt. */
@@ -901,8 +932,18 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
      execute until this function completes. */
     lowPowerTimeAfterSleep = getCurrentTime();
 
+    /* Compute time spent in low power state and report precision loss */
+    lowPowerTimeDiff = (lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) + lowPowerTimeDiffRemaining;
+    /* Store precision loss during RTC time conversion to report it for next OS tick. */
+    timeDiff = TIMER_IF_Convert_Tick2ms(lowPowerTimeDiff);
+    lowPowerTimeDiffRemaining = lowPowerTimeDiff - TIMER_IF_Convert_ms2Tick(timeDiff);
+    /* Report precision loss */
+    timeDiff += timeDiffRemaining;
+    /* Store precision loss during OS tick time conversion to report it for next OS tick. */
+    timeDiffRemaining = timeDiff % portTICK_PERIOD_MS;
+
     /* Correct the kernel tick count to account for the time spent in its low power state. */
-    vTaskStepTick( TIMER_IF_Convert_Tick2ms(lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) / portTICK_PERIOD_MS );
+    vTaskStepTick( timeDiff / portTICK_PERIOD_MS );
 
     /* Re-enable interrupts to allow the interrupt that brought the MCU
      * out of sleep mode to execute immediately.  See comments above
@@ -912,12 +953,12 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
     __asm volatile ( "isb" );
 
     /* Put the radio in active state */
-    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+    if( system_startup_done != FALSE )
     {
       LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-      ll_sys_dp_slp_exit();
-      UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+      (void)ll_sys_dp_slp_exit();
     }
+    UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 
     /* Restart the timer that is generating the OS tick interrupt. */
     UTIL_TIMER_StartWithPeriod(&TimerOStick_Id, portTICK_PERIOD_MS);
@@ -1027,6 +1068,7 @@ ADCCTRL_Cmd_Status_t ADCCTRL_MutexRelease(void)
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 
+/* Overwrite HAL_InitTick to not use sysTick in this project */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
   return HAL_OK;
@@ -1034,11 +1076,13 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 
 void HAL_SuspendTick(void)
 {
+  UTIL_TIMER_Stop(&TimerHALtick_Id);
   return;
 }
 
 void HAL_ResumeTick(void)
 {
+  UTIL_TIMER_Start(&TimerHALtick_Id);
   return;
 }
 /* USER CODE END FD_WRAP_FUNCTIONS */

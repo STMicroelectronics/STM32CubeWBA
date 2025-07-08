@@ -27,72 +27,17 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stdint.h"
-#include "ble_types.h"
-
 
 /* Defines ---------------------------------------------------------------------*/
 
 
 /* Types ---------------------------------------------------------------------*/
 
-/* Enumerated values used for the return of the functions:
- */
-enum
-{
-  BLEAUDIO_PLAT_NVM_OK    =  0,
-  BLEAUDIO_PLAT_NVM_FULL  = -1,
-  BLEAUDIO_PLAT_NVM_BUSY  = -2,
-  BLEAUDIO_PLAT_NVM_EOF   = -3,
-  BLEAUDIO_PLAT_NVM_WARN  = -4,
-  BLEAUDIO_PLAT_NVM_ERROR = -5
-};
-
-/* Enumerated values used for the 'type' of NVM functions:
- */
-enum
-{
-  BLEAUDIO_PLAT_NVM_TYPE_BAP_PACS = 2,
-  BLEAUDIO_PLAT_NVM_TYPE_BAP_ASCS = 3,
-  BLEAUDIO_PLAT_NVM_TYPE_BAP_BASS = 4,
-  BLEAUDIO_PLAT_NVM_TYPE_CCP = 5,
-  BLEAUDIO_PLAT_NVM_TYPE_CSIP = 6,
-  BLEAUDIO_PLAT_NVM_TYPE_MCP = 7,
-  BLEAUDIO_PLAT_NVM_TYPE_VCP = 8,
-  BLEAUDIO_PLAT_NVM_TYPE_MICP = 9,
-};
-
-/* Enumerated values used for the 'mode' of NVM functions:
- */
-enum
-{
-  BLEAUDIO_PLAT_NVM_FIRST    =  0,
-  BLEAUDIO_PLAT_NVM_NEXT     =  1,
-  BLEAUDIO_PLAT_NVM_CURRENT  =  2,
-  BLEAUDIO_PLAT_NVM_ALL      =  3
-};
-
 /* Non Volatile Memory (NVM) interface:
  *
  * This interface is only called from BLE Audio stack context
  */
-
-extern int BLE_AUDIO_PLAT_NvmAdd( uint8_t type,
-                                 const uint8_t* data,
-                                 uint16_t size,
-                                 const uint8_t* extra_data,
-                                 uint16_t extra_size );
-
-extern int BLE_AUDIO_PLAT_NvmGet( uint8_t mode,
-                                   uint8_t type,
-                                   uint16_t offset,
-                                   uint8_t* data,
-                                   uint16_t size );
-
-extern int BLE_AUDIO_PLAT_NvmCompare( uint16_t offset,
-                                     const uint8_t* data,
-                                     uint16_t size );
-
-extern void BLE_AUDIO_PLAT_NvmDiscard( uint8_t mode );
+extern void BLE_AUDIO_PLAT_NvmStore( const uint32_t* ptr,uint32_t size );
 
 /* Advanced Encryption Standard (AES) interface:
  */

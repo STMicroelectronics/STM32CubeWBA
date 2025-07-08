@@ -46,9 +46,9 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
+
 /* USER CODE BEGIN EM */
-/* Trigger BLE Host stack process after calling any aci/hci functions */
-#define BLE_WRAP_POSTPROC() BleStackCB_Process()
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

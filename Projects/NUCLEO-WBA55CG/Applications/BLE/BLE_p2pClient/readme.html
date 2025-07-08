@@ -23,20 +23,40 @@
 <p>Demonstrate STM32WBA acting as BLE central and GATT client.</p>
 <p>BLE p2pClient application scans and connects to p2pServer device.</p>
 <p>Once connected, BLE p2pClient can write a message to the p2pServer and receive notification from it.</p>
-<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits). - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Client_application"> STM32WBA Peer To Peer Client Applications</a></p>
+<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits). <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Client_application"> STM32WBA Peer To Peer Client Applications.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol</p>
+<p>Connectivity, BLE, BLE protocol.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx Nucleo board.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
+<li>This application runs on STM32WBA55xx Nucleo board.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
 <li>Another STM32WBAxx Nucleo board is necessary to run BLE p2pServer application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the binary file - Power up BLE p2pClient device next to a BLE p2pServer device. - On BLE p2pClient device, click on button B1 to launch a scan.<br />
-- If a BLE p2pServer device is detected, a connection is initiated. - Once the BLE p2pClient application is connected to a BLE p2pServer (green led flashes faster): - On BLE p2pClient device, click on button B1, to write a message toward connected BLE p2pServer device, the blue LED on the Server device should switch on/off. - On BLE p2pServer device, click on button B1 to send a notification message toward connected BLE p2pClient device, the blue LED on the Client device should switch on/off. - Pressing button B2 while not connected clear the database.</p>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> Peer To Peer Applications</a></p>
+<p>In order to make the program work:</p>
+<ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the binary file.<br />
+</li>
+<li>Power up BLE p2pClient device next to a BLE p2pServer device.<br />
+</li>
+<li>On BLE p2pClient device, click on button B1 to launch a scan.<br />
+</li>
+<li>If a BLE p2pServer device is detected, a connection is initiated.<br />
+</li>
+<li>Once the BLE p2pClient application is connected to a BLE p2pServer (green led flashes faster):
+<ul>
+<li>On BLE p2pClient device, click on button B1 to write a message to the connected BLE p2pServer device. The blue LED on the Server device should switch on/off.<br />
+</li>
+<li>On BLE p2pServer device, click on button B1 to send a notification message to the connected BLE p2pClient device. The blue LED on the Client device should switch on/off.<br />
+</li>
+</ul></li>
+<li>Pressing button B2 while not connected clears the database.</li>
+</ul>
+<p>For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki.</a></p>
 </div>
 </div>
 </body>

@@ -118,6 +118,7 @@ set_oem2_key()
     # Step to configure OEM2 key
     echo "   * OEM2 key setup"
     echo "       Open oem2_password file and put OEM2 key(Default path is \ROT_Provisioning\OEMiRoT\Keys\oem2_password.txt)"
+    echo "       Warning: Default OEM2 keys must NOT be used in a product. Make sure to regenerate your own OEM2 keys!"
     echo "       Press any key to continue..."
     echo
     if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
@@ -151,11 +152,18 @@ images_generation()
     source $img_config
 
     echo "   * Code firmware image generation"
-    echo "       Open the OEMiROT_Appli_TrustZone project with preferred toolchain."
-    echo "       Rebuild all files. The oemirot_tz_app_enc_sign.bin file(s) is generated with the postbuild command."
+    if [ "$app_full_secure" == "1" ]; then
+      echo "       Open the OEMiROT_Appli project with preferred toolchain."
+      echo "       Rebuild the Secure project. The $oemirot_appli_secure and oemirot_tz_s_app_enc_sign.bin files are generated with the postbuild command."
+    else
+      echo "       Open the OEMiROT_Appli_TrustZone project with preferred toolchain."
+      echo "       Rebuild the Secure project. The $oemirot_appli_secure and oemirot_tz_s_app_enc_sign.bin files are generated with the postbuild command."
+      echo "       Rebuild the NonSecure project. The $oemirot_appli_non_secure and oemirot_tz_ns_app_enc_sign.bin files are generated with the postbuild command."
+    fi
     echo "       Press any key to continue..."
     echo
     if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
+
     echo "   * Data secure generation (if Data secure image is enabled)"
     echo "       Select OEMiRoT_S_Data_Image.xml(Default path is /ROT_Provisioning/OEMiROT/Images/OEMiROT_S_Data_Image.xml)"
     echo "       Generate the data_enc_sign.bin image"

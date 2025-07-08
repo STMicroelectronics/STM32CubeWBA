@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1_app.c
+  * @file    hrs_app.c
   * @author  MCD Application Team
-  * @brief   service1_app application definition.
+  * @brief   hrs_app application definition.
   ******************************************************************************
   * @attention
   *
@@ -21,18 +21,19 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "hrs_app.h"
 #include "hrs.h"
 #include "stm32_rtos.h"
-#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "host_stack_if.h"
+#include "app_freertos.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +58,7 @@ typedef struct
   HRS_MeasVal_t                 MeasurementVal;
   uint8_t                       ResetEnergyExpended;
   HRS_BodySensorLocation_t      BodySensorLocationVal;
+
   /* USER CODE END Service1_APP_Context_t */
   uint16_t              ConnectionHandle;
 } HRS_APP_Context_t;
@@ -69,7 +71,7 @@ typedef struct
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-extern RNG_HandleTypeDef hrng;
+
 /* USER CODE END EV */
 
 /* Private macros ------------------------------------------------------------*/
@@ -83,14 +85,12 @@ static HRS_APP_Context_t HRS_APP_Context;
 uint8_t a_HRS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 static void HRS_Hrme_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -193,8 +193,8 @@ void HRS_APP_Init(void)
   /**
    * Set Flags for measurement value
    */
-  HRS_APP_Context.MeasurementVal.Flags = (HRS_HRM_VALUE_FORMAT_UINT16 | 
-                                          HRS_HRM_SENSOR_CONTACTS_PRESENT | 
+  HRS_APP_Context.MeasurementVal.Flags = (HRS_HRM_VALUE_FORMAT_UINT16 |
+                                          HRS_HRM_SENSOR_CONTACTS_PRESENT |
                                           HRS_HRM_SENSOR_CONTACTS_SUPPORTED |
                                           HRS_HRM_ENERGY_EXPENDED_PRESENT |
                                           HRS_HRM_RR_INTERVAL_PRESENT);
@@ -226,6 +226,7 @@ void HRS_APP_Init(void)
 }
 
 /* USER CODE BEGIN FD */
+
 void HRS_APP_Measurements(void)
 {
   uint32_t measurement;
@@ -237,20 +238,20 @@ void HRS_APP_Measurements(void)
   measurement = (measurement % 15) + 60;
 
   HRS_APP_Context.MeasurementVal.MeasurementValue = measurement;
-  
+
   if((HRS_APP_Context.MeasurementVal.Flags & HRS_HRM_ENERGY_EXPENDED_PRESENT) &&
      (HRS_APP_Context.ResetEnergyExpended == 0))
   {
     HRS_APP_Context.MeasurementVal.EnergyExpended += 5;
-  }  
+  }
   else if(HRS_APP_Context.ResetEnergyExpended == 1)
   {
     HRS_APP_Context.ResetEnergyExpended = 0;
   }
-  
+
   LOG_INFO_APP("Heart Rate value = %d bpm \n", HRS_APP_Context.MeasurementVal.MeasurementValue);
   LOG_INFO_APP("Energy expended = %d kJ \n", HRS_APP_Context.MeasurementVal.EnergyExpended);
-  
+
   /**
    * Flags update
    */
@@ -371,10 +372,9 @@ void HRS_APP_Measurements(void)
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
 
-  BleStackCB_Process();
-
   return;
 }
+
 /* USER CODE END FD */
 
 /*************************************************************
@@ -390,22 +390,21 @@ __USED void HRS_Hrme_SendNotification(void) /* Property Notification */
   hrs_notification_data.p_Payload = (uint8_t*)a_HRS_UpdateCharData;
   hrs_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char1_NS_1*/
+  /* USER CODE BEGIN Service1Char1_NS_1 */
 
-  /* USER CODE END Service1Char1_NS_1*/
+  /* USER CODE END Service1Char1_NS_1 */
 
   if (notification_on_off != Hrme_NOTIFICATION_OFF)
   {
     HRS_UpdateValue(HRS_HRME, &hrs_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char1_NS_Last*/
+  /* USER CODE BEGIN Service1Char1_NS_Last */
 
-  /* USER CODE END Service1Char1_NS_Last*/
+  /* USER CODE END Service1Char1_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
-
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
+/* USER CODE END FD_LOCAL_FUNCTIONS */

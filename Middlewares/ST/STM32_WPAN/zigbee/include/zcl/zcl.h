@@ -21,6 +21,11 @@ extern "C" {
  * ZCL Debug Logging
  *---------------------------------------------------------------
  */
+#ifdef CONFIG_ZB_LOG_NONE
+#define ZCL_LOG_PRINTF(zb, mask, hdr, ...)      (void)zb
+#define ZCL_LOG_ASSERT(zb, cond)                (void)zb
+
+#else
 #if ((ZB_LOG_MASK_ZCL & CONFIG_ZB_LOG_ALLOWED_MASK) != 0U)
 /*lint -e{762} "Redundantly declared symbol [LINT]" */
 /*lint -e{9004} "previously declared [MISRA Rule 8.5 (REQUIRED)]" */
@@ -71,6 +76,7 @@ void zcl_log_mask_clear(struct ZigBeeT *zb, uint32_t mask);
 #else
 #define ZCL_LOG_PRINTF(zb, mask, hdr, ...)      (void)zb
 #define ZCL_LOG_ASSERT(zb, cond)                (void)zb
+#endif
 #endif
 
 struct ZbZclAddrInfoT {
@@ -430,7 +436,9 @@ struct ZbZclClusterT {
         enum ZclStatusCodeT (*reset_callback)(struct ZbZclClusterT *cluster, uint8_t alarm_code,
             uint16_t cluster_id, struct ZbApsdeDataIndT *data_ind, struct ZbZclHeaderT *hdr);
     } alarm;
+
     struct ZbTimerT *persist_timer;
+    bool persist_immed;
 
     /*-------------------------------------------
      * Callbacks
@@ -443,19 +451,19 @@ struct ZbZclClusterT {
     /* Callback to handle a Profile-Wide (ZCL_FRAMETYPE_PROFILE) command.
      * Return value is a ZCL_STATUS_ code. If not ZCL_STATUS_SUCCESS, a default
      * response with the status code is sent to the originator of the command. */
-    void (*profile_cb)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
-        struct ZbApsdeDataIndT *dataIndPtr);
+    void (*profile_cb)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdr,
+        struct ZbApsdeDataIndT *dataInd);
 
     /* Callback to handle a Cluster-Specific (ZCL_FRAMETYPE_CLUSTER) command.
      * Return value is a ZCL_STATUS_ code. If not ZCL_STATUS_SUCCESS, a default
      * response with the status code is sent to the originator of the command. */
-    enum ZclStatusCodeT (*command)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
-        struct ZbApsdeDataIndT *dataIndPtr);
+    enum ZclStatusCodeT (*command)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdr,
+        struct ZbApsdeDataIndT *dataInd);
 
     /* Callback to receive ZCL Report Commands. Configured by calling ZbZclClusterReportCallbackAttach.
      * Attribute reporting can be configured on the remote device by calling ZbZclAttrReportConfigReq.
      * When the remote device sends reports, those reports can be received through this callback. */
-    void (*report)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr, struct ZbApsdeDataIndT *dataIndPtr,
+    void (*report)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdr, struct ZbApsdeDataIndT *dataInd,
         uint16_t attributeId, enum ZclDataTypeT dataType, const uint8_t *in_payload, uint16_t in_len, bool *discard);
 
     /* Callback invoked on sending the ZCL Report commands. Configured by calling ZbZclClusterReportConfirmCallbackAttach.
@@ -506,7 +514,7 @@ struct ZbZclClusterT {
 void ZbZclAddEndpoint(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req, struct ZbApsmeAddEndpointConfT *conf);
 /* ZbZclAddEndpointNoBasic is the same as ZbZclAddEndpoint, except it does not allocate
  * a Basic Server cluster for the endpoint. */
-void ZbZclAddEndpointNoBasic(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *addReqPtr, struct ZbApsmeAddEndpointConfT *addConfPtr);
+void ZbZclAddEndpointNoBasic(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req, struct ZbApsmeAddEndpointConfT *conf);
 
 /* Helper to remove a ZCL endpoint created by ZbZclAddEndpoint.
  * Calls ZbApsmeRemoveEndpoint and removes the ZCL filters created by ZbZclAddEndpoint. */
@@ -530,15 +538,15 @@ bool ZbZclClusterEndpointRemove(struct ZbZclClusterT *cluster);
  */
 /** Parses a ZCL Header from a received frame.
  * Returns Length of the ZCL header, or negative value (-1) on error. */
-int ZbZclParseHeader(struct ZbZclHeaderT *zclHdrPtr, const uint8_t *buf, unsigned int len);
+int ZbZclParseHeader(struct ZbZclHeaderT *zclHdr, const uint8_t *buf, unsigned int len);
 
 /** Builds and appends a ZCL Header to the start of a buffer.
  * Returns length of data written, or negative value (-1) on error. */
-int ZbZclPrependHeader(struct ZbZclHeaderT *zclHdrPtr, uint8_t *data, unsigned int len);
+int ZbZclPrependHeader(struct ZbZclHeaderT *zclHdr, uint8_t *data, unsigned int len);
 
 /** Builds and appends a ZCL Header to the end of a buffer.
  * Returns Length of data written, or negative value (-1) on error. */
-int ZbZclAppendHeader(struct ZbZclHeaderT *zclHdrPtr, uint8_t *data, unsigned int max_len);
+int ZbZclAppendHeader(struct ZbZclHeaderT *zclHdr, uint8_t *data, unsigned int max_len);
 
 /*---------------------------------------------------------------
  * Attribute Helpers
@@ -560,14 +568,14 @@ int ZbZclAttrParseLength(enum ZclDataTypeT type, const uint8_t *ptr,
  * or ZbZclAttrTypeLength
  * @param dataType ZCL Attribute data type.
  * @param data ZCL attribute data.
- * @param statusPtr ZCL Status Code (OUT)
- * @return The parsed value, if *statusPtr == SUCCESS
+ * @param status ZCL Status Code (OUT)
+ * @return The parsed value, if *status == SUCCESS
  */
-long long ZbZclParseInteger(enum ZclDataTypeT dataType, const uint8_t *data, enum ZclStatusCodeT *statusPtr);
+long long ZbZclParseInteger(enum ZclDataTypeT dataType, const uint8_t *data, enum ZclStatusCodeT *status);
 
 /* Write a float value to the output 'data' pointer in ZCL format based on the attribute data type. */
 int ZbZclAppendFloat(double value, enum ZclDataTypeT dataType, uint8_t *data, unsigned int maxlen);
-double ZbZclParseFloat(enum ZclDataTypeT dataType, const uint8_t *data, enum ZclStatusCodeT *statusPtr);
+double ZbZclParseFloat(enum ZclDataTypeT dataType, const uint8_t *data, enum ZclStatusCodeT *status);
 
 /*---------------------------------------------------------------
  * Local Attribute Read/Write
@@ -607,12 +615,12 @@ enum ZclStatusCodeT ZbZclAttrWrite(struct ZbZclClusterT *cluster, const struct Z
  * Helper to ZbZclAttrRead to read an integer attribute value.
  * @param cluster Cluster instance
  * @param attributeId The attribute Id
- * @param typePtr If pointer provided, returns the attribute type.
- * @param statusPtr ZCL Status Code that can be returned to caller if pointer provided.
+ * @param type If pointer provided, returns the attribute type.
+ * @param status ZCL Status Code that can be returned to caller if pointer provided.
  * @return Value of attribute
  */
 long long ZbZclAttrIntegerRead(struct ZbZclClusterT *cluster, uint16_t attributeId,
-    enum ZclDataTypeT *typePtr, enum ZclStatusCodeT *statusPtr);
+    enum ZclDataTypeT *type, enum ZclStatusCodeT *status);
 
 /**
  * Helper to ZbZclAttrWrite to write an integer attribute value.
@@ -636,10 +644,10 @@ enum ZclStatusCodeT ZbZclAttrIntegerIncrement(struct ZbZclClusterT *cluster, uin
  * Helper to ZbZclAttrRead to read an EUI-64 attribute value.
  * @param cluster Cluster instance
  * @param attributeId The attribute Id
- * @param statusPtr ZCL Status Code that can be returned to caller if pointer provided.
+ * @param status ZCL Status Code that can be returned to caller if pointer provided.
  * @return The EUI-64 value
  */
-uint64_t ZbZclAttrEuiRead(struct ZbZclClusterT *cluster, uint16_t attributeId, enum ZclStatusCodeT *statusPtr);
+uint64_t ZbZclAttrEuiRead(struct ZbZclClusterT *cluster, uint16_t attributeId, enum ZclStatusCodeT *status);
 
 /**
  * Helper to ZbZclAttrWrite to write an EUI-64 attribute value.
@@ -710,7 +718,7 @@ struct ZbZclReadRspT {
 };
 
 enum ZclStatusCodeT ZbZclReadReq(struct ZbZclClusterT *cluster, struct ZbZclReadReqT *req,
-    void (*callback)(const struct ZbZclReadRspT *readRsp, void *cb_arg), void *arg);
+    void (*callback)(const struct ZbZclReadRspT *rsp, void *arg), void *arg);
 
 struct ZbZclWriteReqDataT {
     /* EXEGIN: implement a selector for structured version. */
@@ -742,7 +750,7 @@ struct ZbZclWriteRspT {
 };
 
 enum ZclStatusCodeT ZbZclWriteReq(struct ZbZclClusterT *cluster, struct ZbZclWriteReqT *req,
-    void (*callback)(const struct ZbZclWriteRspT *writeResp, void *cb_arg), void *arg);
+    void (*callback)(const struct ZbZclWriteRspT *rsp, void *arg), void *arg);
 
 /*---------------------------------------------------------------
  * Attribute Reporting
@@ -816,26 +824,26 @@ struct ZbZclAttrReportReadT {
 /**
  * Send a Read Reporting Configuration Command. Response is returned in the 'callback' if provided by application.
  * @param cluster Cluster instance
- * @param report Attribute reporting configuration destination and records to read
+ * @param read Attribute reporting configuration destination and records to read
  * @param callback Callback function to receive Read Reporting Configuration Response Command
  * @param arg Callback argument
  * @return ZCL Status Code
  */
-enum ZclStatusCodeT ZbZclAttrReportReadReq(struct ZbZclClusterT *cluster, struct ZbZclAttrReportReadT *report,
+enum ZclStatusCodeT ZbZclAttrReportReadReq(struct ZbZclClusterT *cluster, struct ZbZclAttrReportReadT *read,
     void (*callback)(struct ZbZclCommandRspT *cmd_rsp, void *arg), void *arg);
 
 /**
  * Configure an attribute's default reporting intervals. It will also set the
  * active reporting intervals to these values and reset the reporting timer.
  * The Reportable Change value will also be reset back to defaults (value = 1).
- * @param clusterPtr Cluster instance
+ * @param cluster Cluster instance
  * @param attrId Attribute Id of the attribute to modify
  * @param default_min New default minimum reporting interval in seconds.
  * @param default_max New default maximum reporting interval in seconds.
  * @param default_change (Optional) New default reportable change value.
  * @return ZCL Status Code
  */
-enum ZclStatusCodeT ZbZclAttrReportConfigDefault(struct ZbZclClusterT *clusterPtr,
+enum ZclStatusCodeT ZbZclAttrReportConfigDefault(struct ZbZclClusterT *cluster,
     uint16_t attrId, uint16_t default_min, uint16_t default_max, double *default_change);
 
 /**
@@ -881,7 +889,7 @@ struct ZbZclDiscoverAttrRspT {
 };
 
 enum ZclStatusCodeT ZbZclDiscoverAttrReq(struct ZbZclClusterT *cluster, struct ZbZclDiscoverAttrReqT *req,
-    void (*callback)(const struct ZbZclDiscoverAttrRspT *discRsp, void *cb_arg), void *arg);
+    void (*callback)(const struct ZbZclDiscoverAttrRspT *rsp, void *cb_arg), void *arg);
 
 /*---------------------------------------------------------------
  * Attribute Persistence
@@ -962,10 +970,10 @@ enum ZclStatusCodeT ZbZclClusterCommandReqWithRspFilter(struct ZbZclClusterT *cl
  *
  * Returns ZCL_STATUS_SUCCESS if the message was queued to the stack, or an error status
  * otherwise. */
-enum ZclStatusCodeT ZbZclClusterCommandRsp(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dstInfo,
+enum ZclStatusCodeT ZbZclClusterCommandRsp(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dst,
     uint8_t cmdId, struct ZbApsBufT *payloads, uint8_t numPayloads);
 
-enum ZclStatusCodeT ZbZclClusterCommandRspWithCb(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dstInfo,
+enum ZclStatusCodeT ZbZclClusterCommandRspWithCb(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dst,
     uint8_t cmdId, struct ZbApsBufT *payloads, uint8_t numPayloads,
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 
@@ -976,7 +984,7 @@ enum ZclStatusCodeT ZbZclClusterCommandRspWithCb(struct ZbZclClusterT *cluster, 
  * then the response will not be sent. This simplifies the cluster application from having
  * to make these checks. */
 enum ZclStatusCodeT ZbZclSendClusterStatusResponse(struct ZbZclClusterT *cluster,
-    struct ZbApsdeDataIndT *dataIndPtr, struct ZbZclHeaderT *zclHdrPtr, uint8_t cmdId,
+    struct ZbApsdeDataIndT *ind, struct ZbZclHeaderT *hdr, uint8_t cmdId,
     uint8_t *zclPayload, uint8_t zclPaylen, bool allow_bcast);
 
 /* Send a Default Response. */
@@ -985,7 +993,7 @@ void ZbZclSendDefaultResponse(struct ZbZclClusterT *cluster, struct ZbApsdeDataI
 
 /* Different version of ZbZclSendDefaultResponse, but takes in ZbZclAddrInfoT rather than
  * struct ZbApsdeDataIndT and ZbZclHeaderT */
-void ZbZclSendDefaultResponse2(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dstInfo,
+void ZbZclSendDefaultResponse2(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *dst,
     uint8_t cmdId, enum ZclStatusCodeT status);
 
 /*---------------------------------------------------------------
@@ -1020,6 +1028,8 @@ ZbUptimeT ZbZclUptime(struct ZigBeeT *zb);
 /* Get the next ZCL sequence number to use in a request/notify message. */
 uint8_t ZbZclGetNextSeqnum(struct ZigBeeT *zb);
 
+/* Sets the profile Id for the cluster, which can affect the filter rules
+ * for receiving packets based on cluster and profile Id. */
 void ZbZclClusterSetProfileId(struct ZbZclClusterT *cluster, uint16_t profileId);
 
 /* Sets the minimum security level for incoming frames, and also adjusts
@@ -1033,7 +1043,7 @@ bool ZbZclClusterSetMaxAsduLength(struct ZbZclClusterT *cluster, uint16_t maxAsd
 
 /* Helper functions to initialize requests based on cluster parameters */
 void ZbZclClusterInitCommandReq(struct ZbZclClusterT *cluster, struct ZbZclCommandReqT *cmdReq);
-void ZbZclClusterInitApsdeReq(struct ZbZclClusterT *cluster, struct ZbApsdeDataReqT *apsReq, struct ZbApsdeDataIndT *dataIndPtr);
+void ZbZclClusterInitApsdeReq(struct ZbZclClusterT *cluster, struct ZbApsdeDataReqT *apsReq, struct ZbApsdeDataIndT *dataInd);
 
 /* Helper to generate proper APS TX Options (e.g. ZB_APSDE_DATAREQ_TXOPTIONS_SECURITY)
  * for a response, based on the given (incoming message) security status code. */
@@ -1046,8 +1056,8 @@ uint16_t ZbZclTxOptsFromSecurityStatus(enum ZbStatusCodeT security_status);
  * @return None
  */
 void ZbZclClusterReportCallbackAttach(struct ZbZclClusterT *cluster,
-    void (*callback)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
-        struct ZbApsdeDataIndT *dataIndPtr, uint16_t attr_id, enum ZclDataTypeT data_type,
+    void (*callback)(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdr,
+        struct ZbApsdeDataIndT *dataInd, uint16_t attr_id, enum ZclDataTypeT data_type,
         const uint8_t *in_payload, uint16_t in_len, bool *discard));
 
 /**
@@ -1204,7 +1214,7 @@ uint32_t zcl_get_bomd_req_wait_timeout_ms(struct ZigBeeT *zb);
 ZbUptimeT zcl_get_bomd_req_queue_timeout_abs(struct ZigBeeT *zb);
 
 /* Handles Profile-Wide commands (e.g. ZCL Read Request) */
-void zcl_handle_profile_command(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdrPtr,
+void zcl_handle_profile_command(struct ZbZclClusterT *cluster, struct ZbZclHeaderT *zclHdr,
     struct ZbApsdeDataIndT *ind);
 
 #ifdef __cplusplus

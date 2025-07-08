@@ -31,8 +31,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 #include "ll_sys_if.h"
+/* USER CODE BEGIN Includes */
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -46,19 +47,21 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
 /* Halt if any aci/hci functions call is made under ISR context, for debug purpose. */
 /* Get Link Layer Mutex before calling any aci/hci functions */
 #define BLE_WRAP_PREPROC() do{ \
-  if( __get_IPSR() != 0 )while(1); \
-  tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER); \
-}while(0)
+                             if( __get_IPSR() != 0 )while(1); \
+                             tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER); \
+                           }while(0)
 
 /* Put Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
 #define BLE_WRAP_POSTPROC() do{ \
-   tx_mutex_put(&LinkLayerMutex); \
-   BleStackCB_Process(); \
- }while(0)
+                              tx_mutex_put(&LinkLayerMutex); \
+                              BleStackCB_Process(); \
+                            }while(0)
+
+/* USER CODE BEGIN EM */
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

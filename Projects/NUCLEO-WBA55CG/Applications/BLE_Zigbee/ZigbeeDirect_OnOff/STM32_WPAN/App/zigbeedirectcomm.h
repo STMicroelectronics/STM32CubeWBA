@@ -27,6 +27,11 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+/* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
+#include "zdd_ble_interface.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -36,66 +41,16 @@ extern "C" {
 
 /* USER CODE END ED */
 
-/* Exported types ------------------------------------------------------------*/
-#ifdef BLE_MULTIPLE_DEFINITION
-typedef enum
-{
-  ZIGBEEDIRECTCOMM_FORMNETWORK,
-  ZIGBEEDIRECTCOMM_JOINNETWORK,
-  ZIGBEEDIRECTCOMM_PERMITJOIN,
-  ZIGBEEDIRECTCOMM_LEAVENETWORK,
-  ZIGBEEDIRECTCOMM_COMMSTATUS,
-  ZIGBEEDIRECTCOMM_MANAGEJOINER,
-  ZIGBEEDIRECTCOMM_COMMIDENTITY,
-  ZIGBEEDIRECTCOMM_FINDBIND,
-  /* USER CODE BEGIN Service2_CharOpcode_t */
-
-  /* USER CODE END Service2_CharOpcode_t */
-  ZIGBEEDIRECTCOMM_CHAROPCODE_LAST
-} ZIGBEEDIRECTCOMM_CharOpcode_t;
-
-typedef enum
-{
-  ZIGBEEDIRECTCOMM_FORMNETWORK_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_JOINNETWORK_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_PERMITJOIN_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_LEAVENETWORK_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_COMMSTATUS_READ_EVT,
-  ZIGBEEDIRECTCOMM_COMMSTATUS_NOTIFY_ENABLED_EVT,
-  ZIGBEEDIRECTCOMM_COMMSTATUS_NOTIFY_DISABLED_EVT,
-  ZIGBEEDIRECTCOMM_MANAGEJOINER_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_COMMIDENTITY_READ_EVT,
-  ZIGBEEDIRECTCOMM_COMMIDENTITY_WRITE_EVT,
-  ZIGBEEDIRECTCOMM_FINDBIND_WRITE_EVT,
-  /* USER CODE BEGIN Service2_OpcodeEvt_t */
-
-  /* USER CODE END Service2_OpcodeEvt_t */
-  ZIGBEEDIRECTCOMM_BOOT_REQUEST_EVT
-} ZIGBEEDIRECTCOMM_OpcodeEvt_t;
-
 typedef struct
 {
-  uint8_t *p_Payload;
-  uint8_t Length;
-
-  /* USER CODE BEGIN Service2_Data_t */
-
-  /* USER CODE END Service2_Data_t */
-} ZIGBEEDIRECTCOMM_Data_t;
-
-#else
-#include "zdd_ble_interface.h"
-#endif /* NO_SINGLE_INTERFACE */
-typedef struct
-{
-  ZIGBEEDIRECTCOMM_OpcodeEvt_t       EvtOpcode;
-  ZIGBEEDIRECTCOMM_Data_t             DataTransfered;
-  uint16_t                ConnectionHandle;
-  uint16_t                AttributeHandle;
-  uint8_t                 ServiceInstance;
+  ZIGBEEDIRECTCOMM_OpcodeEvt_t EvtOpcode;
+  ZIGBEEDIRECTCOMM_Data_t      DataTransfered;
+  uint16_t                     ConnectionHandle;
+  uint16_t                     AttributeHandle;
+  uint8_t                      ServiceInstance;
   /* USER CODE BEGIN Service2_NotificationEvt_t */
-  uint16_t  ZigbeedirectcommSvcHdle;
-  uint16_t  CommidentityCharHdle;
+  uint16_t                     ZigbeedirectcommSvcHdle;
+  uint16_t                     CommidentityCharHdle;
   /* USER CODE END Service2_NotificationEvt_t */
 } ZIGBEEDIRECTCOMM_NotificationEvt_t;
 

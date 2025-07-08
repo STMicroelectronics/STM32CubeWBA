@@ -293,27 +293,13 @@ typedef uint8_t APP_CAP_Linkup_State_t;
 #define APP_CAP_LINKUP_STATE_DONE_RESTORE       0x03
 #define APP_CAP_LINKUP_STATE_DONE_COMPLETE      0x04
 
-/* MCP Client Read State */
-typedef uint8_t APP_MCP_Linkup_State_t;
-#define APP_MCP_LINKUP_STATE_IDLE                        0x00
-#define APP_MCP_LINKUP_STATE_CONFIGURE_TRACK_TITLE_NOTIF 0x01
-#define APP_MCP_LINKUP_STATE_READ_MEDIA_STATE            0x02
-#define APP_MCP_LINKUP_STATE_READ_TRACK_TITLE            0x03
-
-/* MCP CLient Operation type*/
-#define MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION           0x0001u
-#define MCP_CLT_OP_MOVE_NEXT_TRACK                              0x0002u
-#define MCP_CLT_OP_MOVE_PREVIOUS_TRACK                          0x0004u
-#define MCP_CLT_OP_PLAY_TRACK                                   0x0008u
-#define MCP_CLT_OP_PAUSE_TRACK                                  0x0010u
-#define MCP_CLT_OP_READ_MEDIA_STATE                             0x0020u
-#define MCP_CLT_OP_READ_TRACK_TITLE                             0x0040u
-
 /* CCP Client Operation type*/
-#define CCP_CLT_OP_READ_CALL_STATE                              0x0100u
-#define CCP_CLT_OP_ANSWER_INC_CALL                              0x0200u
-#define CCP_CLT_OP_TERMINATE_CALL                               0x0400u
-#define CCP_CLT_OP_READ_FEATURES_STATUS                         0x0800u
+#define CCP_CLT_OP_READ_CALL_STATE              0x0100u
+#define CCP_CLT_OP_ANSWER_INC_CALL              0x0200u
+#define CCP_CLT_OP_TERMINATE_CALL               0x0400u
+#define CCP_CLT_OP_READ_FEATURES_STATUS         0x0800u
+#define CCP_CLT_OP_ALL                          0x0F00u
+
 /*Structure used for ASE information storage*/
 typedef struct
 {
@@ -351,10 +337,6 @@ typedef struct
   uint8_t                ForceCompleteLinkup;
   uint8_t                LinkupRetry;
   APP_CAP_Linkup_State_t CAPLinkupState;
-  uint8_t                GenericMediaPlayerCCID;
-  MCP_MediaState_t       MediaState;
-  uint8_t                PlayPauseOperation;
-  APP_MCP_Linkup_State_t MCPLinkupState;
   uint8_t                GenericTelephoneBearerCCID;
   uint8_t                CurrentCallID;
   CCP_CallState_t        CurrentCallState;
@@ -501,6 +483,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void);
 void HAPAPP_Init(uint8_t csip_config_id);
 tBleStatus HAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t HAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,uint8_t EnableSolicitationRequest,
@@ -528,6 +511,7 @@ tBleStatus CSIPAPP_RegisterCSIS(uint8_t instance_id,
                                 uint8_t size,
                                 uint8_t rank);
 #endif /*APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u)*/
+void HAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif

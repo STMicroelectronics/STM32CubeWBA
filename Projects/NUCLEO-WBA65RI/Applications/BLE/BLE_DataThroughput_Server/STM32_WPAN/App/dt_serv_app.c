@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "dt_serv_app.h"
 #include "dt_serv.h"
 #include "stm32_rtos.h"
@@ -300,30 +299,30 @@ void DTS_Button1TriggerReceived( void )
   }
   else
   {
-  if (DTS_Context.connectionstatus != APP_BLE_CONNECTED_SERVER)
-  {
-
-  }
-  else
-  {
-    if(DTS_Context.ButtonTransferReq != DTS_APP_TRANSFER_REQ_OFF)
+    if (DTS_Context.connectionstatus != APP_BLE_CONNECTED_SERVER)
     {
-      #if (CFG_LED_SUPPORTED == 1)
-      BSP_LED_Off(LED_BLUE);
-      #endif
-      DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_OFF;
+
     }
     else
     {
-      #if (CFG_LED_SUPPORTED == 1)
-      BSP_LED_On(LED_BLUE);
-      #endif
-      DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_ON;
-      UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
+      if(DTS_Context.ButtonTransferReq != DTS_APP_TRANSFER_REQ_OFF)
+      {
+        #if (CFG_LED_SUPPORTED == 1)
+        BSP_LED_Off(LED_BLUE);
+        #endif
+        DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_OFF;
+      }
+      else
+      {
+        #if (CFG_LED_SUPPORTED == 1)
+        BSP_LED_On(LED_BLUE);
+        #endif
+        DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_ON;
+        UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
+      }
     }
   }
-  }
-  BleStackCB_Process();
+
   return;
 }
 
@@ -346,7 +345,7 @@ void DTS_Button2TriggerReceived( void )
   {
     UTIL_SEQ_SetTask(1U << CFG_TASK_CONN_INTERV_UPDATE_ID, CFG_SEQ_PRIO_0);
   }
-  BleStackCB_Process();
+
   return;
 }
 
@@ -360,7 +359,7 @@ void DTS_Button3TriggerReceived( void )
   {
     UTIL_SEQ_SetTask(1U << CFG_TASK_DATA_PHY_UPDATE_ID, CFG_SEQ_PRIO_0);
   }
-  BleStackCB_Process();
+
   return;
 }
 
@@ -436,7 +435,7 @@ static void BLE_App_Delay_DataThroughput(void)
   DataReceived = 0;
   packet_lost = 0;
 
-  BleStackCB_Process();
+  return;
 }
 
 static void DataThroughput_proc(void *arg){
@@ -475,7 +474,6 @@ static void SendData( void )
     }
   }
 
-  BleStackCB_Process();
   return;
 }
 

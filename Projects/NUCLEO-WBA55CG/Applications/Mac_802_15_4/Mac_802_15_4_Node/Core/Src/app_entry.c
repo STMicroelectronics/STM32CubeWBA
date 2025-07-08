@@ -366,6 +366,8 @@ static void SystemPower_Config(void)
  */
 static void RNG_Init(void)
 {
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);

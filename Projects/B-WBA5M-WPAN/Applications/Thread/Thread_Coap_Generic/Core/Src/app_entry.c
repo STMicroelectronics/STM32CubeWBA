@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -290,6 +290,8 @@ static void SystemPower_Config(void)
  */
 static void APPE_RNG_Init(void)
 {
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Register Random Number Generator task */

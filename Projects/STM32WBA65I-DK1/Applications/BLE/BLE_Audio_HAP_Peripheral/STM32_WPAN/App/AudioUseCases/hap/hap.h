@@ -29,6 +29,7 @@ extern "C" {
 #include <stdint.h>
 #include "ble_types.h"
 #include "hap_config.h"
+#include "ble_audio_stack.h"
 #include "cap.h"
 
 /* Defines -------------------------------------------------------------------*/
@@ -62,6 +63,13 @@ extern "C" {
 #else /* (HAP_HA_IAS_SUPPORT == 1u) */
 #define HAP_HA_ATT_VALUE_ARRAY_SIZE(num_ble_links) (MAX_HEARING_AID_PRESET_CONTROL_POINT_SIZE + 17 + 6*num_ble_links)
 #endif /* (HAP_HA_IAS_SUPPORT == 1u) */
+
+/*
+ * memory size used to store information related to a device to store in Non Volatile Memory
+ */
+#define HAP_HA_GATT_DATABASE_SIZE          (3u + HAP_MAX_PRESET_NUM * (3 + HAP_MAX_PRESET_NAME_LEN))
+#define HAP_HARC_GATT_DATABASE_SIZE        (35)
+#define HAP_IAC_GATT_DATABASE_SIZE         (14)
 
 /* Types ---------------------------------------------------------------------*/
 /* Types of mask for roles of the Media Control Profile */

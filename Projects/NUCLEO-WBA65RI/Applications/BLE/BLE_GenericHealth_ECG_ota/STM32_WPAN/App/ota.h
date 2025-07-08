@@ -27,6 +27,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
 /* USER CODE BEGIN Includes */
 #define OTA_RAW_DATA_SIZE    (248)
 /* USER CODE END Includes */
@@ -105,9 +108,10 @@ typedef enum
 
 typedef enum
 {
-  OTA_REBOOT_CONFIRMED             = 0x01,
-  OTA_READY_TO_RECEIVE_FILE        = 0x02,
-  OTA_NOT_READY_TO_RECEIVE_FILE    = 0x03,
+  OTA_REBOOT_CONFIRMED          = 0x01,
+  OTA_READY_TO_RECEIVE_FILE     = 0x02,
+  OTA_NOT_READY_TO_RECEIVE_FILE = 0x03,
+  OTA_FW_NOT_VALID              = 0x04,
 } OTA_Indication_Msg_t;
 
 typedef struct
@@ -119,14 +123,14 @@ typedef struct
 
 typedef __PACKED_STRUCT
 {
-  OTA_Command_t   Command;       /**< [0:7] */
-  uint8_t          Base_Addr[3]; /**< [8:31] */
-  uint8_t          Sectors;      /**< [32:39] */
+  OTA_Command_t   Command;      /* [0:7] command to perform */
+  uint8_t         Base_Addr[3]; /* [8:31] base address*/
+  uint8_t         Sectors;      /* [32:39] number of sector to erase*/
 } OTA_Base_Addr_Event_Format_t;
 
 typedef __PACKED_STRUCT
 {
-  uint8_t   Raw_Data[OTA_RAW_DATA_SIZE];
+  uint8_t Raw_Data[OTA_RAW_DATA_SIZE];
 } OTA_Raw_Data_Event_Format_t;
 
 typedef __PACKED_STRUCT

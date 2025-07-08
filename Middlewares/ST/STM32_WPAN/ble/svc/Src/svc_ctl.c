@@ -18,8 +18,9 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "common_blesvc.h"
-#include "cmsis_compiler.h"
+#include "svc_ctl.h"
+#include "ble_core.h"
+#include "ble_conf.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct

@@ -23,12 +23,19 @@
 #include "peripheral_init.h"
 #include "main.h"
 #include "crc_ctrl.h"
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#include "stm32_lpm_if.h"
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
 
@@ -43,26 +50,35 @@
   */
 void MX_StandbyExit_PeripheralInit(void)
 {
-  HAL_StatusTypeDef hal_status;
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+  /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
+  if(LPM_is_wakeup_time_profiling_done() != 0)
+  {
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
-  /* Re-Initialize Tick with new clock source */
-  hal_status = HAL_InitTick(TICK_INT_PRIORITY);
-  if (hal_status != HAL_OK)
+    /* Initialize SysTick */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
   {
     assert_param(0);
   }
+  }
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#else
+  /* Select SysTick source clock */
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
-  MX_GPIO_Init();
-  MX_RAMCFG_Init();
-  MX_RNG_Init();
-  MX_ICACHE_Init();
-  CRCCTRL_Init();
+  /* Initialize SysTick */
+  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+  {
+    assert_param(0);
+  }
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   GPIO_InitTypeDef DbgIOsInit = {0};
@@ -78,6 +94,22 @@ void MX_StandbyExit_PeripheralInit(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
+
+  memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
+  memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+#if (CFG_LOG_SUPPORTED == 1)
+  memset(&huart1, 0, sizeof(huart1));
+#endif
+
+  MX_GPIO_Init();
+  MX_GPDMA1_Init();
+  MX_RAMCFG_Init();
+#if (CFG_LOG_SUPPORTED == 1)
+  MX_USART1_UART_Init();
+#endif
+  MX_ICACHE_Init();
+  CRCCTRL_Init();
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
   ConfigureStandbyWakeupPins();

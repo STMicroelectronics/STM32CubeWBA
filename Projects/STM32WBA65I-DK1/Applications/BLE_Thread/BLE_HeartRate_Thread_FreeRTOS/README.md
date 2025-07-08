@@ -153,26 +153,14 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its **blue L
   |BLE_HeartRate_Thread_FreeRTOS|                       | Thread_Coap_Generic     |
   |_____________________________|                       |_________________________|  
   |                             |                       |                         |
-  |               	        |                       |                         |
-  |               every 1sec 	|                       |                         |
-  |       or Joystick right-->	|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
-  |                         	| Resource "light"      |                         |
+  |                             |                       |                         |
+  |               every 1sec    |                       |                         |
+  |       or Joystick right-->  |======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
+  |                             | Resource "light"      |                         |
   |                             | Mode: Multicast       |                         |
-  |          	                | Type: Non-Confirmable |                         |
+  |                             | Type: Non-Confirmable |                         |
   |                             | Code: Put             |                         |
   |                             |                       |                         |
-  |                             |                       |                         |
-  |           Joystick left-->  |=====> COAP ==========>|-------->                |
-  |                             | Resource "light"      |         |               |
-  |                             | Mode: Multicast       |  CoapRequestHandler()   |
-  |                             | Type: Confirmable     |         |               |
-  |                             | Code: Put             |         |               |
-  |                             |                       |         v               |
-  |                             |                       |  CoapSendDataResponse() |
-  |                             |                       |         |               |
-  |                             |                       |         v               |
-  | CoapDataRespHandler()<--    |<===== COAP <==========| <-------                |
-  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
   |-----------------------------|                       |-------------------------|
   | Role : Child                |                       | Role : Leader           |
   |                             |                       |                         |

@@ -91,6 +91,13 @@
 		<Default>16</Default>
 	</Param>
 	<Param>
+		<Name>Boot record</Name>
+		<Type>Data</Type>
+		<Command>--boot-record</Command>
+		<Hidden>1</Hidden>
+		<Default>SPE</Default>
+	</Param>
+	<Param>
 		<Name>Number of scratch sectors</Name>
 		<Value>0</Value>
 		<Type>Data</Type>

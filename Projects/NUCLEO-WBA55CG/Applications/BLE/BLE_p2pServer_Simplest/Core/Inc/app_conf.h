@@ -23,6 +23,7 @@
 #define APP_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_defs.h"
 #include "utilities_conf.h"
 
 /* USER CODE BEGIN Includes */
@@ -97,7 +98,12 @@
  *  - 2, if extended properties is used
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (1344)
+
+/**
+ * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
+ */
+#define CFG_BLE_EATT_BEARER_PER_LINK  (0)
 
 /**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
@@ -155,7 +161,16 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -188,35 +203,6 @@ typedef enum
 /* USER CODE BEGIN RTC */
 
 /* USER CODE END RTC */
-
-/*****************************************************************************
- * Logs
- *
- * Applications must call LOG_INFO_APP for logs.
- * By default, CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE is set to 0.
- * As a result, there is no time stamp insertion inside the logs.
- *
- * For advanced log use cases, see the log_module.h file.
- * This file is customizable, you can create new verbose levels and log regions.
- *****************************************************************************/
-/**
- * Enable or disable LOG over UART in the application.
- * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
- */
-#define CFG_LOG_SUPPORTED           (0U)
-
-/* Configure Log display settings */
-#define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
-#define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
-#define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
-
-#define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
-#define CFG_LOG_TRACE_BUF_SIZE      (256U)
-
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
 
 /* USER CODE BEGIN Logs */
 
@@ -290,8 +276,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -314,13 +303,6 @@ typedef enum
     #define CFG_DEBUGGER_LEVEL      (0)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
-
-#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
-  #if CFG_LOG_SUPPORTED
-    #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
-  #endif /* CFG_LOG_SUPPORTED */
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN Defines_2 */
 

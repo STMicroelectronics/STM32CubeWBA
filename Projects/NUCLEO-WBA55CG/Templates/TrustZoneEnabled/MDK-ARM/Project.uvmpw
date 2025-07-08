@@ -5,7 +5,7 @@
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
-  <WorkspaceName></WorkspaceName>
+  <WorkspaceName>C:\git\wba_master\Firmware\Projects\NUCLEO-WBA55CG\Templates\TrustZoneEnabled\MDK-ARM\Project.uvmpw</WorkspaceName>
 
   <project>
     <PathAndName>.\Secure\Project_s.uvprojx</PathAndName>

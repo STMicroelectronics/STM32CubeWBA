@@ -22,7 +22,9 @@
 #include "main.h"
 #include "app_common.h"
 #include "log_module.h"
-#include "ble.h"
+#include "ble_core.h"
+#include "uuid.h"
+#include "svc_ctl.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -32,7 +34,6 @@
 #include "stm_list.h"
 #include "advanced_memory_manager.h"
 #include "blestack.h"
-#include "nvm.h"
 #include "simple_nvm_arbiter.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,74 +51,10 @@
 
 /* USER CODE END PTD */
 
-/* Security parameters structure */
 typedef struct
 {
-  /* IO capability of the device */
-  uint8_t ioCapability;
-
-  /**
-   * Authentication requirement of the device
-   * Man In the Middle protection required?
-   */
-  uint8_t mitm_mode;
-
-  /* Bonding mode of the device */
-  uint8_t bonding_mode;
-
-  /**
-   * this variable indicates whether to use a fixed pin
-   * during the pairing process or a passkey has to be
-   * requested to the application during the pairing process
-   * 0 implies use fixed pin and 1 implies request for passkey
-   */
-  uint8_t Use_Fixed_Pin;
-
-  /* Minimum encryption key size requirement */
-  uint8_t encryptionKeySizeMin;
-
-  /* Maximum encryption key size requirement */
-  uint8_t encryptionKeySizeMax;
-
-  /**
-   * fixed pin to be used in the pairing process if
-   * Use_Fixed_Pin is set to 1
-   */
-  uint32_t Fixed_Pin;
-
-  /**
-   * this flag indicates whether the host has to initiate
-   * the security, wait for pairing or does not have any security
-   * requirements.
-   * 0x00 : no security required
-   * 0x01 : host should initiate security by sending the slave security
-   *        request command
-   * 0x02 : host need not send the clave security request but it
-   * has to wait for paiirng to complete before doing any other
-   * processing
-   */
-  uint8_t initiateSecurity;
-  /* USER CODE BEGIN tSecurityParams */
-
-  /* USER CODE END tSecurityParams */
-}SecurityParams_t;
-
-/* Global context contains all BLE common variables. */
-typedef struct
-{
-  /* Security requirements of the host */
-  SecurityParams_t bleSecurityParam;
-
-  /* USER CODE BEGIN BleGlobalContext_t */
-
-  /* USER CODE END BleGlobalContext_t */
-}BleGlobalContext_t;
-
-typedef struct
-{
-  BleGlobalContext_t BleApplicationContext_legacy;
   /* USER CODE BEGIN PTD_1 */
-
+  uint32_t dummy;
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
 
@@ -134,7 +71,7 @@ typedef struct
                                    + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 #define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
+        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
 
 /* USER CODE BEGIN PD */
 
@@ -154,15 +91,17 @@ static uint8_t a_BLE_CfgIrValue[16];
 
 /* Encryption root key used to derive LTK(Legacy) and CSRK */
 static uint8_t a_BLE_CfgErValue[16];
-
-uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
+static BleApplicationContext_t bleAppContext;
 
 static AMM_VirtualMemoryCallbackFunction_t APP_BLE_ResumeFlowProcessCb;
 
 /* Host stack init variables */
-static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
+
+/* Host stack buffers */
+static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
+static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 /* USER CODE BEGIN PV */
 
@@ -175,15 +114,15 @@ static BleStack_init_t pInitParams;
 /* USER CODE END GV */
 
 /* Private function prototypes -----------------------------------------------*/
+static uint8_t HOST_BLE_Init(void);
 static void BleStack_Process_BG(void);
 static void Ble_UserEvtRx(void);
 static void BLE_ResumeFlowProcessCallback(void);
+static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGenerateBdAddress(void);
 static const uint8_t* BleGenerateIRValue(void);
 static const uint8_t* BleGenerateERValue(void);
-static void BLE_NvmCallback (SNVMA_Callback_Status_t);
-static uint8_t HOST_BLE_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -207,25 +146,19 @@ void APP_BLE_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
-  /* NVM emulation in RAM initialization */
-  NVM_Init(buffer_nvm, 0, CFG_BLEPLAT_NVM_MAX_SIZE);
+  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
+  host_nvm_buffer[0] = 0;
 
-  /* First register the APP BLE buffer */
-  SNVMA_Register (APP_BLE_NvmBuffer,
-                  (uint32_t *)buffer_nvm,
-                  (CFG_BLEPLAT_NVM_MAX_SIZE * 2));
+  /* Register A NVM buffer for BLE Host stack */
+  SNVMA_Register(APP_BLE_NvmBuffer,
+                  (uint32_t *)host_nvm_buffer,
+                  (CFG_BLE_NVM_SIZE_MAX * 2));
 
   /* Realize a restore */
-  SNVMA_Restore (APP_BLE_NvmBuffer);
+  SNVMA_Restore(APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
-
+  UNUSED(bleAppContext.dummy);
   /* USER CODE END APP_BLE_Init_Buffers */
-
-  /* Check consistency */
-  if (NVM_Get (NVM_FIRST, 0xFF, 0, 0, 0) != NVM_EOF)
-  {
-    NVM_Discard (NVM_ALL);
-  }
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -298,8 +231,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
        p_hardware_error_event = (hci_hardware_error_event_rp0 *)p_event_pckt->data;
        UNUSED(p_hardware_error_event);
-       APP_DBG_MSG(">>== HCI_HARDWARE_ERROR_EVT_CODE\n");
-       APP_DBG_MSG("Hardware Code = 0x%02X\n",p_hardware_error_event->Hardware_Code);
+       LOG_INFO_APP(">>== HCI_HARDWARE_ERROR_EVT_CODE\n");
+       LOG_INFO_APP("Hardware Code = 0x%02X\n",p_hardware_error_event->Hardware_Code);
        /* USER CODE BEGIN HCI_EVT_LE_HARDWARE_ERROR */
 
        /* USER CODE END HCI_EVT_LE_HARDWARE_ERROR */
@@ -409,8 +342,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
 
           p_fw_error_event = (aci_hal_fw_error_event_rp0 *)p_blecore_evt->data;
           UNUSED(p_fw_error_event);
-          APP_DBG_MSG(">>== ACI_HAL_FW_ERROR_VSEVT_CODE\n");
-          APP_DBG_MSG("FW Error Type = 0x%02X\n", p_fw_error_event->FW_Error_Type);
+          LOG_INFO_APP(">>== ACI_HAL_FW_ERROR_VSEVT_CODE\n");
+          LOG_INFO_APP("FW Error Type = 0x%02X\n", p_fw_error_event->FW_Error_Type);
           /* USER CODE BEGIN ACI_HAL_FW_ERROR_VSEVT_CODE */
 
           /* USER CODE END ACI_HAL_FW_ERROR_VSEVT_CODE */
@@ -459,6 +392,12 @@ const uint8_t* BleGetBdAddress(void)
   return p_bd_addr;
 }
 
+void APP_BLE_HostNvmStore(void)
+{
+  /* Start SNVMA write procedure */
+  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+}
+
 /* USER CODE BEGIN FD */
 
 /* USER CODE END FD */
@@ -480,12 +419,16 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
   pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
   pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
+  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK;
   pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
   pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
-  pInitParams.bleStartRamAddress      = (uint8_t*)buffer;
+  pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
+  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
+  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -834,13 +777,12 @@ static void BLE_ResumeFlowProcessCallback(void)
   ll_intf_chng_evnt_hndlr_state( notify_options );
 }
 
-static void BLE_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
+static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus)
 {
   if (CbkStatus != SNVMA_OPERATION_COMPLETE)
   {
     /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer,
-                 BLE_NvmCallback);
+    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
   }
 }
 
@@ -892,16 +834,6 @@ tBleStatus BLECB_Indication( const uint8_t* data,
     status = BLE_STATUS_SUCCESS;
   }
   return status;
-}
-
-void NVMCB_Store( const uint32_t* ptr, uint32_t size )
-{
-  UNUSED(ptr);
-  UNUSED(size);
-
-  /* Call SNVMA for storing - Without callback */
-  SNVMA_Write (APP_BLE_NvmBuffer,
-               BLE_NvmCallback);
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

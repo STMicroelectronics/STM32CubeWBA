@@ -20,7 +20,7 @@
 
 #include "app_common.h"
 #include "bleplat.h"
-#include "nvm.h"
+#include "app_ble.h"
 #include "baes.h"
 #include "bpka.h"
 #include "ble_timer.h"
@@ -40,40 +40,13 @@ void BLEPLAT_Init( void )
 
 /*****************************************************************************/
 
-int BLEPLAT_NvmAdd( uint8_t type,
-                    const uint8_t* data,
-                    uint16_t size,
-                    const uint8_t* extra_data,
-                    uint16_t extra_size )
+void BLEPLAT_NvmStore( const uint64_t* ptr,
+                              uint16_t size )
 {
-  return NVM_Add( type, data, size, extra_data, extra_size );
-}
+  UNUSED(ptr);
+  UNUSED(size);
 
-/*****************************************************************************/
-
-int BLEPLAT_NvmGet( uint8_t mode,
-                    uint8_t type,
-                    uint16_t offset,
-                    uint8_t* data,
-                    uint16_t size )
-{
-  return NVM_Get( mode, type, offset, data, size );
-}
-
-/*****************************************************************************/
-
-int BLEPLAT_NvmCompare( uint16_t offset,
-                        const uint8_t* data,
-                        uint16_t size )
-{
-  return NVM_Compare( offset, data, size );
-}
-
-/*****************************************************************************/
-
-void BLEPLAT_NvmDiscard( uint8_t mode )
-{
-  NVM_Discard( mode );
+  return;
 }
 
 /*****************************************************************************/

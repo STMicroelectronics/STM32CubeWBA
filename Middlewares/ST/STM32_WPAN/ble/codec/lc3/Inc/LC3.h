@@ -44,6 +44,7 @@ typedef enum {
     DEPTH_16 = 16u,
     DEPTH_24 = 24u,
     DEPTH_32 = 32u,
+    DEPTH_32F,
 } LC3_SampleDepth;
 
 typedef enum {
@@ -59,8 +60,8 @@ typedef enum {
 /* Exported define -----------------------------------------------------------*/
 #define LC3_SESSION_STRUCT_SIZE           LC3_SESSION_STRUCT_SIZE_48kHz
 
-#define LC3_SESSION_STRUCT_SIZE_24kHz     (364u)   /* up to 24kHz only */
-#define LC3_SESSION_STRUCT_SIZE_48kHz     (652u)   /* full feature */
+#define LC3_SESSION_STRUCT_SIZE_24kHz     (124u)   /* up to 24kHz only */
+#define LC3_SESSION_STRUCT_SIZE_48kHz     (172u)   /* full features */
 
 
 /* Exported functions ------------------------------------------------------- */

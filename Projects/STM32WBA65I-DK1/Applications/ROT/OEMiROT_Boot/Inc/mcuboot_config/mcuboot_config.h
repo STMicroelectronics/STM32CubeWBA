@@ -60,6 +60,11 @@ extern "C" {
                                      /* Undefined: Image encryption disabled. */
 #define MCUBOOT_BOOTSTRAP            /* Allow initial state with images in secondary slots only (empty primary slots) */
 
+#define MCUBOOT_MEASURED_BOOT
+#define MCUBOOT_DATA_SHARING
+#define TFM_PARTITION_FIRMWARE_UPDATE
+#define MAX_BOOT_RECORD_SZ 0x100
+
 /*
  * Cryptographic settings
  */
@@ -78,7 +83,7 @@ extern "C" {
 /*
  * Logging
  */
-#if defined (OEMIROT_DEV_MODE) &&  !defined (OEMIROT_FIRST_BOOT_STAGE)
+#if defined (OEMIROT_DEV_MODE)
 #define MCUBOOT_HAVE_LOGGING
 #endif
 

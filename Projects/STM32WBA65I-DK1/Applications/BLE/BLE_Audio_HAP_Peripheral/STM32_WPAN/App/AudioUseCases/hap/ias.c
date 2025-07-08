@@ -20,10 +20,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hap_config.h"
 #if (HAP_HA_IAS_SUPPORT == 1u)
-#include "common_blesvc.h"
 #include "ias.h"
 #include "hap_log.h"
-
+#include "uuid.h"
 
 /* Private typedef -----------------------------------------------------------*/
 typedef struct
@@ -35,6 +34,7 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
+#define PLACE_IN_SECTION( __x__ )  __attribute__((section (__x__)))
 /* Private variables ---------------------------------------------------------*/
 
 /**
@@ -65,7 +65,7 @@ SVCCTL_EvtAckStatus_t IAS_Event_Handler(void *Event)
   hci_event_pckt *event_pckt;
   evt_blecore_aci *blecore_evt;
   aci_gatt_attribute_modified_event_rp0* attribute_modified;
-  IAS_Notification_Evt_t Notification;
+  IAS_Notification_Evt_t                Notification;
 
   return_value = SVCCTL_EvtNotAck;
   event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)Event)->data);
@@ -138,11 +138,10 @@ tBleStatus IAS_Init(void)
    */
   uuid = IMMEDIATE_ALERT_SERVICE_UUID;
   hciCmdResult = aci_gatt_add_service(UUID_TYPE_16,
-                                   (Service_UUID_t *) &uuid,
-                                   PRIMARY_SERVICE,
-                                   3,
-                                   &(IAS_Context.SvcHdle));
-
+                                      (Service_UUID_t *) &uuid,
+                                      PRIMARY_SERVICE,
+                                      3,
+                                      &(IAS_Context.SvcHdle));
   if (hciCmdResult == BLE_STATUS_SUCCESS)
   {
     BLE_DBG_IAS_MSG ("Immediate Alert Service (IAS) is added Successfully %04X\n",
@@ -182,28 +181,6 @@ tBleStatus IAS_Init(void)
 
   return hciCmdResult;
 }
-
-
-/**
- * @brief  Characteristic update
- * @param  UUID: UUID of the characteristic
- * @retval AlertLevelValue: The new value to be written
- */
-tBleStatus IAS_Update_Char(uint16_t UUID, uint8_t *pPayload)
-{
-  tBleStatus return_value = BLE_STATUS_FAILED;
-
-  if(UUID == ALERT_LEVEL_CHARACTERISTIC_UUID)
-  {
-    return_value = aci_gatt_update_char_value(IAS_Context.SvcHdle,
-                                              IAS_Context.AlertLevelCharHdle,
-                                              0, /* charValOffset */
-                                              1, /* charValueLen */
-                                              (uint8_t *) pPayload);
-}
-
-  return return_value;
-}/* end IAS_Update_Char() */
 
 
 #endif /* (HAP_HA_IAS_SUPPORT == 1u) */

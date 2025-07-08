@@ -44,7 +44,7 @@
  *----------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-/* Section where include file can be added */
+
 /* USER CODE END Includes */
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
@@ -177,9 +177,6 @@ header file. */
 /* USER CODE END 2 */
 
 /* USER CODE BEGIN Defines */
-#define USE_CUSTOM_SYSTICK_HANDLER_IMPLEMENTATION 0
-#define configSYSTICK_CLOCK_HZ                    ( 32768 )
-
 #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP     3
 /* USER CODE END Defines */
 

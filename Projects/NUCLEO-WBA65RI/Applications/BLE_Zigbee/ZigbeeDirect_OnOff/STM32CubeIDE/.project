@@ -393,16 +393,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/dis_app.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/hrs.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hrs.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/hrs_app.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/hrs_app.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/App/tunneling.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/tunneling.c</locationURI>
@@ -536,11 +526,6 @@
 			<name>Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Nvm/nvm_emul.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Nvm/nvm_emul.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>

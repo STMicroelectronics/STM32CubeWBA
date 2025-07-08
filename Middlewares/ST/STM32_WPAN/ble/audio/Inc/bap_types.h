@@ -336,8 +336,9 @@ typedef struct
                                                          * parameter to be written by the client for the ASE in
                                                          * the Config QoS operation
                                                          * Range: 0x00–0xFF
+                                                         * 0xFF = Don’t care
                                                          */
-  uint16_t              MaxTransportLatency;            /* Largest Server supported value for the Max_Transport_Latency
+  uint16_t              MaxTransportLatency;            /* Maximum Server supported value for the Max_Transport_Latency
                                                          * parameter to be written by the client for the ASE in
                                                          * the Config QoS operation defined.
                                                          * Range: 0x0005–0x0FA0
@@ -761,21 +762,38 @@ typedef struct
  */
 typedef struct
 {
-  uint8_t       NumberBroadcastReceiveStateChar;
-  uint16_t      BASS_StartAttHandle;            /* ATT Start Handle of the BASS Service in the remote Unicast Server */
-  uint16_t      BASS_EndAttHandle;              /* ATT End Handle of the BASS Service in the remote Unicast Server */
-  uint16_t      PACS_StartAttHandle;            /* Start ATT Handle of the PACS Service in the remote Unicast Server */
-  uint16_t      PACS_EndAttHandle;              /* End ATT Handle of the PACS Service in the remote Unicast Server */
+  uint8_t               NumberBroadcastReceiveStateChar;
+  Audio_Location_t      SnkAudioLocations;      /* Sink audio Locations (valid if Server supports Sink role).
+                                                 * The value 0x00000000 indicates that the server supports receiving
+                                                 * only mono audio (no specified Audio Location)
+                                                 */
+  BAP_Audio_Contexts_t  SuppAudioContexts;      /* Supported audio contexts associated to reception and/or transmission
+                                                 * of unicast audio data and/or broadcast audio data
+                                                 */
+  uint16_t              BASS_StartAttHandle;    /* ATT Start Handle of the BASS Service in the remote Unicast Server */
+  uint16_t              BASS_EndAttHandle;      /* ATT End Handle of the BASS Service in the remote Unicast Server */
+  uint16_t              PACS_StartAttHandle;    /* Start ATT Handle of the PACS Service in the remote Unicast Server */
+  uint16_t              PACS_EndAttHandle;      /* End ATT Handle of the PACS Service in the remote Unicast Server */
 } BAP_Broadcast_Assistant_Info_t;
 
 /* Structure containing information about remote Unicast Server reported by Unicast Client once link is complete */
 typedef struct
 {
   Audio_Role_t          AudioRole;              /* audio role of the remote Unicast Server*/
-  Audio_Location_t      SnkAudioLocations;      /* Sink audio Locations */
-  Audio_Location_t      SrcAudioLocations;      /* Source audio Locations */
-  BAP_Audio_Contexts_t  AvailAudioContexts;     /* Available audio contexts */
-  BAP_Audio_Contexts_t  SuppAudioContexts;      /* Supported audio contexts */
+  Audio_Location_t      SnkAudioLocations;      /* Sink audio Locations (valid if Server supports Sink role).
+                                                 * The value 0x00000000 indicates that the server supports receiving
+                                                 * only mono audio (no specified Audio Location)
+                                                 */
+  Audio_Location_t      SrcAudioLocations;      /* Source audio Locations (valid if Server supports Source role).
+                                                 * The value 0x00000000 indicates that the server supports transmitting
+                                                 * only mono audio (no specified Audio Location)
+                                                 */
+  BAP_Audio_Contexts_t  AvailAudioContexts;     /* Available audio contexts associated to reception and/or transmission
+                                                 * of unicast audio data only
+                                                 */
+  BAP_Audio_Contexts_t  SuppAudioContexts;      /* Supported audio contexts associated to reception and/or transmission
+                                                 * of unicast audio data and/or broadcast audio data
+                                                 */
   uint16_t              ASCS_StartAttHandle;    /* ATT Start Handle of the ASCS Service in the remote Unicast Server */
   uint16_t              ASCS_EndAttHandle;      /* ATT End Handle of the ASCS Service in the remote Unicast Server */
   uint16_t              PACS_StartAttHandle;    /* Start ATT Handle of the PACS Service in the remote Unicast Server */

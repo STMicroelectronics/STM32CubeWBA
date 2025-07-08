@@ -86,7 +86,7 @@
 /* Following CoAP resource is requested to reboot on Thread_Ota application */
 #define C_RESSOURCE_FUOTA_REBOOT    "FUOTA_REBOOT"
 
-#define FUOTA_REBOOT_WAIT_TIME_MS   (50u) /* 50 miliseconds */
+#define FUOTA_REBOOT_WAIT_TIME_MS   (50u) /* 50 milliseconds */
 
 /**
  * Define list of reboot reason

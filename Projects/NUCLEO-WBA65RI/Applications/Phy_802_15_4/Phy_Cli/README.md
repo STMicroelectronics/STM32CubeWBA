@@ -87,7 +87,7 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
 
   - This example runs on STM32WBA65xx devices.
 
-  - This example has been tested with an STMicroelectronics STM32WBA55xx
+  - This example has been tested with an STMicroelectronics STM32WBA65xx
     board and can be easily tailored to any other supported device
     and development board.
 

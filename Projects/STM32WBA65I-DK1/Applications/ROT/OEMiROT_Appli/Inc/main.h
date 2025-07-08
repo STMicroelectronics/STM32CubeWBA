@@ -25,14 +25,6 @@
 extern "C" {
 #endif
 
-#if defined ( __ICCARM__ )
-#  define CMSE_NS_CALL  __cmse_nonsecure_call
-#  define CMSE_NS_ENTRY __cmse_nonsecure_entry
-#else
-#  define CMSE_NS_CALL  __attribute((cmse_nonsecure_call))
-#  define CMSE_NS_ENTRY __attribute((cmse_nonsecure_entry))
-#endif /* __ICCARM__  */
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32_hal.h"
 #include "stm32_board.h"
@@ -41,16 +33,6 @@ extern "C" {
 
 
 /* Exported types ------------------------------------------------------------*/
-/* Function pointer declaration in non-secure*/
-#if defined ( __ICCARM__ )
-typedef void (CMSE_NS_CALL *funcptr)(void);
-#else
-typedef void CMSE_NS_CALL(*funcptr)(void);
-#endif /* __ICCARM__  */
-
-/* typedef for non-secure callback functions */
-typedef funcptr funcptr_NS;
-
 
 
 /* Exported functions prototypes ---------------------------------------------*/

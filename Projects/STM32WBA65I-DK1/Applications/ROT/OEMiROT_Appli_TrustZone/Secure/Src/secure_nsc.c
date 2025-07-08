@@ -21,12 +21,10 @@
 #include "secure_nsc.h"
 #include <stdio.h>
 #include "appli_flash_layout.h"
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && ((MCUBOOT_APP_IMAGE_NUMBER == 2) || (MCUBOOT_S_DATA_IMAGE_NUMBER == 1))
 #include "Driver_Flash.h"
-extern ARM_DRIVER_FLASH FLASH_PRIMARY_SECURE_DEV_NAME;
-extern ARM_DRIVER_FLASH FLASH_PRIMARY_DATA_SECURE_DEV_NAME;
+
+extern ARM_DRIVER_FLASH FLASH_PRIMARY_DEV_NAME;
 #define TRAILER_MAGIC_SIZE 16
-#endif
 
 /* Global variables ----------------------------------------------------------*/
 void *pSecureFaultCallback = NULL;   /* Pointer to secure fault callback in Non-secure */
@@ -78,7 +76,7 @@ CMSE_NS_ENTRY void SECURE_ConfirmSecureAppImage(void)
   const uint8_t FlagPattern[16]={0x1 ,0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff };
   const uint32_t ConfirmAddress = FLASH_AREA_0_OFFSET  + FLASH_AREA_0_SIZE - (TRAILER_MAGIC_SIZE + sizeof(FlagPattern));  
-  if (FLASH_PRIMARY_SECURE_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
+  if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
         return;
   }
@@ -100,7 +98,7 @@ CMSE_NS_ENTRY void SECURE_ConfirmSecureDataImage(void)
   const uint8_t FlagPattern[16]={0x1 ,0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff };
   const uint32_t ConfirmAddress = FLASH_AREA_4_OFFSET  + FLASH_AREA_4_SIZE - (TRAILER_MAGIC_SIZE + sizeof(FlagPattern));  
-  if (FLASH_PRIMARY_DATA_SECURE_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
+  if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
         return;
   }

@@ -163,17 +163,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 #endif /* CFG_LPM_LEVEL */
 }
 
-/**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
 
 /**
  * @brief  Configure Zigbee application endpoints
@@ -201,7 +190,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add TempMeas Client Cluster */
   stZigbeeAppInfo.TempMeasClient = ZbZclTempMeasClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.TempMeasClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.TempMeasClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.TempMeasClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during TempMeas Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Server Report callback */
@@ -405,8 +397,8 @@ static void APP_ZIGBEE_TempMeasServerReport( struct ZbZclClusterT * pstCluster, 
                                              bool * bDiscard )
 {
   int       iAttrLen;
-  int16_t   iAttrValue;
-  float     fTempValue;
+  uint8_t   cAttrValueAP;
+  int16_t   iAttrValue, iAttrValueBP;
   char      szText[32]; 
 
   iAttrLen = ZbZclAttrParseLength( eDataType, pDataInputPayload, pstDataInd->asduLength, 0 );
@@ -432,10 +424,11 @@ static void APP_ZIGBEE_TempMeasServerReport( struct ZbZclClusterT * pstCluster, 
   {
     case ZCL_TEMP_MEAS_ATTR_MEAS_VAL:
         iAttrValue= (int16_t)( pletoh16( pDataInputPayload ) );
-        fTempValue = (float)iAttrValue / 100;
-        sprintf( szText, "%.2f", fTempValue );
+        iAttrValueBP = (int16_t)(iAttrValue / 100);
+        cAttrValueAP = (uint8_t)(iAttrValue % 100);
+        snprintf( szText, sizeof(szText), "%d.%02d", iAttrValueBP, cAttrValueAP );
         LOG_INFO_APP( "[TEMP MEAS] From " LOG_DISPLAY64() ", Temp. value is %s C", LOG_NUMBER64( pstDataInd->src.extAddr ), szText );
-        APP_LED_TOGGLE( LED_BLUE );
+        APP_LED_TOGGLE( LED_OK );
         break;
 
     default:

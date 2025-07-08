@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "ets.h"
 
 /* USER CODE BEGIN Includes */
@@ -160,7 +159,7 @@ static SVCCTL_EvtAckStatus_t ETS_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_1_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_1_Disabled_BEGIN */
@@ -172,7 +171,7 @@ static SVCCTL_EvtAckStatus_t ETS_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
                 /* USER CODE BEGIN Service3_Char_1_COMSVC_Indication_BEGIN */
 
                 /* USER CODE END Service3_Char_1_COMSVC_Indication_BEGIN */
@@ -331,11 +330,11 @@ void ETS_Init(void)
                              &(ETS_Context.EtsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: ETS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: ETS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: ETS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: EtsSvcHdle = 0x%04X\n",ETS_Context.EtsSvcHdle);
   }
 
   /**
@@ -358,7 +357,7 @@ void ETS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : CET\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : CetCharHdle = 0x%04X\n",ETS_Context.CetCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -396,11 +395,11 @@ tBleStatus ETS_UpdateValue(ETS_CharOpcode_t CharOpcode, ETS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value CET command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value CET command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value CET command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value CET command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 

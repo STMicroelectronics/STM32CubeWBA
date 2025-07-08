@@ -33,15 +33,15 @@ binary using Thread (Server side).</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software
 environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA55xx devices.</p></li>
+<li><p>This example runs on STM32WBA65xx devices.</p></li>
 <li><p>This example has been tested with an STMicroelectronics
-STM32WBA55CGA_Nucleo board and can be easily tailored to any other
+STM32WBA65CGA_Nucleo board and can be easily tailored to any other
 supported device and development board.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
-<li>Connect 2 STM32WBA55xx_Nucleo boards to your PC</li>
+<li>Connect 2 STM32WBA65xx_Nucleo boards to your PC</li>
 <li>Open your preferred toolchain</li>
 <li>Rebuild all files and load your image into target memory</li>
 <li>Run the application</li>
@@ -75,7 +75,7 @@ application compatible with Ota settings (see Thread_Coap_Generic_Ota
 for details) for requesting the application to reset and give the
 control to Thread_OTA_Client .</p>
 <p>IMPORTANT PREREQUISITES: On Thread_OTA_Server a binary image has to
-be loaded at <span class="citation" data-cites="0x08080000">@0x08080000</span> before starting the process.
+be loaded at <span class="citation" data-cites="0x08100000">@0x08100000</span> before starting the process.
 It can be FW application example (compatible with Ota settings, see
 Thread_Coap_Generic_Ota for details).</p>
 <ul>
@@ -84,12 +84,6 @@ Thread_Coap_Generic_Ota for details).</p>
 Thread_OTA_Server to Thread_OTA_CLient .<br />
 if Thread_OTA_CLient confirm the message the Thread_OTA_Server will
 start the FUOTA procedure.</p></li>
-<li><p>press the SW3 Push-Button on boad Thread_OTA_Server to send a
-<strong>COAP command (Confirmable) “FUOTA_REBOOT”</strong> from
-Thread_OTA_Server to Thread_Coap_Generic_Ota .<br />
-The board Thread_Coap_Generic_Ota will receive COAP commands and send to
-board A a <strong>Coap Data response</strong> then reset and give the
-control to Thread_OTA_Client.</p></li>
 </ul>
 <p>Following diagram describes the Update procedure:</p>
 <pre>

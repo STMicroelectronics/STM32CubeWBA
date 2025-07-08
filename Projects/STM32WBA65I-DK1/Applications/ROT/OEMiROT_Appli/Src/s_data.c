@@ -115,7 +115,7 @@ static void S_DATA_Print_menu(void)
 static void S_DATA_Display(void)
 {
   uint8_t *data1;
-  data1 = (uint8_t*)(FLASH_BASE_S + S_DATA_IMAGE_PRIMARY_PARTITION_OFFSET + S_DATA_IMAGE_IAT_PRIV_KEY_OFFSET);
+  data1 = (uint8_t*)(_FLASH_BASE_S + S_DATA_IMAGE_PRIMARY_PARTITION_OFFSET + S_DATA_IMAGE_IAT_PRIV_KEY_OFFSET);
 
   printf("  -- S Data: %08lx%08lx..%08lx%08lx\r\n\n",
                *((unsigned long *)(&data1[0])),

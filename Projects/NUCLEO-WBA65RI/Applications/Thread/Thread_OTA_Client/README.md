@@ -10,7 +10,7 @@ Connectivity, 802.15.4 protocol, Thread, OTA, COAP
 
 * This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA65RIV6_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA65RI_Nucleo board and can be easily tailored to any other supported device and development board.  
 
 ### __How to use it?__
 
@@ -52,10 +52,11 @@ Following diagram describes the Update procedure:
   |  Thread_OTA_Server                |                                | Thread_OTA_Client                   |
   |___________________________________|                                |_____________________________________|
   |                                   |                                |                                     |
-  | Before starting FW for update     |                                | At startup, application performs    |
-  |  must be written at following     |                                |   a delete of FLASH memory sectors  |
-  |  @ = 0x08080000                   |                                |   starting from @ = 0x08080000      |
-  |                                   |                                |   to SFSA (Option Byte) limit       |  
+  | Before starting this example,     |                                | At startup, Application can performs|
+  | the Thread_Coap_Generic_Ota FW    |                                | a delete of FLASH memory sectors    |
+  | must be written at following      |                                | starting from @ = 0x08100000 to SFSA|
+  | @ = 0x08100000                    |                                | limit by pressing on SW3            |
+  |                                   |                                |                                     |  
   |                                   |                                |                                     |  
   | Get Mesh-Local EID                |                                |                                     |
   |  (Endpoint Identifier) of         |                                |                                     |
@@ -86,15 +87,15 @@ Following diagram describes the Update procedure:
   | Once confirmation received        |                                |                                     |
   |   ->Starts FUOTA data transfer    |                                |                                     |
   |                                   |                                |                                     |
-  |                                   |                                |                                     |                                     
+  |                                   |                                |                                     |
   |--> Data Transfer                  | ============> COAP =========>  |    BLUE LED TOGGLING                |
-  ||   (400 bytes Payload)            | Resource: "FUOTA_SEND"         |                                     |      
+  ||   (400 bytes Payload)            | Resource: "FUOTA_SEND"         |                                     |
   ||                                  | Mode: Unicast                  |                                     |
   ||                                  | Type: Confirmable              |   Each time data buffer is received |
   ||                                  | Code: Put                      |    writes it to FLASH memory        |
   ||                                  | Payload  : Buffer[]            |                                     |
   ||                                  |                                |                                     |
-  ||            Ack received          | <=====COAP CONFIRMATION ====== |                                     | 
+  ||            Ack received          | <=====COAP CONFIRMATION ====== |                                     |
   ||                |                 |                                |                                     |
   ||                V                 |                                |                                     |
   ||                /\                |                                |                                     |
@@ -122,18 +123,18 @@ Following diagram describes the Update procedure:
   |                                   |                                | On Reboot:                          |
   |                                   |                                | -if there is a new valid image(     |
   |                                   |                                |   Thread_Coap_Generic_Ota or any    | 
-  |                                   |                                |   appilcation supporting Ota at     | 
-  |                                   |                                |   @ 0x80000)                        | 
-  |                                   |                                |   (see Thread_Coap_Generic_Ota),    | 
-  |                                   |                                |   run the application if not, then  | 
-  |                                   |                                |   run the Thread_OTA_Client         |
+  |                                   |                                |   application supporting Ota at     | 
+  |                                   |                                |   @ 0x08100000) the system will boot| 
+  |                                   |                                |   on this new image, otherwise, it  | 
+  |                                   |                                |   will boot on the Thread_OTA_Client| 
+  |                                   |                                |   application.                      |
   |                                   |                                |                                     |
   |                                   |                                |                                     |
   |                                   |                                |                                     |
   |                                   |                                |                                     | 
   |                                   |                                |                                     | 
   |                                   |                                |                                     |  
-  --------------------------------    -                                 --------------------------------------       
+  --------------------------------------                               ---------------------------------------     
   | Role : Leader                     |                                | Role : Child                        |
   |                                   |                                |                                     |
   | LED : Green                       |                                | LED : Red                           |

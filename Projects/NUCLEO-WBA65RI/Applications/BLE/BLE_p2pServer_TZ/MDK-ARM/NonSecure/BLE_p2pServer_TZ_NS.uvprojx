@@ -551,8 +551,43 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Doc</GroupName>
+          <Files>
+            <File>
+              <FileName>README.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>../../README.md</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/CMSIS</GroupName>
+          <Files>
+            <File>
+              <FileName>system_stm32wbaxx_ns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../NonSecure/Core/Src/system_stm32wbaxx_ns.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32wbaxx_nucleo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
           <GroupName>Common/WPAN/Interface</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>adv_trace_usart_if.c</FileName>
               <FileType>1</FileType>
@@ -593,6 +628,8 @@
         <Group>
           <GroupName>Common/WPAN/Modules</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>adc_ctrl.c</FileName>
               <FileType>1</FileType>
@@ -639,6 +676,8 @@
           <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>baes_cmac.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</FilePath>
@@ -658,6 +697,8 @@
         <Group>
           <GroupName>Common/WPAN/Modules/Flash</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>flash_driver.c</FileName>
               <FileType>1</FileType>
@@ -684,6 +725,8 @@
           <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>advanced_memory_manager.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</FilePath>
@@ -696,18 +739,10 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Common/WPAN/Modules/Nvm</GroupName>
-          <Files>
-            <File>
-              <FileName>nvm_emul.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Projects/Common/WPAN/Modules/Nvm/nvm_emul.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>RTDebug.c</FileName>
               <FileType>1</FileType>
@@ -724,6 +759,8 @@
           <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>serial_cmd_interpreter.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</FilePath>
@@ -733,6 +770,8 @@
         <Group>
           <GroupName>Common/WPAN/Modules/Log</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>log_module.c</FileName>
               <FileType>1</FileType>
@@ -744,6 +783,8 @@
           <GroupName>Common/WPAN/Startup</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>stm32wbaxx_ResetHandler_MDK-ARM.s</FileName>
               <FileType>2</FileType>
               <FilePath>../../../../../../../Projects/Common/WPAN/Startup/stm32wbaxx_ResetHandler_MDK-ARM.s</FilePath>
@@ -751,27 +792,9 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Doc</GroupName>
-          <Files>
-            <File>
-              <FileName>README.md</FileName>
-              <FileType>5</FileType>
-              <FilePath>../../README.md</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
           <Files>
             <File>
-              <FileName>stm32wbaxx_ll_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_cortex.c</FileName>
@@ -834,6 +857,11 @@
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</FilePath>
             </File>
             <File>
+              <FileName>stm32wbaxx_ll_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_hal_rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</FilePath>
@@ -852,6 +880,11 @@
               <FileName>stm32wbaxx_hal_adc_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_crc.c</FileName>
@@ -916,28 +949,10 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Drivers/CMSIS</GroupName>
-          <Files>
-            <File>
-              <FileName>system_stm32wbaxx_ns.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../NonSecure/Core/Src/system_stm32wbaxx_ns.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Drivers/BSP</GroupName>
-          <Files>
-            <File>
-              <FileName>stm32wbaxx_nucleo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>ll_sys_cs.c</FileName>
               <FileType>1</FileType>
@@ -969,6 +984,8 @@
           <GroupName>Middlewares/STM32_WPAN/BLE</GroupName>
           <Files>
             <File>
+            </File>
+            <File>
               <FileName>stm32wba_ble_stack_full.a</FileName>
               <FileType>4</FileType>
               <FilePath>../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_full.a</FilePath>
@@ -983,6 +1000,8 @@
         <Group>
           <GroupName>Utilities</GroupName>
           <Files>
+            <File>
+            </File>
             <File>
               <FileName>stm32_adv_trace.c</FileName>
               <FileType>1</FileType>
@@ -1024,9 +1043,6 @@
               <FilePath>../../../../../../../Utilities/lpm/tiny_lpm/stm32_lpm.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>

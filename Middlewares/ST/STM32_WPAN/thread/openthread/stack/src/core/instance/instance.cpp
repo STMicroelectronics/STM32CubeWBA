@@ -36,7 +36,6 @@
 #include <openthread/platform/misc.h>
 
 #include "common/new.hpp"
-#include "radio/trel_link.hpp"
 #include "utils/heap.hpp"
 
 namespace ot {
@@ -91,6 +90,9 @@ Instance::Instance(void)
     // DNS-SD (mDNS) platform is initialized early to
     // allow other modules to use it.
     , mDnssd(*this)
+#endif
+#if OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+    , mCryptoStorageKeyRefManager(*this)
 #endif
     , mIp6(*this)
     , mThreadNetif(*this)
@@ -222,7 +224,7 @@ Instance::Instance(void)
     , mApplicationCoap(*this)
 #endif
 #if OPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE
-    , mApplicationCoapSecure(*this, /* aLayerTwoSecurity */ true)
+    , mApplicationCoapSecure(*this, kWithLinkSecurity)
 #endif
 #if OPENTHREAD_CONFIG_BLE_TCAT_ENABLE
     , mApplicationBleSecure(*this)
@@ -234,8 +236,7 @@ Instance::Instance(void)
     , mChannelMonitor(*this)
 #endif
 #if OPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE && \
-    (OPENTHREAD_FTD ||                          \
-     (OPENTHREAD_CONFIG_MAC_CSL_RECEIVER_ENABLE && OPENTHREAD_CONFIG_CHANNEL_MANAGER_CSL_CHANNEL_SELECT_ENABLE))
+    (OPENTHREAD_FTD || OPENTHREAD_CONFIG_CHANNEL_MANAGER_CSL_CHANNEL_SELECT_ENABLE)
     , mChannelManager(*this)
 #endif
 #if OPENTHREAD_CONFIG_MESH_DIAG_ENABLE && OPENTHREAD_FTD
@@ -278,6 +279,14 @@ Instance::Instance(void)
     , mIsInitialized(false)
     , mId(Random::NonCrypto::GetUint32())
 {
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE && OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE
+#if OPENTHREAD_CONFIG_MULTIPLE_STATIC_INSTANCE_ENABLE
+    mCryptoStorageKeyRefManager.SetKeyRefExtraOffset(Crypto::Storage::KeyRefManager::kKeyRefExtraOffset * GetIdx(this));
+#else
+#error "MULTIPLE_INSTANCE (without static allocation) is used with PLATFORM_KEY_REFERENCES_ENABLE " \
+       "The `KeyRef` values will be shared across different `Instance` objects"
+#endif
+#endif
 }
 
 #if (OPENTHREAD_MTD || OPENTHREAD_FTD) && !OPENTHREAD_CONFIG_HEAP_EXTERNAL_ENABLE
@@ -342,9 +351,7 @@ Instance &Instance::Get(uint8_t aIdx)
 
 uint8_t Instance::GetIdx(Instance *aInstance)
 {
-    return static_cast<uint8_t>(
-        (reinterpret_cast<uint8_t *>(aInstance) - reinterpret_cast<uint8_t *>(gMultiInstanceRaw)) /
-        INSTANCE_SIZE_ALIGNED);
+    return static_cast<uint8_t>((reinterpret_cast<uint64_t *>(aInstance) - gMultiInstanceRaw) / INSTANCE_SIZE_ALIGNED);
 }
 
 #endif // #if OPENTHREAD_CONFIG_MULTIPLE_STATIC_INSTANCE_ENABLE

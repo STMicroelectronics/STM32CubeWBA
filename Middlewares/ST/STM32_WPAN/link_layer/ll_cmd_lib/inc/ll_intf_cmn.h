@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_intf_cmn.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/ll_intf_cmn.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_intf_cmn.h
@@ -110,20 +110,6 @@ void ll_intf_cmn_set_temperature_sensor_state(void);
  * @retval None
  */
 uint32_t  ll_intf_cmn_set_temperature_value(uint32_t temperature);
-
-/*========================================================================================================*/
-/*======================================  CTE and FCC switch =============================================*/
-/*========================================================================================================*/
-#if SUPPORT_CTE_DEGRADATION_API
-/**
- * @brief  replace the contents of the wakeup and interpacket
- * 			sequences to apply the CTE Degradation fix.
- *
- * @retval None.
- */
-void ll_intf_apply_cte_degrad_change(void);
-#endif /* SUPPORT_CTE_DEGRADATION_API */
-
 /*========================================================================================================*/
 /*====================================  Random Number Generation Group ===================================*/
 /*========================================================================================================*/
@@ -187,6 +173,16 @@ void ll_intf_cmn_gain_fix_init(
 		uint8_t region_0x0b_val, uint8_t region_0x09_val,
 		uint8_t r_msur_percent);
 #endif /* SUPPORT_CONFIGURABLE_GAIN_FIX */
+/*===============  Set PHY Calibration Period  =================*/
+ /**
+  * @brief  set PHY calibration period.
+  *
+  * @param  phy_clbr_evnt_period    : [in] Indicate the periodicity of the PHY calibration event. Periodicity = phy_clbr_evnt_period * 1s.
+  * @param  phy_clbr_evnt_count 	: [in] Indicate the number of the PHY calibration events to be executed.
+  *
+  * @retval None
+  */
+void ll_intf_cmn_set_phy_clbr_period(uint32_t phy_clbr_evnt_period, uint32_t phy_clbr_evnt_count);
 /** @}
 */
 

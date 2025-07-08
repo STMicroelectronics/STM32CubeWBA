@@ -4,7 +4,7 @@
  * @brief ZCL Over-The-Air (OTA) Upgrade cluster header
  * ZCL 7 section 11
  * ZCL 8 section 11
- * @copyright Copyright [2014 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2014 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 /* @PICS.ZCL.OTA
@@ -792,7 +792,7 @@ enum ZclStatusCodeT ZbZclOtaServerUpgradeEndRespUnsolic(struct ZbZclClusterT *cl
  * Send a  Solicited OTA Upgrade End Response. This command is sent in response to receiving
  * the Upgrade End Request.
  * @param cluster Cluster instance from which to send this command
- * @param dstInfo ZCL Addressing info, including sequence number for the response.
+ * @param dst ZCL Addressing info, including sequence number for the response.
  * @param image_definition OTA Header Image Definition
  * @param end_response_times Upgrade End Response command
  * @param callback APSDE-DATA.confirm callback indicating status of transmitting this command.
@@ -800,7 +800,7 @@ enum ZclStatusCodeT ZbZclOtaServerUpgradeEndRespUnsolic(struct ZbZclClusterT *cl
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclOtaServerUpgradeEndRespSolic(struct ZbZclClusterT *cluster,
-    struct ZbZclAddrInfoT *dstInfo, struct ZbZclOtaImageDefinition *image_definition,
+    struct ZbZclAddrInfoT *dst, struct ZbZclOtaImageDefinition *image_definition,
     struct ZbZclOtaEndResponseTimes *end_response_times,
     void (*callback)(struct ZbApsdeDataConfT *conf, void *arg), void *arg);
 

@@ -17,11 +17,9 @@
 
 #include "app_common.h"
 #include "ble_codec.h"
-#include "ble.h"
-
 #include "codec_mngr.h"
-
 #include "log_module.h"
+#include "ble_types.h"
 
 #define BLE_PLAT_NUM_CIS             (2u)
 #define BLE_PLAT_NUM_BIS             (2u)
@@ -145,11 +143,11 @@ uint8_t BLE_ReadLocalSupportedCodecCapabilities(
   uint8_t codec_capabilities_len;
   uint8_t len = 0u;
   uint8_t i;
-  status = CODEC_ReadSupportedCodecCapabilies((uint8_t*)codecID,
-                                              logical_transport_type,
-                                              direction,
-                                              num_codec_capabilities,
-                                              &p_codec_capability);
+  status = CODEC_ReadLocalSupportedCodecCapabilies((uint8_t*)codecID,
+                                                   logical_transport_type,
+                                                   direction,
+                                                   num_codec_capabilities,
+                                                   &p_codec_capability );
   if (status == 0x00)
   {
     for (i = 0; i < (*num_codec_capabilities) ; i++)
@@ -199,7 +197,8 @@ uint8_t BLE_ReadLocalSupportedControllerDelay(
 
 /*****************************************************************************/
 
-uint8_t BLE_SetupIsoDataPath(uint16_t connection_handle,hci_le_setup_iso_data_path_params* iso_command_params)
+uint8_t BLE_SetupIsoDataPath(uint16_t connection_handle,
+                             hci_le_setup_iso_data_path_params* iso_command_params )
 {
   int32_t ret;
   CODEC_SetupIsoDataPathCmd_t param;
@@ -260,7 +259,7 @@ uint8_t BLE_SendIsoDataOutToCodec(uint16_t iso_connection_handle,
                                   uint16_t PSN,
                                   uint8_t  packet_status_flag,
                                   uint16_t iso_data_load_length,
-                                  uint32_t* iso_data)
+                                  uint32_t* iso_data )
 {
   return CODEC_ReceiveMediaPacket(iso_connection_handle,
                                   pb_flag,
@@ -280,7 +279,8 @@ uint8_t BLE_SendIsoDataInToCodec(uint16_t iso_connection_handle,
                                  uint32_t timestamp,
                                  uint16_t PSN,
                                  uint16_t iso_data_load_length,
-                                 uint8_t* iso_data)
+                                 uint16_t total_sdu_len,
+                                 uint8_t* iso_data )
 {
   return 0;
 }
@@ -290,7 +290,7 @@ uint8_t BLE_SendIsoDataInToCodec(uint16_t iso_connection_handle,
 void BLE_LeSyncEvent(uint8_t group_id,
                      uint32_t next_anchor_point,
                      uint32_t time_stamp,
-                     uint32_t next_sdu_delivery_timeout)
+                     uint32_t next_sdu_delivery_timeout )
 {
   AUDIO_SyncEventClbk(group_id,next_anchor_point,time_stamp,next_sdu_delivery_timeout);
 }
@@ -305,7 +305,7 @@ void BLE_IsochronousGroupEvent(uint16_t opcode,
                               uint8_t num_connection_handles,
                               uint16_t* iso_con_handle,
                               uint8_t* transport_latency_C_to_P,
-                              uint8_t* transport_latency_P_to_C)
+                              uint8_t* transport_latency_P_to_C )
 {
   uint8_t type;
   uint8_t ID;
@@ -474,7 +474,13 @@ void BLE_CalibrationCallback(uint32_t timeStamp)
 }
 
 /*****************************************************************************/
-static uint8_t BLE_GetExistingCISConfSlot(uint16_t CIS_Conn_Handle,CIS_Conf_t **pCIS_Conf)
+
+/**
+  * @brief Get an existing and configured slot matching the CIS con handle
+  * @retval 0 is success, 1 is fail
+  */
+static uint8_t BLE_GetExistingCISConfSlot(uint16_t CIS_Conn_Handle,
+                                          CIS_Conf_t **pCIS_Conf)
 {
   uint8_t i;
   for (i = 0; i < BLE_PLAT_NUM_CIS ; i++)
@@ -488,6 +494,10 @@ static uint8_t BLE_GetExistingCISConfSlot(uint16_t CIS_Conn_Handle,CIS_Conf_t **
   return 1u;
 }
 
+/**
+  * @brief Get a new slot
+  * @retval 0 is success, 1 is fail meaning no slot available
+  */
 static uint8_t BLE_GetFreeCISConfSlot(CIS_Conf_t **pCIS_Conf)
 {
   uint8_t i;
@@ -502,6 +512,10 @@ static uint8_t BLE_GetFreeCISConfSlot(CIS_Conf_t **pCIS_Conf)
   return 1u;
 }
 
+/**
+  * @brief Clean CIS handle from the slots without clearing CIG id
+  * @retval 0 if the last CIS of the group has been killed, 1 otherwise
+  */
 static uint8_t BLE_SetFreeCISConfSlot(uint16_t CIS_Conn_Handle, uint8_t *CIG_ID)
 {
   uint8_t i;

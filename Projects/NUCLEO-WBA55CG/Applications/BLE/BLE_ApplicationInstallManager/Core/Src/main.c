@@ -42,7 +42,6 @@ typedef void (*fct_t)(void);
 /* Define mapping of OTA messages in SRAM */
 #define CFG_OTA_REBOOT_VAL_MSG              (*(uint8_t*)(SRAM1_BASE+0))
 #define CFG_OTA_START_SECTOR_IDX_VAL_MSG    (*(uint8_t*)(SRAM1_BASE+1))
-#define CFG_OTA_NBR_OF_SECTOR_VAL_MSG       (*(uint8_t*)(SRAM1_BASE+2))
 
 /* Size in Page of Download and Active slots */
 #define DOWNLOAD_ACTIVE_NB_SECTORS          ((FLASH_SIZE / FLASH_PAGE_SIZE) - CFG_NVM_NB_SECTORS - CFG_USER_DATA_NB_SECTORS)
@@ -249,7 +248,6 @@ static void BootModeCheck( void )
        */
       CFG_OTA_REBOOT_VAL_MSG = REBOOT_ON_APP_INSTALL_MNGR; /* Request to reboot on Application Install Manager */
       CFG_OTA_START_SECTOR_IDX_VAL_MSG = CFG_ACTIVE_SLOT_START_SECTOR_INDEX;
-      CFG_OTA_NBR_OF_SECTOR_VAL_MSG = 0xFF;
     }
     else if(CFG_OTA_REBOOT_VAL_MSG == REBOOT_ON_APP_INSTALL_MNGR)
     {
@@ -489,7 +487,6 @@ static void JumpSelectionOnPowerUp( void )
      * Erase all sectors specified by byte1 and byte1 in SRAM1 to download a new App.
      */
     CFG_OTA_START_SECTOR_IDX_VAL_MSG = CFG_ACTIVE_SLOT_START_SECTOR_INDEX;
-    CFG_OTA_NBR_OF_SECTOR_VAL_MSG = 0xFF;
   }
   return;
 }
@@ -510,8 +507,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

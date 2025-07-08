@@ -34,7 +34,7 @@ binary using Thread (Server side).</p>
 environment</strong></h3>
 <ul>
 <li><p>This example runs on STM32WBA65xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA65RIV6_Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA65RI_Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
@@ -77,26 +77,27 @@ only communicate with Thread_OTA_Server.</p>
   |  Thread_OTA_Server                |                                | Thread_OTA_Client                   |
   |___________________________________|                                |_____________________________________|
   |                                   |                                |                                     |
-  | Before starting FW for update     |                                | At startup, application performs    |
-  |  must be written at following     |                                |   a delete of FLASH memory sectors  |
-  |  @ = 0x08080000                   |                                |   starting from @ = 0x08080000      |
-  |                                   |                                |   to SFSA (Option Byte) limit       |  
+  | Before starting this example,     |                                | At startup, Application can perform |
+  | the Thread_Coap_Generic_Ota       |                                | a delete of FLASH memory sectors    |
+  | must be written at following      |                                | starting from @ = 0x08100000 to SFSA|
+  | @ = 0x08100000                    |                                | limit by pressing on SW3            |
+  |                                   |                                |                                     |  
   |                                   |                                |                                     |  
   | Get Mesh-Local EID                |                                |                                     |
   |  (Endpoint Identifier) of         |                                |                                     |
   |  Thread_OTA_Client device         |                                |                                     |
   |                                   |                                |                                     |
-  | Push Button  -----&gt;               |                                |                                     |                          
+  | Push Button  ----->               |                                |                                     |                          
   |  - SW1 (OTA for APP Update)       |                                |                                     |
   |                                   |                                |                                     |
-  |                                   | ====== COAP REQUEST =========&gt; |                                     |
+  |                                   | ====== COAP REQUEST =========> |                                     |
   |                                   | Resource: &quot;FUOTA_PROVISIONING&quot; |                                     |
   |                                   | Mode: Multicast                |                                     |
   |                                   | Type: Confirmable              |     returns Mesh-Local EID          |
   |                                   | Code: Get                      |                                     |
   |                                   | Payload  : OtaContext          |                                     |
   |                                   |                                |                                     |
-  |Thread_OTA_Client Mesh-Local       | &lt;=====COAP CONFIRMATION ====== |                                     |
+  |Thread_OTA_Client Mesh-Local       | <=====COAP CONFIRMATION ====== |                                     |
   |         EID received              |                                |                                     |
   |                                   |                                |                                     |
   |                                   |                                |                                     |
@@ -147,18 +148,18 @@ only communicate with Thread_OTA_Server.</p>
   |                                   |                                | On Reboot:                          |
   |                                   |                                | -if there is a new valid image(     |
   |                                   |                                |   Thread_Coap_Generic_Ota or any    | 
-  |                                   |                                |   appilcation supporting Ota at     | 
-  |                                   |                                |   @ 0x80000)                        | 
-  |                                   |                                |   (see Thread_Coap_Generic_Ota),    | 
-  |                                   |                                |   run the application if not, then  | 
-  |                                   |                                |   run the Thread_OTA_Client         |
+  |                                   |                                |   application supporting Ota at     | 
+  |                                   |                                |   @ 0x08100000), the system will    | 
+  |                                   |                                |   boot on this new image, otherwise | 
+  |                                   |                                |   it will boot on the               | 
+  |                                   |                                |   Thread_OTA_Client application     |
   |                                   |                                |                                     |
   |                                   |                                |                                     |
   |                                   |                                |                                     |
   |                                   |                                |                                     | 
   |                                   |                                |                                     | 
   |                                   |                                |                                     |  
-  --------------------------------    -                                 --------------------------------------       
+  --------------------------------------                               ---------------------------------------       
   | Role : Leader                     |                                | Role : Child                        |
   |                                   |                                |                                     |
   | LED : Green                       |                                | LED : Red                           |

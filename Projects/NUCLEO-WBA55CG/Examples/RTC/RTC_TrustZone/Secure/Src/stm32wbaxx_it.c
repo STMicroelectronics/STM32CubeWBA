@@ -224,6 +224,7 @@ void RTC_S_IRQHandler(void)
   /* USER CODE END RTC_S_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
+  HAL_RTCEx_SSRUIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_S_IRQn 1 */
 
   /* USER CODE END RTC_S_IRQn 1 */

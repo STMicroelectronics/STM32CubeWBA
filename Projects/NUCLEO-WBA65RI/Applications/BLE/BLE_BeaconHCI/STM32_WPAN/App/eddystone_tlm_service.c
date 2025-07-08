@@ -21,7 +21,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
 #include "app_ble.h"
-#include "ble.h"
+#include "cmsis_compiler.h"
+#include "ble_core.h"
 #include "eddystone_beacon.h"
 #include "eddystone_url_service.h"
 #include "eddystone_uid_service.h"

@@ -36,12 +36,13 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)
-static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t ErrorCode);
+static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode);
 static void HAP_IAC_Post_Linkup_Event(HAP_IAC_Inst_t *pIAC_Inst, tBleStatus const Status);
 tBleStatus HAP_IAC_Check_IAS_Service(HAP_IAC_Inst_t *pIAC_Inst);
 static HAP_IAC_Inst_t *HAP_IAC_GetAvailableInstance(void);
-static HAP_IAC_Inst_t *HAP_IAC_GetInstance(uint16_t ConnHandle);
+static HAP_IAC_Inst_t *HAP_IAC_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer);
 static void HAP_IAC_InitInstance(HAP_IAC_Inst_t *pIAC_Inst);
+static tBleStatus HAP_IAC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
 #endif /* (BLE_CFG_HAP_IAC_ROLE == 1u) */
 /* External functions prototype------------------------------------------------*/
 
@@ -76,86 +77,126 @@ tBleStatus HAP_IAC_Init(void)
   */
 tBleStatus HAP_IAC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
 {
-  tBleStatus    hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
+  tBleStatus            hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)
-  HAP_IAC_Inst_t  *p_iac_inst;
+  uint16_t              conn_handle;
+  HAP_IAC_Inst_t        *p_iac_inst;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  uint8_t               channel_index;
+  UseCaseConnInfo_t     *p_conn_info;
 
   if (HAP_Context.Role & HAP_ROLE_IMMEDIATE_ALERT_CLIENT)
   {
     BLE_DBG_HAP_IAC_MSG("Start HAP IAC Link Up procedure on ACL Connection Handle 0x%04X\n", ConnHandle);
-    /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
-    p_iac_inst = HAP_IAC_GetInstance(ConnHandle);
-    if (p_iac_inst == 0)
+    if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
     {
-      /*Get an available HAP Client Instance*/
-      p_iac_inst = HAP_IAC_GetAvailableInstance();
-      if (p_iac_inst != 0)
+      conn_handle = p_conn_info->Connection_Handle;
+      if ((BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(conn_handle) > 0) && (LinkupMode == HAP_LINKUP_MODE_COMPLETE))
       {
-        p_iac_inst->ConnHandle = ConnHandle;
-        /*Check that HAP LinkUp process is not already started*/
-        if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_IDLE)
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(conn_handle,&channel_index) == BLE_STATUS_SUCCESS)
         {
-          p_iac_inst->LinkupMode = LinkupMode;
-
-          if (p_iac_inst->LinkupMode == HAP_LINKUP_MODE_COMPLETE)
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          return BLE_STATUS_BUSY;
+        }
+      }
+      else if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_conn_info->Connection_Handle,0) == BLE_STATUS_SUCCESS) \
+              && (LinkupMode == HAP_LINKUP_MODE_COMPLETE))
+      {
+        BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because ATT Bearer already used\n");
+        return BLE_STATUS_BUSY;
+      }
+      /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
+      p_iac_inst = HAP_IAC_GetInstance(ConnHandle,&p_eatt_bearer);
+      if (p_iac_inst == 0)
+      {
+        /*Get an available HAP Client Instance*/
+        p_iac_inst = HAP_IAC_GetAvailableInstance();
+        if (p_iac_inst != 0)
+        {
+          p_iac_inst->pConnInfo = p_conn_info;
+          /*Check that HAP LinkUp process is not already started*/
+          if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_IDLE)
           {
-            /* First step of Link Up process : find the IAS in the remote GATT Database*/
-            hciCmdResult = aci_gatt_disc_all_primary_services(p_iac_inst->ConnHandle);
-            BLE_DBG_HAP_IAC_MSG("aci_gatt_disc_all_primary_services() returns status 0x%x\n", hciCmdResult);
-            if (hciCmdResult == BLE_STATUS_SUCCESS)
+            p_iac_inst->LinkupMode = LinkupMode;
+
+            if (p_iac_inst->LinkupMode == HAP_LINKUP_MODE_COMPLETE)
             {
-              p_iac_inst->AttProcStarted = 1u;
-              /*Start Immediate Alert Service Linkup*/
-              p_iac_inst->LinkupState = HAP_IAC_LINKUP_DISC_SERVICE;
+              /* First step of Link Up process : find the IAS in the remote GATT Database*/
+              hciCmdResult = aci_gatt_disc_all_primary_services(conn_handle);
+              BLE_DBG_HAP_IAC_MSG("aci_gatt_disc_all_primary_services() returns status 0x%x\n", hciCmdResult);
+              if (hciCmdResult == BLE_STATUS_SUCCESS)
+              {
+                /*Register the ATT procedure*/
+                if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_iac_inst->pConnInfo->Connection_Handle) > 0)
+                {
+                  BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_IAC_ATT_PROCEDURE_ID);
+                }
+                else
+                {
+                  BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                           HAP_IAC_ATT_PROCEDURE_ID);
+                }
+                /*Start Immediate Alert Service Linkup*/
+                p_iac_inst->LinkupState = HAP_IAC_LINKUP_DISC_SERVICE;
+              }
+              else
+              {
+                HAP_IAC_InitInstance(p_iac_inst);
+              }
             }
-            else
+            else if (p_iac_inst->LinkupMode == HAP_LINKUP_MODE_RESTORE)
             {
-              HAP_IAC_InitInstance(p_iac_inst);
+              /*IAS shall be restored from Service Database*/
+              hciCmdResult = HAP_IAC_DB_RestoreClientDatabase(p_iac_inst);
+              if (hciCmdResult != BLE_STATUS_SUCCESS)
+              {
+                BLE_DBG_HAP_IAC_MSG("HAP Link restoration has failed\n");
+                HAP_IAC_InitInstance(p_iac_inst);
+              }
             }
           }
-          else if (p_iac_inst->LinkupMode == HAP_LINKUP_MODE_RESTORE)
+          else if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_COMPLETE)
           {
-            /*IAS shall be restored from Service Database*/
-            hciCmdResult = HAP_IAC_DB_RestoreClientDatabase(p_iac_inst);
-            if (hciCmdResult != BLE_STATUS_SUCCESS)
-            {
-              BLE_DBG_HAP_IAC_MSG("HAP Link restoration has failed\n");
-              HAP_IAC_InitInstance(p_iac_inst);
-            }
+            /*HAP Link Up is already performed*/
+            BLE_DBG_HAP_IAC_MSG("HAP Link Up is already performed\n");
+            hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
+          }
+          else
+          {
+            BLE_DBG_HAP_IAC_MSG("HAP Link Up process is already in progress\n");
+            /*Microphone Control Link Up process is already in progress*/
+            hciCmdResult = BLE_STATUS_BUSY;
           }
         }
-        else if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_COMPLETE)
+        else
+        {
+          BLE_DBG_HAP_IAC_MSG("No resource to use a HAP IAC Instance\n");
+          hciCmdResult = BLE_STATUS_FAILED;
+        }
+      }
+      else
+      {
+        BLE_DBG_HAP_IAC_MSG("HAP IAC Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
+        if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_COMPLETE)
         {
           /*HAP Link Up is already performed*/
-          BLE_DBG_HAP_IAC_MSG("HAP Link Up is already performed\n");
           hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
         else
         {
-          BLE_DBG_HAP_IAC_MSG("HAP Link Up process is already in progress\n");
-          /*Microphone Control Link Up process is already in progress*/
+          /* HAP Link Up process is already in progress*/
           hciCmdResult = BLE_STATUS_BUSY;
         }
-      }
-      else
-      {
-        BLE_DBG_HAP_IAC_MSG("No resource to use a HAP IAC Instance\n");
-        hciCmdResult = BLE_STATUS_FAILED;
       }
     }
     else
     {
-      BLE_DBG_HAP_IAC_MSG("HAP IAC Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
-      if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_COMPLETE)
-      {
-        /*HAP Link Up is already performed*/
-        hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
-      }
-      else
-      {
-        /* HAP Link Up process is already in progress*/
-        hciCmdResult = BLE_STATUS_BUSY;
-      }
+      BLE_DBG_HAP_HARC_MSG("Did not find related Connection Info Structure\n");
+      hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
   else
@@ -178,13 +219,41 @@ tBleStatus HAP_IAC_SetAlertLevel(uint16_t ConnHandle, HAP_IAC_AlertLevel_t Alert
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_IMMEDIATE_ALERT_CLIENT)
   {
-    HAP_IAC_Inst_t *p_iac_inst;
+    HAP_IAC_Inst_t      *p_iac_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_IAC_MSG("Start Set Alert Level %d on connection handle 0x%04X\n", AlertLevel, ConnHandle);
 
-    p_iac_inst = HAP_IAC_GetInstance(ConnHandle);
+    p_iac_inst = HAP_IAC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_iac_inst != 0)
     {
-      if (p_iac_inst->AttProcStarted == 0)
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_iac_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_iac_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_iac_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if (hciCmdResult != BLE_STATUS_BUSY)
       {
         if (p_iac_inst->LinkupState == HAP_IAC_LINKUP_COMPLETE)
         {
@@ -194,35 +263,39 @@ tBleStatus HAP_IAC_SetAlertLevel(uint16_t ConnHandle, HAP_IAC_AlertLevel_t Alert
               AlertLevel
             };
 
-            hciCmdResult = aci_gatt_write_without_resp(ConnHandle,
+            hciCmdResult = aci_gatt_write_without_resp(conn_handle,
                                                        p_iac_inst->AlertLevelChar.ValueHandle,
                                                        1,
                                                        &a_value[0]);
             BLE_DBG_HAP_IAC_MSG("aci_gatt_write_without_resp() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_iac_inst->AlertLevelChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              BLE_DBG_HAP_IAC_MSG("Start HAP_IAC_OP_SET_ALERT_LEVEL Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_IAC_MSG("Start HAP_IAC_OP_SET_ALERT_LEVEL Operation(ConnHandle 0x%04X)\n",
+                                  p_iac_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_IAC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_IAC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                              p_iac_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_IAC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_IAC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                            p_iac_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_IAC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_IAC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                          ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -248,11 +321,12 @@ tBleStatus HAP_IAC_SetAlertLevel(uint16_t ConnHandle, HAP_IAC_AlertLevel_t Alert
    */
 tBleStatus HAP_IAC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t MaxDataLen, uint16_t *len)
 {
-  tBleStatus                    status = BLE_STATUS_SUCCESS;
-  uint16_t                      remain = MaxDataLen;
-  HAP_IAC_Inst_t *p_iac_inst;
+  tBleStatus            status = BLE_STATUS_SUCCESS;
+  uint16_t              remain = MaxDataLen;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  HAP_IAC_Inst_t        *p_iac_inst;
 
-  p_iac_inst = HAP_IAC_GetInstance(ConnHandle);
+  p_iac_inst = HAP_IAC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_iac_inst != 0)
   {
     *len = 0u;
@@ -342,7 +416,7 @@ tBleStatus HAP_IAC_RestoreDatabase(HAP_IAC_Inst_t *pIAC_Inst, uint8_t *pData,uin
   uint16_t              uuid_value;
   uint8_t               data_len;
 
-  BLE_DBG_HAP_IAC_MSG("Restore IAS Service for conn handle 0x%04X\n", pIAC_Inst->ConnHandle);
+  BLE_DBG_HAP_IAC_MSG("Restore IAS Service for conn handle 0x%04X\n", pIAC_Inst->pConnInfo->Connection_Handle);
 
   while ((data_index < Len) && (status == BLE_STATUS_SUCCESS))
   {
@@ -392,9 +466,10 @@ tBleStatus HAP_IAC_RestoreDatabase(HAP_IAC_Inst_t *pIAC_Inst, uint8_t *pData,uin
   */
 void HAP_IAC_AclDisconnection(uint16_t ConnHandle)
 {
-  HAP_IAC_Inst_t *p_iac_inst;
+  HAP_IAC_Inst_t        *p_iac_inst;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
   /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
-  p_iac_inst = HAP_IAC_GetInstance(ConnHandle);
+  p_iac_inst = HAP_IAC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_iac_inst != 0)
   {
     BLE_DBG_HAP_IAC_MSG("ACL Disconnection on Connection Handle 0x%04X : Reset HAP IAC Instance\n",ConnHandle);
@@ -403,12 +478,15 @@ void HAP_IAC_AclDisconnection(uint16_t ConnHandle)
     {
       /*Notify that HAP Link Up is complete*/
       HAP_IAC_NotificationEvt_t evt;
-      evt.ConnHandle = p_iac_inst->ConnHandle;
+      evt.ConnHandle = p_iac_inst->pConnInfo->Connection_Handle;
       evt.Status = BLE_STATUS_FAILED;
       evt.EvtOpcode = (HAP_IAC_NotCode_t) IAC_LINKUP_COMPLETE_EVT;
       evt.pInfo = 0;
       HAP_IAC_Notification(&evt);
-      if (p_iac_inst->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                        HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                          HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         HAP_IAC_InitInstance(p_iac_inst);
       }
@@ -421,7 +499,10 @@ void HAP_IAC_AclDisconnection(uint16_t ConnHandle)
     else
     {
       /* Reset HAP Instance */
-      if (p_iac_inst->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                        HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                          HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         HAP_IAC_InitInstance(p_iac_inst);
       }
@@ -442,7 +523,8 @@ void HAP_IAC_AclDisconnection(uint16_t ConnHandle)
 SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
 {
   SVCCTL_EvtAckStatus_t return_value;
-  hci_event_pckt *p_event_pckt;
+  hci_event_pckt        *p_event_pckt;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
   return_value = SVCCTL_EvtNotAck;
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
 
@@ -461,37 +543,42 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
           uint16_t uuid;
 
           /* Check if a HAP Instance with specified Connection Handle exists*/
-          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle);
+          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_iac_inst != 0)
           {
-            BLE_DBG_HAP_IAC_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
-                             pr->Connection_Handle);
-
-            /*Check that HAP Link Up Process State is in Service Discovery state*/
-            if ((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_SERVICE) == HAP_IAC_LINKUP_DISC_SERVICE)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_IAC_IsATTProcedureInProgress(p_iac_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_HAP_IAC_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
+                               pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
-              numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
-              BLE_DBG_HAP_IAC_MSG("Number of services in the GATT response : %d\n",numServ);
-              if (pr->Attribute_Data_Length == 6)
+
+              /*Check that HAP Link Up Process State is in Service Discovery state*/
+              if ((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_SERVICE) == HAP_IAC_LINKUP_DISC_SERVICE)
               {
-                idx = 4;
-                for (i=0; i<numServ; i++)
+                numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
+                BLE_DBG_HAP_IAC_MSG("Number of services in the GATT response : %d\n",numServ);
+                if (pr->Attribute_Data_Length == 6)
                 {
-                  uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
-                  /*Check that UUID in the GATT response corresponds to the IAS */
-                  if (uuid == IMMEDIATE_ALERT_SERVICE_UUID)
+                  idx = 4;
+                  for (i=0; i<numServ; i++)
                   {
-                    /* Save start handle and the end handle of the IAS
-                     * for the next step of the HAP Link Up process
-                     */
-                    p_iac_inst->IASServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
-                    p_iac_inst->IASServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
-                    BLE_DBG_HAP_IAC_MSG("Immediate Alert Service has been found (start: %04X, end: %04X)\n",
-                                        p_iac_inst->IASServiceStartHandle,
-                                        p_iac_inst->IASServiceEndHandle);
+                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
+                    /*Check that UUID in the GATT response corresponds to the IAS */
+                    if (uuid == IMMEDIATE_ALERT_SERVICE_UUID)
+                    {
+                      /* Save start handle and the end handle of the IAS
+                       * for the next step of the HAP Link Up process
+                       */
+                      p_iac_inst->IASServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
+                      p_iac_inst->IASServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
+                      BLE_DBG_HAP_IAC_MSG("Immediate Alert Service has been found (start: %04X, end: %04X)\n",
+                                          p_iac_inst->IASServiceStartHandle,
+                                          p_iac_inst->IASServiceEndHandle);
+                    }
+                    idx += 6;
                   }
-                  idx += 6;
                 }
               }
             }
@@ -507,55 +594,61 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
           uint8_t data_length;
 
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle);
+          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_iac_inst != 0)
           {
-            /* the event data will be
-             * 2 bytes start handle
-             * 1 byte char properties
-             * 2 bytes handle
-             * 2 or 16 bytes data
-             */
-            BLE_DBG_HAP_IAC_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",pr->Connection_Handle);
-
-            /*Check that HAP Link Up Process State is in Characteristics Discovery state*/
-            if ((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_CHAR) == HAP_IAC_LINKUP_DISC_CHAR)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_IAC_IsATTProcedureInProgress(p_iac_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              idx = 5;
-              data_length = pr->Data_Length;
-              if (pr->Handle_Value_Pair_Length == 7)
+              /* the event data will be
+               * 2 bytes start handle
+               * 1 byte char properties
+               * 2 bytes handle
+               * 2 or 16 bytes data
+               */
+              BLE_DBG_HAP_IAC_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",
+                                  pr->Connection_Handle);
+
+              return_value = SVCCTL_EvtAckFlowEnable;
+
+              /*Check that HAP Link Up Process State is in Characteristics Discovery state*/
+              if ((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_CHAR) == HAP_IAC_LINKUP_DISC_CHAR)
               {
-                data_length -= 1;
-                /*Check if characteristic handle corresponds to the Immediate Alert Service range */
-                if (((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_iac_inst->IASServiceStartHandle)
-                     && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_iac_inst->IASServiceEndHandle)))
+                idx = 5;
+                data_length = pr->Data_Length;
+                if (pr->Handle_Value_Pair_Length == 7)
                 {
-                  return_value = SVCCTL_EvtAckFlowEnable;
-                  while (idx < data_length)
+                  data_length -= 1;
+                  /*Check if characteristic handle corresponds to the Immediate Alert Service range */
+                  if (((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_iac_inst->IASServiceStartHandle)
+                       && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_iac_inst->IASServiceEndHandle)))
                   {
-                    /* extract the characteristic UUID */
-                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
-                    /*  extract the characteristic handle */
-                    handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
-                    /*  extract the start handle of the characteristic */
-                    start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
-
-                    switch (uuid)
+                    while (idx < data_length)
                     {
-                      case ALERT_LEVEL_CHARACTERISTIC_UUID:
-                        BLE_DBG_HAP_IAC_MSG("Alert Level Characteristic has been found:\n");
-                        BLE_DBG_HAP_IAC_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_HAP_IAC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_HAP_IAC_MSG("Handle = 0x%04X\n",handle);
-                        p_iac_inst->AlertLevelChar.ValueHandle = handle;
-                        p_iac_inst->AlertLevelChar.EndHandle = p_iac_inst->IASServiceEndHandle;
-                        p_iac_inst->AlertLevelChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                      break;
+                      /* extract the characteristic UUID */
+                      uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
+                      /*  extract the characteristic handle */
+                      handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
+                      /*  extract the start handle of the characteristic */
+                      start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
 
-                    default:
-                      break;
+                      switch (uuid)
+                      {
+                        case ALERT_LEVEL_CHARACTERISTIC_UUID:
+                          BLE_DBG_HAP_IAC_MSG("Alert Level Characteristic has been found:\n");
+                          BLE_DBG_HAP_IAC_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_HAP_IAC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_HAP_IAC_MSG("Handle = 0x%04X\n",handle);
+                          p_iac_inst->AlertLevelChar.ValueHandle = handle;
+                          p_iac_inst->AlertLevelChar.EndHandle = p_iac_inst->IASServiceEndHandle;
+                          p_iac_inst->AlertLevelChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                        break;
+
+                      default:
+                        break;
+                      }
+                      idx += pr->Handle_Value_Pair_Length;
                     }
-                    idx += pr->Handle_Value_Pair_Length;
                   }
                 }
               }
@@ -572,34 +665,58 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
         {
           aci_gatt_proc_complete_event_rp0 *pr = (void*)p_blecore_evt->data;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle);
+          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_iac_inst != 0)
           {
+            uint8_t ack = 0u;
             BLE_DBG_HAP_IAC_MSG("ACI_GATT_PROC_COMPLETE_EVENT is received on conn handle %04X (ErrorCode %04X)\n",
                                 pr->Connection_Handle,
                                 pr->Error_Code);
 
             /* Check if an ATT Procedure was started*/
-            if (p_iac_inst->AttProcStarted != 0u)
+            if (p_eatt_bearer != 0)
             {
-              p_iac_inst->AttProcStarted = 0u;
-              return_value = SVCCTL_EvtAckFlowEnable;
-            }
-            /*Check if a HAP Linkup procedure is in progress*/
-            if ((p_iac_inst->LinkupState != HAP_IAC_LINKUP_IDLE) && (p_iac_inst->LinkupState != HAP_IAC_LINKUP_COMPLETE))
-            {
-              if (p_iac_inst->DelayDeallocation == 0u)
+              if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(p_eatt_bearer->ChannelIdx,
+                                                                      HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
               {
-                /* GATT Process is complete, continue, if needed, the HAP Link Up Process */
-                HAP_IAC_Linkup_Process(p_iac_inst,pr->Error_Code);
+                BLE_AUDIO_STACK_EATT_UnregisterATTProcedure(p_eatt_bearer->ChannelIdx,HAP_IAC_ATT_PROCEDURE_ID);
+                ack = 1u;
               }
             }
-
-            if ((p_iac_inst->DelayDeallocation == 1u) && (p_iac_inst->AttProcStarted == 0u))
+            else
             {
-              BLE_DBG_HAP_IAC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
-              p_iac_inst->DelayDeallocation = 0u;
-              HAP_IAC_InitInstance(p_iac_inst);
+              /* Check if an ATT Procedure was started*/
+              if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                               HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+              {
+                BLE_AUDIO_STACK_ATT_UnregisterATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                           HAP_IAC_ATT_PROCEDURE_ID);
+                ack = 1u;
+              }
+            }
+            if (ack == 1u)
+            {
+              return_value = SVCCTL_EvtAckFlowEnable;
+              /*Check if a HAP Linkup procedure is in progress*/
+              if ((p_iac_inst->LinkupState != HAP_IAC_LINKUP_IDLE) && (p_iac_inst->LinkupState != HAP_IAC_LINKUP_COMPLETE))
+              {
+                if (p_iac_inst->DelayDeallocation == 0u)
+                {
+                  /* GATT Process is complete, continue, if needed, the HAP Link Up Process */
+                  HAP_IAC_Linkup_Process(p_iac_inst,p_eatt_bearer,pr->Error_Code);
+                }
+              }
+
+              if ((p_iac_inst->DelayDeallocation == 1u) \
+                  && (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                                   HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+                  && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_iac_inst->pConnInfo->Connection_Handle,
+                                                                    HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
+              {
+                BLE_DBG_HAP_IAC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
+                p_iac_inst->DelayDeallocation = 0u;
+                HAP_IAC_InitInstance(p_iac_inst);
+              }
             }
           }
         }
@@ -609,32 +726,15 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
         {
           aci_gatt_error_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle);
+          p_iac_inst = HAP_IAC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_iac_inst != 0)
           {
-            BLE_DBG_HAP_IAC_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-            if (pr->Attribute_Handle >= p_iac_inst->IASServiceStartHandle
-                && pr->Attribute_Handle <= p_iac_inst->IASServiceEndHandle)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_IAC_IsATTProcedureInProgress(p_iac_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_HAP_IAC_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
-            }
-            else
-            {
-              if (((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_SERVICE) == HAP_IAC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u))
-              {
-                return_value = SVCCTL_EvtAckFlowEnable;
-              }
-              if ((((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_SERVICE) == HAP_IAC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u)) \
-                || (((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_SERVICE) == HAP_IAC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x08u)) \
-                || (((p_iac_inst->LinkupState & HAP_IAC_LINKUP_DISC_CHAR) == HAP_IAC_LINKUP_DISC_CHAR) && (pr->Req_Opcode == 0x08u)))
-              {
-                /* Error response returned after :
-                 * aci_gatt_disc_all_primary_services()
-                 * -aci_gatt_find_included_services()
-                 * -aci_gatt_disc_all_char_of_service()
-                 */
-                return_value = SVCCTL_EvtAckFlowEnable;
-              }
             }
           }
         }
@@ -653,12 +753,18 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
 /**
  * @brief HAP Link Up process
  * @param  pIAC_Inst: pointer on HAP Client Instance
+ * @param  pEATTBearer: pointer on EATT Bearer
  * @param  ErrorCode: Error Code from Host Stack when a GATT procedure is complete
  * @retval status of the operation
  */
-static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t ErrorCode)
+static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode)
 {
   tBleStatus hciCmdResult = BLE_STATUS_FAILED;
+  uint16_t conn_handle = pIAC_Inst->pConnInfo->Connection_Handle;
+  if (pEATTBearer != 0)
+  {
+    conn_handle = (0xEA << 8) | (pEATTBearer->ChannelIdx);
+  }
 
   BLE_DBG_HAP_IAC_MSG("HAP Link Up Process, state 0x%x\n",pIAC_Inst->LinkupState);
 
@@ -678,7 +784,7 @@ static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t Error
           /* Immediate Alert Service has been found */
           BLE_DBG_HAP_IAC_MSG("GATT : Discover IAS Characteristics\n");
           /* Discover all the characteristics of the IAS in the remote GATT Database */
-          hciCmdResult = aci_gatt_disc_all_char_of_service(pIAC_Inst->ConnHandle,
+          hciCmdResult = aci_gatt_disc_all_char_of_service(conn_handle,
                                                           pIAC_Inst->IASServiceStartHandle,
                                                           pIAC_Inst->IASServiceEndHandle);
           BLE_DBG_HAP_IAC_MSG("aci_gatt_disc_all_char_of_service() (start: %04X, end: %04X) returns status 0x%x\n",
@@ -688,7 +794,16 @@ static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t Error
 
           if (hciCmdResult == BLE_STATUS_SUCCESS)
           {
-            pIAC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_IAC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pIAC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_IAC_ATT_PROCEDURE_ID);
+            }
             pIAC_Inst->LinkupState |= HAP_IAC_LINKUP_DISC_CHAR;
           }
           else
@@ -720,7 +835,7 @@ static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t Error
       /*Notify that HAP Link Up is complete*/
       HAP_IAC_NotificationEvt_t evt;
       evt.Status = BLE_STATUS_FAILED;
-      evt.ConnHandle = pIAC_Inst->ConnHandle;
+      evt.ConnHandle = pIAC_Inst->pConnInfo->Connection_Handle;
       evt.pInfo = 0;
       evt.EvtOpcode = (HAP_IAC_NotCode_t) IAC_LINKUP_COMPLETE_EVT;
       HAP_IAC_Notification(&evt);
@@ -744,8 +859,10 @@ static tBleStatus HAP_IAC_Linkup_Process(HAP_IAC_Inst_t *pIAC_Inst,uint8_t Error
 static void HAP_IAC_Post_Linkup_Event(HAP_IAC_Inst_t *pIAC_Inst, tBleStatus const Status)
 {
   HAP_IAC_NotificationEvt_t evt;
-  BLE_DBG_HAP_IAC_MSG("HAP Client notifies HAP Linkup is complete with status 0x%x\n",Status);
-  evt.ConnHandle = pIAC_Inst->ConnHandle;
+  BLE_DBG_HAP_IAC_MSG("HAP Client notifies HAP Linkup is complete on ConHanlde 0x%04X with status 0x%x\n",
+                      pIAC_Inst->pConnInfo->Connection_Handle,
+                      Status);
+  evt.ConnHandle = pIAC_Inst->pConnInfo->Connection_Handle;
   evt.Status = Status;
 
   pIAC_Inst->LinkupState = HAP_IAC_LINKUP_COMPLETE;
@@ -789,7 +906,7 @@ tBleStatus HAP_IAC_Check_IAS_Service(HAP_IAC_Inst_t *pIAC_Inst)
            && ((pIAC_Inst->AlertLevelChar.Properties & CHAR_PROP_WRITE) == 0))
   {
     BLE_DBG_HAP_IAC_MSG("Error : Properties 0x%02X of the HA Preset Control Point Characteristic is not valid\n",
-                pIAC_Inst->AlertLevelChar.Properties);
+                        pIAC_Inst->AlertLevelChar.Properties);
     status = BLE_STATUS_FAILED;
   }
   if (status == BLE_STATUS_SUCCESS)
@@ -809,8 +926,7 @@ static void HAP_IAC_InitInstance(HAP_IAC_Inst_t *pIAC_Inst)
   /*Initialize the HAP_IAC_Inst_t structure*/
   pIAC_Inst->LinkupState = HAP_IAC_LINKUP_IDLE;
   pIAC_Inst->ReqHandle = 0x0000;
-  pIAC_Inst->ConnHandle = 0xFFFF;
-  pIAC_Inst->AttProcStarted = 0u;
+  pIAC_Inst->pConnInfo = 0;
   pIAC_Inst->DelayDeallocation = 0u;
   pIAC_Inst->AlertLevelChar.ValueHandle = 0x0000u;
   pIAC_Inst->AlertLevelChar.DescHandle = 0x0000u;
@@ -835,7 +951,7 @@ static HAP_IAC_Inst_t *HAP_IAC_GetAvailableInstance(void)
   /*Get a free HAP Client Instance*/
   for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
   {
-    if (HAP_Context.aIACInst[i].ConnHandle == 0xFFFFu)
+    if (HAP_Context.aIACInst[i].pConnInfo == 0)
     {
       return &HAP_Context.aIACInst[i];
     }
@@ -843,18 +959,66 @@ static HAP_IAC_Inst_t *HAP_IAC_GetAvailableInstance(void)
   return 0u;
 }
 
-static HAP_IAC_Inst_t *HAP_IAC_GetInstance(uint16_t ConnHandle)
+static HAP_IAC_Inst_t *HAP_IAC_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer)
 {
   uint8_t i;
-
-  /*Get a free HAP Client Instance*/
-  for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+#if (CFG_BLE_EATT_BEARER_PER_LINK > 0u)
+  /*Check if the connection handle corresponds to a Connection Oriented Channel*/
+  if ((uint8_t) (ConnHandle >> 8) == 0xEA)
   {
-    if (HAP_Context.aIACInst[i].ConnHandle == ConnHandle)
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
     {
-      return &HAP_Context.aIACInst[i];
+      if ((HAP_Context.aIACInst[i].pConnInfo != 0) \
+          && (HAP_Context.aIACInst[i].pConnInfo->Connection_Handle != 0xFFFFu))
+      {
+        for (uint8_t j = 0u; j < CFG_BLE_EATT_BEARER_PER_LINK; j++)
+        {
+          if ( (HAP_Context.aIACInst[i].pConnInfo->aEATTBearer[j].State == 0u) \
+              && (HAP_Context.aIACInst[i].pConnInfo->aEATTBearer[j].ChannelIdx == (uint8_t)(ConnHandle)))
+          {
+            *pEATTBearer = &HAP_Context.aIACInst[i].pConnInfo->aEATTBearer[j];
+            return &HAP_Context.aIACInst[i];
+          }
+        }
+      }
+    }
+  }
+  else
+#endif /*(CFG_BLE_EATT_BEARER_PER_LINK > 0u)*/
+  {
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+    {
+      if ((HAP_Context.aIACInst[i].pConnInfo != 0) \
+          && (HAP_Context.aIACInst[i].pConnInfo->Connection_Handle == ConnHandle))
+      {
+        return &HAP_Context.aIACInst[i];
+      }
     }
   }
   return 0u;
+}
+
+static tBleStatus HAP_IAC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer)
+{
+
+  tBleStatus status = BLE_STATUS_FAILED;
+
+  if (pEATTBearer != 0)
+  {
+    if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(pEATTBearer->ChannelIdx,
+                                                            HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  else
+  {
+    /* Check if an ATT Procedure was started*/
+    if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(ConnHandle,HAP_IAC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  return status;
 }
 #endif /* (BLE_CFG_HAP_IAC_ROLE == 1u) */

@@ -164,6 +164,10 @@
                                                       /*LL can use crystal oscillator or RTC or RCO to drive the sleep clock.This selection is done via "DEFAULT_SLEEP_CLOCK_SOURCE" macro. */
 #endif /* USE_NON_ACCURATE_32K_SLEEP_CLK */
 
+#ifndef SUPPORT_CTE_DEGRADATION_API
+#define SUPPORT_CTE_DEGRADATION_API                 1 /* Enable\Disable CTE degradation API. Enable:1 - Disable:0 */
+#endif /* SUPPORT_CTE_DEGRADATION_API */
+
 /* Non-standard features configurations */
 #ifndef NUM_OF_CTSM_EMNGR_HNDLS
 #define NUM_OF_CTSM_EMNGR_HNDLS                     1 /* Number of custom handles in event manager to be used for app specific needs */
@@ -209,11 +213,11 @@
 #endif /* MAX_NUMBER_OF_INDIRECT_DATA */
 
 #ifndef SUPPORT_OPENTHREAD_1_2
-#define SUPPORT_OPENTHREAD_1_2                      0 /* Enable / disable FW parts related to new features introduced in openthread 1.2*/
+#define SUPPORT_OPENTHREAD_1_2                      1 /* Enable / disable FW parts related to new features introduced in openthread 1.2*/
 #endif /* SUPPORT_OPENTHREAD_1_2 */
 
 #ifndef SUPPORT_SEC
-#define SUPPORT_SEC                                 0 /* The MAC Security Supported : 1 - Not Supported:0 */
+#define SUPPORT_SEC                                 1 /* The MAC Security Supported : 1 - Not Supported:0 */
 #endif /* SUPPORT_SEC */
 
 #ifndef RADIO_CSMA
@@ -227,6 +231,10 @@
 #ifndef SUPPORT_A_MAC
 #define SUPPORT_A_MAC                               1
 #endif /* SUPPORT_A_MAC */
+
+#ifndef SUPPORT_CONFIG_LIB
+#define SUPPORT_CONFIG_LIB                          1 /* Enable\Disable Configurable Library feature */
+#endif /* SUPPORT_CONFIG_LIB */
 
 #ifndef SMPL_PRTCL_TEST_ENABLE
 #define SMPL_PRTCL_TEST_ENABLE                      0

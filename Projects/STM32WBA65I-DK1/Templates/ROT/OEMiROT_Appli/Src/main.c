@@ -26,15 +26,15 @@
 /** @addtogroup Templates
   * @{
   */
-extern funcptr_NS pSecureErrorCallback;
+void Error_Handler(void);
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static void SystemIsolation_Config(void);
-/* static void SystemClock_Config(void);  provided as example if secure sets clocks */
+static void MX_GPIO_Init(void);
+static void SystemClock_Config(void);
 
 /**
   * @brief  Main program
@@ -42,190 +42,35 @@ static void SystemIsolation_Config(void);
   */
 int main(void)
 {
-  /* SAU/IDAU, FPU and Interrupts secure/non-secure allocation settings  */
-  /* already done in SystemInit() thanks to partition_stm32wbaxx.h file */
+  /* MCU Configuration--------------------------------------------------------*/
 
-  /* STM32WBAxx **SECURE** HAL library initialization:
-       - Secure Systick timer is configured by default as source of time base,
-         but user can eventually implement his proper time base source (a general
-         purpose timer for example or other time source), keeping in mind that
-         Time base duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined
-         and handled in milliseconds basis.
-       - Low Level Initialization
-     */
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* !!! To boot in a secure way, the RoT has configured and activated the Memory Protection Unit
-     In order to keep a secure environment execution, you should reconfigure the
-     MPU to make it compatible with your application
-     In this example, MPU is disabled */
+      In order to keep a secure environment execution, you should reconfigure the
+      MPU to make it compatible with your application
+      In this example, MPU is disabled */
   HAL_MPU_Disable();
 
-  /* Secure application may configure the System clock here */
-  /* SystemClock_Config(); */
+  /* Reset the RCC clock configuration */
+  HAL_RCC_DeInit();
 
-  /* For better performances, enable the instruction cache in 1-way direct mapped mode */
-  HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY);
-  HAL_ICACHE_Enable();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-  /* Secure/Non-secure Memory and Peripheral isolation configuration */
-  SystemIsolation_Config();
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-  /* Enable SecureFault handler (HardFault is default) */
-  SCB->SHCSR |= SCB_SHCSR_SECUREFAULTENA_Msk;
-
-  /* Add your secure application code here prior to non-secure initialization
-     */
-
-
-  /* Secure SysTick should rather be suspended before calling non-secure  */
-  /* in order to avoid wake-up from sleep mode entered by non-secure      */
-  /* The Secure SysTick shall be resumed on non-secure callable functions */
-  HAL_SuspendTick();
-
-  /* Non-secure software does not return, this code is not executed */
-  while (1) {
+  /* Infinite loop */
+  while (1)
+  {
+    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    HAL_Delay(500);
   }
 }
 
-/**
-  * @brief  GTZC TZIC interrupt callback.
-  * @param  PeriphId Peripheral identifier triggering the illegal access.
-  *         This parameter can be a value of @ref GTZC_TZSC_TZIC_PeriphId
-  * @retval None.
-  */
-void HAL_GTZC_TZIC_Callback(uint32_t PeriphId)
-{
-  funcptr_NS callback_NS; // non-secure callback function pointer
-
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(PeriphId);
-
-  if(pSecureErrorCallback != (funcptr_NS)NULL)
-  {
-   /* return function pointer with cleared LSB */
-   callback_NS = (funcptr_NS)cmse_nsfptr_create(pSecureErrorCallback);
-
-   callback_NS();
-  }
-  else
-  {
-    /* Something went wrong in test case */
-    while(1);
-  }
-}
-
-/* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  System Isolation Configuration
-  *         This function is responsible for Memory and Peripheral isolation
-  *         for secure and non-secure application parts
-  * @retval None
-  */
-static void SystemIsolation_Config(void)
-{
-  uint32_t index;
-  MPCBB_ConfigTypeDef MPCBB_desc;
-
-  /* Enable GTZC peripheral clock */
-  __HAL_RCC_GTZC1_CLK_ENABLE();
-
-  /* -------------------------------------------------------------------------*/
-  /*                   Memory isolation configuration                         */
-  /* Initializes the memory that secure application books for non secure      */
-  /* -------------------------------------------------------------------------*/
-
-  /* -------------------------------------------------------------------------*/
-  /* Internal RAM */
-  /* The booking is done in both IDAU/SAU and GTZC MPCBB */
-
-  /* GTZC MPCBB setup */
-  /* based on non-secure RAM memory area starting from 0x20010000         */
-  /* 0x20010000 is the start address of SRAM2                             */
-  /* Internal SRAM is secured by default and configured by block          */
-  /* of 512bytes.                                                         */
-  /* Secure block-based memory starting from 0x20000000 means             */
-  /* 0x10000 / (512 * 32) = 4 super-blocks for secure block-based memory  */
-  MPCBB_desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
-  MPCBB_desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
-  MPCBB_desc.AttributeConfig.MPCBB_LockConfig_array[0] = 0x00000000U;  /* Locked configuration */
-  for(index=0; index<4; index++)
-  {
-    /* Secure blocks */
-    MPCBB_desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0xFFFFFFFFU;
-  }
-
-  if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_desc) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
-
-  /* Internal SRAM2 is set as non-secure and configured by block          */
-  /* Non-secure block-based memory starting from 0x20010000 means         */
-  /* 0x10000 / (512 * 32) = 4 super-blocks set to 0 for non-secure        */
-  /* block-based memory                                                   */
-  for(index=0; index<4; index++)
-  {
-    /* Non-secure blocks */
-    MPCBB_desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0x00000000U;
-  }
-
-  if (HAL_GTZC_MPCBB_ConfigMem(SRAM2_BASE, &MPCBB_desc) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
-
-  /* -------------------------------------------------------------------------*/
-  /* Internal Flash */
-  /* The booking is done in both IDAU/SAU and FLASH interface */
-
-  /* Setup done with first half in secure and second half in non-secure       */
-  /* Non-secure Flash memory area starting from 0x08080000                    */
-  /* Flash memory is secured by default and modified with Option Byte Loading */
-
-  /* -------------------------------------------------------------------------*/
-  /*                   Peripheral isolation configuration                     */
-  /* Initializes the peripherals and features that secure application books   */
-  /* for secure (RCC, PWR, RTC, EXTI, DMA, etc..) or leave them to            */
-  /* non-secure (GPIO (secured by default))                                   */
-  /* -------------------------------------------------------------------------*/
-
-  /* All IOs are by default allocated to secure */
-
-  /* Release PC.07 I/O for LED_GREEN (LED1) control in non-secure */
-  /* __HAL_RCC_GPIOC_CLK_ENABLE(); */
-  /* HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_7, GPIO_PIN_NSEC); */
-
-  /* Leave the GPIO clocks enabled to let non-secure having I/Os control */
-
-  /* -------------------------------------------------------------------------*/
-  /*                   Activation of illegal access errors                    */
-  /* -------------------------------------------------------------------------*/
-
-  /* Clear all illegal access flags in TZIC */
-  if(HAL_GTZC_TZIC_ClearFlag(GTZC_PERIPH_ALL) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
-
-  /* Enable all illegal access interrupts in TZIC */
-  if(HAL_GTZC_TZIC_EnableIT(GTZC_PERIPH_ALL) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
-
-  /* Enable GTZC TZIC secure interrupt */
-  HAL_NVIC_SetPriority(GTZC_IRQn, 0, 0); /* Highest priority level */
-  HAL_NVIC_ClearPendingIRQ(GTZC_IRQn);
-  HAL_NVIC_EnableIRQ(GTZC_IRQn);
-}
-
-#if 0   /* provided as example if secure sets clocks */
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follows :
@@ -297,7 +142,42 @@ static void SystemClock_Config(void)
     while(1);
   }
 }
-#endif /* 0 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  LED_CLK_ENABLE();
+
+  /*Configure GPIO pin : LED1_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+}
 
 #ifdef  USE_FULL_ASSERT
 

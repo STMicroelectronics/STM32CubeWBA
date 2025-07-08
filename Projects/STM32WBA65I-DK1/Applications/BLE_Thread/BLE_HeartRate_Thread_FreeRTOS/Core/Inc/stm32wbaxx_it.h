@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,7 +22,7 @@
 #define __STM32WBAxx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Private includes ----------------------------------------------------------*/
@@ -61,15 +61,11 @@ void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
 void TIM16_IRQHandler(void);
-void RNG_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
-void ADC4_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-void EXTI4_IRQHandler(void);
-void EXTI5_IRQHandler(void);
-void EXTI13_IRQHandler(void);
-void COMP_IRQHandler(void);
+void WKUP_IRQHandler(void);
+void ADC4_IRQHandler(void);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

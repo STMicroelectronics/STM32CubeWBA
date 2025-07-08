@@ -103,6 +103,14 @@ void configureTimerForRunTimeStats(void);
 unsigned long getRunTimeCounterValue(void);
 
 /* USER CODE BEGIN 1 */
+void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
+{
+   /* Run time stack overflow checking is performed if
+   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+   called if a stack overflow is detected. */
+  Error_Handler();
+}
+
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
 __weak void configureTimerForRunTimeStats(void)
 {

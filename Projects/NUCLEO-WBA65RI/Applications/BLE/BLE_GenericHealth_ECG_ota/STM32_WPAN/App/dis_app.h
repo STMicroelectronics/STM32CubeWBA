@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.h
+  * @file    dis_app.h
   * @author  MCD Application Team
-  * @brief   Header for service2_app.c
+  * @brief   Header for dis_app.c
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -78,6 +80,7 @@ typedef struct
 #define DISAPP_OUI                            0x123456
 #define DISAPP_MANUFACTURER_ID                0x9ABCDE
 #define BLE_CFG_DIS_SYSTEM_ID_LEN_MAX         (8)
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

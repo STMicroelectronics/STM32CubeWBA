@@ -598,12 +598,11 @@ static void app_phy_cli_Runner(char *pCommand, uint16_t commandLength)
 
   case CMD_RX_STOP: 
     app_cli_ex_stop_rx();
-    /* If no RX pending, print prompt */
-    if (is_rx_pending == FALSE)
-    {
-      app_cli_print_result(0);
-      app_cli_printPrompt();
-    }
+    /* Reset is_rx_pending to FALSE */
+    is_rx_pending = FALSE;
+    /* Print result and prompt */
+    app_cli_print_result(0);
+    app_cli_printPrompt();
     break;
 
   case CMD_GET_CCA:

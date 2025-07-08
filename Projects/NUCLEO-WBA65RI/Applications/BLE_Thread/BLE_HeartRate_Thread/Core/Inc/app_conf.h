@@ -103,12 +103,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
+#define CFG_BLE_IR  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
+#define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -177,6 +177,11 @@
 #define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
 
 /**
+ * Maximum numbers of bearers that can be created for Enhanced ATT in addition to the number of links
+ */
+#define CFG_BLE_EATT_BEARER_MAX       (0)
+
+/**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
  */
 #define CFG_BLE_ATTR_PREPARE_WRITE_VALUE_SIZE       (30)
@@ -232,7 +237,16 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -288,10 +302,6 @@ typedef enum
 /* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
-extern UART_HandleTypeDef           huart1;
-#define LOG_UART_HANDLER            huart1
-extern UART_HandleTypeDef           huart1;
-#define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
 #define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
@@ -300,10 +310,6 @@ extern UART_HandleTypeDef           huart1;
 
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
-
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
 
 /* USER CODE BEGIN Logs */
 
@@ -443,19 +449,12 @@ typedef enum
    */
 #define CFG_NVMA_THREAD_NVM_SIZE                    ( 0u )
 
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_NVM_SIZE_MAX            ((2048/8)-4)
+
 /* USER CODE BEGIN NVM_Configuration */
 
 /* USER CODE END NVM_Configuration */
-
-/******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
 
 /******************************************************************************
  * Debugger
@@ -477,6 +476,14 @@ typedef enum
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
 
 #define CFG_SCM_SUPPORTED                   (1)
@@ -502,9 +509,6 @@ typedef enum
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 #endif /* USE_RADIO_LOW_ISR */
 
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (1)
-
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
@@ -524,8 +528,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 

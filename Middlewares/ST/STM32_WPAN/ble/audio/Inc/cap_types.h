@@ -603,10 +603,30 @@ typedef enum
                                                  * The pInfo field indicates information associated to the VCP subevent
                                                  * Instance through the VCP_Notification_Evt_t type.
                                                  */
-  CAP_CSIP_META_EVT,                             /* This event is notified for Coordinated Set Identification Profile.
+  CAP_CSIP_META_EVT,                            /* This event is notified for Coordinated Set Identification Profile.
                                                  * A subevent is associated of type CSIP_NotCode_t.
                                                  * The pInfo field indicates information associated to the VCP subevent
                                                  * Instance through the CSIP_Notification_Evt_t type.
+                                                 */
+  CAP_CSIP_LOCK_REQUEST_PROC_COMPLETE_EVT,      /* This event is reported once the CSIP Set Coordinator has
+                                                 * locked all Set Members
+                                                 * with BLE_STATUS_SUCCESS if successful
+                                                 * with BLE_STATUS_FAILED if some are already locked and the
+                                                 * Unlock will be start automatically.
+                                                 * This event is reported when the procedure is started by the application 
+                                                 * through CAP_CSIP_StartLockRequestProcedure
+                                                 */
+  CAP_CSIP_LOCK_RELEASE_PROC_COMPLETE_EVT,      /* This event is reported once the CSIP Set Coordinator has
+                                                 * unlocked all Set Members
+                                                 * The status indicates the result of this procedure
+                                                 * This event is reported when the procedure is started by the application 
+                                                 * through CAP_CSIP_StartLockReleaseProcedure
+                                                 */
+  CAP_CSIP_ORDERED_ACCESS_PROC_COMPLETE_EVT,    /* This event is reported once the CSIP Set Coordinator has
+                                                 * checked that all Set Members are unlocked
+                                                 * The status indicates the result of this procedure
+                                                 * This event is reported when the procedure is started by the application 
+                                                 * through CAP_CSIP_StartOrderedAccessProcedure
                                                  */
 } CAP_NotCode_t;
 

@@ -19,48 +19,82 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<h2 id="__zigbeedirect_onoff-application-description__"><strong>ZigbeeDirect_OnOff_Server_Router_Identify Application Description</strong></h2>
-</br>
-<p>Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones 
+<h2 id="__zigbeedirect_onoff-application-description__"><strong>## __ZigbeeDirect_OnOff_Server_Router_Identify Application Description__</strong></h2>
+<p></br>
+Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones 
 or tablets without the need for a dedicated Zigbee hub or gateway.
 Inside the Zigbee Direct ecosystem, you have two main actors : the ZVD (Zigbee Virtual Device) and the ZDD 
-(Zigbee Direct Device). On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by 
-sending On and Off commands.</p>
+(Zigbee Direct Device). 
+On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by sending On/Off and level control commands.</p>
 <h3 id="__keywords__"><strong>Keywords</strong></h3>
 <p>Connectivity, ZigbeeDirect, Zigbee protocol, BLE, 802.15.4 protocol</p>
 <h3 id="__hardware-requirements__"><strong>Hardware Requirements</strong></h3>
 <p>For this application it is requested to have at least:</p>
 <ul>
 <li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff</strong></li>
-<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong> (Use case 2 only)</li>
 <li>One IOS device loaded with Ubisys Smart Home application</li>
+<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong> </li>
 </ul>
-
-</ul>
-<h3 id="__demo-use-case-2__"><strong>Demo use case 2</strong></h3>
+<p>By default the ZDD is the coordinator, if you want the ZVD to be the coordinator remove the ZDD_IS_ZC flag on your IDE preprocessor options and take a look at the part __Demo use case 2__.</p>
+<h3 id="__demo-use-case-1__"><strong>Demo use case 1</strong></h3>
 <p></br></p>
 <pre>
 
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)                ZD (Zigbee Device)                                                       
-                   +-------------------------------+           +-----------------+                +-----------------+
-                   |                               |           |                 |                |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |                | WBA5 or WBA6    |
-                   |      (running on IOS)         |           | Nucleo board    |                | Nucleo board    |
-                   |                               |           |                 |                |                 |
-     Use the    => |                               | --------> |                 |=> LED toggle   |                 |
-    dedicated      |                               |           |                 |                |                 |
- smartphone apps   |                               |           |                 |                |                 |
-  to control the   |                               |           |                 |                |                 |
-  LED on the ZDD   |                               |           |                 |                |                 |
-   switch item  => |                               | --------> |                 | ----------->   |                 |=> LED toggle
-                   |                               |           |                 |                |                 |
-                   |-------------------------------|           |-----------------|                |-----------------|
+In this Demo, ZDD is the Coordinator.
+
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
+                   +-------------------------------+           +-----------------+              +-----------------+
+                   |                               |           |                 |              |                 |
+                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
+                   |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
+                   |                               |           |                 |              |                 |
+     Use the    => |                               | --------> |                 |=> LED toggle |                 |
+    dedicated      |                               |           |                 |              |                 |
+ smartphone apps   |                               |           |                 |              |                 |
+  to control the   |                               |           |                 |              |                 |
+  LED on the ZDD   |                               |           |                 |              |                 |
+   switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
+................   |                               |           |                 |              |                 |
+                   |-------------------------------|           |-----------------|              |-----------------|
+
 
 </pre> 
 
 <h3 id="__application-setup__"><strong>Application Setup</strong></h3>
 <ul>
-<li>First, open the ZDD project, build it and load your generated application on your STM32WBA55xx or STM32WBA65xx devices.</li>
+<li>First, open the project, build it and load your generated application on your STM32WBAxx device </li>
+<li><p>To run the application :</p>
+<ol>
+<li>Start the board. This board is configured and is acting as a Zigbee Direct Device. </li>
+<li>Launch the Ubisys Application and follow the instructions described in the chapter &quot; Demo 1 procedure&quot; of following wiki page :
+<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup">https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</a></li>
+</ol>
+</li>
+</ul>
+<h3 id="__demo-use-case-2__"><strong>Demo use case 2</strong></h3>
+<p></br></p>
+<pre>
+In this Demo, ZVD is the Coordinator.
+
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
+                   +-------------------------------+           +-----------------+              +-----------------+
+                   |                               |           |                 |              |                 |
+                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
+                   |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
+                   |                               |           |                 |              |                 |
+     Use the    => |                               | --------> |                 |=> LED toggle |                 |
+    dedicated      |                               |           |                 |              |                 |
+ smartphone apps   |                               |           |                 |              |                 |
+  to control the   |                               |           |                 |              |                 |
+  LED on the ZDD   |                               |           |                 |              |                 |
+   switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
+................   |                               |           |                 |              |                 |
+                   |-------------------------------|           |-----------------|              |-----------------|
+
+</pre> 
+
+<h3 id="__application-setup__"><strong>Application Setup</strong></h3>
+<ul>
 <li>To run the application :<ol>
 <li>Start the first board. This board is configured as Zigbee Direct Device. 
 Launch the Ubisys Application and follow the instructions described in the chapter &quot; Demo 2 procedure&quot; of following wiki page :
@@ -116,4 +150,3 @@ Flow control   = none</br>
 Terminal   &quot;Go to the Line&quot; </br> </p>
 </li>
 </ul>
-</body></html>

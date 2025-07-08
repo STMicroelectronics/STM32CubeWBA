@@ -20,45 +20,70 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2pserverthreadx-application-description"><strong>BLE_p2pServerThreadX Application Description</strong></h2>
-<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits). - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications</a></p>
-<p>Peer to Peer Server device is part of Peer to Peer Profile. It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
-<p>BLE p2pServer application advertises and waits for a connection from either:</p>
+<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br />
+For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
+<p>The Peer to Peer Server device is part of the Peer to Peer Profile.<br />
+It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
+<p>The BLE p2pServer application advertises and waits for a connection from either:</p>
 <ul>
-<li>BLE p2pClient application running on STM32WBAxx devices</li>
-<li>remote interface</li>
+<li>The BLE p2pClient application running on STM32WBAxx devices.<br />
+</li>
+<li>The remote interface.</li>
 </ul>
-<p>Once connected, BLE p2pServer can receive messages from the Client and send notification to it.</p>
+<p>Once connected, the BLE p2pServer can receive messages from the Client and send notification to it.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx Nucleo board.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
-<li>Another STM32WBAxx Nucleo board may be necessary to run BLE p2pClient or BLE p2pRouter application.</li>
+<li>This application runs on STM32WBA55xx Nucleo board.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
+<li>Another STM32WBAxx Nucleo board may be necessary to run the BLE p2pClient or BLE p2pRouter application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file</p>
-<p>Use one of the following remote interface to interact with your device<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
-<p>Reset the STM32WBAxx Nucleo board and launch remote interface on PC/android/ios device.</p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Open remote interface:
-<ul>
-<li>Select the p2pS_xx in the device list, where xx is the 2 last digits of the BD ADDRESS.<br />
+<li>Open your preferred toolchain.<br />
 </li>
-<li>Connect it.<br />
+<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file.</li>
+</ul>
+<p>Use one of the following remote interface to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
+<p>Reset the STM32WBAxx Nucleo board and launch the remote interface on PC/android/ios device.</p>
+<ul>
+<li>Open the remote interface:
+<ul>
+<li>Select the p2pS_xx in the device list, where xx are the last 2 digits of the BD ADDRESS.<br />
+</li>
+<li>Connect to it.<br />
 </li>
 <li>Select the P2P Server service.</li>
 </ul></li>
 <li>On remote interface, click on the LED icon to switch On/Off LED1 (blue) of the STM32WBAxx Nucleo board.</li>
 </ul>
-<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board, is associated to the following functions:</p>
-<p>B1 : - not connected : launch fast advertising - connected : send notification message to the client</p>
-<p>B2 : - not connected : clear security database - connected : launch fast advertising to allow multi-connection</p>
-<p>B3 : - not connected : no action - connected : update connection interval</p>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> Peer To Peer Applications</a></p>
+<p>Each button (B1, B2, B3) on the STM32WBAxx Nucleo board is associated to the following functions:</p>
+<ul>
+<li>B1 :
+<ul>
+<li>Not connected : Launch fast advertising.<br />
+</li>
+<li>Connected : Send notification message to the client.</li>
+</ul></li>
+<li>B2 :
+<ul>
+<li>Not connected : Clear security database.<br />
+</li>
+<li>Connected : Launch fast advertising to allow multi-connection.</li>
+</ul></li>
+<li>B3 :
+<ul>
+<li>Not connected : Not used.<br />
+</li>
+<li>Connected : Update connection interval.</li>
+</ul></li>
+</ul>
+<p>For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki.</a></p>
 </div>
 </div>
 </body>

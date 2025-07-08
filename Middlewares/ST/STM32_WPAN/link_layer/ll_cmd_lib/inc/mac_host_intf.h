@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/mac_host_intf.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/mac_host_intf.h#1 $*/
 /**
  ********************************************************************************
  * @file    mac_host_intf.h
@@ -58,14 +58,14 @@
 #define MODE_THREE					3
 
 /**security parameters */
-#if SUPPORT_SEC
+#if SUPPORT_SEC || (!SUPPORT_RADIO_SECURITY_OT_1_2 || SUPPORT_CONFIG_LIB)
 #define KEY_SOURCE_SIZE    				 8
 #define KEY_ID_LOOKUP_DSCRP_LIST_SIZE    3
 #define MAX_NUM_OF_DEVICES_USE_KEY       8
 #define KEY_USAGE_LIST_SIZE              5
 #define KEY_SIZE                        16
 #define MAC_KEY_TBL_STRUCT_SIZE_PLUS_OVERHEAD	(sizeof(key_dscrp_st_t) + 7) /*adding 7 bytes for header parameters ( 1 opcode + 2 length + 1 mac_handle + 1 pib_attributes + 1 pib_attribute_index + 1 pib_attribute_length )*/
-#endif /*SUPPORT_SEC */
+#endif /* SUPPORT_SEC || (!SUPPORT_RADIO_SECURITY_OT_1_2 || SUPPORT_CONFIG_LIB) */
 
 
 /* The maximum number of octets that can be transmitted in the MAC Payload field (MAX_PHY_PACKET_SIZE  MIN_PDU_OVERHEAD)*/
@@ -132,6 +132,7 @@ typedef enum {
 	RANGING_NOT_SUPPORTED,
 	INTERNAL_ERROR,
 	CONDITINALLY_PASSED,
+	INVALID_STATE = 0xD0,
 	MAC_STATUS_SUCCESS = 0,
 } mac_status_enum_t;
 
@@ -292,7 +293,7 @@ typedef struct prim_sec_param_e {
 	uint8_t key_id_mod;
 } prim_sec_param_st;
 
-#if SUPPORT_SEC
+#if SUPPORT_SEC || (!SUPPORT_RADIO_SECURITY_OT_1_2 || SUPPORT_CONFIG_LIB)
 typedef union _dev_addrs_un
 {
 	uint8_t  dev_addrs_arr[EXT_ADDRESS_LENGTH];
@@ -357,7 +358,7 @@ typedef enum security_tbl_enum {
 	KEY_USAGE_DSCRP_ST_LIST
 } sec_tbl_enum_t;
 
-#endif /*SUPPORT_SEC */
+#endif /* SUPPORT_SEC || (!SUPPORT_RADIO_SECURITY_OT_1_2 || SUPPORT_CONFIG_LIB) */
 
 /**
  * @brief structure represents pan descriptor parameters
@@ -497,6 +498,8 @@ typedef struct {
 	/* The originator of the key purportedly used by the originator of the received frame */
 	uint8_t key_src[8];
 #endif
+	/*frame pending bit field from received data frame*/
+	uint8_t frame_pending;
 } mcps_indicate_params_st_t;
 
 /* MLME Association Status */
@@ -931,6 +934,27 @@ struct mac_dispatch_tbl {
 	 */
 	void (*mlme_set_ant_div_rssi_threshold_cfm)(void* mac_cntx_ptr, uint8_t status, int8_t rssi_threshold);
 #endif /* SUPPORT_ANT_DIV */
+#if SUPPORT_CONFIG_LIB
+	/**
+	 * @brief  MLME-SET-CONFIG-LIB-PARAMS.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		     : [in] indicate the used mac context
+	 * @param  status			     : [in] indicates the status of setting configurable library params
+	 * @param  ptr_config_lib_params : [in] indicates the pointer of currently used configurable library parameters
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_set_config_lib_params_cfm)(void* mac_cntx_ptr, uint8_t status, config_lib_st* ptr_config_lib_params);
+	/**
+	 * @brief  MLME-INIT.CONFIRM primitive callback
+	 *
+	 * @param  mac_cntx_ptr		     : [in] indicate the used mac context
+	 * @param  status			     : [in] indicates the status of init operation
+	 *
+	 * @retval None.
+	 */
+	void (*mlme_init_cfm)(void* mac_cntx_ptr, uint8_t status);
+#endif /* SUPPORT_CONFIG_LIB */
 #if SUPPORT_SEC
 	/*===== Get key table Confirm Callback =====*/
 	/**
@@ -1638,6 +1662,54 @@ mac_status_enum_t mac_set_default_ant_id(uint32_t mac_hndl, uint8_t enable);
  */
 mac_status_enum_t mac_set_ant_div_rssi_threshold(uint32_t mac_hndl, int8_t rssi_threshold);
 #endif /* SUPPORT_ANT_DIV */
+#if SUPPORT_CONFIG_LIB
+/**
+ * @fn mac_set_config_lib_params
+ *
+ * @brief   set configurable library parameters
+ *
+ * @param   mac_hndl	          : [in] the MAC instance handle
+ * @param   ptr_config_lib_params : [in] pointer to configurable library parameters structure
+ *
+ * @retval mac_status_enum_t.
+ */
+mac_status_enum_t mac_set_config_lib_params(uint32_t mac_hndl, config_lib_st* ptr_config_lib_params);
+
+/**
+ * @fn mac_get_config_lib_params
+ *
+ * @brief   get configurable library parameters
+ *
+ * @param   mac_hndl	          : [in] the MAC instance handle
+ * @param   ptr_config_lib_params : [out] pointer to configurable library parameters structure
+ *
+ * @retval None .
+ */
+void mac_get_config_lib_params(uint32_t mac_hndl, config_lib_st* ptr_config_lib_params);
+
+/**
+ * @fn mac_set_rtl_polling_time
+ *
+ * @brief   set RTL polling time
+ *
+ * @param   mac_hndl	     : [in] the MAC instance handle
+ * @param   rtl_polling_time : [in] RTL polling time
+ *
+ * @retval void
+ */
+void mac_set_rtl_polling_time(uint32_t mac_hndl, uint8_t rtl_polling_time);
+
+/**
+ * @fn mac_get_rtl_polling_time
+ *
+ * @brief   get RTL polling time
+ *
+ * @param   mac_hndl : [in] the MAC instance handle
+ *
+ * @retval returns current RTL polling time
+ */
+uint8_t mac_get_rtl_polling_time(uint32_t mac_hndl);
+#endif /* SUPPORT_CONFIG_LIB */
 #endif /* INCLUDE_MAC_HOST_INTF_H_ */
 /**
  * @}

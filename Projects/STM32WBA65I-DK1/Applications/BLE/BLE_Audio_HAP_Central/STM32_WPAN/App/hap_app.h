@@ -442,6 +442,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void);
 void HAPAPP_Init(void);
 tBleStatus HAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t HAPAPP_StartScanning(void);
@@ -469,6 +470,7 @@ void HAPAPP_CISConnected(uint16_t Conn_Handle);
 void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void HAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void HAPAPP_BondLost(uint16_t Conn_Handle);
+void HAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif

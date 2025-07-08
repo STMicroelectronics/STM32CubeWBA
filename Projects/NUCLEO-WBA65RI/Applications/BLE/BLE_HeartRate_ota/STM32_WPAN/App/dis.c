@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "dis.h"
 
 /* USER CODE BEGIN Includes */
@@ -199,6 +198,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             }
           }
           break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -276,11 +276,11 @@ void DIS_Init(void)
                              &(DIS_Context.DisSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DIS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DIS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: DIS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: DisSvcHdle = 0x%04X\n",DIS_Context.DisSvcHdle);
   }
 
   /**
@@ -303,7 +303,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MANS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MansCharHdle = 0x%04X\n",DIS_Context.MansCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char1 */
@@ -341,11 +341,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MANS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MANS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MANS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MANS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_1 */
 

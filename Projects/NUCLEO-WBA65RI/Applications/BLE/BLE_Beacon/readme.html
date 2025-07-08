@@ -20,32 +20,45 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_beacon-application-description"><strong>BLE_Beacon Application Description</strong></h2>
-<p>How to advertise 4 types of beacon ( tlm, uuid, url, iBeacon ). For more details on Beacon profile, please refer to : <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Beacon"> STM32WBA Bluetooth Low Energy - Beacon</a></p>
+<p>How to advertise 4 types of beacon (tlm, uuid, url, iBeacon).<br />
+For more details on Beacon profile, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Beacon"> STM32WBA Bluetooth Low Energy - Beacon</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65xx devices.</li>
+<li>This application runs on STM32WBA65xx devices.<br />
+</li>
 <li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the board at the address 0x08000000 with the binary file</p>
+<p>In order to make the program work:</p>
 <ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the board at the address 0x08000000 with the binary file.<br />
+</li>
 <li>4 Beacon types are available and have to be defined in app_con.h file :
 <ul>
 <li>#define CFG_BEACON_TYPE must be set at one of the following value :
 <ul>
-<li>CFG_EDDYSTONE_UID_BEACON_TYPE</li>
-<li>CFG_EDDYSTONE_URL_BEACON_TYPE</li>
-<li>CFG_EDDYSTONE_TLM_BEACON_TYPE</li>
+<li>CFG_EDDYSTONE_UID_BEACON_TYPE<br />
+</li>
+<li>CFG_EDDYSTONE_URL_BEACON_TYPE<br />
+</li>
+<li>CFG_EDDYSTONE_TLM_BEACON_TYPE<br />
+</li>
 <li>CFG_IBEACON</li>
 </ul></li>
 </ul></li>
-<li>Run the example</li>
-<li>On the smartphone, download a Beacon Scanner application</li>
-<li>Enable Bluetooth communications</li>
-<li>Run Beacon Scanner application and start scanning</li>
-<li>The Beacon information are displayed on the smartphone.</li>
+<li>Run the example.<br />
+</li>
+<li>On the smartphone, download a Beacon Scanner application.<br />
+</li>
+<li>Enable Bluetooth communications.<br />
+</li>
+<li>Run Beacon Scanner application and start scanning.<br />
+</li>
+<li>The Beacon information is displayed on the smartphone.</li>
 </ul>
 </div>
 </div>

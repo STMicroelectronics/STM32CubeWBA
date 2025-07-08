@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -103,12 +103,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
+#define CFG_BLE_IR  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
+#define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -184,6 +184,11 @@
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  */
 #define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (2048)
+
+/**
+ * Maximum numbers of bearers that can be created for Enhanced ATT in addition to the number of links
+ */
+#define CFG_BLE_EATT_BEARER_MAX       (0)
 
 /**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
@@ -293,10 +298,6 @@ typedef enum
 #define CFG_LOG_SUPPORTED           (1U)
 
 /* Usart used by LOG */
-extern UART_HandleTypeDef           huart1;
-#define LOG_UART_HANDLER            huart1
-extern UART_HandleTypeDef           huart1;
-#define LOG_UART_HANDLER            huart1
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
@@ -488,19 +489,12 @@ typedef enum
    */
 #define CFG_NVMA_THREAD_NVM_SIZE                    ( 0u )
 
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_NVM_SIZE_MAX            ((2048/8)-4)
+
 /* USER CODE BEGIN NVM_Configuration */
 
 /* USER CODE END NVM_Configuration */
-
-/******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
 
 /******************************************************************************
  * Debugger
@@ -555,8 +549,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -566,14 +563,14 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (60000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (51000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (4U)
 #define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (400U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE             (400U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE               (200U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (3U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10500U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (9000U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (4U)
 #define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (3000U)  /* words (32 bits) */
 #define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \

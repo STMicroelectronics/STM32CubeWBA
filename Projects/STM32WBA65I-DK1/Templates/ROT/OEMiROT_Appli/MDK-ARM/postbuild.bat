@@ -1,5 +1,7 @@
 @ECHO OFF
-:: arg1 is the binary type (1 nonsecure, 2 secure)
+:: arg1 is the security type (nonsecure, secure)
+:: When script is called from STM32CubeIDE : set signing="%2"
+:: When script is called from IAR or KEIL  : set "signing=%2"
 set "signing=%2"
 
 :: Getting the Trusted Package Creator CLI path
@@ -75,7 +77,6 @@ set "python=python "
 :postbuild
 echo Postbuild %signing% image >> %current_log_file% 2>>&1
 
-::IF %signing% == "secure" (
 ::update xml file : input file
 %python%%applicfg% xmlval -v %s_app_bin_xml_field% --string -n %fw_in_bin_xml_field% %s_code_xml% --vb >> %current_log_file% 2>>&1
 IF !errorlevel! neq 0 goto :error
@@ -105,7 +106,6 @@ IF !errorlevel! neq 0 goto :error
 
 %python%%applicfg% xmlval -v %s_data_init_sign_bin_xml_field% --string -n %fw_out_bin_xml_field% %s_data_init_xml% --vb >> %current_log_file% 2>>&1
 IF !errorlevel! neq 0 goto :error
-::)
 
 exit 0
 

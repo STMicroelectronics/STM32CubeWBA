@@ -3,7 +3,7 @@
  * @heading NWK Layer
  * @brief NWK header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_NWK_H
@@ -1197,9 +1197,10 @@ bool ZbNwkIfGetTxPower(struct ZigBeeT *zb, const char *name, int8_t *tx_power);
  * which configures TX Power Control in the NWK and MAC.
  * @param zb ZigBee stack structure
  * @param enable New duty cycle setting
+ * @param accel Enable or disable accelerated mode. Should only be enabled for testing purposes only.
  * @return Returns true on Success, or false otherwise
  */
-bool ZbNwkToggleDutyCycle(struct ZigBeeT *zb, bool enable);
+bool ZbNwkToggleDutyCycle(struct ZigBeeT *zb, bool enable, bool accel);
 
 /* Undocumented API. Only used for testing / debugging purposes.
  * Only available when stack compiled with CONFIG_ZB_ENABLE_GU defined.

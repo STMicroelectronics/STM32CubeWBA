@@ -73,7 +73,6 @@ void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_CRC_Init(void);
-void MX_RNG_Init(void);
 void MX_AES_Init(void);
 void MX_PKA_Init(void);
 

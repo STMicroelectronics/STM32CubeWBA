@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "dt_serv.h"
 
 /* USER CODE BEGIN Includes */
@@ -176,7 +175,7 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
                 LOG_INFO_APP("==>> Notification disabled\n");
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
@@ -188,7 +187,7 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
                 LOG_INFO_APP("==>> Tx_char_handle Notification enabled\n");
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
@@ -220,7 +219,7 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_3_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_3_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_3_Disabled_BEGIN */
@@ -232,7 +231,7 @@ static SVCCTL_EvtAckStatus_t DT_SERV_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_3_COMSVC_Notification_BEGIN */
                 LOG_INFO_APP("==>> Through_char_handle attribute enabled\n");
                 /* USER CODE END Service1_Char_3_COMSVC_Notification_BEGIN */
@@ -433,11 +432,11 @@ void DT_SERV_Init(void)
                              &(DT_SERV_Context.Dt_servSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DT_SERV, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DT_SERV, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: DT_SERV \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: Dt_servSvcHdle = 0x%04X\n",DT_SERV_Context.Dt_servSvcHdle);
   }
 
   /**
@@ -460,7 +459,7 @@ void DT_SERV_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : TX_CHAR\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Tx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Tx_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -487,7 +486,7 @@ void DT_SERV_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : RX_CHAR\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Rx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Rx_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -514,7 +513,7 @@ void DT_SERV_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : THROUGH_CHAR\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Through_CharCharHdle = 0x%04X\n",DT_SERV_Context.Through_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -551,11 +550,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value TX_CHAR command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value TX_CHAR command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value TX_CHAR command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value TX_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -570,11 +569,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value RX_CHAR command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value RX_CHAR command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value RX_CHAR command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value RX_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -589,11 +588,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value THROUGH_CHAR command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value THROUGH_CHAR command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value THROUGH_CHAR command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value THROUGH_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

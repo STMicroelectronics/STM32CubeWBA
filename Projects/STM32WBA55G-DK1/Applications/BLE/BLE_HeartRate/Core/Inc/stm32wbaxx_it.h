@@ -65,7 +65,6 @@ void RADIO_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 void ADC4_IRQHandler(void);
-
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

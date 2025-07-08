@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0-RC1</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x30000000-0x3000FFFF) IROM(0x0C000000-0xC07DFFF) IROM2(0x0C07E000-0xC07FFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -358,7 +358,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>../../../../../../Drivers/CMSIS/Include</IncludePath>
+              <IncludePath>../../../../../../Drivers/CMSIS/Include;../../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -437,9 +437,6 @@
               <FilePath>../../Secure/Src/system_stm32wbaxx_s.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
@@ -1428,6 +1425,9 @@
               </FileOption>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>

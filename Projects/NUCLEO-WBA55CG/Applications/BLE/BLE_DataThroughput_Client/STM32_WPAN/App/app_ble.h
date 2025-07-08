@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -146,6 +147,9 @@ APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_H
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 const uint8_t* BleGetBdAddress(void);
+tBleStatus SetGapAppearance(uint16_t appearance);
+tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
+void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen );
 

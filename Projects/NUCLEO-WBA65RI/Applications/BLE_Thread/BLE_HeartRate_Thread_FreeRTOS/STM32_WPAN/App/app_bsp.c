@@ -189,17 +189,17 @@ void APP_BSP_StandbyExit( void )
   BSP_JOY_Init( JOY1, JOY_MODE_EXTI, JOY_ALL );
 #endif /* CFG_BSP_ON_DISCOVERY */
 
-#ifdef APPLICATION_ON_CEB
+#ifdef CFG_BSP_ON_CEB
   /* Button HW Initialization */
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
-#endif /* APPLICATION_ON_CEB */
+#endif /* CFG_BSP_ON_CEB */
 
-#ifdef APPLICATION_ON_NUCLEO
+#ifdef CFG_BSP_ON_NUCLEO
   /* Buttons HW Initialization */
   BSP_PB_Init( B1, BUTTON_MODE_EXTI );
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
   BSP_PB_Init( B3, BUTTON_MODE_EXTI );
-#endif /* APPLICATION_ON_NUCLEO */
+#endif /* CFG_BSP_ON_NUCLEO */
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 }
 
@@ -554,7 +554,7 @@ static void Button_InitTask( void )
 #ifdef CFG_BSP_ON_CEB
   /* Task associated with push button B2 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
-#else // CFG_BSP_ON_CEB
+#else /* CFG_BSP_ON_CEB */
   /* Task associated with push button B1 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B1, UTIL_SEQ_RFU, APP_BSP_Button1Action );
 
@@ -581,11 +581,16 @@ void APP_BSP_ButtonInit( void )
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
 #endif /* CFG_BSP_ON_CEB */
 #ifdef CFG_BSP_ON_NUCLEO
-  BSP_PB_Init( B1, BUTTON_MODE_EXTI );
+  BSP_PB_Init( B1, BUTTON_MODE_GPIO );
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
   BSP_PB_Init( B3, BUTTON_MODE_EXTI );
 #endif /* CFG_BSP_ON_NUCLEO */
 
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   /*B1 --> PC13 */
+  
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_C, GPIO_PIN_13);
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
   /* Button task initialisation */
   Button_InitTask();
 
@@ -648,7 +653,7 @@ static void Button_TriggerActions( void * arg )
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
 
 #ifdef CFG_BSP_ON_CEB
-  /* For B-WBA5M-WPAN board, Button B2 as same task as Button B1 on other boards */
+
   if ( p_buttonDesc->button == B2 )
   {
 #ifdef CFG_BSP_ON_FREERTOS
@@ -662,7 +667,7 @@ static void Button_TriggerActions( void * arg )
 #endif /* CFG_BSP_ON_SEQUENCER */
   }
 #endif /* CFG_BSP_ON_CEB */
-#ifdef CFG_BSP_ON_NUCLEO
+#if (defined CFG_BSP_ON_NUCLEO) || (defined CFG_BSP_ON_DISCOVERY )
   switch ( p_buttonDesc->button )
   {
 #ifdef CFG_BSP_ON_FREERTOS
@@ -708,7 +713,7 @@ static void Button_TriggerActions( void * arg )
     default:
         break;
   }
-#endif /* CFG_BSP_ON_NUCLEO */
+#endif /* (defined CFG_BSP_ON_NUCLEO) || (defined CFG_BSP_ON_DISCOVERY ) */
 }
 
 /**
@@ -725,7 +730,6 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 
   /* Parse received frame */
 #ifdef CFG_BSP_ON_CEB
-  /* For Board B_WBA5M_WPAN, the only button (same as B1 on other board) is named B2. */
   if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
        (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
   {
@@ -828,4 +832,8 @@ void BSP_PB_Callback( Button_TypeDef button )
   UTIL_TIMER_StartWithPeriod( &buttonDesc[button].longTimerId, BUTTON_LONG_PRESS_SAMPLE_MS );
 }
 
+void HAL_PWR_WKUP2_Callback(void)
+{
+  BSP_PB_Callback(B1);
+}
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */

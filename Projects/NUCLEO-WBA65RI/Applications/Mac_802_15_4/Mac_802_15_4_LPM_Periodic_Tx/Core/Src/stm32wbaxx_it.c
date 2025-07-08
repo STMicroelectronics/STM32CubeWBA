@@ -67,7 +67,6 @@ void LPTIM1_IRQHandler(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -230,8 +229,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -376,21 +376,6 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-
-/**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
 }
 
 /**

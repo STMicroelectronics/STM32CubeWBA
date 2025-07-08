@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -17,16 +17,14 @@
   ******************************************************************************
   */
 
-
 /* Includes ------------------------------------------------------------------*/
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "appli_region_defs.h"
-#include "main.h"
 #include "com.h"
 #include "common.h"
-#include "s_data.h"
+#include "appli_region_defs.h"
+#include "main.h"
 #include "Driver_Flash.h"
 #if defined(USE_STM32WBA65I_DK1)
 #include "stm32wba65i_discovery_conf.h"
@@ -34,13 +32,17 @@
 #include "stm32wba55g_discovery_conf.h"
 #endif
 
-extern ARM_DRIVER_FLASH LOADER_FLASH_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_DEV_NAME;
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+extern ARM_DRIVER_FLASH SPI_FLASH_DEV_NAME;
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
 /* Avoids the semihosting issue */
 #if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
 __asm("  .global __ARM_use_no_argv\n");
 #endif /* defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "fw_update_app.h"
+#include "s_data.h"
 
 #if defined(__ICCARM__)
 #include <LowLevelIOInterface.h>
@@ -141,7 +143,7 @@ int main(void)
 {
   /*  set example to const : this const changes in binary without rebuild */
   pUserAppId = (uint8_t *)&UserAppId;
-  
+
   /* SAU/IDAU, FPU and interrupts secure/non-secure allocation setup done */
   /* in SystemInit() based on partition_stm32xxx.h file's definitions. */
 
@@ -149,19 +151,15 @@ int main(void)
   /* Enable SecureFault handler (HardFault is default) */
   SCB->SHCSR |= SCB_SHCSR_SECUREFAULTENA_Msk;
 
-  /* STM32xxx **SECURE** HAL library initialization:
-       - Secure Systick timer is configured by default as source of time base,
-         but user can eventually implement his proper time base source (a general
-         purpose timer for example or other time source), keeping in mind that
-         Time base duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined
-         and handled in milliseconds basis.
-       - Low Level Initialization
-     */
-
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  /* STM32xxx HAL library initialization:
+  - Systick timer is configured by default as source of time base, but user
+  can eventually implement his proper time base source (a general purpose
+  timer for example or other time source), keeping in mind that Time base
+  duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and
+  handled in milliseconds basis.
+  - Set NVIC Group Priority to 3
+  - Low Level Initialization
+  */
   HAL_Init();
 
   /* !!! To boot in a secure way, the RoT has configured and activated the Memory Protection Unit
@@ -213,34 +211,6 @@ int main(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
 #endif /* GPIOH */
 
-#if defined(GPIOA)
-  HAL_GPIO_ConfigPinAttributes(GPIOA, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOA */
-#if defined(GPIOB)
-  HAL_GPIO_ConfigPinAttributes(GPIOB, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOB */
-#if defined(GPIOC)
-  HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOC */
-#if defined(GPIOD)
-  HAL_GPIO_ConfigPinAttributes(GPIOD, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOD */
-#if defined(GPIOE)
-  HAL_GPIO_ConfigPinAttributes(GPIOE, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOE */
-#if defined(GPIOG)
-  HAL_GPIO_ConfigPinAttributes(GPIOG, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOG */
-#if defined(GPIOH)
-  HAL_GPIO_ConfigPinAttributes(GPIOH, GPIO_PIN_All, GPIO_PIN_NSEC);
-#endif /* GPIOH */
-
-
-  /* remove from NonSecure the PIN reserved for Secure */
-  HAL_GPIO_ConfigPinAttributes(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SEC);
-#if !defined(USE_STM32WBA55G_DK1)
-  HAL_GPIO_ConfigPinAttributes(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SEC);
-#endif /* USE_STM32WBA55G_DK1 */
   /* Leave the GPIO clocks enabled to let non-secure having I/Os control */
 
   /* Secure SysTick should rather be suspended before calling non-secure  */
@@ -250,9 +220,6 @@ int main(void)
   /* running to toggle the secure IO and the following is commented:      */
   /* HAL_SuspendTick(); */
 
-
-  /*************** Setup and jump to non-secure *******************************/
-
   printf("\r\n======================================================================");
   printf("\r\n=              (C) COPYRIGHT 2024 STMicroelectronics                 =");
   printf("\r\n=                                                                    =");
@@ -260,20 +227,26 @@ int main(void)
   printf("\r\n======================================================================");
   printf("\r\n\r\n");
 
-  if ( LOADER_FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
+  if ( FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
   {
     printf("Driver Flash Init : Failed");
+    Error_Handler();
   }
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+  if (SPI_FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
+  {
+    printf("Error while initializing EEPROM Interface");
+    Error_Handler();
+  }
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
+
   /* User App firmware runs*/
   FW_APP_Run();
-  /* Non-secure software does not return, this code is not executed */
 
   /* Infinite loop */
+  while (1U)
+  {}
 
-  while (1)
-  {
-
-  }
 }
 
 #if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
@@ -445,7 +418,6 @@ void Error_Handler(void)
   {
 
   }
-
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -462,9 +434,8 @@ void assert_failed(uint8_t *file, uint32_t line)
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
   /* Infinite loop */
-  while (1)
+  while (1U)
   {
   }
-
 }
 #endif /* USE_FULL_ASSERT */

@@ -115,7 +115,6 @@ static AMM_InitParameters_t ammInitConfig =
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
-
 /* ThreadX objects declaration */
 
 static TX_THREAD      AmmTaskHandle;
@@ -126,7 +125,7 @@ static TX_SEMAPHORE   RngSemaphore;
 
 static TX_THREAD      AppliTaskHandle;
 
-#if (CFG_LPM_STDBY_SUPPORTED >0)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
 static TX_THREAD      IdleTaskHandle;
 #endif
 
@@ -158,7 +157,7 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 void MX_APPE_InitTask(ULONG lArgument);
 static void RNG_Task_Entry(ULONG lArgument);
 
-#if (CFG_LPM_STDBY_SUPPORTED >0)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
 static void IDLE_Task_Entry(ULONG lArgument);
 #endif
 
@@ -367,19 +366,33 @@ static void SystemPower_Config(void)
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_SCM_SUPPORTED == 1)
@@ -403,7 +416,7 @@ static void SystemPower_Config(void)
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
-#if (CFG_LPM_STDBY_SUPPORTED >0)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
@@ -419,7 +432,7 @@ static void SystemPower_Config(void)
     LOG_ERROR_APP( "IDLE ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
-#endif /* (CFG_LPM_STDBY_SUPPORTED >0) */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -447,6 +460,8 @@ static void APPE_RNG_Init(void)
   UINT TXstatus;
   CHAR *pStack;
 
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Create Random Number Generator ThreadX objects */
@@ -514,7 +529,7 @@ static void AMM_Task_Entry(ULONG lArgument)
   }
 }
 
-#if (CFG_LPM_STDBY_SUPPORTED >0)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
 static void IDLE_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
@@ -644,7 +659,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
-  
+
   /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
@@ -665,7 +680,7 @@ void ThreadXLowPowerUserEnter( void )
 #if ( CFG_LPM_LEVEL != 0 )
   LL_PWR_ClearFlag_STOP();
 
-#if (CFG_LPM_STDBY_SUPPORTED >0)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_BLE_EnterDeepSleep();
@@ -718,7 +733,7 @@ void ThreadXLowPowerUserExit( void )
   /* Enable SysTick Interrupt */
   SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
-  ll_sys_dp_slp_exit();
+  (void)ll_sys_dp_slp_exit();
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */

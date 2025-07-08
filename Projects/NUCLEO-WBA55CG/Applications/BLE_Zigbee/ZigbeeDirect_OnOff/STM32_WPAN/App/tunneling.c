@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "tunneling.h"
 
 /* USER CODE BEGIN Includes */
@@ -166,7 +165,7 @@ static SVCCTL_EvtAckStatus_t TUNNELING_EventHandler(void *p_Event)
               /* USER CODE END Service4_Char_1_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
                 /* USER CODE BEGIN Service4_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service4_Char_1_Disabled_BEGIN */
@@ -178,15 +177,15 @@ static SVCCTL_EvtAckStatus_t TUNNELING_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
-                /* USER CODE BEGIN Service4_Char_1_COMSVC_Indication_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
+                /* USER CODE BEGIN Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
 
-                /* USER CODE END Service4_Char_1_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
                 notification.EvtOpcode = TUNNELING_TUNNZDTSNPDU_INDICATE_ENABLED_EVT;
                 TUNNELING_Notification(&notification);
-                /* USER CODE BEGIN Service4_Char_1_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
 
-                /* USER CODE END Service4_Char_1_COMSVC_Indication_END */
+                /* USER CODE END Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
                 break;
 
               default:

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -226,8 +226,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 

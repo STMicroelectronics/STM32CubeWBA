@@ -216,7 +216,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Thread Initialisation */
   APP_THREAD_Init();
 
-
   /* USER CODE BEGIN APPE_Init_2 */
 
   /* USER CODE END APPE_Init_2 */
@@ -365,6 +364,8 @@ static void SystemPower_Config(void)
  */
 static void APPE_RNG_Init(void)
 {
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Register Random Number Generator task */
@@ -485,7 +486,7 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE END UTIL_SEQ_PostIdle_1 */
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-  ll_sys_dp_slp_exit();
+  (void)ll_sys_dp_slp_exit();
   UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */

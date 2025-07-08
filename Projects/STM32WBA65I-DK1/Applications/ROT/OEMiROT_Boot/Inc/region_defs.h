@@ -86,8 +86,8 @@
 #define S_TOTAL_RAM_SIZE        (_SRAM2_SIZE_MAX) /*! size require for Secure part */
 
 /*  This area in SRAM 2 is updated BL2 and can be lock to avoid any changes */
-#define BOOT_SHARED_DATA_SIZE        0
-#define BOOT_SHARED_DATA_BASE        (S_RAM_ALIAS(_SRAM1_SIZE_MAX))
+#define BOOT_SHARED_DATA_SIZE        0x400
+#define BOOT_SHARED_DATA_BASE        (_SRAM2_BASE_S + _SRAM2_SIZE_MAX - BOOT_SHARED_DATA_SIZE)
 /*
  * Boot partition structure if MCUBoot is used:
  * 0x0_0000 Bootloader header
@@ -151,7 +151,7 @@
 /*  regression from local tool with non secure attachment
  *  This avoid blocking board in case of hardening error */
 #define BL2_DATA_START                      (_SRAM2_BASE_S)
-#define BL2_DATA_SIZE                       (_SRAM2_SIZE_MAX)
+#define BL2_DATA_SIZE                       (_SRAM2_SIZE_MAX - BOOT_SHARED_DATA_SIZE)
 #define BL2_DATA_LIMIT                      (BL2_DATA_START + BL2_DATA_SIZE - 1)
 
 /* Define BL2 MPU SRAM protection to remove execution capability */

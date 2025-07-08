@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.c
+  * @file    dis_app.c
   * @author  MCD Application Team
-  * @brief   service2_app application definition.
+  * @brief   DIS application definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "dis_app.h"
 #include "dis.h"
 #include "stm32_rtos.h"
@@ -58,6 +57,7 @@ typedef struct
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DISAPP_MANUFACTURER_NAME              "STM"
 
 /* USER CODE END PD */
 
@@ -93,7 +93,7 @@ static uint8_t regulatory_certification_data_list[] =
   0x00, 0x01,  /* Regulatory Certification Data list Count: 1 */
   0x00, 0x0C,  /* Regulatory Certification Data list Length: 12 bytes */
   0x02, 0x01,  /* Regulatory Certification Data list: auth-body-continua 2, auth-body-struc-type = continua-version-struct = 1 */
-  0x00, 0x08,  /* auth-body-data.length = 8 */               
+  0x00, 0x08,  /* auth-body-data.length = 8 */
   0x01, 0x05,  /* auth-body-data:  ContinuaBodyStruct.major-IG-version = 5, ContinuaBodyStruct.minor-IG-version = 1 */
   0x00, 0x01,  /* CertifiedDeviceClassList.count = 1 */
   0x00, 0x02,  /* CertifiedDeviceClassList.length = 2 */
@@ -104,15 +104,16 @@ static uint8_t udi_for_medical_devices[] =
   0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,  /* 01 Device Identifier */
   0x11, 0x01, 0x02, 0x03,                          /* 17 Expiration Date */
   0x0A, 0x01, 0x02, 0x03,                          /* 10 Lot Number */
-  0x15, 0x01, 0x02, 0x03, 0x04, 0x05               /* 21 Serial Number */               
+  0x15, 0x01, 0x02, 0x03, 0x04, 0x05               /* 21 Serial Number */
 };
 static uint8_t PnP_ID[] =
 {
   0x01,                   /* Vendor ID Source */
   0x01, 0x02,             /* Vendor ID */
   0x01, 0x02,             /* Product ID */
-  0x01, 0x02,             /* Product Version */               
+  0x01, 0x02,             /* Product Version */
 };
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -250,7 +251,7 @@ void DIS_APP_Init(void)
   /* USER CODE BEGIN Service2_APP_Init */
   DIS_Data_t dis_information_data;
 
-  APP_DBG_MSG("DIS_APP_Init\n\r");
+  LOG_INFO_APP("DIS_APP_Init\n\r");
   /**
    * Update SOFTWARE REVISION Information
    *

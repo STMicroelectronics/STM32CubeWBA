@@ -54,8 +54,11 @@ void cli_print_aps_channel_mask(void);
 void cli_status_nwk(void);
 void cli_status_nnt(void);
 void cli_security_dump(void);
+void cli_port_print_fmt(const char *hdr, const char *fmt, ...);
+void cli_port_print_mac_debug(void *null_p, const char *pMessage);
 void APP_ZIGBEE_InitStatusDebug(void);
 void APP_ZIGBEE_App_UartRxCallback(uint8_t *pData, uint16_t iSize, uint8_t cError);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

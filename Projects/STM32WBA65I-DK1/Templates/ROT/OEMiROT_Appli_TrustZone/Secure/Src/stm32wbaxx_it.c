@@ -109,9 +109,24 @@ void UsageFault_Handler(void)
   */
 void SecureFault_Handler(void)
 {
-  /* Go to infinite loop when Secure Fault exception occurs */
-  while (1)
+  /* USER CODE BEGIN SecureFault_IRQn 0 */
+   funcptr_NS callback_NS; /* non-secure callback function pointer */
+
+  if (pSecureFaultCallback != (funcptr_NS)NULL)
   {
+    /* return function pointer with cleared LSB */
+    callback_NS = (funcptr_NS)cmse_nsfptr_create(pSecureFaultCallback);
+
+    callback_NS();
+  }
+  else
+  {
+
+    while (1)
+    {
+      /* USER CODE BEGIN W1_SecureFault_IRQn 0 */
+      /* USER CODE END W1_SecureFault_IRQn 0 */
+    }
   }
 }
 

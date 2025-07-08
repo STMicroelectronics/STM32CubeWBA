@@ -72,7 +72,6 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef hlpuart1;
 extern UART_HandleTypeDef huart1;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 /* USER CODE BEGIN EV */
 
@@ -225,8 +224,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -378,7 +378,6 @@ void RNG_IRQHandler(void)
   /* USER CODE BEGIN RNG_IRQn 0 */
 
   /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
   /* USER CODE BEGIN RNG_IRQn 1 */
 
   /* USER CODE END RNG_IRQn 1 */

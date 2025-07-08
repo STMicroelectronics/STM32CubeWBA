@@ -120,6 +120,15 @@ void PWR_DisableSleepMode( void );
   */
 uint32_t is_boot_from_standby(void);
 
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+/**
+  * @brief returns 0 if wakeup time profiling is not done.
+  */
+uint32_t LPM_is_wakeup_time_profiling_done(void);
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /**
   * @brief will save MCU context if before standby entry
   */

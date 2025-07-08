@@ -3,7 +3,7 @@
  * @heading BDB Layer
  * @brief BDB header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_BDB_H
@@ -48,9 +48,16 @@ enum ZbBdbCommissioningStatusT {
          * currently on a network. */
 };
 
-#define BDB_DEFAULT_TC_NODE_JOIN_TIMEOUT        15 /* seconds */
+#define BDB_DEFAULT_TC_NODE_JOIN_TIMEOUT        15U /* seconds */
 
-#define DEFAULT_EP_BDB_COMMISSION_GRP_ID     0xffffU
+/* Min valid BDB commissioning group id. */
+#define BDB_COMMISSION_EP_GROUP_ID_MIN          0x0001U
+
+/* Default BDB commissioning endpoint group id to be used while adding an APS endpoint.
+ * This disables group bindings with F&B. To enable group bindings during F&B process
+ * set bdbCommissioningGroupID in the range >= BDB_COMMISSION_EP_GROUP_ID_MIN and
+ * < BDB_COMMISSION_EP_GROUP_ID_DEFAULT */
+#define BDB_COMMISSION_EP_GROUP_ID_DEFAULT      0xffffU
 
 /* Bits for ZB_BDB_CommissioningMode */
 #define BDB_COMMISSION_MODE_MASK                0x0FU
@@ -212,11 +219,11 @@ enum ZbBdbAttrIdT {
     ZB_BDB_SecondaryChannelSet = 0x100a,
     /**< bdbSecondaryChannelSet (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttempts = 0x100b,
-    /**< bdbTCLinkKeyExchangeAttempts - Deprecated in BDB 3.1, still used as a counter
-     * to keep track of number of TCLK exchange attempts made.
+    /**< bdbTCLinkKeyExchangeAttempts - Deprecated in BDB 3.1.
      * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLK_ExchangeAttemptsMax = 0x100c,
-    /**< bdbcfTCExchangeAttemptsMax (type: uint8_t, reset: no, persist: no) */
+    /**< bdbTCLinkKeyExchangeAttemptsMax - Deprecated in BDB 3.1.
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_TCLinkKeyExchangeMethod = 0x100d,
     /**< bdbTCLinkKeyExchangeMethod - Deprecated in BDB 3.1
      * (type: uint8_t / enum ZbBdbLinkKeyExchMethodT, reset: no, persist: no) */
@@ -248,29 +255,29 @@ enum ZbBdbAttrIdT {
     /* discontinuity */
     ZB_BDB_TLRssiMin = 0x1107,
     /**< Minimum RSSI threshold for Touchlink commissioning
-     * (type: int8_t, reset: no, persist: yes) */
+     * (type: int8_t, reset: no, persist: no) */
     /* discontinuity */
     ZB_BDB_UpdateDeviceKeyId = 0x1109,
     /**< E.g. ZB_SEC_KEYID_NETWORK (default) or ZB_SEC_KEYID_LINK.
-     * (type: uint8_t / enum ZbSecHdrKeyIdT, reset: no, persist: yes) */
+     * (type: uint8_t / enum ZbSecHdrKeyIdT, reset: no, persist: no) */
     ZB_BDB_JoinScanType = 0x110a,
     /**< ZB_SCAN_TYPE_ACTIVE (default) or ZB_SCAN_TYPE_ENHANCED
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_PrevJoinScanType = 0x110b,
-    /**< (type: uint8_t, reset: no, persist: yes) */
+    /**< (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_NlmeSyncFailNumBeforeError = 0x110c,
     /**< Number of consecutive NLME-SYNC failures before reporting
-     * ZB_NWK_STATUS_CODE_PARENT_LINK_FAILURE (type: uint8_t, reset: no, persist: yes) */
+     * ZB_NWK_STATUS_CODE_PARENT_LINK_FAILURE (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_ZdoTimeout = 0x110d,
     /**< ZDO response wait timeout in milliseconds - default is 6000 mS.
-     * (type: uint32_t, reset: no, persist: yes) */
+     * (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_TLStealFlags = 0x110e,
     /**< Touchlink Stealing Flags (TOUCHLINK_STEAL_xxx defines.
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_JoinTclkNodeDescReqDelay = 0x110f,
-    /**< (type: uint16_t, reset: no, persist: yes) */
+    /**< (type: uint16_t, reset: no, persist: no) */
     ZB_BDB_JoinTclkRequestKeyDelay = 0x1110,
-    /**< (type: uint16_t, reset: no, persist: yes) */
+    /**< (type: uint16_t, reset: no, persist: no) */
     /* discontinuity */
     ZB_BDB_TLKey = 0x1112,
     /**< Touchlink preconfigured link key
@@ -280,18 +287,42 @@ enum ZbBdbAttrIdT {
      * (type: uint8_t / enum ZbBdbTouchlinkKeyIndexT, reset: no, persist: yes) */
     /* discontinuity */
     ZB_BDB_ZdoZigbeeProtocolRevision = 0x1115,
-    /**< Default = 23 (R23) (type: uint8_t, reset: no, persist: yes) */
+    /**< Default = 23 (R23) (type: uint8_t, reset: no, persist: no) */
     /* discontinuity */
     ZB_BDB_PersistTimeoutMs = 0x1117,
-    /**< Minimum delay between persistence updates
-     * (type: uint32_t, reset: no, persist: yes) */
+    /**< Minimum delay between persistence updates. Default value is 10000 mS (10 sec).
+     * This delay helps to group a bunch of persistence notifications due to multiple
+     * parameters being modified into a single notification and eventual persistence
+     * write to Flash.
+     *
+     * WARNING: Be careful with how often your application saves persistence data
+     * to Flash, if this is applicable to your platform.
+     * Excessive Flash writes can lead to wear and eventual failure of the memory.
+     * Minimize write operations and use wear-leveling techniques to extend the
+     * lifespan of the Flash.
+     *
+     * (type: uint32_t, reset: no, persist: no) */
     ZB_BDB_JoinAttemptsMax = 0x1118,
     /**< Maximum number attempts to join a network. If an attempt fails,
      * the EPID is added to a blacklist before the next attempt.
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_MaxConcurrentJoiners = 0x1119,
     /**< Maximum number of concurrent joiners the coordinator supports.
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
+    ZB_BDB_PersistImmedTimeoutMs = 0x111a,
+    /**< Minimum delay between "immediate" persistence updates. Default value is 500 mS.
+     * Used in conjunction with the ZCL attribute flag ZCL_ATTR_FLAG_PERSIST_IMMED.
+     * If ZB_BDB_PersistTimeoutMs is less than the value of this parameter, then
+     * ZB_BDB_PersistTimeoutMs takes presedence.
+     *
+     * WARNING: Be careful with how often your application saves persistence data
+     * to Flash, if this is applicable to your platform.
+     * Excessive Flash writes can lead to wear and eventual failure of the memory.
+     * Minimize write operations and use wear-leveling techniques to extend the
+     * lifespan of the Flash.
+     *
+     * (type: uint32_t, reset: no, persist: no) */
+
     /* discontinuity */
     ZB_BDB_Uptime = 0x111d,
     /**< Returns the current stack uptime in milliseconds (ZbUptime).
@@ -315,7 +346,7 @@ enum ZbBdbAttrIdT {
     ZB_BDB_AppendBeaconAppendix = 0x1123,
     /**< Boolean value that determines if the Beacon appendix will be appended to
      * the beacons sent from an R23 device. By default, this is always true.
-     * (type: uint8_t, reset: no, persist: yes) */
+     * (type: uint8_t, reset: no, persist: no) */
     ZB_BDB_StartupLongDelayMs = 0x1124,
     /**< Configurable delay added to the end of a successful ZbStartup when joining
      * or rejoining a network. This is to give the stack time to send and receive
@@ -361,7 +392,7 @@ enum ZbBdbAttrIdT {
     ZB_BDBC_TLScanTimeBaseDuration = 0x1206,
     /**< Milliseconds (type: uint8_t, reset: no, persist: no) */
 
-    ZB_BDB_RequireCBKESuccess = 0x1308
+    ZB_BDB_RequireCBKESuccess = 0x1305
         /**< A boolean flag to indicate how to handle CBKE failure as part of startup join.
          * (type: uint8_t, reset: no, persist: no) */
 };

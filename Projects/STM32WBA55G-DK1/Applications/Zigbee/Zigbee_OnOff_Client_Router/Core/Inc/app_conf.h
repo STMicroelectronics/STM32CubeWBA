@@ -62,7 +62,16 @@
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -125,10 +134,6 @@ extern UART_HandleTypeDef           huart1;
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
 
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
-
 /* Specific defines for Zigbee traces levels */
 #define ZB_LOG_MASK_LEVEL_0         0x00000000U
 #define ZB_LOG_MASK_LEVEL_1         ( ZB_LOG_MASK_FATAL )
@@ -188,14 +193,13 @@ typedef enum
   CFG_TASK_ZIGBEE_APP3,
   CFG_TASK_ZIGBEE_APP4,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BSP_BUTTON_B1,         /* Task linked to push-button. */
-  CFG_TASK_BSP_BUTTON_B2,
-  CFG_TASK_BSP_BUTTON_B3,
   CFG_TASK_BSP_JOY_UP,            /* Task linked to joystick. */
   CFG_TASK_BSP_JOY_RIGHT,
   CFG_TASK_BSP_JOY_DOWN,
   CFG_TASK_BSP_JOY_LEFT,
-  CFG_TASK_BSP_JOY_SELECT, 
+  CFG_TASK_BSP_JOY_SELECT,
+  CFG_TASK_BSP_JOY_NONE,
+  CFG_TASK_BSP_JOY_SAMPLE,
 
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
@@ -234,14 +238,13 @@ typedef enum
 #define TASK_ZIGBEE_APP3                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 #define TASK_ZIGBEE_APP4                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
 /* USER CODE BEGIN TASK_ID_Define */
-#define TASK_BSP_BUTTON_B1                  ( 1u << CFG_TASK_BSP_BUTTON_B1 )
-#define TASK_BSP_BUTTON_B2                  ( 1u << CFG_TASK_BSP_BUTTON_B2 )
-#define TASK_BSP_BUTTON_B3                  ( 1u << CFG_TASK_BSP_BUTTON_B3 )
 #define TASK_BSP_JOY_UP                     ( 1u << CFG_TASK_BSP_JOY_UP     )
 #define TASK_BSP_JOY_RIGHT                  ( 1u << CFG_TASK_BSP_JOY_RIGHT  )
 #define TASK_BSP_JOY_DOWN                   ( 1u << CFG_TASK_BSP_JOY_DOWN   )
 #define TASK_BSP_JOY_LEFT                   ( 1u << CFG_TASK_BSP_JOY_LEFT   )
 #define TASK_BSP_JOY_SELECT                 ( 1u << CFG_TASK_BSP_JOY_SELECT ) 
+#define TASK_BSP_JOY_NONE                   ( 1u << CFG_TASK_BSP_JOY_NONE   ) 
+#define TASK_BSP_JOY_SAMPLE                 ( 1u << CFG_TASK_BSP_JOY_SAMPLE ) 
 
 /* USER CODE END TASK_ID_Define */
 
@@ -254,6 +257,8 @@ typedef enum
   CFG_EVENT_LINK_LAYER,
   CFG_EVENT_MAC_LAYER,
   CFG_EVENT_ZIGBEE_LAYER,
+  CFG_EVENT_ZIGBEE_CALLBACK_DONE,
+  CFG_EVENT_ZIGBEE_RESTART_WAIT,
   CFG_EVENT_ZIGBEE_STARTUP_ENDED,
   CFG_EVENT_ZIGBEE_APP1,           /* Events linked to Zigbee Application. */
   CFG_EVENT_ZIGBEE_APP2,
@@ -269,6 +274,8 @@ typedef enum
 #define EVENT_LINK_LAYER                ( 1U << CFG_EVENT_LINK_LAYER )
 #define EVENT_MAC_LAYER                 ( 1U << CFG_EVENT_MAC_LAYER )
 #define EVENT_ZIGBEE_LAYER              ( 1U << CFG_EVENT_ZIGBEE_LAYER )
+#define EVENT_ZIGBEE_CALLBACK_DONE      ( 1U << CFG_EVENT_ZIGBEE_CALLBACK_DONE )
+#define EVENT_ZIGBEE_RESTART_WAIT       ( 1U << CFG_EVENT_ZIGBEE_RESTART_WAIT )
 #define EVENT_ZIGBEE_STARTUP_ENDED      ( 1U << CFG_EVENT_ZIGBEE_STARTUP_ENDED )
 #define EVENT_ZIGBEE_APP1               ( 1U << CFG_EVENT_ZIGBEE_APP1 )
 #define EVENT_ZIGBEE_APP2               ( 1U << CFG_EVENT_ZIGBEE_APP2 )
@@ -298,8 +305,15 @@ typedef enum
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
-
 #define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
@@ -331,8 +345,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -367,6 +384,7 @@ typedef enum
 
 #define CFG_LED_SUPPORTED           (1)
 #define CFG_JOYSTICK_SUPPORTED      (1)
+#define CFG_JOYSTICK_USE_TYPE       (1)
 #define CFG_LCD_SUPPORTED           (1)
 
 /**
@@ -402,13 +420,6 @@ typedef enum
     #define CFG_DEBUGGER_LEVEL      (0)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
-
-#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
-  #if CFG_LOG_SUPPORTED
-    #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
-  #endif /* CFG_LOG_SUPPORTED */
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE BEGIN Defines_2 */
 

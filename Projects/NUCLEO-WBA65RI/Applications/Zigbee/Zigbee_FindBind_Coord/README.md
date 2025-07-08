@@ -31,9 +31,9 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, OnOff cluster, Scenes 
 
 For this application it is requested to have:  
 
-* One STM32WBA55xx Nucleo board loaded with application : **Zigbee_Find_Bind_Coord**  
-* One or more STM32WBA55xx board loaded with application : **Zigbee_Find_Bind_OnOff_Router**  
-* One or more STM32WBA55xx board loaded with application : **Zigbee_Find_Bind_IAS_Router**  
+* One STM32WBA65xx Nucleo board loaded with application : **Zigbee_Find_Bind_Coord**  
+* One or more STM32WBA65xx board loaded with application : **Zigbee_Find_Bind_OnOff_Router**  
+* One or more STM32WBA65xx board loaded with application : **Zigbee_Find_Bind_IAS_Router**  
 
 <pre>
  
@@ -165,7 +165,7 @@ For this application it is requested to have:
 
 ### __Application Setup__
 
-* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
+* First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
 * To run the application :
 	1. On power, the Zigbee **Coordinator** (ZC) will initialize the stack and allocate the following clusters on endpoint 10:
 		* ZCL Scenes Server
@@ -220,7 +220,7 @@ For this application it is requested to have:
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA55xx devices.  
+* This example runs on STM32WBA65xx devices.  
 
 * This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 

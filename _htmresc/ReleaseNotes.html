@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.6.0 / 05-February-2025</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.7.0 / 04-June-2025</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -17,64 +17,40 @@
 <b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</b>
 </p>
 <p>
+- FreeRTOS upgrade to 10.6.2 and ThreadX upgrade to 6.4.0 
+</p>
+<p>
+- EWARM IDE update to version 9.60.3
+</p>
+<p>
 <b>Security</b>
 </p>
 <p>
-- Minor updates in security applications (SBSFU and TFM) and related scripts (NUCLEO-WBA55CG)
+- Upgraded Mbedtls v3.6.2 LTS to Mbedtls v3.6.3 LTS
 </p>
 <p>
-- For security Applications, main board is STM32WBA65I-DK1
+- Upgraded mcuboot v1.7.2.31 to mcuboot v1.7.2.34
 </p>
 <p>
-- Introducing OEMiRoT & OEMiRoT_OEMuRoT
+- ROT applications have been migrated to IAR 9.60.3
 </p>
 <p>
-- Add support for initial installation of clear image binaries in execution slots for OEMxRoT
-</p>
-<p>
-- ROT provisioning scripts for OEMiRoT & OEMiRoT_OEMuRoT
-</p>
-<p>
-- Introducing MbedTLS_HW_ALT and MbedTLS_SW
+- Use batch scripts on Windows with CubeIDE (bash scripts only used for Linux & MAC-OS)
 </p>
 <p>
 <b>Connectivity</b>
 </p>
 <p>
-- BLE compliancy to TCRL 2024-2
+- ZigBee Direct enhancements
 </p>
 <p>
-- BLE Audio:
+- Thread 1.4 support (OT commit "c583554263c8c88922ca45ef4c7486b9292a4f93" - Feb 14 2025)
 </p>
 <p>
-- LE Audio Projects available on STM32WBA65I-DK
+- Low Power performance improvements (wake up time from standby automatically profiled, optimized RNG initialization)
 </p>
 <p>
-- New GMAP Peripheral and GMAP Central projects available on STM32WBA65I-DK
-</p>
-<p>
-- Add Scan Delegator feature in TMAP Peripheral project
-</p>
-<p>
-- RAM Usage optimization in Audio projects
-</p>
-<p>
-- Support of CubeMX for the different concurrent modes: BLE_Thread, BLE_Zigbee and BLE_MAC
-</p>
-<p>
-- ioc files are available for applications using those 3 types of concurrent modes.
-</p>
-<p>
-- Zigbee Direct :
-</p>
-<p>
-- Zigbee Direct is a new communication protocol designed to enable direct communication between Zigbee devices and smartphones.
-</p>
-<p>
-- Simple Application example using ZigbeeDirect are available in the BLE_Zigbee folders on Nucleo Boards.
-</p>
-<p>
-- LSI2 support for Connectivity applications
+- BLE Audio: Support of the Enhanced ATT feature
 </p>
 <b>Drivers</b>
 </p>
@@ -107,7 +83,7 @@
 <b>- B-WBA5M-WPAN</b>
 </p>
 <p>
-- Update new applications demonstrating BLE, Thread and Zigbee capabilities
+- Update Applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
 <b>- NUCLEO-WBA55CG</b>
@@ -116,40 +92,22 @@
 - Update Applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
-- Add new Application demonstrating ThreadX and FileX capabilities
-</p>
-<p>
 <b>- STM32WBA55G-DK1</b>
 </p>
 <p>
-- Update applications demonstrating BLE, Zigbee capabilities
+- Update Applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
 <b>- NUCLEO-WBA65RI</b>
 </p>
 <p>
-- Add new Applications demonstrating BLE, Thread and Zigbee capabilities
-</p>
-<p>
-- Add new Application demonstrating ThreadX, FileX and USBX capabilities
-</p>
-<p>
-- Add HAL and LL examples
+- Update Applications demonstrating BLE, Thread and Zigbee capabilities
 </p>
 <p>
 <b>- STM32WBA65I-DK1</b>
 </p>
 <p>
-- Add new Applications demonstrating BLE, Thread and Zigbee capabilities
-</p>
-<p>
-- Add new Application demonstrating OEMiRoT capabilities
-</p>
-<p>
-- Add new Applications demonstrating mbedtls capabilities (MbedTLS_HW_ALT and MbedTLS_SW)
-</p>
-<p>
-- Add a HAL SAI example for audio codec
+- Update Applications demonstrating BLE and Zigbee capabilities
 </p>
 </div>
 </body>

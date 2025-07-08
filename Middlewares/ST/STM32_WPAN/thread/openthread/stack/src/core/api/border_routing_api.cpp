@@ -35,10 +35,6 @@
 
 #if OPENTHREAD_CONFIG_BORDER_ROUTING_ENABLE
 
-#include <openthread/border_routing.h>
-#include <openthread/platform/border_routing.h>
-
-#include "border_router/routing_manager.hpp"
 #include "instance/instance.hpp"
 
 using namespace ot;
@@ -194,7 +190,30 @@ otError otBorderRoutingGetNextRouterEntry(otInstance                         *aI
     return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetNextRouterEntry(*aIterator, *aEntry);
 }
 
+#if OPENTHREAD_CONFIG_BORDER_ROUTING_TRACK_PEER_BR_INFO_ENABLE
+
+otError otBorderRoutingGetNextPeerBrEntry(otInstance                           *aInstance,
+                                          otBorderRoutingPrefixTableIterator   *aIterator,
+                                          otBorderRoutingPeerBorderRouterEntry *aEntry)
+{
+    AssertPointerIsNotNull(aIterator);
+    AssertPointerIsNotNull(aEntry);
+
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetNextPeerBrEntry(*aIterator, *aEntry);
+}
+
+uint16_t otBorderRoutingCountPeerBrs(otInstance *aInstance, uint32_t *aMinAge)
+{
+    uint32_t minAge;
+
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().CountPeerBrs((aMinAge != nullptr) ? *aMinAge
+                                                                                                       : minAge);
+}
+
+#endif
+
 #if OPENTHREAD_CONFIG_BORDER_ROUTING_DHCP6_PD_ENABLE
+
 void otBorderRoutingDhcp6PdSetEnabled(otInstance *aInstance, bool aEnabled)
 {
     AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetDhcp6PdEnabled(aEnabled);
@@ -202,8 +221,7 @@ void otBorderRoutingDhcp6PdSetEnabled(otInstance *aInstance, bool aEnabled)
 
 otBorderRoutingDhcp6PdState otBorderRoutingDhcp6PdGetState(otInstance *aInstance)
 {
-    return static_cast<otBorderRoutingDhcp6PdState>(
-        AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetDhcp6PdState());
+    return MapEnum(AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetDhcp6PdState());
 }
 
 void otBorderRoutingDhcp6PdSetRequestCallback(otInstance                           *aInstance,
@@ -211,6 +229,15 @@ void otBorderRoutingDhcp6PdSetRequestCallback(otInstance                        
                                               void                                 *aContext)
 {
     AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetRequestDhcp6PdCallback(aCallback, aContext);
+}
+
+#endif
+
+#if OPENTHREAD_CONFIG_BORDER_ROUTING_TESTING_API_ENABLE
+
+void otBorderRoutingSetOnLinkPrefix(otInstance *aInstance, const otIp6Prefix *aPrefix)
+{
+    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetOnLinkPrefix(AsCoreType(aPrefix));
 }
 
 #endif

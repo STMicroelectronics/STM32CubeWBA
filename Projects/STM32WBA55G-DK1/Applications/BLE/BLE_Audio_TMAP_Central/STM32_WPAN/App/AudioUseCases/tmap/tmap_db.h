@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "tmap.h"
+#include "tmap_alloc.h"
 
 /* Functions ---------------------------------------------------------------------*/
 void TMAP_CLT_StoreDatabase(TMAP_CltInst_t const *pTMAP_CltInst);

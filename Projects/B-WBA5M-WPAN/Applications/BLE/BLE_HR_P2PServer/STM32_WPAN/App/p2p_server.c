@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "p2p_server.h"
 
 /* USER CODE BEGIN Includes */
@@ -165,7 +164,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_2_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_2_Disabled_BEGIN */
@@ -177,7 +176,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service3_Char_2_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service3_Char_2_COMSVC_Notification_BEGIN */
@@ -259,6 +258,21 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
+        /* Manage ACI_GATT_INDICATION_VSEVT_CODE occurring on Android 12 */
+        case ACI_GATT_INDICATION_VSEVT_CODE:
+          {
+            aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
+            tBleStatus status = aci_gatt_confirm_indication(pr->Connection_Handle);
+            if (status != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+            }
+          }
+          break; /* end ACI_GATT_NOTIFICATION_VSEVT_CODE */
 
         /* USER CODE END BLECORE_EVT */
         default:
@@ -339,11 +353,11 @@ void P2P_SERVER_Init(void)
                              &(P2P_SERVER_Context.P2p_serverSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: P2P_Server, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: P2P_Server, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: P2P_Server \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: P2p_serverSvcHdle = 0x%04X\n",P2P_SERVER_Context.P2p_serverSvcHdle);
   }
 
   /**
@@ -366,7 +380,7 @@ void P2P_SERVER_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : LED_C\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Led_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Led_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -393,7 +407,7 @@ void P2P_SERVER_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SWITCH_C\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Switch_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Switch_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char2 */
@@ -430,11 +444,11 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value LED_C command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value LED_C command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value LED_C command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value LED_C command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 
@@ -449,11 +463,11 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SWITCH_C command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value SWITCH_C command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SWITCH_C command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value SWITCH_C command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_2 */
 

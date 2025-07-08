@@ -98,7 +98,7 @@ struct APP_ZIGBEE_OTAImage_t
   uint32_t    lHeaderBufferSize;  /* The image header payload size */
                                   /* Note: Usually the header, tags and data are stored, ready to be transmitted as-is, 
                                      and contiguous in memory. But in our case the header and tags are stored in their struct 
-                                     form and the binary is stored in a seperate memory location in flash */
+                                     form and the binary is stored in a separate memory location in flash */
   uint32_t    lBaseAddress;       /* The base address of the image in flash */
   uint32_t    lBinarySize;        /* The binary size */
 };
@@ -475,7 +475,7 @@ static bool APP_ZIGBEE_OTAServerImageEvalCallback( struct ZbZclOtaImageDefinitio
   LOG_INFO_APP( "[OTA] Query Next Image Request received" );
   LOG_INFO_APP( "[OTA] Contents of the Query Next Image Request:" );
   LOG_INFO_APP( "[OTA] Sender manufacturer code:         0x%04" PRIX16, pstQueryImage->manufacturer_code ); /* The device's assigned manufacturer code */
-  LOG_INFO_APP( "[OTA] Sender current file version:      0x%08" PRIX32, pstQueryImage->file_version ); /* The device's current running file verison */
+  LOG_INFO_APP( "[OTA] Sender current file version:      0x%08" PRIX32, pstQueryImage->file_version ); /* The device's current running file version */
   LOG_INFO_APP( "[OTA] Sender image type:                0x%04" PRIX16, pstQueryImage->image_type ); /* The device's unique image type to distinguish manufacturer products */
 
   if ( cFieldControl == ZCL_OTA_QUERY_FIELD_CONTROL_HW_VERSION )
@@ -484,7 +484,7 @@ static bool APP_ZIGBEE_OTAServerImageEvalCallback( struct ZbZclOtaImageDefinitio
     LOG_INFO_APP( "[OTA] Sender Hardware version:         0x%04" PRIX16, iHardwareVersion ); /* The device's current running hardware version */
   }
 
-  /* Find a suitable image for the given manufacturer code, image version, and file version (can only be upgraded or downgraded, will return false if the saem version is found) */
+  /* Find a suitable image for the given manufacturer code, image version, and file version (can only be upgraded or downgraded, will return false if the same version is found) */
   lIndex = APP_ZIGBEE_OTAServerFindImage( pstQueryImage, true );
   if ( lIndex == UINT32_MAX )
   {
@@ -525,7 +525,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OTAServerImageReadCallback( struct ZbZclOt
     /* Log the information if it is the first Image Block/Page Request */
     LOG_INFO_APP( "[OTA] Image Block/Page Request received" );
     LOG_INFO_APP( "[OTA] Sender manufacturer code:        0x%04" PRIX16, pstImageDefinition->manufacturer_code ); /* The device's assigned manufacturer code */
-    LOG_INFO_APP( "[OTA] Sender requested file version:   0x%08" PRIX32, pstImageDefinition->file_version ); /* The device's requested file verison */
+    LOG_INFO_APP( "[OTA] Sender requested file version:   0x%08" PRIX32, pstImageDefinition->file_version ); /* The device's requested file version */
     LOG_INFO_APP( "[OTA] Sender image type:               0x%04" PRIX16, pstImageDefinition->image_type ); /* The device's unique image type to distinguish manufacturer products */
   }
 #endif

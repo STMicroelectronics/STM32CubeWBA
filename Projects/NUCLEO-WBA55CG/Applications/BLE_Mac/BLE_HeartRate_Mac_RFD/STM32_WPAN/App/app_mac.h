@@ -23,7 +23,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-
+#include "app_conf.h"
 
 /* ---------------------------------------------------------------------------*/
 /* Exported types and defines ------------------------------------------------*/
@@ -36,5 +36,8 @@
 void APP_MAC_Init(void);
 void APP_RFD_MAC_802_15_4_SetupTask(void);
 void APP_RFD_MAC_802_15_4_SendData(const char *);
+#if (CFG_BUTTON_SUPPORTED == 1) || defined(APP_MAC_PERIODIC_TRANSMIT)
+void APP_BSP_Button1Action(void);
+#endif
 
 #endif /* APP_MAC_USER_H */

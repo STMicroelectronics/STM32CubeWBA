@@ -74,7 +74,7 @@ using current generated binary.
 
 In order to make the program work, you must do the following: 
 
-- Connect 2 STM32WBA55xx-Nucleo boards to your PC 
+- Connect 2 STM32WBA65xx-Nucleo boards to your PC 
  
   - NODE :
     - Open your preferred toolchain 

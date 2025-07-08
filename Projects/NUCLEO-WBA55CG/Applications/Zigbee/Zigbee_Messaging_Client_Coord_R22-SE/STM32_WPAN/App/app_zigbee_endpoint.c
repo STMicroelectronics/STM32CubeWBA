@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -57,8 +57,7 @@
 
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_SMART_ENERGY
-#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_METER_INTERFACE
-#define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
+#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_METER
 
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_MESSAGING
 #define APP_ZIGBEE_CLUSTER_NAME           "Messaging Client"
@@ -69,8 +68,8 @@
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME
 #define APP_ZIGBEE_APPLICATION_OS_NAME    "."
 
-#define CFG_TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION                 CFG_TASK_ZIGBEE_APP1
-#define TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION_PRIORITY            CFG_SEQ_PRIO_1
+#define CFG_TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION         CFG_TASK_ZIGBEE_APP1
+#define TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION_PRIORITY    CFG_SEQ_PRIO_1
 
 /* USER CODE END PD */
 
@@ -83,14 +82,14 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
-/* These CBKE Keys are valid an Extended Address. So we perhaps need to change Extended Adress of Device for tests */
-const uint64_t dlMyExtendedAdress       = 0x00;
+/* These CBKE Keys are valid with an Extended Address. So we perhaps need to change Extended Adress of Device for tests */
+const uint64_t dlMyExtendedAdress       = 0x00u;
 
 /* To obtains theses keys, you need to connect to Certicom site (www.certicom.com). */
 const uint8_t szZibgeeCbkeCert[CBKE2_CERTIFICATE_SIZE] = { 0, }; /* To fiil by user */
- 
+
 const uint8_t szZibgeeCbkeCaPublic[CBKE2_COMPRESSED_PUBLIC_KEY_SIZE] = { 0, }; /* To fiil by user */
- 
+
 const uint8_t szZibgeeCbkePrivate[CBKE2_PRIVATE_KEY_SIZE] = { 0, };  /* To fiil by user */
 
 /* USER CODE BEGIN PC */
@@ -109,10 +108,10 @@ static UTIL_TIMER_Object_t          stDisplayTimerId;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Messaging Client Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo);
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientDisplayMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientCancelMessageCallback ( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgClientCallbacksT stMessagingClientCallbacks =
 {
@@ -183,18 +182,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -237,8 +224,9 @@ void APP_ZIGBEE_ConfigEndpoints(void)
  */
 bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
-  
-  return true;
+  /* Not used */
+
+  return false;
 }
 
 /**
@@ -246,7 +234,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
  */
 static bool APP_ZIGBEE_TcsoNotifyCallback( enum ZbTcsoStatusT eStatus, void *arg )
 {
-  bool  bReturn = false;
+  bool  bReturn = true;
   /* USER CODE BEGIN APP_ZIGBEE_TcsoNotifyCallback */
 
   LOG_INFO_APP( "[TCSO] Notification Callback. Status = (0x%02X)", eStatus );
@@ -264,7 +252,7 @@ static void APP_ZIGBEE_GetCbkeConfig( struct ZbStartupT * pstConfig )
 {
   /* Update CBKE Certificate & Keys  */
   pstConfig->security.cbke.endpoint = ZB_ENDPOINT_CBKE_DEFAULT;
-    
+
   pstConfig->security.cbke.suite_mask = ZCL_KEY_SUITE_CBKE2_ECMQV;
   memcpy( pstConfig->security.cbke.cbke_v2.cert, szZibgeeCbkeCert, CBKE2_CERTIFICATE_SIZE );
   memcpy( pstConfig->security.cbke.cbke_v2.keys.publicCaKey, szZibgeeCbkeCaPublic, CBKE2_COMPRESSED_PUBLIC_KEY_SIZE );
@@ -280,37 +268,37 @@ static void APP_ZIGBEE_GetCbkeConfig( struct ZbStartupT * pstConfig )
  */
 static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
 {
-  uint8_t     cTempVal = 0;
+  uint8_t     cTempVal;
   enum ZbStatusCodeT  eStatus;
-  
+
   /* Update Trust Center Server */
   pstConfig->security.trustCenterAddress = dlMyExtendedAdress;
-  
-  pstConfig->security.cbke.tc_keepalive_server_enable = true;
-//  pstConfig->security.cbke.tc_keepalive_base = ZCL_KEEPALIVE_SERVER_BASE_DEFAULT;
-//  pstConfig->security.cbke.tc_keepalive_jitter = ZCL_KEEPALIVE_SERVER_JITTER_DEFAULT;
-  pstConfig->security.cbke.tc_keepalive_base = 1;
-  pstConfig->security.cbke.tc_keepalive_jitter = 5;
-  pstConfig->security.cbke.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
-  pstConfig->security.cbke.tcso_arg = NULL;
-  
+
+  pstConfig->security.keepalive.enabled = true;
+  pstConfig->security.keepalive.server_enable = true;
+  pstConfig->security.keepalive.server_base = ZCL_KEEPALIVE_SERVER_BASE_DEFAULT;
+  pstConfig->security.keepalive.server_jitter = ZCL_KEEPALIVE_SERVER_JITTER_DEFAULT;
+  pstConfig->security.keepalive.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
+  pstConfig->cb_arg = NULL;
+
+  cTempVal = 0;
   eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_TCLinkKeyExchangeMethod, &cTempVal, sizeof( cTempVal ) );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
     LOG_ERROR_APP( "Error : ZbBdbSet : Change 'TC LinkKey Exchange Method' failed. (0x%02X) \n", eStatus);
   }
-  
+
+  cTempVal = 0;
   eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_TrustCenterRequiresKeyExchange, &cTempVal, sizeof( cTempVal ) );
   if ( eStatus != ZB_STATUS_SUCCESS )
   {
     LOG_ERROR_APP( "Error : ZbBdbSet : Change 'Trust Center Requires Key Exchange' failed. (0x%02X) \n", eStatus);
   }
-  
+
   /* USER CODE BEGIN APP_ZIGBEE_GetTrustCenterConfig */
 
-  /* USER CODE END APP_ZIGBEE_GetTrustCenterConfig */  
+  /* USER CODE END APP_ZIGBEE_GetTrustCenterConfig */
 }
-
 
 /**
  * @brief  Return the Startup Configuration
@@ -319,9 +307,9 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Configure Zigbee Network */
+  /* Attempt to join a zigbee network */
   ZbStartupConfigGetProSeDefaults( pstConfig );
-  
+
   APP_ZIGBEE_GetCbkeConfig( pstConfig );
   APP_ZIGBEE_GetTrustCenterConfig( pstConfig );
 
@@ -464,7 +452,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayMessageCallback( str
 /**
  * @brief  Messaging Client 'CancelMessage' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientCancelMessageCallback */
@@ -492,7 +480,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( stru
 /**
  * @brief  Messaging Client 'CancelAllMessages' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientCancelAllMessagesCallback */
@@ -504,7 +492,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( 
 /**
  * @brief  Messaging Client 'DisplayProtectedMessage' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback */

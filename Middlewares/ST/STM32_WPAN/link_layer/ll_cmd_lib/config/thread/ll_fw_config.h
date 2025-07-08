@@ -194,9 +194,16 @@
 #ifndef FFD_DEVICE_CONFIG
 #define FFD_DEVICE_CONFIG                           1 /* Enable\Disable FFD:1 - RFD:0 */
 #endif /* FFD_DEVICE_CONFIG */
+
+#ifdef RFD_DEVICE_CONFIG
+#undef FFD_DEVICE_CONFIG
+#define FFD_DEVICE_CONFIG                           0 /* Enable\Disable FFD:1 - RFD:0 */
+#endif
+
 #ifndef RAL_NUMBER_OF_INSTANCE
 #define RAL_NUMBER_OF_INSTANCE                      1 /* The Number of RAL instances supported */
 #endif /* RAL_NUMBER_OF_INSTANCE */
+
 #ifndef MAX_NUMBER_OF_INDIRECT_DATA
 #define MAX_NUMBER_OF_INDIRECT_DATA                 10 /* The maximum number of supported indirect data buffers */
 #endif /* MAX_NUMBER_OF_INDIRECT_DATA */
@@ -220,6 +227,10 @@
 #ifndef SUPPORT_A_MAC
 #define SUPPORT_A_MAC                               1
 #endif /* SUPPORT_A_MAC */
+
+#ifndef SUPPORT_CONFIG_LIB
+#define SUPPORT_CONFIG_LIB                          1 /* Enable\Disable Configurable Library feature */
+#endif /* SUPPORT_CONFIG_LIB */
 
 #ifndef SMPL_PRTCL_TEST_ENABLE
 #define SMPL_PRTCL_TEST_ENABLE                      0

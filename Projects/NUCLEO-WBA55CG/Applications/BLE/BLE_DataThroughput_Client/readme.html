@@ -21,64 +21,72 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_datathroughput_client-application-description"><strong>BLE_DataThroughput_Client Application Description</strong></h2>
 <p>How to demonstrate Point-to-Point communication using BLE component (as GATT server or GATT client).</p>
-<p>The Nucleo board flashed with BLE_DataThroughput_Client application acts as GATT Client and can connect and exchange data with a nucleo board flashed with BLE_DataThroughput_Server application</p>
+<p>The Nucleo board flashed with BLE_DataThroughput_Client application acts as GATT Client and can connect and exchange data with a nucleo board flashed with BLE_DataThroughput_Server application.</p>
 <p>Data transfer via notification from server to client or/and write from client to server. Use of a timer that enables to calculate the throughput at application level.</p>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Data throughput profile<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Data_Throughput#Data_throughput_profile"> Data throughput profile</a></p>
+<p>For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Data_Throughput#Data_throughput_profile"> STM32WBA Bluetooth LE - Data throughput profile.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx devices.</li>
+<li>This application runs on STM32WBA55xx devices.<br />
+</li>
 <li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
-<li>Open your prefered toolchain</li>
+<li>Open your preferred toolchain.<br />
+</li>
 <li>Rebuild all files and flash the board with the executable file.</li>
 </ul>
 <p><strong>Use of two nucleo boards</strong></p>
-<p>Two STM32WBA nucleo boards are used, one central/client (flashed with BLE_DataThroughput_Client) and one peripheral/server (flashed with BLE_DataThroughput_Server).</p>
-<p>The GATT server board support a Data transfer service with a transmission characteristic that supports notification.</p>
-<p>The GATT client board support a Data transfer by writing without response to the GATT server board Reception characteristic.</p>
+<p>Two STM32WBA nucleo boards are used: one central/client (flashed with BLE_DataThroughput_Client) and one peripheral/server (flashed with BLE_DataThroughput_Server).</p>
+<p>The GATT server board supports a Data transfer service with a transmission characteristic that supports notifications.</p>
+<p>The GATT client board supports a Data transfer by writing without response to the GATT server board’s reception characteristic.</p>
 <p>The board flashed with BLE_DataThroughput_Client is defined as GAP central.</p>
-<p>Open a VT100 terminal on Central and Peripheral side (ST Link Com Port, <span class="citation" data-cites="115200">@115200</span> bauds).</p>
-<p>At reset application initialization is done.</p>
+<p>Open a VT100 terminal on both the Central and Peripheral sides (ST Link Com Port, <span class="citation" data-cites="115200">@115200</span> bauds).</p>
+<p>Upon reset application initialization is done.</p>
 <ul>
-<li>The peripheral device starts advertising.</li>
-<li>Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_DT_SERVER).</li>
+<li>The peripheral device starts advertising.<br />
+</li>
+<li>Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_DT_SERVER).<br />
+</li>
 <li>After connection:
 <ul>
-<li>the client starts to search the data transfer service and characteristic.</li>
+<li>the client starts to search the data transfer service and characteristic.<br />
+</li>
 <li>the client enables the notification of the transmission characteristic.</li>
 </ul></li>
 </ul>
 <p>On server side when connected:</p>
 <ul>
-<li>B1 starts (blue LED is ON)/stops (blue LED is OFF) notification.</li>
-<li>B2 sends L2CAP connection update - toggle 26.25 ms/11.25 ms</li>
-<li>B3 PHY toggle</li>
+<li>B1 starts (blue LED is ON)/stops (blue LED is OFF) notification.<br />
+</li>
+<li>B2 sends an L2CAP connection update - toggles 26.25 ms/11.25 ms.<br />
+</li>
+<li>B3 toggles PHY.</li>
 </ul>
-<p>On server side when idle:</p>
+<p>On the server side when idle:</p>
 <ul>
-<li>B2 clear database</li>
+<li>B2 clears database.</li>
 </ul>
-<p>On client side when connected:</p>
+<p>On the client side when connected:</p>
 <ul>
-<li>B1 starts (blue LED is ON)/stops (blue LED is OFF) write without response.</li>
-<li>B2 sends pairing request</li>
+<li>B1 starts (blue LED is ON)/stops (blue LED is OFF) write without response.<br />
+</li>
+<li>B2 sends a pairing request.</li>
 </ul>
-<p>On client side when idle:</p>
+<p>On the client side when idle:</p>
 <ul>
-<li>B2 clear database</li>
+<li>B2 clears database.</li>
 </ul>
-<p>On client terminal receiving the current notification, the number of bytes per second is displayed.</p>
-<p>On server terminal receiving the current write without response, the number of bytes per second is displayed.</p>
+<p>On the client terminal, the current notification displays the number of bytes per second.</p>
+<p>On the server terminal, the current write without response displays the number of bytes per second.</p>
 <p>In app_conf.h :</p>
 <ul>
-<li>if #define CFG_TX_PHY 2 and #define CFG_RX_PHY 2, link is set to 2M at connection</li>
-<li>if #define CFG_TX_PHY 1 and #define CFG_RX_PHY 1, link stays at 1M</li>
+<li>if #define CFG_TX_PHY 2 and #define CFG_RX_PHY 2, link is set to 2M at connection.<br />
+</li>
+<li>if #define CFG_TX_PHY 1 and #define CFG_RX_PHY 1, link stays at 1M.</li>
 </ul>
 </div>
 </div>

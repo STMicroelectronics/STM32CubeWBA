@@ -27,13 +27,16 @@
 #include "appli_region_defs.h"
 #include "Driver_Flash.h"
 #include "string.h"
-#include "secure_nsc.h"
 
 #if   !defined(MCUBOOT_PRIMARY_ONLY)
 /** @addtogroup USER_APP User App Example
   * @{
   */
-extern ARM_DRIVER_FLASH LOADER_FLASH_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_SECONDARY_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_PRIMARY_DEV_NAME;
+
+#define TRAILER_MAGIC_SIZE 16
+
 /** @addtogroup  FW_UPDATE Firmware Update Example
   * @{
   */
@@ -68,13 +71,11 @@ static HAL_StatusTypeDef FW_UPDATE_DownloadNewFirmware(SFU_FwImageFlashTypeDef *
 static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwSecureImageType);
 #if !defined(MCUBOOT_OVERWRITE_ONLY)
 static void FW_Valid_AppImage(void);
-static void FW_Install_AppImage(void);
 #endif /* defined(MCUBOOT_OVERWRITE_ONLY) */
 #if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void);
 #if !defined(MCUBOOT_OVERWRITE_ONLY)
-static void FW_Valid_SecureDataImage(void);
-static void FW_Install_SecureDataImage(void);
+static void FW_Valid_DataImage(void);
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) */
 #endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 /**
@@ -126,19 +127,10 @@ void FW_UPDATE_Run(void)
 #endif /* defined(MCUBOOT_OVERWRITE_ONLY) && defined(MCUBOOT_APP_IMAGE_NUMBER == 1) */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
       case '8':
-          FW_Valid_SecureDataImage();
+          FW_Valid_DataImage();
           break;
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 1)
-      case 'a':
-          FW_Install_AppImage();
-          break;
-#endif /* defined(MCUBOOT_OVERWRITE_ONLY) && defined(MCUBOOT_APP_IMAGE_NUMBER == 1) */
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
-      case 'c':
-          FW_Install_SecureDataImage();
-          break;
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
+
 #if defined(OEMUROT_ENABLE)
       case 'e':
           FW_UPDATE_SECURE_APP_IMAGE(SECURE_BOOT);
@@ -166,7 +158,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwS
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
 
   /* Print Firmware Update welcome message */
   if (FwSecureImageType == SECURE_BOOT)
@@ -216,7 +208,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
   /* Print Firmware Update welcome message */
   printf("Download Secure Data Image\r\n");
   /* Get Info about the download area */
@@ -237,33 +229,21 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
   return ret;
 }
 #if !defined(MCUBOOT_OVERWRITE_ONLY)
-static void FW_Valid_SecureDataImage(void)
+static void FW_Valid_DataImage(void)
 {
-    SECURE_ConfirmSecureDataImage();
-    printf("  -- Secure Data Firmware Confirm Done\r\n\n");
-}
-/**
-  * @brief  Write Magic Flag to trigger installation from Download Slot
-  * @brief  - After Reset, Version not Confirm are recopied in download slot
-  * @brief  - Calling this API triggers the re-installation
-  * @param  None
-  * @retval None
-  */
-
-static void FW_Install_SecureDataImage(void)
-{
-  uint32_t MagicAddress = FLASH_AREA_6_OFFSET  + FLASH_AREA_6_SIZE - sizeof(MagicTrailerValue);
-  /* write the magic to trigger installation at next reset */
-#if defined(__ARMCC_VERSION)
-  printf("  Write Magic Trailer at %x\r\n\n", MagicAddress);
-#else
-  printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
-#endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+  const uint8_t FlagPattern[16]={0x1 ,0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff,
+  0xff, 0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff };
+  const uint32_t ConfirmAddress = FLASH_AREA_4_OFFSET  + FLASH_AREA_4_SIZE - (TRAILER_MAGIC_SIZE + sizeof(FlagPattern));
+  if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
-     printf(" Write Magic Trailer: Failed \r\n\n");
+    printf("  -- Secure Data Firmware Confirm Done\r\n\n");
+  }
+  else
+  {
+    printf("  -- Confirm Flag Not Correctlty Written \r\n\n");
   }
 }
+
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) */
 #endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 
@@ -293,7 +273,7 @@ static void FW_UPDATE_PrintWelcome(void)
   printf("  Download Secure Data Image ---------------------------- 4\r\n\n");
 #endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 1)
-  printf("  Validate Secure App Image ------------------------------------ 6\r\n\n");
+  printf("  Validate Secure App Image ----------------------------- 6\r\n\n");
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 1) */
 #if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
   printf("  Validate Secure Data Image ---------------------------- 8\r\n\n");
@@ -322,7 +302,7 @@ static HAL_StatusTypeDef FW_UPDATE_DownloadNewFirmware(SFU_FwImageFlashTypeDef *
        sector_address < pFwImageDwlArea->DownloadAddr + pFwImageDwlArea->MaxSizeInBytes;
        sector_address += m_uFlashSectorSize)
   {
-    ret_arm = LOADER_FLASH_DEV_NAME.EraseSector(sector_address);
+    ret_arm = FLASH_SECONDARY_DEV_NAME.EraseSector(sector_address);
     if (ret_arm < 0)
     {
       return HAL_ERROR;
@@ -360,7 +340,7 @@ static HAL_StatusTypeDef FW_UPDATE_DownloadNewFirmware(SFU_FwImageFlashTypeDef *
 #else
       printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-      if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+      if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
       {
         ret = HAL_ERROR;
       }
@@ -457,9 +437,9 @@ HAL_StatusTypeDef Ymodem_DataPktRxCpltCallback(uint8_t *pData, uint32_t uFlashDe
     ret = SECURE_Flash_ProgramData(uFlashDestination, pData, uSize);
   }
   else
-    ret = LOADER_FLASH_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
+    ret = FLASH_SECONDARY_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
 #else
-  ret = LOADER_FLASH_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
+  ret = FLASH_SECONDARY_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
 #endif /*defined(MCUBOOT_PRIMARY_ONLY) */
   if (ret != ARM_DRIVER_OK)
   {
@@ -489,7 +469,7 @@ static void FW_Valid_AppImage(void)
 #else
   const uint32_t ConfirmAddress = FLASH_AREA_1_OFFSET + FLASH_NS_PARTITION_SIZE - (sizeof(MagicTrailerValue) + sizeof(FlagPattern));
 #endif
-  if (FLASH_PRIMARY_NONSECURE_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
+  if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
 #if defined(__ARMCC_VERSION)
     printf("  --  Confirm Flag  correctly written %x %x \r\n\n",ConfirmAddress ,FlagPattern[0] );
@@ -503,41 +483,6 @@ static void FW_Valid_AppImage(void)
   }
 }
 
-/**
-  * @brief  Write Magic Flag to trigger installation from Download Slot
-  * @brief  - After Reset, Version not Confirm are recopied in download slot
-  * @brief  - Calling this API triggers the re-installation
-  * @param  None
-  * @retval None
-  */
-static void FW_Install_AppImage(void)
-{
-#if (MCUBOOT_APP_IMAGE_NUMBER == 1)
-  uint32_t MagicAddress = FLASH_AREA_2_OFFSET  + FLASH_PARTITION_SIZE - sizeof(MagicTrailerValue);
-#else
-  uint32_t MagicAddress = FLASH_AREA_3_OFFSET + FLASH_NS_PARTITION_SIZE - sizeof(MagicTrailerValue);
-#endif
-  /* write the magic to trigger installation at next reset */
-#if defined(__ARMCC_VERSION)
-  printf("  Write Magic Trailer at %x\r\n\n", MagicAddress);
-#else
-  printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
-#endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
-  {
-     printf(" Write Magic Trailer: Failed \r\n\n");
-  }
-}
 #endif /* !defined(MCUBOOT_OVERWRITE_ONLY) */
-/**
-  * @}
-  */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
 #endif /* !defined(MCUBOOT_PRIMARY_ONLY) */

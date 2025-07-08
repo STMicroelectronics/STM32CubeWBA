@@ -117,9 +117,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* hpcd)
     {
       HAL_PWREx_EnableVddUSB();
     }
-
     HAL_SYSCFG_EnableOTGPHY(SYSCFG_OTG_HS_PHY_ENABLE);
-
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
     __HAL_RCC_USB_OTG_HS_PHY_CLK_ENABLE();

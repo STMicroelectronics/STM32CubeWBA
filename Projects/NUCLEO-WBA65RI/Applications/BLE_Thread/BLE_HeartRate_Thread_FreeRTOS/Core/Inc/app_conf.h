@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,7 +44,7 @@
  * Definition of public BD Address,
  * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0000000000000)
+#define CFG_BD_ADDRESS                    (0x000000000000)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -103,12 +103,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
+#define CFG_BLE_IR  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
+#define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -177,6 +177,11 @@
 #define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (1344)
 
 /**
+ * Maximum numbers of bearers that can be created for Enhanced ATT in addition to the number of links
+ */
+#define CFG_BLE_EATT_BEARER_MAX       (0)
+
+/**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
  */
 #define CFG_BLE_ATTR_PREPARE_WRITE_VALUE_SIZE       (30)
@@ -220,18 +225,28 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
+ *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  *
  * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
  *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
+ *   - 0 : Stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (0)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -280,7 +295,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -306,9 +321,21 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
 #define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
-
+#define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
 /* USER CODE END Log_level */
@@ -330,19 +357,12 @@ extern UART_HandleTypeDef           huart1;
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)) - FLASH_PAGE_SIZE)
 
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_NVM_SIZE_MAX            ((2048/8)-4)
+
 /* USER CODE BEGIN NVM_Configuration */
 
 /* USER CODE END NVM_Configuration */
-
-/******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
 
 /******************************************************************************
  * Debugger
@@ -364,6 +384,14 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
 
 #define CFG_SCM_SUPPORTED            (1)
@@ -378,11 +406,11 @@ extern UART_HandleTypeDef           huart1;
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
+#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
-#define RADIO_INTR_PRIO_HIGH                (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 2)        /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_HIGH                (5)            /* 2.4GHz RADIO interrupt priority when radio is Active */
+#define RADIO_INTR_PRIO_LOW                 (7)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
@@ -392,7 +420,7 @@ extern UART_HandleTypeDef           huart1;
 /* Link Layer supported number of antennas */
 #define RADIO_NUM_OF_ANTENNAS               (4)
 
-#define RCC_INTR_PRIO                       (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1)           /* HSERDY and PLL1RDY */
+#define RCC_INTR_PRIO                       (6)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm
@@ -400,11 +428,8 @@ extern UART_HandleTypeDef           huart1;
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
-/* Custom LSE sleep clock accuracy to use if both conditions are met:
- * - LSE is selected as Link Layer sleep clock source
- * - the LSE used is different from the default one.
- */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -414,8 +439,11 @@ extern UART_HandleTypeDef           huart1;
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -440,9 +468,9 @@ extern UART_HandleTypeDef           huart1;
 /* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
-#define CFG_BSP_ON_FREERTOS                    (1)
-#define CFG_BSP_ON_NUCLEO                      (1)
-                                                 
+#define CFG_BSP_ON_FREERTOS                     (1)
+#define CFG_BSP_ON_NUCLEO                       (1)
+
 /**
  * User interaction
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
@@ -492,12 +520,12 @@ extern UART_HandleTypeDef           huart1;
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
     #define CFG_LOG_SUPPORTED       (0)
   #endif /* CFG_LOG_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
 
 /**
  * Switch to enable/disable BLE radio activity shown on green LED

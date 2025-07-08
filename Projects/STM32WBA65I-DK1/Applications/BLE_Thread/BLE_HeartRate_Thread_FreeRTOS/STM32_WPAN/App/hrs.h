@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1.h
+  * @file    hrs.h
   * @author  MCD Application Team
-  * @brief   Header for service1.c
+  * @brief   Header for hrs.c
   ******************************************************************************
   * @attention
   *
@@ -27,6 +27,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -56,6 +59,7 @@ typedef enum
   HRS_HRCP_WRITE_EVT,
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
   HRS_RESET_ENERGY_EXPENDED_EVT,
+
   /* USER CODE END Service1_OpcodeEvt_t */
   HRS_BOOT_REQUEST_EVT
 } HRS_OpcodeEvt_t;
@@ -90,16 +94,17 @@ typedef struct{
     uint8_t     NbreOfValidRRIntervalValues;
     uint8_t     Flags;
 }HRS_MeasVal_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 typedef enum
 {
-  HRS_HRM_VALUE_FORMAT_UINT16 = 1,
-  HRS_HRM_SENSOR_CONTACTS_PRESENT = 2,
-  HRS_HRM_SENSOR_CONTACTS_SUPPORTED = 4,
-  HRS_HRM_ENERGY_EXPENDED_PRESENT = 8,
+  HRS_HRM_VALUE_FORMAT_UINT16 = 0x01,
+  HRS_HRM_SENSOR_CONTACTS_PRESENT = 0x02,
+  HRS_HRM_SENSOR_CONTACTS_SUPPORTED = 0x04,
+  HRS_HRM_ENERGY_EXPENDED_PRESENT = 0x08,
   HRS_HRM_RR_INTERVAL_PRESENT = 0x10
 }HRS_HrmFlags_t;
 
@@ -113,6 +118,7 @@ typedef enum
   HRS_BODY_SENSOR_LOCATION_EAR_LOBE = 5,
   HRS_BODY_SENSOR_LOCATION_FOOT = 6
 }HRS_BodySensorLocation_t;
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

@@ -20,10 +20,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "zigbeedirectcomm.h"
 
 /* USER CODE BEGIN Includes */
+#include "svc_ctl.h"
 #include "zigbee.zd.h"
 #include "zdd_stack_wrapper.h"
 #include "stm32_rtos.h"
@@ -219,7 +219,7 @@ static SVCCTL_EvtAckStatus_t ZIGBEEDIRECTCOMM_EventHandler(void *p_Event)
               /* USER CODE END Service2_Char_5_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case 0x0:
                 /* USER CODE BEGIN Service2_Char_5_Disabled_BEGIN */
 
                 /* USER CODE END Service2_Char_5_Disabled_BEGIN */
@@ -231,7 +231,7 @@ static SVCCTL_EvtAckStatus_t ZIGBEEDIRECTCOMM_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case 0x1:
                 /* USER CODE BEGIN Service2_Char_5_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service2_Char_5_COMSVC_Notification_BEGIN */

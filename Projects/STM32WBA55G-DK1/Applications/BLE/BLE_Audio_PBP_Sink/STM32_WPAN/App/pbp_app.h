@@ -39,6 +39,7 @@ typedef uint8_t PBPAPP_PASyncState_t;
 #define PBPAPP_PA_SYNC_STATE_IDLE           (0x00)
 #define PBPAPP_PA_SYNC_STATE_SYNCHRONIZING  (0x01)
 #define PBPAPP_PA_SYNC_STATE_SYNCHRONIZED   (0x02)
+#define PBPAPP_PA_SYNC_STATE_BASE_RECEIVED  (0x03)
 
 typedef uint8_t PBPAPP_BIGSyncState_t;
 #define PBPAPP_BIG_SYNC_STATE_IDLE          (0x00)
@@ -82,6 +83,12 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+/**
+  * @brief Init Audio Stack
+  * @retval Status of the operation
+  */
+tBleStatus APP_AUDIO_STACK_Init(void);
+
 /**
   * @brief Init PBP Sink Application
   * @retval Status of the operation

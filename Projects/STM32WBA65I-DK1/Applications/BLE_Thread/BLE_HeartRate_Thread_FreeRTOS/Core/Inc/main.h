@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -66,12 +66,11 @@ void MX_GPDMA1_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
-void MX_RNG_Init(void);
 void MX_CRC_Init(void);
 void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN EFP */
-void ConfigureStandbyWakeupPins(void);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

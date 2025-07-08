@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "bas.h"
 
 /* USER CODE BEGIN Includes */
@@ -152,7 +151,7 @@ static SVCCTL_EvtAckStatus_t BAS_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_1_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_1_Disabled_BEGIN */
@@ -164,7 +163,7 @@ static SVCCTL_EvtAckStatus_t BAS_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service3_Char_1_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service3_Char_1_COMSVC_Notification_BEGIN */
@@ -312,11 +311,11 @@ void BAS_Init(void)
                              &(BAS_Context.BasSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: BAS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: BAS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: BAS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: BasSvcHdle = 0x%04X\n",BAS_Context.BasSvcHdle);
   }
 
   /**
@@ -339,7 +338,7 @@ void BAS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BAL\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BalCharHdle = 0x%04X\n",BAS_Context.BalCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -377,11 +376,11 @@ tBleStatus BAS_UpdateValue(BAS_CharOpcode_t CharOpcode, BAS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value BAL command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value BAL command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value BAL command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value BAL command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 

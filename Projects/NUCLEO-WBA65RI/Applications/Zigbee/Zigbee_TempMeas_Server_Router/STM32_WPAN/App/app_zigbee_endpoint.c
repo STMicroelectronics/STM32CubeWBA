@@ -172,18 +172,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -209,7 +197,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add TempMeas Server Cluster */
   stZigbeeAppInfo.TempMeasServer = ZbZclTempMeasServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, APP_ZIGBEE_TEMP_MIN, APP_ZIGBEE_TEMP_MAX, APP_ZIGBEE_TEMP_TOLERANCE );
   assert( stZigbeeAppInfo.TempMeasServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.TempMeasServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.TempMeasServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during TempMeas Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -367,7 +358,8 @@ static void APP_ZIGBEE_TimerUpdateCallback( void * arg )
  */
 static void APP_ZIGBEE_TempMeasAttributeUpdate( void )
 {
-  uint8_t             cTempVariation; 
+  uint8_t             cTempVariation, cTempAP; 
+  int16_t             iTempBP;
   enum ZclStatusCodeT eStatus;
   char                szText[10];
   
@@ -400,9 +392,11 @@ static void APP_ZIGBEE_TempMeasAttributeUpdate( void )
     }
   }
     
-  sprintf( szText, "%.2f", ( (float)iTemperatureCurrent / 100 ) );
+  iTempBP = (int16_t)(iTemperatureCurrent / 100);
+  cTempAP = (uint8_t)(iTemperatureCurrent % 100);
+  snprintf( szText, sizeof(szText), "%d.%02d", iTempBP, cTempAP );
   LOG_INFO_APP( "[TEMP MEAS] Update TempMeasure : %s C", szText );
-  APP_LED_TOGGLE(LED_GREEN);
+  APP_LED_TOGGLE(LED_WORK);
   
   eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.TempMeasServer, ZCL_TEMP_MEAS_ATTR_MEAS_VAL, iTemperatureCurrent);
   if ( eStatus != ZCL_STATUS_SUCCESS )

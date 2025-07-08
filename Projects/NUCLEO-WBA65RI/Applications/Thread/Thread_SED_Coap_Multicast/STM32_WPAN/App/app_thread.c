@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -481,7 +481,7 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
     case ERR_THREAD_MSG_COMPARE_FAILED:
         APP_THREAD_TraceError("ERROR : ERR_THREAD_MSG_COMPARE_FAILED ",ErrCode);
         break;
-
+        
     /* USER CODE END APP_THREAD_Error_2 */
     default :
         APP_THREAD_TraceError("ERROR Unknown ", 0);
@@ -511,7 +511,7 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-          APP_LED_OFF(LD2);
+      	  APP_LED_OFF(LD2);
           APP_LED_OFF(LD3);
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
@@ -537,22 +537,22 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-    	  APP_LED_OFF(LD2);
-    	  APP_LED_ON(LD3);
+          APP_LED_OFF(LD2);
+          APP_LED_ON(LD3);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-    	  APP_LED_ON(LD2);
+          APP_LED_ON(LD2);
           APP_LED_OFF(LD3);
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
       default:
           /* USER CODE BEGIN DEFAULT */
-    	  APP_LED_OFF(LD2);
-    	  APP_LED_OFF(LD3);
+          APP_LED_OFF(LD2);
+          APP_LED_OFF(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -803,11 +803,22 @@ static bool APP_THREAD_CheckMsgValidity(void)
   return valid;
 }
 
+
 /**
  * @brief Task associated to the push button 1.
  * @param  None
  * @retval None
  */
+void APP_BSP_Button1Action(void)
+{
+  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  
+  /* Send a NON-CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+                              NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
+
+}
+
 static void APP_THREAD_TimerTask(void)
 {
   LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
@@ -854,6 +865,9 @@ static void APP_THREAD_CoapSendTimerCallback(void *arg)
 
 
 }
+
+
+
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

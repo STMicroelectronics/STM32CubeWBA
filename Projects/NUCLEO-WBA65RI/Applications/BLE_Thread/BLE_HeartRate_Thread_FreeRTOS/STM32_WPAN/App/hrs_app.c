@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1_app.c
+  * @file    hrs_app.c
   * @author  MCD Application Team
-  * @brief   service1_app application definition.
+  * @brief   hrs_app application definition.
   ******************************************************************************
   * @attention
   *
@@ -21,14 +21,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "hrs_app.h"
 #include "hrs.h"
 #include "stm32_rtos.h"
-#include "log_module.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -69,7 +68,7 @@ typedef struct
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
-extern RNG_HandleTypeDef hrng;
+
 /* USER CODE END EV */
 
 /* Private macros ------------------------------------------------------------*/

@@ -164,6 +164,10 @@
                                                       /*LL can use crystal oscillator or RTC or RCO to drive the sleep clock.This selection is done via "DEFAULT_SLEEP_CLOCK_SOURCE" macro. */
 #endif /* USE_NON_ACCURATE_32K_SLEEP_CLK */
 
+#ifndef SUPPORT_CTE_DEGRADATION_API
+#define SUPPORT_CTE_DEGRADATION_API                 1 /* Enable\Disable CTE degradation API. Enable:1 - Disable:0 */
+#endif /* SUPPORT_CTE_DEGRADATION_API */
+
 /* Non-standard features configurations */
 #ifndef NUM_OF_CTSM_EMNGR_HNDLS
 #define NUM_OF_CTSM_EMNGR_HNDLS                     1 /* Number of custom handles in event manager to be used for app specific needs */

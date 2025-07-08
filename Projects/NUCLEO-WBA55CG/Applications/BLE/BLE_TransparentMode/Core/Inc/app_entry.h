@@ -53,15 +53,14 @@ extern "C" {
  * [24:31] = Version major
  *
  ******************************************************************************/
-#define CFG_FW_BUILD              (0)
-#define CFG_FW_BRANCH             (0)
-#define CFG_FW_SUBVERSION         (0)
-#define CFG_FW_MINOR_VERSION      (6)
-#define CFG_FW_MAJOR_VERSION      (1)
+#define WPAN_FW_BUILD              (0)
+#define WPAN_FW_BRANCH             (0)
+#define WPAN_FW_SUBVERSION         (0)
+#define WPAN_FW_MINOR_VERSION      (7)
+#define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE BEGIN EC */
-#undef CFG_FW_SUBVERSION
-#define CFG_FW_SUBVERSION         (1)
+
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/

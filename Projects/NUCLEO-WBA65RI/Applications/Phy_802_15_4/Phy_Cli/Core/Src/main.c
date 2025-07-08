@@ -46,8 +46,6 @@ CRC_HandleTypeDef hcrc;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
-RNG_HandleTypeDef hrng;
-
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
@@ -108,7 +106,6 @@ int main(void)
   MX_RTC_Init();
   MX_USART1_UART_Init();
   MX_ADC4_Init();
-  MX_RNG_Init();
   MX_ICACHE_Init();
 
   /* USER CODE BEGIN 2 */
@@ -391,35 +388,6 @@ void MX_RAMCFG_Init(void)
 
 }
 
-/**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-  memset(&hrng, 0, sizeof(hrng));
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
-
-}
 
 /**
   * @brief RTC Initialization Function

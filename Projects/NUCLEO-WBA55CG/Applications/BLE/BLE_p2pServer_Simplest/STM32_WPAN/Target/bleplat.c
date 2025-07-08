@@ -34,39 +34,12 @@ void BLEPLAT_Init( void )
 
 /*****************************************************************************/
 
-int BLEPLAT_NvmAdd( uint8_t type,
-                    const uint8_t* data,
-                    uint16_t size,
-                    const uint8_t* extra_data,
-                    uint16_t extra_size )
+void BLEPLAT_NvmStore( const uint64_t* ptr,
+                              uint16_t size )
 {
-  return 0;
-}
+  UNUSED(ptr);
+  UNUSED(size);
 
-/*****************************************************************************/
-
-int BLEPLAT_NvmGet( uint8_t mode,
-                    uint8_t type,
-                    uint16_t offset,
-                    uint8_t* data,
-                    uint16_t size )
-{
-  return -3; /* Simulate end of NVM  */
-}
-
-/*****************************************************************************/
-
-int BLEPLAT_NvmCompare( uint16_t offset,
-                        const uint8_t* data,
-                        uint16_t size )
-{
-  return 0;
-}
-
-/*****************************************************************************/
-
-void BLEPLAT_NvmDiscard( uint8_t mode )
-{
   return;
 }
 

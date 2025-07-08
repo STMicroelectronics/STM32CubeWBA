@@ -144,6 +144,25 @@ extern "C" {
             + (VCP_RENDERER_MEM_PER_AIC_INST_SIZE_BYTES * num_aic_instances) \
             + (VCP_RENDERER_MEM_PER_VOC_INST_SIZE_BYTES * num_voc_instances))
 
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BLE_VCP_CTLR_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Volume Control Profile in Controller role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_aic_instances: Maximum number of supported Audio Input Control Instances.
+ *
+ * @param num_voc_instances: Maximum number of supported Volume Offset Control Instances.
+ */
+#define BLE_VCP_CTLR_DB_BUFFER_SIZE(num_db_devices,num_aic_instances,num_voc_instances) \
+        (num_db_devices \
+         * (16u + (DIVC((31u + (num_aic_instances * 55u) + (num_voc_instances * 39u)),4u) * 4u)))
+
 /* Types ---------------------------------------------------------------------*/
 
 /* Types of mask for roles of the Volume Control Profile */

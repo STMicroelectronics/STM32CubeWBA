@@ -12,8 +12,8 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, OnOff cluster, basic a
 
 For this application it is requested to have:  
 
-* One STM32WBA55xx Nucleo board loaded with application : **Zigbee_Basic_Client_Coord**  
-* One or more STM32WBA55xx board loaded with application : **Zigbee_Basic_Server_Router**  
+* One STM32WBA65xx Nucleo board loaded with application : **Zigbee_Basic_Client_Coord**  
+* One or more STM32WBA65xx board loaded with application : **Zigbee_Basic_Server_Router**  
 
 <pre>
 	
@@ -32,20 +32,20 @@ For this application it is requested to have:
                |        |                                      |        |
                |        |             ZbZclReadReq             |        | <= PushB SW1
                |        | <----------------------------------- |        | 
-			   |        | -----------------------------------> |        | => Display Manufacturer Name
-               |        |                                      |        |			   
-               |        |                                      |        |			   			   
+               |        | -----------------------------------> |        | => Display Manufacturer Name
+               |        |                                      |        |   
+               |        |                                      |        |   
                |        |             ZbZclReadReq             |        | <= PushB SW2
                |        | <----------------------------------- |        | 
-			   |        | -----------------------------------> |        | => Display ZCL Version & Power Source
-               |        |                                      |        |			   			   
+               |        | -----------------------------------> |        | => Display ZCL Version & Power Source
+               |        |                                      |        |   
                +--------+                                      +--------+
 
 </pre> 
 
 ### __Application Setup__  
 
-* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
+* First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
 * To run the application :
 	1. Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_Basic_Client_Coord application.  
 
@@ -63,7 +63,7 @@ You must see the Rer LED toggling on the Server side.
 
 ## Hardware and Software environment
 
-* This example runs on STM32WBA55xx devices.  
+* This example runs on STM32WBA65xx devices.  
 
 * This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 

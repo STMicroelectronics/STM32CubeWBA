@@ -9,7 +9,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,31 +24,12 @@
   */
 
   .syntax unified
-	.cpu cortex-m33
-	.fpu softvfp
-	.thumb
+  .cpu cortex-m33
+  .fpu softvfp
+  .thumb
 
-/* start address for the initialization values of the .data section.
-defined in linker script */
-.word	_sidata
-/* start address for the .data section. defined in linker script */
-.word	_sdata
-/* end address for the .data section. defined in linker script */
-.word	_edata
-/* start address for the .bss section. defined in linker script */
-.word	_sbss
-/* end address for the .bss section. defined in linker script */
-.word	_ebss
-
-
-/**
- * @brief  This is the code that gets called when the processor first
- *          starts execution following a reset event. Only the absolutely
- *          necessary set is performed, after which the application
- *          supplied main() routine is called.
- * @param  None
- * @retval : None
-*/
+  .extern SystemInit
+  .extern RestoreFromStandby
 
   .section .text.Reset_Handler
   .global Reset_Handler

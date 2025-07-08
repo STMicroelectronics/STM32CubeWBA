@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "p2p_server_app.h"
 #include "p2p_server.h"
 #include "stm32_rtos.h"

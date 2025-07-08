@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-full-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-full-config.h&gt;,OPENTHREAD_FTD_FULL,STM32WBA55xx</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\config;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\platform;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns;..\..\..\..\..\..\..\Third_Party\mbedtls\include</IncludePath>
+              <IncludePath>..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\config;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\platform;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include\;..\..\..\stack\src\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -890,11 +890,6 @@
               <FilePath>..\..\..\stack\src\core\common\binary_search.cpp</FilePath>
             </File>
             <File>
-              <FileName>crc16.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\crc16.cpp</FilePath>
-            </File>
-            <File>
               <FileName>data.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\data.cpp</FilePath>
@@ -993,6 +988,16 @@
               <FileName>preference.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\preference.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>crc.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\crc.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>offset_range.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\offset_range.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1108,6 +1113,16 @@
               <FileName>sub_mac_callbacks.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\mac\sub_mac_callbacks.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>sub_mac_csl_receiver.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\mac\sub_mac_csl_receiver.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mac_header_ie.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\mac\mac_header_ie.cpp</FilePath>
             </File>
           </Files>
         </Group>

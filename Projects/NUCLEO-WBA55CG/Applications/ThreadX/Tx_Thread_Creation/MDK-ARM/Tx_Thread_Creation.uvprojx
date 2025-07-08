@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0-RC1</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -338,7 +338,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>TX_SINGLE_MODE_NON_SECURE=1,USE_HAL_DRIVER,STM32WBA55xx</Define>
+              <Define>TX_SINGLE_MODE_NON_SECURE=1,USE_HAL_DRIVER,STM32WBA55xx,TX_INCLUDE_USER_DEFINE_FILE</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/threadx/common/inc;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/threadx/ports/cortex_m33/ac6/inc;../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
@@ -1361,6 +1361,9 @@
               <FilePath>../../../../../../Middlewares/ST/threadx/common/src/txe_timer_info_get.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>

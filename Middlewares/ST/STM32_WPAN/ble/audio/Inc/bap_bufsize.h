@@ -387,7 +387,6 @@
  *
  * @param num_ble_links: Maximum number of supported Ble connection
  *
- *
  * @param max_num_snk_pac_records: Maximum number of Sink PAC records
  *
  * @param max_num_src_pac_records: Maximum number of Source PAC records
@@ -474,4 +473,88 @@
                                                                                 max_num_base_subgroups)))
 
 
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BAP_ASCS_CLT_DB_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Audio Stream Control Service in Client Role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection
+ *
+ * @param max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connection
+ *
+ * @param max_codec_config_length_per_ase: Maximum Codec configuration length per Audio Stream Endpoint
+ *
+ */
+#define BAP_ASCS_CLT_DB_BUFFER_SIZE(num_db_devices,max_num_snk_ase_per_link, \
+                                       max_num_src_ase_per_link,max_codec_config_length_per_ase) \
+        (num_db_devices \
+         * (16u + (DIVC((12u + ((max_num_snk_ase_per_link + max_num_src_ase_per_link) * (30u + max_codec_config_length_per_ase))),4u) * 4u)))
+
+/*
+ * BAP_PACS_CLT_DB_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Published Audio Capabilities Service in Client role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_pac_records_per_link: Maximum number of PAC Records per connection
+ */
+#define BAP_PACS_CLT_DB_BUFFER_SIZE(num_db_devices,num_pac_records_per_link) \
+        (num_db_devices \
+         * (16u + (DIVC((47u + (num_pac_records_per_link * 6u)),4u) * 4u)))
+
+/*
+ * BAP_BASS_CLT_DB_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Broadcast Audio Scan Service in Client role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param max_num_bsrc_info_per_link: Maximum number of Broadcast Source Information contexts per connection
+ *                                    with remote Scan Delegator
+ *
+ */
+#define BAP_BASS_CLT_DB_BUFFER_SIZE(num_db_devices,max_num_bsrc_info_per_link) \
+        (num_db_devices \
+         * (16u + (DIVC((12u + (max_num_bsrc_info_per_link * 6u)),4u) * 4u)))
+
+/*
+ * BAP_ASCS_SRV_DB_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Audio Stream Control Service in Server Role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param caching: Indicate if server caches the ASE codec configuration during autonomous Released operation when ASE
+ *                 is in Releasing state. Transition an ASE from Releasing state to the Idle state (caching = 0) or the
+ *                 Codec Configured state (caching = 1)
+ *
+ * @param max_num_snk_ase_per_link: Maximum number of Sink Audio Stream Endpoints per connection
+ *
+ * @param max_num_src_ase_per_link: Maximum number of Source Audio Stream Endpoints per connection
+ *
+ * @param max_codec_config_length_per_ase: Maximum Codec configuration length per Audio Stream Endpoint
+ *
+ */
+#define BAP_ASCS_SRV_DB_BUFFER_SIZE(num_db_devices,caching, max_num_snk_ase_per_link, \
+                                       max_num_src_ase_per_link,max_codec_config_length_per_ase) \
+        (num_db_devices \
+         * (16u + (DIVC((((max_num_snk_ase_per_link + max_num_src_ase_per_link) * (7u + (((caching) == (0x01)) ? (23 + max_codec_config_length_per_ase) : (0))))),4u) * 4u)))
+
+/*
+ * BAP_PACS_SRV_DB_BUFFER_SIZE: this macro returns the amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Published Audio Capabilities Service in Server role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param max_num_snk_pac_records: Maximum number of Sink PAC records
+ *
+ * @param max_num_src_pac_records: Maximum number of Source PAC records
+ */
+#define BAP_PACS_SRV_DB_BUFFER_SIZE(num_db_devices,max_num_snk_pac_records,max_num_src_pac_records) \
+        (num_db_devices \
+         * (16u + (DIVC((36u + ((max_num_snk_pac_records + max_num_src_pac_records) * 21u)),4u) * 4u)))
 #endif /* BAP_BUFSIZE_H__ */

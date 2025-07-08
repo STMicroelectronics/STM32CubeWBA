@@ -88,16 +88,12 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configUSE_RECURSIVE_MUTEXES              1
 #define configUSE_COUNTING_SEMAPHORES            1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  0
-#define configUSE_TIME_SLICING                   1
 #define configUSE_TICKLESS_IDLE                  2
 #define configUSE_TASK_NOTIFICATIONS             1
 #define configRECORD_STACK_HIGH_ADDRESS          1
 #define configHEAP_CLEAR_MEMORY_ON_FREE          0
 #define configUSE_MINI_LIST_ITEM                 1
 #define configUSE_SB_COMPLETED_CALLBACK          0
-
-
-
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
@@ -112,9 +108,9 @@ extern unsigned long getRunTimeCounterValue(void);
 
 /* Software timer definitions. */
 #define configUSE_TIMERS                         1
-#define configTIMER_TASK_PRIORITY                (55)
-#define configTIMER_QUEUE_LENGTH                 15
-#define configTIMER_TASK_STACK_DEPTH             256
+#define configTIMER_TASK_PRIORITY                ( 2 )
+#define configTIMER_QUEUE_LENGTH                 10
+#define configTIMER_TASK_STACK_DEPTH             128
 
 /* CMSIS-RTOS V2 flags */
 #define configUSE_OS2_THREAD_SUSPEND_RESUME  1
@@ -140,11 +136,6 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark  1
 #define INCLUDE_xTaskGetCurrentTaskHandle    1
 #define INCLUDE_eTaskGetState                1
-
-//DEBUG
-#define configSTACK_DEPTH_TYPE               size_t
-
-#define configUSE_MALLOC_FAILED_HOOK         1
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
@@ -194,12 +185,9 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 #define USE_CUSTOM_SYSTICK_HANDLER_IMPLEMENTATION 0
-//#define USE_CUSTOM_SYSTICK_HANDLER_IMPLEMENTATION 1 /* do not change to 0 till xPortSysTickHandler() is defined and declared */
 #define configSYSTICK_CLOCK_HZ                    (32768)
 
-/* USER CODE BEGIN Defines */
-/* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
-//#define configOVERRIDE_DEFAULT_TICK_CONFIGURATION 1  /* required only for Keil but does not hurt otherwise */
+#define configEXPECTED_IDLE_TIME_BEFORE_SLEEP     3
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

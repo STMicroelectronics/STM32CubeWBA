@@ -1,5 +1,6 @@
-<?xml version="1.0" ?><project>
-    <fileVersion>3</fileVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <fileVersion>4</fileVersion>
     <configuration>
         <name>ZigbeeDirect_OnOff_Server_Router_Identify</name>
         <toolchain>
@@ -10,7 +11,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>34</version>
+                <version>37</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -69,7 +70,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.60.3.7274</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -97,8 +98,8 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -114,8 +115,8 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
@@ -137,8 +138,8 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGCMSISPackSelectDevice</name>
@@ -171,11 +172,11 @@
                 </option>
                 <option>
                     <name>GenLocaleTags</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>GenLocaleDisplayOnly</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>DSPExtension</name>
@@ -202,13 +203,30 @@
                     <name>BuildFilesPath</name>
                     <state>OnOff_Server_Router_Identify\</state>
                 </option>
+                <option>
+                    <name>PointerAuthentication</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>FPU64</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>OG_32_64DeviceCoreSlave</name>
+                    <version>34</version>
+                    <state>61</state>
+                </option>
+                <option>
+                    <name>GOutputSo</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>37</version>
+                <version>39</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -267,19 +285,19 @@
                 </option>
                 <option>
                     <name>CCDiagSuppress</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagRemark</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagWarning</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCDiagError</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCObjPrefix</name>
@@ -346,7 +364,7 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCIncludePath2</name>
@@ -504,13 +522,29 @@
                     <name>CCStackProtection</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>CCPointerAutentiction</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCBranchTargetIdentification</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosRadRwpi</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosSharedSlave</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>AARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>11</version>
+                <version>12</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -540,15 +574,15 @@
                 </option>
                 <option>
                     <name>AWarnOne</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AWarnRange1</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AWarnRange2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>ADebug</name>
@@ -560,7 +594,7 @@
                 </option>
                 <option>
                     <name>ADefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AList</name>
@@ -652,7 +686,7 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -660,7 +694,7 @@
                 </option>
                 <option>
                     <name>AExtraOptionsV2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>AsmNoLiteralPool</name>
@@ -668,7 +702,11 @@
                 </option>
                 <option>
                     <name>PreInclude</name>
-                    <state/>
+                    <state></state>
+                </option>
+                <option>
+                    <name>A_32_64Device</name>
+                    <state>1</state>
                 </option>
             </data>
         </settings>
@@ -704,27 +742,18 @@
         </settings>
         <settings>
             <name>CUSTOM</name>
-            <archiveVersion>3</archiveVersion>
+            <archiveVersion>4</archiveVersion>
             <data>
-                <extensions/>
-                <cmdline/>
-                <hasPrio>1</hasPrio>
+                <extensions></extensions>
+                <cmdline></cmdline>
                 <buildSequence>inputOutputBased</buildSequence>
-            </data>
-        </settings>
-        <settings>
-            <name>BUILDACTION</name>
-            <archiveVersion>1</archiveVersion>
-            <data>
-                <prebuild/>
-                <postbuild>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin</postbuild>
             </data>
         </settings>
         <settings>
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>26</version>
+                <version>28</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -745,31 +774,31 @@
                 </option>
                 <option>
                     <name>IlinkKeepSymbols</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkDefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkConfigDefines</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkMapFile</name>
@@ -805,7 +834,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkEnableRemarks</name>
@@ -813,19 +842,19 @@
                 </option>
                 <option>
                     <name>IlinkSuppressDiags</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsRem</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsWarn</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkTreatAsErr</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkWarningsAreErrors</name>
@@ -837,7 +866,7 @@
                 </option>
                 <option>
                     <name>IlinkExtraOptions</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkLowLevelInterfaceSlave</name>
@@ -849,7 +878,7 @@
                 </option>
                 <option>
                     <name>IlinkAdditionalLibs</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkOverrideProgramEntryLabel</name>
@@ -984,11 +1013,11 @@
                 </option>
                 <option>
                     <name>IlinkStackControlFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkStackCallGraphFile</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>CrcAlgorithm</name>
@@ -1010,7 +1039,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile_AltDefault</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkEncInput</name>
@@ -1042,19 +1071,19 @@
                 </option>
                 <option>
                     <name>IlinkRawBinaryFile2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySymbol2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinarySegment2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkRawBinaryAlign2</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkLogCrtRoutineSelection</name>
@@ -1082,7 +1111,19 @@
                 </option>
                 <option>
                     <name>IlinkWrapperFile</name>
-                    <state/>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkFpuProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkSharedSlave</name>
+                    <state>0</state>
                 </option>
             </data>
         </settings>
@@ -1095,7 +1136,7 @@
                 <debug>1</debug>
                 <option>
                     <name>IarchiveInputs</name>
-                    <state/>
+                    <state></state>
                 </option>
                 <option>
                     <name>IarchiveOverride</name>
@@ -1108,9 +1149,27 @@
             </data>
         </settings>
         <settings>
+            <name>BUILDACTION</name>
+            <archiveVersion>2</archiveVersion>
+            <data>
+                <buildActions>
+                    <buildAction>
+                        <cmdline>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin &amp;&amp; echo &gt; "$BUILD_FILES_DIR$/.postbuild"</cmdline>
+                        <workingDirectory>$PROJ_DIR$</workingDirectory>
+                        <buildSequence>postLink</buildSequence>
+                        <outputs>
+                            <file>
+                                <name>$BUILD_FILES_DIR$/.postbuild</name>
+                            </file>
+                        </outputs>
+                    </buildAction>
+                </buildActions>
+            </data>
+        </settings>
+        <settings>
             <name>Coder</name>
             <archiveVersion>0</archiveVersion>
-            <data/>
+            <data />
         </settings>
     </configuration>
     <group>
@@ -1216,16 +1275,16 @@
             <group>
                 <name>Interfaces</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_rng.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
                 </file>
             </group>
             <group>
@@ -1233,71 +1292,71 @@
                 <group>
                     <name>BasicAES</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Log</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Log\log_module.c</name>
                     </file>
                 </group>
                 <group>
                     <name>MemoryManager</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
                     </file>
                 </group>
                 <group>
                     <name>RFControl</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
                     </file>
                 </group>
                 <group>
                     <name>RTDebug</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
                     </file>
                 </group>
                 <group>
                     <name>SerialCmdInterpreter</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
                     </file>
                 </group>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\app_sys.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\crc_ctrl.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\crc_ctrl.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\otp.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\scm.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\stm_list.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_list.c</name>
                 </file>
             </group>
             <group>
                 <name>Startup</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                 </file>
             </group>
         </group>
@@ -1305,7 +1364,7 @@
     <group>
         <name>Doc</name>
         <file>
-            <name>$PROJ_DIR$\..\readme.md</name>
+            <name>$PROJ_DIR$\..\README.md</name>
         </file>
     </group>
     <group>
@@ -1492,9 +1551,6 @@
             <group>
                 <name>LinkLayer</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</name>
-                </file>
-                <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
                 </file>
                 <file>
@@ -1505,6 +1561,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</name>
                 </file>
             </group>
             <group>

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -57,8 +57,7 @@
 
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_SMART_ENERGY
-#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_HOME_GATEWAY
-#define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
+#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_IN_HOME_DISPLAY
 
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_MESSAGING
 #define APP_ZIGBEE_CLUSTER_NAME           "Messaging Server"
@@ -83,7 +82,7 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
-/* These CBKE Keys are valid an Extended Address. So we perhaps need to change Extended Adress of Device for tests */
+/* These CBKE Keys are valid with an Extended Address. So we perhaps need to change Extended Adress of Device for tests */
 const uint64_t dlMyExtendedAdress       = 0x00u;
 
 /* To obtains theses keys, you need to connect to Certicom site (www.certicom.com). */
@@ -110,7 +109,7 @@ static struct ZbZclMsgMessageT          stDelayedMessage;
 
 /* Messaging Server Callbacks */
 static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo);
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
 static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgServerCallbacksT stMessagingServerCallbacks =
@@ -180,18 +179,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -219,7 +206,7 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   assert( stZigbeeAppInfo.MessagingServer != NULL );
   if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingServer ) == false )
   {
-    LOG_ERROR_APP( "Error during Messaging Endpoint Register." );
+    LOG_ERROR_APP( "Error during Messaging Server Endpoint Register." );
   }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
@@ -234,8 +221,9 @@ void APP_ZIGBEE_ConfigEndpoints(void)
  */
 bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
+  /* Not used */
 
-  return true;
+  return false;
 }
 
 /**
@@ -303,11 +291,12 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
   enum ZbStatusCodeT  eStatus;
 
   /* Update Trust Center Client */
-  pstConfig->security.cbke.tc_keepalive_server_enable = false;
-  pstConfig->security.cbke.tc_keepalive_base = ZCL_KEEPALIVE_CLIENT_BASE_DEFAULT;
-  pstConfig->security.cbke.tc_keepalive_jitter = ZCL_KEEPALIVE_CLIENT_JITTER_DEFAULT;
-  pstConfig->security.cbke.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
-  pstConfig->security.cbke.tcso_arg = NULL;
+  pstConfig->security.keepalive.enabled = true;
+  pstConfig->security.keepalive.server_enable = false;
+  pstConfig->security.keepalive.server_base = ZCL_KEEPALIVE_CLIENT_BASE_DEFAULT;
+  pstConfig->security.keepalive.server_jitter = ZCL_KEEPALIVE_CLIENT_JITTER_DEFAULT;
+  pstConfig->security.keepalive.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
+  pstConfig->cb_arg = NULL;
   
   /* Messaging Appli performs CBKE through ZbStartup. For this application, let's use ZbZclKeWithDevice to test that API. */
   cTempVal = BDB_LINKKEY_EXCHANGE_METHOD_CBKE;
@@ -337,7 +326,7 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
  */
 void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
-  /* Configure Zigbee Network */
+  /* Attempt to join a zigbee network */
   ZbStartupConfigGetProSeDefaults( pstConfig );
 
   APP_ZIGBEE_GetCbkeConfig( pstConfig );
@@ -351,7 +340,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   pstConfig->channelList.count = 1;
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
-
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
@@ -424,7 +412,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( str
 /**
  * @brief  Messaging Server 'MessageConfirmation' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo)
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingServerMessageConfirmationCallback */

@@ -287,6 +287,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Src/stm32wbaxx_it.c</locationURI>
 		</link>
 		<link>
+			<name>Example/User/startup_stm32wbaxx.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/Src/startup_stm32wbaxx.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>

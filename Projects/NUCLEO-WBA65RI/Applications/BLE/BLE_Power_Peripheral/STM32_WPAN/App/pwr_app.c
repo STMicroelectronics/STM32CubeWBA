@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "pwr_app.h"
 #include "pwr.h"
 #include "stm32_rtos.h"
@@ -210,43 +209,40 @@ void PWR_APP_Init(void)
   if((PWR_APP_Context.Rx_TransferReq != PWR_CO_APP_TRANSFER_REQ_OFF)
     && (PWR_APP_Context.Pwr_rx_Notification_Status != Pwr_rx_NOTIFICATION_OFF) )
   {
-
- PWR_UpdateValue(PWR_PWR_RX,&Data_Rx);
-
+    PWR_UpdateValue(PWR_PWR_RX,&Data_Rx);
   }
-   BleStackCB_Process();
 
+  return;
 }
 
 void Disable_GPIOs(void)
 {
-  if(CFG_LPM_LEVEL > 1)
-  {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-  
-    /*Put all GPIOs on analog*/
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOH_CLK_ENABLE();
+#if(CFG_LPM_LEVEL > 1)
+  /*Put all GPIOs on analog*/
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
     
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Pin  = GPIO_PIN_All;
   
-   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct); 
-   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct); 
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct); 
+  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct); 
    
-__HAL_RCC_GPIOA_CLK_DISABLE();
-__HAL_RCC_GPIOB_CLK_DISABLE();
-__HAL_RCC_GPIOC_CLK_DISABLE();
-__HAL_RCC_GPIOH_CLK_DISABLE();
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+  __HAL_RCC_GPIOC_CLK_DISABLE();
+  __HAL_RCC_GPIOH_CLK_DISABLE();
 
 PWR_CO_GPIO_Status = PWR_CO_GPIO_OFF;
-  }
-
+#endif
+  return;
 }
 /* USER CODE END FD */
 

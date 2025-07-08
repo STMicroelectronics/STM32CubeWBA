@@ -18,7 +18,7 @@
 #include "stm32wbaxx_hal.h"
 #include "stdio.h"
 #include "ble_audio_plat.h"
-#include "nvm.h"
+#include "simple_nvm_arbiter.h"
 #include "baes.h"
 #include "hw.h"
 #include "stm32_timer.h"
@@ -54,45 +54,25 @@ static UTIL_TIMER_Object_t AUDIO_TimerObj;
 
 /* Private functions prototypes-----------------------------------------------*/
 static void BLE_AUDIO_TimerCallback(void *arg);
-
+static void BLE_AUDIO_NvmCallback (SNVMA_Callback_Status_t CbkStatus);
 /* Functions Definition ------------------------------------------------------*/
 
 /*****************************************************************************/
 
-int BLE_AUDIO_PLAT_NvmAdd( uint8_t type,
-                    const uint8_t* data,
-                    uint16_t size,
-                    const uint8_t* extra_data,
-                    uint16_t extra_size )
+
+void BLE_AUDIO_PLAT_NvmStore( const uint32_t* ptr, uint32_t size )
 {
-  return NVM_Add( type, data, size, extra_data, extra_size );
-}
-
-/*****************************************************************************/
-
-int BLE_AUDIO_PLAT_NvmGet( uint8_t mode,
-                    uint8_t type,
-                    uint16_t offset,
-                    uint8_t* data,
-                    uint16_t size )
-{
-  return NVM_Get( mode, type, offset, data, size );
-}
-
-/*****************************************************************************/
-
-int BLE_AUDIO_PLAT_NvmCompare( uint16_t offset,
-                        const uint8_t* data,
-                        uint16_t size )
-{
-  return NVM_Compare( offset, data, size );
-}
-
-/*****************************************************************************/
-
-void BLE_AUDIO_PLAT_NvmDiscard( uint8_t mode )
-{
-  NVM_Discard( mode );
+  UNUSED(ptr);
+  UNUSED(size);
+#if (CFG_LOG_SUPPORTED != 0)
+  SNVMA_Cmd_Status_t status;
+#endif
+  /* Call SNVMA for storing - Without callback */
+#if (CFG_LOG_SUPPORTED != 0)
+  status =
+#endif
+  SNVMA_Write (APP_AUDIO_NvmBuffer,BLE_AUDIO_NvmCallback);
+  LOG_INFO_APP("SNVMA_Write() for AUDIO NVM Buffer returns status 0x%02X\n",status);
 }
 
 /*****************************************************************************/
@@ -185,4 +165,22 @@ static void BLE_AUDIO_TimerCallback(void *arg)
 {
   //Call timer Callback of the Audio Stack
   BLE_AUDIO_TimerFunction(AUDIO_TimerParam);
+}
+
+
+static void BLE_AUDIO_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
+{
+  if (CbkStatus != SNVMA_OPERATION_COMPLETE)
+  {
+#if (CFG_LOG_SUPPORTED != 0)
+    SNVMA_Cmd_Status_t status;
+#endif
+  /* Call SNVMA for storing - Without callback */
+#if (CFG_LOG_SUPPORTED != 0)
+    status =
+#endif
+    /* Retry the write operation */
+    SNVMA_Write (APP_AUDIO_NvmBuffer,BLE_AUDIO_NvmCallback);
+    LOG_INFO_APP("SNVMA_Write() for AUDIO NVM Buffer returns status 0x%02X\n",status);
+  }
 }

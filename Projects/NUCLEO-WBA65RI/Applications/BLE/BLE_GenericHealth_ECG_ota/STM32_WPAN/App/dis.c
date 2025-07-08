@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   service2 definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "dis.h"
 
 /* USER CODE BEGIN Includes */
@@ -46,7 +45,6 @@ typedef struct{
   uint16_t  IrcdlCharHdle;                  /**< IRCDL Characteristic Handle */
   uint16_t  PniCharHdle;                  /**< PNI Characteristic Handle */
 /* USER CODE BEGIN Context */
-  /* Place holder for Characteristic Descriptors Handle*/
 
 /* USER CODE END Context */
 }DIS_Context_t;
@@ -276,7 +274,6 @@ void DIS_Init(void)
   max_attr_record = 21;
 
   /* USER CODE BEGIN SVCCTL_InitService */
-  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 
@@ -288,11 +285,11 @@ void DIS_Init(void)
                              &(DIS_Context.DisSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DIS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DIS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: DIS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: DisSvcHdle = 0x%04X\n",DIS_Context.DisSvcHdle);
   }
 
   /**
@@ -315,7 +312,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SRS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SrsCharHdle = 0x%04X\n",DIS_Context.SrsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char1 */
@@ -343,7 +340,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MANS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MansCharHdle = 0x%04X\n",DIS_Context.MansCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char2 */
@@ -371,7 +368,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MONS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MonsCharHdle = 0x%04X\n",DIS_Context.MonsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char3 */
@@ -399,7 +396,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SNS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SnsCharHdle = 0x%04X\n",DIS_Context.SnsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char4 */
@@ -427,7 +424,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SYID\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SyidCharHdle = 0x%04X\n",DIS_Context.SyidCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char5 */
@@ -455,7 +452,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : UDIFMD\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : UdifmdCharHdle = 0x%04X\n",DIS_Context.UdifmdCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char6 */
@@ -483,7 +480,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : FRS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : FrsCharHdle = 0x%04X\n",DIS_Context.FrsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char7 */
@@ -511,7 +508,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HRS\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrsCharHdle = 0x%04X\n",DIS_Context.HrsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char8 */
@@ -539,7 +536,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : IRCDL\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : IrcdlCharHdle = 0x%04X\n",DIS_Context.IrcdlCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char9 */
@@ -567,7 +564,7 @@ void DIS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : PNI\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : PniCharHdle = 0x%04X\n",DIS_Context.PniCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char10 */
@@ -605,11 +602,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SRS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value SRS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SRS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value SRS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_1 */
 
@@ -624,11 +621,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MANS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MANS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MANS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MANS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_2 */
 
@@ -643,11 +640,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MONS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MONS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MONS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MONS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_3 */
 
@@ -662,11 +659,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SNS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value SNS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SNS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value SNS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_4 */
 
@@ -681,11 +678,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SYID command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value SYID command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SYID command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value SYID command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_5 */
 
@@ -700,11 +697,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value UDIFMD command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value UDIFMD command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value UDIFMD command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value UDIFMD command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_6 */
 
@@ -719,11 +716,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value FRS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value FRS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value FRS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value FRS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_7 */
 
@@ -738,11 +735,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HRS command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HRS command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HRS command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HRS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_8 */
 
@@ -757,11 +754,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value IRCDL command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value IRCDL command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value IRCDL command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value IRCDL command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_9 */
 
@@ -776,11 +773,11 @@ tBleStatus DIS_UpdateValue(DIS_CharOpcode_t CharOpcode, DIS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value PNI command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value PNI command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value PNI command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value PNI command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_10 */
 

@@ -35,12 +35,7 @@
 
 #if OPENTHREAD_CONFIG_NEIGHBOR_DISCOVERY_AGENT_ENABLE
 
-#include "common/as_core_type.hpp"
-#include "common/locator_getters.hpp"
-#include "thread/lowpan.hpp"
-#include "thread/mle_router.hpp"
-#include "thread/network_data_leader.hpp"
-#include "thread/thread_netif.hpp"
+#include "instance/instance.hpp"
 
 namespace ot {
 namespace NeighborDiscovery {
@@ -101,10 +96,10 @@ void Agent::UpdateService(void)
 
         if (error == kErrorNone)
         {
-            uint16_t rloc = Mle::kAloc16NeighborDiscoveryAgentStart + lowpanContext.mContextId - 1;
+            uint16_t aloc16 = Mle::kAloc16NeighborDiscoveryAgentStart + lowpanContext.mContextId - 1;
 
             mAloc.InitAsThreadOrigin();
-            mAloc.GetAddress().SetToAnycastLocator(Get<Mle::MleRouter>().GetMeshLocalPrefix(), rloc);
+            mAloc.GetAddress().SetToAnycastLocator(Get<Mle::MleRouter>().GetMeshLocalPrefix(), aloc16);
             mAloc.mMeshLocal = true;
             Get<ThreadNetif>().AddUnicastAddress(mAloc);
             ExitNow();

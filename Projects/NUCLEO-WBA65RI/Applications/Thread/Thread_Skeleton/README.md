@@ -18,9 +18,9 @@ It is up to the client to add his application, calling OpenThread APIs.
 
 * This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA65RIV6_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA65RI_Nucleo board and can be easily tailored to any other supported device and development board.  
 
-* On STM32WBA65RIV6_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+* On STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
 <br>    
 **JP1:**</br>
 1-2:  [ON]</br>

@@ -54,12 +54,11 @@
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-#include "app_thread_data_transfer.h"
 #include "udp.h"
 #include "app_bsp.h"
 #include "logging_stm32wba.h"
 
- extern void BootModeCheck(void);
+void BootModeCheck(void);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,7 +105,7 @@ typedef void (*fct_t)(void);
 /* Define list of reboot reason */
 #define FUOTA_MAGIC_KEYWORD_M33_APP         0xBF806133u       /* Keyword found at the end of Zigbee Ota file for M33 Application Processor binary */
 
-#define HW_FLASH_WIDTH                      (16u)   // Write Lentgh in Bytes (128 bits = 4 words) 
+#define HW_FLASH_WIDTH                      (16u)   // Write Length in Bytes (128 bits = 4 words)
 
 #define C_RESSOURCE_FUOTA_PROVISIONING     "FUOTA_PROVISIONING"
 #define C_RESSOURCE_FUOTA_PARAMETERS       "FUOTA_PARAMETERS"
@@ -118,7 +117,7 @@ typedef void (*fct_t)(void);
 #define RAM_FIRMWARE_BUFFER_SIZE            1024u
 
 #define FUOTA_APP_FW_BINARY_ADDRESS         (FLASH_BASE + ( CFG_APP_START_SECTOR_INDEX * FLASH_PAGE_SIZE))     /* Address for Application Processor FW Update */
-#define FUOTA_APP_FW_BINARY_MAX_SIZE        (FLASH_BASE + FLASH_SIZE - FUOTA_APP_FW_BINARY_ADDRESS)     /* Size of the availbale flash space for OTA Image */
+#define FUOTA_APP_FW_BINARY_MAX_SIZE        (FLASH_BASE + FLASH_SIZE - FUOTA_APP_FW_BINARY_ADDRESS)     /* Size of the available flash space for OTA Image */
 
 #define FUOTA_M33_APP_OTA_TAG_OFFSET        0x160u            /* Offset of the OTA tag from the base address in flash for M33 Applciation Processor binary */
 #define FUOTA_M33_APP_OTA_TAG_ADDRESS       (FUOTA_APP_FW_BINARY_ADDRESS + FUOTA_M33_APP_OTA_TAG_OFFSET)       /* Address of the OTA tag in flash for M33 Application Processor binary */
@@ -126,7 +125,7 @@ typedef void (*fct_t)(void);
 /**
  * Define list of reboot reason
  */
-#define CFG_REBOOT_ON_DOWNLOADED_FW         0x55u       /* Reboot on the downloaded Firmware */
+#define CFG_REBOOT_ON_DOWNLOADED_FW         0x0         /* Reboot on the downloaded Firmware */
 #define CFG_REBOOT_ON_OTA_CLIENT_FW         0xaau       /* Reboot on Thread_OTA_Client FW */
 
 #define OTA_RESET_WAIT_TIME                 100
@@ -715,7 +714,7 @@ static bool APP_THREAD_ValidateOta(void)
 static void APP_THREAD_FuotaInit(void)
 {
   /* Erase the sectors used to download the image */
-  LOG_INFO_APP( "[OTA] Deleting flash sectors from 0x%08X to 0x%08X", FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_MAX_SIZE);
+  LOG_INFO_APP( "[OTA] Deleting flash sectors from 0x%08X with size 0x%08X", FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_MAX_SIZE);
 
   /* Delete all the sector needed for the image */
   APP_THREAD_DeleteSectors(FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_MAX_SIZE);
@@ -937,7 +936,7 @@ static APP_THREAD_StatusTypeDef APP_THREAD_CheckDeviceCapabilities(void)
   else
   {
     status = APP_THREAD_ERROR;
-    LOG_ERROR_APP("WARNING: Inavlid OTA Image Base address");
+    LOG_ERROR_APP("WARNING: Invalid OTA Image Base address");
   }
 
   return status;
@@ -998,7 +997,7 @@ static void APP_THREAD_ResetFuotaProcess(void)
    UTIL_TIMER_Stop(&TimerID);
    BSP_LED_Off(LED_BLUE);
    
-   LOG_INFO_APP( "[OTA] Deleting flash sectors from 0x%08X to 0x%08X", FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_MAX_SIZE);
+   LOG_INFO_APP( "[OTA] Deleting flash sectors from 0x%08X to 0x%08X", FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_ADDRESS + FUOTA_APP_FW_BINARY_MAX_SIZE);
 
    APP_THREAD_DeleteSectors(FUOTA_APP_FW_BINARY_ADDRESS, FUOTA_APP_FW_BINARY_MAX_SIZE);
 }
@@ -1212,6 +1211,7 @@ void APP_BSP_Button1Action(void)
 void APP_BSP_Button3Action(void)
 {
   LOG_INFO_APP("Button3 pressed");
+  APP_THREAD_ResetFuotaProcess();
 }
 
 /**
@@ -1318,7 +1318,14 @@ static bool CheckFwAppValidity( void )
 {
   bool status = true;
   uint32_t lMagicKeywordAddress = *(uint32_t*)FUOTA_M33_APP_OTA_TAG_ADDRESS;
-  uint32_t lMagicKeywordValue = *(uint32_t*)lMagicKeywordAddress;
+  uint32_t lMagicKeywordValue = 0;
+
+  if (lMagicKeywordAddress == 0xFFFFFFFF)
+  {
+    return false;
+  }
+
+  lMagicKeywordValue = *(uint32_t*)lMagicKeywordAddress;
 
   if( (lMagicKeywordAddress < FLASH_BASE) || (lMagicKeywordAddress > (FLASH_BASE + FLASH_SIZE) ) )
   {

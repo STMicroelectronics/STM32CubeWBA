@@ -136,6 +136,7 @@ goto define_rdp_level
 :provisioning_oem2_key
 echo    * OEM2 key setup
 echo        Open oem2_password file and put OEM2 key(Default path is \ROT_Provisioning\OEMiRoT_OEMuRoT\Keys\oem2_password.txt)
+echo        Warning: Default OEM2 keys must NOT be used in a product. Make sure to regenerate your own OEM2 keys!
 echo        Press any key to continue...
 echo.
 if [%1] neq [AUTO] pause >nul
@@ -211,11 +212,18 @@ set "command=%python%%applicfg% xmlval -v %ns_app_enc_sign_bin% --string -n %fw_
 IF !errorlevel! NEQ 0 goto :step_error
 
 echo    * Code firmware image generation
+IF "%app_full_secure%" == "1" (
+echo        Open the OEMiROT_Appli project with preferred toolchain.
+echo        Rebuild the Secure project. The %oemurot_appli_secure% and oemurot_tz_s_app_enc_sign.bin files are generated with the postbuild command.
+) else (
 echo        Open the OEMiROT_Appli_TrustZone project with preferred toolchain.
-echo        Rebuild all files. The oemirot_tz_app_enc_sign.bin file(s) is generated with the postbuild command.
+echo        Rebuild the Secure project. The %oemurot_appli_secure% and oemurot_tz_s_app_enc_sign.bin files are generated with the postbuild command.
+echo        Rebuild the NonSecure project. The %oemurot_appli_non_secure% and oemurot_tz_ns_app_enc_sign.bin files are generated with the postbuild command.
+)
 echo        Press any key to continue...
 echo.
 if [%1] neq [AUTO] pause >nul
+
 echo    * Data secure generation (if Data secure image is enabled)
 echo        Select OEMuRoT_S_Data_Image.xml(Default path is \ROT_Provisioning\OEMiRoT_OEMuRoT\Images\OEMuROT_S_Data_Image.xml)
 echo        Generate the data_enc_sign.bin image

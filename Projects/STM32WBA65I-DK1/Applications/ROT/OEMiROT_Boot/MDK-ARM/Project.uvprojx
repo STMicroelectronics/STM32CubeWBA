@@ -668,6 +668,16 @@
               <FileType>1</FileType>
               <FilePath>../../../../../../Middlewares/Third_Party/mcuboot/platform/ext/common/uart_stdout.c</FilePath>
             </File>
+            <File>
+              <FileName>boot_record.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Middlewares/Third_Party/mcuboot/boot/bootutil/src/boot_record.c</FilePath>
+            </File>
+            <File>
+              <FileName>shared_data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Middlewares/Third_Party/mcuboot/bl2/src/shared_data.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

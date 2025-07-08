@@ -99,6 +99,7 @@ extern "C" {
 #define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
+#define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 
 /* USER CODE END TASK_Size_Define */
 

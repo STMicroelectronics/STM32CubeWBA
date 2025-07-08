@@ -27,6 +27,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -95,6 +97,7 @@ uint8_t P2PR_getWriteData(uint32_t *p_P2PR_writeValAddr, uint8_t *p_P2PR_writeVa
 uint8_t P2PR_setNotifLevel(uint8_t dev_idx, uint8_t level);
 uint8_t P2PR_analyseAdvReport(hci_le_advertising_report_event_rp0 *p_adv_report);
 void P2PR_ForwardNotification(void);
+void P2PR_setConnHdlFromIndex(uint8_t index, uint16_t connHdl);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

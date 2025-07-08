@@ -20,7 +20,7 @@
 
 #include "gmap_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "stm32_timer.h"
@@ -33,6 +33,7 @@
 #include "log_module.h"
 #include "app_ble.h"
 #include "micp.h"
+#include "simple_nvm_arbiter.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -90,7 +91,7 @@
 #endif /*(APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)*/
 
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
@@ -154,8 +155,12 @@
 #endif /* (APP_MICP_ROLE_DEVICE_SUPPORT == 1) */
 
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)
-#define BLE_CSIP_SET_MEMBER_DYN_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES,CFG_BLE_NUM_LINK)
+#define BLE_CSIP_SET_MEMBER_DYN_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES, \
+                                                                                      CFG_BLE_NUM_LINK)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1) */
+
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
 
 #define VOLUME_STEP                     10
 
@@ -257,6 +262,7 @@ static uint32_t aASCSSrvMemBuffer[DIVC(BAP_ASCS_SRV_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t audio_init_buffer[BLE_AUDIO_DYN_ALLOC_SIZE];
+static uint64_t audio_buffer_nvm[CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE] = {0};
 static BleAudioInit_t pBleAudioInit;
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
 static uint32_t aRenderMemBuffer[DIVC(BLE_VCP_RDR_DYN_ALLOC_SIZE,4)];
@@ -383,6 +389,32 @@ static void Print_String(uint8_t *pString, uint8_t StringLen);
 extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* First register the APP BLE Audio buffer */
+  SNVMA_Register(APP_AUDIO_NvmBuffer,
+                 (uint32_t *)audio_buffer_nvm,
+                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  /* Realize a restore */
+  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+
+  /* Initialize the Audio IP*/
+  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  pBleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  pBleAudioInit.bleAudioStartRamAddress = (uint8_t*)audio_init_buffer;
+  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  pBleAudioInit.MaxNumOfBondedDevices = APP_MAX_NUM_BONDED_DEVICES;
+  pBleAudioInit.bleAudioStartRamAddress_NVM = audio_buffer_nvm;
+  pBleAudioInit.total_buffer_size_NVM = CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE;
+  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 
 void GMAPAPP_Init(uint8_t csip_config_id)
 {
@@ -875,10 +907,10 @@ void GMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_
         break;
       }
     }
+    /* Set Available Audio Contexts */
+    p_conn->AvailableSnkAudioContext = GMAPAPP_Context.AvailableSnkAudioContext;
+    p_conn->AvailableSrcAudioContext = GMAPAPP_Context.AvailableSrcAudioContext;
   }
-  /* Set Available Audio Contexts */
-  p_conn->AvailableSnkAudioContext = GMAPAPP_Context.AvailableSnkAudioContext;
-  p_conn->AvailableSrcAudioContext = GMAPAPP_Context.AvailableSrcAudioContext;
 
   GMAPAPP_Context.NumConn++;
   if (GMAPAPP_Context.NumConn < CFG_BLE_NUM_LINK )
@@ -1384,9 +1416,6 @@ uint8_t GMAPAPP_StopSink(void)
     }
   }
 
-  LOG_INFO_APP("   >>==  MX_AudioDeInit()\n");
-  MX_AudioDeInit();
-
   LOG_INFO_APP(">>==  End Stop Broadcast Sink\n");
   return ret;
 
@@ -1400,6 +1429,10 @@ void GMAPAPP_SetBroadcastMode(APP_BroadcastMode_t mode)
   GMAPAPP_Context.BroadcastMode = mode;
 }
 
+void GMAPAPP_ClearDatabase(void)
+{
+  BLE_AUDIO_STACK_DB_ClearAllRecords();
+}
 /*************************************************************
  *
  * LOCAL FUNCTIONS
@@ -1425,18 +1458,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   Audio_Location_t audio_locations = FRONT_LEFT;
 
   LOG_INFO_APP("CAPAPP_Init() with audio role 0x%02X\n",AudioRole);
-
-  /* Initialize the Audio IP*/
-  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  pBleAudioInit.bleStartRamAddress = (uint8_t*)audio_init_buffer;
-  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
-  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
-  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
-  if(status != BLE_STATUS_SUCCESS)
-  {
-    return status;
-  }
 
   /*Clear the CAP Configuration*/
   memset(&APP_CAP_Config, 0, sizeof(CAP_Config_t));
@@ -1510,7 +1531,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   APP_BAP_Config.ASCSSrvConfig.MaxNumSrcASEs = APP_NUM_SRC_ASE;
   APP_BAP_Config.ASCSSrvConfig.MaxCodecConfSize = MAX_USR_CODEC_CONFIG_SIZE;
   APP_BAP_Config.ASCSSrvConfig.MaxMetadataLength = MAX_USR_METADATA_SIZE;
-  APP_BAP_Config.ASCSSrvConfig.CachingEn = 1u;
+  APP_BAP_Config.ASCSSrvConfig.CachingEn = APP_ASCS_CACHING;
   APP_BAP_Config.ASCSSrvConfig.pStartRamAddr = (uint8_t *)&aASCSSrvMemBuffer;
   APP_BAP_Config.ASCSSrvConfig.RamSize = BAP_ASCS_SRV_DYN_ALLOC_SIZE;
 
@@ -3274,7 +3295,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     case CAP_BROADCAST_AUDIO_UP_EVT:
     {
       Sampling_Freq_t sampling_freq;
-      char freq_text[8];
+      char freq_text[8] = {0};
       LOG_INFO_APP(">>== CAP_BROADCAST_AUDIO_UP_EVT\n");
 
       sampling_freq = LTV_GetConfiguredSamplingFrequency(
@@ -3285,37 +3306,37 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         case SAMPLE_FREQ_8000_HZ:
         {
-          strcpy(&freq_text[0], "8KHz");
+          strncpy(&freq_text[0], "8KHz",5u);
           break;
         }
         case SAMPLE_FREQ_16000_HZ:
         {
-          strcpy(&freq_text[0], "16KHz");
+          strncpy(&freq_text[0], "16KHz",6u);
           break;
         }
         case SAMPLE_FREQ_24000_HZ:
         {
-          strcpy(&freq_text[0], "24KHz");
+          strncpy(&freq_text[0], "24KHz",6u);
           break;
         }
         case SAMPLE_FREQ_32000_HZ:
         {
-          strcpy(&freq_text[0], "32KHz");
+          strncpy(&freq_text[0], "32KHz",6u);
           break;
         }
         case SAMPLE_FREQ_44100_HZ:
         {
-          strcpy(&freq_text[0], "44.1KHz");
+          strncpy(&freq_text[0], "44.1KHz",8u);
           break;
         }
         case SAMPLE_FREQ_48000_HZ:
         {
-          strcpy(&freq_text[0], "48KHz");
+          strncpy(&freq_text[0], "48KHz",6u);
           break;
         }
         default:
         {
-          strcpy(&freq_text[0], "Unknown");
+          strncpy(&freq_text[0], "Unknown",8u);
           break;
         }
       }
@@ -3326,6 +3347,8 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     {
       uint8_t status;
       LOG_INFO_APP(">>== CAP_BROADCAST_AUDIO_DOWN_EVT\n");
+
+      Stop_TxAudio();
       MX_AudioDeInit();
 
       if (GMAPAPP_Context.BroadcastMode == APP_BROADCAST_MODE_SCAN_DELEGATOR)
@@ -3699,7 +3722,6 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         uint8_t status;
         BAP_BIGInfo_Report_Data_t *data = (BAP_BIGInfo_Report_Data_t *) pNotification->pInfo;
-        //uint8_t bis_index[2u] = {0x01, 0x02};
 
         LOG_INFO_APP("  CAP_Broadcast_StartBIGSync() function for %d BIEses:\n", GMAPAPP_Context.BSNK.num_sync_bis);
         for (uint8_t i = 0u; i < GMAPAPP_Context.BSNK.num_sync_bis;i++)
@@ -4454,8 +4476,8 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
     if (GMAPAPP_Context.audio_role_setup == 0x00)
     {
       Sampling_Freq_t target_frequency = frequency;
-      APP_ASE_Info_t *p_app_ase2;
-      BAP_ASE_Info_t *p_ase2;
+      APP_ASE_Info_t *p_app_ase2 = 0;
+      BAP_ASE_Info_t *p_ase2 = 0;
       GMAPAPP_Context.SinkDecimation = 1;
       GMAPAPP_Context.SourceDecimation = 1;
       /* Check if other ASEs are configured with different sample rates */
@@ -4469,36 +4491,47 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
         {
           p_app_ase2 = &p_conn->pASEs->aSrcASE[i-APP_NUM_SNK_ASE];
         }
-
-        if (p_app_ase2->ID != p_ase->ASE_ID
+        if (p_app_ase2 != 0)
+        {
+          if (p_app_ase2->ID != p_ase->ASE_ID
             && p_app_ase2->type != p_ase->Type
             && p_app_ase2->allocated == 1u)
-        {
-          /* Found another ASE allocated */
-          p_ase2 = CAP_Unicast_GetASEInfo(ACL_ConnHandle, p_conn->pASEs->aSnkASE[i].ID);
-          if (p_ase2->State == ASE_STATE_ENABLING)
           {
-            Sampling_Freq_t frequency2 = LTV_GetConfiguredSamplingFrequency(p_ase2->params.Codec.CodecConf.pSpecificConf,
-                                                                            p_ase2->params.Codec.CodecConf.SpecificConfLength);
-            if (target_frequency <= SAMPLE_FREQ_48000_HZ && frequency2 <= SAMPLE_FREQ_48000_HZ)
+            /* Found another ASE allocated */
+            p_ase2 = CAP_Unicast_GetASEInfo(ACL_ConnHandle, p_app_ase2->ID);
+            if (p_ase2 != 0)
             {
-              LOG_INFO_APP("Target Frequency = %d, Frequency2 = %d\n", target_frequency, frequency2);
-              /* Retrieve frequency and decimation of combined frequencies */
-              if (role == AUDIO_ROLE_SINK)
+              if (p_ase2->State == ASE_STATE_ENABLING)
               {
-                GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
-                GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                Sampling_Freq_t frequency2 = LTV_GetConfiguredSamplingFrequency(p_ase2->params.Codec.CodecConf.pSpecificConf,
+                                                                                p_ase2->params.Codec.CodecConf.SpecificConfLength);
+                if (target_frequency <= SAMPLE_FREQ_48000_HZ && frequency2 <= SAMPLE_FREQ_48000_HZ)
+                {
+                  LOG_INFO_APP("Target Frequency = %d, Frequency2 = %d\n", target_frequency, frequency2);
+                  /* Retrieve frequency and decimation of combined frequencies */
+                  if (role == AUDIO_ROLE_SINK)
+                  {
+                    GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
+                    GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                  }
+                  else
+                  {
+                    GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
+                    GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                  }
+                  target_frequency = APP_CombinedFrequencyTable[target_frequency][frequency2].Frequency;
+                  LOG_INFO_APP("ASE id %d type %d and ASE id %d type %d are starting, using combined frequency %d\n",
+                               p_ase->ASE_ID,
+                               p_ase->Type,
+                               p_app_ase2->ID,
+                               p_app_ase2->type,
+                               target_frequency);
+                  LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n",
+                               GMAPAPP_Context.SourceDecimation,
+                               GMAPAPP_Context.SinkDecimation);
+                  break;
+                }
               }
-              else
-              {
-                GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
-                GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
-              }
-              target_frequency = APP_CombinedFrequencyTable[target_frequency][frequency2].Frequency;
-              LOG_INFO_APP("ASE id %d type %d and ASE id %d type %d are starting, using combined frequency %d\n",
-                           p_ase->ASE_ID, p_ase->Type, p_app_ase2->ID, p_app_ase2->type, target_frequency);
-              LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n", GMAPAPP_Context.SourceDecimation, GMAPAPP_Context.SinkDecimation);
-              break;
             }
           }
         }
@@ -4884,21 +4917,21 @@ static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification)
     case MICP_DEVICE_UPDATED_AUDIO_INPUT_STATE_EVT:
     {
       MICP_AudioInputState_Evt_t *p_info = (MICP_AudioInputState_Evt_t *)pNotification->pInfo;
-      APP_DBG_MSG("Updated Audio Input State :\n");
-      APP_DBG_MSG("     Instance ID : %d\n",p_info->AICInst);
-      APP_DBG_MSG("     Gain Setting : %d\n",p_info->State.GainSetting);
-      APP_DBG_MSG("     Mute : %d\n",p_info->State.Mute);
-      APP_DBG_MSG("     Gain Mode : %d\n",p_info->State.GainMode);
-      APP_DBG_MSG("     Change Counter : %d\n",p_info->ChangeCounter);
+      LOG_INFO_APP("Updated Audio Input State :\n");
+      LOG_INFO_APP("     Instance ID : %d\n",p_info->AICInst);
+      LOG_INFO_APP("     Gain Setting : %d\n",p_info->State.GainSetting);
+      LOG_INFO_APP("     Mute : %d\n",p_info->State.Mute);
+      LOG_INFO_APP("     Gain Mode : %d\n",p_info->State.GainMode);
+      LOG_INFO_APP("     Change Counter : %d\n",p_info->ChangeCounter);
       UNUSED(p_info);
       break;
     }
     case MICP_DEVICE_UPDATED_AUDIO_INPUT_DESCRIPTION_EVT:
     {
       MICP_AudioDescription_Evt_t *p_info = (MICP_AudioDescription_Evt_t *)pNotification->pInfo;
-      APP_DBG_MSG("Updated Audio Input Description :\n");
-      APP_DBG_MSG("     Instance ID : %d\n",p_info->Inst);
-      APP_DBG_MSG("     Description : %s\n",p_info->pData);
+      LOG_INFO_APP("Updated Audio Input Description :\n");
+      LOG_INFO_APP("     Instance ID : %d\n",p_info->Inst);
+      LOG_INFO_APP("     Description : %s\n",p_info->pData);
       UNUSED(p_info);
       break;
     }

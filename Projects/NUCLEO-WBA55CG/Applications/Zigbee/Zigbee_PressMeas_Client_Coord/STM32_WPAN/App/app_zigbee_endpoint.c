@@ -164,18 +164,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -201,7 +189,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add PressMeas Client Cluster */
   stZigbeeAppInfo.PressMeasClient = ZbZclPressMeasClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.PressMeasClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.PressMeasClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.PressMeasClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during PressMeas Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Server Report callback */
@@ -431,7 +422,7 @@ static void APP_ZIGBEE_PressMeasServerReport( struct ZbZclClusterT * pstCluster,
     case ZCL_PRESS_MEAS_ATTR_MEAS_VAL:
         iAttrValue= (int16_t)( pletoh16( pDataInputPayload ) );
         LOG_INFO_APP( "[PRESS MEAS] From " LOG_DISPLAY64() ", Pressure value is %d hPa", LOG_NUMBER64( pstDataInd->src.extAddr ), iAttrValue );
-        APP_LED_TOGGLE( LED_BLUE );
+        APP_LED_TOGGLE( LED_OK );
         break;
 
     default:

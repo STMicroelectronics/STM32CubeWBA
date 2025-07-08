@@ -20,51 +20,67 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2pserver_ext-application-description"><strong>BLE_p2pServer_Ext Application Description</strong></h2>
-<p>Demonstrate STM32WBA using BLE basic plus stack version to use several extended advertising sets.</p>
-<p>BLE p2pServer_Ext application advertises several extended advertising sets:</p>
+<p>Demonstrates STM32WBA using BLE basic plus stack version to utilize several extended advertising sets.</p>
+<p>The BLE p2pServer_Ext application advertises several extended advertising sets:</p>
 <ul>
-<li>A legacy advertising</li>
-<li>A connectable extended advertising</li>
-<li>A scannable extended advertising</li>
-<li>A not connectable and not scannable extended advertising</li>
+<li>A legacy advertising.<br />
+</li>
+<li>A connectable extended advertising.<br />
+</li>
+<li>A scannable extended advertising.<br />
+</li>
+<li>A not connectable and not scannable extended advertising.</li>
 </ul>
 <p>These sets are configurable in file adv_ext_app.c.</p>
-<p>For legacy advertising set please refer to : - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications</a></p>
+<p>For a legacy advertising set please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, extended, advertising</p>
+<p>Connectivity, BLE, extended, advertising.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65xx devices.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
+<li>This application runs on STM32WBA65xx devices.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
 <li>Another STM32WBAxx Nucleo board may be necessary to run p2pClient_Ext application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following :</p>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file - Run the example</p>
-<p><strong>You can interact with p2pServer_Ext application with a smartphone:</strong></p>
-<p>Use one of the following remote interface to interact with your device<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Enable extended advertising in scan panel</li>
-<li>You can see data advertised by BLE p2pServer_Ext application.</li>
-<li>Moreover, you can connect to the legacy adverting set, your device acts like in BLE p2pServer application.</li>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file.<br />
+</li>
+<li>Run the example.</li>
+</ul>
+<p><strong>You can interact with p2pServer_Ext application with a smartphone:</strong></p>
+<p>Use one of the following remote interfaces to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
+<ul>
+<li>Enable extended advertising in scan panel.<br />
+</li>
+<li>You can see data advertised by BLE p2pServer_Ext application.<br />
+</li>
+<li>Moreover, you can connect to the legacy adverting set; your device acts like in the BLE p2pServer application.</li>
 </ul>
 <p><strong>You can interact with BLE p2pServer_Ext application with another Nucleo board running BLE p2pClient_Ext:</strong></p>
 <ul>
-<li>Power up BLE p2pClient_Ext devices next to BLE p2pServer_Ext device.</li>
-<li>On BLE p2pClient_Ext device button B1 click, starts scanning
+<li>Power up BLE p2pClient_Ext devices next to BLE p2pServer_Ext device.<br />
+</li>
+<li>On the BLE p2pClient_Ext device, click button B1 to start scanning.
 <ul>
-<li>BLE p2pServer_Ext connectable extended advertising in discovered, BD address is registered.</li>
-<li>Then, on BLE p2pClient_Ext device button B3 click, connection is performed.</li>
+<li>The BLE p2pServer_Ext connectable extended advertising in discovered, and the BD address is registered.<br />
+</li>
+<li>Then, on the BLE p2pClient_Ext device, click button B3 to perform the connection.</li>
 </ul></li>
 </ul>
 <p><strong>You can interact with BLE p2pServer_Ext application with another Nucleo board running BLE p2pClient:</strong></p>
 <ul>
-<li>Power up BLE p2pClient devices next to BLE p2pServer_Ext device.</li>
-<li>On BLE p2pClient device button B1 click, to start scanning
+<li>Power up BLE p2pClient device next to BLE p2pServer_Ext device.<br />
+</li>
+<li>On BLE p2pClient device button B1 click, to start scanning.
 <ul>
-<li>p2pServer_Ext connectable legacy advertising in discovered, BD address is registered.</li>
+<li>BLE p2pServer_Ext connectable legacy advertising in discovered, and the BD address is registered.<br />
+</li>
 <li>Then, connection is performed.</li>
 </ul></li>
 </ul>

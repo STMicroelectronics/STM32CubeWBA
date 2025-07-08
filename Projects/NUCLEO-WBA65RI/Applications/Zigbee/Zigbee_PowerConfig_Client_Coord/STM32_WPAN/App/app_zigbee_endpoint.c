@@ -169,18 +169,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -206,7 +194,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add PowerConfig Client Cluster */
   stZigbeeAppInfo.PowerConfigClient = ZbZclPowerConfigClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.PowerConfigClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.PowerConfigClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.PowerConfigClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during PowerConfig Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Server Report callback */
@@ -437,7 +428,7 @@ static void APP_ZIGBEE_PowerConfigServerReport( struct ZbZclClusterT * pstCluste
 //    case ZCL_POWER_CONFIG_ATTR_BATTERY_VOLTAGE:
 //        iAttrValue= (uint16_t)( (uint8_t)pDataInputPayload[0] )  * BATTERY_MEASURED_RESOL;
 //        LOG_INFO_APP( "[POWER CONFIG] From " LOG_DISPLAY64() ", Battery Voltage value is %d mV", LOG_NUMBER64( pstDataInd->src.extAddr ), iAttrValue );
-//        APP_LED_TOGGLE( LED_BLUE );
+//        APP_LED_TOGGLE( LED_OK );
 //        break;
         
     case ZCL_POWER_CONFIG_ATTR_BATTERY_PCT:
@@ -445,7 +436,7 @@ static void APP_ZIGBEE_PowerConfigServerReport( struct ZbZclClusterT * pstCluste
         cBatteryPctInt = (uint8_t)( ( iAttrValue * 10 / BATTERY_PERCENT_RESOL ) / 10u );
         cBatteryPctDiv = (uint8_t)( ( iAttrValue * 10 / BATTERY_PERCENT_RESOL ) % 10u );
         LOG_INFO_APP( "[POWER CONFIG] From " LOG_DISPLAY64() ", Battery remain value is %d.%d %%", LOG_NUMBER64( pstDataInd->src.extAddr ), cBatteryPctInt, cBatteryPctDiv );
-        APP_LED_TOGGLE( LED_BLUE );
+        APP_LED_TOGGLE( LED_OK );
         break;
 
     default:

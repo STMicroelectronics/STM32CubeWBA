@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -77,6 +77,7 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -147,20 +148,10 @@ void APP_ZIGBEE_ApplicationStart( void )
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
   UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STDBY_SUPPORTED > 0)
   UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
 #endif /* CFG_LPM_STDBY_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
-}
-
-/**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* Not used */
 }
 
 /**
@@ -189,7 +180,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add OnOff Client Cluster */
   stZigbeeAppInfo.OnOffClient = ZbZclOnOffClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.OnOffClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during OnOff Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -224,6 +218,9 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
 {
   /* Attempt to join a zigbee network */
   ZbStartupConfigGetProDefaults( pstConfig );
+
+  /* Using the default HA preconfigured Link Key */
+  memcpy( pstConfig->security.preconfiguredLinkKey, sec_key_ha, ZB_SEC_KEYSIZE );
 
   /* Setting up additional startup configuration parameters */
   pstConfig->startupControl = stZigbeeAppInfo.eStartupControl;

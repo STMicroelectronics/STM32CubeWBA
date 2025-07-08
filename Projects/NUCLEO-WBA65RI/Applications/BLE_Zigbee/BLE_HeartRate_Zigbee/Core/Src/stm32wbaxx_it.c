@@ -27,7 +27,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
-#include "ral.h"
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -66,7 +65,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -222,8 +220,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -326,35 +325,12 @@ void TIM16_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-  ral_instance_t radio_instance;
-  uint8_t channel;
 
-  /* Check current ral state to use AHB5 synchronization workaround only if radio is granted to BLE */
-  ral_event_state_enum_t radio_state = ral_get_current_event_state( &radio_instance, &channel );
-  if (radio_state == RAL_IDLE) {
-    /* WORKAROUND : Force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
-    uint32_t mul,div;
-    ll_intf_get_aligned_us_now(&mul, &div);
-  }
   /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)

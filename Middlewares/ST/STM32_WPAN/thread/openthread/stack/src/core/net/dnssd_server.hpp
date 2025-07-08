@@ -45,10 +45,12 @@
 #endif // OPENTHREAD_CONFIG_DNSSD_DISCOVERY_PROXY_ENABLE
 
 #include <openthread/dnssd_server.h>
+#include <openthread/platform/dns.h>
 
 #include "border_router/infra_if.hpp"
 #include "common/as_core_type.hpp"
 #include "common/callback.hpp"
+#include "common/equatable.hpp"
 #include "common/message.hpp"
 #include "common/non_copyable.hpp"
 #include "common/owned_ptr.hpp"
@@ -79,7 +81,6 @@ namespace ServiceDiscovery {
 
 /**
  * Implements DNS-SD server.
- *
  */
 class Server : public InstanceLocator, private NonCopyable
 {
@@ -92,17 +93,33 @@ class Server : public InstanceLocator, private NonCopyable
 public:
     /**
      * Contains the counters of the DNS-SD server.
-     *
      */
     class Counters : public otDnssdCounters, public Clearable<Counters>
     {
+    public:
+        /**
+         * Returns the total number of processed queries (successful or failed responses).
+         *
+         * @return The total number of queries.
+         */
+        uint32_t GetTotalQueries(void) const { return mSuccessResponse + GetTotalFailedQueries(); }
+
+        /**
+         * Returns the total number of failed queries (any error response code).
+         *
+         * @return The total number of failed queries.
+         */
+        uint32_t GetTotalFailedQueries(void) const
+        {
+            return mServerFailureResponse + mFormatErrorResponse + mNameErrorResponse + mNotImplementedResponse +
+                   mOtherResponse;
+        }
     };
 
 #if OPENTHREAD_CONFIG_DNS_UPSTREAM_QUERY_ENABLE
     /**
      * Represents an upstream query transaction. The methods should only be used by
      * `Dns::ServiceDiscovery::Server`.
-     *
      */
     class UpstreamQueryTransaction : public otPlatDnsUpstreamQuery
     {
@@ -112,7 +129,6 @@ public:
          *
          * @retval  TRUE  The transaction is valid.
          * @retval  FALSE The transaction is not valid.
-         *
          */
         bool IsValid(void) const { return mValid; }
 
@@ -120,14 +136,12 @@ public:
          * Returns the time when the transaction expires.
          *
          * @returns The expire time of the transaction.
-         *
          */
         TimeMilli GetExpireTime(void) const { return mExpireTime; }
 
         /**
          * Resets the transaction with a reason. The transaction will be invalid and can be reused for
          * another upstream query after this call.
-         *
          */
         void Reset(void) { mValid = false; }
 
@@ -135,7 +149,6 @@ public:
          * Initializes the transaction.
          *
          * @param[in] aMessageInfo  The IP message info of the query.
-         *
          */
         void Init(const Ip6::MessageInfo &aMessageInfo);
 
@@ -143,7 +156,6 @@ public:
          * Returns the message info of the query.
          *
          * @returns  The message info of the query.
-         *
          */
         const Ip6::MessageInfo &GetMessageInfo(void) const { return mMessageInfo; }
 
@@ -156,7 +168,6 @@ public:
 
     /**
      * Specifies a DNS-SD query type.
-     *
      */
     enum DnsQueryType : uint8_t
     {
@@ -178,7 +189,6 @@ public:
      * Initializes the object.
      *
      * @param[in]  aInstance     A reference to the OpenThread instance.
-     *
      */
     explicit Server(Instance &aInstance);
 
@@ -187,13 +197,11 @@ public:
      *
      * @retval kErrorNone     Successfully started the DNS-SD server.
      * @retval kErrorFailed   If failed to open or bind the UDP socket.
-     *
      */
     Error Start(void);
 
     /**
      * Stops the DNS-SD server.
-     *
      */
     void Stop(void);
 
@@ -203,7 +211,6 @@ public:
      * @param[in] aSubscribe    A pointer to the callback function to subscribe a service or service instance.
      * @param[in] aUnsubscribe  A pointer to the callback function to unsubscribe a service or service instance.
      * @param[in] aContext      A pointer to the application-specific context.
-     *
      */
     void SetQueryCallbacks(SubscribeCallback aSubscribe, UnsubscribeCallback aUnsubscribe, void *aContext);
 
@@ -212,7 +219,6 @@ public:
      *
      * @param[in] aServiceFullName  The null-terminated full service name.
      * @param[in] aInstanceInfo     A reference to the discovered service instance information.
-     *
      */
     void HandleDiscoveredServiceInstance(const char *aServiceFullName, const ServiceInstanceInfo &aInstanceInfo);
 
@@ -225,7 +231,6 @@ public:
      * @param[in] aQueryTransaction    A reference to upstream DNS query transaction.
      * @param[in] aResponseMessage     A pointer to response UDP message, should be allocated from Udp::NewMessage.
      *                                 Passing a nullptr means close the transaction without a response.
-     *
      */
     void OnUpstreamQueryDone(UpstreamQueryTransaction &aQueryTransaction, Message *aResponseMessage);
 
@@ -234,7 +239,6 @@ public:
      *
      * @retval TRUE  If the server will forward DNS queries.
      * @retval FALSE If the server will not forward DNS queries.
-     *
      */
     bool IsUpstreamQueryEnabled(void) const { return mEnableUpstreamQuery; }
 
@@ -242,7 +246,6 @@ public:
      * Enables or disables forwarding DNS queries to platform DNS upstream API.
      *
      * @param[in]  aEnabled   A boolean to enable/disable forwarding DNS queries to upstream.
-     *
      */
     void SetUpstreamQueryEnabled(bool aEnabled) { mEnableUpstreamQuery = aEnabled; }
 #endif // OPENTHREAD_CONFIG_DNS_UPSTREAM_QUERY_ENABLE
@@ -252,7 +255,6 @@ public:
      *
      * @param[in] aHostFullName     The null-terminated full host name.
      * @param[in] aHostInfo         A reference to the discovered host information.
-     *
      */
     void HandleDiscoveredHost(const char *aHostFullName, const HostInfo &aHostInfo);
 
@@ -262,7 +264,6 @@ public:
      * @param[in] aQuery            The query pointer. Pass `nullptr` to get the first query.
      *
      * @returns  A pointer to the query or `nullptr` if no more queries.
-     *
      */
     const otDnssdQuery *GetNextQuery(const otDnssdQuery *aQuery) const;
 
@@ -273,7 +274,6 @@ public:
      * @param[out]  aName       The name output buffer.
      *
      * @returns The DNS-SD query type.
-     *
      */
     static DnsQueryType GetQueryTypeAndName(const otDnssdQuery *aQuery, Dns::Name::Buffer &aName);
 
@@ -281,18 +281,17 @@ public:
      * Returns the counters of the DNS-SD server.
      *
      * @returns  A reference to the `Counters` instance.
-     *
      */
     const Counters &GetCounters(void) const { return mCounters; };
 
     /**
      * Represents different test mode flags for use in `SetTestMode()`.
-     *
      */
     enum TestModeFlags : uint8_t
     {
-        kTestModeSingleQuestionOnly     = 1 << 0, ///< Allow single question in query, send `FormatError` otherwise.
-        kTestModeEmptyAdditionalSection = 1 << 1, ///< Do not include any RR in additional section.
+        kTestModeRejectMultiQuestionQuery = 1 << 0, ///< Send `FormatError` for a query with multiple questions.
+        kTestModeIgnoreMultiQuestionQuery = 1 << 1, ///< Ignore a query with multiple questions (send no response).
+        kTestModeEmptyAdditionalSection   = 1 << 2, ///< Do not include any RR in additional section.
     };
 
     static constexpr uint8_t kTestModeDisabled = 0; ///< Test mode is disabled (no flags).
@@ -304,7 +303,6 @@ public:
      * messages with certain format (e.g., more than one question in query).
      *
      * @param[in] aTestMode   The new test mode (combination of `TestModeFlags`).
-     *
      */
     void SetTestMode(uint8_t aTestMode) { mTestMode = aTestMode; }
 
@@ -325,12 +323,19 @@ private:
         kTxtQuery,
         kSrvTxtQuery,
         kAaaaQuery,
+        kAQuery,
     };
 
     enum Section : uint8_t
     {
         kAnswerSection,
         kAdditionalDataSection,
+    };
+
+    enum AddrType : uint8_t
+    {
+        kIp6AddrType,
+        kIp4AddrType,
     };
 
 #if OPENTHREAD_CONFIG_DNSSD_DISCOVERY_PROXY_ENABLE
@@ -341,12 +346,13 @@ private:
         kResolvingSrv,
         kResolvingTxt,
         kResolvingIp6Address,
+        kResolvingIp4Address
     };
 #endif
 
     struct Request
     {
-        ResponseCode ParseQuestions(uint8_t aTestMode);
+        ResponseCode ParseQuestions(uint8_t aTestMode, bool &aShouldRespond);
 
         const Message          *mMessage;
         const Ip6::MessageInfo *mMessageInfo;
@@ -383,33 +389,35 @@ private:
     {
     public:
         explicit Response(Instance &aInstance);
-        Error        AllocateAndInitFrom(const Request &aRequest);
-        void         InitFrom(ProxyQuery &aQuery, const ProxyQueryInfo &aInfo);
-        void         SetResponseCode(ResponseCode aResponseCode) { mHeader.SetResponseCode(aResponseCode); }
         ResponseCode AddQuestionsFrom(const Request &aRequest);
-        Error        ParseQueryName(void);
-        void         ReadQueryName(Name::Buffer &aName) const;
-        bool         QueryNameMatches(const char *aName) const;
-        Error        AppendQueryName(void);
-        Error        AppendPtrRecord(const char *aInstanceLabel, uint32_t aTtl);
-        Error        AppendSrvRecord(const ServiceInstanceInfo &aInstanceInfo);
-        Error        AppendSrvRecord(const char *aHostName,
-                                     uint32_t    aTtl,
-                                     uint16_t    aPriority,
-                                     uint16_t    aWeight,
-                                     uint16_t    aPort);
-        Error        AppendTxtRecord(const ServiceInstanceInfo &aInstanceInfo);
-        Error        AppendTxtRecord(const void *aTxtData, uint16_t aTxtLength, uint32_t aTtl);
-        Error        AppendHostAddresses(const HostInfo &aHostInfo);
-        Error        AppendHostAddresses(const ServiceInstanceInfo &aInstanceInfo);
-        Error        AppendHostAddresses(const Ip6::Address *aAddrs, uint16_t aAddrsLength, uint32_t aTtl);
-        Error        AppendAaaaRecord(const Ip6::Address &aAddress, uint32_t aTtl);
-        void         UpdateRecordLength(ResourceRecord &aRecord, uint16_t aOffset);
-        void         IncResourceRecordCount(void);
-        void         Send(const Ip6::MessageInfo &aMessageInfo);
-        void         Answer(const HostInfo &aHostInfo, const Ip6::MessageInfo &aMessageInfo);
-        void         Answer(const ServiceInstanceInfo &aInstanceInfo, const Ip6::MessageInfo &aMessageInfo);
-        Error        ExtractServiceInstanceLabel(const char *aInstanceName, Name::LabelBuffer &aLabel);
+
+        Error AllocateAndInitFrom(const Request &aRequest);
+        void  InitFrom(ProxyQuery &aQuery, const ProxyQueryInfo &aInfo);
+        void  SetResponseCode(ResponseCode aResponseCode) { mHeader.SetResponseCode(aResponseCode); }
+        Error ParseQueryName(void);
+        void  ReadQueryName(Name::Buffer &aName) const;
+        bool  QueryNameMatches(const char *aName) const;
+        Error AppendQueryName(void);
+        Error AppendPtrRecord(const char *aInstanceLabel, uint32_t aTtl);
+        Error AppendSrvRecord(const ServiceInstanceInfo &aInstanceInfo);
+        Error AppendSrvRecord(const char *aHostName,
+                              uint32_t    aTtl,
+                              uint16_t    aPriority,
+                              uint16_t    aWeight,
+                              uint16_t    aPort);
+        Error AppendTxtRecord(const ServiceInstanceInfo &aInstanceInfo);
+        Error AppendTxtRecord(const void *aTxtData, uint16_t aTxtLength, uint32_t aTtl);
+        Error AppendHostAddresses(AddrType aAddrType, const HostInfo &aHostInfo);
+        Error AppendHostAddresses(const ServiceInstanceInfo &aInstanceInfo);
+        Error AppendHostAddresses(AddrType aAddrType, const Ip6::Address *aAddrs, uint16_t aAddrsLength, uint32_t aTtl);
+        Error AppendAaaaRecord(const Ip6::Address &aAddress, uint32_t aTtl);
+        Error AppendARecord(const Ip6::Address &aAddress, uint32_t aTtl);
+        void  UpdateRecordLength(ResourceRecord &aRecord, uint16_t aOffset);
+        void  IncResourceRecordCount(void);
+        void  Send(const Ip6::MessageInfo &aMessageInfo);
+        void  Answer(const HostInfo &aHostInfo, const Ip6::MessageInfo &aMessageInfo);
+        void  Answer(const ServiceInstanceInfo &aInstanceInfo, const Ip6::MessageInfo &aMessageInfo);
+        Error ExtractServiceInstanceLabel(const char *aInstanceName, Name::LabelBuffer &aLabel);
 #if OPENTHREAD_CONFIG_SRP_SERVER_ENABLE
         Error ResolveBySrp(void);
         bool  QueryNameMatchesService(const Srp::Server::Service &aService) const;
@@ -421,8 +429,8 @@ private:
         Error AppendPtrRecord(const ProxyResult &aResult);
         Error AppendSrvRecord(const ProxyResult &aResult);
         Error AppendTxtRecord(const ProxyResult &aResult);
-
-        Error AppendHostAddresses(const ProxyResult &aResult);
+        Error AppendHostIp6Addresses(const ProxyResult &aResult);
+        Error AppendHostIp4Addresses(const ProxyResult &aResult);
 #endif
 
 #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
@@ -437,12 +445,8 @@ private:
         NameOffsets       mOffsets;
     };
 
-    struct ProxyQueryInfo
+    struct ProxyQueryInfo : Message::FooterData<ProxyQueryInfo>
     {
-        void ReadFrom(const ProxyQuery &aQuery);
-        void RemoveFrom(ProxyQuery &aQuery) const;
-        void UpdateIn(ProxyQuery &aQuery) const;
-
         QueryType        mType;
         Ip6::MessageInfo mMessageInfo;
         TimeMilli        mExpireTime;
@@ -492,16 +496,19 @@ private:
         void StartOrStopSrvResolver(Command aCommand, const ProxyQuery &aQuery, const ProxyQueryInfo &aInfo);
         void StartOrStopTxtResolver(Command aCommand, const ProxyQuery &aQuery, const ProxyQueryInfo &aInfo);
         void StartOrStopIp6Resolver(Command aCommand, Name::Buffer &aHostName);
+        void StartOrStopIp4Resolver(Command aCommand, Name::Buffer &aHostName);
 
         static void HandleBrowseResult(otInstance *aInstance, const otPlatDnssdBrowseResult *aResult);
         static void HandleSrvResult(otInstance *aInstance, const otPlatDnssdSrvResult *aResult);
         static void HandleTxtResult(otInstance *aInstance, const otPlatDnssdTxtResult *aResult);
         static void HandleIp6AddressResult(otInstance *aInstance, const otPlatDnssdAddressResult *aResult);
+        static void HandleIp4AddressResult(otInstance *aInstance, const otPlatDnssdAddressResult *aResult);
 
         void HandleBrowseResult(const Dnssd::BrowseResult &aResult);
         void HandleSrvResult(const Dnssd::SrvResult &aResult);
         void HandleTxtResult(const Dnssd::TxtResult &aResult);
         void HandleIp6AddressResult(const Dnssd::AddressResult &aResult);
+        void HandleIp4AddressResult(const Dnssd::AddressResult &aResult);
         void HandleResult(ProxyAction         aAction,
                           const Name::Buffer &aName,
                           ResponseAppender    aAppender,
@@ -513,11 +520,9 @@ private:
     };
 #endif
 
-    bool        IsRunning(void) const { return mSocket.IsBound(); }
-    static void HandleUdpReceive(void *aContext, otMessage *aMessage, const otMessageInfo *aMessageInfo);
-    void        HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
-    void        ProcessQuery(Request &aRequest);
-
+    bool IsRunning(void) const { return mSocket.IsBound(); }
+    void HandleUdpReceive(Message &aMessage, const Ip6::MessageInfo &aMessageInfo);
+    void ProcessQuery(Request &aRequest);
     void ResolveByProxy(Response &aResponse, const Ip6::MessageInfo &aMessageInfo);
     void RemoveQueryAndPrepareResponse(ProxyQuery &aQuery, ProxyQueryInfo &aInfo, Response &aResponse);
     void Finalize(ProxyQuery &aQuery, ResponseCode aResponseCode);
@@ -560,7 +565,8 @@ private:
 
     void UpdateResponseCounters(ResponseCode aResponseCode);
 
-    using ServerTimer = TimerMilliIn<Server, &Server::HandleTimer>;
+    using ServerTimer  = TimerMilliIn<Server, &Server::HandleTimer>;
+    using ServerSocket = Ip6::Udp::SocketIn<Server, &Server::HandleUdpReceive>;
 
     static const char kDefaultDomainName[];
     static const char kSubLabel[];
@@ -568,7 +574,7 @@ private:
     static const char *kBlockedDomains[];
 #endif
 
-    Ip6::Udp::Socket mSocket;
+    ServerSocket mSocket;
 
     ProxyQueryList                mProxyQueries;
     Callback<SubscribeCallback>   mQuerySubscribe;

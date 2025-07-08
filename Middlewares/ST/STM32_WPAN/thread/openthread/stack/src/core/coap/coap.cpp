@@ -28,17 +28,7 @@
 
 #include "coap.hpp"
 
-#include "common/array.hpp"
-#include "common/as_core_type.hpp"
-#include "common/code_utils.hpp"
-#include "common/debug.hpp"
-#include "common/locator_getters.hpp"
-#include "common/log.hpp"
-#include "common/random.hpp"
 #include "instance/instance.hpp"
-#include "net/ip6.hpp"
-#include "net/udp6.hpp"
-#include "thread/thread_netif.hpp"
 
 /**
  * @file
@@ -63,10 +53,11 @@ CoapBase::CoapBase(Instance &aInstance, Sender aSender)
 {
 }
 
-void CoapBase::ClearRequestsAndResponses(void)
+void CoapBase::ClearAllRequestsAndResponses(void)
 {
     ClearRequests(nullptr); // Clear requests matching any address.
     mResponsesQueue.DequeueAllResponses();
+    mRetransmissionTimer.Stop();
 }
 
 void CoapBase::ClearRequests(const Ip6::Address &aAddress) { ClearRequests(&aAddress); }
@@ -119,7 +110,7 @@ Message *CoapBase::NewMessage(void) { return NewMessage(Message::Settings::GetDe
 
 Message *CoapBase::NewPriorityMessage(void)
 {
-    return NewMessage(Message::Settings(Message::kWithLinkSecurity, Message::kPriorityNet));
+    return NewMessage(Message::Settings(kWithLinkSecurity, Message::kPriorityNet));
 }
 
 Message *CoapBase::NewPriorityConfirmablePostMessage(Uri aUri)
@@ -160,13 +151,13 @@ exit:
     return aMessage;
 }
 
-Message *CoapBase::InitResponse(Message *aMessage, const Message &aResponse)
+Message *CoapBase::InitResponse(Message *aMessage, const Message &aRequest)
 {
     Error error = kErrorNone;
 
     VerifyOrExit(aMessage != nullptr);
 
-    SuccessOrExit(error = aMessage->SetDefaultResponseHeader(aResponse));
+    SuccessOrExit(error = aMessage->SetDefaultResponseHeader(aRequest));
     SuccessOrExit(error = aMessage->SetPayloadMarker());
 
 exit:
@@ -1360,7 +1351,7 @@ void CoapBase::ProcessReceivedRequest(Message &aMessage, const Ip6::MessageInfo 
 
     for (const ResourceBlockWise &resource : mBlockWiseResources)
     {
-        if (strcmp(resource.GetUriPath(), uriPath) != 0)
+        if (!StringMatch(resource.GetUriPath(), uriPath))
         {
             continue;
         }
@@ -1427,7 +1418,7 @@ void CoapBase::ProcessReceivedRequest(Message &aMessage, const Ip6::MessageInfo 
 
     for (const Resource &resource : mResources)
     {
-        if (strcmp(resource.mUriPath, uriPath) == 0)
+        if (StringMatch(resource.mUriPath, uriPath))
         {
             resource.HandleRequest(aMessage, aMessageInfo);
             error = kErrorNone;
@@ -1457,19 +1448,6 @@ exit:
 
         FreeMessage(cachedResponse);
     }
-}
-
-void CoapBase::Metadata::ReadFrom(const Message &aMessage)
-{
-    uint16_t length = aMessage.GetLength();
-
-    OT_ASSERT(length >= sizeof(*this));
-    IgnoreError(aMessage.Read(length - sizeof(*this), *this));
-}
-
-void CoapBase::Metadata::UpdateIn(Message &aMessage) const
-{
-    aMessage.Write(aMessage.GetLength() - sizeof(*this), *this);
 }
 
 ResponsesQueue::ResponsesQueue(Instance &aInstance)
@@ -1506,8 +1484,7 @@ const Message *ResponsesQueue::FindMatchedResponse(const Message &aRequest, cons
 
             metadata.ReadFrom(message);
 
-            if ((metadata.mMessageInfo.GetPeerPort() == aMessageInfo.GetPeerPort()) &&
-                (metadata.mMessageInfo.GetPeerAddr() == aMessageInfo.GetPeerAddr()))
+            if (metadata.mMessageInfo.HasSamePeerAddrAndPort(aMessageInfo))
             {
                 response = &message;
                 break;
@@ -1577,7 +1554,11 @@ void ResponsesQueue::UpdateQueue(void)
 
 void ResponsesQueue::DequeueResponse(Message &aMessage) { mQueue.DequeueAndFree(aMessage); }
 
-void ResponsesQueue::DequeueAllResponses(void) { mQueue.DequeueAndFreeAll(); }
+void ResponsesQueue::DequeueAllResponses(void)
+{
+    mQueue.DequeueAndFreeAll();
+    mTimer.Stop();
+}
 
 void ResponsesQueue::HandleTimer(Timer &aTimer)
 {
@@ -1604,14 +1585,6 @@ void ResponsesQueue::HandleTimer(void)
     }
 
     mTimer.FireAt(nextDequeueTime);
-}
-
-void ResponsesQueue::ResponseMetadata::ReadFrom(const Message &aMessage)
-{
-    uint16_t length = aMessage.GetLength();
-
-    OT_ASSERT(length >= sizeof(*this));
-    IgnoreError(aMessage.Read(length - sizeof(*this), *this));
 }
 
 /// Return product of @p aValueA and @p aValueB if no overflow otherwise 0.
@@ -1693,7 +1666,7 @@ Resource::Resource(Uri aUri, RequestHandler aHandler, void *aContext)
 
 Coap::Coap(Instance &aInstance)
     : CoapBase(aInstance, &Coap::Send)
-    , mSocket(aInstance)
+    , mSocket(aInstance, *this)
 {
 }
 
@@ -1704,10 +1677,10 @@ Error Coap::Start(uint16_t aPort, Ip6::NetifIdentifier aNetifIdentifier)
 
     VerifyOrExit(!mSocket.IsBound());
 
-    SuccessOrExit(error = mSocket.Open(&Coap::HandleUdpReceive, this));
+    SuccessOrExit(error = mSocket.Open(aNetifIdentifier));
     socketOpened = true;
 
-    SuccessOrExit(error = mSocket.Bind(aPort, aNetifIdentifier));
+    SuccessOrExit(error = mSocket.Bind(aPort));
 
 exit:
     if (error != kErrorNone && socketOpened)
@@ -1725,15 +1698,15 @@ Error Coap::Stop(void)
     VerifyOrExit(mSocket.IsBound());
 
     SuccessOrExit(error = mSocket.Close());
-    ClearRequestsAndResponses();
+    ClearAllRequestsAndResponses();
 
 exit:
     return error;
 }
 
-void Coap::HandleUdpReceive(void *aContext, otMessage *aMessage, const otMessageInfo *aMessageInfo)
+void Coap::HandleUdpReceive(ot::Message &aMessage, const Ip6::MessageInfo &aMessageInfo)
 {
-    static_cast<Coap *>(aContext)->Receive(AsCoapMessage(aMessage), AsCoreType(aMessageInfo));
+    Receive(AsCoapMessage(&aMessage), aMessageInfo);
 }
 
 Error Coap::Send(CoapBase &aCoapBase, ot::Message &aMessage, const Ip6::MessageInfo &aMessageInfo)

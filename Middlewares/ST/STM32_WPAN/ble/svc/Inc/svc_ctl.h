@@ -43,6 +43,8 @@ extern "C" {
 #endif
 
   /* Includes ------------------------------------------------------------------*/
+#include "cmsis_compiler.h"
+
   /* Exported types ------------------------------------------------------------*/
 #define PACKED(d) __PACKED_STRUCT     
 typedef PACKED(struct) _hci_uart_pckt

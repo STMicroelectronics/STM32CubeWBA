@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "ble_sensor.h"
 
 /* USER CODE BEGIN Includes */
@@ -165,7 +164,7 @@ static SVCCTL_EvtAckStatus_t BLE_SENSOR_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
@@ -177,7 +176,7 @@ static SVCCTL_EvtAckStatus_t BLE_SENSOR_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
@@ -209,7 +208,7 @@ static SVCCTL_EvtAckStatus_t BLE_SENSOR_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_2_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_2_Disabled_BEGIN */
@@ -221,7 +220,7 @@ static SVCCTL_EvtAckStatus_t BLE_SENSOR_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_2_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_2_COMSVC_Notification_BEGIN */
@@ -371,11 +370,11 @@ void BLE_SENSOR_Init(void)
                              &(BLE_SENSOR_Context.Ble_sensorSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: BLE_Sensor, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: BLE_Sensor, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: BLE_Sensor \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: Ble_sensorSvcHdle = 0x%04X\n",BLE_SENSOR_Context.Ble_sensorSvcHdle);
   }
 
   /**
@@ -398,7 +397,7 @@ void BLE_SENSOR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MOTION_C\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Motion_CCharHdle = 0x%04X\n",BLE_SENSOR_Context.Motion_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -426,7 +425,7 @@ void BLE_SENSOR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : ENV_C\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Env_CCharHdle = 0x%04X\n",BLE_SENSOR_Context.Env_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -464,11 +463,11 @@ tBleStatus BLE_SENSOR_UpdateValue(BLE_SENSOR_CharOpcode_t CharOpcode, BLE_SENSOR
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MOTION_C command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MOTION_C command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MOTION_C command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MOTION_C command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -483,11 +482,11 @@ tBleStatus BLE_SENSOR_UpdateValue(BLE_SENSOR_CharOpcode_t CharOpcode, BLE_SENSOR
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value ENV_C command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value ENV_C command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value ENV_C command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value ENV_C command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 

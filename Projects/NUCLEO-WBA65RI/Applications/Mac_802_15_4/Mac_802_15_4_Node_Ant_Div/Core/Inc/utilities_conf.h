@@ -28,7 +28,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_compiler.h"
-
 /* definitions to be provided to "sequencer" utility */
 #include "stm32_mem.h"
 /* definition and callback for tiny_vsnprintf */
@@ -153,6 +152,14 @@ extern "C" {
 #define UTIL_ADV_TRACE_FIFO_SIZE                   (4096U)                               /*!< default trace fifo size */
 #define UTIL_ADV_TRACE_MEMSET8( dest, value, size) UTIL_MEM_set_8((dest),(value),(size)) /*!< memset utilities interface to trace feature */
 #define UTIL_ADV_TRACE_VSNPRINTF(...)              vsnprintf(__VA_ARGS__)      /*!< vsnprintf utilities interface to trace feature */
+
+/******************************************************************************
+ * tiny low power manager
+ ******************************************************************************/
+/* Maximum number of supported LPM drivers */
+#define UTIL_LPM_DRIVER_MAX_NUM (10)
+/* Enables LPM legacy APIs */
+#define UTIL_LPM_LEGACY_ENABLED (1)
 
 /* USER CODE BEGIN EM */
 

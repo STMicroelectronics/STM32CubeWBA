@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -85,8 +85,8 @@ void ZIGBEE_PLAT_Init( void )
  */
 void ZIGBEE_PLAT_RngInit( void )
 {
-  // -- Init random HW driver --
-  HW_RNG_Start( );
+  // -- Init random HW driver. Not used with the new HW-RNG algotrithm --
+  //HW_RNG_Start( );
 }
 
 /**

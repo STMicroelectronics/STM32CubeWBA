@@ -89,8 +89,8 @@ void ll_sys_enable_irq(void);
 void ll_sys_disable_irq(void);
 void ll_sys_enable_specific_irq(uint8_t isr_type);
 void ll_sys_disable_specific_irq(uint8_t isr_type);
-void ll_sys_enable_os_context_switch(void);
-void ll_sys_disable_os_context_switch(void);
+void ll_sys_phy_start_clbr(void);
+void ll_sys_phy_stop_clbr(void);
 
 /* Link Layer system interface deep sleep module functions  ************************************************/
 ll_sys_status_t ll_sys_dp_slp_init(void);
@@ -113,9 +113,9 @@ uint8_t ll_sys_get_concurrent_state_machines_num(void);
   * @param  exec_time[in]: number of Link Layer sleep timer cycles (1 cycle = 31us)  for the EXEC TIME timing.
   * @note   This interface needs to be called after system initialization
   *         and before starting any radio activity.  
-  * @retval None
+  * @retval uint32_t : Effective EXEC_Time value computed from the exec_time value profiled and given in parameter.
   */
-void ll_sys_config_BLE_schldr_timings(uint8_t drift_time, uint8_t exec_time);
+uint32_t ll_sys_config_BLE_schldr_timings(uint8_t drift_time, uint8_t exec_time);
 #endif /* BLE */
 
 uint32_t ll_intf_cmn_get_slptmr_value(void);

@@ -84,7 +84,7 @@ extern "C" {
                                      max_bearer_uci_length,max_uri_schemes_list_length,max_num_calls,max_uri_length, \
                                      max_call_friendly_name_length) \
                           (num_bearers * \
-                          (68u + (18u*num_ble_links) \
+                          (69u + (18u*num_ble_links) \
                           + max_bearer_provider_name_length \
                           + max_bearer_uci_length \
                           + max_uri_schemes_list_length \
@@ -98,7 +98,7 @@ extern "C" {
 
 /* #############################################################################
    #       Defines and MACRO used to allocate memory resource of               #
-   #       Call Control Profile in CCP_Config_t                                  #
+   #       Call Control Profile in CCP_Config_t                                #
    #      (BLE_CCP_CLT_TOTAL_BUFFER_SIZE , BLE_CCP_SRV_TOTAL_BUFFER_SIZE)      #
    ############################################################################# */
 
@@ -144,7 +144,7 @@ extern "C" {
 /*
  * CCP_SRV_MEM_PER_BEARER_SIZE_BYTES: memory size used per Telephony Bearer in CCP Server role
  */
-#define CCP_SRV_MEM_PER_BEARER_SIZE_BYTES               (112u)
+#define CCP_SRV_MEM_PER_BEARER_SIZE_BYTES               (128u)
 
 /*
  * CCP_SRV_MEM_PER_READLONG_PROC_SIZE_BYTES: memory size used per Read Long Procedure in CCP Server role
@@ -222,6 +222,25 @@ extern "C" {
            (CCP_SRV_MEM_CALL_STATE_INFO_PER_CALL_SIZE_BYTES * max_num_calls) + \
            (((read_long_en) == (0x01)) ? (CCP_SRV_MEM_PER_READLONG_PROC_SIZE_BYTES * num_ble_links * (1 + num_bearer_instances)) : (0)) + \
            mem_blocks_uri + mem_blocks_uri_schemes_list + mem_blocks_call_friendly_name)
+
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BLE_CCP_CLT_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Call Control Profile in Client role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_bearer_instances: Maximum number of supported Telephony Bearer Instances (without
+ * take in account the mandatory Generic Telephony Bearer).
+ */
+#define BLE_CCP_CLT_DB_BUFFER_SIZE(num_db_devices,num_bearer_instances) \
+        (num_db_devices \
+         * (16u + (DIVC(((1 + num_bearer_instances) * 94u),4u) * 4u)))
+
 
 /* Types ---------------------------------------------------------------------*/
 

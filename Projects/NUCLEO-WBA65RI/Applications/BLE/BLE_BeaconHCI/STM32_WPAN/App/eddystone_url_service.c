@@ -19,10 +19,12 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "ble.h"
+#include "cmsis_compiler.h"
+#include "ble_core.h"
+#include "app_conf.h"
+#include "app_ble.h"
 #include "eddystone_beacon.h"
 #include "eddystone_url_service.h"
-#include "app_ble.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Private types -------------------------------------------------------------*/

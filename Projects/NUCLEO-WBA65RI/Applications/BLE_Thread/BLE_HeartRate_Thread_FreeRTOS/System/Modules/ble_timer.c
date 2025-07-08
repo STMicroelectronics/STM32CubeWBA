@@ -156,7 +156,6 @@ static void BleTimer_Task_Entry(void* thread_input)
   {
     osSemaphoreAcquire(BleTimerSemaphore, osWaitForever);
     BLE_TIMER_Background();
-    osThreadYield();
   }
 }
 

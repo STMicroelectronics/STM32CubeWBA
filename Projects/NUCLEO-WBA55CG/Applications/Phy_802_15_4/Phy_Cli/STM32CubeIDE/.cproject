@@ -84,6 +84,7 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/mac_utilities/inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
+									<listOptionValue builtIn="false" value="../../System/Interfaces"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.2137320348" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -201,11 +202,11 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/CMSIS/Include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo"/>
 									<listOptionValue builtIn="false" value="../../System/Modules/RFControl"/>
-									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
 									<listOptionValue builtIn="false" value="../../System/Modules/SerialCmdInterpreter"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/mac_utilities/inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
+									<listOptionValue builtIn="false" value="../../System/Interfaces"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.792307368" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -264,14 +265,17 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1808897525;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1153657870">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1808897525;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.2137320348">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.902869192.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1808897525;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1153657870">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.864539345;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.864539345.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.48490905;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.370736330">
 			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.864539345;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.864539345.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.48490905;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.792307368">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

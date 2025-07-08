@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "ble_sensor_app.h"
 #include "ble_sensor.h"
 #include "stm32_rtos.h"
@@ -178,8 +177,8 @@ void BLE_SENSOR_Notification(BLE_SENSOR_NotificationEvt_t *p_Notification)
 
     case BLE_SENSOR_ENV_C_READ_EVT:
       /* USER CODE BEGIN Service1Char2_READ_EVT */
-      APP_DBG_MSG("-- BLE_SENSOR ENV : ENV CHARACTERISTIC READ\n");
-      APP_DBG_MSG(" \n\r");
+      LOG_INFO_APP("-- BLE_SENSOR ENV : ENV CHARACTERISTIC READ\n");
+      LOG_INFO_APP(" \n\r");
       UTIL_SEQ_SetTask(1<<CFG_TASK_ENV_UPDATE_ID, CFG_SEQ_PRIO_0);
       /* USER CODE END Service1Char2_READ_EVT */
       break;
@@ -442,14 +441,14 @@ static void ENV_Handle_Sensor(void)
   if(env_capabilities.Humidity == SENSOR_FEATURE_SUPPORTED)
   {    
     BSP_ENV_SENSOR_GetValue(ENV_SENSOR_SHT40AD1B_0, ENV_HUMIDITY, &humidity);
-    LOG_INFO_APP("\tHumidity = %f \n", humidity);
+    LOG_INFO_APP("\tHumidity = %f \n", (float_t)humidity);
     F2I_1D(humidity, intPart, decPart);
     ENV_Server_App_Context.HumidityValue = intPart*10+decPart; ;
   }
   if(env_capabilities.Temperature == SENSOR_FEATURE_SUPPORTED)
   {    
     BSP_ENV_SENSOR_GetValue(ENV_SENSOR_SHT40AD1B_0, ENV_TEMPERATURE, &temperature);
-    LOG_INFO_APP("\tTemperature = %f \n", temperature);
+    LOG_INFO_APP("\tTemperature = %f \n", (float_t)temperature);
     F2I_1D(temperature, intPart, decPart);
     ENV_Server_App_Context.TemperatureValue[0] = intPart*10+decPart; ;
   }
@@ -472,19 +471,11 @@ void MOTION_Update(void)
   MOTION_ACC_Handle_Sensor();
   MOTION_GYRO_Handle_Sensor();
 
-  
-
   /* Timestamp */
   STORE_LE_16(ble_motion_sensor_notification_data.p_Payload, (HAL_GetTick()>>3));
 
-  //LOG_INFO_APP( "\tAccel (x = %ld,\t y = %ld,\t z = %ld)\n", MOTION_Server_App_Context.acceleration.x, MOTION_Server_App_Context.acceleration.y, MOTION_Server_App_Context.acceleration.z);
-  
   if(motion_capabilities.Acc == SENSOR_FEATURE_SUPPORTED)
   {
-//    acceleration.x/=100;
-//    acceleration.y/=100;
-//    acceleration.z/=100;
-    
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+2, MOTION_Server_App_Context.acceleration.x);
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+4, MOTION_Server_App_Context.acceleration.y);
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+6, MOTION_Server_App_Context.acceleration.z);
@@ -492,25 +483,14 @@ void MOTION_Update(void)
 
   if(motion_capabilities.Gyro == SENSOR_FEATURE_SUPPORTED)
   {
-//    angular_velocity.x/=30;
-//    angular_velocity.y/=30;
-//    angular_velocity.z/=30;
-
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+8, MOTION_Server_App_Context.angular_velocity.x);
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+10, MOTION_Server_App_Context.angular_velocity.y);
     STORE_LE_16(ble_motion_sensor_notification_data.p_Payload+12, MOTION_Server_App_Context.angular_velocity.z);
     
   }
-  
-//  LOG_INFO_APP("Payload Length: %d\n", ble_motion_sensor_notification_data.Length);
-//  for (int i = 0; i < ble_motion_sensor_notification_data.Length; i++) 
-//  {
-//    LOG_INFO_APP("Payload[%d]: 0x%02X \n", i, ble_motion_sensor_notification_data.p_Payload[i]);
-//  }
-
 
   BLE_SENSOR_UpdateValue(BLE_SENSOR_MOTION_C, &ble_motion_sensor_notification_data);
-  
+ 
   return;
 }
 
@@ -529,23 +509,6 @@ void MOTION_ACC_Handle_Sensor(void)
     Error_Handler();
   }
   LOG_INFO_APP( "\tAccel (x = %ld,\t y = %ld,\t z = %ld)\n", acceleration.x, acceleration.y, acceleration.z);
-  
-
-  
-  
-  
-//  for(uint8_t i = 0; i < 3; i++)
-//  {
-//    memset(&acceleration_for_test, 0, sizeof(MOTION_SENSOR_Axes_t));
-//    ret = BSP_MOTION_SENSOR_GetAxes(MOTION_SENSOR_ISM330DHCX_0, MOTION_ACCELERO, &acceleration_for_test);
-//    if (ret != BSP_ERROR_NONE)
-//    {
-//      Error_Handler();
-//    }
-//    LOG_INFO_APP( "\t Acclero (x = %ld,\t y = %ld,\t z = %ld)\n", acceleration_for_test.x, acceleration_for_test.y, acceleration_for_test.z);
-//    
-//    HAL_Delay(500);
-//  }
 
   MOTION_Server_App_Context.acceleration=acceleration;  
 
@@ -575,8 +538,6 @@ void MOTION_GYRO_Handle_Sensor(void)
   
   
 }
-
-
 
 void ENV_GetCaps(void)
 {
@@ -697,7 +658,6 @@ void ENV_GetCaps(void)
   
 #endif /* defined(USE_ENV_SENSOR_SHT40AD1B_0) */
 }
-
 
 /**
  * @brief  Check the Motion active capabilities and set the ADV data accordingly

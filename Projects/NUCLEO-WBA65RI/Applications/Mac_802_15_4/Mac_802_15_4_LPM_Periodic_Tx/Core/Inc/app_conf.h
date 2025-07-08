@@ -69,16 +69,28 @@ extern UART_HandleTypeDef    hlpuart1;
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
+ *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  *
  * When CFG_LPM_STDBY_SUPPORTED is set to:
+ *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
  *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
+ *   - 0 : Stop mode 1 is used as low power mode.
  *
  ******************************************************************************/
 #define CFG_LPM_LEVEL            (2)
 #define CFG_LPM_STDBY_SUPPORTED  (1)
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -334,6 +346,9 @@ typedef enum
 
 /* Number of 32-bit random values stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 

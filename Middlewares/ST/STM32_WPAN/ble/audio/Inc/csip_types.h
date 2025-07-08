@@ -127,16 +127,61 @@ extern "C" {
           (CSIP_SERV_INST_MEM_PER_CONN_SIZE_BYTES * (num_csi_instances * num_ble_links)) + \
           (CSIP_NVM_MGMT_PER_CONN_SIZE_BYTES * num_ble_links))
 
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BLE_CSIP_SET_MEMBER_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the storage
+ * in Non Volatile Memory of the Coordinated Set Identification Profile in Set Member role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_csi_instances: Maximum number of supported Coordinated Set Identification Instances
+ */
+#define BLE_CSIP_SET_MEMBER_DB_BUFFER_SIZE(num_db_devices,num_csi_instances) \
+        (num_db_devices \
+         * (16u + (DIVC((num_csi_instances * 39u),4u) * 4u)))
+
+/*
+ * BLE_CSIP_SET_COORDINATOR_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the
+ * storage in Non Volatile Memory of the Coordinated Set Identification Profile in Set Coordinator role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ */
+#define BLE_CSIP_SET_COORDINATOR_DB_BUFFER_SIZE(num_db_devices) \
+        (num_db_devices * 84u)
+
 /* Types ---------------------------------------------------------------------*/
 /* Types of mask for roles of the Coordinated Set Identification Profile */
 typedef uint8_t CSIP_Role_t;
 #define CSIP_ROLE_SET_MEMBER                    (0x01)
 #define CSIP_ROLE_SET_COORDINATOR	        (0x02)
 
-/* Types of mask for roles of the Coordinated Set Identification Profile */
+/* Types of mask for SIRK over OOB of the Coordinated Set Identification Profile */
 typedef uint8_t SIRK_OOB_t;
 #define CSIP_SIRK_IS_NOT_OOB                    (0x00)
 #define CSIP_SIRK_IS_OOB                        (0x01)
+
+/* Types of mask for type of SIRK of the Coordinated Set Identification Profile */
+typedef uint8_t SIRK_Type_t;
+#define CSIP_SIRK_ENCRYTED                      (0x00)
+#define CSIP_SIRK_PLAINTEXT                     (0x01)
+
+typedef uint8_t CSIP_Error_t;
+#define ERROR_CSIP_LOCK_DENIED                  (0x80)
+#define ERROR_CSIP_LOCK_RELEASE_NOT_ALLOWED     (0x81)
+#define ERROR_CSIP_INVALID_LOCK_VALUE           (0x82)
+#define ERROR_CSIP_OOB_SIRK_ONLY                (0x83)
+#define ERROR_CSIP_LOCK_ALREADY_GRANTED         (0x84)
+
+typedef uint8_t Lock_Type_t;
+#define LOCK_VALUE_UNLOCKED                     (0x01)
+#define LOCK_VALUE_LOCKED                       (0x02)
+
+#define TIMEOUT_LOCK                            (30)
+#define TIMEOUT_DISCOVER_MEMBERS                (20)
 
 typedef enum
 {
@@ -172,6 +217,44 @@ typedef enum
                                                          * are discovered (BLE_STATUS_SUCCESS) or the discovery timer
                                                          * has expired (BLE_STATUS_TIMEOUT))
                                                          */
+  CSIP_COO_LOCKED_EVT,                                  /* This event is reported once the CSIP Set Coordinator has
+                                                         * unlocked 1 Set Member
+                                                         */
+  CSIP_COO_LOCKED_COMPLETE_EVT,                         /* This event is reported once the CSIP Set Coordinator has
+                                                         * locked all Set Members
+                                                         * with BLE_STATUS_SUCCESS if successful
+                                                         * with BLE_STATUS_FAILED if some are already locked and the
+                                                         * Unlock will be start automatically.
+                                                         */
+  CSIP_COO_UNLOCKED_EVT,                                /* This event is reported once the CSIP Set Coordinator has
+                                                         * locked 1 Set Member
+                                                         */
+  CSIP_COO_UNLOCKED_COMPLETE_EVT,                       /* This event is reported once the CSIP Set Coordinator has
+                                                         * unlocked all Set Members
+                                                         */
+  CSIP_COO_ORDERED_ACCESS_COMPLETE_EVT,                 /* This event is reported once the CSIP Set Coordinator has
+                                                         * checked that all Set Members are unlocked
+                                                         */
+  CSIP_COO_LOCK_NOTIFIED_EVT,                           /* This event is reported to the Set Coordinator 
+                                                         * if the Set Member's Lock value has changed.
+                                                         * the Set Coordinator may register on this event when any 
+                                                         * procedure has failed because the Set Member is locked
+                                                         */
+  CSIP_COO_SIRK_NOTIFIED_EVT,                           /* This event is reported to the Set Coordinator 
+                                                         * if the Set Member's SIRK has changed. 
+                                                         * the Set Coordinator should execute the Set Member Discovery
+                                                         */
+  CSIP_COO_SET_SIZE_NOTIFIED_EVT,                       /* This event is reported to the Set Coordinator 
+                                                         * if the Set Member's Set Size has changed.
+                                                         * the Set Coordinator should execute the Set Member Discovery
+                                                         */
+  CSIP_MEM_LOCKED_EVT,                                  /* This event is reported once the CSIP Set Member is locked by
+                                                         * the set Coordiantor
+                                                         */
+  CSIP_MEM_UNLOCKED_EVT,                                /* This event is reported once the CSIP Set Member is unlocked by
+                                                         * the set Coordiantor
+                                                         */
+
 } CSIP_NotCode_t;
 
 /* CSIP Set_Member Configurration  */
@@ -236,6 +319,21 @@ typedef struct
   uint8_t* Address;
 } CSIP_New_Member_Evt_Params_t;
 
+typedef struct
+{
+  uint8_t Size;
+} CSIP_Set_Size_Notif_Evt_Params_t;
+
+typedef struct
+{
+  uint8_t SIRK_type;
+  uint8_t SIRK[16];
+} CSIP_SIRK_Notif_Evt_Params_t;
+
+typedef struct
+{
+  Lock_Type_t Lock_Value;
+} CSIP_Lock_Notif_Evt_Params_t;
 
 #ifdef __cplusplus
 }

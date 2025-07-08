@@ -108,8 +108,8 @@ connect to the target.</li>
 HAL uses a separate time base through the TIM IPs.</li>
 <li>ThreadX is configured with 100 ticks/sec by default, this should be
 taken into account when using delays or timeouts at application. It is
-always possible to reconfigure it in the "tx_user.h" file. The update
-should be reflected in "tx_initialize_low_level.S" file too.</li>
+always possible to reconfigure it in the “tx_user.h” file. The update
+should be reflected in “tx_initialize_low_level.S” file too.</li>
 <li>ThreadX is disabling all interrupts during kernel start-up to avoid
 any unexpected behavior, therefore all system related calls (HAL, BSP)
 should be done either at the beginning of the application or inside the
@@ -159,10 +159,10 @@ the “USE_DYNAMIC_MEMORY_ALLOCATION” flag.</li>
 <h3 id="hardware-and-software-environment"><b>Hardware and Software
 environment</b></h3>
 <ul>
-<li><p>This application runs on STM32WBAxx devices with security enabled
+<li><p>This application runs on STM32WBA65xx devices with security enabled
 (TZEN=1).</p></li>
 <li><p>This application has been tested with STMicroelectronics
-NUCLEO-WBA65RI boards revision MB2130-WBA65RI-A01 and can be easily
+NUCLEO-WBA65RI revision boards (MB2130-WBA65RI-A01 and MB1801-USB-D01) and can be easily
 tailored to any other supported device and development board.</p></li>
 <li><p>User Option Bytes requirement (with STM32CubeProgrammer tool)</p>
 <ul>
@@ -189,6 +189,44 @@ as non-secure</li>
 <li>Load the secure and non-secures images into target memory (Ctrl +
 D)</li>
 <li>Run the application</li>
+</ul>
+<p>MDK-ARM</p>
+<ul>
+<li>Open your toolchain</li>
+<li>Open Multi-projects workspace file Project.uvmpw</li>
+<li>Select the xxxxx_S project as Active Project (Set as Active
+Project)</li>
+<li>Build xxxxx_S project</li>
+<li>Select the xxxxx_NS project as Active Project (Set as Active
+Project)</li>
+<li>Build xxxxx_NS project</li>
+<li>Load the non-secure binary (F8) (this shall download the
+-ARM_ns_ns.axf to flash memory)</li>
+<li>Select the xxxxx_S project as Active Project (Set as Active
+Project)</li>
+<li>Load the secure binary (F8) (this shall download the -ARM_s_s.axf to
+flash memory)</li>
+<li>Run the application</li>
+</ul>
+<p>STM32CubeIDE</p>
+<ul>
+<li>Open STM32CubeIDE</li>
+<li>File &gt; Import. Point to the STM32CubeIDE folder of the example
+project. Click Finish.</li>
+<li>Build configuration: Set the same active build configuration: Debug
+(default) or Release for both projects xxxxx_S &amp; xxxxx_NS</li>
+<li>Select and build the xxxxx_NS project, this will automatically
+trigger the build of xxxxx_S project</li>
+<li>Select the xxxxx_S project and select “Debug configuration” or “Run
+configuration” in function of the active build configuration
+<ul>
+<li>Double click on “STM32 Cortex-M C/C++ Application”</li>
+<li>Select “Startup” &gt; “Add” &gt;
+<ul>
+<li>Select the xxxxx_NS project</li>
+</ul></li>
+</ul></li>
+<li>Click Debug/Run to debug/run the application</li>
 </ul>
 </section>
 </div>

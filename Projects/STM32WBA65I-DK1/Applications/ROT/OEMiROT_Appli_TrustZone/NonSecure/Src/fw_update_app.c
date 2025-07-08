@@ -33,7 +33,11 @@
 /** @addtogroup USER_APP User App Example
   * @{
   */
-extern ARM_DRIVER_FLASH LOADER_FLASH_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_SECONDARY_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_PRIMARY_DEV_NAME;
+
+#define TRAILER_MAGIC_SIZE 16
+
 /** @addtogroup  FW_UPDATE Firmware Update Example
   * @{
   */
@@ -221,7 +225,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_APP_IMAGE(SFU_FwSecureImageTypeDef FwS
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
 
   /* Print Firmware Update welcome message */
   if (FwSecureImageType == SECURE_BOOT)
@@ -278,7 +282,7 @@ static HAL_StatusTypeDef FW_UPDATE_NONSECURE_APP_IMAGE(void)
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
   /* Print Firmware Update welcome message */
   printf("Download NonSecure App Image\r\n");
 
@@ -329,7 +333,7 @@ static void FW_Install_SecureAppImage(SFU_FwSecureImageTypeDef FwSecureImageType
 #else
   printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+  if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
   {
      printf(" Write Magic Trailer: Failed \r\n\n");
   }
@@ -347,7 +351,7 @@ static HAL_StatusTypeDef FW_UPDATE_SECURE_DATA_IMAGE(void)
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
   /* Print Firmware Update welcome message */
   printf("Download Secure Data Image\r\n");
   /* Get Info about the download area */
@@ -390,7 +394,7 @@ static void FW_Install_SecureDataImage(void)
 #else
   printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+  if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
   {
      printf(" Write Magic Trailer: Failed \r\n\n");
   }
@@ -408,7 +412,7 @@ static HAL_StatusTypeDef FW_UPDATE_NONSECURE_DATA_IMAGE(void)
 {
   HAL_StatusTypeDef ret = HAL_ERROR;
   SFU_FwImageFlashTypeDef fw_image_dwl_area;
-  ARM_FLASH_INFO *data = LOADER_FLASH_DEV_NAME.GetInfo();
+  ARM_FLASH_INFO *data = FLASH_SECONDARY_DEV_NAME.GetInfo();
   /* Print Firmware Update welcome message */
   printf("Download NonSecure Data Image\r\n");
   /* Get Info about the download area */
@@ -441,7 +445,7 @@ static void FW_Valid_NonSecureDataImage(void)
   const uint8_t FlagPattern[]={0x1 ,0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff,
   0xff, 0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff };
   const uint32_t ConfirmAddress = FLASH_AREA_5_OFFSET  + FLASH_AREA_5_SIZE - (sizeof(MagicTrailerValue) + sizeof(FlagPattern));
-  if (FLASH_PRIMARY_DATA_NONSECURE_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
+  if (FLASH_SECONDARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
 #if defined(__ARMCC_VERSION)
     printf("  --  Confirm Flag  correctly written %x %x \r\n\n",ConfirmAddress ,FlagPattern[0] );
@@ -471,7 +475,7 @@ static void FW_Install_NonSecureDataImage(void)
 #else
   printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+  if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
   {
      printf(" Write Magic Trailer: Failed \r\n\n");
   }
@@ -549,7 +553,7 @@ static HAL_StatusTypeDef FW_UPDATE_DownloadNewFirmware(SFU_FwImageFlashTypeDef *
        sector_address < pFwImageDwlArea->DownloadAddr + pFwImageDwlArea->MaxSizeInBytes;
        sector_address += m_uFlashSectorSize)
   {
-    ret_arm = LOADER_FLASH_DEV_NAME.EraseSector(sector_address);
+    ret_arm = FLASH_SECONDARY_DEV_NAME.EraseSector(sector_address);
     if (ret_arm < 0)
     {
       return HAL_ERROR;
@@ -587,7 +591,7 @@ static HAL_StatusTypeDef FW_UPDATE_DownloadNewFirmware(SFU_FwImageFlashTypeDef *
 #else
       printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-      if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+      if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
       {
         ret = HAL_ERROR;
       }
@@ -684,9 +688,9 @@ HAL_StatusTypeDef Ymodem_DataPktRxCpltCallback(uint8_t *pData, uint32_t uFlashDe
     ret = SECURE_Flash_ProgramData(uFlashDestination, pData, uSize);
   }
   else
-    ret = LOADER_FLASH_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
+    ret = FLASH_SECONDARY_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
 #else
-  ret = LOADER_FLASH_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
+  ret = FLASH_SECONDARY_DEV_NAME.ProgramData(uFlashDestination, pData, uSize);
 #endif /*defined(MCUBOOT_PRIMARY_ONLY) */
   if (ret != ARM_DRIVER_OK)
   {
@@ -716,7 +720,7 @@ static void FW_Valid_AppImage(void)
 #else
   const uint32_t ConfirmAddress = FLASH_AREA_1_OFFSET + FLASH_NS_PARTITION_SIZE - (sizeof(MagicTrailerValue) + sizeof(FlagPattern));
 #endif
-  if (FLASH_PRIMARY_NONSECURE_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
+  if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
 #if defined(__ARMCC_VERSION)
     printf("  --  Confirm Flag  correctly written %x %x \r\n\n",ConfirmAddress ,FlagPattern[0] );
@@ -750,7 +754,7 @@ static void FW_Install_AppImage(void)
 #else
   printf("  Write Magic Trailer at %lx\r\n\n", MagicAddress);
 #endif /*  __ARMCC_VERSION */
-  if (LOADER_FLASH_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
+  if (FLASH_SECONDARY_DEV_NAME.ProgramData(MagicAddress, MagicTrailerValue, sizeof(MagicTrailerValue)) != ARM_DRIVER_OK)
   {
      printf(" Write Magic Trailer: Failed \r\n\n");
   }

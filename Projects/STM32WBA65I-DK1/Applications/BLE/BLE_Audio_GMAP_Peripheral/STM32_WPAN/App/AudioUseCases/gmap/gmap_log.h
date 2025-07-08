@@ -31,8 +31,8 @@
 
 
 #if BLE_DBG_GMAP_ENABLE == 1
-#define BLE_DBG_GMAP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("GMAP: " fmt, ##__VA_ARGS__ )
-#define BLE_DBG_GMAS_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("GMAS: " fmt, ##__VA_ARGS__ )
+#define BLE_DBG_GMAP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[GMAP] " fmt, ##__VA_ARGS__ )
+#define BLE_DBG_GMAS_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[GMAS] " fmt, ##__VA_ARGS__ )
 #else /*BLE_DBG_GMAP_ENABLE != 1*/
 #define BLE_DBG_GMAP_MSG(fmt, ...)               (void)0
 #define BLE_DBG_GMAS_MSG(fmt, ...)               (void)0

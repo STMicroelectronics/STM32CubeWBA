@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "ota.h"
 
 /* USER CODE BEGIN Includes */
@@ -44,7 +43,6 @@ typedef struct{
   uint16_t  ConfCharHdle;                  /**< CONF Characteristic Handle */
   uint16_t  Raw_DataCharHdle;                  /**< RAW_DATA Characteristic Handle */
 /* USER CODE BEGIN Context */
-  /* Place holder for Characteristic Descriptors Handle*/
 
 /* USER CODE END Context */
 }OTA_Context_t;
@@ -177,7 +175,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
               /* USER CODE END Service2_Char_2_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (0x00):
                 /* USER CODE BEGIN Service2_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service2_Char_2_Disabled_BEGIN */
@@ -189,7 +187,7 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
                 /* USER CODE BEGIN Service2_Char_2_COMSVC_Indication_BEGIN */
 
                 /* USER CODE END Service2_Char_2_COMSVC_Indication_BEGIN */
@@ -313,19 +311,20 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
           OTA_Conf_Status = (OTA_Confirmation_Status_t)OTA_APP_GetConfStatus();
           if( OTA_Conf_Status == OTA_Pending)
           {
-            notification.EvtOpcode = OTA_CONF_EVT;
             OTA_Conf_Status = OTA_No_Pending;
             return_value = SVCCTL_EvtAckFlowEnable;
+
+            notification.EvtOpcode = OTA_CONF_EVT;
             OTA_Notification( &notification );
           }
           else if( OTA_Conf_Status == OTA_Ready_Pending)
           {
-            notification.EvtOpcode = OTA_READY_EVT;
             OTA_Conf_Status = OTA_No_Pending;
             return_value = SVCCTL_EvtAckFlowEnable;
+
+            notification.EvtOpcode = OTA_READY_EVT;
             OTA_Notification( &notification );
           }
-
           /* USER CODE END ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
           break;/* ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
         }
@@ -421,11 +420,11 @@ void OTA_Init(void)
                              &(OTA_Context.OtaSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: OTA, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: OTA, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: OTA \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: OtaSvcHdle = 0x%04X\n",OTA_Context.OtaSvcHdle);
   }
 
   /**
@@ -448,7 +447,7 @@ void OTA_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BASE_ADR\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Base_AdrCharHdle = 0x%04X\n",OTA_Context.Base_AdrCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char1 */
@@ -475,7 +474,7 @@ void OTA_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : CONF\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : ConfCharHdle = 0x%04X\n",OTA_Context.ConfCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char2 */
@@ -502,7 +501,7 @@ void OTA_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : RAW_DATA\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Raw_DataCharHdle = 0x%04X\n",OTA_Context.Raw_DataCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char3 */
@@ -539,11 +538,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value BASE_ADR command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value BASE_ADR command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value BASE_ADR command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value BASE_ADR command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_1 */
 
@@ -558,11 +557,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value CONF command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value CONF command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value CONF command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value CONF command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_2 */
 
@@ -577,11 +576,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value RAW_DATA command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value RAW_DATA command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value RAW_DATA command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value RAW_DATA command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_3 */
 

@@ -504,11 +504,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Log/log_module.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Modules/Nvm/nvm_emul.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Nvm/nvm_emul.c</locationURI>
-		</link>
-		<link>
 			<name>Common/WPAN/Modules/RTDebug/RTDebug.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>

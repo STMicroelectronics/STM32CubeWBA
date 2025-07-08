@@ -31,6 +31,7 @@ extern "C" {
 #include "ble_types.h"
 #include "svc_ctl.h"
 #include "hap.h"
+#include "usecase_dev_mgmt.h"
 
 /* Defines -----------------------------------------------------------*/
 
@@ -57,16 +58,12 @@ typedef struct
 /* HAP Controller Instance Structure */
 typedef struct
 {
-  uint16_t                       ConnHandle;                     /* Connection Handle associated to the link
-                                                                  * between the HAP Client with the remote
-                                                                  * HAP Server
-                                                                  */
+  UseCaseConnInfo_t              *pConnInfo;                     /* ACL Connection Information*/
   HAP_LinkupMode_t               LinkupMode;                     /* Linkup Mode */
   uint16_t                       LinkupState;                    /* Bitmask of HAP_LinkupProcState_t and
                                                                   * HAS_Characteristic_t
                                                                   */
   uint16_t                       ReqHandle;                      /* Att Handle under process during ATT operation */
-  uint8_t                        AttProcStarted;                 /* Flag to 1 if an ATT procedure is started */
   uint8_t                        DelayDeallocation;              /* Indicate if the HAP Client Instance deallocation
                                                                   * should be delayed when ACI_GATT_PROC_COMPLETE_VSEVT_CODE
                                                                   * event is received */

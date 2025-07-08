@@ -90,12 +90,55 @@ void LINKLAYER_PLAT_ClockInit()
   */
 void LINKLAYER_PLAT_DelayUs(uint32_t delay)
 {
-  __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
-  do
+  static uint8_t lock = 0;
+  uint32_t t0;
+  uint32_t primask_bit;
+
+  /* Enter critical section */
+  primask_bit= __get_PRIMASK();
+  __disable_irq();
+
+  if (lock == 0U)
   {
-    __NOP();
+    /* Initialize counter */
+    /* Reset cycle counter to prevent overflow
+       As a us counter, it is assumed than even with re-entrancy,
+       overflow will never happen before re-initializing this counter */
+    DWT->CYCCNT = 0U;
+    /* Enable DWT by safety but should be useless (as already set) */
+    SET_BIT(DCB->DEMCR, DCB_DEMCR_TRCENA_Msk);
+    /* Enable counter */
+    SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
   }
-  while (Delay --);
+  /* Increment 're-entrance' counter */
+  lock++;
+  /* Get starting time stamp */
+  t0 = DWT->CYCCNT;
+  /* Exit critical section */
+ __set_PRIMASK(primask_bit);
+
+  /* Turn us into cycles */
+  delay = delay * (SystemCoreClock / 1000000U);
+  delay += t0;
+
+  /* Busy waiting loop */
+  while (DWT->CYCCNT < delay)
+  {
+  };
+
+  /* Enter critical section */
+  primask_bit= __get_PRIMASK();
+  __disable_irq();
+  if (lock == 1U)
+  {
+    /* Disable counter */
+    CLEAR_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
+  }
+  /* Decrement 're-entrance' counter */
+  lock--;
+  /* Exit critical section */
+ __set_PRIMASK(primask_bit);
+
 }
 
 /**
@@ -508,7 +551,6 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
 #endif /* (CFG_LPM_LEVEL != 0) */
 #if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
-  while (LL_PWR_IsActiveFlag_VOS() == 0);
 #endif /* (CFG_SCM_SUPPORTED == 1) */
 }
 
@@ -522,33 +564,33 @@ void LINKLAYER_PLAT_RequestTemperature(void)
 }
 
 /**
-  * @brief  Enable RTOS context switch.
+  * @brief  PHY Start calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStartClbr(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStartClbr_0 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_0 */
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStartClbr_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStartClbr_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStartClbr_1 */
 }
 
 /**
-  * @brief  Disable RTOS context switch.
+  * @brief  PHY Stop calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStopClbr(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStopClbr_0 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_0 */
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStopClbr_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStopClbr_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStopClbr_1 */
 }
 
 /**

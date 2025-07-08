@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -113,7 +113,6 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_RNG_Init();
   MX_AES_Init();
   MX_PKA_Init();
   /* USER CODE BEGIN 2 */
@@ -372,35 +371,6 @@ void MX_RAMCFG_Init(void)
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
-
-}
-
-/**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
 
 }
 

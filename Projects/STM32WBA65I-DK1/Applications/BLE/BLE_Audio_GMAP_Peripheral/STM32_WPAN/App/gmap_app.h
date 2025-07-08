@@ -521,6 +521,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void);
 void GMAPAPP_Init(uint8_t csip_config_id);
 tBleStatus GMAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t GMAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,uint8_t EnableSolicitationRequest,
@@ -548,6 +549,7 @@ uint8_t GMAPAPP_SyncToPA(uint8_t AdvSID, uint8_t *pAdvAddress, uint8_t AdvAddres
 uint8_t GMAPAPP_StartSink(void);
 uint8_t GMAPAPP_StopSink(void);
 void GMAPAPP_SetBroadcastMode(APP_BroadcastMode_t mode);
+void GMAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif

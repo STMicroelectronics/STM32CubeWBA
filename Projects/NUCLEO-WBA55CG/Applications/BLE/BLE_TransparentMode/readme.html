@@ -22,28 +22,36 @@
 <h2 id="ble_transparentmode-application-description"><strong>BLE_TransparentMode Application Description</strong></h2>
 <p>How to communicate with the STM32CubeMonitor-RF Tool using the transparent mode.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol</p>
+<p>Connectivity, BLE, BLE protocol.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx devices.</li>
+<li>This application runs on STM32WBA55xx devices.<br />
+</li>
 <li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
-<h3 id="how-to-use-it"><strong>How to use it ?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild project and flash the board at the address 0x08000000 with the binary file</p>
+<h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
+<p>In order to make the program work:</p>
+<ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild project and flash the board at the address 0x08000000 with the binary file.</li>
+</ul>
 <p>To test the BLE Transparent Mode application, use the STM32CubeMonitor-RF tool:</p>
 <ul>
-<li>Make the connection between STM32CubeMonitor RF tool and BLE_TransparentMode application</li>
-<li>Send some ACI commands from STM32CubeMonitor RF tool as HCI_RESET, HCI_LE_RECEIVER_TEST, HCI_LE_TRANSMITTER_TEST, …</li>
-<li>the application must acknowledge the command with a “HCI_COMMAND_COMPLETE_EVENT” answer</li>
+<li>Make the connection between STM32CubeMonitor RF tool and BLE_TransparentMode application.<br />
+</li>
+<li>Send some ACI commands from STM32CubeMonitor RF tool as HCI_RESET, HCI_LE_RECEIVER_TEST, HCI_LE_TRANSMITTER_TEST, etc<br />
+</li>
+<li>the application must acknowledge the command with a “HCI_COMMAND_COMPLETE_EVENT” answer.</li>
 </ul>
-<p>Button 1 allows to enter/exit Low Power Stop mode.</p>
-<p>Button 2 allows to enter in Standby Mode. Exiting standby mode must be done by pressing Reset Button.</p>
+<p>Button 1 allows you to enter/exit Low Power Stop mode.</p>
+<p>Button 2 allows you to enter in Standby Mode. Exiting standby mode must be done by pressing Reset Button.</p>
 <h3 id="note"><strong>Note</strong></h3>
 <p>In this project, the BLE host stack is initialized with the Extended Advertising option.<br />
-Refer to : <a href="https://www.st.com/resource/en/programming_manual/pm0271-guidelines-for-bluetooth-low-energy-stack-programming-on-stm32wb-stm32wba-mcus-stmicroelectronics.pdf"> Full mode commands (legacy and extended)</a></p>
-<p>Supported command in each configuration refer to chapter : 5.9.6 Legacy and extended advertising/scanning commands and event impact</p>
+Refer to the <a href="https://www.st.com/resource/en/programming_manual/pm0271-guidelines-for-bluetooth-low-energy-stack-programming-on-stm32wb-stm32wba-mcus-stmicroelectronics.pdf"> Full mode commands (legacy and extended).</a></p>
+<p>Supported command in each configuration refer to chapter : 5.9.6 Legacy and extended advertising/scanning commands and event impact.</p>
 <p>Please note, HCI_Reset command must be called between Legacy adv/scan and Extended adv/scan HCI commands.</p>
-<p>It is possible to modify CFG_BLE_OPTIONS in the app_conf.h to disable BLE_OPTIONS_EXTENDED_ADV feature.</p>
+<p>It is possible to modify CFG_BLE_OPTIONS in the app_conf.h to disable BLE_OPTIONS_EXTENDED_ADV feature from ACI.</p>
 </div>
 </div>
 </body>

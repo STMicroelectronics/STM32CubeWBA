@@ -173,18 +173,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -210,7 +198,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add PressMeas Server Cluster */
   stZigbeeAppInfo.PressMeasServer = ZbZclPressMeasServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, APP_ZIGBEE_PRESS_MIN, APP_ZIGBEE_PRESS_MAX );
   assert( stZigbeeAppInfo.PressMeasServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.PressMeasServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.PressMeasServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during PressMeas Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -400,7 +391,7 @@ static void APP_ZIGBEE_PressSensorRead( void )
   }
     
   LOG_INFO_APP( "[PRESS MEAS] Update PressMeasure : %d hPa", iPressureCurrent );
-  APP_LED_TOGGLE(LED_GREEN);
+  APP_LED_TOGGLE(LED_OK);
   
   eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.PressMeasServer, ZCL_PRESS_MEAS_ATTR_MEAS_VAL, iPressureCurrent);
   if ( eStatus != ZCL_STATUS_SUCCESS )

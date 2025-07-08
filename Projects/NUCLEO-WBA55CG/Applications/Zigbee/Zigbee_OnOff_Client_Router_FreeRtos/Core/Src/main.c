@@ -44,8 +44,6 @@
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
-RNG_HandleTypeDef hrng;
-
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
@@ -108,7 +106,6 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -126,7 +123,6 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -319,35 +315,6 @@ void MX_RAMCFG_Init(void)
 }
 
 /**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
-
-}
-
-/**
   * @brief RTC Initialization Function
   * @param None
   * @retval None
@@ -527,7 +494,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

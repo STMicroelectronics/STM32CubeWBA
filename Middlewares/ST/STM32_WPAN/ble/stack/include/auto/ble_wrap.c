@@ -16,13 +16,13 @@
  */
 
 #include "ble_const.h"
-#include "ble_gap_aci.h"
-#include "ble_gatt_aci.h"
-#include "ble_hal_aci.h"
-#include "ble_hci_le.h"
-#include "ble_l2cap_aci.h"
-#include "ble_events.h"
-#include "ble_raw_api.h"
+#include "auto/ble_gap_aci.h"
+#include "auto/ble_gatt_aci.h"
+#include "auto/ble_hal_aci.h"
+#include "auto/ble_hci_le.h"
+#include "auto/ble_l2cap_aci.h"
+#include "auto/ble_events.h"
+#include "auto/ble_raw_api.h"
 
 /* Generic BLE command pre-processing macro */
 #ifndef BLE_WRAP_PREPROC
@@ -304,14 +304,14 @@
 #define BLE_WRAP_HCI_LE_READ_BUFFER_SIZE_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES pre-processing macro */
-#ifndef BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PREPROC
-#define BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PREPROC BLE_WRAP_PREPROC
+/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0 pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_PREPROC
+#define BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES post-processing macro */
-#ifndef BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_POSTPROC
-#define BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_POSTPROC BLE_WRAP_POSTPROC
+/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0 post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_POSTPROC
+#define BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* HCI_LE_SET_RANDOM_ADDRESS pre-processing macro */
@@ -484,14 +484,14 @@
 #define BLE_WRAP_HCI_LE_READ_CHANNEL_MAP_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* HCI_LE_READ_REMOTE_FEATURES pre-processing macro */
-#ifndef BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PREPROC
-#define BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PREPROC BLE_WRAP_PREPROC
+/* HCI_LE_READ_REMOTE_FEATURES_PAGE_0 pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_PREPROC
+#define BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* HCI_LE_READ_REMOTE_FEATURES post-processing macro */
-#ifndef BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_POSTPROC
-#define BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_POSTPROC BLE_WRAP_POSTPROC
+/* HCI_LE_READ_REMOTE_FEATURES_PAGE_0 post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_POSTPROC
+#define BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* HCI_LE_ENCRYPT pre-processing macro */
@@ -1534,14 +1534,274 @@
 #define BLE_WRAP_HCI_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_V2_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_HAL_GET_FW_BUILD_NUMBER pre-processing macro */
-#ifndef BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_PREPROC
-#define BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_PREPROC BLE_WRAP_PREPROC
+/* HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_PREPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* ACI_HAL_GET_FW_BUILD_NUMBER post-processing macro */
-#ifndef BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_POSTPROC
-#define BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_POSTPROC BLE_WRAP_POSTPROC
+/* HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_POSTPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_PREPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_POSTPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_SYNC_SUBEVENT pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_PREPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_SYNC_SUBEVENT post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_POSTPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_EXTENDED_CREATE_CONNECTION_V2 pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_PREPROC
+#define BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_EXTENDED_CREATE_CONNECTION_V2 post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_POSTPROC
+#define BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2 pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_PREPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2 post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_POSTPROC
+#define BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_PREPROC
+#define BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_POSTPROC
+#define BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_READ_ALL_REMOTE_FEATURES pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_PREPROC
+#define BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_READ_ALL_REMOTE_FEATURES post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_POSTPROC
+#define BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_PREPROC
+#define BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_PREPROC
+#define BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_PREPROC
+#define BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_SECURITY_ENABLE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_PREPROC
+#define BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_SECURITY_ENABLE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_SET_DEFAULT_SETTINGS pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_PREPROC
+#define BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_SET_DEFAULT_SETTINGS post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_READ_REMOTE_FAE_TABLE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_PREPROC
+#define BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_READ_REMOTE_FAE_TABLE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_PREPROC
+#define BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_CREATE_CONFIG pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_PREPROC
+#define BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_CREATE_CONFIG post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_REMOVE_CONFIG pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_PREPROC
+#define BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_REMOVE_CONFIG post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_SET_CHANNEL_CLASSIFICATION pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_PREPROC
+#define BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_SET_CHANNEL_CLASSIFICATION post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_SET_PROCEDURE_PARAMETERS pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_PREPROC
+#define BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_SET_PROCEDURE_PARAMETERS post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_PROCEDURE_ENABLE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_PREPROC
+#define BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_PROCEDURE_ENABLE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_TEST pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_TEST_PREPROC
+#define BLE_WRAP_HCI_LE_CS_TEST_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_TEST post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_TEST_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_TEST_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CS_TEST_END pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_TEST_END_PREPROC
+#define BLE_WRAP_HCI_LE_CS_TEST_END_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CS_TEST_END post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CS_TEST_END_POSTPROC
+#define BLE_WRAP_HCI_LE_CS_TEST_END_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_PREPROC
+#define BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_POSTPROC
+#define BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_PREPROC
+#define BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_POSTPROC
+#define BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_PREPROC
+#define BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_POSTPROC
+#define BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_PREPROC
+#define BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_POSTPROC
+#define BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_ENABLE_MONITORING_ADVERTISERS pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_PREPROC
+#define BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_ENABLE_MONITORING_ADVERTISERS post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_POSTPROC
+#define BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* HCI_LE_FRAME_SPACE_UPDATE pre-processing macro */
+#ifndef BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_PREPROC
+#define BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* HCI_LE_FRAME_SPACE_UPDATE post-processing macro */
+#ifndef BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_POSTPROC
+#define BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_HAL_WRITE_CONFIG_DATA pre-processing macro */
@@ -1632,16 +1892,6 @@
 /* ACI_HAL_GET_LINK_STATUS_V2 post-processing macro */
 #ifndef BLE_WRAP_ACI_HAL_GET_LINK_STATUS_V2_POSTPROC
 #define BLE_WRAP_ACI_HAL_GET_LINK_STATUS_V2_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
-/* ACI_HAL_GET_PM_DEBUG_INFO_V2 pre-processing macro */
-#ifndef BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_PREPROC
-#define BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_HAL_GET_PM_DEBUG_INFO_V2 post-processing macro */
-#ifndef BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_POSTPROC
-#define BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_HAL_SET_PERIPHERAL_LATENCY pre-processing macro */
@@ -2072,16 +2322,6 @@
 /* ACI_GAP_SET_OOB_DATA post-processing macro */
 #ifndef BLE_WRAP_ACI_GAP_SET_OOB_DATA_POSTPROC
 #define BLE_WRAP_ACI_GAP_SET_OOB_DATA_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
-/* ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST pre-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_PREPROC
-#define BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST post-processing macro */
-#ifndef BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_POSTPROC
-#define BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_GAP_REMOVE_BONDED_DEVICE pre-processing macro */
@@ -2814,6 +3054,46 @@
 #define BLE_WRAP_ACI_L2CAP_COC_TX_DATA_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
+/* ACI_RESET pre-processing macro */
+#ifndef BLE_WRAP_ACI_RESET_PREPROC
+#define BLE_WRAP_ACI_RESET_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_RESET post-processing macro */
+#ifndef BLE_WRAP_ACI_RESET_POSTPROC
+#define BLE_WRAP_ACI_RESET_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_GET_INFORMATION pre-processing macro */
+#ifndef BLE_WRAP_ACI_GET_INFORMATION_PREPROC
+#define BLE_WRAP_ACI_GET_INFORMATION_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_GET_INFORMATION post-processing macro */
+#ifndef BLE_WRAP_ACI_GET_INFORMATION_POSTPROC
+#define BLE_WRAP_ACI_GET_INFORMATION_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_WRITE_CONFIG_DATA pre-processing macro */
+#ifndef BLE_WRAP_ACI_WRITE_CONFIG_DATA_PREPROC
+#define BLE_WRAP_ACI_WRITE_CONFIG_DATA_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_WRITE_CONFIG_DATA post-processing macro */
+#ifndef BLE_WRAP_ACI_WRITE_CONFIG_DATA_POSTPROC
+#define BLE_WRAP_ACI_WRITE_CONFIG_DATA_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_READ_CONFIG_DATA pre-processing macro */
+#ifndef BLE_WRAP_ACI_READ_CONFIG_DATA_PREPROC
+#define BLE_WRAP_ACI_READ_CONFIG_DATA_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_READ_CONFIG_DATA post-processing macro */
+#ifndef BLE_WRAP_ACI_READ_CONFIG_DATA_POSTPROC
+#define BLE_WRAP_ACI_READ_CONFIG_DATA_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
 /* HCI_DISCONNECT wrapper function */
 tBleStatus hci_disconnect( uint16_t Connection_Handle,
                            uint8_t Reason )
@@ -3119,12 +3399,12 @@ tBleStatus hci_le_read_buffer_size( uint16_t* HC_LE_ACL_Data_Packet_Length,
   return status;
 }
 
-/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES wrapper function */
-tBleStatus hci_le_read_local_supported_features( uint8_t* LE_Features )
+/* HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0 wrapper function */
+tBleStatus hci_le_read_local_supported_features_page_0( uint8_t* LE_Features )
 {
-  BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PREPROC( );
-  tBleStatus status = HCI_LE_READ_LOCAL_SUPPORTED_FEATURES( LE_Features );
-  BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_POSTPROC( );
+  BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_PREPROC( );
+  tBleStatus status = HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0( LE_Features );
+  BLE_WRAP_HCI_LE_READ_LOCAL_SUPPORTED_FEATURES_PAGE_0_POSTPROC( );
   return status;
 }
 
@@ -3349,12 +3629,12 @@ tBleStatus hci_le_read_channel_map( uint16_t Connection_Handle,
   return status;
 }
 
-/* HCI_LE_READ_REMOTE_FEATURES wrapper function */
-tBleStatus hci_le_read_remote_features( uint16_t Connection_Handle )
+/* HCI_LE_READ_REMOTE_FEATURES_PAGE_0 wrapper function */
+tBleStatus hci_le_read_remote_features_page_0( uint16_t Connection_Handle )
 {
-  BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PREPROC( );
-  tBleStatus status = HCI_LE_READ_REMOTE_FEATURES( Connection_Handle );
-  BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_POSTPROC( );
+  BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_PREPROC( );
+  tBleStatus status = HCI_LE_READ_REMOTE_FEATURES_PAGE_0( Connection_Handle );
+  BLE_WRAP_HCI_LE_READ_REMOTE_FEATURES_PAGE_0_POSTPROC( );
   return status;
 }
 
@@ -4874,12 +5154,522 @@ tBleStatus hci_le_set_extended_advertising_parameters_v2( uint8_t Advertising_Ha
   return status;
 }
 
-/* ACI_HAL_GET_FW_BUILD_NUMBER wrapper function */
-tBleStatus aci_hal_get_fw_build_number( uint16_t* Build_Number )
+/* HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA wrapper function */
+tBleStatus hci_le_set_periodic_advertising_subevent_data( uint8_t Advertising_Handle,
+                                                          uint8_t Num_Subevents,
+                                                          const uint8_t* Subevent_Param )
 {
-  BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_PREPROC( );
-  tBleStatus status = ACI_HAL_GET_FW_BUILD_NUMBER( Build_Number );
-  BLE_WRAP_ACI_HAL_GET_FW_BUILD_NUMBER_POSTPROC( );
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_PREPROC( );
+  tBleStatus status = HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA( Advertising_Handle,
+                                                                     Num_Subevents,
+                                                                     Subevent_Param );
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_SUBEVENT_DATA_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA wrapper function */
+tBleStatus hci_le_set_periodic_advertising_response_data( uint16_t Sync_Handle,
+                                                          uint16_t Request_Event,
+                                                          uint8_t Request_Subevent,
+                                                          uint8_t Response_Subevent,
+                                                          uint8_t Response_Slot,
+                                                          uint8_t Response_Data_Length,
+                                                          const uint8_t* Response_Data )
+{
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_PREPROC( );
+  tBleStatus status = HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA( Sync_Handle,
+                                                                     Request_Event,
+                                                                     Request_Subevent,
+                                                                     Response_Subevent,
+                                                                     Response_Slot,
+                                                                     Response_Data_Length,
+                                                                     Response_Data );
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_RESPONSE_DATA_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_SET_PERIODIC_SYNC_SUBEVENT wrapper function */
+tBleStatus hci_le_set_periodic_sync_subevent( uint16_t Sync_Handle,
+                                              uint16_t Periodic_Advertising_Properties,
+                                              uint8_t Num_Subevents,
+                                              const uint8_t* Subevent )
+{
+  BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_PREPROC( );
+  tBleStatus status = HCI_LE_SET_PERIODIC_SYNC_SUBEVENT( Sync_Handle,
+                                                         Periodic_Advertising_Properties,
+                                                         Num_Subevents,
+                                                         Subevent );
+  BLE_WRAP_HCI_LE_SET_PERIODIC_SYNC_SUBEVENT_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_EXTENDED_CREATE_CONNECTION_V2 wrapper function */
+tBleStatus hci_le_extended_create_connection_v2( uint8_t Advertising_Handle,
+                                                 uint8_t Subevent,
+                                                 uint8_t Initiator_Filter_Policy,
+                                                 uint8_t Own_Address_Type,
+                                                 uint8_t Peer_Address_Type,
+                                                 const uint8_t* Peer_Address,
+                                                 uint8_t Initiating_PHYs,
+                                                 const Init_Param_Phy_t* Init_Param_Phy )
+{
+  BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_PREPROC( );
+  tBleStatus status = HCI_LE_EXTENDED_CREATE_CONNECTION_V2( Advertising_Handle,
+                                                            Subevent,
+                                                            Initiator_Filter_Policy,
+                                                            Own_Address_Type,
+                                                            Peer_Address_Type,
+                                                            Peer_Address,
+                                                            Initiating_PHYs,
+                                                            Init_Param_Phy );
+  BLE_WRAP_HCI_LE_EXTENDED_CREATE_CONNECTION_V2_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2 wrapper function */
+tBleStatus hci_le_set_periodic_advertising_parameters_v2( uint8_t Advertising_Handle,
+                                                          uint16_t Periodic_Adv_Interval_Min,
+                                                          uint16_t Periodic_Adv_Interval_Max,
+                                                          uint16_t Periodic_Adv_Properties,
+                                                          uint8_t Num_Subevents,
+                                                          uint8_t Subevent_Interval,
+                                                          uint8_t Response_Slot_Delay,
+                                                          uint8_t Response_Slot_Spacing,
+                                                          uint8_t Num_Response_Slots )
+{
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_PREPROC( );
+  tBleStatus status = HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2( Advertising_Handle,
+                                                                     Periodic_Adv_Interval_Min,
+                                                                     Periodic_Adv_Interval_Max,
+                                                                     Periodic_Adv_Properties,
+                                                                     Num_Subevents,
+                                                                     Subevent_Interval,
+                                                                     Response_Slot_Delay,
+                                                                     Response_Slot_Spacing,
+                                                                     Num_Response_Slots );
+  BLE_WRAP_HCI_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_V2_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES wrapper function */
+tBleStatus hci_le_read_all_local_supported_features( uint8_t* Max_Page,
+                                                     uint8_t* LE_Features )
+{
+  BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_PREPROC( );
+  tBleStatus status = HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES( Max_Page,
+                                                                LE_Features );
+  BLE_WRAP_HCI_LE_READ_ALL_LOCAL_SUPPORTED_FEATURES_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_READ_ALL_REMOTE_FEATURES wrapper function */
+tBleStatus hci_le_read_all_remote_features( uint16_t Connection_Handle,
+                                            uint8_t Pages_Requested )
+{
+  BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_PREPROC( );
+  tBleStatus status = HCI_LE_READ_ALL_REMOTE_FEATURES( Connection_Handle,
+                                                       Pages_Requested );
+  BLE_WRAP_HCI_LE_READ_ALL_REMOTE_FEATURES_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES wrapper function */
+tBleStatus hci_le_cs_read_local_supported_capabilities( uint8_t* Num_Config_Supported,
+                                                        uint16_t* Max_Consecutive_Procedures_Supported,
+                                                        uint8_t* Num_Antennas_Supported,
+                                                        uint8_t* Max_Antenna_Paths_Supported,
+                                                        uint8_t* Roles_Supported,
+                                                        uint8_t* Optional_Modes_Supported,
+                                                        uint8_t* RTT_Capability,
+                                                        uint8_t* RTT_AA_Only_N,
+                                                        uint8_t* RTT_Sounding_N,
+                                                        uint8_t* RTT_Random_Payload_N,
+                                                        uint16_t* NADM_Sounding_Capability,
+                                                        uint16_t* NADM_Random_Capability,
+                                                        uint8_t* CS_SYNC_PHYs_Supported,
+                                                        uint16_t* Subfeatures_Supported,
+                                                        uint16_t* T_IP1_Times_Supported,
+                                                        uint16_t* T_IP2_Times_Supported,
+                                                        uint16_t* T_FCS_Times_Supported,
+                                                        uint16_t* T_PM_Times_Supported,
+                                                        uint8_t* T_SW_Time_Supported,
+                                                        uint8_t* TX_SNR_Capability )
+{
+  BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_PREPROC( );
+  tBleStatus status = HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES( Num_Config_Supported,
+                                                                   Max_Consecutive_Procedures_Supported,
+                                                                   Num_Antennas_Supported,
+                                                                   Max_Antenna_Paths_Supported,
+                                                                   Roles_Supported,
+                                                                   Optional_Modes_Supported,
+                                                                   RTT_Capability,
+                                                                   RTT_AA_Only_N,
+                                                                   RTT_Sounding_N,
+                                                                   RTT_Random_Payload_N,
+                                                                   NADM_Sounding_Capability,
+                                                                   NADM_Random_Capability,
+                                                                   CS_SYNC_PHYs_Supported,
+                                                                   Subfeatures_Supported,
+                                                                   T_IP1_Times_Supported,
+                                                                   T_IP2_Times_Supported,
+                                                                   T_FCS_Times_Supported,
+                                                                   T_PM_Times_Supported,
+                                                                   T_SW_Time_Supported,
+                                                                   TX_SNR_Capability );
+  BLE_WRAP_HCI_LE_CS_READ_LOCAL_SUPPORTED_CAPABILITIES_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES wrapper function */
+tBleStatus hci_le_cs_read_remote_supported_capabilities( uint16_t Connection_Handle )
+{
+  BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_PREPROC( );
+  tBleStatus status = HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES( Connection_Handle );
+  BLE_WRAP_HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES wrapper function */
+tBleStatus hci_le_cs_write_cached_remote_supported_capabilities( uint16_t Connection_Handle,
+                                                                 uint8_t Num_Config_Supported,
+                                                                 uint16_t Max_Consecutive_Procedures_Supported,
+                                                                 uint8_t Num_Antennas_Supported,
+                                                                 uint8_t Max_Antenna_Paths_Supported,
+                                                                 uint8_t Roles_Supported,
+                                                                 uint8_t Modes_Supported,
+                                                                 uint8_t RTT_Capability,
+                                                                 uint8_t RTT_AA_Only_N,
+                                                                 uint8_t RTT_Sounding_N,
+                                                                 uint8_t RTT_Random_Payload_N,
+                                                                 uint16_t NADM_Sounding_Capability,
+                                                                 uint16_t NADM_Random_Capability,
+                                                                 uint8_t CS_SYNC_PHYs_Supported,
+                                                                 uint16_t Subfeatures_Supported,
+                                                                 uint16_t T_IP1_Times_Supported,
+                                                                 uint16_t T_IP2_Times_Supported,
+                                                                 uint16_t T_FCS_Times_Supported,
+                                                                 uint16_t T_PM_Times_Supported,
+                                                                 uint8_t T_SW_Time_Supported,
+                                                                 uint8_t TX_SNR_Capability )
+{
+  BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_PREPROC( );
+  tBleStatus status = HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES( Connection_Handle,
+                                                                            Num_Config_Supported,
+                                                                            Max_Consecutive_Procedures_Supported,
+                                                                            Num_Antennas_Supported,
+                                                                            Max_Antenna_Paths_Supported,
+                                                                            Roles_Supported,
+                                                                            Modes_Supported,
+                                                                            RTT_Capability,
+                                                                            RTT_AA_Only_N,
+                                                                            RTT_Sounding_N,
+                                                                            RTT_Random_Payload_N,
+                                                                            NADM_Sounding_Capability,
+                                                                            NADM_Random_Capability,
+                                                                            CS_SYNC_PHYs_Supported,
+                                                                            Subfeatures_Supported,
+                                                                            T_IP1_Times_Supported,
+                                                                            T_IP2_Times_Supported,
+                                                                            T_FCS_Times_Supported,
+                                                                            T_PM_Times_Supported,
+                                                                            T_SW_Time_Supported,
+                                                                            TX_SNR_Capability );
+  BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_SUPPORTED_CAPABILITIES_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_SECURITY_ENABLE wrapper function */
+tBleStatus hci_le_cs_security_enable( uint16_t Connection_Handle )
+{
+  BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_PREPROC( );
+  tBleStatus status = HCI_LE_CS_SECURITY_ENABLE( Connection_Handle );
+  BLE_WRAP_HCI_LE_CS_SECURITY_ENABLE_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_SET_DEFAULT_SETTINGS wrapper function */
+tBleStatus hci_le_cs_set_default_settings( uint16_t Connection_Handle,
+                                           uint8_t Role_Enable,
+                                           uint8_t CS_SYNC_Antenna_Selection,
+                                           uint8_t Max_TX_Power )
+{
+  BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_PREPROC( );
+  tBleStatus status = HCI_LE_CS_SET_DEFAULT_SETTINGS( Connection_Handle,
+                                                      Role_Enable,
+                                                      CS_SYNC_Antenna_Selection,
+                                                      Max_TX_Power );
+  BLE_WRAP_HCI_LE_CS_SET_DEFAULT_SETTINGS_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_READ_REMOTE_FAE_TABLE wrapper function */
+tBleStatus hci_le_cs_read_remote_fae_table( uint16_t Connection_Handle )
+{
+  BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_PREPROC( );
+  tBleStatus status = HCI_LE_CS_READ_REMOTE_FAE_TABLE( Connection_Handle );
+  BLE_WRAP_HCI_LE_CS_READ_REMOTE_FAE_TABLE_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE wrapper function */
+tBleStatus hci_le_cs_write_cached_remote_fae_table( uint16_t Connection_Handle,
+                                                    const uint8_t* Remote_FAE_Table )
+{
+  BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_PREPROC( );
+  tBleStatus status = HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE( Connection_Handle,
+                                                               Remote_FAE_Table );
+  BLE_WRAP_HCI_LE_CS_WRITE_CACHED_REMOTE_FAE_TABLE_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_CREATE_CONFIG wrapper function */
+tBleStatus hci_le_cs_create_config( uint16_t Connection_Handle,
+                                    uint8_t Config_ID,
+                                    uint8_t Create_Context,
+                                    uint8_t Main_Mode_Type,
+                                    uint8_t Sub_Mode_Type,
+                                    uint8_t Min_Main_Mode_Steps,
+                                    uint8_t Max_Main_Mode_Steps,
+                                    uint8_t Main_Mode_Repetition,
+                                    uint8_t Mode_0_Steps,
+                                    uint8_t Role,
+                                    uint8_t RTT_Type,
+                                    uint8_t CS_SYNC_PHY,
+                                    const uint8_t* Channel_Map,
+                                    uint8_t Channel_Map_Repetition,
+                                    uint8_t Channel_Selection_Type,
+                                    uint8_t Ch3c_Shape,
+                                    uint8_t Ch3c_Jump,
+                                    uint8_t Reserved )
+{
+  BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_PREPROC( );
+  tBleStatus status = HCI_LE_CS_CREATE_CONFIG( Connection_Handle,
+                                               Config_ID,
+                                               Create_Context,
+                                               Main_Mode_Type,
+                                               Sub_Mode_Type,
+                                               Min_Main_Mode_Steps,
+                                               Max_Main_Mode_Steps,
+                                               Main_Mode_Repetition,
+                                               Mode_0_Steps,
+                                               Role,
+                                               RTT_Type,
+                                               CS_SYNC_PHY,
+                                               Channel_Map,
+                                               Channel_Map_Repetition,
+                                               Channel_Selection_Type,
+                                               Ch3c_Shape,
+                                               Ch3c_Jump,
+                                               Reserved );
+  BLE_WRAP_HCI_LE_CS_CREATE_CONFIG_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_REMOVE_CONFIG wrapper function */
+tBleStatus hci_le_cs_remove_config( uint16_t Connection_Handle,
+                                    uint8_t Config_ID )
+{
+  BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_PREPROC( );
+  tBleStatus status = HCI_LE_CS_REMOVE_CONFIG( Connection_Handle,
+                                               Config_ID );
+  BLE_WRAP_HCI_LE_CS_REMOVE_CONFIG_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_SET_CHANNEL_CLASSIFICATION wrapper function */
+tBleStatus hci_le_cs_set_channel_classification( const uint8_t* Channel_Classification )
+{
+  BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_PREPROC( );
+  tBleStatus status = HCI_LE_CS_SET_CHANNEL_CLASSIFICATION( Channel_Classification );
+  BLE_WRAP_HCI_LE_CS_SET_CHANNEL_CLASSIFICATION_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_SET_PROCEDURE_PARAMETERS wrapper function */
+tBleStatus hci_le_cs_set_procedure_parameters( uint16_t Connection_Handle,
+                                               uint8_t Config_ID,
+                                               uint16_t Max_Procedure_Len,
+                                               uint16_t Min_Procedure_Interval,
+                                               uint16_t Max_Procedure_Interval,
+                                               uint16_t Max_Procedure_Count,
+                                               const uint8_t* Min_Subevent_Len,
+                                               const uint8_t* Max_Subevent_Len,
+                                               uint8_t Tone_Antenna_Config_Selection,
+                                               uint8_t PHY,
+                                               uint8_t Tx_Power_Delta,
+                                               uint8_t Preferred_Peer_Antenna,
+                                               uint8_t SNR_Control_Initiator,
+                                               uint8_t SNR_Control_Reflector )
+{
+  BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_PREPROC( );
+  tBleStatus status = HCI_LE_CS_SET_PROCEDURE_PARAMETERS( Connection_Handle,
+                                                          Config_ID,
+                                                          Max_Procedure_Len,
+                                                          Min_Procedure_Interval,
+                                                          Max_Procedure_Interval,
+                                                          Max_Procedure_Count,
+                                                          Min_Subevent_Len,
+                                                          Max_Subevent_Len,
+                                                          Tone_Antenna_Config_Selection,
+                                                          PHY,
+                                                          Tx_Power_Delta,
+                                                          Preferred_Peer_Antenna,
+                                                          SNR_Control_Initiator,
+                                                          SNR_Control_Reflector );
+  BLE_WRAP_HCI_LE_CS_SET_PROCEDURE_PARAMETERS_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_PROCEDURE_ENABLE wrapper function */
+tBleStatus hci_le_cs_procedure_enable( uint16_t Connection_Handle,
+                                       uint8_t Config_ID,
+                                       uint8_t Enable )
+{
+  BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_PREPROC( );
+  tBleStatus status = HCI_LE_CS_PROCEDURE_ENABLE( Connection_Handle,
+                                                  Config_ID,
+                                                  Enable );
+  BLE_WRAP_HCI_LE_CS_PROCEDURE_ENABLE_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_TEST wrapper function */
+tBleStatus hci_le_cs_test( uint8_t Main_Mode_Type,
+                           uint8_t Sub_Mode_Type,
+                           uint8_t Main_Mode_Repetition,
+                           uint8_t Mode_0_Steps,
+                           uint8_t Role,
+                           uint8_t RTT_Type,
+                           uint8_t CS_SYNC_PHY,
+                           uint8_t CS_SYNC_Antenna_Selection,
+                           const uint8_t* Subevent_Len,
+                           uint16_t Subevent_Interval,
+                           uint8_t Max_Num_Subevents,
+                           uint8_t Transmit_Power_Level,
+                           uint8_t T_IP1_Time,
+                           uint8_t T_IP2_Time,
+                           uint8_t T_FCS_Time,
+                           uint8_t T_PM_Time,
+                           uint8_t T_SW_Time,
+                           uint8_t Tone_Antenna_Config_Selection,
+                           uint8_t Reserved,
+                           uint8_t SNR_Control_Initiator,
+                           uint8_t SNR_Control_Reflector,
+                           uint16_t DRBG_Nonce,
+                           uint8_t Channel_Map_Repetition,
+                           uint16_t Override_Config,
+                           uint8_t Override_Parameters_Length,
+                           const uint8_t* Override_Parameters_Data )
+{
+  BLE_WRAP_HCI_LE_CS_TEST_PREPROC( );
+  tBleStatus status = HCI_LE_CS_TEST( Main_Mode_Type,
+                                      Sub_Mode_Type,
+                                      Main_Mode_Repetition,
+                                      Mode_0_Steps,
+                                      Role,
+                                      RTT_Type,
+                                      CS_SYNC_PHY,
+                                      CS_SYNC_Antenna_Selection,
+                                      Subevent_Len,
+                                      Subevent_Interval,
+                                      Max_Num_Subevents,
+                                      Transmit_Power_Level,
+                                      T_IP1_Time,
+                                      T_IP2_Time,
+                                      T_FCS_Time,
+                                      T_PM_Time,
+                                      T_SW_Time,
+                                      Tone_Antenna_Config_Selection,
+                                      Reserved,
+                                      SNR_Control_Initiator,
+                                      SNR_Control_Reflector,
+                                      DRBG_Nonce,
+                                      Channel_Map_Repetition,
+                                      Override_Config,
+                                      Override_Parameters_Length,
+                                      Override_Parameters_Data );
+  BLE_WRAP_HCI_LE_CS_TEST_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CS_TEST_END wrapper function */
+tBleStatus hci_le_cs_test_end( void )
+{
+  BLE_WRAP_HCI_LE_CS_TEST_END_PREPROC( );
+  tBleStatus status = HCI_LE_CS_TEST_END(  );
+  BLE_WRAP_HCI_LE_CS_TEST_END_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST wrapper function */
+tBleStatus hci_le_add_device_to_monitored_advertisers_list( uint8_t Address_Type,
+                                                            const uint8_t* Address,
+                                                            uint8_t RSSI_Threshold_Low,
+                                                            uint8_t RSSI_Threshold_High,
+                                                            uint8_t Timeout )
+{
+  BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_PREPROC( );
+  tBleStatus status = HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST( Address_Type,
+                                                                       Address,
+                                                                       RSSI_Threshold_Low,
+                                                                       RSSI_Threshold_High,
+                                                                       Timeout );
+  BLE_WRAP_HCI_LE_ADD_DEVICE_TO_MONITORED_ADVERTISERS_LIST_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST wrapper function */
+tBleStatus hci_le_remove_device_from_monitored_advertisers_list( uint8_t Address_Type,
+                                                                 const uint8_t* Address )
+{
+  BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_PREPROC( );
+  tBleStatus status = HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST( Address_Type,
+                                                                            Address );
+  BLE_WRAP_HCI_LE_REMOVE_DEVICE_FROM_MONITORED_ADVERTISERS_LIST_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST wrapper function */
+tBleStatus hci_le_clear_monitored_advertisers_list( void )
+{
+  BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_PREPROC( );
+  tBleStatus status = HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST(  );
+  BLE_WRAP_HCI_LE_CLEAR_MONITORED_ADVERTISERS_LIST_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE wrapper function */
+tBleStatus hci_le_read_monitored_advertisers_list_size( uint8_t* Number )
+{
+  BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_PREPROC( );
+  tBleStatus status = HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE( Number );
+  BLE_WRAP_HCI_LE_READ_MONITORED_ADVERTISERS_LIST_SIZE_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_ENABLE_MONITORING_ADVERTISERS wrapper function */
+tBleStatus hci_le_enable_monitoring_advertisers( uint8_t Enable )
+{
+  BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_PREPROC( );
+  tBleStatus status = HCI_LE_ENABLE_MONITORING_ADVERTISERS( Enable );
+  BLE_WRAP_HCI_LE_ENABLE_MONITORING_ADVERTISERS_POSTPROC( );
+  return status;
+}
+
+/* HCI_LE_FRAME_SPACE_UPDATE wrapper function */
+tBleStatus hci_le_frame_space_update( uint16_t Connection_Handle,
+                                      uint16_t Frame_Space_Min,
+                                      uint16_t Frame_Space_Max,
+                                      uint8_t PHYS,
+                                      uint16_t Spacing_Types )
+{
+  BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_PREPROC( );
+  tBleStatus status = HCI_LE_FRAME_SPACE_UPDATE( Connection_Handle,
+                                                 Frame_Space_Min,
+                                                 Frame_Space_Max,
+                                                 PHYS,
+                                                 Spacing_Types );
+  BLE_WRAP_HCI_LE_FRAME_SPACE_UPDATE_POSTPROC( );
   return status;
 }
 
@@ -4975,19 +5765,6 @@ tBleStatus aci_hal_get_link_status_v2( uint8_t* Link_Status,
   tBleStatus status = ACI_HAL_GET_LINK_STATUS_V2( Link_Status,
                                                   Link_Connection_Handle );
   BLE_WRAP_ACI_HAL_GET_LINK_STATUS_V2_POSTPROC( );
-  return status;
-}
-
-/* ACI_HAL_GET_PM_DEBUG_INFO_V2 wrapper function */
-tBleStatus aci_hal_get_pm_debug_info_v2( uint16_t* Allocated_For_TX,
-                                         uint16_t* Allocated_For_RX,
-                                         uint16_t* Allocated_MBlocks )
-{
-  BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_PREPROC( );
-  tBleStatus status = ACI_HAL_GET_PM_DEBUG_INFO_V2( Allocated_For_TX,
-                                                    Allocated_For_RX,
-                                                    Allocated_MBlocks );
-  BLE_WRAP_ACI_HAL_GET_PM_DEBUG_INFO_V2_POSTPROC( );
   return status;
 }
 
@@ -5639,19 +6416,6 @@ tBleStatus aci_gap_set_oob_data( uint8_t Device_Type,
                                             OOB_Data_Len,
                                             OOB_Data );
   BLE_WRAP_ACI_GAP_SET_OOB_DATA_POSTPROC( );
-  return status;
-}
-
-/* ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST wrapper function */
-tBleStatus aci_gap_add_devices_to_resolving_list( uint8_t Num_of_Resolving_list_Entries,
-                                                  const Identity_Entry_t* Identity_Entry,
-                                                  uint8_t Clear_Resolving_List )
-{
-  BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_PREPROC( );
-  tBleStatus status = ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST( Num_of_Resolving_list_Entries,
-                                                             Identity_Entry,
-                                                             Clear_Resolving_List );
-  BLE_WRAP_ACI_GAP_ADD_DEVICES_TO_RESOLVING_LIST_POSTPROC( );
   return status;
 }
 
@@ -6718,6 +7482,7 @@ tBleStatus aci_l2cap_coc_connect_confirm( uint16_t Connection_Handle,
                                           uint16_t MPS,
                                           uint16_t Initial_Credits,
                                           uint16_t Result,
+                                          uint8_t Max_Channel_Number,
                                           uint8_t* Channel_Number,
                                           uint8_t* Channel_Index_List )
 {
@@ -6727,6 +7492,7 @@ tBleStatus aci_l2cap_coc_connect_confirm( uint16_t Connection_Handle,
                                                      MPS,
                                                      Initial_Credits,
                                                      Result,
+                                                     Max_Channel_Number,
                                                      Channel_Number,
                                                      Channel_Index_List );
   BLE_WRAP_ACI_L2CAP_COC_CONNECT_CONFIRM_POSTPROC( );
@@ -6794,10 +7560,60 @@ tBleStatus aci_l2cap_coc_tx_data( uint8_t Channel_Index,
   return status;
 }
 
+/* ACI_RESET wrapper function */
+tBleStatus aci_reset( uint8_t Mode,
+                      uint32_t Options )
+{
+  BLE_WRAP_ACI_RESET_PREPROC( );
+  tBleStatus status = ACI_RESET( Mode,
+                                 Options );
+  BLE_WRAP_ACI_RESET_POSTPROC( );
+  return status;
+}
+
+/* ACI_GET_INFORMATION wrapper function */
+tBleStatus aci_get_information( uint32_t* Version,
+                                uint32_t* Options,
+                                uint32_t* Debug_Info )
+{
+  BLE_WRAP_ACI_GET_INFORMATION_PREPROC( );
+  tBleStatus status = ACI_GET_INFORMATION( Version,
+                                           Options,
+                                           Debug_Info );
+  BLE_WRAP_ACI_GET_INFORMATION_POSTPROC( );
+  return status;
+}
+
+/* ACI_WRITE_CONFIG_DATA wrapper function */
+tBleStatus aci_write_config_data( uint8_t Offset,
+                                  uint8_t Length,
+                                  const uint8_t* Value )
+{
+  BLE_WRAP_ACI_WRITE_CONFIG_DATA_PREPROC( );
+  tBleStatus status = ACI_WRITE_CONFIG_DATA( Offset,
+                                             Length,
+                                             Value );
+  BLE_WRAP_ACI_WRITE_CONFIG_DATA_POSTPROC( );
+  return status;
+}
+
+/* ACI_READ_CONFIG_DATA wrapper function */
+tBleStatus aci_read_config_data( uint8_t Offset,
+                                 uint8_t* Data_Length,
+                                 uint8_t* Data )
+{
+  BLE_WRAP_ACI_READ_CONFIG_DATA_PREPROC( );
+  tBleStatus status = ACI_READ_CONFIG_DATA( Offset,
+                                            Data_Length,
+                                            Data );
+  BLE_WRAP_ACI_READ_CONFIG_DATA_POSTPROC( );
+  return status;
+}
+
 /* Event tables */
 
 #define HCI_EVENT_TABLE_SIZE 8
-#define HCI_LE_EVENT_TABLE_SIZE 36
+#define HCI_LE_EVENT_TABLE_SIZE 53
 #define HCI_VS_EVENT_TABLE_SIZE 54
 
 typedef struct
@@ -6818,7 +7634,7 @@ static tBleStatus hci_authenticated_payload_timeout_expired_event_process( const
 static tBleStatus hci_le_connection_complete_event_process( const uint8_t* in );
 static tBleStatus hci_le_advertising_report_event_process( const uint8_t* in );
 static tBleStatus hci_le_connection_update_complete_event_process( const uint8_t* in );
-static tBleStatus hci_le_read_remote_features_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_read_remote_features_page_0_complete_event_process( const uint8_t* in );
 static tBleStatus hci_le_long_term_key_request_event_process( const uint8_t* in );
 static tBleStatus hci_le_remote_connection_parameter_request_event_process( const uint8_t* in );
 static tBleStatus hci_le_data_length_change_event_process( const uint8_t* in );
@@ -6850,9 +7666,26 @@ static tBleStatus hci_le_path_loss_threshold_event_process( const uint8_t* in );
 static tBleStatus hci_le_transmit_power_reporting_event_process( const uint8_t* in );
 static tBleStatus hci_le_biginfo_advertising_report_event_process( const uint8_t* in );
 static tBleStatus hci_le_subrate_change_event_process( const uint8_t* in );
+static tBleStatus hci_le_periodic_advertising_sync_established_v2_event_process( const uint8_t* in );
+static tBleStatus hci_le_periodic_advertising_report_v2_event_process( const uint8_t* in );
+static tBleStatus hci_le_periodic_advertising_sync_transfer_received_v2_event_process( const uint8_t* in );
+static tBleStatus hci_le_periodic_advertising_subevent_data_request_event_process( const uint8_t* in );
+static tBleStatus hci_le_periodic_advertising_response_report_event_process( const uint8_t* in );
+static tBleStatus hci_le_enhanced_connection_complete_v2_event_process( const uint8_t* in );
 static tBleStatus hci_le_cis_established_v2_event_process( const uint8_t* in );
+static tBleStatus hci_le_read_all_remote_features_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_read_remote_supported_capabilities_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_read_remote_fae_table_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_security_enable_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_config_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_procedure_enable_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_subevent_result_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_subevent_result_continue_event_process( const uint8_t* in );
+static tBleStatus hci_le_cs_test_end_complete_event_process( const uint8_t* in );
+static tBleStatus hci_le_monitored_advertisers_report_event_process( const uint8_t* in );
+static tBleStatus hci_le_frame_space_update_complete_event_process( const uint8_t* in );
 static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in );
-static tBleStatus aci_hal_warning_event_process( const uint8_t* in );
+static tBleStatus aci_warning_event_process( const uint8_t* in );
 static tBleStatus aci_hal_sync_event_process( const uint8_t* in );
 static tBleStatus aci_gap_limited_discoverable_event_process( const uint8_t* in );
 static tBleStatus aci_gap_pairing_complete_event_process( const uint8_t* in );
@@ -6925,7 +7758,7 @@ static const hci_event_table_t hci_le_event_table[HCI_LE_EVENT_TABLE_SIZE] =
   { 0x0001U, hci_le_connection_complete_event_process },
   { 0x0002U, hci_le_advertising_report_event_process },
   { 0x0003U, hci_le_connection_update_complete_event_process },
-  { 0x0004U, hci_le_read_remote_features_complete_event_process },
+  { 0x0004U, hci_le_read_remote_features_page_0_complete_event_process },
   { 0x0005U, hci_le_long_term_key_request_event_process },
   { 0x0006U, hci_le_remote_connection_parameter_request_event_process },
   { 0x0007U, hci_le_data_length_change_event_process },
@@ -6957,14 +7790,31 @@ static const hci_event_table_t hci_le_event_table[HCI_LE_EVENT_TABLE_SIZE] =
   { 0x0021U, hci_le_transmit_power_reporting_event_process },
   { 0x0022U, hci_le_biginfo_advertising_report_event_process },
   { 0x0023U, hci_le_subrate_change_event_process },
+  { 0x0024U, hci_le_periodic_advertising_sync_established_v2_event_process },
+  { 0x0025U, hci_le_periodic_advertising_report_v2_event_process },
+  { 0x0026U, hci_le_periodic_advertising_sync_transfer_received_v2_event_process },
+  { 0x0027U, hci_le_periodic_advertising_subevent_data_request_event_process },
+  { 0x0028U, hci_le_periodic_advertising_response_report_event_process },
+  { 0x0029U, hci_le_enhanced_connection_complete_v2_event_process },
   { 0x002AU, hci_le_cis_established_v2_event_process },
+  { 0x002BU, hci_le_read_all_remote_features_complete_event_process },
+  { 0x002CU, hci_le_cs_read_remote_supported_capabilities_complete_event_process },
+  { 0x002DU, hci_le_cs_read_remote_fae_table_complete_event_process },
+  { 0x002EU, hci_le_cs_security_enable_complete_event_process },
+  { 0x002FU, hci_le_cs_config_complete_event_process },
+  { 0x0030U, hci_le_cs_procedure_enable_complete_event_process },
+  { 0x0031U, hci_le_cs_subevent_result_event_process },
+  { 0x0032U, hci_le_cs_subevent_result_continue_event_process },
+  { 0x0033U, hci_le_cs_test_end_complete_event_process },
+  { 0x0034U, hci_le_monitored_advertisers_report_event_process },
+  { 0x0035U, hci_le_frame_space_update_complete_event_process },
 };
 
 /* HCI VS event process functions table */
 static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
 {
   { 0x0004U, aci_hal_end_of_radio_activity_event_process },
-  { 0x0006U, aci_hal_warning_event_process },
+  { 0x0006U, aci_warning_event_process },
   { 0x0008U, aci_hal_sync_event_process },
   { 0x0400U, aci_gap_limited_discoverable_event_process },
   { 0x0401U, aci_gap_pairing_complete_event_process },
@@ -7218,21 +8068,21 @@ static tBleStatus hci_le_connection_update_complete_event_process( const uint8_t
                                                   rp0->Supervision_Timeout );
 }
 
-/* HCI_LE_READ_REMOTE_FEATURES_COMPLETE_EVENT callback function */
-__WEAK tBleStatus hci_le_read_remote_features_complete_event( uint8_t Status,
-                                                              uint16_t Connection_Handle,
-                                                              const uint8_t* LE_Features )
+/* HCI_LE_READ_REMOTE_FEATURES_PAGE_0_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_read_remote_features_page_0_complete_event( uint8_t Status,
+                                                                     uint16_t Connection_Handle,
+                                                                     const uint8_t* LE_Features )
 {
   return HCI_SUCCESS_ERR_CODE;
 }
 
-/* HCI_LE_READ_REMOTE_FEATURES_COMPLETE_EVENT process function */
-static tBleStatus hci_le_read_remote_features_complete_event_process( const uint8_t* in )
+/* HCI_LE_READ_REMOTE_FEATURES_PAGE_0_COMPLETE_EVENT process function */
+static tBleStatus hci_le_read_remote_features_page_0_complete_event_process( const uint8_t* in )
 {
-  hci_le_read_remote_features_complete_event_rp0 *rp0 = (void*)in;
-  return hci_le_read_remote_features_complete_event( rp0->Status,
-                                                     rp0->Connection_Handle,
-                                                     rp0->LE_Features );
+  hci_le_read_remote_features_page_0_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_read_remote_features_page_0_complete_event( rp0->Status,
+                                                            rp0->Connection_Handle,
+                                                            rp0->LE_Features );
 }
 
 /* HCI_LE_LONG_TERM_KEY_REQUEST_EVENT callback function */
@@ -7949,6 +8799,184 @@ static tBleStatus hci_le_subrate_change_event_process( const uint8_t* in )
                                       rp0->Supervision_Timeout );
 }
 
+/* HCI_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED_V2_EVENT callback function */
+__WEAK tBleStatus hci_le_periodic_advertising_sync_established_v2_event( uint8_t Status,
+                                                                         uint16_t Sync_Handle,
+                                                                         uint8_t Advertising_SID,
+                                                                         uint8_t Advertiser_Address_Type,
+                                                                         const uint8_t* Advertiser_Address,
+                                                                         uint8_t Advertiser_PHY,
+                                                                         uint16_t Periodic_Advertising_Interval,
+                                                                         uint8_t Advertiser_Clock_Accuracy,
+                                                                         uint8_t Num_Subevents,
+                                                                         uint8_t Subevent_Interval,
+                                                                         uint8_t Response_Slot_Delay,
+                                                                         uint8_t Response_Slot_Spacing )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_SYNC_ESTABLISHED_V2_EVENT process function */
+static tBleStatus hci_le_periodic_advertising_sync_established_v2_event_process( const uint8_t* in )
+{
+  hci_le_periodic_advertising_sync_established_v2_event_rp0 *rp0 = (void*)in;
+  return hci_le_periodic_advertising_sync_established_v2_event( rp0->Status,
+                                                                rp0->Sync_Handle,
+                                                                rp0->Advertising_SID,
+                                                                rp0->Advertiser_Address_Type,
+                                                                rp0->Advertiser_Address,
+                                                                rp0->Advertiser_PHY,
+                                                                rp0->Periodic_Advertising_Interval,
+                                                                rp0->Advertiser_Clock_Accuracy,
+                                                                rp0->Num_Subevents,
+                                                                rp0->Subevent_Interval,
+                                                                rp0->Response_Slot_Delay,
+                                                                rp0->Response_Slot_Spacing );
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_REPORT_V2_EVENT callback function */
+__WEAK tBleStatus hci_le_periodic_advertising_report_v2_event( uint16_t Sync_Handle,
+                                                               uint8_t Tx_Power,
+                                                               uint8_t RSSI,
+                                                               uint8_t CTE_Type,
+                                                               uint16_t Periodic_Event_Counter,
+                                                               uint8_t Subevent,
+                                                               uint8_t Data_Status,
+                                                               uint8_t Data_Length,
+                                                               const uint8_t* Data )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_REPORT_V2_EVENT process function */
+static tBleStatus hci_le_periodic_advertising_report_v2_event_process( const uint8_t* in )
+{
+  hci_le_periodic_advertising_report_v2_event_rp0 *rp0 = (void*)in;
+  return hci_le_periodic_advertising_report_v2_event( rp0->Sync_Handle,
+                                                      rp0->Tx_Power,
+                                                      rp0->RSSI,
+                                                      rp0->CTE_Type,
+                                                      rp0->Periodic_Event_Counter,
+                                                      rp0->Subevent,
+                                                      rp0->Data_Status,
+                                                      rp0->Data_Length,
+                                                      rp0->Data );
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_SYNC_TRANSFER_RECEIVED_V2_EVENT callback function */
+__WEAK tBleStatus hci_le_periodic_advertising_sync_transfer_received_v2_event( uint8_t Status,
+                                                                               uint16_t Connection_Handle,
+                                                                               uint16_t Service_Data,
+                                                                               uint16_t Sync_Handle,
+                                                                               uint8_t Advertising_SID,
+                                                                               uint8_t Advertiser_Address_Type,
+                                                                               const uint8_t* Advertiser_Address,
+                                                                               uint8_t Advertiser_PHY,
+                                                                               uint16_t Periodic_Advertising_Interval,
+                                                                               uint8_t Advertiser_Clock_Accuracy,
+                                                                               uint8_t Num_Subevents,
+                                                                               uint8_t Subevent_Interval,
+                                                                               uint8_t Response_Slot_Delay,
+                                                                               uint8_t Response_Slot_Spacing )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_SYNC_TRANSFER_RECEIVED_V2_EVENT process function */
+static tBleStatus hci_le_periodic_advertising_sync_transfer_received_v2_event_process( const uint8_t* in )
+{
+  hci_le_periodic_advertising_sync_transfer_received_v2_event_rp0 *rp0 = (void*)in;
+  return hci_le_periodic_advertising_sync_transfer_received_v2_event( rp0->Status,
+                                                                      rp0->Connection_Handle,
+                                                                      rp0->Service_Data,
+                                                                      rp0->Sync_Handle,
+                                                                      rp0->Advertising_SID,
+                                                                      rp0->Advertiser_Address_Type,
+                                                                      rp0->Advertiser_Address,
+                                                                      rp0->Advertiser_PHY,
+                                                                      rp0->Periodic_Advertising_Interval,
+                                                                      rp0->Advertiser_Clock_Accuracy,
+                                                                      rp0->Num_Subevents,
+                                                                      rp0->Subevent_Interval,
+                                                                      rp0->Response_Slot_Delay,
+                                                                      rp0->Response_Slot_Spacing );
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_SUBEVENT_DATA_REQUEST_EVENT callback function */
+__WEAK tBleStatus hci_le_periodic_advertising_subevent_data_request_event( uint8_t Advertising_Handle,
+                                                                           uint8_t Subevent_Start,
+                                                                           uint8_t Subevent_Data_Count )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_SUBEVENT_DATA_REQUEST_EVENT process function */
+static tBleStatus hci_le_periodic_advertising_subevent_data_request_event_process( const uint8_t* in )
+{
+  hci_le_periodic_advertising_subevent_data_request_event_rp0 *rp0 = (void*)in;
+  return hci_le_periodic_advertising_subevent_data_request_event( rp0->Advertising_Handle,
+                                                                  rp0->Subevent_Start,
+                                                                  rp0->Subevent_Data_Count );
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_RESPONSE_REPORT_EVENT callback function */
+__WEAK tBleStatus hci_le_periodic_advertising_response_report_event( uint8_t Advertising_Handle,
+                                                                     uint8_t Subevent,
+                                                                     uint8_t Tx_Status,
+                                                                     uint8_t Num_Responses,
+                                                                     const uint8_t* Responses )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_PERIODIC_ADVERTISING_RESPONSE_REPORT_EVENT process function */
+static tBleStatus hci_le_periodic_advertising_response_report_event_process( const uint8_t* in )
+{
+  hci_le_periodic_advertising_response_report_event_rp0 *rp0 = (void*)in;
+  return hci_le_periodic_advertising_response_report_event( rp0->Advertising_Handle,
+                                                            rp0->Subevent,
+                                                            rp0->Tx_Status,
+                                                            rp0->Num_Responses,
+                                                            rp0->Responses );
+}
+
+/* HCI_LE_ENHANCED_CONNECTION_COMPLETE_V2_EVENT callback function */
+__WEAK tBleStatus hci_le_enhanced_connection_complete_v2_event( uint8_t Status,
+                                                                uint16_t Connection_Handle,
+                                                                uint8_t Role,
+                                                                uint8_t Peer_Address_Type,
+                                                                const uint8_t* Peer_Address,
+                                                                const uint8_t* Local_Resolvable_Private_Address,
+                                                                const uint8_t* Peer_Resolvable_Private_Address,
+                                                                uint16_t Conn_Interval,
+                                                                uint16_t Conn_Latency,
+                                                                uint16_t Supervision_Timeout,
+                                                                uint8_t Central_Clock_Accuracy,
+                                                                uint8_t Advertising_Handle,
+                                                                uint16_t Sync_Handle )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_ENHANCED_CONNECTION_COMPLETE_V2_EVENT process function */
+static tBleStatus hci_le_enhanced_connection_complete_v2_event_process( const uint8_t* in )
+{
+  hci_le_enhanced_connection_complete_v2_event_rp0 *rp0 = (void*)in;
+  return hci_le_enhanced_connection_complete_v2_event( rp0->Status,
+                                                       rp0->Connection_Handle,
+                                                       rp0->Role,
+                                                       rp0->Peer_Address_Type,
+                                                       rp0->Peer_Address,
+                                                       rp0->Local_Resolvable_Private_Address,
+                                                       rp0->Peer_Resolvable_Private_Address,
+                                                       rp0->Conn_Interval,
+                                                       rp0->Conn_Latency,
+                                                       rp0->Supervision_Timeout,
+                                                       rp0->Central_Clock_Accuracy,
+                                                       rp0->Advertising_Handle,
+                                                       rp0->Sync_Handle );
+}
+
 /* HCI_LE_CIS_ESTABLISHED_V2_EVENT callback function */
 __WEAK tBleStatus hci_le_cis_established_v2_event( uint8_t Status,
                                                    uint16_t Connection_Handle,
@@ -8004,6 +9032,323 @@ static tBleStatus hci_le_cis_established_v2_event_process( const uint8_t* in )
                                           rp0->Framing );
 }
 
+/* HCI_LE_READ_ALL_REMOTE_FEATURES_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_read_all_remote_features_complete_event( uint8_t Status,
+                                                                  uint16_t Connection_Handle,
+                                                                  uint8_t Max_Remote_Page,
+                                                                  uint8_t Max_Valid_Page,
+                                                                  const uint8_t* LE_Features )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_READ_ALL_REMOTE_FEATURES_COMPLETE_EVENT process function */
+static tBleStatus hci_le_read_all_remote_features_complete_event_process( const uint8_t* in )
+{
+  hci_le_read_all_remote_features_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_read_all_remote_features_complete_event( rp0->Status,
+                                                         rp0->Connection_Handle,
+                                                         rp0->Max_Remote_Page,
+                                                         rp0->Max_Valid_Page,
+                                                         rp0->LE_Features );
+}
+
+/* HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_read_remote_supported_capabilities_complete_event( uint8_t Status,
+                                                                               uint16_t Connection_Handle,
+                                                                               uint8_t Num_Config_Supported,
+                                                                               uint16_t Max_Consecutive_Procedures_Supported,
+                                                                               uint8_t Num_Antennas_Supported,
+                                                                               uint8_t Max_Antenna_Paths_Supported,
+                                                                               uint8_t Roles_Supported,
+                                                                               uint8_t Optional_Modes_Supported,
+                                                                               uint8_t RTT_Capability,
+                                                                               uint8_t RTT_AA_Only_N,
+                                                                               uint8_t RTT_Sounding_N,
+                                                                               uint8_t RTT_Random_Payload_N,
+                                                                               uint16_t NADM_Sounding_Capability,
+                                                                               uint16_t NADM_Random_Capability,
+                                                                               uint8_t CS_SYNC_PHYs_Supported,
+                                                                               uint16_t Subfeatures_Supported,
+                                                                               uint16_t T_IP1_Times_Supported,
+                                                                               uint16_t T_IP2_Times_Supported,
+                                                                               uint16_t T_FCS_Times_Supported,
+                                                                               uint16_t T_PM_Times_Supported,
+                                                                               uint8_t T_SW_Time_Supported,
+                                                                               uint8_t TX_SNR_Capability )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_READ_REMOTE_SUPPORTED_CAPABILITIES_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_read_remote_supported_capabilities_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_read_remote_supported_capabilities_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_read_remote_supported_capabilities_complete_event( rp0->Status,
+                                                                      rp0->Connection_Handle,
+                                                                      rp0->Num_Config_Supported,
+                                                                      rp0->Max_Consecutive_Procedures_Supported,
+                                                                      rp0->Num_Antennas_Supported,
+                                                                      rp0->Max_Antenna_Paths_Supported,
+                                                                      rp0->Roles_Supported,
+                                                                      rp0->Optional_Modes_Supported,
+                                                                      rp0->RTT_Capability,
+                                                                      rp0->RTT_AA_Only_N,
+                                                                      rp0->RTT_Sounding_N,
+                                                                      rp0->RTT_Random_Payload_N,
+                                                                      rp0->NADM_Sounding_Capability,
+                                                                      rp0->NADM_Random_Capability,
+                                                                      rp0->CS_SYNC_PHYs_Supported,
+                                                                      rp0->Subfeatures_Supported,
+                                                                      rp0->T_IP1_Times_Supported,
+                                                                      rp0->T_IP2_Times_Supported,
+                                                                      rp0->T_FCS_Times_Supported,
+                                                                      rp0->T_PM_Times_Supported,
+                                                                      rp0->T_SW_Time_Supported,
+                                                                      rp0->TX_SNR_Capability );
+}
+
+/* HCI_LE_CS_READ_REMOTE_FAE_TABLE_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_read_remote_fae_table_complete_event( uint8_t Status,
+                                                                  uint16_t Connection_Handle,
+                                                                  const uint8_t* Remote_FAE_Table )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_READ_REMOTE_FAE_TABLE_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_read_remote_fae_table_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_read_remote_fae_table_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_read_remote_fae_table_complete_event( rp0->Status,
+                                                         rp0->Connection_Handle,
+                                                         rp0->Remote_FAE_Table );
+}
+
+/* HCI_LE_CS_SECURITY_ENABLE_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_security_enable_complete_event( uint8_t Status,
+                                                            uint16_t Connection_Handle )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_SECURITY_ENABLE_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_security_enable_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_security_enable_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_security_enable_complete_event( rp0->Status,
+                                                   rp0->Connection_Handle );
+}
+
+/* HCI_LE_CS_CONFIG_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_config_complete_event( uint8_t Status,
+                                                   uint16_t Connection_Handle,
+                                                   uint8_t Config_ID,
+                                                   uint8_t Action,
+                                                   uint8_t Main_Mode_Type,
+                                                   uint8_t Sub_Mode_Type,
+                                                   uint8_t Min_Main_Mode_Steps,
+                                                   uint8_t Max_Main_Mode_Steps,
+                                                   uint8_t Main_Mode_Repetition,
+                                                   uint8_t Mode_0_Steps,
+                                                   uint8_t Role,
+                                                   uint8_t RTT_Type,
+                                                   uint8_t CS_SYNC_PHY,
+                                                   const uint8_t* Channel_Map,
+                                                   uint8_t Channel_Map_Repetition,
+                                                   uint8_t Channel_Selection_Type,
+                                                   uint8_t Ch3c_Shape,
+                                                   uint8_t Ch3c_Jump,
+                                                   uint8_t Reserved,
+                                                   uint8_t T_IP1_Time,
+                                                   uint8_t T_IP2_Time,
+                                                   uint8_t T_FCS_Time,
+                                                   uint8_t T_PM_Time )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_CONFIG_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_config_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_config_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_config_complete_event( rp0->Status,
+                                          rp0->Connection_Handle,
+                                          rp0->Config_ID,
+                                          rp0->Action,
+                                          rp0->Main_Mode_Type,
+                                          rp0->Sub_Mode_Type,
+                                          rp0->Min_Main_Mode_Steps,
+                                          rp0->Max_Main_Mode_Steps,
+                                          rp0->Main_Mode_Repetition,
+                                          rp0->Mode_0_Steps,
+                                          rp0->Role,
+                                          rp0->RTT_Type,
+                                          rp0->CS_SYNC_PHY,
+                                          rp0->Channel_Map,
+                                          rp0->Channel_Map_Repetition,
+                                          rp0->Channel_Selection_Type,
+                                          rp0->Ch3c_Shape,
+                                          rp0->Ch3c_Jump,
+                                          rp0->Reserved,
+                                          rp0->T_IP1_Time,
+                                          rp0->T_IP2_Time,
+                                          rp0->T_FCS_Time,
+                                          rp0->T_PM_Time );
+}
+
+/* HCI_LE_CS_PROCEDURE_ENABLE_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_procedure_enable_complete_event( uint8_t Status,
+                                                             uint16_t Connection_Handle,
+                                                             uint8_t Config_ID,
+                                                             uint8_t State,
+                                                             uint8_t Tone_Antenna_Config_Selection,
+                                                             uint8_t Selected_TX_Power,
+                                                             const uint8_t* Subevent_Len,
+                                                             uint8_t Subevents_Per_Event,
+                                                             uint16_t Subevent_Interval,
+                                                             uint16_t Event_Interval,
+                                                             uint16_t Procedure_Interval,
+                                                             uint16_t Procedure_Count,
+                                                             uint16_t Max_Procedure_Len )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_PROCEDURE_ENABLE_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_procedure_enable_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_procedure_enable_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_procedure_enable_complete_event( rp0->Status,
+                                                    rp0->Connection_Handle,
+                                                    rp0->Config_ID,
+                                                    rp0->State,
+                                                    rp0->Tone_Antenna_Config_Selection,
+                                                    rp0->Selected_TX_Power,
+                                                    rp0->Subevent_Len,
+                                                    rp0->Subevents_Per_Event,
+                                                    rp0->Subevent_Interval,
+                                                    rp0->Event_Interval,
+                                                    rp0->Procedure_Interval,
+                                                    rp0->Procedure_Count,
+                                                    rp0->Max_Procedure_Len );
+}
+
+/* HCI_LE_CS_SUBEVENT_RESULT_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_subevent_result_event( uint16_t Connection_Handle,
+                                                   uint8_t Config_ID,
+                                                   uint16_t Start_ACL_Conn_Event_Counter,
+                                                   uint16_t Procedure_Counter,
+                                                   uint16_t Frequency_Compensation,
+                                                   uint8_t Reference_Power_Level,
+                                                   uint8_t Procedure_Done_Status,
+                                                   uint8_t Subevent_Done_Status,
+                                                   uint8_t Abort_Reason,
+                                                   uint8_t Num_Antenna_Paths,
+                                                   uint8_t Num_Steps_Reported,
+                                                   const uint8_t* Step_Param )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_SUBEVENT_RESULT_EVENT process function */
+static tBleStatus hci_le_cs_subevent_result_event_process( const uint8_t* in )
+{
+  hci_le_cs_subevent_result_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_subevent_result_event( rp0->Connection_Handle,
+                                          rp0->Config_ID,
+                                          rp0->Start_ACL_Conn_Event_Counter,
+                                          rp0->Procedure_Counter,
+                                          rp0->Frequency_Compensation,
+                                          rp0->Reference_Power_Level,
+                                          rp0->Procedure_Done_Status,
+                                          rp0->Subevent_Done_Status,
+                                          rp0->Abort_Reason,
+                                          rp0->Num_Antenna_Paths,
+                                          rp0->Num_Steps_Reported,
+                                          rp0->Step_Param );
+}
+
+/* HCI_LE_CS_SUBEVENT_RESULT_CONTINUE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_subevent_result_continue_event( uint16_t Connection_Handle,
+                                                            uint8_t Config_ID,
+                                                            uint8_t Procedure_Done_Status,
+                                                            uint8_t Subevent_Done_Status,
+                                                            uint8_t Abort_Reason,
+                                                            uint8_t Num_Antenna_Paths,
+                                                            uint8_t Num_Steps_Reported,
+                                                            const uint8_t* Step_Param )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_SUBEVENT_RESULT_CONTINUE_EVENT process function */
+static tBleStatus hci_le_cs_subevent_result_continue_event_process( const uint8_t* in )
+{
+  hci_le_cs_subevent_result_continue_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_subevent_result_continue_event( rp0->Connection_Handle,
+                                                   rp0->Config_ID,
+                                                   rp0->Procedure_Done_Status,
+                                                   rp0->Subevent_Done_Status,
+                                                   rp0->Abort_Reason,
+                                                   rp0->Num_Antenna_Paths,
+                                                   rp0->Num_Steps_Reported,
+                                                   rp0->Step_Param );
+}
+
+/* HCI_LE_CS_TEST_END_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_cs_test_end_complete_event( uint8_t Status )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_CS_TEST_END_COMPLETE_EVENT process function */
+static tBleStatus hci_le_cs_test_end_complete_event_process( const uint8_t* in )
+{
+  hci_le_cs_test_end_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_cs_test_end_complete_event( rp0->Status );
+}
+
+/* HCI_LE_MONITORED_ADVERTISERS_REPORT_EVENT callback function */
+__WEAK tBleStatus hci_le_monitored_advertisers_report_event( uint8_t Address_Type,
+                                                             const uint8_t* Address,
+                                                             uint8_t Condition )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_MONITORED_ADVERTISERS_REPORT_EVENT process function */
+static tBleStatus hci_le_monitored_advertisers_report_event_process( const uint8_t* in )
+{
+  hci_le_monitored_advertisers_report_event_rp0 *rp0 = (void*)in;
+  return hci_le_monitored_advertisers_report_event( rp0->Address_Type,
+                                                    rp0->Address,
+                                                    rp0->Condition );
+}
+
+/* HCI_LE_FRAME_SPACE_UPDATE_COMPLETE_EVENT callback function */
+__WEAK tBleStatus hci_le_frame_space_update_complete_event( uint8_t Status,
+                                                            uint16_t Connection_Handle,
+                                                            uint8_t Initiator,
+                                                            uint16_t Frame_Space,
+                                                            uint8_t PHYS,
+                                                            uint16_t Spacing_Types )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* HCI_LE_FRAME_SPACE_UPDATE_COMPLETE_EVENT process function */
+static tBleStatus hci_le_frame_space_update_complete_event_process( const uint8_t* in )
+{
+  hci_le_frame_space_update_complete_event_rp0 *rp0 = (void*)in;
+  return hci_le_frame_space_update_complete_event( rp0->Status,
+                                                   rp0->Connection_Handle,
+                                                   rp0->Initiator,
+                                                   rp0->Frame_Space,
+                                                   rp0->PHYS,
+                                                   rp0->Spacing_Types );
+}
+
 /* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT callback function */
 __WEAK tBleStatus aci_hal_end_of_radio_activity_event( uint8_t Last_State,
                                                        uint8_t Next_State,
@@ -8025,21 +9370,21 @@ static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in
                                               rp0->Next_State_Slot );
 }
 
-/* ACI_HAL_WARNING_EVENT callback function */
-__WEAK tBleStatus aci_hal_warning_event( uint8_t Warning_Type,
-                                         uint8_t Data_Length,
-                                         const uint8_t* Data )
+/* ACI_WARNING_EVENT callback function */
+__WEAK tBleStatus aci_warning_event( uint8_t Warning_Type,
+                                     uint8_t Data_Length,
+                                     const uint8_t* Data )
 {
   return HCI_SUCCESS_ERR_CODE;
 }
 
-/* ACI_HAL_WARNING_EVENT process function */
-static tBleStatus aci_hal_warning_event_process( const uint8_t* in )
+/* ACI_WARNING_EVENT process function */
+static tBleStatus aci_warning_event_process( const uint8_t* in )
 {
-  aci_hal_warning_event_rp0 *rp0 = (void*)in;
-  return aci_hal_warning_event( rp0->Warning_Type,
-                                rp0->Data_Length,
-                                rp0->Data );
+  aci_warning_event_rp0 *rp0 = (void*)in;
+  return aci_warning_event( rp0->Warning_Type,
+                            rp0->Data_Length,
+                            rp0->Data );
 }
 
 /* ACI_HAL_SYNC_EVENT callback function */
@@ -8829,9 +10174,10 @@ static tBleStatus aci_gatt_prepare_write_permit_req_event_process( const uint8_t
 }
 
 /* ACI_GATT_EATT_BEARER_EVENT callback function */
-__WEAK tBleStatus aci_gatt_eatt_bearer_event( uint8_t Channel_Index,
+__WEAK tBleStatus aci_gatt_eatt_bearer_event( uint16_t Connection_Handle,
+                                              uint8_t Channel_Index,
                                               uint8_t EAB_State,
-                                              uint8_t Status )
+                                              uint16_t MTU )
 {
   return HCI_SUCCESS_ERR_CODE;
 }
@@ -8840,9 +10186,10 @@ __WEAK tBleStatus aci_gatt_eatt_bearer_event( uint8_t Channel_Index,
 static tBleStatus aci_gatt_eatt_bearer_event_process( const uint8_t* in )
 {
   aci_gatt_eatt_bearer_event_rp0 *rp0 = (void*)in;
-  return aci_gatt_eatt_bearer_event( rp0->Channel_Index,
+  return aci_gatt_eatt_bearer_event( rp0->Connection_Handle,
+                                     rp0->Channel_Index,
                                      rp0->EAB_State,
-                                     rp0->Status );
+                                     rp0->MTU );
 }
 
 /* ACI_GATT_MULT_NOTIFICATION_EVENT callback function */

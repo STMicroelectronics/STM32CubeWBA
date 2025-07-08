@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "pbp_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "codec_mngr.h"
@@ -113,7 +113,7 @@ typedef struct
 /* Length of the ST Manufacturer Data */
 #define MANUFACTURER_DATA_LENGTH                11
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory required for CAP*/
 #define CAP_DYN_ALLOC_SIZE      CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_INITIATOR,CFG_BLE_NUM_LINK, \
@@ -251,6 +251,24 @@ static int32_t start_audio_sink(void);
 extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* Initialize the Audio IP*/
+  BleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  BleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  BleAudioInit.bleAudioStartRamAddress = (uint8_t*)aAudioInitBuffer;
+  BleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  BleAudioInit.MaxNumOfBondedDevices = 0;
+  BleAudioInit.bleAudioStartRamAddress_NVM = 0;
+  BleAudioInit.total_buffer_size_NVM = 0;
+  status = BLE_AUDIO_STACK_Init(&BleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 /**
   * @brief  Notify CAP Events
   * @param  pNotification: pointer on notification information
@@ -399,10 +417,10 @@ uint8_t PBPAPP_StartSource(void)
   CAP_Broadcast_AudioStart_Params_t cap_audio_start_params;
   char broadcast_name_string[BROADCAST_NAME_LENGTH+1];
   char source_id_string[COMPLETE_LOCAL_NAME_LENGTH+1];
-  
+
   uint8_t Pb_Addr_Len;
   uint8_t Pb_Addr[6] = {0x00};
-  
+
   aci_hal_read_config_data(CONFIG_DATA_PUBADDR_OFFSET, &Pb_Addr_Len, &Pb_Addr[0]);
   snprintf(source_id_string, COMPLETE_LOCAL_NAME_LENGTH+1, "PBP_WBA_%02X%02X", Pb_Addr[1], Pb_Addr[0]);
   MEMCPY(&a_additional_adv_data[2], source_id_string, COMPLETE_LOCAL_NAME_LENGTH);
@@ -558,102 +576,86 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
 static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
 {
   tBleStatus ret = 0;
-  /* Initialize the Audio IP*/
-  BleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  BleAudioInit.bleStartRamAddress = (uint8_t*)aAudioInitBuffer;
-  BleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  ret = BLE_AUDIO_STACK_Init(&BleAudioInit);
+
+  /*Clear the CAP Configuration*/
+  memset(&PBPAPP_CAP_Config,0,sizeof(PBPAPP_CAP_Config));
+
+  /*Clear the BAP Configuration*/
+  memset(&PBPAPP_BAP_Config,0,sizeof(PBPAPP_BAP_Config));
+
+  /*Clear the CCP Configuration*/
+  memset(&PBPAPP_CCP_Config,0,sizeof(CCP_Config_t));
+
+  /*Clear the MCP Configuration*/
+  memset(&PBPAPP_MCP_Config,0,sizeof(MCP_Config_t));
+
+  /*Clear the VCP Configuration*/
+  memset(&PBPAPP_VCP_Config,0,sizeof(VCP_Config_t));
+
+  /*Clear the VCP Configuration*/
+  memset(&PBPAPP_MICP_Config,0,sizeof(MICP_Config_t));
+
+  /*Clear the CSIP Configuration*/
+  memset(&PBPAPP_CSIP_Config,0,sizeof(CSIP_Config_t));
+
+  PBPAPP_CAP_Config.Role = CAP_Role;
+  PBPAPP_CAP_Config.MaxNumLinks = CFG_BLE_NUM_LINK;
+
+  PBPAPP_CAP_Config.pStartRamAddr = (uint8_t *)&aCAPMemBuffer;
+  PBPAPP_CAP_Config.RamSize = CAP_DYN_ALLOC_SIZE;
+
+  PBPAPP_BAP_Config.Role = BAP_Role;
+
+  PBPAPP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
+
+  /*Isochronous Channels Configuration*/
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCIG = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCISPerCIG = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBIG = MAX_NUM_BIG;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBISPerBIG = MAX_NUM_BIS_PER_BIG;
+  PBPAPP_BAP_Config.ISOChnlConfig.pStartRamAddr = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.RamSize = 0u;
+
+  /* Initialize the Basic Audio Profile*/
+  ret = CAP_Init(&PBPAPP_CAP_Config,
+                 &PBPAPP_BAP_Config,
+                 &PBPAPP_VCP_Config,
+                 &PBPAPP_MICP_Config,
+                 &PBPAPP_CCP_Config,
+                 &PBPAPP_MCP_Config,
+                 &PBPAPP_CSIP_Config);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : BLE_AUDIO_STACK_Init() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: BLE_AUDIO_STACK_Init() function\n");
-    LOG_INFO_APP("BLE Audio Stack Lib version: %s\n", BLE_AUDIO_STACK_GetFwVersion());
+    LOG_INFO_APP("  Success: CAP_Init() function\n");
   }
   if (ret == BLE_STATUS_SUCCESS)
   {
-    /*Clear the CAP Configuration*/
-    memset(&PBPAPP_CAP_Config,0,sizeof(PBPAPP_CAP_Config));
 
-    /*Clear the BAP Configuration*/
-    memset(&PBPAPP_BAP_Config,0,sizeof(PBPAPP_BAP_Config));
+    /*Initialize the Audio Codec (LC3)*/
+    CODEC_LC3Config_t lc3_config = {0};
+    PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
 
-    /*Clear the CCP Configuration*/
-    memset(&PBPAPP_CCP_Config,0,sizeof(CCP_Config_t));
+    /*Register the Audio Task */
+    UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
 
-    /*Clear the MCP Configuration*/
-    memset(&PBPAPP_MCP_Config,0,sizeof(MCP_Config_t));
+    lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
+    lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
+    lc3_config.StackSize = sizeof(aLC3StackMemBuffer);
 
-    /*Clear the VCP Configuration*/
-    memset(&PBPAPP_VCP_Config,0,sizeof(VCP_Config_t));
+    lc3_config.pSessionStart = aLC3SessionMemBuffer;
+    lc3_config.pChannelStart = aLC3ChannelMemBuffer;
+    lc3_config.pStackStart = aLC3StackMemBuffer;
 
-    /*Clear the VCP Configuration*/
-    memset(&PBPAPP_MICP_Config,0,sizeof(MICP_Config_t));
-
-    /*Clear the CSIP Configuration*/
-    memset(&PBPAPP_CSIP_Config,0,sizeof(CSIP_Config_t));
-
-    PBPAPP_CAP_Config.Role = CAP_Role;
-    PBPAPP_CAP_Config.MaxNumLinks = CFG_BLE_NUM_LINK;
-
-    PBPAPP_CAP_Config.pStartRamAddr = (uint8_t *)&aCAPMemBuffer;
-    PBPAPP_CAP_Config.RamSize = CAP_DYN_ALLOC_SIZE;
-
-    PBPAPP_BAP_Config.Role = BAP_Role;
-
-    PBPAPP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
-
-    /*Isochronous Channels Configuration*/
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCIG = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCISPerCIG = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBIG = MAX_NUM_BIG;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBISPerBIG = MAX_NUM_BIS_PER_BIG;
-    PBPAPP_BAP_Config.ISOChnlConfig.pStartRamAddr = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.RamSize = 0u;
-
-    /* Initialize the Basic Audio Profile*/
-    ret = CAP_Init(&PBPAPP_CAP_Config,
-                   &PBPAPP_BAP_Config,
-                   &PBPAPP_VCP_Config,
-                   &PBPAPP_MICP_Config,
-                   &PBPAPP_CCP_Config,
-                   &PBPAPP_MCP_Config,
-                   &PBPAPP_CSIP_Config);
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: CAP_Init() function\n");
-    }
-    if (ret == BLE_STATUS_SUCCESS)
-    {
-
-      /*Initialize the Audio Codec (LC3)*/
-      CODEC_LC3Config_t lc3_config = {0};
-      PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
-
-      /*Register the Audio Task */
-      UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
-
-      lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
-      lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
-      lc3_config.StackSize = sizeof(aLC3StackMemBuffer);
-
-      lc3_config.pSessionStart = aLC3SessionMemBuffer;
-      lc3_config.pChannelStart = aLC3ChannelMemBuffer;
-      lc3_config.pStackStart = aLC3StackMemBuffer;
-
-      CODEC_ManagerInit(sizeof(aCodecPacketsMemory),
-                        (uint8_t*)aCodecPacketsMemory,
-                        &lc3_config,
-                        CODEC_PROC_MARGIN_US,
-                        CODEC_RF_SETUP_US,
-                        CODEC_MODE_DEFAULT);
-    }
+    CODEC_ManagerInit(sizeof(aCodecPacketsMemory),
+                      (uint8_t*)aCodecPacketsMemory,
+                      &lc3_config,
+                      CODEC_PROC_MARGIN_US,
+                      CODEC_RF_SETUP_US,
+                      CODEC_MODE_DEFAULT);
   }
   return ret;
 }

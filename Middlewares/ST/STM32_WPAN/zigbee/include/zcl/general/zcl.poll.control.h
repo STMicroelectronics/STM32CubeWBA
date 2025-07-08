@@ -2,7 +2,7 @@
  * @file zcl.poll.control.h
  * @heading Poll Control
  * @brief ZCL Poll Control cluster header
- * @copyright Copyright [2019 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2019 - 2025] Exegin Technologies Limited. All rights reserved.
  *
  * ZCL 8 section 3.16
  *
@@ -107,7 +107,7 @@ enum ZbZclPollControlSvrAttrT {
      * number of received check-in responses matches the number of bound
      * clients, then stop fast-polling immediately.
      * Note that this is an Exegin custom attribute and not exposed to
-     * the network. */
+     * the network. (Optional) */
 
 };
 

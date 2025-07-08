@@ -160,10 +160,12 @@ extern "C" {
 #define  USE_HAL_COMP_REGISTER_CALLBACKS       0U /* COMP register callback disabled      */
 #define  USE_HAL_CRYP_REGISTER_CALLBACKS       0U /* CRYP register callback disabled      */
 #define  USE_HAL_HASH_REGISTER_CALLBACKS       0U /* HASH register callback disabled      */
+
 #define  USE_HAL_I2C_REGISTER_CALLBACKS        0U /* I2C register callback disabled       */
 #define  USE_HAL_IRDA_REGISTER_CALLBACKS       0U /* IRDA register callback disabled      */
 #define  USE_HAL_IWDG_REGISTER_CALLBACKS       0U /* IWDG register callback disabled      */
 #define  USE_HAL_LPTIM_REGISTER_CALLBACKS      0U /* LPTIM register callback disabled     */
+
 #define  USE_HAL_PKA_REGISTER_CALLBACKS        0U /* PKA register callback disabled       */
 #define  USE_HAL_RAMCFG_REGISTER_CALLBACKS     0U /* RAMCFG register callback disabled    */
 #define  USE_HAL_RNG_REGISTER_CALLBACKS        0U /* RNG register callback disabled       */
@@ -348,3 +350,4 @@ void assert_failed(uint8_t *file, uint32_t line);
 #endif
 
 #endif /* STM32WBAxx_HAL_CONF_H */
+

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 #ifndef APP_SYS_H
 #define APP_SYS_H
+
+#include <stdint.h>
 
 #include "main.h"
 
@@ -37,8 +39,8 @@
 
 /* Exported functions prototypes ---------------------------------------------*/
 
-void APP_SYS_LPM_EnterLowPowerMode(void);
-void APP_SYS_LinkLayer_BackgroundProcessInit(void);
+void APP_SYS_BLE_EnterDeepSleep(void);
+void APP_SYS_SetWakeupOffset(uint32_t wakeup_offset_us);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

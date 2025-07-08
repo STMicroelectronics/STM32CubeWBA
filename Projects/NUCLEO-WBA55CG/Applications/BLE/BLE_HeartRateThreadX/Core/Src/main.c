@@ -47,8 +47,6 @@ CRC_HandleTypeDef hcrc;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
-RNG_HandleTypeDef hrng;
-
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
@@ -62,6 +60,7 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -99,6 +98,9 @@ int main(void)
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
+  /* Configure the System Power */
+  SystemPower_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -108,7 +110,6 @@ int main(void)
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_RNG_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
@@ -217,6 +218,19 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
+  * @brief Power Configuration
+  * @retval None
+  */
+static void SystemPower_Config(void)
+{
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
+}
+
+/**
   * @brief ADC4 Initialization Function
   * @param None
   * @retval None
@@ -231,7 +245,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  
+
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -394,36 +408,6 @@ void MX_RAMCFG_Init(void)
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
-
-}
-
-/**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
 
 }
 
@@ -605,8 +589,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

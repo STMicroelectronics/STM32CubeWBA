@@ -842,6 +842,7 @@ static void Menu_ClearSecDB(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Clear Security DB\n");
   aci_gap_clear_security_db();
+  TMAPAPP_ClearDatabase();
   Menu_SetActivePage(p_startup_menu);
 }
 

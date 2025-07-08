@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0-RC1</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2007FFFF) IROM(0x8000000-0x81FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -502,6 +502,11 @@
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
           <Files>
             <File>
+              <FileName>stm32wbaxx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_hal_icache.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</FilePath>
@@ -520,11 +525,6 @@
               <FileName>stm32wbaxx_hal_rcc_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_cortex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_flash.c</FileName>
@@ -1012,9 +1012,14 @@
               <FilePath>../../../../../../Middlewares/ST/usbx/common/core/src/ux_utility_memory_free.c</FilePath>
             </File>
             <File>
-              <FileName>ux_utility_memory_free_block_best_get.c</FileName>
+              <FileName>ux_utility_memory_byte_pool_create.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../../../../Middlewares/ST/usbx/common/core/src/ux_utility_memory_free_block_best_get.c</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_create.c</FilePath>
+            </File>
+            <File>
+              <FileName>ux_utility_memory_byte_pool_search.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Middlewares/ST/usbx/common/core/src/ux_utility_memory_byte_pool_search.c</FilePath>
             </File>
             <File>
               <FileName>ux_utility_memory_set.c</FileName>

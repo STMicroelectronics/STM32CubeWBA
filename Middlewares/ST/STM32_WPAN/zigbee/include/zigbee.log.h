@@ -3,7 +3,7 @@
  * @heading Zigbee Logging Utilities
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  *
  * This file groups global/external definitions from all the layer specific header files
  * e.g, aps, nwk, zdo etc... into a single place, so that one can just include zigbee.h for
@@ -45,7 +45,7 @@ struct ZigBeeT;
 /* Misc */
 #define ZB_LOG_MASK_PERSIST             0x00100000U /* Persistence */
 #define ZB_LOG_MASK_GREENPOWER          0x00200000U /* Green Power */
-#define ZB_LOG_MASK_HEAP                0x00400000U /* ZbHeapAlloc / ZbHeapFree debugging */
+/* 0x00400000U Reserved (was ZB_LOG_MASK_HEAP) */
 #define ZB_LOG_MASK_TIMER               0x00800000U /* ZbTimer */
 #define ZB_LOG_MASK_SLEEPY              0x01000000U /* Sleepy (e.g. Polling) */
 #define ZB_LOG_MASK_MAC_RSSI            0x02000000U /* Print debug message per MCPS-DATA.indication showing RSSI */
@@ -75,7 +75,14 @@ void ZbSetLogging(struct ZigBeeT *zb, uint32_t mask,
 
 /* E.g. PRIu64 */
 #ifndef LOGFMTu64
+/* Check for 32-bit ARM 7 architecture (e.g. arm-linux-gnueabihf-) */
+#if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__)    \
+    || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__)
+/* ARM7 */
+# define LOGFMTu64                  "%llu"
+#else
 # define LOGFMTu64                  "%lu"
+#endif
 #endif
 
 #endif

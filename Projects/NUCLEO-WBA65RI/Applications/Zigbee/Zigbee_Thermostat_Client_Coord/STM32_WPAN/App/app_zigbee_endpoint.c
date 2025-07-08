@@ -164,18 +164,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -201,7 +189,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Thermostat Client Cluster */
   stZigbeeAppInfo.ThermostatClient = ZbZclThermClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.ThermostatClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.ThermostatClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.ThermostatClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Thermostat Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Server Report callback */
@@ -407,11 +398,10 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
                                                uint16_t iAttributeId, enum ZclDataTypeT eDataType, const uint8_t * pDataInputPayload, uint16_t iDataInputLength,
                                                bool * bDiscard )
 {
-  uint8_t   bDisplay;
-  int       iAttrLen;
-  int16_t   iAttrValue;
-  float     fTempValue;
+  uint8_t   bDisplay, cAttrValueAP;
+  int16_t   iAttrValue, iAttrValueBP;
   char      szText[32];
+  int       iAttrLen;
 
   iAttrLen = ZbZclAttrParseLength( eDataType, pDataInputPayload, pstDataInd->asduLength, 0 );
   if ( iAttrLen < 0 )
@@ -439,8 +429,9 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
     /* The only reportable Attribute is the Local Temperature */
     case ZCL_THERM_SVR_ATTR_LOCAL_TEMP:
         iAttrValue= (int16_t)( pletoh16( pDataInputPayload ) );
-        fTempValue = (float)iAttrValue / 100;
-        sprintf( szText, "%.2f C", fTempValue );
+        iAttrValueBP = (int16_t)(iAttrValue / 100);
+        cAttrValueAP = (uint8_t)(iAttrValue % 100);
+        snprintf( szText, sizeof(szText), "%d.%02d C", iAttrValueBP, cAttrValueAP );
         break;
 
     default:

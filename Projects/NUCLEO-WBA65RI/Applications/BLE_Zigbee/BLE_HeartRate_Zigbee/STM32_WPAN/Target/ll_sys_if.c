@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,10 +25,14 @@
 #include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
+#include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
+/* Radio event scheduling method - must be set at 1 */
+#define USE_RADIO_LOW_ISR                   (1)
+#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* USER CODE BEGIN PD */
 
@@ -57,9 +61,7 @@
 
 /* Private functions prototypes-----------------------------------------------*/
 static void ll_sys_sleep_clock_source_selection(void);
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
 static uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void);
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
 void ll_sys_reset(void);
 
 /* USER CODE BEGIN PFP */
@@ -112,6 +114,10 @@ void ll_sys_schedule_bg_process_isr(void)
   */
 void ll_sys_config_params(void)
 {
+/* USER CODE BEGIN ll_sys_config_params_0 */
+
+/* USER CODE END ll_sys_config_params_0 */
+
   /* Configure link layer behavior for low ISR use and next event scheduling method:
    * - SW low ISR is used.
    * - Next event is scheduled from ISR.
@@ -120,14 +126,23 @@ void ll_sys_config_params(void)
   /* Apply the selected link layer sleep timer source */
   ll_sys_sleep_clock_source_selection();
 
+/* USER CODE BEGIN ll_sys_config_params_1 */
+
+/* USER CODE END ll_sys_config_params_1 */
+
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+/* USER CODE BEGIN ll_sys_config_params_2 */
+
+/* USER CODE END ll_sys_config_params_2 */
 }
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
+
 uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 {
   uint8_t BLE_sleep_clock_accuracy = 0;
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
   uint32_t RevID = LL_DBGMCU_GetRevisionID();
+#endif
   uint32_t linklayer_slp_clk_src = LL_RCC_RADIO_GetSleepTimerClockSource();
 
   if(linklayer_slp_clk_src == LL_RCC_RADIOSLEEPSOURCE_LSE)
@@ -135,6 +150,7 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
     /* LSE selected as Link Layer sleep clock source.
        Sleep clock accuracy is different regarding the WBA device ID and revision
      */
+#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
 #if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx)
     if(RevID == REV_ID_A)
     {
@@ -155,6 +171,9 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 #else
     UNUSED(RevID);
 #endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) */
+#else /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+    BLE_sleep_clock_accuracy = CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE;
+#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
   }
   else
   {
@@ -164,7 +183,7 @@ uint8_t ll_sys_BLE_sleep_clock_accuracy_selection(void)
 
   return BLE_sleep_clock_accuracy;
 }
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+
 void ll_sys_sleep_clock_source_selection(void)
 {
   uint16_t freq_value = 0;
@@ -195,21 +214,51 @@ void ll_sys_sleep_clock_source_selection(void)
 
 void ll_sys_reset(void)
 {
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE == 0)
   uint8_t bsca = 0;
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+  /* Link layer timings */
+  uint8_t drift_time = DRIFT_TIME_DEFAULT;
+  uint8_t exec_time = EXEC_TIME_DEFAULT;
+
+/* USER CODE BEGIN ll_sys_reset_0 */
+
+/* USER CODE END ll_sys_reset_0 */
 
   /* Apply the selected link layer sleep timer source */
   ll_sys_sleep_clock_source_selection();
 
-  /* Configure the link layer sleep clock accuracy if different from the default one */
-#if (CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE != 0)
-  ll_intf_le_set_sleep_clock_accuracy(CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE);
-#else
+  /* Configure the link layer sleep clock accuracy */
   bsca = ll_sys_BLE_sleep_clock_accuracy_selection();
-  if(bsca != STM32WBA5x_DEFAULT_SCA_RANGE)
+  ll_intf_le_set_sleep_clock_accuracy(bsca);
+
+  /* Update link layer timings depending on selected configuration */
+  if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
-    ll_intf_le_set_sleep_clock_accuracy(bsca);
+    drift_time += DRIFT_TIME_EXTRA_LSI2;
+    exec_time += EXEC_TIME_EXTRA_LSI2;
   }
-#endif /* CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE */
+  else
+  {
+#if defined(__GNUC__) && defined(DEBUG)
+    drift_time += DRIFT_TIME_EXTRA_GCC_DEBUG;
+    exec_time += EXEC_TIME_EXTRA_GCC_DEBUG;
+#endif
+  }
+
+  /* USER CODE BEGIN ll_sys_reset_1 */
+
+  /* USER CODE END ll_sys_reset_1 */
+
+  if((drift_time != DRIFT_TIME_DEFAULT) || (exec_time != EXEC_TIME_DEFAULT))
+  {
+    ll_sys_config_BLE_schldr_timings(drift_time, exec_time);
+  }
+  /* USER CODE BEGIN ll_sys_reset_2 */
+
+  /* USER CODE END ll_sys_reset_2 */
+}
+
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time)
+{
+  /* first parameter otInstance *aInstance is unused */
+  radio_set_rtl_polling_time(NULL, rtl_polling_time);
 }

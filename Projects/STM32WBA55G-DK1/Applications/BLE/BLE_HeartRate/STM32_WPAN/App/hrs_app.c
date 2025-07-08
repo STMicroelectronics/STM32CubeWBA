@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "hrs_app.h"
 #include "hrs.h"
 #include "stm32_rtos.h"
@@ -35,7 +34,6 @@
 #include "stm32_timer.h"
 #include "host_stack_if.h"
 #include "app_bsp.h"
-
 
 /* USER CODE END Includes */
 
@@ -589,8 +587,6 @@ static void HRS_APP_Measurements(void)
   {
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
-
-  BleStackCB_Process();
 
   return;
 }

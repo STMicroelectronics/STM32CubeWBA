@@ -1,5 +1,5 @@
 <?xml version="1.0" ?><project>
-    <fileVersion>3</fileVersion>
+    <fileVersion>4</fileVersion>
     <configuration>
         <name>Zigbee_TempMeas_Server_Router</name>
         <toolchain>
@@ -10,7 +10,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>34</version>
+                <version>37</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -69,7 +69,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.60.3.7274</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -97,8 +97,8 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -114,8 +114,8 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
@@ -137,8 +137,8 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGCMSISPackSelectDevice</name>
@@ -202,13 +202,30 @@
                     <name>BuildFilesPath</name>
                     <state>TempMeas_Server_Router\</state>
                 </option>
+                <option>
+                    <name>PointerAuthentication</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>FPU64</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>OG_32_64DeviceCoreSlave</name>
+                    <version>34</version>
+                    <state>61</state>
+                </option>
+                <option>
+                    <name>GOutputSo</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>37</version>
+                <version>39</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -503,13 +520,29 @@
                     <name>CCStackProtection</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>CCPointerAutentiction</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCBranchTargetIdentification</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosRadRwpi</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosSharedSlave</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>AARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>11</version>
+                <version>12</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -669,6 +702,10 @@
                     <name>PreInclude</name>
                     <state/>
                 </option>
+                <option>
+                    <name>A_32_64Device</name>
+                    <state>1</state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -703,27 +740,18 @@
         </settings>
         <settings>
             <name>CUSTOM</name>
-            <archiveVersion>3</archiveVersion>
+            <archiveVersion>4</archiveVersion>
             <data>
                 <extensions/>
                 <cmdline/>
-                <hasPrio>0</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
-            </data>
-        </settings>
-        <settings>
-            <name>BUILDACTION</name>
-            <archiveVersion>1</archiveVersion>
-            <data>
-                <prebuild/>
-                <postbuild>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin</postbuild>
             </data>
         </settings>
         <settings>
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>26</version>
+                <version>28</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -1083,6 +1111,18 @@
                     <name>IlinkWrapperFile</name>
                     <state/>
                 </option>
+                <option>
+                    <name>IlinkProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkFpuProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkSharedSlave</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1104,6 +1144,24 @@
                     <name>IarchiveOutput</name>
                     <state>###Unitialized###</state>
                 </option>
+            </data>
+        </settings>
+        <settings>
+            <name>BUILDACTION</name>
+            <archiveVersion>2</archiveVersion>
+            <data>
+                <buildActions>
+                    <buildAction>
+                        <cmdline>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin &amp;&amp; echo &gt; &quot;$BUILD_FILES_DIR$/.postbuild&quot;</cmdline>
+                        <workingDirectory>$PROJ_DIR$</workingDirectory>
+                        <buildSequence>postLink</buildSequence>
+                        <outputs>
+                            <file>
+                                <name>$BUILD_FILES_DIR$/.postbuild</name>
+                            </file>
+                        </outputs>
+                    </buildAction>
+                </buildActions>
             </data>
         </settings>
         <settings>

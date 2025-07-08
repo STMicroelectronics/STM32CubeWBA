@@ -47,7 +47,6 @@ MEMORY
 {
   RAM (xrw): ORIGIN = S_RAM_START, LENGTH = S_RAM_SIZE
   ROM (rx): ORIGIN = S_CODE_START, LENGTH = S_CODE_SIZE
-  ROM_NSC (rx): ORIGIN = NSC_CODE_START, LENGTH = NSC_CODE_SIZE
 }
 
 /* Sections */
@@ -165,13 +164,6 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
 
   } >RAM
-
-  .gnu.sgstubs :
-  {
-    . = ALIGN(8);
-    *(.gnu.sgstubs*)   /* Secure Gateway stubs */
-    . = ALIGN(8);
-  } >ROM_NSC
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(8);

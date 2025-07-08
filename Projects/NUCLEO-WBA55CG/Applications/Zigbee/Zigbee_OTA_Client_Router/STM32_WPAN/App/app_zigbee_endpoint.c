@@ -142,7 +142,7 @@ static struct APP_ZIGBEE_OTAClientInfo_t                stOTAClientInfo =
   .lMagicKeyword = FUOTA_MAGIC_KEYWORD_M33_APP,
   .iManufacturerCode = ST_ZIGBEE_MANUFACTURER_CODE,
   .iImageType = IMAGE_TYPE_FW_M33_APP,
-  .lCurrentFileVersion = CURRENT_FW_M33_APP_FILE_VERSION, // TODO: Ideally there should be a way to get the file version from the binary itself such as from a tag section
+  .lCurrentFileVersion = CURRENT_FW_M33_APP_FILE_VERSION,
 };
 
 static struct APP_ZIGBEE_OTAClientGlobals_t             stOTAClientGlobals;
@@ -1053,7 +1053,7 @@ static void JumpFwApp( void )
 
   SCB->VTOR = FUOTA_APP_FW_BINARY_ADDRESS;
   __set_MSP( * ( uint32_t * )FUOTA_APP_FW_BINARY_ADDRESS );
-  fApplicationResetHandler = ( ReBootFunction_t )( * ( uint32_t * )( FUOTA_APP_FW_BINARY_ADDRESS + 4u ) );
+  fApplicationResetHandler = ( ReBootFunction_t )( * (uint32_t *)( FUOTA_APP_FW_BINARY_ADDRESS + 4u ) );
   fApplicationResetHandler();
 
   /**

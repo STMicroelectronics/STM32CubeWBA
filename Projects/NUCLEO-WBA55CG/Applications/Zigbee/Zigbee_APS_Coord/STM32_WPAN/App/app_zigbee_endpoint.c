@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -91,7 +91,6 @@ void APP_ZIGBEE_ApplicationInit(void)
   APP_ZIGBEE_StackLayersInit(); 
 }
 
-
 /**
  * @brief  Zigbee application start
  * @param  None
@@ -103,18 +102,6 @@ void APP_ZIGBEE_ApplicationStart( void )
   LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 }
-
-
-/**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* Not used */
-}
-
 
 /**
  * @brief  Configure Zigbee application endpoints
@@ -140,7 +127,6 @@ void APP_ZIGBEE_ConfigEndpoints(void)
                                                                    APP_ZIGBEE_ApsIndicationCallback, NULL );
   assert( stZigbeeAppInfo.stApsInfo.pstApsFilter != NULL );
 }
-
 
 /**
  * @brief  Set Group Addressing mode (if used)

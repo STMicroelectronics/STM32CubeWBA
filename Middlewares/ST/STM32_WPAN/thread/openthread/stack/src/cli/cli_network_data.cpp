@@ -170,7 +170,7 @@ void NetworkData::OutputService(const otServiceConfig &aConfig)
         OutputFormat(" s");
     }
 
-    OutputLine(" %04x", aConfig.mServerConfig.mRloc16);
+    OutputLine(" %04x %u", aConfig.mServerConfig.mRloc16, aConfig.mServiceId);
 }
 
 /**
@@ -244,17 +244,17 @@ template <> otError NetworkData::Process<Cmd("publish")>(Arg aArgs[])
         /**
          * @cli netdata publish dnssrp anycast
          * @code
-         * netdata publish dnssrp anycast 1
+         * netdata publish dnssrp anycast 1 1
          * Done
          * @endcode
-         * @cparam netdata publish dnssrp anycast @ca{seq-num}
+         * @cparam netdata publish dnssrp anycast @ca{seq-num} [@ca{version}]
          * @par
-         * Publishes a DNS/SRP Service Anycast Address with a sequence number. Any current
-         * DNS/SRP Service entry being published from a previous `publish dnssrp{anycast|unicast}`
+         * Publishes a DNS/SRP Service Anycast Address with a sequence number and version. Any current
+         * DNS/SRP Service entry being published from a previous `publish dnssrp {anycast|unicast}`
          * command is removed and replaced with the new arguments.
          * @par
          * `OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE` must be enabled.
-         * @csa{netdata publish dnssrp unicast (addr,port)}
+         * @csa{netdata publish dnssrp unicast (addr,port,version)}
          * @csa{netdata publish dnssrp unicast (mle)}
          * @sa otNetDataPublishDnsSrpServiceAnycast
          * @endcli
@@ -262,55 +262,83 @@ template <> otError NetworkData::Process<Cmd("publish")>(Arg aArgs[])
         if (aArgs[1] == "anycast")
         {
             uint8_t sequenceNumber;
+            uint8_t version = 0;
 
             SuccessOrExit(error = aArgs[2].ParseAsUint8(sequenceNumber));
-            otNetDataPublishDnsSrpServiceAnycast(GetInstancePtr(), sequenceNumber);
+
+            if (!aArgs[3].IsEmpty())
+            {
+                SuccessOrExit(error = aArgs[3].ParseAsUint8(version));
+                VerifyOrExit(aArgs[4].IsEmpty(), error = OT_ERROR_INVALID_ARGS);
+            }
+
+            otNetDataPublishDnsSrpServiceAnycast(GetInstancePtr(), sequenceNumber, version);
             ExitNow();
         }
 
         if (aArgs[1] == "unicast")
         {
             otIp6Address address;
+            bool         hasAddress = false;
             uint16_t     port;
+            uint8_t      version = 0;
+
+            aArgs += 2;
+
+            if (aArgs->ParseAsIp6Address(address) == kErrorNone)
+            {
+                hasAddress = true;
+                aArgs++;
+            }
+
+            SuccessOrExit(error = aArgs->ParseAsUint16(port));
+            aArgs++;
+
+            if (!aArgs->IsEmpty())
+            {
+                SuccessOrExit(error = aArgs->ParseAsUint8(version));
+                aArgs++;
+            }
+
+            VerifyOrExit(aArgs->IsEmpty(), error = kErrorInvalidArgs);
 
             /**
              * @cli netdata publish dnssrp unicast (mle)
              * @code
-             * netdata publish dnssrp unicast 50152
+             * netdata publish dnssrp unicast 50152 1
              * Done
              * @endcode
-             * @cparam netdata publish dnssrp unicast @ca{port}
+             * @cparam netdata publish dnssrp unicast @ca{port} [@ca{version}]
              * @par
-             * Publishes the device's Mesh-Local EID with a port number. MLE and port information is
-             * included in the Server TLV data. To use a different Unicast address, use the
-             * `netdata publish dnssrp unicast (addr,port)` command.
+             * Publishes the device's Mesh-Local EID with a port number and given version. MLE, port and version
+             * information is included in the Server TLV data. To use a different Unicast address, use the
+             * `netdata publish dnssrp unicast (addr,port,version)` command.
              * @par
              * Any current DNS/SRP Service entry being published from a previous
-             * `publish dnssrp{anycast|unicast}` command is removed and replaced with the new arguments.
+             * `publish dnssrp {anycast|unicast}` command is removed and replaced with the new arguments.
              * @par
              * `OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE` must be enabled.
-             * @csa{netdata publish dnssrp unicast (addr,port)}
+             * @csa{netdata publish dnssrp unicast (addr,port,version)}
              * @csa{netdata publish dnssrp anycast}
              * @sa otNetDataPublishDnsSrpServiceUnicastMeshLocalEid
              */
-            if (aArgs[3].IsEmpty())
+            if (!hasAddress)
             {
-                SuccessOrExit(error = aArgs[2].ParseAsUint16(port));
-                otNetDataPublishDnsSrpServiceUnicastMeshLocalEid(GetInstancePtr(), port);
+                otNetDataPublishDnsSrpServiceUnicastMeshLocalEid(GetInstancePtr(), port, version);
                 ExitNow();
             }
 
             /**
-             * @cli netdata publish dnssrp unicast (addr,port)
+             * @cli netdata publish dnssrp unicast (addr,port,version)
              * @code
-             * netdata publish dnssrp unicast fd00::1234 51525
+             * netdata publish dnssrp unicast fd00::1234 51525 1
              * Done
              * @endcode
-             * @cparam netdata publish dnssrp unicast @ca{address} @ca{port}
+             * @cparam netdata publish dnssrp unicast @ca{address} @ca{port} [@ca{version}]
              * @par
-             * Publishes a DNS/SRP Service Unicast Address with an address and port number. The address
-             * and port information is included in Service TLV data. Any current DNS/SRP Service entry being
-             * published from a previous `publish dnssrp{anycast|unicast}` command is removed and replaced
+             * Publishes a DNS/SRP Service Unicast Address with an address and port and version number. The address,
+             * port, and version information is included in Service TLV data. Any current DNS/SRP Service entry being
+             * published from a previous `publish dnssrp {anycast|unicast}` command is removed and replaced
              * with the new arguments.
              * @par
              * `OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE` must be enabled.
@@ -318,9 +346,7 @@ template <> otError NetworkData::Process<Cmd("publish")>(Arg aArgs[])
              * @csa{netdata publish dnssrp anycast}
              * @sa otNetDataPublishDnsSrpServiceUnicast
              */
-            SuccessOrExit(error = aArgs[2].ParseAsIp6Address(address));
-            SuccessOrExit(error = aArgs[3].ParseAsUint16(port));
-            otNetDataPublishDnsSrpServiceUnicast(GetInstancePtr(), &address, port);
+            otNetDataPublishDnsSrpServiceUnicast(GetInstancePtr(), &address, port, version);
             ExitNow();
         }
     }
@@ -713,8 +739,8 @@ exit:
  * Routes:
  * fd49:7770:7fc5:0::/64 s med 4000
  * Services:
- * 44970 5d c000 s 4000
- * 44970 01 9a04b000000e10 s 4000
+ * 44970 5d c000 s 4000 0
+ * 44970 01 9a04b000000e10 s 4000 1
  * Contexts:
  * fd00:dead:beef:cafe::/64 1 c
  * Commissioning:
@@ -771,6 +797,7 @@ exit:
  * * Flags
  *   * s: Stable flag
  * * RLOC16 of devices which added the service entry
+ * * Service ID
  * @par
  * 6LoWPAN Context IDs are listed under `Contexts` header:
  * * The prefix

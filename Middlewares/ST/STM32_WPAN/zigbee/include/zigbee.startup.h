@@ -3,7 +3,7 @@
  * @heading Startup
  * @brief Zigbee startup header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_STARTUP_H
@@ -32,14 +32,57 @@ enum ZbStartType {
     ZbStartTypeNone = 0xff /**< [Internal stack use only] None */
 };
 
+struct ZbStartupKeepAliveT {
+    bool enabled;
+    /**< If true, Keep-Alive is enabled within the stack. Default is false. */
+
+    uint8_t endpoint;
+    /**< Endpoint to assign Keep-Alive cluster. Default is ZB_ENDPOINT_CBKE_DEFAULT (240). */
+
+    uint16_t profileId;
+    /**< Profile Id to assign to the endpoint created for the Keep-Alive cluster.
+     * Default is ZCL_PROFILE_SMART_ENERGY (0x0109) */
+
+    uint16_t deviceId;
+    /**< Device Id to assign to the endpoint created for the Keep-Alive cluster.
+     * Default is ZCL_DEVICE_METER */
+
+    /* Keep Alive Server or Client */
+    bool server_enable;
+    /**< This flag determines whether to allocate the Trust Center Keep Alive Server (true)
+     * or Client (false). The Trust Center should set this flag to true, and all other
+     * joiners should set this flag to false. */
+
+    /* Keep Alive Server attributes */
+    uint8_t server_base;
+    /**< Trust Center Keep Alive Server 'Base' attribute value in minutes.
+     * If zero, let the stack choose a default value. */
+    uint16_t server_jitter;
+    /**< Trust Center Keep Alive Server 'Jitter' attribute value in seconds.
+     * If zero, let the stack choose a default value. */
+
+    bool (*tcso_callback)(enum ZbTcsoStatusT status, void *arg);
+    /**< Application callback that is called to notify of any Trust Center Swap Out (TCSO)
+     * events initiated by the Keep Alive Client cluster. If the status is set to
+     * ZB_TCSO_STATUS_DISCOVERY_UNDERWAY, the application can return false to this callback
+     * to halt the TCSO process from continuing. This allows the application to dictate when
+     * to start TCSO; for example, during the next wake-cycle if the device is sleepy.
+     * The Keep Alive Client is also halted in this case, but will restart after the application
+     * calls ZbStartupTcsoStart to perform TCSO, or it calls ZbZclKeepAliveClientStart to restart
+     * the Keep Alive mechanism. If the application returns true to this callback, then the
+     * TCSO process will proceed normally. */
+};
+
 /** CBKE configuration parameters for ZbStartup. This configuration is only
  * applicable if the 'suite_mask' is non-zero. */
 struct ZbStartupCbkeT {
     bool bdbRequireCBKESuccess;
-    /**< If true, it indicates that CBKE is mandatory as part of network join and on CBKE failure
-     * joiner shall terminate the join procedure. If false, the joiner is allowed to use other
-     * link key establishment mechanisms in case of CBKE failure. By default, it is set to true.
-     * This is flag is introduced with BDB 3.1. */
+    /**< If true, it indicates that successful completion of CBKE is mandatory as part of
+     * network join and on CBKE failure joiner shall terminate the join procedure. If false,
+     * the joiner is allowed to use other link key establishment mechanisms in case of
+     * CBKE failure. This flag comes into effect only if CBKE is configured on joiner as
+     * part of startup cbke config and by default it is set to true. Application can overwrite
+     * the default as part of startup cbke configuration. This flag was introduced with BDB 3.1. */
 
     uint8_t endpoint;
     /**< Endpoint to assign ZCL Key Exchange cluster. Default is ZB_ENDPOINT_CBKE_DEFAULT (240) */
@@ -66,32 +109,6 @@ struct ZbStartupCbkeT {
     /**< This is the time in seconds to include in the Wait Time field in the Terminate Key
      * Establishment command. The Wait Time is the time for the CBKE initiator to wait before
      * trying again. The default value is 0xfe (254 seconds). */
-
-    /* Keep Alive Server or Client */
-    bool tc_keepalive_server_enable;
-    /**< If CBKE is enabled (suite_mask != 0), this flag determines whether to allocate the
-     * Trust Center Keep Alive Server (true) or Client (false). The Trust Center should
-     * set this flag to true, and all other joiners should set this flag to false. */
-
-    /* Keep Alive Server attributes */
-    uint8_t tc_keepalive_base;
-    /**< Trust Center Keep Alive Server 'Base' attribute value in minutes.
-     * If zero, let the stack choose a default value. */
-    uint16_t tc_keepalive_jitter;
-    /**< Trust Center Keep Alive Server 'Jitter' attribute value in seconds.
-     * If zero, let the stack choose a default value. */
-
-    bool (*tcso_callback)(enum ZbTcsoStatusT status, void *arg);
-    /**< Application callback that is called to notify of any Trust Center Swap Out (TCSO)
-     * events initiated by the Keep Alive Client cluster. If the status is set to
-     * ZB_TCSO_STATUS_DISCOVERY_UNDERWAY, the application can return false to this callback
-     * to halt the TCSO process from continuing. This allows the application to dictate when
-     * to start TCSO; for example, during the next wake-cycle if the device is sleepy.
-     * The Keep Alive Client is also halted in this case, but will restart after the application
-     * calls ZbStartupTcsoStart to perform TCSO, or it calls ZbZclKeepAliveClientStart to restart
-     * the Keep Alive mechanism. If the application returns true to this callback, then the
-     * TCSO process will proceed normally. */
-    void *tcso_arg; /** Application callback argument for 'tcso_callback' */
 };
 
 /**
@@ -100,6 +117,8 @@ struct ZbStartupCbkeT {
  * ZbStartupConfigGetProSeDefaults.
  */
 struct ZbStartupT {
+    void *cb_arg; /**< Application callback argument for any callbacks defined in this struct. */
+
     uint16_t shortAddress;
     /**< Network short address. Only applicable if startupControl is
      * ZbStartTypePreconfigured or ZbStartTypeRejoin */
@@ -188,10 +207,24 @@ struct ZbStartupT {
 
         struct ZbStartupCbkeT cbke; /**< CBKE certificate configuration */
 
+        struct ZbStartupKeepAliveT keepalive; /**< Keep-Alive configuration */
+
         uint8_t zdLinkKeyFlags;
         /**< APS Link key flags provided as part of commissioning join to ZDD
          * e.g, ZD_TLV_LINK_KEY_FLAG_UNIQUE.
-         * NOTE: Only applicable with CONFIG_ZB_ZDD_SUPPORT. */
+         * NOTE: Only applicable with CONFIG_ZB_ZIGBEE_DIRECT (EXEGIN - ZVD only?) */
+
+        uint8_t passcode[ZB_SEC_KEYSIZE];
+        /**< Configures a 16-byte pre-shared secret, derived out of a short passcode. Short passcodes are
+         * introduced with R23 and are short human readable codes, that the user can key-in to a device.
+         * These codes shall be decoded following the mechanism outlined in the document,
+         * '20-66834-001-zigbee-r23-short-device-setup-codes' to generate a 16-byte pre-shared secret.
+         * When provided this code shall be used as PSK for authenticated DLK.
+         *
+         * NOTE: Use this parameter to provide a unique short passcode for the joiner device.
+         * And in case of TC, this will be used as a common preconfigured passcode for all the
+         * joiner devices, where a joiner specific passcode is not available. i.e, similar
+         * to apsPreconfiguredLinkKey. */
     } security;
 
     uint8_t nwkUpdateId;
@@ -229,7 +262,6 @@ struct ZbStartupT {
         unsigned int persist_len; /**< Length of persistence data. */
         struct ZbTouchlinkCallbacks callbacks;
         /**< Callback functions for Touchlink Controller Device Utility commands. */
-        void *cb_arg; /**< Pointer to application data that will be used with Touchlink callbacks. */
     } touchlink; /**< Touchlink configuration. Only applicable if BDB_COMMISSION_MODE_TOUCHLINK. */
 
     struct {
@@ -256,8 +288,6 @@ struct ZbStartupT {
      * ZbStartupDeviceInterviewComplete. Refer to that functions description for more
      * information.
      */
-    void *device_interview_cb_arg;
-    /**< Argument pointer for device interview callback. */
 };
 
 /**
@@ -351,7 +381,9 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbTrustCenterRejoin(struct ZigBeeT *zb,
  * @param zb Zigbee stack instance
  * @param pdata Pointer to persistent data
  * @param plen Length of persistent data
- * @param cbke_config Optional pointer to CBKE configuration data structure.
+ * @param config Optional startup configuration pointer. Currently, ZSDK stack only needs
+ * the CBKE & KA configuration from the startup config structure. However, this can be
+ * extended to use any other info.
  * @param callback Application callback to call after persistence is completed.
  * It is necessary for the application to specify this callback so it knows exactly
  * when it is safe to start transmitting packets to the Zigbee network.
@@ -360,8 +392,7 @@ enum ZbStatusCodeT ZB_WARN_UNUSED ZbTrustCenterRejoin(struct ZigBeeT *zb,
  * @return Zigbee Status Code
  */
 enum ZbStatusCodeT ZbStartupPersist(struct ZigBeeT *zb, const void *pdata, unsigned int plen,
-    struct ZbStartupCbkeT *cbke_config,
-    void (*callback)(enum ZbStatusCodeT status, void *arg), void *arg);
+    struct ZbStartupT *config, void (*callback)(enum ZbStatusCodeT status, void *arg), void *arg);
 
 /**
  * Get the default configuration for a PRO network.
@@ -440,4 +471,58 @@ enum ZbStatusCodeT ZbStartupTclkStart(struct ZigBeeT *zb,
  */
 bool ZbStartupDeviceInterviewComplete(struct ZigBeeT *zb, uint64_t joiner_eui64, bool success);
 
+/* Type declaration, required for struct ZbStartupAppLkT. */
+struct ZbZdoSecGetAuthLevelRspT;
+
+/**
+ * Application link-key information structure. This structure needs to be populated by
+ * the initiator/responder devices at the time of starting the application link-key
+ * establishment process. */
+struct ZbStartupAppLkT {
+    bool is_initiator;
+    /**< If true, we take on the initiator role. else, act as responder. */
+
+    uint64_t partner_addr;
+    /**< Extended address of partner device. */
+
+    bool (*auth_level_cb)(struct ZbZdoSecGetAuthLevelRspT *rsp, void *arg);
+    /**< If not NULL, then this callback will be invoked by stack on receiving the ZDO
+     * Security_Get_Authentication_Level_Rsp, so that the application is notified of the
+     * authentication level of target. In case, the ZDO Security_Get_Authentication_Level_Rsp
+     * returns an error status, then this callback marks the termination of the application
+     * link-key establishment process and the aps_link_key_cb callback shall not be invoked by stack.
+     *
+     * In case ZDO Security_Get_Authentication_Level_Rsp returns with a status of SUCCESS, then this
+     * callback, provides application an opportunity to check if it is ok with the authentication level
+     * of target device. If yes, it shall return a boolean value of 'true' as status. Whereas, a status
+     * value of 'false' is an indication to terminate the application link-key establishment process due
+     * to 'insufficient target security'. */
+
+    void (*aps_link_key_cb)(uint64_t partner_addr, enum ZbStatusCodeT status, void *arg);
+    /**< If not NULL, this callback will be invoked by stack once the link-key is successfully verified
+     * by the responder/partner device or in case of timeout to complete the verification process. */
+
+    void *arg;
+    /**< Callback argument pointer to auth_level_cb & aps_link_key_cb. */
+};
+
+/**
+ * Perform application link-key establishment with a non-TC partner device after having
+ * joined the network. The initiator or the responder devices can't be TC.
+ *
+ * This API supports application link-key establishment as per BDB 3.1 which involves
+ * querying the authentication level of the partner device and verification of new
+ * link-key.
+ *
+ * In case of Initiator, this API starts the application link-key establishment process,
+ * whereas, in case of responder, this API shall be called by application on receiving
+ * the APS-TRANSPORT-KEY.indication from TC with an application link key and if the
+ * application intends to run the responder side of the application link-key state-machine
+ * as per BDB 3.1 specification.
+ *
+ * @param zb Zigbee instance
+ * @param info Pointer to application link key information structure.
+ * @return ZB Status Code. If not ZB_STATUS_SUCCESS, then the callback will not be called.
+ */
+enum ZbStatusCodeT ZbStartupAppLkStart(struct ZigBeeT *zb, struct ZbStartupAppLkT *info);
 #endif

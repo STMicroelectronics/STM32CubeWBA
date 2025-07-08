@@ -1,4 +1,4 @@
-/* Copyright [2009 - 2022] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved. */
 
 #ifndef ZCL_PAYLOAD_H
 # define ZCL_PAYLOAD_H
@@ -39,7 +39,7 @@
 static inline int
 zb_zcl_append_uint8(uint8_t *payload, const unsigned int capacity, unsigned int *index, uint8_t value)
 {
-    ZCL_BUILDER_TEMPLATE(1U, payload[*index] = value);
+    ZCL_BUILDER_TEMPLATE(1U, (payload[*index] = value));
 }
 
 static inline int

@@ -164,6 +164,10 @@
                                                       /*LL can use crystal oscillator or RTC or RCO to drive the sleep clock.This selection is done via "DEFAULT_SLEEP_CLOCK_SOURCE" macro. */
 #endif /* USE_NON_ACCURATE_32K_SLEEP_CLK */
 
+#ifndef SUPPORT_CTE_DEGRADATION_API
+#define SUPPORT_CTE_DEGRADATION_API                 1 /* Enable\Disable CTE degradation API. Enable:1 - Disable:0 */
+#endif /* SUPPORT_CTE_DEGRADATION_API */
+
 /* Non-standard features configurations */
 #ifndef NUM_OF_CTSM_EMNGR_HNDLS
 #define NUM_OF_CTSM_EMNGR_HNDLS                     1 /* Number of custom handles in event manager to be used for app specific needs */
@@ -195,6 +199,11 @@
 #define FFD_DEVICE_CONFIG                           1 /* Enable\Disable FFD:1 - RFD:0 */
 #endif /* FFD_DEVICE_CONFIG */
 
+#ifdef RFD_DEVICE_CONFIG
+#undef FFD_DEVICE_CONFIG
+#define FFD_DEVICE_CONFIG                           0 /* Enable\Disable FFD:1 - RFD:0 */
+#endif
+
 #ifndef RAL_NUMBER_OF_INSTANCE
 #define RAL_NUMBER_OF_INSTANCE                      1 /* The Number of RAL instances supported */
 #endif /* RAL_NUMBER_OF_INSTANCE */
@@ -222,6 +231,10 @@
 #ifndef SUPPORT_A_MAC
 #define SUPPORT_A_MAC                               1
 #endif /* SUPPORT_A_MAC */
+
+#ifndef SUPPORT_CONFIG_LIB
+#define SUPPORT_CONFIG_LIB                          1 /* Enable\Disable Configurable Library feature */
+#endif /* SUPPORT_CONFIG_LIB */
 
 #ifndef SMPL_PRTCL_TEST_ENABLE
 #define SMPL_PRTCL_TEST_ENABLE                      0

@@ -5,14 +5,11 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Release Notes for STM32 TINY low power manager</title>
-  <style>
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
   <link rel="stylesheet" href="_htmresc/mini-st.css" />
   <!--[if lt IE 9]>
@@ -25,19 +22,24 @@
 <div class="col-sm-12 col-lg-4">
 <center>
 <h1 id="release-notes-for-stm32-tiny-low-power-manager">Release Notes for <mark>STM32 TINY low power manager</h1>
-<p>Copyright © 2019 STMicroelectronics<br />
+<p>Copyright © 2025 STMicroelectronics<br />
 </p>
 <a href="https://www.st.com" class="logo"><img src="_htmresc/st_logo_2020.png" alt="ST logo" /></a>
 </center>
 <h1 id="purpose">Purpose</h1>
 <p>The code source delivered is an utility to help customer to build a low power application.</p>
 </div>
-<section id="update-history" class="col-sm-12 col-lg-8">
-<h1>Update History</h1>
+<div class="col-sm-12 col-lg-8">
+<h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section7" checked aria-hidden="true"> <label for="collapse-section7" aria-hidden="true">V1.4.2 / 27-October-2022</label>
+<input type="checkbox" id="collapse-section9" checked aria-hidden="true"> <label for="collapse-section9" aria-hidden="true">V1.5.0 / 06-May-2025</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>Number of low power profiles is flexible and defined by user in interface file<br />
+(not limited anymore to sleep, stop and standby)</li>
+<li>Unique API to request mode instead of one per mode</li>
+</ul>
 <h2 id="contents">Contents</h2>
 <p><strong>Fixed bugs list</strong></p>
 <table>
@@ -48,24 +50,28 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td>Ticket 137597 - [CodeSpell] Mistake in lpm module</td>
+<td>Ticket 197110 - New low power manager is needed to support more low power mode and functionalities</td>
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations">known limitations</h2>
+<h2 id="known-limitations">Known limitations</h2>
+<p>New APIs and features cannot be used when legacy mode is enabled.</p>
 <h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
 <ul>
-<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
-<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain V5.25</li>
-<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V9.20.1</li>
+<li>µVision Microcontroller Development Kit (MDK-ARM) toolchain V5.39</li>
+<li>CubeIDE toolchain V1.18.0</li>
 </ul>
 <h2 id="supported-devices-and-boards">Supported Devices and boards</h2>
-<h2 id="backward-compatibility">backward compatibility</h2>
+<h2 id="backward-compatibility">Backward compatibility</h2>
+<p>Backward compatibility with previous releases is maintained as far as compile switch UTIL_LPM_LEGACY_ENABLED is defined to 1 in <em>utilities_conf.h</em></p>
+<pre><code>  /* Enables LPM legacy APIs */
+  #define UTIL_LPM_LEGACY_ENABLED (1)</code></pre>
 <h2 id="dependencies">Dependencies</h2>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="true">V1.4.1 / 17-June-2022</label>
+<input type="checkbox" id="collapse-section8" aria-hidden="true"> <label for="collapse-section8" aria-hidden="true">V1.4.2 / 27-October-2022</label>
 <div>
 <h2 id="main-changes-1">Main Changes</h2>
 <h2 id="contents-1">Contents</h2>
@@ -78,7 +84,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td>Release note format update</td>
+<td>Ticket 137597 - [CodeSpell] Mistake in lpm module</td>
 </tr>
 </tbody>
 </table>
@@ -95,7 +101,7 @@
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="true">V1.4.0 / 09-November-2021</label>
+<input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="true">V1.4.1 / 17-June-2022</label>
 <div>
 <h2 id="main-changes-2">Main Changes</h2>
 <h2 id="contents-2">Contents</h2>
@@ -108,7 +114,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td>Ticket 115234 - [Licensing] Update the way to declare licenses in Cube and X-CUBE components</td>
+<td>Release note format update</td>
 </tr>
 </tbody>
 </table>
@@ -125,10 +131,9 @@
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true">V1.3.1 / 10-September-2020</label>
+<input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="true">V1.4.0 / 09-November-2021</label>
 <div>
 <h2 id="main-changes-3">Main Changes</h2>
-<h3 id="release-v1.3.1">release V1.3.1</h3>
 <h2 id="contents-3">Contents</h2>
 <p><strong>Fixed bugs list</strong></p>
 <table>
@@ -139,7 +144,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td>Ticket 86948 - CodeSpell : Correct some English words typo</td>
+<td>Ticket 115234 - [Licensing] Update the way to declare licenses in Cube and X-CUBE components</td>
 </tr>
 </tbody>
 </table>
@@ -156,11 +161,42 @@
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true">V1.3.0 / 3-September-2020</label>
+<input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true">V1.3.1 / 10-September-2020</label>
 <div>
 <h2 id="main-changes-4">Main Changes</h2>
-<h3 id="release-v1.3.0">release V1.3.0</h3>
+<h3 id="release-v1.3.1">release V1.3.1</h3>
 <h2 id="contents-4">Contents</h2>
+<p><strong>Fixed bugs list</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Ticket 86948 - CodeSpell : Correct some English words typo</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-4">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-4">Supported Devices and boards</h2>
+<h2 id="backward-compatibility-4">backward compatibility</h2>
+<h2 id="dependencies-4">Dependencies</h2>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true">V1.3.0 / 3-September-2020</label>
+<div>
+<h2 id="main-changes-5">Main Changes</h2>
+<h3 id="release-v1.3.0">release V1.3.0</h3>
+<h2 id="contents-5">Contents</h2>
 <p><strong>Fixed bugs list</strong></p>
 <table>
 <thead>
@@ -180,24 +216,24 @@
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-4">known limitations</h2>
-<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
+<h2 id="known-limitations-5">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
 <ul>
 <li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
 <li>RealView Microcontroller Development Kit (MDK-ARM) toolchain V5.25</li>
 <li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
 </ul>
-<h2 id="supported-devices-and-boards-4">Supported Devices and boards</h2>
-<h2 id="backward-compatibility-4">backward compatibility</h2>
-<h2 id="dependencies-4">Dependencies</h2>
+<h2 id="supported-devices-and-boards-5">Supported Devices and boards</h2>
+<h2 id="backward-compatibility-5">backward compatibility</h2>
+<h2 id="dependencies-5">Dependencies</h2>
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="true">V1.2.0 / 18-Mars-2020</label>
+<input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="true">V1.2.0 / 18-Mars-2020</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <h3 id="release-v1.2.0">release V1.2.0</h3>
-<h2 id="contents-5">Contents</h2>
+<h2 id="contents-6">Contents</h2>
 <p><strong>Fixed bugs list</strong></p>
 <table>
 <thead>
@@ -214,37 +250,6 @@
 </tr>
 </tbody>
 </table>
-<h2 id="known-limitations-5">known limitations</h2>
-<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
-<ul>
-<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
-<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain V5.25</li>
-<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
-</ul>
-<h2 id="supported-devices-and-boards-5">Supported Devices and boards</h2>
-<h2 id="backward-compatibility-5">backward compatibility</h2>
-<h2 id="dependencies-5">Dependencies</h2>
-</div>
-</div>
-<div class="collapse">
-<input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="true">V1.1.0 / 04-June-2019</label>
-<div>
-<h2 id="main-changes-6">Main Changes</h2>
-<h3 id="release-v1.1.0">release V1.1.0</h3>
-<h2 id="contents-6">Contents</h2>
-<p><strong>Fixed bugs list</strong></p>
-<table>
-<thead>
-<tr class="header">
-<th>Headline</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Add CubeMx tag inside the template file.</td>
-</tr>
-</tbody>
-</table>
 <h2 id="known-limitations-6">known limitations</h2>
 <h2 id="development-toolchains-and-compilers-6">Development Toolchains and Compilers</h2>
 <ul>
@@ -258,10 +263,10 @@
 </div>
 </div>
 <div class="collapse">
-<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="true">V1.0.0 / 13-May-2019</label>
+<input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="true">V1.1.0 / 04-June-2019</label>
 <div>
 <h2 id="main-changes-7">Main Changes</h2>
-<h3 id="first-release">First release</h3>
+<h3 id="release-v1.1.0">release V1.1.0</h3>
 <h2 id="contents-7">Contents</h2>
 <p><strong>Fixed bugs list</strong></p>
 <table>
@@ -272,7 +277,7 @@
 </thead>
 <tbody>
 <tr class="odd">
-<td>first official release</td>
+<td>Add CubeMx tag inside the template file.</td>
 </tr>
 </tbody>
 </table>
@@ -288,7 +293,38 @@
 <h2 id="dependencies-7">Dependencies</h2>
 </div>
 </div>
-</section>
+<div class="collapse">
+<input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="true">V1.0.0 / 13-May-2019</label>
+<div>
+<h2 id="main-changes-8">Main Changes</h2>
+<h3 id="first-release">First release</h3>
+<h2 id="contents-8">Contents</h2>
+<p><strong>Fixed bugs list</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Headline</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>first official release</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-limitations-8">known limitations</h2>
+<h2 id="development-toolchains-and-compilers-8">Development Toolchains and Compilers</h2>
+<ul>
+<li>IAR Embedded Workbench for ARM (EWARM) toolchain V8.20.2</li>
+<li>RealView Microcontroller Development Kit (MDK-ARM) toolchain V5.25</li>
+<li>System Workbench STM32 (SW4STM32) toolchain V2.7.2</li>
+</ul>
+<h2 id="supported-devices-and-boards-8">Supported Devices and boards</h2>
+<h2 id="backward-compatibility-8">backward compatibility</h2>
+<h2 id="dependencies-8">Dependencies</h2>
+</div>
+</div>
+</div>
 </div>
 <footer class="sticky">
 <div class="columns">

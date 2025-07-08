@@ -20,6 +20,8 @@
 #ifndef APP_SYS_H
 #define APP_SYS_H
 
+#include <stdint.h>
+
 #include "main.h"
 
 /* Exported constants --------------------------------------------------------*/
@@ -39,6 +41,7 @@
 
 void APP_SYS_LPM_EnterLowPowerMode(void);
 void APP_SYS_LinkLayer_BackgroundProcessInit(void);
+void APP_SYS_SetWakeupOffset(uint32_t wakeup_offset_us);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

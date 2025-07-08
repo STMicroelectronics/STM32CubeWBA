@@ -20,6 +20,8 @@
 #ifndef APP_SYS_H
 #define APP_SYS_H
 
+#include <stdint.h>
+
 #include "main.h"
 
 /* Exported constants --------------------------------------------------------*/
@@ -38,6 +40,7 @@
 /* Exported functions prototypes ---------------------------------------------*/
 
 void APP_SYS_BLE_EnterDeepSleep(void);
+void APP_SYS_SetWakeupOffset(uint32_t wakeup_offset_us);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

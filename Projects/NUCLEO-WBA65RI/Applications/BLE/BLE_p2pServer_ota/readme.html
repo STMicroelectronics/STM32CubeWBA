@@ -20,73 +20,131 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2pserver_ota-application-description"><strong>BLE_p2pServer_ota Application Description</strong></h2>
-<p>How to use the BLE Peer to Peer Server with Over The Air Firmware Update feature.</p>
-<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits). - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications</a></p>
-<p>Peer to Peer Server device is part of Peer to Peer Profile. It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
-<p>BLE p2pServer application advertises and waits for a connection from either:</p>
+<p>How to use the BLE Peer to Peer Server with Firmware Update Over The Air feature.</p>
+<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br />
+For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
+<p>The Peer to Peer Server device is part of the Peer to Peer Profile.<br />
+It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
+<p>The BLE p2pServer application advertises and waits for a connection from either:</p>
 <ul>
-<li>BLE p2pClient application running on STM32WBAxx devices</li>
-<li>remote application</li>
+<li>The BLE p2pClient application running on STM32WBAxx devices.<br />
+</li>
+<li>The remote application.</li>
 </ul>
-<p>Once connected, p2pServer can receive messages from the Client and send notification to it.</p>
+<p>Once connected, the BLE p2pServer can receive messages from the Client and send notification to it.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE firmware update over the air, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE Firmware Update Over The Air, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65xx Nucleo board.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
+<li>This application runs on STM32WBA65xx Nucleo board.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
 <li>Another STM32WBAxx Nucleo board may be necessary to run BLE p2pClient or BLE p2pRouter application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
+<ul>
+<li>This application runs on STM32WBA65xx Nucleo board.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
+<li>Another STM32WBAxx Nucleo board may be necessary to run the BLE p2pClient or BLE p2pRouter application.</li>
+</ul>
+<h3 id="how-to-use-it-1"><strong>How to use it?</strong></h3>
 <p>In order to make the program work:</p>
 <ul>
-<li>Open your prefered toolchain</li>
+<li>Open your preferred toolchain.<br />
+</li>
 <li>Rebuild all files and flash the board:
 <ul>
-<li>BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000</li>
-<li>BLE_p2pServer_ota binary is downloaded at the memory address 0x08006000</li>
+<li>The BLE_ApplicationInstallManager binary is downloaded at the memory address 0x08000000<br />
+</li>
+<li>The BLE_p2pServer_ota binary is downloaded at the memory address 0x08006000<br />
+</li>
 </ul></li>
-<li>Run the example</li>
+<li>Run the example.</li>
 </ul>
-<p>Use one of the following remote interface to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
+<p>Use one of the following remote interface to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
 <ul>
-<li><p>Power on the STM32WBAxx Nucleo board.</p></li>
-<li>Open remote interface:
-<ul>
+<li>Power on the STM32WBAxx Nucleo board.<br />
+</li>
+<li>Open the remote interface:<br />
+</li>
 <li>Select the p2pS_xx in the device list, where xx is the 2 last digits of the BD ADDRESS.<br />
 </li>
-<li>Connect it.<br />
+<li>Connect to it.<br />
 </li>
-<li>Select the P2P Server service.</li>
-</ul></li>
-<li><p>On remote interface, click on the LED icon to switch On/Off LED1 (blue) of the STM32WBAxx Nucleo board.</p></li>
+<li>Select the P2P Server service.<br />
+</li>
+<li>On the remote interface, click on the LED icon to switch LED1 (blue) of the STM32WBAxx Nucleo board On/Off.</li>
 </ul>
-<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board, is associated to the following functions:</p>
-<p>B1 : - not connected : launch fast advertising - connected : send notification message to the client</p>
-<p>B2 : - not connected : clear security database - connected : launch fast advertising to allow multi-connection</p>
-<p>B3 : - not connected : no action - connected : update connection interval</p>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> Peer To Peer Applications</a></p>
-<p>The firmware update over the air (FUOTA) service provides the possibility to receive a new application to be installed, while the current application is running, for more details please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_FUOTA#Firmware_update_over_the_air_profile"> Firmware update over the air profile</a></p>
-<p>To change the application downloading Firmware Other The Air - Select the Over The Air Update Server service panel in remote interface,<br />
-- select the STM32WBA device type - The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary - Memory mapping is defined as following:<br />
-- pages 0 to 2 are reserved for the BLE_ApplicationInstallManager application, - pages 3 to 127 are dedicated to BLE_HeartRate_ota application,<br />
-- pages 128 to 252 are dedicated for the new application, - page 253 is dedicated to User Configuration Data, - pages 254 to 255 reserved for NVM</p>
+<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board is associated to the following functions:</p>
 <ul>
-<li>Offset configuration
+<li>B1 :
 <ul>
-<li>if Application Binary is selected<br />
-Address offset is set to 0x100000 to download the new application at address 0x08100000.</li>
-<li>if User Conf Binary is selected Address offset is set to 0x0F6000 to download the new application at address 0x080F6000.</li>
+<li>Not connected : Launch fast advertising.<br />
+</li>
+<li>Connected : Send notification message to the client.<br />
+</li>
 </ul></li>
-<li>Select the binary file to download
+<li>B2 :
 <ul>
-<li>Number of pages to erase is displayed resulting of the size in pages of the file</li>
-<li>The Number of pages may be over written is needed</li>
+<li>Not connected : Clear security database.<br />
+</li>
+<li>Connected : Launch fast advertising to allow multi-connection.<br />
+</li>
 </ul></li>
-<li>Download the file</li>
-<li>When done, a reboot of the application is done.</li>
+<li>B3 :
+<ul>
+<li>Not connected : Not used.<br />
+</li>
+<li>Connected : Update connection interval.</li>
+</ul></li>
+</ul>
+<p>For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> STM32WBA Bluetooth LE - Peer 2 Peer Applications ST wiki.</a></p>
+<p>The Firmware Update Over The Air (FUOTA) service provides the possibility to receive a new application to be installed while the current application is running.<br />
+For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_FUOTA#Firmware_update_over_the_air_profile"> Firmware Update over The Air profile.</a></p>
+<p>To change the application using Firmware Other The Air:</p>
+<ul>
+<li>Select the Over The Air Update Server service panel in the remote interface.<br />
+</li>
+<li>Select the STM32WBA device type.<br />
+</li>
+<li>The STM32WBA interface offers the choice to download an Application Binary or a User Conf Binary.
+<ul>
+<li>Memory mapping is defined as follows:
+<ul>
+<li>Pages 0 to 2 are reserved for the BLE_ApplicationInstallManager application.<br />
+</li>
+<li>Pages 3 to 127 are dedicated to BLE_p2pServer_ota application.<br />
+</li>
+<li>Pages 128 to 252 are dedicated for the new application.<br />
+</li>
+<li>Page 253 is dedicated to User Configuration Data.<br />
+</li>
+<li>Pages 254 to 255 reserved for NVM.</li>
+</ul></li>
+<li>Offset configuration:
+<ul>
+<li>if Application Binary is selected:<br />
+Address offset is set to 0x100000 to download the new application at address 0x08100000.<br />
+</li>
+<li>if User Conf Binary is selected:<br />
+Address offset is set to 0x0F6000 to download the new application at address 0x080F6000.<br />
+</li>
+</ul></li>
+<li>Select the binary file to download:
+<ul>
+<li>The number of pages to erase is displayed resulting of the size in pages of the file.<br />
+</li>
+<li>The Number of pages may be over written is needed.<br />
+</li>
+</ul></li>
+<li>Download the file.<br />
+</li>
+<li>When done, a reboot of the application is performed.</li>
+</ul></li>
 </ul>
 </div>
 </div>

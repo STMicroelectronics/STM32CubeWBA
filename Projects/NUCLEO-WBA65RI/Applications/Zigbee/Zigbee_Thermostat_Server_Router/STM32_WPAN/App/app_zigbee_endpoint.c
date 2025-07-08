@@ -253,18 +253,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -290,7 +278,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Thermostat Server Cluster */
   stZigbeeAppInfo.ThermostatServer = ZbZclThermServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stThermostatServerCallbacks, NULL );
   assert( stZigbeeAppInfo.ThermostatServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.ThermostatServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.ThermostatServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Thermostat Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 

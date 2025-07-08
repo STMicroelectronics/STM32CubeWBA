@@ -97,7 +97,7 @@ extern "C" {
 /*
  * MCP_CLT_MEM_PER_MEDIA_PLAYER_SIZE_BYTES: memory size used per Media Player in MCP Client role
  */
-#define MCP_CLT_MEM_PER_MEDIA_PLAYER_SIZE_BYTES         (192u)
+#define MCP_CLT_MEM_PER_MEDIA_PLAYER_SIZE_BYTES         (120u)
 
 /*
  * MCP_SRV_MEM_PER_MEDIA_PLAYER_SIZE_BYTES: memory size used per Media Player in MCP Server role
@@ -146,6 +146,30 @@ extern "C" {
                                         (DIVC((max_media_name_length * (1+num_mp_instances)),4u) * 4u) + \
                                         (DIVC((max_track_title_length * (1+num_mp_instances)),4u) * 4u))
 
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BLE_MCP_CLT_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Media Control Profile in Client role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_media_player_instances: Maximum number of supported Media Player Instances (without
+ * take in account the mandatory Generic Media Player) per connection.
+ *
+ * @param mcp_feature: Supported MCP Option Feature (MCP_OptionFeatures_t type).
+ */
+#define BLE_MCP_CLT_DB_BUFFER_SIZE(num_db_devices,num_media_player_instances,mcp_feature) \
+        (num_db_devices \
+         * (16u + (DIVC(((1 + num_media_player_instances) * \
+           (61u + (((mcp_feature & MCP_FEATURE_PLAYBACK_SPEED) != (0x00)) ? (8u) : (0u)) \
+           + (((mcp_feature & MCP_FEATURE_SEEKING_SPEED) != (0x00)) ? (8u) : (0u)) \
+           + (((mcp_feature & MCP_FEATURE_PLAYING_ORDER) != (0x00)) ? (8u) : (0u)) \
+           + (((mcp_feature & MCP_FEATURE_PLAYING_ORDERS_SUPPORTED) != (0x00)) ? (5u) : (0u)) \
+           + (((mcp_feature & MCP_FEATURE_MEDIA_CTRL_OP) != (0x00)) ? (16u) : (0u)))),4u) * 4u)))
 
 /* Types ---------------------------------------------------------------------*/
 /* Types of mask for roles of the Media Control Profile */
@@ -809,7 +833,7 @@ typedef struct
   uint8_t               MaxNumMPInstPerConn;            /* Maximum Number of Media Player Instances
                                                          * per MCP connections
                                                          */
-
+  MCP_OptionFeatures_t  OptionFeatures;                 /* Mask indicating the MCP optional features to support*/
   uint8_t               *pStartRamAddr;                 /* Start address of the RAM buffer allocated for MCP Client
                                                          * Context memory resource.
                                                          * It must be a 32bit aligned RAM area.

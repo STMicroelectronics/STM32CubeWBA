@@ -5,7 +5,7 @@
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
-  <WorkspaceName>WorkSpace</WorkspaceName>
+  <WorkspaceName>C:\git\iso_wba_master\Firmware\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\MDK-ARM\openthread_lib_KEIL.uvmpw</WorkspaceName>
 
   <project>
     <PathAndName>.\thread_ftd_full_keil_config\thread_ftd_full_keil_config.uvprojx</PathAndName>
@@ -29,7 +29,6 @@
 
   <project>
     <PathAndName>.\thread_mtd_light_no_tcp_matter_keil_config\thread_mtd_light_no_tcp_matter_keil_config.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
   </project>
 
   <project>
@@ -42,7 +41,7 @@
 
   <project>
     <PathAndName>.\thread_mtd_light_no_tcp_matter_mbedtls_config\thread_mtd_light_no_tcp_matter_mbedtls_config.uvprojx</PathAndName>
-    <NodeIsExpanded>1</NodeIsExpanded>
+    <NodeIsActive>1</NodeIsActive>
   </project>
 
 </ProjectWorkspace>

@@ -517,9 +517,10 @@ tBleStatus HAP_HA_StoreDatabase(uint16_t ConnHandle, uint8_t *pData,uint16_t Max
   */
 tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint16_t Len)
 {
-  tBleStatus status = BLE_STATUS_SUCCESS;
-  HAP_HA_Restore_Context_t *p_restore_context;
-
+  tBleStatus                    status = BLE_STATUS_SUCCESS;
+  HAP_HA_Restore_Context_t      *p_restore_context;
+  uint16_t                      conn_handle = ConnHandle;
+  uint8_t                       channel_index;
   status = HAP_HA_GetRestoreContext(ConnHandle, &p_restore_context);
   if (status != BLE_STATUS_SUCCESS)
   {
@@ -550,7 +551,18 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
     {
       /* Notify new HA Features */
       BLE_DBG_HAP_HA_MSG("Hearing Aid Features value has changed\n");
-      status = HAS_SetHearingAidFeatures(&HAP_Context.HA.HASSvc, ConnHandle, HAP_Context.HA.Features);
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(ConnHandle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(ConnHandle,&channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          return BLE_STATUS_INSUFFICIENT_RESOURCES;
+        }
+      }
+      status = HAS_SetHearingAidFeatures(&HAP_Context.HA.HASSvc, conn_handle, HAP_Context.HA.Features);
 
       if ((status == BLE_STATUS_INSUFFICIENT_RESOURCES) \
                 || (status == BLE_STATUS_BUSY) \
@@ -575,7 +587,19 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
       /* Notify new Active Preset */
       BLE_DBG_HAP_HA_MSG("Active Preset Index value has changed since last connection with ConnHandle 0x%04X\n",
                          ConnHandle);
-      status = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, ConnHandle, HAP_Context.HA.ActivePreset);
+
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(ConnHandle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(ConnHandle,&channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          return BLE_STATUS_INSUFFICIENT_RESOURCES;
+        }
+      }
+      status = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, conn_handle, HAP_Context.HA.ActivePreset);
 
       if ((status == BLE_STATUS_INSUFFICIENT_RESOURCES) \
                 || (status == BLE_STATUS_BUSY) \
@@ -684,16 +708,34 @@ tBleStatus HAP_HA_CheckDatabaseChange(uint16_t ConnHandle, uint8_t *pData, uint1
 
     if (preset_to_notify == 1u)
     {
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(ConnHandle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(ConnHandle,&channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          return BLE_STATUS_INSUFFICIENT_RESOURCES;
+        }
+      }
       if (preset_deleted == 0u)
       {
-        status = HAS_SetPresetGenericUpdate(&HAP_Context.HA.HASSvc, ConnHandle, isLast, prev_index,
+        status = HAS_SetPresetGenericUpdate(&HAP_Context.HA.HASSvc,
+                                            conn_handle,
+                                            isLast,
+                                            prev_index,
                                             p_preset);
-        BLE_DBG_HAP_HA_MSG("HAS_SetPresetGenericUpdate on preset index %d with status 0x%02X\n", p_preset->Index, status);
+        BLE_DBG_HAP_HA_MSG("HAS_SetPresetGenericUpdate on preset index %d with status 0x%02X\n",
+                           p_preset->Index,
+                           status);
       }
       else
       {
-        status = HAS_SetPresetRecordDeleted(&HAP_Context.HA.HASSvc, ConnHandle, isLast, index);
-        BLE_DBG_HAP_HA_MSG("HAS_SetPresetRecordDeleted on present index %d with status 0x%02X\n", index, status);
+        status = HAS_SetPresetRecordDeleted(&HAP_Context.HA.HASSvc, conn_handle, isLast, index);
+        BLE_DBG_HAP_HA_MSG("HAS_SetPresetRecordDeleted on present index %d with status 0x%02X\n",
+                           index,
+                           status);
       }
     }
 
@@ -738,185 +780,118 @@ tBleStatus HAP_HA_GetRestoreContext(uint16_t ConnHandle, HAP_HA_Restore_Context_
  */
 void HAS_Notification(HAS_NotificationEvt_t const *pNotification)
 {
-  switch (pNotification->EvtOpcode)
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer;
+
+  if (USECASE_DEV_MGMT_GetConnInfo(pNotification->ConnHandle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
   {
-    case HAS_CONTROL_POINT_EVT:
+    uint16_t    conn_handle = p_conn_info->Connection_Handle;
+    uint8_t     channel_index;
+    switch (pNotification->EvtOpcode)
     {
-      HAP_HA_Control_Point_Op_t CtrlOp = pNotification->pData[0];
-
-      switch (CtrlOp)
+      case HAS_CONTROL_POINT_EVT:
       {
-        case HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST:
-        {
-          tBleStatus ret;
+        HAP_HA_Control_Point_Op_t CtrlOp = pNotification->pData[0];
 
-          if (!LST_is_empty(&HAP_Context.HA.PresetList))
+        switch (CtrlOp)
+        {
+          case HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST:
           {
+            tBleStatus ret;
+
+            if (!LST_is_empty(&HAP_Context.HA.PresetList))
+            {
+              HAP_Preset_t* p_preset;
+              LST_get_next_node((tListNode *)&HAP_Context.HA.PresetList, (tListNode **)&p_preset) ;
+
+              /* Parse preset list */
+              while ((tListNode *)p_preset != &HAP_Context.HA.PresetList)
+              {
+                if (p_preset->Index >= pNotification->pData[1])
+                {
+                  break;
+                }
+                LST_get_next_node((tListNode *)p_preset, (tListNode **)&p_preset) ;
+              }
+
+              if ((tListNode *)p_preset != &HAP_Context.HA.PresetList)
+              {
+                uint8_t is_last = 0;
+
+                if ((((tListNode *)p_preset)->next == &HAP_Context.HA.PresetList)
+                       || (pNotification->pData[2] == 1))
+                {
+                  is_last = 1;
+                }
+                if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_conn_info->Connection_Handle) > 0)
+                {
+                  if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_conn_info->Connection_Handle,
+                                                              &channel_index) == BLE_STATUS_SUCCESS)
+                  {
+                    conn_handle = (0xEA << 8) | (channel_index);
+                  }
+                  else
+                  {
+                    return;
+                  }
+                }
+                ret = HAS_SetReadPresetsResponse(&HAP_Context.HA.HASSvc, conn_handle, p_preset, is_last);
+                BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed with status 0x%02X\n", ret);
+
+                if (ret == BLE_STATUS_SUCCESS)
+                {
+                  HAP_Context.HA.CtrlPointOp.CurrentOp = HAP_HA_CONTROL_POINT_OP_READ_PRESETS_RESPONSE;
+                  HAP_Context.HA.CtrlPointOp.pCurrentNode = (tListNode*) p_preset;
+                  HAP_Context.HA.CtrlPointOp.RemainingNumRecord = pNotification->pData[2] - 1;
+                }
+              }
+            }
+            break;
+          }
+
+          case HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME:
+          {
+            tBleStatus ret;
             HAP_Preset_t* p_preset;
-            LST_get_next_node((tListNode *)&HAP_Context.HA.PresetList, (tListNode **)&p_preset) ;
+            uint8_t prev_index;
 
-            /* Parse preset list */
-            while ((tListNode *)p_preset != &HAP_Context.HA.PresetList)
-            {
-              if (p_preset->Index >= pNotification->pData[1])
-              {
-                break;
-              }
-              LST_get_next_node((tListNode *)p_preset, (tListNode **)&p_preset) ;
-            }
-
-            if ((tListNode *)p_preset != &HAP_Context.HA.PresetList)
-            {
-              uint8_t is_last = 0;
-
-              if ((((tListNode *)p_preset)->next == &HAP_Context.HA.PresetList)
-                     || (pNotification->pData[2] == 1))
-              {
-                is_last = 1;
-              }
-
-              ret = HAS_SetReadPresetsResponse(&HAP_Context.HA.HASSvc, pNotification->ConnHandle, p_preset, is_last);
-              BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed with status 0x%02X\n", ret);
-
-              if (ret == BLE_STATUS_SUCCESS)
-              {
-                HAP_Context.HA.CtrlPointOp.CurrentOp = HAP_HA_CONTROL_POINT_OP_READ_PRESETS_RESPONSE;
-                HAP_Context.HA.CtrlPointOp.pCurrentNode = (tListNode*) p_preset;
-                HAP_Context.HA.CtrlPointOp.RemainingNumRecord = pNotification->pData[2] - 1;
-              }
-            }
-          }
-          break;
-        }
-
-        case HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME:
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          uint8_t prev_index;
-
-          ret = HAP_HA_FindPresetWithIndex(pNotification->pData[1], &p_preset, &prev_index);
-
-          if (ret == BLE_STATUS_SUCCESS)
-          {
-            p_preset->NameLen = pNotification->DataLen - 2;
-            memcpy(&p_preset->Name[0], &pNotification->pData[2], pNotification->DataLen - 2);
-            ret = HAS_SetPresetGenericUpdate(&HAP_Context.HA.HASSvc, 0x0000, 1, prev_index, p_preset);
-            BLE_DBG_HAP_HA_MSG("Set Preset Generic Update executed with status 0x%02X\n", ret);
+            ret = HAP_HA_FindPresetWithIndex(pNotification->pData[1], &p_preset, &prev_index);
 
             if (ret == BLE_STATUS_SUCCESS)
             {
-              HAP_Notification_Evt_t notif;
-
-              notif.ConnHandle = pNotification->ConnHandle;
-              notif.EvtOpcode = HAP_HA_PRESET_NAME_UPDATE_EVT;
-              notif.pInfo = (uint8_t*) p_preset;
-              notif.Status = BLE_STATUS_SUCCESS;
-              HAP_Notification(&notif);
-            }
-          }
-
-          break;
-        }
-
-        case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET:
-        case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC:
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(pNotification->pData[1], &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
-          {
-            ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, pNotification->pData[1]);
-            BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n", pNotification->pData[1], ret);
-
-            if (ret == BLE_STATUS_SUCCESS)
-            {
-              HAP_Notification_Evt_t notif;
-              HAP_ActivePreset_Info_t info;
-              info.pPreset = p_preset;
-              if (pNotification->EvtOpcode == HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC)
-              {
-                info.SyncLocally = 1;
-              }
-              else
-              {
-                info.SyncLocally = 0;
-              }
-
-              notif.ConnHandle = pNotification->ConnHandle;
-              notif.EvtOpcode = HAP_HA_ACTIVE_PRESET_EVT;
-              notif.pInfo = (uint8_t*) &info;
-              notif.Status = BLE_STATUS_SUCCESS;
-              HAP_Notification(&notif);
-
-              HAP_Context.HA.ActivePreset = p_preset->Index;
-            }
-          }
-
-          break;
-        }
-
-        case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET:
-        case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC:
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
-          {
-            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 0);
-
-            if (ret == BLE_STATUS_SUCCESS)
-            {
-              ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, p_preset->Index);
-              BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n", p_preset->Index, ret);
+              p_preset->NameLen = pNotification->DataLen - 2;
+              memcpy(&p_preset->Name[0], &pNotification->pData[2], pNotification->DataLen - 2);
+              ret = HAS_SetPresetGenericUpdate(&HAP_Context.HA.HASSvc, 0x0000, 1, prev_index, p_preset);
+              BLE_DBG_HAP_HA_MSG("Set Preset Generic Update executed with status 0x%02X\n", ret);
 
               if (ret == BLE_STATUS_SUCCESS)
               {
                 HAP_Notification_Evt_t notif;
-                HAP_ActivePreset_Info_t info;
-                info.pPreset = p_preset;
-                if (pNotification->EvtOpcode == HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC)
-                {
-                  info.SyncLocally = 1;
-                }
-                else
-                {
-                  info.SyncLocally = 0;
-                }
 
-                notif.ConnHandle = pNotification->ConnHandle;
-                notif.EvtOpcode = HAP_HA_ACTIVE_PRESET_EVT;
-                notif.pInfo = (uint8_t*) &info;
+                notif.ConnHandle = p_conn_info->Connection_Handle;
+                notif.EvtOpcode = HAP_HA_PRESET_NAME_UPDATE_EVT;
+                notif.pInfo = (uint8_t*) p_preset;
                 notif.Status = BLE_STATUS_SUCCESS;
                 HAP_Notification(&notif);
-
-                HAP_Context.HA.ActivePreset = p_preset->Index;
               }
             }
+
+            break;
           }
-          break;
-        }
 
-        case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET:
-        case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC:
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
+          case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET:
+          case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC:
           {
-            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 1);
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(pNotification->pData[1], &p_preset, 0);
 
             if (ret == BLE_STATUS_SUCCESS)
             {
-              ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, p_preset->Index);
-              BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n", p_preset->Index, ret);
-
+              ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, pNotification->pData[1]);
+              BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n",
+                                 pNotification->pData[1],
+                                 ret);
               if (ret == BLE_STATUS_SUCCESS)
               {
                 HAP_Notification_Evt_t notif;
@@ -931,7 +906,7 @@ void HAS_Notification(HAS_NotificationEvt_t const *pNotification)
                   info.SyncLocally = 0;
                 }
 
-                notif.ConnHandle = pNotification->ConnHandle;
+                notif.ConnHandle = p_conn_info->Connection_Handle;
                 notif.EvtOpcode = HAP_HA_ACTIVE_PRESET_EVT;
                 notif.pInfo = (uint8_t*) &info;
                 notif.Status = BLE_STATUS_SUCCESS;
@@ -940,167 +915,301 @@ void HAS_Notification(HAS_NotificationEvt_t const *pNotification)
                 HAP_Context.HA.ActivePreset = p_preset->Index;
               }
             }
+
+            break;
           }
-          break;
+
+          case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET:
+          case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC:
+          {
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
+
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 0);
+
+              if (ret == BLE_STATUS_SUCCESS)
+              {
+                ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, p_preset->Index);
+                BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n", p_preset->Index, ret);
+
+                if (ret == BLE_STATUS_SUCCESS)
+                {
+                  HAP_Notification_Evt_t notif;
+                  HAP_ActivePreset_Info_t info;
+                  info.pPreset = p_preset;
+                  if (pNotification->EvtOpcode == HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC)
+                  {
+                    info.SyncLocally = 1;
+                  }
+                  else
+                  {
+                    info.SyncLocally = 0;
+                  }
+
+                  notif.ConnHandle = p_conn_info->Connection_Handle;
+                  notif.EvtOpcode = HAP_HA_ACTIVE_PRESET_EVT;
+                  notif.pInfo = (uint8_t*) &info;
+                  notif.Status = BLE_STATUS_SUCCESS;
+                  HAP_Notification(&notif);
+
+                  HAP_Context.HA.ActivePreset = p_preset->Index;
+                }
+              }
+            }
+            break;
+          }
+
+          case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET:
+          case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC:
+          {
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
+
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 1);
+
+              if (ret == BLE_STATUS_SUCCESS)
+              {
+                ret = HAS_SetActivePresetIndex(&HAP_Context.HA.HASSvc, 0x0000, p_preset->Index);
+                BLE_DBG_HAP_HA_MSG("Set Active Preset index %d executed with status 0x%02X\n", p_preset->Index, ret);
+
+                if (ret == BLE_STATUS_SUCCESS)
+                {
+                  HAP_Notification_Evt_t notif;
+                  HAP_ActivePreset_Info_t info;
+                  info.pPreset = p_preset;
+                  if (pNotification->EvtOpcode == HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC)
+                  {
+                    info.SyncLocally = 1;
+                  }
+                  else
+                  {
+                    info.SyncLocally = 0;
+                  }
+
+                  notif.ConnHandle = p_conn_info->Connection_Handle;
+                  notif.EvtOpcode = HAP_HA_ACTIVE_PRESET_EVT;
+                  notif.pInfo = (uint8_t*) &info;
+                  notif.Status = BLE_STATUS_SUCCESS;
+                  HAP_Notification(&notif);
+
+                  HAP_Context.HA.ActivePreset = p_preset->Index;
+                }
+              }
+            }
+            break;
+          }
+
+          default:
+          {
+            /* Invalid Opcode, Should not happen */
+            break;
+          }
         }
 
-        default:
-        {
-          /* Invalid Opcode, Should not happen */
-          break;
-        }
+        break;
       }
 
-      break;
-    }
-
-    case HAS_CONTROL_POINT_DESC_EVT:
-    {
-      uint8_t i;
-
-      for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+      case HAS_CONTROL_POINT_DESC_EVT:
       {
-        if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == pNotification->ConnHandle)
-        {
-          HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue = pNotification->pData[0];
-        }
-      }
-      break;
-    }
+        uint8_t i;
 
-    default:
-      break;
+        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+        {
+          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == p_conn_info->Connection_Handle)
+          {
+            HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue = pNotification->pData[0];
+          }
+        }
+        break;
+      }
+
+      default:
+        break;
+    }
   }
 }
 
 uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLen)
 {
-  uint8_t err_code = 0x00;
+  uint8_t               err_code = 0x00;
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer;
 
-  if (DataLen > 0u)
+  if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
   {
-    switch (pData[0])
+    if (DataLen > 0u)
     {
-      case HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST:
+      switch (pData[0])
       {
-        uint8_t i;
-
-        /* Check if descriptor is configured for indication */
-        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+        case HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST:
         {
-          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
+          uint8_t i;
+
+          /* Check if descriptor is configured for indication */
+          for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
           {
-            if (HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue == 0)
+            if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == p_conn_info->Connection_Handle)
             {
-              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
-              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
-            }
-            break;
-          }
-        }
-
-        if (err_code == 0x00)
-        {
-          /* Check if DataLen is valid */
-          if (DataLen != 3)
-          {
-            BLE_DBG_HAP_HA_MSG("Read Presets Request with invalid parameters length\n");
-            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
-          }
-          else if ((pData[1] == 0)
-                || (pData[2] == 0)
-                  || (LST_is_empty(&HAP_Context.HA.PresetList))
-                    || (((HAP_Preset_t*)HAP_Context.HA.PresetList.prev)->Index < pData[1]))
-          {
-            BLE_DBG_HAP_HA_MSG("Read Presets Request parameters out of range\n");
-            err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
-          }
-        }
-        break;
-      }
-
-      case HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME:
-      {
-        uint8_t i;
-
-        /* Check if descriptor is configured for indication */
-        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
-        {
-          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
-          {
-            if ((HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue & GATT_CHAR_UPDATE_SEND_INDICATION) == 0)
-            {
-              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
-              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
-            }
-            break;
-          }
-        }
-
-        if (err_code == 0x00)
-        {
-          if (DataLen < 3 || DataLen > 42)
-          {
-            BLE_DBG_HAP_HA_MSG("Write Preset Name with invalid parameters length\n");
-            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
-          }
-          else if ((HAP_Context.HA.Features & HAP_WRITABLE_PRESETS_SUPPORTED) == 0)
-          {
-            BLE_DBG_HAP_HA_MSG("Writable Presets records are not supported\n");
-            err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
-          }
-          else
-          {
-            tBleStatus ret;
-            HAP_Preset_t* p_preset;
-            ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
-
-            if (ret == BLE_STATUS_SUCCESS)
-            {
-              if ((p_preset->Properties & HAP_PRESET_PROPERTIES_WRITABLE) == 0)
+              if (HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue == 0)
               {
-                BLE_DBG_HAP_HA_MSG("Write Preset Name on preset index %d not allowed\n", pData[1]);
-                err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
+                BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
+                err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
               }
+              break;
             }
-            else
+          }
+
+          if (err_code == 0x00)
+          {
+            /* Check if DataLen is valid */
+            if (DataLen != 3)
             {
-              BLE_DBG_HAP_HA_MSG("Write Preset Name index %d out of range\n", pData[1]);
+              BLE_DBG_HAP_HA_MSG("Read Presets Request with invalid parameters length\n");
+              err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+            }
+            else if ((pData[1] == 0)
+                  || (pData[2] == 0)
+                    || (LST_is_empty(&HAP_Context.HA.PresetList))
+                      || (((HAP_Preset_t*)HAP_Context.HA.PresetList.prev)->Index < pData[1]))
+            {
+              BLE_DBG_HAP_HA_MSG("Read Presets Request parameters out of range\n");
               err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
             }
           }
+          break;
         }
 
-        break;
-      }
-
-      case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET:
-      case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC:
-      {
-        uint8_t i;
-
-        /* Check if descriptor is configured for indication */
-        for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
+        case HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME:
         {
-          if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == ConnHandle)
+          uint8_t i;
+
+          /* Check if descriptor is configured for indication */
+          for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
           {
-            if ((HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue & GATT_CHAR_UPDATE_SEND_INDICATION) == 0)
+            if (HAP_Context.HA.CtrlPointDescContext[i].ConnHandle == p_conn_info->Connection_Handle)
             {
-              BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
-              err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
+              if ((HAP_Context.HA.CtrlPointDescContext[i].CtrlPointDescValue & GATT_CHAR_UPDATE_SEND_INDICATION) == 0)
+              {
+                BLE_DBG_HAP_HA_MSG("Descriptor isn't configured for indication\n");
+                err_code = ATT_ERR_CLIENT_CHAR_CONF_DESC_IMPROPERLY_CONFIGURED;
+              }
+              break;
             }
-            break;
           }
+
+          if (err_code == 0x00)
+          {
+            if (DataLen < 3 || DataLen > 42)
+            {
+              BLE_DBG_HAP_HA_MSG("Write Preset Name with invalid parameters length\n");
+              err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+            }
+            else if ((HAP_Context.HA.Features & HAP_WRITABLE_PRESETS_SUPPORTED) == 0)
+            {
+              BLE_DBG_HAP_HA_MSG("Writable Presets records are not supported\n");
+              err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
+            }
+            else
+            {
+              tBleStatus ret;
+              HAP_Preset_t* p_preset;
+              ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
+
+              if (ret == BLE_STATUS_SUCCESS)
+              {
+                if ((p_preset->Properties & HAP_PRESET_PROPERTIES_WRITABLE) == 0)
+                {
+                  BLE_DBG_HAP_HA_MSG("Write Preset Name on preset index %d not allowed\n", pData[1]);
+                  err_code = ATT_ERR_WRITE_NAME_NOT_ALLOWED;
+                }
+              }
+              else
+              {
+                BLE_DBG_HAP_HA_MSG("Write Preset Name index %d out of range\n", pData[1]);
+                err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+              }
+            }
+          }
+
+          break;
         }
 
-        if (err_code == 0x00)
+        case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET:
+        case HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC:
         {
-          if (DataLen != 2)
+          if (err_code == 0x00)
           {
-            BLE_DBG_HAP_HA_MSG("Set Active Preset with invalid parameters length\n");
+            if (DataLen != 2)
+            {
+              BLE_DBG_HAP_HA_MSG("Set Active Preset with invalid parameters length\n");
+              err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+            }
+            else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC)
+                     && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
+            {
+              BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
+              err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
+            }
+            else
+            {
+              tBleStatus ret;
+              HAP_Preset_t* p_preset;
+              ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
+
+              if (ret == BLE_STATUS_SUCCESS)
+              {
+                if (p_preset->Properties & HAP_PRESET_PROPERTIES_IS_AVAILABLE)
+                {
+                  HAP_Notification_Evt_t notif;
+                  HAP_ActivePresetChangeReq_Info_t info;
+                  HAP_SetActivePreset_Resp_t resp = 0;
+
+                  info.pPreset = p_preset;
+                  info.pResp = &resp;
+
+                  notif.ConnHandle = p_conn_info->Connection_Handle;
+                  notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
+                  notif.pInfo = (uint8_t*) &info;
+                  notif.Status = BLE_STATUS_SUCCESS;
+                  HAP_Notification(&notif);
+
+                  if(resp != 0)
+                  {
+                    BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d denied\n", pData[1]);
+                    err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
+                  }
+                }
+                else
+                {
+                  BLE_DBG_HAP_HA_MSG("Preset with index %d is not available\n", pData[1]);
+                  err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
+                }
+              }
+              else
+              {
+                BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d out of range\n", pData[1]);
+                err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
+              }
+            }
+          }
+          break;
+        }
+
+        case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET:
+        case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC:
+        {
+          if (DataLen != 1)
+          {
+            BLE_DBG_HAP_HA_MSG("Set Next Preset with invalid parameters length\n");
             err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
           }
-          else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC)
+          else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC)
                    && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
           {
             BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
@@ -1110,11 +1219,13 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
           {
             tBleStatus ret;
             HAP_Preset_t* p_preset;
-            ret = HAP_HA_FindPresetWithIndex(pData[1], &p_preset, 0);
+            ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
 
             if (ret == BLE_STATUS_SUCCESS)
             {
-              if (p_preset->Properties & HAP_PRESET_PROPERTIES_IS_AVAILABLE)
+              ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 0);
+
+              if (ret == BLE_STATUS_SUCCESS)
               {
                 HAP_Notification_Evt_t notif;
                 HAP_ActivePresetChangeReq_Info_t info;
@@ -1123,7 +1234,7 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
                 info.pPreset = p_preset;
                 info.pResp = &resp;
 
-                notif.ConnHandle = ConnHandle;
+                notif.ConnHandle = p_conn_info->Connection_Handle;
                 notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
                 notif.pInfo = (uint8_t*) &info;
                 notif.Status = BLE_STATUS_SUCCESS;
@@ -1131,144 +1242,88 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
 
                 if(resp != 0)
                 {
-                  BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d denied\n", pData[1]);
+                  BLE_DBG_HAP_HA_MSG("Set Next Preset with index %d denied\n", p_preset->Index);
                   err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
                 }
               }
               else
               {
-                BLE_DBG_HAP_HA_MSG("Preset with index %d is not available\n", pData[1]);
+                BLE_DBG_HAP_HA_MSG("No other available preset\n", pData[1]);
                 err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
               }
             }
-            else
-            {
-              BLE_DBG_HAP_HA_MSG("Set Active Preset with index %d out of range\n", pData[1]);
-              err_code = ATT_ERR_VALUE_OUT_OF_RANGE;
-            }
           }
-        }
-        break;
-      }
 
-      case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET:
-      case HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC:
-      {
-        if (DataLen != 1)
-        {
-          BLE_DBG_HAP_HA_MSG("Set Next Preset with invalid parameters length\n");
-          err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          break;
         }
-        else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC)
-                 && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
-        {
-          BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
-          err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
-        }
-        else
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
 
-          if (ret == BLE_STATUS_SUCCESS)
+        case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET:
+        case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC:
+        {
+          if (DataLen != 1)
           {
-            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 0);
+            BLE_DBG_HAP_HA_MSG("Set Previous Preset with invalid parameters length\n");
+            err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          }
+          else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC)
+                   && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
+          {
+            BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
+            err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
+          }
+          else
+          {
+            tBleStatus ret;
+            HAP_Preset_t* p_preset;
+            ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
 
             if (ret == BLE_STATUS_SUCCESS)
             {
-              HAP_Notification_Evt_t notif;
-              HAP_ActivePresetChangeReq_Info_t info;
-              HAP_SetActivePreset_Resp_t resp = 0;
+              ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 1);
 
-              info.pPreset = p_preset;
-              info.pResp = &resp;
-
-              notif.ConnHandle = ConnHandle;
-              notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
-              notif.pInfo = (uint8_t*) &info;
-              notif.Status = BLE_STATUS_SUCCESS;
-              HAP_Notification(&notif);
-
-              if(resp != 0)
+              if (ret == BLE_STATUS_SUCCESS)
               {
-                BLE_DBG_HAP_HA_MSG("Set Next Preset with index %d denied\n", p_preset->Index);
+                HAP_Notification_Evt_t notif;
+                HAP_ActivePresetChangeReq_Info_t info;
+                HAP_SetActivePreset_Resp_t resp = 0;
+
+                info.pPreset = p_preset;
+                info.pResp = &resp;
+
+                notif.ConnHandle = p_conn_info->Connection_Handle;
+                notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
+                notif.pInfo = (uint8_t*) &info;
+                notif.Status = BLE_STATUS_SUCCESS;
+                HAP_Notification(&notif);
+
+                if(resp != 0)
+                {
+                  BLE_DBG_HAP_HA_MSG("Set Next Preset with index %d denied\n", p_preset->Index);
+                  err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
+                }
+              }
+              else
+              {
+                BLE_DBG_HAP_HA_MSG("No other available preset\n", pData[1]);
                 err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
               }
             }
-            else
-            {
-              BLE_DBG_HAP_HA_MSG("No other available preset\n", pData[1]);
-              err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
-            }
           }
+          break;
         }
 
-        break;
-      }
-
-      case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET:
-      case HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC:
-      {
-        if (DataLen != 1)
+        default:
         {
-          BLE_DBG_HAP_HA_MSG("Set Previous Preset with invalid parameters length\n");
-          err_code = ATT_ERR_INVALID_PARAMETERS_LENGTH;
+          BLE_DBG_HAP_HA_MSG("Hearing Aid Preset Ctrl Operation 0x%02X is invalid\n", pData[0]);
+          err_code = ATT_ERR_INVALID_OPCODE;
+          break;
         }
-        else if ((pData[0] == HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC)
-                 && ((HAP_Context.HA.Features & HAP_PRESET_SYNC_SUPPORTED) == 0))
-        {
-          BLE_DBG_HAP_HA_MSG("Preset sync is not supported\n");
-          err_code = ATT_ERR_PRESET_SYNC_NOT_SUPPORTED;
-        }
-        else
-        {
-          tBleStatus ret;
-          HAP_Preset_t* p_preset;
-          ret = HAP_HA_FindPresetWithIndex(HAP_Context.HA.ActivePreset, &p_preset, 0);
-
-          if (ret == BLE_STATUS_SUCCESS)
-          {
-            ret = HAP_HA_FindNextAvailablePreset(p_preset, &p_preset, 1);
-
-            if (ret == BLE_STATUS_SUCCESS)
-            {
-              HAP_Notification_Evt_t notif;
-              HAP_ActivePresetChangeReq_Info_t info;
-              HAP_SetActivePreset_Resp_t resp = 0;
-
-              info.pPreset = p_preset;
-              info.pResp = &resp;
-
-              notif.ConnHandle = ConnHandle;
-              notif.EvtOpcode = HAP_HA_SET_PRESET_REQ_EVT;
-              notif.pInfo = (uint8_t*) &info;
-              notif.Status = BLE_STATUS_SUCCESS;
-              HAP_Notification(&notif);
-
-              if(resp != 0)
-              {
-                BLE_DBG_HAP_HA_MSG("Set Next Preset with index %d denied\n", p_preset->Index);
-                err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
-              }
-            }
-            else
-            {
-              BLE_DBG_HAP_HA_MSG("No other available preset\n", pData[1]);
-              err_code = ATT_ERR_PRESET_OP_NOT_POSSIBLE;
-            }
-          }
-        }
-        break;
-      }
-
-      default:
-      {
-        BLE_DBG_HAP_HA_MSG("Hearing Aid Preset Ctrl Operation 0x%02X is invalid\n", pData[0]);
-        err_code = ATT_ERR_INVALID_OPCODE;
-        break;
       }
     }
+  }
+  else
+  {
+    err_code = ATT_ERR_INVALID_OPCODE;
   }
 
   return err_code;
@@ -1276,48 +1331,67 @@ uint8_t HAS_CheckCtrlOpParams(uint16_t ConnHandle, uint8_t *pData,uint8_t DataLe
 
 SVCCTL_EvtAckStatus_t HAS_HandleCtrlPointIndicateComplete(uint16_t ConnHandle)
 {
-  if (HAP_Context.HA.CtrlPointOp.CurrentOp == HAP_HA_CONTROL_POINT_OP_READ_PRESETS_RESPONSE)
+
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer;
+
+  if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
   {
-    HAP_Preset_t *p_preset = (HAP_Preset_t *) HAP_Context.HA.CtrlPointOp.pCurrentNode;
-    LST_get_next_node((tListNode *)p_preset, (tListNode **)&p_preset) ;
-
-    if (HAP_Context.HA.CtrlPointOp.RemainingNumRecord == 0
-        || (tListNode *) p_preset == &HAP_Context.HA.PresetList)
+    uint16_t    conn_handle = p_conn_info->Connection_Handle;
+    uint8_t     channel_index;
+    if (HAP_Context.HA.CtrlPointOp.CurrentOp == HAP_HA_CONTROL_POINT_OP_READ_PRESETS_RESPONSE)
     {
-      /* End of procedure */
-      HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
-    }
-    else
-    {
-      uint8_t is_last = 0;
-      tBleStatus ret;
+      HAP_Preset_t *p_preset = (HAP_Preset_t *) HAP_Context.HA.CtrlPointOp.pCurrentNode;
+      LST_get_next_node((tListNode *)p_preset, (tListNode **)&p_preset) ;
 
-      HAP_Context.HA.CtrlPointOp.RemainingNumRecord --;
-
-      if ((HAP_Context.HA.CtrlPointOp.RemainingNumRecord == 0)
-          || (((tListNode *) p_preset)->next == &HAP_Context.HA.PresetList))
+      if ((HAP_Context.HA.CtrlPointOp.RemainingNumRecord == 0) \
+          || ((tListNode *) p_preset == &HAP_Context.HA.PresetList))
       {
-        is_last = 1;
-      }
-
-      ret = HAS_SetReadPresetsResponse(&HAP_Context.HA.HASSvc, ConnHandle, p_preset, is_last);
-      BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed with status 0x%02X\n", ret);
-
-      if (ret == BLE_STATUS_SUCCESS)
-      {
-        HAP_Context.HA.CtrlPointOp.pCurrentNode = (tListNode*) p_preset;
+        /* End of procedure */
+        HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
       }
       else
       {
-        HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
+        uint8_t is_last = 0;
+        tBleStatus ret;
+
+        HAP_Context.HA.CtrlPointOp.RemainingNumRecord --;
+
+        if ((HAP_Context.HA.CtrlPointOp.RemainingNumRecord == 0) \
+            || (((tListNode *) p_preset)->next == &HAP_Context.HA.PresetList))
+        {
+          is_last = 1;
+        }
+        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_conn_info->Connection_Handle) > 0)
+        {
+          if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_conn_info->Connection_Handle,
+                                                      &channel_index) == BLE_STATUS_SUCCESS)
+          {
+            conn_handle = (0xEA << 8) | (channel_index);
+          }
+          else
+          {
+            BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed aborted becasue no EATT Bearer is available\n");
+            HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
+            return SVCCTL_EvtAckFlowEnable;
+          }
+        }
+        ret = HAS_SetReadPresetsResponse(&HAP_Context.HA.HASSvc, conn_handle, p_preset, is_last);
+        BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed with status 0x%02X\n", ret);
+
+        if (ret == BLE_STATUS_SUCCESS)
+        {
+          HAP_Context.HA.CtrlPointOp.pCurrentNode = (tListNode*) p_preset;
+        }
+        else
+        {
+          HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
+        }
       }
+      return SVCCTL_EvtAckFlowEnable;
     }
-    return SVCCTL_EvtAckFlowEnable;
   }
-  else
-  {
-    return SVCCTL_EvtNotAck;
-  }
+  return SVCCTL_EvtNotAck;
 }
 
 /**
@@ -1326,8 +1400,9 @@ SVCCTL_EvtAckStatus_t HAS_HandleCtrlPointIndicateComplete(uint16_t ConnHandle)
   */
 void HAP_HA_LinkEncrypted(uint16_t ConnHandle)
 {
-  uint8_t i;
-  const UseCaseConnInfo_t *p_conn_info;
+  uint8_t               i;
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer;
 
   /* Allocate Ctrl Point Descriptor Context */
   for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
@@ -1339,11 +1414,10 @@ void HAP_HA_LinkEncrypted(uint16_t ConnHandle)
     }
   }
 
-  if ((USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &p_conn_info) == BLE_STATUS_SUCCESS)
-      && (p_conn_info->MTU >= 49u)
-        && (p_conn_info->LinkEncrypted == 1u))
+  if ((USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS) \
+      && (p_conn_info->MTU >= 49u) \
+      && (p_conn_info->LinkEncrypted == 1u))
   {
-    uint8_t i;
     for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
     {
       if (HAP_Context.HA.RestoreContext[i].ConnHandle == 0xFFFF)
@@ -1366,8 +1440,9 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
 {
   SVCCTL_EvtAckStatus_t return_value;
 
-  hci_event_pckt *p_event_pckt;
-  evt_blecore_aci *p_blecore_evt;
+  hci_event_pckt        *p_event_pckt;
+  evt_blecore_aci       *p_blecore_evt;
+  BleEATTBearer_t       *p_eatt_bearer;
 
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
 
@@ -1382,10 +1457,10 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
           aci_att_exchange_mtu_resp_event_rp0 *mtu_resp_event = (void*)p_blecore_evt->data;
-          const UseCaseConnInfo_t *p_conn_info;
-          if ((USECASE_DEV_MGMT_GetConnInfo(mtu_resp_event->Connection_Handle, &p_conn_info) == BLE_STATUS_SUCCESS)
-              && (p_conn_info->MTU >= 49u)
-                && (p_conn_info->LinkEncrypted == 1u))
+          UseCaseConnInfo_t *p_conn_info;
+          if ((USECASE_DEV_MGMT_GetConnInfo(mtu_resp_event->Connection_Handle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS) \
+              && (p_conn_info->MTU >= 49u) \
+              && (p_conn_info->LinkEncrypted == 1u))
           {
             uint8_t i;
             for (i = 0; i < USECASE_DEV_MGMT_MAX_CONNECTION; i++)
@@ -1405,9 +1480,9 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         case ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE:
         {
-          const UseCaseConnInfo_t *p_conn_info;
-          uint8_t                 num_links;
-          uint16_t                conn_handle;
+          UseCaseConnInfo_t     *p_conn_info;
+          uint8_t               num_links;
+          uint16_t              conn_handle;
           /*Get the number of connected devices*/
           num_links = USECASE_DEV_MGMT_GetNumConnectedDevices();
           if (num_links > 0u)
@@ -1417,7 +1492,7 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
               conn_handle = USECASE_DEV_MGMT_GetConnHandle(i);
               if (conn_handle != 0xFFFFu)
               {
-                if (USECASE_DEV_MGMT_GetConnInfo(conn_handle, &p_conn_info) == BLE_STATUS_SUCCESS)
+                if (USECASE_DEV_MGMT_GetConnInfo(conn_handle, &p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
                 {
                   /* Check if connection role is Slave (0x01u)*/
                   if ((p_conn_info->Connection_Handle != 0xFFFFu) && (p_conn_info->Role == 0x01u))
@@ -1457,37 +1532,42 @@ SVCCTL_EvtAckStatus_t HAP_HA_GATT_Event_Handler(void *pEvent)
 void IAS_Notification(IAS_Notification_Evt_t *pNotification)
 {
   HAP_Notification_Evt_t evt;
-  uint8_t alert_value;
-  evt.ConnHandle = pNotification->ConnHandle;
-  evt.EvtOpcode = HAP_HA_IAS_ALERT_EVT;
-  evt.pInfo = &alert_value;
+  uint8_t               alert_value;
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
 
-  switch(pNotification->EvtOpcode)
+  if (USECASE_DEV_MGMT_GetConnInfo(pNotification->ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
   {
-    case IAS_NO_ALERT_EVT:
+    evt.ConnHandle = p_conn_info->Connection_Handle;
+    evt.EvtOpcode = HAP_HA_IAS_ALERT_EVT;
+    evt.pInfo = &alert_value;
+
+    switch(pNotification->EvtOpcode)
     {
-      alert_value = 0x00;
-      break;
+      case IAS_NO_ALERT_EVT:
+      {
+        alert_value = 0x00;
+        break;
+      }
+
+      case IAS_MID_ALERT_EVT:
+      {
+        alert_value = 0x01;
+        break;
+      }
+
+      case IAS_HIGH_ALERT_EVT:
+      {
+        alert_value = 0x02;
+        break;
+      }
+
+      default:
+        break;
     }
 
-    case IAS_MID_ALERT_EVT:
-    {
-      alert_value = 0x01;
-      break;
-    }
-
-    case IAS_HIGH_ALERT_EVT:
-    {
-      alert_value = 0x02;
-      break;
-    }
-
-    default:
-      break;
+    HAP_Notification(&evt);
   }
-
-  HAP_Notification(&evt);
-  return;
 }
 
 /* Private functions ----------------------------------------------------------*/

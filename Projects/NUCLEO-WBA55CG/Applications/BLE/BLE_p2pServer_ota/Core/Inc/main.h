@@ -75,7 +75,6 @@ void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_ADC4_Init(void);
 void MX_CRC_Init(void);
-void MX_RNG_Init(void);
 void MX_ICACHE_Init(void);
 
 /* USER CODE BEGIN EFP */

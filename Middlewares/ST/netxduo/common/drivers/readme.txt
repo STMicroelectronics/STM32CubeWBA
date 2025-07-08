@@ -7,6 +7,104 @@
   ******************************************************************************
   */
 
+### V4.0.1 / 18-October-2024 ###
+==================================
+Main changes
+-------------
+- Add timeout for the PHY link state check in the driver enable function.
+ + ethernet/nx_stm32_eth_driver.c
+
+### V4.0.0 / 27-September-2024 ###
+==================================
+Main changes
+-------------
+- Add Time Sensitive Networking (TSN) features support:
+    * Credit Based Shaper (CBS)
+    * Time Aware Shaper (TAS)
+    * Frame preemption (FPE)
+    * Precision Time Protocol (PTP)
+
+  + ethernet/nx_stm32_eth_driver.c
+  + ethernet/nx_stm32_eth_driver.h
+
+- Add multiple queues and channels support
+  + ethernet/nx_stm32_eth_driver.c
+  + ethernet/nx_stm32_eth_driver.h
+
+- Fix default return value nx_stm32_eth_driver()
+  + wifi/mxchip/nx_driver_framework.c
+
+- Return ETH_PHY_STATUS_OK when the PHY interface is already initialized
+  + ethernet/rtl8211/nx_stm32_phy_driver.c
+
+- Define Txbuffer array as static in _nx_driver_hardware_packet_send function
+  to avoid stack overflow
+  + ethernet/nx_stm32_eth_driver.c
+
+- Add new macro NX_DRIVER_TX_RELEASE_THRESHOLD to define the number of packets
+ to be transmitted before released
+  + ethernet/nx_stm32_eth_driver.c
+  + ethernet/nx_stm32_eth_driver.h
+
+Dependencies:
+-------------
+- Azure RTOS NetXDuo V6.4.0
+- STM32CubeH7RS Ethernet HAL driver V1.1.0
+- STM32CubeH5 Ethernet HAL driver V1.3.0
+- STM32CubeH7 Ethernet HAL driver V1.11.3
+- STM32CubeF4 Ethernet HAL driver V1.8.3
+- STM32CubeF7 Ethernet HAL driver V1.3.1
+- Cypress_WHD middleware 1.70.0
+- MX_WIFI component driver 2.3.4
+
+### V3.3.0 / 17-May-2024 ###
+============================
+Main changes
+-------------
+- Use ETH_TxPacketConfigTypeDef instead of ETH_TxPacketConfig
+  + ethernet/nx_stm32_eth_driver.c
+
+- Support NX_ENABLE_VLAN flag in the ethernet driver
+  + ethernet/nx_stm32_eth_driver.c
+  + ethernet/nx_stm32_eth_driver.h
+
+- Support cache maintenance for Cortex-A7 in the ethernet driver
+  + ethernet/nx_stm32_eth_driver.c
+  + ethernet/nx_stm32_eth_driver.h
+
+- Fix default return value nx_stm32_eth_driver()
+  + ethernet/nx_stm32_eth_driver.c
+
+- Align eth driver interface with new HAL/ETH data types definition
+  + ethernet/nx_stm32_eth_driver.c
+
+- Make rtl8211xx driver generic
+  + ethernet/rtl8211/nx_stm32_phy_driver.c
+
+- Fix compile warning in netxduo wifi cypress driver
+  + wifi/cypress/nx_stm32_cypress_whd_driver.c
+
+- Remove explicit call to printf() in wifi drivers
+  + wifi/cypress/nx_driver_framework.c
+  + wifi/cypress/nx_stm32_cypress_whd_driver.c
+  + wifi/es_wifi/nx_driver_ism43362.c
+  + wifi/es_wifi/nx_driver_ism43362.h
+  + wifi/mxchip/mx_wifi_azure_rtos.c
+  + wifi/mxchip/nx_driver_emw3080.c
+  + wifi/mxchip/nx_driver_emw3080.h
+  + wifi/mxchip/nx_driver_framework.c
+  + wifi/mxchip/nx_driver_framework.h
+
+Dependencies:
+-------------
+- Azure RTOS NetXDuo V6.4.0
+- STM32CubeH5 Ethernet HAL driver V1.2.0
+- STM32CubeH7 Ethernet HAL driver V1.11.3
+- STM32CubeF4 Ethernet HAL driver V1.8.3
+- STM32CubeF7 Ethernet HAL driver V1.3.1
+- Cypress_WHD middleware 1.70.0
+- MX_WIFI component driver 2.3.4
+
 ### V3.2.0 / 09-December-2022 ###
 =================================
 Main changes

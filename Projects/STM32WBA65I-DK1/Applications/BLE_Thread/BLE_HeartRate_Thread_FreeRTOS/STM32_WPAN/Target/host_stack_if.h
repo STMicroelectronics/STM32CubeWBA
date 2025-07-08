@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ll_sys_if.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -46,6 +47,19 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
+/* Halt if any aci/hci functions call is made under ISR context, for debug purpose. */
+/* Acquire Link Layer Mutex before calling any aci/hci functions */
+#define BLE_WRAP_PREPROC() do{ \
+                             if( __get_IPSR() != 0 )while(1); \
+                             osMutexAcquire(LinkLayerMutex, osWaitForever); \
+                           }while(0)
+
+/* Release Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
+#define BLE_WRAP_POSTPROC() do{ \
+                              osMutexRelease(LinkLayerMutex); \
+                              BleStackCB_Process(); \
+                            }while(0)
+
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */

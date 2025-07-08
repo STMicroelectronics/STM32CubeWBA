@@ -51,6 +51,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void      APP_BSP_Init                    ( void );
+void      APP_BSP_PostIdle                ( void );
 void      APP_BSP_StandbyExit             ( void );
 uint8_t   APP_BSP_SerialCmdExecute        ( uint8_t * pRxBuffer, uint16_t iRxBufferSize );
 

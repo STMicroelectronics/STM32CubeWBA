@@ -93,7 +93,7 @@ typedef struct
 /* HAP Controller Instance Structure */
 typedef struct
 {
-  const UseCaseConnInfo_t             *pConnInfo;                     /* Pointer to Connection info structure */
+  UseCaseConnInfo_t                   *pConnInfo;                     /* Pointer to Connection info structure */
   HAP_LinkupMode_t                    LinkupMode;                     /* Linkup Mode */
   uint16_t                            LinkupState;                    /* Bitmask of HAP_LinkupProcState_t and
                                                                        * HAS_Characteristic_t
@@ -101,7 +101,6 @@ typedef struct
   HAS_Characteristic_t                CurrentLinkupChar;              /* HAP Characteristic being read/discovered */
   HAP_HARC_GATT_CharacteristicInfo_t  *pGattChar;                     /* Pointer on GATT Characteristic */
   uint16_t                            ReqHandle;                      /* Att Handle under process during ATT operation */
-  uint8_t                             AttProcStarted;                 /* Flag to 1 if an ATT procedure is started */
   uint8_t                             DelayDeallocation;              /* Indicate if the HAP Client Instance deallocation
                                                                        * should be delayed when ACI_GATT_PROC_COMPLETE_VSEVT_CODE
                                                                        * event is received */

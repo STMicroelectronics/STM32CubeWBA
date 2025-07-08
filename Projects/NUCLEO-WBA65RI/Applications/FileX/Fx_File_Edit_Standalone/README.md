@@ -30,7 +30,7 @@ None
 None
 
 ### <b>Notes</b>
- 1. The created SRAM-Disk, is placed in SRAM2 (64KB) starting from the (FX_SRAM_DISK_BASE_ADDRESS=@0x20010000).
+ 1. The created SRAM-Disk, is placed in SRAM2 (64KB) starting from the (FX_SRAM_DISK_BASE_ADDRESS=@0x20070000).
  2. User can change the location of the SRAM-Disk by modifying FX_SRAM_DISK_BASE_ADDRESS.
 
 #### <b>FileX/LevelX usage hints</b>

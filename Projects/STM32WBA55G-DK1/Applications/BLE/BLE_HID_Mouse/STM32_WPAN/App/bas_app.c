@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "bas_app.h"
 #include "bas.h"
 #include "stm32_rtos.h"
@@ -113,7 +112,7 @@ void BAS_Notification(BAS_NotificationEvt_t *p_Notification)
 
     case BAS_BAL_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service3Char1_NOTIFY_ENABLED_EVT */
-      APP_DBG_MSG("BAS_BAL_NOTIFY_ENABLED_EVT\n");
+      LOG_INFO_APP("BAS_BAL_NOTIFY_ENABLED_EVT\n");
       UTIL_TIMER_Stop(&(BAS_APP_Context.TimerLevel_Id));
       UTIL_TIMER_StartWithPeriod(&(BAS_APP_Context.TimerLevel_Id), BAS_APP_DEFAULT_BAT_LEVEL_CHG);
       /* USER CODE END Service3Char1_NOTIFY_ENABLED_EVT */
@@ -121,7 +120,7 @@ void BAS_Notification(BAS_NotificationEvt_t *p_Notification)
 
     case BAS_BAL_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service3Char1_NOTIFY_DISABLED_EVT */
-      APP_DBG_MSG("BAS_BAL_NOTIFY_DISABLED_EVT\n");
+      LOG_INFO_APP("BAS_BAL_NOTIFY_DISABLED_EVT\n");
       UTIL_TIMER_Stop(&(BAS_APP_Context.TimerLevel_Id));
       /* USER CODE END Service3Char1_NOTIFY_DISABLED_EVT */
       break;
@@ -199,7 +198,7 @@ void BAS_APP_Init(void)
   result = BAS_UpdateValue(BAS_BAL, &msg_conf);
   if(result != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("BAS_UpdateValue fails\n");
+    LOG_INFO_APP("BAS_UpdateValue fails\n");
   }
 
   /**
@@ -265,7 +264,7 @@ static void BAS_APP_Level( void )
   result = BAS_UpdateValue(BAS_BAL, &msg_conf);
   if(result != BLE_STATUS_SUCCESS)
   {
-    APP_DBG_MSG("BAS_UpdateValue fails\n");
+    LOG_ERROR_APP("BAS_UpdateValue fails\n");
   }
 
   return;

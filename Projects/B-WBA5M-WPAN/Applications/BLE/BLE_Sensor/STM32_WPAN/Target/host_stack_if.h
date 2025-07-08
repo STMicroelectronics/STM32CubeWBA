@@ -46,9 +46,16 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
+/* Halt if any aci/hci functions call is made under ISR context, for debug purpose. */
+#define BLE_WRAP_PREPROC() do{ \
+                             if( __get_IPSR() != 0 )while(1); \
+                           }while(0)
+
 /* Trigger BLE Host stack process after calling any aci/hci functions */
 #define BLE_WRAP_POSTPROC() BleStackCB_Process()
+
+/* USER CODE BEGIN EM */
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

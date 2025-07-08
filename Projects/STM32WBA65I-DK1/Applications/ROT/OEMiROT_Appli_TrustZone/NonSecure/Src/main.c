@@ -33,13 +33,15 @@
 #include "stm32wba55g_discovery_conf.h"
 #endif
 
-extern ARM_DRIVER_FLASH LOADER_FLASH_DEV_NAME;
+extern ARM_DRIVER_FLASH FLASH_DEV_NAME;
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+extern ARM_DRIVER_FLASH SPI_FLASH_DEV_NAME;
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
 /* Avoids the semihosting issue */
 #if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
 __asm("  .global __ARM_use_no_argv\n");
 #endif /* defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
-
 #include "fw_update_app.h"
 #include "ns_data.h"
 
@@ -64,16 +66,27 @@ volatile uint32_t TestNumber  __attribute__((section(".bss.NoInit"))) ;
   * @{
   */
 
+/* Private includes ----------------------------------------------------------*/
+
+
 /* Private typedef -----------------------------------------------------------*/
+
+
 /* Private define ------------------------------------------------------------*/
-
-
+/* Enable print of boot time (obtained through DWT).
+   DWT usage requires product state is not closed/locked.
+   OEMxRoT logs must be disabled for relevant boot time. */
+/* #define PRINT_BOOT_TIME */
 
 #define USER_APP_NBLINKS  ((uint8_t) 1U)
+
 /* Private macro -------------------------------------------------------------*/
+
 /* Private variables ---------------------------------------------------------*/
 uint8_t *pUserAppId;
 const uint8_t UserAppId = 'A';
+uint64_t time;
+uint32_t end;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -96,6 +109,9 @@ void SecureFault_Callback(void);
 void SecureError_Callback(void);
 void Error_Handler(void);
 
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  */
 PUTCHAR_PROTOTYPE
 {
   COM_Transmit((uint8_t*)&ch, 1, TX_TIMEOUT);
@@ -145,14 +161,19 @@ size_t __write(int file, unsigned char const *ptr, size_t len)
 }
 #endif /*  __GNUC__ */
 
+/* Private user code ---------------------------------------------------------*/
+
+
 /**
-  * @brief  Main program
-  * @param  None
-  * @retval None
+  * @brief  The application entry point.
+  * @retval int
   */
 int main(int argc, char **argv)
 /*int main(void) */
 {
+  /* Get boot cycles */
+  end = DWT->CYCCNT;
+
   /*  set example to const : this const changes in binary without rebuild */
   pUserAppId = (uint8_t *)&UserAppId;
 
@@ -167,6 +188,9 @@ int main(int argc, char **argv)
   */
   HAL_Init();
 
+  /* Get Boot Time */
+  time = ((uint64_t)(end) * 1000U  / SystemCoreClock);
+
   /* DeInitialize RCC to allow PLL reconfiguration when configuring system clock */
   HAL_RCC_DeInit();
 
@@ -176,7 +200,13 @@ int main(int argc, char **argv)
   /* Configure Communication module */
   COM_Init();
 
+#ifdef PRINT_BOOT_TIME
+  printf("\r\nBoot time : %u ms at %u MHz", (unsigned int)(time), (unsigned int)(SystemCoreClock/1000000U));
+  printf("\r\n");
+#endif
+
 #if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+  /* Configure SPI module */
   SPI_Init();
 #endif  /* defined(OEMIROT_EXTERNAL_FLASH_ENABLE) */
 
@@ -194,16 +224,150 @@ int main(int argc, char **argv)
   printf("\r\n======================================================================");
   printf("\r\n\r\n");
 
-  if ( LOADER_FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
+  if ( FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
   {
     printf("Driver Flash Init : Failed");
+    Error_Handler();
   }
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+  if (SPI_FLASH_DEV_NAME.Initialize(NULL) != ARM_DRIVER_OK)
+  {
+    printf("Error while initializing EEPROM Interface");
+    Error_Handler();
+  }
+#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
+
   /* User App firmware runs*/
   FW_APP_Run();
 
+  /* Infinite loop */
   while (1U)
   {}
 
+}
+
+#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+/**
+  * @brief SPI Initialization Function
+  * @param None
+  * @retval None
+  */
+static void SPI_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
+
+  M95P32_EEPROM_SPI_CS_RCC();
+
+  /*Configure GPIO pin : M95P32_EEPROM_SPI_CS_PIN */
+  GPIO_InitStruct.Pin = M95P32_EEPROM_SPI_CS_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(M95P32_EEPROM_SPI_CS_PORT, &GPIO_InitStruct);
+
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
+}
+#endif  /* defined(OEMIROT_EXTERNAL_FLASH_ENABLE) */
+
+/**
+  * @brief  Display the TEST Main Menu choices on HyperTerminal
+  * @param  None.
+  * @retval None.
+  */
+void FW_APP_PrintMainMenu(void)
+{
+  printf("\r\n===================== Main Menu ==========================\r\n\n");
+#if !defined(MCUBOOT_PRIMARY_ONLY)
+  printf("  New Firmware Image ------------------------------------ 1\r\n\n");
+#endif
+#if (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
+  printf("  Display Non-Secure Data ------------------------------- 2\r\n\n");
+#endif /* defined(MCUBOOT_NS_DATA_IMAGE_NUMBER) */
+  printf("  Selection :\r\n\n");
+}
+
+/**
+  * @brief  Display the TEST Main Menu choices on HyperTerminal
+  * @param  None.
+  * @retval None.
+  */
+void FW_APP_Run(void)
+{
+  uint8_t key = 0U;
+
+  /*##1- Print Main Menu message*/
+  FW_APP_PrintMainMenu();
+
+  while (1U)
+  {
+    /* Clean the input path */
+    COM_Flush();
+
+    /* Receive key */
+    if (COM_Receive(&key, 1U, RX_TIMEOUT) == HAL_OK)
+    {
+      switch (key)
+      {
+#if !defined(MCUBOOT_PRIMARY_ONLY)
+        case '1' :
+          FW_UPDATE_Run();
+          break;
+#endif
+#if (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
+        case '2' :
+          NS_DATA_Run();
+          break;
+#endif /* defined(MCUBOOT_NS_DATA_IMAGE_NUMBER) */
+        default:
+          printf("Invalid Number !\r");
+          break;
+      }
+
+      /* Print Main Menu message */
+      FW_APP_PrintMainMenu();
+    }
+  }
+}
+
+/**
+  * @brief  Callback called by secure code following a secure fault interrupt
+  * @note   This callback is called by secure code thanks to the registration
+  *         done by the non-secure application with non-secure callable API
+  *         SECURE_RegisterCallback(SECURE_FAULT_CB_ID, (void *)SecureFault_Callback);
+  * @retval None
+  */
+void SecureFault_Callback(void)
+{
+  /* Go to error infinite loop when Secure fault generated by IDAU/SAU check */
+  /* because of illegal access */
+  Error_Handler();
+}
+
+
+/**
+  * @brief  Callback called by secure code following a GTZC TZIC secure interrupt (GTZC_IRQn)
+  * @note   This callback is called by secure code thanks to the registration
+  *         done by the non-secure application with non-secure callable API
+  *         SECURE_RegisterCallback(GTZC_ERROR_CB_ID, (void *)SecureError_Callback);
+  * @retval None
+  */
+void SecureError_Callback(void)
+{
+  /* Go to error infinite loop when Secure error generated by GTZC check */
+  /* because of illegal access */
+  Error_Handler();
+}
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  NVIC_SystemReset();
 }
 
 /**
@@ -280,129 +444,6 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief  Display the TEST Main Menu choices on HyperTerminal
-  * @param  None.
-  * @retval None.
-  */
-void FW_APP_PrintMainMenu(void)
-{
-  printf("\r\n===================== Main Menu ==========================\r\n\n");
-#if !defined(MCUBOOT_PRIMARY_ONLY)
-  printf("  New Firmware Image ------------------------------------ 1\r\n\n");
-#endif
-#if (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
-  printf("  Display Non-Secure Data ------------------------------- 2\r\n\n");
-#endif /* defined(MCUBOOT_NS_DATA_IMAGE_NUMBER) */
-  printf("  Selection :\r\n\n");
-}
-
-/**
-  * @brief  Display the TEST Main Menu choices on HyperTerminal
-  * @param  None.
-  * @retval None.
-  */
-void FW_APP_Run(void)
-{
-  uint8_t key = 0U;
-
-  /*##1- Print Main Menu message*/
-  FW_APP_PrintMainMenu();
-
-  while (1U)
-  {
-    /* Clean the input path */
-    COM_Flush();
-
-    /* Receive key */
-    if (COM_Receive(&key, 1U, RX_TIMEOUT) == HAL_OK)
-    {
-      switch (key)
-      {
-#if !defined(MCUBOOT_PRIMARY_ONLY)
-        case '1' :
-          FW_UPDATE_Run();
-          break;
-#endif
-#if (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
-        case '2' :
-          NS_DATA_Run();
-          break;
-#endif /* defined(MCUBOOT_NS_DATA_IMAGE_NUMBER) */
-        default:
-          printf("Invalid Number !\r");
-          break;
-      }
-
-      /* Print Main Menu message */
-      FW_APP_PrintMainMenu();
-    }
-  }
-}
-/**
-  * @brief  Callback called by secure code following a secure fault interrupt
-  * @note   This callback is called by secure code thanks to the registration
-  *         done by the non-secure application with non-secure callable API
-  *         SECURE_RegisterCallback(SECURE_FAULT_CB_ID, (void *)SecureFault_Callback);
-  * @retval None
-  */
-void SecureFault_Callback(void)
-{
-  /* Go to error infinite loop when Secure fault generated by IDAU/SAU check */
-  /* because of illegal access */
-  Error_Handler();
-}
-
-
-/**
-  * @brief  Callback called by secure code following a GTZC TZIC secure interrupt (GTZC_IRQn)
-  * @note   This callback is called by secure code thanks to the registration
-  *         done by the non-secure application with non-secure callable API
-  *         SECURE_RegisterCallback(GTZC_ERROR_CB_ID, (void *)SecureError_Callback);
-  * @retval None
-  */
-void SecureError_Callback(void)
-{
-  /* Go to error infinite loop when Secure error generated by GTZC check */
-  /* because of illegal access */
-  Error_Handler();
-}
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  NVIC_SystemReset();
-}
-
-#if defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-/**
-  * @brief SPI Initialization Function
-  * @param None
-  * @retval None
-  */
-static void SPI_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  M95P32_EEPROM_SPI_CS_RCC();
-
-  /*Configure GPIO pin : M95P32_EEPROM_SPI_CS_PIN */
-  GPIO_InitStruct.Pin = M95P32_EEPROM_SPI_CS_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(M95P32_EEPROM_SPI_CS_PORT, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
-}
-#endif  /* defined(OEMIROT_EXTERNAL_FLASH_ENABLE) */
-
 #ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
@@ -414,7 +455,7 @@ static void SPI_Init(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* User can add his own implementation to report the file name and line number,
-   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
   /* Infinite loop */
   while (1U)
@@ -422,11 +463,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   }
 }
 #endif /* USE_FULL_ASSERT */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */

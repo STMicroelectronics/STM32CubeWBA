@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,7 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-#include "ral.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -86,10 +86,9 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while(1)
+   while (1)
   {
   }
-
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -104,7 +103,6 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
@@ -120,7 +118,6 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -136,7 +133,6 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -152,7 +148,6 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -226,8 +221,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -335,16 +331,7 @@ void TIM16_IRQHandler(void)
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-  ral_instance_t radio_instance;
-  uint8_t channel;
 
-  /* Check current ral state to use AHB5 synchronization workaround only if radio is granted to BLE */
-  ral_event_state_enum_t radio_state = ral_get_current_event_state( &radio_instance, &channel );
-  if (radio_state == RAL_IDLE) {
-    /* WORKAROUND : Force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
-    uint32_t mul,div;
-    ll_intf_get_aligned_us_now(&mul, &div);
-  }
   /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)
@@ -405,6 +392,7 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
 /**
   * @brief This function handles EXTI Line6 interrupt.
   */

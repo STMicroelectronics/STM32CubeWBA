@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service1_app.h
+  * @file    hrs_app.h
   * @author  MCD Application Team
-  * @brief   Header for service1_app.c
+  * @brief   Header for hrs_app.c
   ******************************************************************************
   * @attention
   *
@@ -27,6 +27,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

@@ -30,6 +30,7 @@
 /* Global define -------------------------------------------------------------*/
 /* Global variables ----------------------------------------------------------*/
 extern ST_MAC_associateCnf_t g_MAC_associateCnf;
+extern uint8_t association_succeed;
 
 /* Private defines -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
@@ -54,6 +55,7 @@ MAC_Status_t APP_MAC_mlmeAssociateCnfCb( const  ST_MAC_associateCnf_t * pAssocia
      /* If success */
     APP_DBG("RFD MAC APP - Association CNF Received \n\r");
     BSP_LED_On(LED_BLUE);
+    association_succeed = 0x01;
   }else{
     APP_DBG("RFD MAC APP - Association CNF Fails %d\n\r",pAssociateCnf->status);
   }

@@ -38,6 +38,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+static void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 /* Private functions ---------------------------------------------------------*/
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl;
@@ -46,7 +47,7 @@ ST_MAC_associateInd_t g_MAC_associateInd;
 
 /* USER CODE BEGIN FD*/
 
-void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
+static void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
   
   // ST_MAC_callbacks_t macCallback;
   macCallback->mlmeAssociateCnfCb = APP_MAC_mlmeAssociateCnfCb ;

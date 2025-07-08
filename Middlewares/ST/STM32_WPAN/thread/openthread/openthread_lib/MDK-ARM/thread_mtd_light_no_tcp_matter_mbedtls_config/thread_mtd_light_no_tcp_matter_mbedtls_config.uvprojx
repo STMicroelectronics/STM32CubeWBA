@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-light-no-tcp-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-light-no-tcp-config.h&gt;,OPENTHREAD_MTD,OT_LIGHT,STM32WBA55xx</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\stack\src;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\stack\src\core;..\..\..\config;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns;..\..\..\..\..\..\..\Third_Party\mbedtls\library</IncludePath>
+              <IncludePath>..\..\..\stack\src;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\stack\src\core;..\..\..\config;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns;..\..\..\..\..\..\..\Third_Party\mbedtls\library;..\..\..\stack\src\include;..\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include\</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

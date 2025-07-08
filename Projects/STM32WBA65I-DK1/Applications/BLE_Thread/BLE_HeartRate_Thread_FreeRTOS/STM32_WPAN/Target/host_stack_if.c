@@ -23,17 +23,40 @@
 #include "app_conf.h"
 #include "ll_sys.h"
 #include "app_ble.h"
+#include "auto/ble_raw_api.h"
 #include "cmsis_os2.h"
 
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+/* External variables --------------------------------------------------------*/
+/**
+  * @brief  Missed HCI event flag
+  */
+extern uint8_t missed_hci_event_flag;
+/* USER CODE BEGIN EV */
+
+/* USER CODE END EV */
+
 /* External function prototypes -----------------------------------------------*/
-
-extern osSemaphoreId_t         BleStackSemaphore;
 /* USER CODE BEGIN EFP */
-
+#undef BLE_WRAP_PREPROC
+#undef BLE_WRAP_POSTPROC
 /* USER CODE END EFP */
 
+/* Release Link Layer Mutex before calling any aci/hci functions */
+#define BLE_WRAP_PREPROC osMutexAcquire(LinkLayerMutex, osWaitForever)
+
+/* Release Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
+#define BLE_WRAP_POSTPROC do{ \
+                              osMutexRelease(LinkLayerMutex);  \
+                              BleStackCB_Process(); \
+                            }while(0)
+
 /**
-  * @brief  BLE Host stack processing request.
+  * @brief  Host stack processing request from Link Layer.
   * @param  None
   * @retval None
   */
@@ -61,8 +84,13 @@ void BleStackCB_Process(void)
   /* USER CODE BEGIN BleStackCB_Process 0 */
 
   /* USER CODE END BleStackCB_Process 0 */
+  if (missed_hci_event_flag)
+  {
+    missed_hci_event_flag = 0;
+    HCI_HARDWARE_ERROR_EVENT(0x03);
+  }
   /* BLE Host stack processing through background task */
-  osSemaphoreRelease(BleStackSemaphore);
+  osSemaphoreRelease(BleHostSemaphore);
 
   /* USER CODE BEGIN BleStackCB_Process 1 */
 

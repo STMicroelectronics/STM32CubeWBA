@@ -277,23 +277,24 @@ void APP_THREAD_Persistence_Init(void)
   }
   
   savedBufferSize = sCachePersistentData.lData[PERSISTENCE_LENGTH_OFFSET_IN_WORDS];
-  
-  memcpy(settingBufferPtr, &sCachePersistentData.cData[PERSISTENCE_DATA_OFFSET_IN_BYTES], savedBufferSize);
-  APP_DBG("\r\nAPP_Thread_NVM_Load Success, the buffer length = %d\r\n", savedBufferSize);
-  
-  assert_param(settingBufferSize >= savedBufferSize);
-
-  error = FillSettingBuffer(settingBufferPtr, savedBufferSize);
-  if (error != OT_ERROR_NONE)
+  if ( savedBufferSize > 0)
   {
-    APP_THREAD_Error(ERR_THREAD_RECOVER_PERSISTENT_INFO, error);
+    memcpy(settingBufferPtr, &sCachePersistentData.cData[PERSISTENCE_DATA_OFFSET_IN_BYTES], savedBufferSize);
+    APP_DBG("\r\nAPP_Thread_NVM_Load Success, the buffer length = %d\r\n", savedBufferSize);
+    
+
+    error = FillSettingBuffer(settingBufferPtr, savedBufferSize);
+    if (error != OT_ERROR_NONE)
+    {
+      APP_THREAD_Error(ERR_THREAD_RECOVER_PERSISTENT_INFO, error);
+    }
+    /* Toggle the Green LED */
+    for (int var = 0; var < 5; ++var) {
+      BSP_LED_Toggle(LED_GREEN);
+      HAL_Delay(50U);
+    }
+    BSP_LED_Off(LED_GREEN);
   }
-  /* Toggle the Blue LED */
-  for (int var = 0; var < 5; ++var) {
-    BSP_LED_Toggle(LED_GREEN);
-    HAL_Delay(50U);
-  }
-  BSP_LED_Off(LED_GREEN);
 }
 
 

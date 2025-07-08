@@ -47,7 +47,9 @@ static void cli_port_print_msg(const char *pMessage);
 static void cli_port_print_prompt(bool bSendCr);
 static void APP_ZIGBEE_App_Task(void);
 static void APP_ZIGBEE_ActivateStatusDebug(void);
-
+static const char * ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship);
+static const char * ZbNwkNeighborDeviceTypeToStr(enum ZbNwkNeighborTypeT deviceType);
+static void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp);
 /**
  * @brief   Reception of UART data until a CR occurs.
  *
@@ -111,7 +113,7 @@ void APP_ZIGBEE_App_UartRxCallback(uint8_t *pData, uint16_t iSize, uint8_t cErro
 
 
 /**
- * @brief  Application task used to get access to some paramters
+ * @brief  Application task used to get access to some parameters
  * @param  None
  * @retval None
  */
@@ -193,7 +195,7 @@ void APP_ZIGBEE_InitStatusDebug(void)
  *-----------------------------------------------------------------------------
  */
 
-void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp)
+static void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp)
 {
     (void)zb;
     (void)mask;
@@ -285,7 +287,7 @@ app_hex_bin_to_str(const uint8_t *in_data, unsigned int in_len, char *out_str, u
     return j;
 }
 
-const char *
+static const char *
 ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship)
 {
     const char *str;
@@ -331,7 +333,7 @@ ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship)
     return (str);
 }
 
-const char *
+static const char *
 ZbNwkNeighborDeviceTypeToStr(enum ZbNwkNeighborTypeT deviceType)
 {
     const char *str;

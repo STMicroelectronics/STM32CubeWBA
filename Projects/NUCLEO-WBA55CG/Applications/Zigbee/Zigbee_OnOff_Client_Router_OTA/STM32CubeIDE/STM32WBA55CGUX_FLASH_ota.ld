@@ -44,9 +44,11 @@ _Min_Stack_Size = 0x1000; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  FLASH    (rx)     : ORIGIN = 0x8080000,   LENGTH = 508K
-  NVM      (rx)     : ORIGIN = 0x80FC000,   LENGTH = 16K
+  RAM         (xrw) : ORIGIN = 0x20000000,  LENGTH = 128K
+  
+  FLASH_START (rx)  : ORIGIN = 0x8080000,             LENGTH = 0x160
+  OTA_START   (rx)  : ORIGIN = ( 0x8080000 + 0x160 ), LENGTH = 0xA0
+  FLASH       (rx)  : ORIGIN = ( 0x8080000 + 0x200 ), LENGTH = 1024K - (0x2000 * 4) - ( 0x80000 + 0x200 )
 }
 
 /* Sections */
@@ -58,8 +60,15 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_START
 
+  .ota_start :
+  {
+  	. = ALIGN(4);
+  	KEEP(*(TAG_OTA_START)) /* OTA File Informations */
+  	. = ALIGN(4);
+  } >OTA_START
+  
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
   {
@@ -148,6 +157,13 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
 
   } >RAM AT> FLASH
+  
+  .ota_end :
+  {
+    . = ALIGN(4);
+    KEEP(*(TAG_OTA_END)) /* OTA File Informations */
+    . = ALIGN(4);
+  } > FLASH
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

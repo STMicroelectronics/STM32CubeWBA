@@ -65,7 +65,6 @@ void HASH_IRQHandler(void);
 void EXTI4_IRQHandler(void);
 void EXTI5_IRQHandler(void);
 void EXTI13_IRQHandler(void);
-
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

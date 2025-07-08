@@ -53,7 +53,7 @@
   */
 void HAL_MspInit(void)
 {
-
+  __HAL_RCC_PWR_CLK_ENABLE();
 }
 
 /**
@@ -62,7 +62,7 @@ void HAL_MspInit(void)
   */
 void HAL_MspDeInit(void)
 {
-
+  __HAL_RCC_PWR_CLK_DISABLE();
 }
 
 /**

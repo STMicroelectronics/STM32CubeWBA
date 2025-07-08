@@ -106,9 +106,28 @@ void PWR_EnterSleepMode( void );
 void PWR_ExitSleepMode( void );
 
 /**
+  * @brief Enable Low Power Sleep Mode
+  */
+void PWR_EnableSleepMode( void );
+
+/**
+  * @brief Disable Low Power Sleep Mode
+  */
+void PWR_DisableSleepMode( void );
+
+/**
   * @brief Check if the system is waking-up from standby low power mode.
   */
 uint32_t is_boot_from_standby(void);
+
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+/**
+  * @brief returns 0 if wakeup time profiling is not done.
+  */
+uint32_t LPM_is_wakeup_time_profiling_done(void);
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 /**
   * @brief will save MCU context if before standby entry

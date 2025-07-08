@@ -4,7 +4,7 @@
  * @brief ZCL Groups cluster header
  * ZCL 7 section 3.6
  * ZCL 8 section 3.6
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_GROUPS_H
@@ -59,7 +59,7 @@
 
 /** Groups Server Attribute IDs */
 enum ZbZclGroupsSvrAttrT {
-    ZCL_GROUPS_ATTR_NAME_SUPPORT = 0x0000, /**< NameSupport */
+    ZCL_GROUPS_ATTR_NAME_SUPPORT = 0x0000 /**< NameSupport */
 };
 
 #define ZCL_GROUPS_NAME_SUPPORT_MASK        0x80U
@@ -71,7 +71,7 @@ enum {
     ZCL_GROUPS_COMMAND_GET_MEMBERSHIP = 0x02,
     ZCL_GROUPS_COMMAND_REMOVE = 0x03,
     ZCL_GROUPS_COMMAND_REMOVE_ALL = 0x04,
-    ZCL_GROUPS_COMMAND_ADD_IDENTIFYING = 0x05,
+    ZCL_GROUPS_COMMAND_ADD_IDENTIFYING = 0x05
 };
 
 /**

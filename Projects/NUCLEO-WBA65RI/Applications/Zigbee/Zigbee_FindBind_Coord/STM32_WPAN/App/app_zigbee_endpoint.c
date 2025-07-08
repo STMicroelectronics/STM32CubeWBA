@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -82,7 +82,7 @@
 /* USER CODE END Scenes defines */
 
 /* USER CODE BEGIN PD */
-#define APP_ZIGBEE_IDENTIFY_MODE_DELAY    30u   /* 30s  */
+#define APP_ZIGBEE_IDENTIFY_MODE_DELAY    30u     /* 30s  */
 
 #define APP_ZIGBEE_APPLICATION_NAME       "Find-Bind Coordinator"
 #define APP_ZIGBEE_APPLICATION_OS_NAME    "."
@@ -118,6 +118,8 @@ const uint8_t     pszMessageBuffer[] = "ZCL Test Message";
 /* USER CODE BEGIN PV */
 static bool       bIsSquawkStrobe = false;
 static struct ZbZclIasWdClientStartWarningReqT  stWarningRequest;
+static uint16_t   iDeviceIndex = 0;
+static uint64_t   dlDeviceExtendedAddress[10];
 
 /* USER CODE END PV */
 
@@ -225,18 +227,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -263,27 +253,42 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Identify Server Cluster */
   stZigbeeAppInfo.IdentifyServer = ZbZclIdentifyServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, NULL, NULL );
   assert( stZigbeeAppInfo.IdentifyServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.IdentifyServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.IdentifyServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Identify Server Endpoint Register." );
+  }
 
   /* Add Scenes Server Cluster */
   stZigbeeAppInfo.ScenesServer = ZbZclScenesServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, ZCL_SCENES_MAX_SCENES );
   assert( stZigbeeAppInfo.ScenesServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.ScenesServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.ScenesServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Scenes Server Endpoint Register." );
+  }
 
   /* Add OnOff Server Cluster */
   stZigbeeAppInfo.OnOffServer = ZbZclOnOffServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stOnOffServerCallbacks, NULL );
   assert( stZigbeeAppInfo.OnOffServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during OnOff Server Endpoint Register." );
+  }
 
   /* Add IasWd Server Cluster */
   stZigbeeAppInfo.IasWdServer = ZbZclIasWdServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stIasWdServerCallbacks, NULL );
   assert( stZigbeeAppInfo.IasWdServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.IasWdServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.IasWdServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during IasWd Server Endpoint Register." );
+  }
 
   /* Add Messaging Server Cluster */
   stZigbeeAppInfo.MessagingServer = ZbZclMsgServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stMessagingServerCallbacks, NULL );
   assert( stZigbeeAppInfo.MessagingServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Messaging Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   ZbZclClusterSetProfileId( stZigbeeAppInfo.MessagingServer, APP_ZIGBEE_PROFILE_ID );
@@ -361,6 +366,7 @@ void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress
   LOG_INFO_APP( "New Device (%d) on Network : with Extended ( " LOG_DISPLAY64() " ) and Short ( 0x%04X ) Address.", cCapability, LOG_NUMBER64( dlExtendedAddress ), iShortAddress );
 
   /* USER CODE BEGIN APP_ZIGBEE_SetNewDevice */
+  dlDeviceExtendedAddress[iDeviceIndex++] = dlExtendedAddress;
 
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
 }
@@ -409,8 +415,8 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
   {
-    LOG_INFO_APP( "[ONOFF] Red Led 'OFF'" );
-    APP_LED_OFF( LED_RED );
+    LOG_INFO_APP( "[ONOFF] Led 'OFF'" );
+    APP_LED_OFF( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
   }
   else
@@ -435,8 +441,8 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
   {
-    LOG_INFO_APP( "[ONOFF] Red Led 'ON'" );
-    APP_LED_ON( LED_RED );
+    LOG_INFO_APP( "[ONOFF] Led 'ON'" );
+    APP_LED_ON( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
   }
   else
@@ -588,13 +594,13 @@ static enum ZclStatusCodeT APP_ZIGBEE_ZclAttributesWriteCallback( struct ZbZclCl
         (void)memcpy( pAttrData, pDataInput, iLen );
         if ( pDataInput[0] == 1 ) 
         {
-          LOG_INFO_APP( "Green Led 'ON'" );
-          APP_LED_ON( LED_GREEN );
+          LOG_INFO_APP( "Light 'ON'" );
+          APP_LED_ON( LED_WORK );
         }
         else 
         {
-          LOG_INFO_APP(  "Green Led 'OFF'" );
-          APP_LED_OFF(LED_GREEN);
+          LOG_INFO_APP(  "Light 'OFF'" );
+          APP_LED_OFF( LED_WORK );
         }
         return ZCL_STATUS_SUCCESS;
 
@@ -658,9 +664,9 @@ static void APP_ZIGBEE_IasWdServerAlarmProcessing( void )
     if ( stWarningRequest.strobe ) 
     {
       /* strobe enabled */
-      APP_LED_ON(LED_RED);
+      APP_LED_ON(LED_WORK);
       HAL_Delay( stWarningRequest.strobe_dutycycle*10); /* time in ms corresponding to strobe duty cycle */
-      APP_LED_OFF(LED_RED);
+      APP_LED_OFF(LED_WORK);
       HAL_Delay(1000 - stWarningRequest.strobe_dutycycle*10); /* remaining time in 1s */
     } 
     else 
@@ -688,14 +694,14 @@ static void APP_ZIGBEE_IasWdServerSquawkProcessing( void )
     LOG_INFO_APP( "[IAS WD] Squawk!" );
     if ( bIsSquawkStrobe != false ) 
     {
-      APP_LED_ON(LED_RED);
+      APP_LED_ON(LED_WORK);
     }
     
     HAL_Delay(100);
 
     if ( bIsSquawkStrobe != false ) 
     {
-      APP_LED_OFF(LED_RED);
+      APP_LED_OFF(LED_WORK);
     }
     
     HAL_Delay(100);
@@ -714,10 +720,30 @@ void APP_BSP_Button1Action( void )
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
   {
-    LOG_INFO_APP( "SW1 PUSHED : Turn on 'Identify Mode' during %ds", APP_ZIGBEE_IDENTIFY_MODE_DELAY );
-    ZbZclIdentifyServerSetTime( stZigbeeAppInfo.IdentifyServer, APP_ZIGBEE_IDENTIFY_MODE_DELAY );
+    if ( APP_BSP_ButtonIsLongPressed( B1 ) == false )
+    {
+      LOG_INFO_APP( "SW1 PUSHED : Turn on 'Identify Mode' during %ds", APP_ZIGBEE_IDENTIFY_MODE_DELAY );
+      ZbZclIdentifyServerSetTime( stZigbeeAppInfo.IdentifyServer, APP_ZIGBEE_IDENTIFY_MODE_DELAY );
+    }
+    else
+    {
+      (void)APP_ZIGBEE_GetDisplayBindTable( true );
+    }
   }
 }
+
+///**
+// * @brief   Callback after a Find&Bind Request
+// *
+// */
+//static void APP_ZIGBEE_ZbStartupFindBindStartCallback( enum ZbStatusCodeT eStatus, void * arg )
+//{
+//  enum ZbStatusCodeT  * pZbStatus = arg;
+//  
+//  LOG_INFO_APP( "FindBindStartCallback" );
+//  *pZbStatus = eStatus;
+//  UTIL_SEQ_SetEvt( EVENT_ZIGBEE_APP1 );
+//}
 
 
 /**
@@ -728,11 +754,21 @@ void APP_BSP_Button1Action( void )
 void APP_BSP_Button2Action( void )
 {
   struct ZbZclMsgMessageT   stMessage;
-  enum ZclStatusCodeT       eStatus;
+  struct ZbApsAddrT         stDestAddress;
+  enum ZclStatusCodeT       eZclStatus;
   
   /* First, verify if Appli has already Join a Network  */ 
   if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
   {
+    LOG_INFO_APP( "SW2 PUSHED : Send New Message" );
+    
+    /* Set Address */
+    memset( &stDestAddress, 0, sizeof( stDestAddress ) );
+    
+    stDestAddress.mode = ZB_APSDE_ADDRMODE_EXT;
+    stDestAddress.extAddr = dlDeviceExtendedAddress[0];
+    stDestAddress.endpoint = 12;
+          
     /* Set Message */
     memset( &stMessage, 0, sizeof( stMessage ) );
 
@@ -741,11 +777,11 @@ void APP_BSP_Button2Action( void )
     stMessage.message_str = (uint8_t *)pszMessageBuffer;
     stMessage.message_len = sizeof( pszMessageBuffer );
     
-    LOG_INFO_APP( "SW2 PUSHED : Send New Message" );
-    eStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, ZbApsAddrBinding, &stMessage, NULL, NULL );
-    if ( eStatus != ZCL_STATUS_SUCCESS) 
+    //eZclStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, ZbApsAddrBinding, &stMessage, NULL, NULL );
+    eZclStatus = ZbZclMsgServerDisplayMessageUnsolic( stZigbeeAppInfo.MessagingServer, &stDestAddress, &stMessage, NULL, NULL );
+    if ( eZclStatus != ZCL_STATUS_SUCCESS) 
     {
-      LOG_ERROR_APP("Failed to display New message (0x%02X)", eStatus);
+      LOG_ERROR_APP( "Failed to display New message (0x%02X)", eZclStatus );
     }
   }
 }

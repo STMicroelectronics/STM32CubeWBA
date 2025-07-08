@@ -42,18 +42,8 @@ extern uint8_t missed_hci_event_flag;
 
 /* External function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN EFP */
-#undef BLE_WRAP_PREPROC
-#undef BLE_WRAP_POSTPROC
+
 /* USER CODE END EFP */
-
-/* Release Link Layer Mutex before calling any aci/hci functions */
-#define BLE_WRAP_PREPROC osMutexAcquire(LinkLayerMutex, osWaitForever)
-
-/* Release Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
-#define BLE_WRAP_POSTPROC do{ \
-                              osMutexRelease(LinkLayerMutex);  \
-                              BleStackCB_Process(); \
-                            }while(0)
 
 /**
   * @brief  Host stack processing request from Link Layer.

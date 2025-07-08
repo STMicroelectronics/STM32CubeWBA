@@ -1,0 +1,10 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;../../../../../../Utilities/lpm/tiny_lpm
+[Others]
+Define=
+HALModule=EXTI
+[Groups]
+Doc=../README.md;
+Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Drivers/STM32WBAxx_HAL_Driver=../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c;
+Utilities/lpm/tiny_lpm=../../../../../../Utilities/lpm/tiny_lpm/stm32_lpm.c;

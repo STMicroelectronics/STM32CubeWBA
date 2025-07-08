@@ -33,17 +33,7 @@
 
 #include "network_data.hpp"
 
-#include "coap/coap_message.hpp"
-#include "common/array.hpp"
-#include "common/code_utils.hpp"
-#include "common/debug.hpp"
-#include "common/locator_getters.hpp"
-#include "common/log.hpp"
 #include "instance/instance.hpp"
-#include "mac/mac_types.hpp"
-#include "thread/thread_netif.hpp"
-#include "thread/thread_tlvs.hpp"
-#include "thread/uri_paths.hpp"
 
 namespace ot {
 namespace NetworkData {
@@ -579,11 +569,11 @@ void NetworkData::AddRloc16ToRlocs(uint16_t aRloc16, Rlocs &aRlocs, RoleFilter a
         break;
 
     case kRouterRoleOnly:
-        VerifyOrExit(Mle::IsActiveRouter(aRloc16));
+        VerifyOrExit(Mle::IsRouterRloc16(aRloc16));
         break;
 
     case kChildRoleOnly:
-        VerifyOrExit(!Mle::IsActiveRouter(aRloc16));
+        VerifyOrExit(Mle::IsChildRloc16(aRloc16));
         break;
     }
 

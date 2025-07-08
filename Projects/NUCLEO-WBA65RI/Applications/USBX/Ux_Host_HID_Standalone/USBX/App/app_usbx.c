@@ -77,9 +77,12 @@ UINT MX_USBX_Init(VOID)
   */
 ALIGN_TYPE _ux_utility_interrupt_disable(VOID)
 {
+  UINT interrupt_save = 0;
   /* USER CODE BEGIN _ux_utility_interrupt_disable */
-  return(0);
+
   /* USER CODE END _ux_utility_interrupt_disable */
+
+  return interrupt_save;
 }
 
 /**

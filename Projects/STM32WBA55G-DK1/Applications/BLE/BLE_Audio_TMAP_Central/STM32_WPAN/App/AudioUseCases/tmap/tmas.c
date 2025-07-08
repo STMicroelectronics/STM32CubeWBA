@@ -21,6 +21,7 @@
 #include "tmap_log.h"
 #include "ble_gatt_aci.h"
 #include "svc_ctl.h"
+#include "usecase_dev_mgmt.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -31,7 +32,6 @@
 #define ATT_ERR_VALUE_NOT_ALLOWED               (0x13u)
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static TMAS_ServiceContext_t *p_srv_ctxt = 0;
 /* Private functions prototype------------------------------------------------*/
 static tBleStatus TMAS_SetCharacteristic(uint16_t ServiceHandle, uint16_t CharHandle, uint8_t *pData, uint16_t DataLen);
 /* Functions Definition ------------------------------------------------------*/
@@ -63,7 +63,6 @@ tBleStatus TMAS_InitService(TMAS_ServiceContext_t *pSrvContext)
     BLE_DBG_TMAS_MSG("Telephony and Media Audio Service (TMAS) is added Successfully %04X (Max_Attribute_Records : %d)\n",
                     pSrvContext->ServiceHandle,
                     (1+num_char_records));
-    p_srv_ctxt = pSrvContext;
   }
   else
   {
@@ -84,7 +83,7 @@ tBleStatus TMAS_InitCharacteristics(TMAS_ServiceContext_t *pSrvContext)
                                   UUID_TYPE_16,
                                   (Char_UUID_t *) &uuid ,
                                   2u,
-                                  (CHAR_PROP_READ),
+                                  CHAR_PROP_READ,
                                   ATTR_PERMISSION_ENCRY_READ,
                                   0,
                                   10,
@@ -128,59 +127,17 @@ tBleStatus TMAS_SetTMAPRole(TMAS_ServiceContext_t *pSrvContext, TMAP_Role_t Role
   return hciCmdResult;
 }
 
-/**
-  * @brief  handles ATT Events for TMAS Service .
-  * @param  pEvent: pointer on Event
-  * @retval indicate if ATT Event has been handled ( returns 1) or not
-  *         ( returns 0) by the function.
-  */
-uint8_t TMAS_ATT_Event_Handler(void *pEvent)
-{
-
-  uint8_t return_value = 0u;
-  hci_event_pckt *p_event_pckt;
-  evt_blecore_aci *p_blecore_evt;
-  //TMAS_NotificationEvt_t notification;
-
-  p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
-
-  if (p_srv_ctxt != 0x00000000u)
-  {
-    switch (p_event_pckt->evt)
-    {
-      case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE:
-      {
-        p_blecore_evt = (evt_blecore_aci*)p_event_pckt->data;
-        BLE_DBG_TMAS_MSG("GATT Event in TMAS Layer : %04X with code %04X!!\n",p_event_pckt->evt,p_blecore_evt->ecode);
-        switch (p_blecore_evt->ecode)
-        {
-          default:
-            break;
-        }
-      }
-      break; /* HCI_HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE_SPECIFIC */
-
-      default:
-        break;
-    }
-  }
-  return return_value;
-}
-
 /* Private functions ----------------------------------------------------------*/
 
 static tBleStatus TMAS_SetCharacteristic(uint16_t ServiceHandle, uint16_t CharHandle, uint8_t *pData,uint16_t DataLen)
 {
- tBleStatus hciCmdResult;
 
-  hciCmdResult = aci_gatt_update_char_value_ext(0x0000,
-                                                ServiceHandle,
-                                                CharHandle,
-                                                0x01,                           /*Notification*/
-                                                DataLen,                        /* Char_Length*/
-                                                0,                              /* charValOffset */
-                                                DataLen,                        /* charValueLen */
-                                                (uint8_t *) &pData[0]);
+  return USECASE_DEV_MGMT_UpdateCharValue(ServiceHandle,
+                                          CharHandle,
+                                          0x00,
+                                          DataLen,
+                                          0,
+                                          DataLen,
+                                          (uint8_t *) &pData[0]);
 
-  return hciCmdResult;
 }

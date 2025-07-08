@@ -46,6 +46,8 @@
 #define APP_MAC_TRANSMIT_PERIOD        (1*1000)        /**< 1000ms */
 #endif
 
+#define ASSOCIATE_RETRY_MAX     8
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint8_t rfBuffer[128];
@@ -64,13 +66,16 @@ static UTIL_TIMER_Object_t APP_MAC_transmitTimerId;
 static uint8_t xorSign( const char * pmessage, uint8_t message_len);
 
 #ifdef APP_MAC_PERIODIC_TRANSMIT
-static void APP_MAC_Transmit(void *arg);
+static void APP_MAC_Transmit_TimerCb(void *arg);
+static void APP_MAC_Transmit(void);
+static void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback);
 #endif
 
 /* Public variables ---------------------------------------------------------*/
 MAC_handle mac_hndl;
 ST_MAC_callbacks_t macCallback;
 ST_MAC_associateCnf_t g_MAC_associateCnf;
+uint8_t association_succeed = 0x00;
 
 /* Private function  ---------------------------------------------------------*/
 /**
@@ -94,11 +99,11 @@ static uint8_t xorSign( const char * pmessage, uint8_t message_len)
 #if (CFG_BUTTON_SUPPORTED == 1) || defined(APP_MAC_PERIODIC_TRANSMIT)
 void APP_BSP_Button1Action(void)
 {
-  APP_RFD_MAC_802_15_4_SendData("Data From Node\0");
+  APP_RFD_MAC_802_15_4_SendData("Async Data From Node\0");
 }
 #endif
 
-void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
+static void app_mac_regMacCallback( ST_MAC_callbacks_t * macCallback) {
   
   // ST_MAC_callbacks_t macCallback;
   macCallback->mlmeAssociateCnfCb = APP_MAC_mlmeAssociateCnfCb ;
@@ -140,6 +145,9 @@ void APP_MAC_Init(void)
 
   /* Register tasks */
   UTIL_SEQ_RegTask(TASK_RFD, UTIL_SEQ_RFU, APP_RFD_MAC_802_15_4_SetupTask); // Setup task
+#ifdef APP_MAC_PERIODIC_TRANSMIT
+  UTIL_SEQ_RegTask(TASK_PERIODIC_TRANSMIT, UTIL_SEQ_RFU, APP_MAC_Transmit); // Periodic OnOff 'Toggle' transmission task
+#endif
 
   
   /* Configuration MAC 802_15_4 */
@@ -158,6 +166,7 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
   ST_MAC_setReq_t      SetReq;
   ST_MAC_associateReq_t AssociateReq;
   int8_t tx_power_pib_value = 0;
+  uint8_t associate_retry_cnt = 0x00;
 
   APP_DBG("Run RFD MAC 802.15.4 - 2 - RFD Startup\r\n");
   /* Reset MAC */
@@ -201,51 +210,60 @@ void APP_RFD_MAC_802_15_4_SetupTask(void)
   UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
     
   /* Association request */
-  APP_DBG("RFD MAC APP - Association REQ\n\r");
-  AssociateReq.channel_number   = g_channel;
-  AssociateReq.channel_page     = g_channel_page;
-  AssociateReq.coord_addr_mode  = g_SHORT_ADDR_MODE_c;
-  memcpy(AssociateReq.coord_address.a_short_addr,&g_coordShortAddr,0x02);
-  AssociateReq.capability_information = 0x80;
-  memcpy(AssociateReq.a_coord_PAN_id,&g_panId,0x02);
-  AssociateReq.security_level = 0x00;
-  MacStatus = ST_MAC_MLMEAssociateReq(mac_hndl,&AssociateReq);
-  if ( MAC_SUCCESS != MacStatus ) {
-    APP_DBG("RFD MAC - Association Req Fails\n\r");
-    return;
+  while((association_succeed == 0x00) && (associate_retry_cnt < ASSOCIATE_RETRY_MAX)) {
+    
+    APP_DBG("RFD MAC APP - Association REQ\n\r");
+    AssociateReq.channel_number   = g_channel;
+    AssociateReq.channel_page     = g_channel_page;
+    AssociateReq.coord_addr_mode  = g_SHORT_ADDR_MODE_c;
+    memcpy(AssociateReq.coord_address.a_short_addr,&g_coordShortAddr,0x02);
+    AssociateReq.capability_information = 0x80;
+    memcpy(AssociateReq.a_coord_PAN_id,&g_panId,0x02);
+    AssociateReq.security_level = 0x00;
+    MacStatus = ST_MAC_MLMEAssociateReq(mac_hndl,&AssociateReq);
+    if ( MAC_SUCCESS != MacStatus ) {
+      APP_DBG("RFD MAC - Association Req Fails\n\r");
+      return;
+    }
+    /* Wait SET CONFIRMATION */
+    UTIL_SEQ_WaitEvt(EVENT_ASSOCIATE_CNF);
+    associate_retry_cnt++;
   }
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_ASSOCIATE_CNF);
-
-  /* Set Device Short Address */
-  APP_DBG("RFD MAC APP - Set Short Address\n\r");
-  memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
-  SetReq.PIB_attribute = g_MAC_SHORT_ADDRESS_c;
-  SetReq.PIB_attribute_valuePtr = (uint8_t*)&g_MAC_associateCnf.a_assoc_short_address;
-  MacStatus = ST_MAC_MLMESetReq(mac_hndl,&SetReq);
-  if ( MAC_SUCCESS != MacStatus ) {
-    APP_DBG("RFD MAC - Set Short Addr Fails\n\r");
-    return;
-  }
- 
-  /* Wait SET CONFIRMATION */
-  UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
- 
-  APP_DBG("RFD MAC APP - Ready \r\n");//to Handle Association Req and Receive Data
-  APP_RFD_MAC_802_15_4_SendData(DATA);
   
+  if (association_succeed == 0x01) {
+    
+    /* Set Device Short Address */
+    APP_DBG("RFD MAC APP - Set Short Address\n\r");
+    memset(&SetReq,0x00,sizeof(ST_MAC_setReq_t));
+    SetReq.PIB_attribute = g_MAC_SHORT_ADDRESS_c;
+    SetReq.PIB_attribute_valuePtr = (uint8_t*)&g_MAC_associateCnf.a_assoc_short_address;
+    MacStatus = ST_MAC_MLMESetReq(mac_hndl,&SetReq);
+    if ( MAC_SUCCESS != MacStatus ) {
+      APP_DBG("RFD MAC - Set Short Addr Fails\n\r");
+      return;
+    }
+   
+    /* Wait SET CONFIRMATION */
+    UTIL_SEQ_WaitEvt(EVENT_SET_CNF);
+   
+    APP_DBG("RFD MAC APP - Ready \r\n");//to Handle Association Req and Receive Data
+    APP_RFD_MAC_802_15_4_SendData(DATA);
+    
 #ifdef APP_MAC_PERIODIC_TRANSMIT
 
-  /* Create timer to handle periodic OnOff 'Toggle' transmission */
-  UTIL_TIMER_Create(&APP_MAC_transmitTimerId,
-                    0,
-                    UTIL_TIMER_PERIODIC,
-                    &APP_MAC_Transmit,
-                    0);
-  
-  /* Start timer for periodic OnOff 'Toggle' transmission */
-  UTIL_TIMER_StartWithPeriod(&APP_MAC_transmitTimerId, APP_MAC_TRANSMIT_PERIOD);
+    /* Create timer to handle periodic OnOff 'Toggle' transmission */
+    UTIL_TIMER_Create(&APP_MAC_transmitTimerId,
+                      0,
+                      UTIL_TIMER_PERIODIC,
+                      &APP_MAC_Transmit_TimerCb,
+                      0);
+    
+    /* Start timer for periodic OnOff 'Toggle' transmission */
+    UTIL_TIMER_StartWithPeriod(&APP_MAC_transmitTimerId, APP_MAC_TRANSMIT_PERIOD);
 #endif
+  } else {
+    APP_DBG("RFD MAC APP - No association succeed after several retries...\r\n");
+  } 
 }
 
 void APP_RFD_MAC_802_15_4_SendData(const char * data)
@@ -286,9 +304,14 @@ void APP_RFD_MAC_802_15_4_SendData(const char * data)
 }
 
 #ifdef APP_MAC_PERIODIC_TRANSMIT
-static void APP_MAC_Transmit(void *arg)
+static void APP_MAC_Transmit_TimerCb(void *arg)
 {
   UNUSED(arg);
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BUTTON_B1, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(TASK_PERIODIC_TRANSMIT, CFG_SEQ_PRIO_0);
+}
+
+static void APP_MAC_Transmit(void)
+{
+  APP_RFD_MAC_802_15_4_SendData("Periodic Data From Node\0");
 }
 #endif

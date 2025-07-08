@@ -41,13 +41,13 @@ Mac_802_15_4/Mac_802_15_4_RFD/
 
 ### __Hardware and Software environment__
 
-- This example runs on STM32WBA55xx devices.
+- This example runs on STM32WBA65xx devices.
 
-- This example has been tested with an STMicroelectronics STM32WBA55CG-Nucleo 
+- This example has been tested with an STMicroelectronics STM32WBA65CG-Nucleo 
   board and can be easily tailored to any other supported device 
   and development board.
   
-- On STM32WBA55CG-Nucleo, the jumpers must be configured as described
+- On STM32WBA65CG-Nucleo, the jumpers must be configured as described
   in this section. Starting from the top left position up to the bottom 
   right position, the jumpers on the Board must be set as follows:
 
@@ -66,12 +66,12 @@ Mac_802_15_4/Mac_802_15_4_RFD/
 
 Minimum requirements for the demo:
 
-- 1 STM32WBA55xx-Nucleo board in MAC 802.15.4 LPM mode 
+- 1 STM32WBA65xx-Nucleo board in MAC 802.15.4 LPM mode 
 using current generated binary.
 
 In order to make the program work, you must do the following: 
 
-- Connect a STM32WBA55xx-Nucleo board to your PC 
+- Connect a STM32WBA65xx-Nucleo board to your PC 
 - Open your preferred toolchain 
 - Rebuild all files of Mac_802_15_4/Mac_802_15_4_LPM_Periodic_Tx and load your image into 
   the target memory 
@@ -100,7 +100,7 @@ If user want to restart the demo, he may simply reset the device.
 
 Power consumption can be measured using the X-Nucleo-LPM01A board solution.
 
-On STM32WBA55xx, the consumption should be:
+On STM32WBA65xx, the consumption should be:
 
 - Stop mode: 25 uA
 - Standby mode: 6 uA

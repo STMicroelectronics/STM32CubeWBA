@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -98,7 +98,7 @@ static struct ZbZclMsgMessageT          stDelayedMessage;
 
 /* Messaging Server Callbacks */
 static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo);
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
 static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgServerCallbacksT stMessagingServerCallbacks =
@@ -167,18 +167,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -204,7 +192,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Messaging Server Cluster */
   stZigbeeAppInfo.MessagingServer = ZbZclMsgServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stMessagingServerCallbacks, NULL );
   assert( stZigbeeAppInfo.MessagingServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Messaging Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -226,7 +217,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
   stRequest.endpt = APP_ZIGBEE_ENDPOINT;
   stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
   ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
-
+  
   return true;
 }
 
@@ -248,7 +239,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   pstConfig->channelList.count = 1;
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
-
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
@@ -321,7 +311,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( str
 /**
  * @brief  Messaging Server 'MessageConfirmation' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo)
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingServerMessageConfirmationCallback */

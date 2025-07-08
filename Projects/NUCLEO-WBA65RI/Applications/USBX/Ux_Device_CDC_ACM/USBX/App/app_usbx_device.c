@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_usbx_device.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -229,7 +228,6 @@ UINT MX_USBX_Device_Stack_Init(void)
 
   /* Initialize and link controller HAL driver */
   ux_dcd_stm32_initialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS);
-
   /* USER CODE BEGIN MX_USBX_Device_Stack_Init_PostTreatment */
   /* USER CODE END MX_USBX_Device_Stack_Init_PostTreatment */
 

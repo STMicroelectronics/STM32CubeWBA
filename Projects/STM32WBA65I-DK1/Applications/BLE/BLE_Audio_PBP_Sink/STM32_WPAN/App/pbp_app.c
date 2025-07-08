@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "pbp_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "codec_mngr.h"
@@ -73,7 +73,7 @@
 #define BIG_MSE                                 (0u)
 #define BIG_SYNC_TIMEOUT                        (0x0190)
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory required for CAP*/
 #define CAP_DYN_ALLOC_SIZE      CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_ACCEPTOR,CFG_BLE_NUM_LINK, \
@@ -150,6 +150,25 @@ static int32_t start_audio_sink(void);
 extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* Initialize the Audio IP*/
+  BleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  BleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  BleAudioInit.bleAudioStartRamAddress = (uint8_t*)aAudioInitBuffer;
+  BleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  BleAudioInit.MaxNumOfBondedDevices = 0;
+  BleAudioInit.bleAudioStartRamAddress_NVM = 0;
+  BleAudioInit.total_buffer_size_NVM = 0;
+  status = BLE_AUDIO_STACK_Init(&BleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
+
 /**
   * @brief  Notify CAP Events
   * @param  pNotification: pointer on notification information
@@ -181,6 +200,8 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
     {
       uint8_t status;
       LOG_INFO_APP(">>== PBP_BROADCAST_AUDIO_DOWN_EVT\n");
+
+      Stop_TxAudio();
       MX_AudioDeInit();
 
       if (PBPAPP_Context.PASyncState != PBPAPP_PA_SYNC_STATE_IDLE)
@@ -290,7 +311,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           }
           parse_index += data->pBAPReport->pAdvertisingData[parse_index] + 1;
         }
-        
+
         if (name_ptr != 0)
         {
           UTIL_MEM_cpy_8(&name[0], name_ptr, name_len);
@@ -301,7 +322,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           UTIL_MEM_cpy_8(&name[0], bid, 11);
           name[11] = '\0';
         }
-        
+
         if (strcmp(&name[0], aSourceList[CurrentID]) == 0)
         {
           /* Matching Name */
@@ -336,7 +357,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
     case PBP_PBK_PA_SYNC_ESTABLISHED_EVT:
     {
       tBleStatus ret;
-      
+
       LOG_INFO_APP(">>== PBP_PBK_PA_SYNC_ESTABLISHED_EVT\n");
       BAP_PA_Sync_Established_Data_t *data = (BAP_PA_Sync_Established_Data_t*) pNotification->pInfo;
       LOG_INFO_APP("     - SyncHandle : 0x%02x\n",data->SyncHandle);
@@ -352,7 +373,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
       {
         LOG_INFO_APP("  Success: PBP_PBK_StopAdvReportParsing() function\n");
       }
-      
+
       ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
       if (ret != BLE_STATUS_SUCCESS)
       {
@@ -380,24 +401,54 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
         uint8_t j;
         uint8_t k;
         uint8_t l;
+        uint8_t is_different;
+        uint8_t payload_len = 0;
         LOG_INFO_APP(">>== PBP_PBK_BASE_REPORT_EVT\n");
 
         base_data = (BAP_BASE_Report_Data_t*) pNotification->pInfo;
-
+        if(PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_SYNCHRONIZED)
+        {
+          PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_BASE_RECEIVED;
+          /* First BASE report after PA sync, force the parsing */
+          is_different = 0x01u;
+        }
+        else
+        {
+          is_different = CAP_Broadcast_IsBASEGroupDifferent(base_data->pBasePayload,
+                                                base_data->BasePayloadLength,
+                                                &(PBPAPP_Context.base_group),
+                                                &(index));
+        }
+        if(is_different == 0x00u)
+        {
+          payload_len += index;
+          for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && is_different == 0x00u; i++)
+          {
+            is_different = CAP_Broadcast_IsBASESubgroupDifferent(base_data->pBasePayload + payload_len,
+                                                     base_data->BasePayloadLength - payload_len,
+                                                     &(PBPAPP_Context.base_subgroups[i]),
+                                                     &(index));
+            payload_len += index;
+            for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes && is_different == 0x00u); j++)
+            {
+              is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
+                                                           base_data->BasePayloadLength - payload_len,
+                                                           &(PBPAPP_Context.base_bis[j]),
+                                                           &(index));
+              payload_len += index;
+            }
+          }
+        }
+        if (is_different == 0x00u)
+        {
+          /* BASE report is not different from the one in PBPAPP_Context */
+          /* No need to parse, copy, or log it again*/
+          break;
+        }
         status = CAP_Broadcast_ParseBASEGroup(base_data->pBasePayload,
                                               base_data->BasePayloadLength,
                                               &(PBPAPP_Context.base_group),
                                               &(index));
-
-        PBPAPP_Context.base_group.pSubgroups = &(PBPAPP_Context.base_subgroups[0]);
-        PBPAPP_Context.base_subgroups[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[0][0]);
-        PBPAPP_Context.base_subgroups[0].pMetadata = &(PBPAPP_Context.subgroup_metadata[0][0]);
-        PBPAPP_Context.base_subgroups[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[1][0]);
-        PBPAPP_Context.base_subgroups[1].pMetadata = &(PBPAPP_Context.subgroup_metadata[1][0]);
-
-
-        PBPAPP_Context.base_bis[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[0][0]);
-        PBPAPP_Context.base_bis[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[1][0]);
 
         if(status == BLE_STATUS_SUCCESS)
         {
@@ -465,10 +516,13 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
             /* Parse BIS */
             for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
             {
-              status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload, base_data->BasePayloadLength, &(PBPAPP_Context.base_bis[j]),
+              status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
+                                                  base_data->BasePayloadLength,
+                                                  &(PBPAPP_Context.base_bis[j]),
                                                   &(index));
               base_data->pBasePayload += index;
               base_data->BasePayloadLength -= index;
+
               LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j].BIS_Index);
               LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j].CodecSpecificConfLength);
               if (PBPAPP_Context.base_bis[j].CodecSpecificConfLength > 0u)
@@ -553,7 +607,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
                        (data->NumBISes * sizeof(uint16_t)));
         PBPAPP_Context.current_num_bis = data->NumBISes;
         PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_SYNCHRONIZED;
-        
+
         ret = PBP_PBK_StopPASync(PBPAPP_Context.PASyncHandle);
         if (ret != BLE_STATUS_SUCCESS)
         {
@@ -739,20 +793,6 @@ uint8_t PBPAPP_StopSink(void)
     }
   }
 
-  if (PBPAPP_Context.PASyncState != PBPAPP_PA_SYNC_STATE_IDLE)
-  {
-    ret = PBP_PBK_StopPASync(PBPAPP_Context.PASyncHandle);
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : PBP_PBK_StopPASync() function, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: PBP_PBK_StopPASync() function\n");
-      PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_IDLE;
-    }
-  }
-
   if (PBPAPP_Context.BIGSyncState != PBPAPP_BIG_SYNC_STATE_IDLE)
   {
     ret = PBP_PBK_StopBIGSync(BIG_HANDLE);
@@ -766,9 +806,6 @@ uint8_t PBPAPP_StopSink(void)
       PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
     }
   }
-
-  LOG_INFO_APP("   >>==  MX_AudioDeInit()\n");
-  MX_AudioDeInit();
 
   LOG_INFO_APP(">>==  End Stop Broadcast Sink\n");
 
@@ -823,9 +860,6 @@ char* PBPAPP_SwitchBrdSource(uint8_t next)
       PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
     }
   }
-
-  LOG_INFO_APP("   >>==  MX_AudioDeInit()\n");
-  MX_AudioDeInit();
 
   if (PBPAPP_Context.ScanState == PBPAPP_SCAN_STATE_IDLE)
   {
@@ -950,128 +984,123 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
 static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
 {
   tBleStatus ret = 0;
-  /* Initialize the Audio IP*/
-  BleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  BleAudioInit.bleStartRamAddress = (uint8_t*)aAudioInitBuffer;
-  BleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  ret = BLE_AUDIO_STACK_Init(&BleAudioInit);
+
+  /*Clear the CAP Configuration*/
+  memset(&PBPAPP_CAP_Config,0,sizeof(PBPAPP_CAP_Config));
+
+  /*Clear the BAP Configuration*/
+  memset(&PBPAPP_BAP_Config,0,sizeof(PBPAPP_BAP_Config));
+
+  /*Clear the CCP Configuration*/
+  memset(&PBPAPP_CCP_Config,0,sizeof(CCP_Config_t));
+
+  /*Clear the MCP Configuration*/
+  memset(&PBPAPP_MCP_Config,0,sizeof(MCP_Config_t));
+
+  /*Clear the VCP Configuration*/
+  memset(&PBPAPP_VCP_Config,0,sizeof(VCP_Config_t));
+
+  /*Clear the MICP Configuration*/
+  memset(&PBPAPP_MICP_Config,0,sizeof(MICP_Config_t));
+
+  /*Clear the CSIP Configuration*/
+  memset(&PBPAPP_CSIP_Config,0,sizeof(CSIP_Config_t));
+
+  PBPAPP_CAP_Config.Role = CAP_Role;
+  PBPAPP_CAP_Config.MaxNumLinks = CFG_BLE_NUM_LINK;
+
+  PBPAPP_CAP_Config.pStartRamAddr = (uint8_t *)&aCAPMemBuffer;
+  PBPAPP_CAP_Config.RamSize = CAP_DYN_ALLOC_SIZE;
+
+  PBPAPP_BAP_Config.Role = BAP_Role;
+
+  PBPAPP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
+
+  if ((PBPAPP_BAP_Config.Role & BAP_ROLE_BROADCAST_SINK) == BAP_ROLE_BROADCAST_SINK)
+  {
+    /*Published Audio Capabilities of Unicast Server and Broadcast Sink Configuration*/
+    PBPAPP_BAP_Config.PACSSrvConfig.MaxNumSnkPACRecords = MAX_NUM_PAC_SNK_RECORDS;
+    PBPAPP_BAP_Config.PACSSrvConfig.MaxNumSrcPACRecords = MAX_NUM_PAC_SRC_RECORDS;
+    PBPAPP_BAP_Config.PACSSrvConfig.pStartRamAddr = (uint8_t *)&aPACSSrvMemBuffer;
+    PBPAPP_BAP_Config.PACSSrvConfig.RamSize = BAP_PACS_SRV_DYN_ALLOC_SIZE;
+  }
+
+  if ((PBPAPP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR)
+  {
+    /*Broadcast Audio Scan for Scan Delegator Configuration*/
+    PBPAPP_BAP_Config.BASSSrvConfig.MaxNumBSRC = MAX_NUM_SDE_BSRC_INFO;
+    PBPAPP_BAP_Config.BASSSrvConfig.MaxCodecConfSize = MAX_BASS_CODEC_CONFIG_SIZE;
+    PBPAPP_BAP_Config.BASSSrvConfig.MaxMetadataLength = MAX_BASS_METADATA_SIZE;
+    PBPAPP_BAP_Config.BASSSrvConfig.MaxNumBaseSubgroups = MAX_NUM_BASS_BASE_SUBGROUPS;
+    PBPAPP_BAP_Config.BASSSrvConfig.pStartRamAddr = (uint8_t *)&aBASSSrvMemBuffer;
+    PBPAPP_BAP_Config.BASSSrvConfig.RamSize = BAP_BASS_SRV_DYN_ALLOC_SIZE;
+  }
+
+  /*Isochronous Channels Configuration*/
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCIG = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCISPerCIG = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBIG = MAX_NUM_BIG;
+  PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBISPerBIG = MAX_NUM_BIS_PER_BIG;
+  PBPAPP_BAP_Config.ISOChnlConfig.pStartRamAddr = 0;
+  PBPAPP_BAP_Config.ISOChnlConfig.RamSize = 0u;
+
+  if (((PBPAPP_BAP_Config.Role & BAP_ROLE_BROADCAST_ASSISTANT) == BAP_ROLE_BROADCAST_ASSISTANT)\
+    || ((PBPAPP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR))
+  {
+    /* Non-Volatile Memory Management for BAP Services restoration */
+    PBPAPP_BAP_Config.NvmMgmtConfig.pStartRamAddr = (uint8_t *)&aNvmMgmtMemBuffer;
+    PBPAPP_BAP_Config.NvmMgmtConfig.RamSize = BAP_NVM_MGMT_DYN_ALLOC_SIZE;
+  }
+  /* Initialize the Basic Audio Profile*/
+  ret = CAP_Init(&PBPAPP_CAP_Config,
+                 &PBPAPP_BAP_Config,
+                 &PBPAPP_VCP_Config,
+                 &PBPAPP_MICP_Config,
+                 &PBPAPP_CCP_Config,
+                 &PBPAPP_MCP_Config,
+                 &PBPAPP_CSIP_Config);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : BLE_AUDIO_STACK_Init() function, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: BLE_AUDIO_STACK_Init() function\n");
+    LOG_INFO_APP("  Success: CAP_Init() function\n");
   }
-  if(ret == BLE_STATUS_SUCCESS)
+  if (ret == BLE_STATUS_SUCCESS)
   {
-    /*Clear the CAP Configuration*/
-    memset(&PBPAPP_CAP_Config,0,sizeof(PBPAPP_CAP_Config));
 
-    /*Clear the BAP Configuration*/
-    memset(&PBPAPP_BAP_Config,0,sizeof(PBPAPP_BAP_Config));
+    /*Initialize the Audio Codec (LC3)*/
+    CODEC_LC3Config_t lc3_config = {0};
+    PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
 
-    /*Clear the CCP Configuration*/
-    memset(&PBPAPP_CCP_Config,0,sizeof(CCP_Config_t));
+    /*Register the Audio Task */
+    UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
 
-    /*Clear the MCP Configuration*/
-    memset(&PBPAPP_MCP_Config,0,sizeof(MCP_Config_t));
+    lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
+    lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
+    lc3_config.StackSize = sizeof(aLC3StackMemBuffer);
 
-    /*Clear the VCP Configuration*/
-    memset(&PBPAPP_VCP_Config,0,sizeof(VCP_Config_t));
+    lc3_config.pSessionStart = aLC3SessionMemBuffer;
+    lc3_config.pChannelStart = aLC3ChannelMemBuffer;
+    lc3_config.pStackStart = aLC3StackMemBuffer;
 
-    /*Clear the MICP Configuration*/
-    memset(&PBPAPP_MICP_Config,0,sizeof(MICP_Config_t));
+    CODEC_ManagerInit(sizeof(aCodecPacketsMemory),
+                      (uint8_t*)aCodecPacketsMemory,
+                      &lc3_config,
+                      CODEC_PROC_MARGIN_US,
+                      CODEC_RF_SETUP_US,
+                      CODEC_MODE_DEFAULT);
 
-    /*Clear the CSIP Configuration*/
-    memset(&PBPAPP_CSIP_Config,0,sizeof(CSIP_Config_t));
-
-    PBPAPP_CAP_Config.Role = CAP_Role;
-    PBPAPP_CAP_Config.MaxNumLinks = CFG_BLE_NUM_LINK;
-
-    PBPAPP_CAP_Config.pStartRamAddr = (uint8_t *)&aCAPMemBuffer;
-    PBPAPP_CAP_Config.RamSize = CAP_DYN_ALLOC_SIZE;
-
-    PBPAPP_BAP_Config.Role = BAP_Role;
-
-    PBPAPP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
-
-    if ((PBPAPP_BAP_Config.Role & BAP_ROLE_BROADCAST_SINK) == BAP_ROLE_BROADCAST_SINK)
-    {
-      /*Published Audio Capabilities of Unicast Server and Broadcast Sink Configuration*/
-      PBPAPP_BAP_Config.PACSSrvConfig.MaxNumSnkPACRecords = MAX_NUM_PAC_SNK_RECORDS;
-      PBPAPP_BAP_Config.PACSSrvConfig.MaxNumSrcPACRecords = MAX_NUM_PAC_SRC_RECORDS;
-      PBPAPP_BAP_Config.PACSSrvConfig.pStartRamAddr = (uint8_t *)&aPACSSrvMemBuffer;
-      PBPAPP_BAP_Config.PACSSrvConfig.RamSize = BAP_PACS_SRV_DYN_ALLOC_SIZE;
-    }
-
-    if ((PBPAPP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR)
-    {
-      /*Broadcast Audio Scan for Scan Delegator Configuration*/
-      PBPAPP_BAP_Config.BASSSrvConfig.MaxNumBSRC = MAX_NUM_SDE_BSRC_INFO;
-      PBPAPP_BAP_Config.BASSSrvConfig.MaxCodecConfSize = MAX_BASS_CODEC_CONFIG_SIZE;
-      PBPAPP_BAP_Config.BASSSrvConfig.MaxMetadataLength = MAX_BASS_METADATA_SIZE;
-      PBPAPP_BAP_Config.BASSSrvConfig.MaxNumBaseSubgroups = MAX_NUM_BASS_BASE_SUBGROUPS;
-      PBPAPP_BAP_Config.BASSSrvConfig.pStartRamAddr = (uint8_t *)&aBASSSrvMemBuffer;
-      PBPAPP_BAP_Config.BASSSrvConfig.RamSize = BAP_BASS_SRV_DYN_ALLOC_SIZE;
-    }
-
-    /*Isochronous Channels Configuration*/
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCIG = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumCISPerCIG = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBIG = MAX_NUM_BIG;
-    PBPAPP_BAP_Config.ISOChnlConfig.MaxNumBISPerBIG = MAX_NUM_BIS_PER_BIG;
-    PBPAPP_BAP_Config.ISOChnlConfig.pStartRamAddr = 0;
-    PBPAPP_BAP_Config.ISOChnlConfig.RamSize = 0u;
-
-    if (((PBPAPP_BAP_Config.Role & BAP_ROLE_BROADCAST_ASSISTANT) == BAP_ROLE_BROADCAST_ASSISTANT)\
-      || ((PBPAPP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR))
-    {
-      /* Non-Volatile Memory Management for BAP Services restoration */
-      PBPAPP_BAP_Config.NvmMgmtConfig.pStartRamAddr = (uint8_t *)&aNvmMgmtMemBuffer;
-      PBPAPP_BAP_Config.NvmMgmtConfig.RamSize = BAP_NVM_MGMT_DYN_ALLOC_SIZE;
-    }
-    /* Initialize the Basic Audio Profile*/
-    ret = CAP_Init(&PBPAPP_CAP_Config,
-                   &PBPAPP_BAP_Config,
-                   &PBPAPP_VCP_Config,
-                   &PBPAPP_MICP_Config,
-                   &PBPAPP_CCP_Config,
-                   &PBPAPP_MCP_Config,
-                   &PBPAPP_CSIP_Config);
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : CAP_Init() function, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: CAP_Init() function\n");
-    }
-    if (ret == BLE_STATUS_SUCCESS)
-    {
-
-      /*Initialize the Audio Codec (LC3)*/
-      CODEC_LC3Config_t lc3_config = {0};
-      PBPAPP_Context.bap_role = PBPAPP_BAP_Config.Role;
-
-      /*Register the Audio Task */
-      UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
-
-      lc3_config.SessionSize = sizeof(aLC3SessionMemBuffer);
-      lc3_config.ChannelSize = sizeof(aLC3ChannelMemBuffer);
-      lc3_config.StackSize = sizeof(aLC3StackMemBuffer);
-
-      lc3_config.pSessionStart = aLC3SessionMemBuffer;
-      lc3_config.pChannelStart = aLC3ChannelMemBuffer;
-      lc3_config.pStackStart = aLC3StackMemBuffer;
-
-      CODEC_ManagerInit(sizeof(aCodecPacketsMemory),
-                        (uint8_t*)aCodecPacketsMemory,
-                        &lc3_config,
-                        CODEC_PROC_MARGIN_US,
-                        CODEC_RF_SETUP_US,
-                        CODEC_MODE_DEFAULT);
-    }
+    PBPAPP_Context.base_group.pSubgroups = &(PBPAPP_Context.base_subgroups[0]);
+    PBPAPP_Context.base_subgroups[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[0][0]);
+    PBPAPP_Context.base_subgroups[0].pMetadata = &(PBPAPP_Context.subgroup_metadata[0][0]);
+    PBPAPP_Context.base_subgroups[0].pBIS = &(PBPAPP_Context.base_bis[0]);
+    PBPAPP_Context.base_subgroups[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[1][0]);
+    PBPAPP_Context.base_subgroups[1].pMetadata = &(PBPAPP_Context.subgroup_metadata[1][0]);
+    PBPAPP_Context.base_subgroups[1].pBIS = &(PBPAPP_Context.base_bis[1]);
+    PBPAPP_Context.base_bis[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[0][0]);
+    PBPAPP_Context.base_bis[1].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_bis[1][0]);
   }
   return ret;
 }

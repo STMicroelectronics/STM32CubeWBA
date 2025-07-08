@@ -17,6 +17,11 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+/* For GCC need to optimize all the files*/
+#if defined(__GNUC__)
+#pragma GCC push_options
+#pragma GCC optimize ("Ofast")
+#endif
 
 #include "app_common.h"
 #include "stm32wbaxx_hal.h"
@@ -25,11 +30,10 @@
 #include "stm32wbaxx_ll_rcc.h"
 #include "app_conf.h"
 #include "scm.h"
+#include "utilities_common.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
-
-#include "stm32_lpm.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -60,12 +64,19 @@ volatile uint32_t local_basepri_value = 0;
 /* Radio SW low ISR global variable */
 volatile uint8_t radio_sw_low_isr_is_running_high_prio = 0;
 
+/* Radio bus clock control variables */
+uint8_t AHB5_SwitchedOff = 0;
+uint32_t radio_sleep_timer_val = 0;
+
+#if defined(__GNUC__)
+#pragma GCC pop_options
+#endif
 /**
   * @brief  Configure the necessary clock sources for the radio.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_ClockInit()
+OPTIMIZED void LINKLAYER_PLAT_ClockInit()
 {
   uint32_t linklayer_slp_clk_src = LL_RCC_RADIOSLEEPSOURCE_NONE;
 
@@ -86,7 +97,7 @@ void LINKLAYER_PLAT_ClockInit()
   * @param  delay: delay in us
   * @retval None
   */
-void LINKLAYER_PLAT_DelayUs(uint32_t delay)
+OPTIMIZED void LINKLAYER_PLAT_DelayUs(uint32_t delay)
 {
 __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
 	do
@@ -101,7 +112,7 @@ __IO register uint32_t Delay = delay * (SystemCoreClock / 1000000U);
   * @param  condition: conditional statement to be checked.
   * @retval None
   */
-void LINKLAYER_PLAT_Assert(uint8_t condition)
+OPTIMIZED void LINKLAYER_PLAT_Assert(uint8_t condition)
 {
   assert_param(condition);
 }
@@ -113,8 +124,50 @@ void LINKLAYER_PLAT_Assert(uint8_t condition)
   */
 void LINKLAYER_PLAT_WaitHclkRdy(void)
 {
-  /* Wait on radio bus clock readiness */
-  while(HAL_RCCEx_GetRadioBusClockReadiness() != RCC_RADIO_BUS_CLOCK_READY);
+  /* Wait on radio bus clock readiness if it has been turned of */
+  if (AHB5_SwitchedOff == 1)
+  {
+    AHB5_SwitchedOff = 0;
+    while (radio_sleep_timer_val == ll_intf_cmn_get_slptmr_value());
+  }
+}
+
+/**
+  * @brief  Notify the Link Layer platform layer the system will enter in WFI
+  *         and AHB5 clock may be turned of regarding the 2.4Ghz radio state.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_NotifyWFIEnter(void)
+{
+  /* Check if Radio state will allow the AHB5 clock to be cut */
+
+  /* AHB5 clock will be cut in the following cases:
+   * - 2.4GHz radio is not in ACTIVE mode (in SLEEP or DEEPSLEEP mode).
+   * - RADIOSMEN and STRADIOCLKON bits are at 0.
+   */
+  if((LL_PWR_GetRadioMode() != LL_PWR_RADIO_ACTIVE_MODE) ||
+     ((__HAL_RCC_RADIO_IS_CLK_SLEEP_ENABLED() == 0) && (LL_RCC_RADIO_IsEnabledSleepTimerClock() == 0)))
+  {
+    AHB5_SwitchedOff = 1;
+  }
+}
+
+/**
+  * @brief  Notify the Link Layer platform layer the system exited WFI and AHB5
+  *         clock may be resynchronized as is may have been turned of during
+  *         low power mode entry.
+  * @param  None
+  * @retval None
+  */
+void LINKLAYER_PLAT_NotifyWFIExit(void)
+{
+  /* Check if AHB5 clock has been turned of and needs resynchronisation */
+  if (AHB5_SwitchedOff)
+  {
+    /* Read sleep register as earlier as possible */
+    radio_sleep_timer_val = ll_intf_cmn_get_slptmr_value();
+  }
 }
 
 /**
@@ -122,7 +175,7 @@ void LINKLAYER_PLAT_WaitHclkRdy(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
+OPTIMIZED void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
 {
   if(enable != 0u)
   {
@@ -153,7 +206,7 @@ void LINKLAYER_PLAT_AclkCtrl(uint8_t enable)
   * @param  len: number of byte of anthropy to get.
   * @retval None
   */
-void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
+OPTIMIZED void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
 {
   uint32_t nb_remaining_rng = len;
   uint32_t generated_rng;
@@ -180,7 +233,7 @@ void LINKLAYER_PLAT_GetRNG(uint8_t *ptr_rnd, uint32_t len)
   * @param  intr_cb: function pointer to assign for the radio high priority ISR routine.
   * @retval None
   */
-void LINKLAYER_PLAT_SetupRadioIT(void (*intr_cb)())
+OPTIMIZED void LINKLAYER_PLAT_SetupRadioIT(void (*intr_cb)())
 {
   radio_callback = intr_cb;
   HAL_NVIC_SetPriority((IRQn_Type) RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH, 0);
@@ -192,7 +245,7 @@ void LINKLAYER_PLAT_SetupRadioIT(void (*intr_cb)())
   * @param  intr_cb: function pointer to assign for the SW low priority ISR routine.
   * @retval None
   */
-void LINKLAYER_PLAT_SetupSwLowIT(void (*intr_cb)())
+OPTIMIZED void LINKLAYER_PLAT_SetupSwLowIT(void (*intr_cb)())
 {
   low_isr_callback = intr_cb;
 
@@ -205,7 +258,7 @@ void LINKLAYER_PLAT_SetupSwLowIT(void (*intr_cb)())
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_TriggerSwLowIT(uint8_t priority)
+OPTIMIZED void LINKLAYER_PLAT_TriggerSwLowIT(uint8_t priority)
 {
   uint8_t low_isr_priority = RADIO_INTR_PRIO_LOW;
 
@@ -246,7 +299,7 @@ void LINKLAYER_PLAT_TriggerSwLowIT(uint8_t priority)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableIRQ(void)
+OPTIMIZED void LINKLAYER_PLAT_EnableIRQ(void)
 {
   irq_counter = max(0,irq_counter-1);
 
@@ -262,7 +315,7 @@ void LINKLAYER_PLAT_EnableIRQ(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableIRQ(void)
+OPTIMIZED void LINKLAYER_PLAT_DisableIRQ(void)
 {
   if(irq_counter == 0)
   {
@@ -283,7 +336,7 @@ void LINKLAYER_PLAT_DisableIRQ(void)
   *              lower priority that link layer SW low interrupt.
   * @retval None
   */
-void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
+OPTIMIZED void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
 {
   if( (isr_type & LL_HIGH_ISR_ONLY) != 0 )
   {
@@ -330,7 +383,7 @@ void LINKLAYER_PLAT_EnableSpecificIRQ(uint8_t isr_type)
   *              lower priority that link layer SW low interrupt.
   * @retval None
   */
-void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
+OPTIMIZED void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
 {
   if( (isr_type & LL_HIGH_ISR_ONLY) != 0 )
   {
@@ -374,7 +427,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableRadioIT(void)
+OPTIMIZED void LINKLAYER_PLAT_EnableRadioIT(void)
 {
   /* USER CODE BEGIN LINKLAYER_PLAT_EnableRadioIT_1*/
 
@@ -392,7 +445,7 @@ void LINKLAYER_PLAT_EnableRadioIT(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableRadioIT(void)
+OPTIMIZED void LINKLAYER_PLAT_DisableRadioIT(void)
 {
   /* USER CODE BEGIN LINKLAYER_PLAT_DisableRadioIT_1*/
 
@@ -410,7 +463,7 @@ void LINKLAYER_PLAT_DisableRadioIT(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_StartRadioEvt(void)
+OPTIMIZED void LINKLAYER_PLAT_StartRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
@@ -424,7 +477,7 @@ void LINKLAYER_PLAT_StartRadioEvt(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_StopRadioEvt(void)
+OPTIMIZED void LINKLAYER_PLAT_StopRadioEvt(void)
 {
   __HAL_RCC_RADIO_CLK_SLEEP_DISABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW);
@@ -438,8 +491,7 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_RCOStartClbr(void)
-{
+OPTIMIZED void LINKLAYER_PLAT_RCOStartClbr(void){
 #if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
@@ -455,7 +507,7 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_RCOStopClbr(void)
+OPTIMIZED void LINKLAYER_PLAT_RCOStopClbr(void)
 {
 #if (CFG_SCM_SUPPORTED == 1)
 #if (CFG_LPM_LEVEL != 0)
@@ -472,7 +524,7 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_RequestTemperature(void)
+OPTIMIZED void LINKLAYER_PLAT_RequestTemperature(void)
 {
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ll_sys_bg_temperature_measurement();
@@ -484,7 +536,7 @@ void LINKLAYER_PLAT_RequestTemperature(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableOSContextSwitch(void)
+OPTIMIZED void LINKLAYER_PLAT_PhyStartClbr(void)
 {
 }
 
@@ -493,7 +545,7 @@ void LINKLAYER_PLAT_EnableOSContextSwitch(void)
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableOSContextSwitch(void)
+OPTIMIZED void LINKLAYER_PLAT_PhyStopClbr(void)
 {
 }
 
@@ -502,7 +554,7 @@ void LINKLAYER_PLAT_DisableOSContextSwitch(void)
  * @param evnt_timing[in]: Evnt_timing_t pointer to structure contains drift time , execution time and scheduling time
  * @retval None.
  */
-void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
+OPTIMIZED void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
 {
 }
 
@@ -511,7 +563,7 @@ void LINKLAYER_PLAT_SCHLDR_TIMING_UPDATE_NOT(Evnt_timing_t * p_evnt_timing)
   * @param  None
   * @retval Company ID
   */
-uint32_t LINKLAYER_PLAT_GetSTCompanyID(void)
+OPTIMIZED uint32_t LINKLAYER_PLAT_GetSTCompanyID(void)
 {
   return LL_FLASH_GetSTCompanyID();
 }
@@ -521,7 +573,7 @@ uint32_t LINKLAYER_PLAT_GetSTCompanyID(void)
   * @param  None
   * @retval UDN
   */
-uint32_t LINKLAYER_PLAT_GetUDN(void)
+OPTIMIZED uint32_t LINKLAYER_PLAT_GetUDN(void)
 {
   return LL_FLASH_GetUDN();
 }

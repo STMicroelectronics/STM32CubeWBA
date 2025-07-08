@@ -332,9 +332,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE,MAC,OPENTHREAD_FTD,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,USE_HAL_DRIVER,STM32WBA65xx,STM32WBA,STM32,STM32WBA65RIVx,USE_FULL_ASSERT</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE,MAC,MAC_LAYER,OPENTHREAD_FTD,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,USE_HAL_DRIVER,STM32WBA65xx,STM32WBA,STM32,STM32WBA65RIVx,USE_FULL_ASSERT</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Utilities/trace/adv_trace;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBA65I-DK1;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../System/Config/CRC_Ctrl;../System/Config/ADC_Ctrl;../System/Modules/RFControl;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../System/Config/Log;../System/Modules/SerialCmdInterpreter;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/Third_Party/mbed-crypto/include;../../../../../../Drivers/CMSIS/RTOS2/Include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/Nvm;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../System/Interfaces;../System/Modules</IncludePath>
+              <IncludePath>../Core/Inc;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Utilities/trace/adv_trace;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBA65I-DK1;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../System/Config/CRC_Ctrl;../System/Config/ADC_Ctrl;../System/Modules/RFControl;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../System/Config/Log;../System/Modules/SerialCmdInterpreter;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include;../../../../../../Drivers/CMSIS/RTOS2/Include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../System/Interfaces;../System/Modules;..\System\Config\ADC_Ctrl</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -352,7 +352,7 @@
               <MiscControls />
               <Define />
               <Undefine />
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/Nvm;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure/;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/;../../../../../../Drivers/CMSIS/RTOS2/Include/;../../../../../../Drivers/BSP/STM32WBA65I-DK1</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure/;../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/;../../../../../../Drivers/CMSIS/RTOS2/Include/;../../../../../../Drivers/BSP/STM32WBA65I-DK1</IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -389,6 +389,11 @@
         <Group>
           <GroupName>Application/User/STM32_WPAN/App</GroupName>
           <Files>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/app_bsp.c</FilePath>
+            </File>
             <File>
               <FileName>app_ble.c</FileName>
               <FileType>1</FileType>
@@ -503,6 +508,16 @@
               <FileName>crc_ctrl_conf.c</FileName>
               <FileType>1</FileType>
               <FilePath>../System/Config/CRC_Ctrl/crc_ctrl_conf.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Config/ADC_Ctrl</GroupName>
+          <Files>
+            <File>
+              <FileName>adc_ctrl_conf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\ADC_Ctrl\adc_ctrl_conf.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -629,6 +644,11 @@
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/temp_measurement.c</FilePath>
             </File>
+            <File>
+              <FileName>adc_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Common\WPAN\Modules\adc_ctrl.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -692,16 +712,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Common/WPAN/Modules/Nvm</GroupName>
-          <Files>
-            <File>
-              <FileName>nvm_emul.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/Nvm/nvm_emul.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
+
           <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
           <Files>
             <File>

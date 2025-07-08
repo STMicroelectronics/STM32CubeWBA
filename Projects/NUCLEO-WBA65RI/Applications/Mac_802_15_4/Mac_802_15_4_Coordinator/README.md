@@ -35,13 +35,13 @@ Mac_802_15_4/Mac_802_15_4_FFD/
 
 ### __Hardware and Software environment__
 
-  - This example runs on STM32WBA55xx devices.
+  - This example runs on STM32WBA65xx devices.
 
-  - This example has been tested with an STMicroelectronics STM32WBA55CG-Nucleo 
+  - This example has been tested with an STMicroelectronics STM32WBA65CG-Nucleo 
     board and can be easily tailored to any other supported device 
     and development board.
     
-  - On STM32WBA52CG-Nucleo, the jumpers must be configured as described
+  - On STM32WBA65CG-Nucleo, the jumpers must be configured as described
     in this section. Starting from the top left position up to the bottom 
     right position, the jumpers on the Board must be set as follows:
 
@@ -60,7 +60,7 @@ Mac_802_15_4/Mac_802_15_4_FFD/
 ### __How to use it?__
 
 
-This application requires two STM32WBA55xx-Nucleo boards. One device will act as 
+This application requires two STM32WBA65xx-Nucleo boards. One device will act as 
 802.15.4 coordinator ensuring association response and network establishment. 
 The other device will act as a MAC 802.15.4 Node. The Node request 
 association on startup and send data to the coordinator. 
@@ -69,12 +69,12 @@ Below example implements the CoordinatorDevices.
 
 Minimum requirements for the demo:
 
-  - 1 STM32WBA55xx-Nucleo board in MAC 802.15.4 Coordinatormode using current generated binary.
-  - 1 STM32WBA55xx-Nucleo board in MAC 802.15.4 Node (see MAC 802.14.4 Node example)
+  - 1 STM32WBA65xx-Nucleo board in MAC 802.15.4 Coordinatormode using current generated binary.
+  - 1 STM32WBA65xx-Nucleo board in MAC 802.15.4 Node (see MAC 802.14.4 Node example)
 
 In order to make the program work, you must do the following:
 
-  - Connect 2 STM32WBA55xx-Nucleo boards to your PC 
+  - Connect 2 STM32WBA65xx-Nucleo boards to your PC 
  
     - COORDINATOR :
  

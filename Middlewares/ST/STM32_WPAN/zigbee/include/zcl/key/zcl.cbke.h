@@ -1,4 +1,4 @@
-/* Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved. */
 
 /*--------------------------------------------------------------------------
  * Copyright (c) 2013-2014, Exegin Technologies Limited
@@ -94,6 +94,6 @@ enum ZclStatusCodeT ZbZclKeAddCbke2(struct ZbZclClusterT *clusterPtr, const stru
 struct ZbZclCertificateT * ZbZclParseCertificate(struct ZbZclCertificateT *dst, const void *src, unsigned int len);
 
 struct ZbZclKeSuiteT * ZbZclKeMatchSuite(struct ZbZclKeClusterT *kePtr, uint16_t suite_mask);
-bool ZbZclSuiteIsSupported(struct ZbZclClusterT *cluster, uint16_t suite);
+bool ZbZclSuiteIsSupported(struct ZbZclClusterT *cluster, uint16_t suite_mask);
 
 #endif /* _ZCL_CBKE_H */

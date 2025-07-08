@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-    <fileVersion>3</fileVersion>
+    <fileVersion>4</fileVersion>
     <configuration>
         <name>Zigbee_OnOff_Client_Router_Ota</name>
         <toolchain>
@@ -11,7 +11,7 @@
             <name>General</name>
             <archiveVersion>3</archiveVersion>
             <data>
-                <version>34</version>
+                <version>37</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -70,7 +70,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.60.3.7274</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -98,8 +98,8 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -115,8 +115,8 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
@@ -138,8 +138,8 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>31</version>
-                    <state>59</state>
+                    <version>34</version>
+                    <state>61</state>
                 </option>
                 <option>
                     <name>OGCMSISPackSelectDevice</name>
@@ -203,13 +203,30 @@
                     <name>BuildFilesPath</name>
                     <state>OnOff_Client_Router_Ota\</state>
                 </option>
+                <option>
+                    <name>PointerAuthentication</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>FPU64</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>OG_32_64DeviceCoreSlave</name>
+                    <version>34</version>
+                    <state>61</state>
+                </option>
+                <option>
+                    <name>GOutputSo</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>37</version>
+                <version>39</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -505,13 +522,29 @@
                     <name>CCStackProtection</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>CCPointerAutentiction</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCBranchTargetIdentification</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosRadRwpi</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>CCPosSharedSlave</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>AARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>11</version>
+                <version>12</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -671,6 +704,10 @@
                     <name>PreInclude</name>
                     <state></state>
                 </option>
+                <option>
+                    <name>A_32_64Device</name>
+                    <state>1</state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -705,27 +742,18 @@
         </settings>
         <settings>
             <name>CUSTOM</name>
-            <archiveVersion>3</archiveVersion>
+            <archiveVersion>4</archiveVersion>
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>1</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
-            </data>
-        </settings>
-        <settings>
-            <name>BUILDACTION</name>
-            <archiveVersion>1</archiveVersion>
-            <data>
-                <prebuild></prebuild>
-                <postbuild>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin</postbuild>
             </data>
         </settings>
         <settings>
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>26</version>
+                <version>28</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -1085,6 +1113,18 @@
                     <name>IlinkWrapperFile</name>
                     <state></state>
                 </option>
+                <option>
+                    <name>IlinkProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkFpuProcessor</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkSharedSlave</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1106,6 +1146,24 @@
                     <name>IarchiveOutput</name>
                     <state>###Unitialized###</state>
                 </option>
+            </data>
+        </settings>
+        <settings>
+            <name>BUILDACTION</name>
+            <archiveVersion>2</archiveVersion>
+            <data>
+                <buildActions>
+                    <buildAction>
+                        <cmdline>ielftool $EXE_DIR$\$CONFIG_NAME$.out $EXE_DIR$\$CONFIG_NAME$.bin --bin &amp;&amp; echo &gt; "$BUILD_FILES_DIR$/.postbuild"</cmdline>
+                        <workingDirectory>$PROJ_DIR$</workingDirectory>
+                        <buildSequence>postLink</buildSequence>
+                        <outputs>
+                            <file>
+                                <name>$BUILD_FILES_DIR$/.postbuild</name>
+                            </file>
+                        </outputs>
+                    </buildAction>
+                </buildActions>
             </data>
         </settings>
         <settings>
@@ -1229,16 +1287,16 @@
             <group>
                 <name>Interfaces</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_rng.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</name>
                 </file>
             </group>
             <group>
@@ -1246,71 +1304,71 @@
                 <group>
                     <name>BasicAES</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
                     </file>
                 </group>
                 <group>
                     <name>Log</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Log\log_module.c</name>
                     </file>
                 </group>
                 <group>
                     <name>MemoryManager</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
                     </file>
                 </group>
                 <group>
                     <name>RFControl</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
                     </file>
                 </group>
                 <group>
                     <name>RTDebug</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
                     </file>
                 </group>
                 <group>
                     <name>SerialCmdInterpreter</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
                     </file>
                 </group>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\app_sys.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\app_sys.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\crc_ctrl.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\crc_ctrl.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\otp.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\scm.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>
                 </file>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\stm_list.c</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_list.c</name>
                 </file>
             </group>
             <group>
                 <name>Startup</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Startup\stm32wbaxx_ResetHandler_EWARM.s</name>
                 </file>
             </group>
         </group>

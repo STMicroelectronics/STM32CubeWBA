@@ -3,7 +3,7 @@
  * @heading TLV Utilities
  * @brief ZigBee TLV implementation.
  * @author Exegin Technologies Limited
- * @copyright Copyright [2018 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2018 - 2025] Exegin Technologies Limited. All rights reserved.
  *
  * This file defines all the ZigBee TLV APIs and macros.
  */
@@ -389,14 +389,6 @@ bool zb_tlv_decode_check_mandatory(const struct zb_tlv *tlv_array, const unsigne
  * @return true if TLV exists, false otherwise
  */
 bool zb_tlv_type_exists(uint8_t *buffer, unsigned int buffer_length, enum zb_tlv_type type);
-
-/**
- * Compute the size of buffer required, if the input TLVs were to be encoded.
- * @param tlv_array (IN) input TLV array.
- * @param tlv_count (IN) depth of input TLV array.
- * @return size of buffer required to encode input TLVs.
- */
-int zb_tlv_encode_length(struct zb_tlv *tlv_array, const unsigned int tlv_count);
 
 /**
  * Given a list of TLVs, this API encodes TLV list into input buffer.

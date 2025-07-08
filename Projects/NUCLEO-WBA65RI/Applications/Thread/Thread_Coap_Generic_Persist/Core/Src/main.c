@@ -44,11 +44,11 @@ CRYP_HandleTypeDef hcryp;
 __ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
                             0x00000000,0x00000000,0x00000000,0x00000000};
 
+HASH_HandleTypeDef hhash;
+
 PKA_HandleTypeDef hpka;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
-
-RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
@@ -64,8 +64,9 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
-static void MX_AES_Init(void);
 static void MX_PKA_Init(void);
+static void MX_AES_Init(void);
+static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -113,9 +114,9 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_RNG_Init();
-  MX_AES_Init();
   MX_PKA_Init();
+  MX_AES_Init();
+  MX_HASH_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -287,6 +288,34 @@ static void MX_GPDMA1_Init(void)
 }
 
 /**
+  * @brief HASH Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_HASH_Init(void)
+{
+
+  /* USER CODE BEGIN HASH_Init 0 */
+
+  /* USER CODE END HASH_Init 0 */
+
+  /* USER CODE BEGIN HASH_Init 1 */
+
+  /* USER CODE END HASH_Init 1 */
+  hhash.Instance = HASH;
+  hhash.Init.DataType = HASH_NO_SWAP;
+  hhash.Init.Algorithm = HASH_ALGOSELECTION_SHA1;
+  if (HAL_HASH_Init(&hhash) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN HASH_Init 2 */
+
+  /* USER CODE END HASH_Init 2 */
+
+}
+
+/**
   * @brief ICACHE Initialization Function
   * @param None
   * @retval None
@@ -372,35 +401,6 @@ void MX_RAMCFG_Init(void)
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
-
-}
-
-/**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
 
 }
 
@@ -529,19 +529,16 @@ void MX_USART1_UART_Init(void)
   */
 void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*RT DEBUG GPIO_Init */
-  RT_DEBUG_GPIO_Init();
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -562,8 +559,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

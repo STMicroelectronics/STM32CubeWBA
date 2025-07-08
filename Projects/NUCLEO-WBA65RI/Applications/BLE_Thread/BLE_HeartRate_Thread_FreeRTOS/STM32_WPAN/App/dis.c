@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2.c
+  * @file    dis.c
   * @author  MCD Application Team
-  * @brief   service2 definition.
+  * @brief   dis definition.
   ******************************************************************************
   * @attention
   *
@@ -19,9 +19,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "common_blesvc.h"
-#include "dis.h"
 #include "log_module.h"
+#include "dis.h"
 
 /* USER CODE BEGIN Includes */
 

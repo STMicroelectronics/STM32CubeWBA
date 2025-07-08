@@ -322,6 +322,8 @@ typedef struct
 typedef uint8_t seeking_direction_t;
 #define SEEKING_DIR_FAST_FORWARD                (0u)
 #define SEEKING_DIR_FAST_REWIND                 (1u)
+
+
 typedef struct
 {
   uint32_t      Duration;
@@ -340,6 +342,7 @@ typedef struct
   uint32_t              TrackPositionInterval;
   seeking_direction_t   SeekingDir;
   uint8_t               TrackSegments;
+  uint8_t               PositionFlag;
 }TMAPAPP_MediaPlayer_t;
 #endif /* (APP_MCP_ROLE_SERVER_SUPPORT == 1u) */
 
@@ -470,6 +473,7 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void);
 void TMAPAPP_Init(void);
 tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t TMAPAPP_StartScanning(void);
@@ -498,6 +502,7 @@ void TMAPAPP_CISConnected(uint16_t Conn_Handle);
 void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
 void TMAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle);
 void TMAPAPP_BondLost(uint16_t Conn_Handle);
+void TMAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif

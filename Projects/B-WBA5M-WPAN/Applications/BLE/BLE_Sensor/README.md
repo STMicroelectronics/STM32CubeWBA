@@ -1,32 +1,32 @@
 ## __BLE_Sensor Application Description__
 
-How to use the BLE sensor application.
+How to use the BLE sensor application.  
 
 ### __Keywords__
 
-Connectivity, BLE, BLE protocol, BLE profile
+Connectivity, BLE, BLE protocol, BLE profile.  
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA5M device.
-* Connect the B-WBA5M-WPAN Board to your PC with a USB cable type C.  
-* To flash and debug, connect an STLink v3 to the CN3 connector  
-for more details <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration#How_can_I_program_my_WBA-board--"> Program the B-WBA5M-WPAN Board</a>  
+- This example runs on STM32WBA5M device.  
+- Connect the B-WBA5M-WPAN board to your PC with a USB cable type C.  
+- To flash and debug, connect an STLink v3 to the CN3 connector.  
+For more details <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration#How_can_I_program_my_WBA-board--"> Program the B-WBA5M-WPAN Board.</a>  
 
 ### __How to use it?__
 
-In order to make the program work:
- - Open your prefered toolchain
- - Rebuild all files and flash the board at the address 0x08000000 with the binary file
+In order to make the program work:  
 
-Use one of the following remote interface to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a>
+ - Open your preferred toolchain.  
+ - Rebuild all files and flash the board at the address 0x08000000 with the binary file.  
 
-Reset the B-WBA5M-WPAN Nucleo board and launch remote interface on PC/android/ios device. 
+Use one of the following remote interfaces to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a>  
 
-* click on WBA5M_xx to connect the board
-* select Environmental Data to display temperature and humidity
-* display Plot Data and play the accelerometer data (moving the board will modify the displayed values) 
+Reset the B-WBA5M-WPAN Nucleo board and launch remote interface on PC/android/ios device.  
 
-For more informations, please refer to 
-<a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA5M-WPAN ST BLE Sensor application</a>  
+ - Click on WBA5M_xx to connect the board.  
+ - Select Environmental Data to display temperature and humidity.  
+ - Display Plot Data and play the accelerometer data (moving the board will modify the displayed values).  
+
+For more informations, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA5M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA5M-WPAN ST BLE Sensor application.</a>  

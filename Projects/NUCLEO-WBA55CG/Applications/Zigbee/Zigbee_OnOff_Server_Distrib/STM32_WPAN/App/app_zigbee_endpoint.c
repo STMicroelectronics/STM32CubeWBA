@@ -157,18 +157,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -194,7 +182,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add OnOff Server Cluster */
   stZigbeeAppInfo.OnOffServer = ZbZclOnOffServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stOnOffServerCallbacks, NULL );
   assert( stZigbeeAppInfo.OnOffServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during OnOff Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* USER CODE END APP_ZIGBEE_ConfigEndpoints2 */
@@ -309,8 +300,8 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
   {
-    LOG_INFO_APP( "[ONOFF] Red Led 'OFF'" );
-    APP_LED_OFF( LED_RED );
+    LOG_INFO_APP( "[ONOFF] Light 'OFF'" );
+    APP_LED_OFF( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
   }
   else
@@ -335,8 +326,8 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
   {
-    LOG_INFO_APP( "[ONOFF] Red Led 'ON'" );
-    APP_LED_ON( LED_RED );
+    LOG_INFO_APP( "[ONOFF] Light 'ON'" );
+    APP_LED_ON( LED_WORK );
     (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
   }
   else

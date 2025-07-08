@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-rcp-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-rcp-config.h&gt;,OPENTHREAD_RADIO,OPENTHREAD_CONFIG_NCP_HDLC_ENABLE=1,_AEABI_PORTABILITY_LEVEL=1,SPINEL_PLATFORM_DOESNT_IMPLEMENT_ERRNO_VAR,PKA_HW_ACCELERATION</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\source\target\stm32wbxx_thread_host\;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBxx_Nucleo;..\..\..\..\..\..\Drivers\STM32WBxx_HAL_Driver\Inc;..\..\..\source\common;..\..\..\source\hw;..\..\..\source\debug;..\..\..\source\nvm;..\..\..\source\openthread_platform;..\..\..\source\openthread_platform\crypto;..\..\..\source\target\stm32wbxx_thread_host;..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\..\..\..\Middlewares\ST\Thread\OpenThread\patterns\pattern1\tl_thread;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\core\openthread_api;..\..\..\source\rf_low_level_driver\aes\inc;..\..\..\source\rf_low_level_driver\ip802154\inc;..\..\..\source\rf_low_level_driver\\radio\inc;..\..\..\source\rf_low_level_driver\sys\inc;..\..\..\source\rf_low_level_driver\common_rf\inc;..\..\..\source\thread_interface;..\..\..\source\tl;..\..\..\source\host;..\..\..\source\syshci;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface\patterns\ble_thread\tl;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\config;..\..\..\..\..\hw;..\..\..\..\..\..\..\..\Drivers\CMSIS\Core\Include;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\stack;..\..\..\platform</IncludePath>
+              <IncludePath>..\..\..\source\target\stm32wbxx_thread_host\;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBxx_Nucleo;..\..\..\..\..\..\Drivers\STM32WBxx_HAL_Driver\Inc;..\..\..\source\common;..\..\..\source\hw;..\..\..\source\debug;..\..\..\source\nvm;..\..\..\source\openthread_platform;..\..\..\source\openthread_platform\crypto;..\..\..\source\target\stm32wbxx_thread_host;..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\..\..\..\..\Third_Party\mbedtls\configs;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\..\..\..\Middlewares\ST\Thread\OpenThread\patterns\pattern1\tl_thread;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\core\openthread_api;..\..\..\source\rf_low_level_driver\aes\inc;..\..\..\source\rf_low_level_driver\ip802154\inc;..\..\..\source\rf_low_level_driver\\radio\inc;..\..\..\source\rf_low_level_driver\sys\inc;..\..\..\source\rf_low_level_driver\common_rf\inc;..\..\..\source\thread_interface;..\..\..\source\tl;..\..\..\source\host;..\..\..\source\syshci;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\interface\patterns\ble_thread\tl;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\utilities;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\config;..\..\..\..\..\hw;..\..\..\..\..\..\..\..\Drivers\CMSIS\Core\Include;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\stack;..\..\..\platform;..\..\..\stack\src\include;..\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include\</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -503,6 +503,11 @@
               <FileName>sub_mac_callbacks.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\mac\sub_mac_callbacks.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mac_header_ie.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\mac\mac_header_ie.cpp</FilePath>
             </File>
           </Files>
         </Group>

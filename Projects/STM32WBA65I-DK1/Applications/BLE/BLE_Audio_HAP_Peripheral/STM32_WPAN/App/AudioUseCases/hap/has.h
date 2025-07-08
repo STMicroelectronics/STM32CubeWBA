@@ -70,17 +70,32 @@ typedef struct
   */
 tBleStatus HAS_InitService(HAS_ServiceContext_t *pSrvContext);
 tBleStatus HAS_InitCharacteristics(HAS_ServiceContext_t *pSrvContext);
-tBleStatus HAS_SetHearingAidFeatures(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, HAP_HA_Features_t Features);
-tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t ActivePresetIndex);
-tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle,
-                                             HAP_Preset_t* PresetRecord, uint8_t IsLast);
-tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
-                                      uint8_t PrevIndex, HAP_Preset_t* PresetRecord);
-tBleStatus HAS_SetPresetRecordDeleted(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
+tBleStatus HAS_SetHearingAidFeatures(HAS_ServiceContext_t *pSrvContext,
+                                     uint16_t ConnHandle,
+                                     HAP_HA_Features_t Features);
+tBleStatus HAS_SetActivePresetIndex(HAS_ServiceContext_t *pSrvContext,
+                                    uint16_t ConnHandle,
+                                    uint8_t ActivePresetIndex);
+tBleStatus HAS_SetReadPresetsResponse(HAS_ServiceContext_t *pSrvContext,
+                                      uint16_t ConnHandle,
+                                      HAP_Preset_t* PresetRecord,
+                                      uint8_t IsLast);
+tBleStatus HAS_SetPresetGenericUpdate(HAS_ServiceContext_t *pSrvContext,
+                                      uint16_t ConnHandle,
+                                      uint8_t IsLast,
+                                      uint8_t PrevIndex,
+                                      HAP_Preset_t* PresetRecord);
+tBleStatus HAS_SetPresetRecordDeleted(HAS_ServiceContext_t *pSrvContext,
+                                      uint16_t ConnHandle,
+                                      uint8_t IsLast,
                                       uint8_t Index);
-tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
+tBleStatus HAS_SetPresetRecordAvailable(HAS_ServiceContext_t *pSrvContext,
+                                        uint16_t ConnHandle,
+                                        uint8_t IsLast,
                                         uint8_t Index);
-tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext, uint16_t ConnHandle, uint8_t IsLast,
+tBleStatus HAS_SetPresetRecordUnavailable(HAS_ServiceContext_t *pSrvContext,
+                                          uint16_t ConnHandle,
+                                          uint8_t IsLast,
                                           uint8_t Index);
 SVCCTL_EvtAckStatus_t HAS_ATT_Event_Handler(void *pEvent);
 void HAS_Notification(HAS_NotificationEvt_t const *pNotification);

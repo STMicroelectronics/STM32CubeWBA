@@ -32,31 +32,15 @@
 
 /* Private defines -----------------------------------------------------------*/
 
-#define HAP_HA_GATT_DATABASE_SIZE          (3u + HAP_MAX_PRESET_NUM * (3 + HAP_MAX_PRESET_NAME_LEN))
-#define HAP_HARC_GATT_DATABASE_SIZE        (35)
-#define HAP_IAC_GATT_DATABASE_SIZE         (14)
-
-/* Database record header length in  bytes :
- * validity (1byte) + 6 bytes for BDAddr + 1 unused + 4 bytes length of data
- * in order to be aligned we define a Header length of 12 bytes and declare it
- * as an array of unsigned U32 of 12/4 size.
- * [0] - Valididy + 3 BD addr
- * [1] - 3 BD addr + 1 unused
- * [2] - 4 Length byte.
- */
-#define BLENVM_HAP_HDR_LEN              (12u)
-
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HA   (0x0C)
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC (0x0D)
-#define BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC  (0x0E)
 /* Private macros ------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 
 /* Private functions prototype------------------------------------------------*/
-void HAP_DB_StoreDatabase(uint8_t NvmType, uint8_t ClAddress[6], uint8_t *pDatabase, uint16_t DatabaseLen);
-static int HAP_FindDatabaseRecord(uint8_t NvmType, const uint8_t* devAddress,uint32_t* dataLen );
-tBleStatus HAP_DB_GetRemoteAddress(uint8_t Peer_Address_Type, const uint8_t Peer_Address[6u], uint8_t *Address);
+tBleStatus HAP_DB_GetRemoteAddress(uint8_t Peer_Address_Type,
+                                   const uint8_t Peer_Address[6u],
+                                   uint8_t *type,
+                                   uint8_t *Address);
 /* External functions prototype------------------------------------------------*/
 /* Functions Definition ------------------------------------------------------*/
 
@@ -72,8 +56,9 @@ void HAP_DB_StoreServices(uint16_t ConnHandle, uint8_t Peer_Address_Type, const 
 {
   tBleStatus    status;
   uint8_t       cl_addr[6u] = {0u};
+  uint8_t       type;
 
-  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -92,7 +77,12 @@ void HAP_DB_StoreServices(uint16_t ConnHandle, uint8_t Peer_Address_Type, const 
     if ((status == BLE_STATUS_SUCCESS) && (len > 0u))
     {
       BLE_DBG_HAP_DB_MSG("%d bytes of HAP HA Information database to store in NVM\n", len);
-      HAP_DB_StoreDatabase(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, cl_addr, hap_database, len);
+      status = BLE_AUDIO_STACK_DB_AddRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA,
+                                           type,
+                                           cl_addr,
+                                           hap_database,
+                                           len);
+      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_STACK_DB_AddRecord() returns status 0x%02X\n",status);
     }
     else
     {
@@ -112,7 +102,12 @@ void HAP_DB_StoreServices(uint16_t ConnHandle, uint8_t Peer_Address_Type, const 
     if ((status == BLE_STATUS_SUCCESS) && (len > 0u))
     {
       BLE_DBG_HAP_DB_MSG("%d bytes of HAP HARC Information database to store in NVM\n", len);
-      HAP_DB_StoreDatabase(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC, cl_addr, hap_database, len);
+      status = BLE_AUDIO_STACK_DB_AddRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC,
+                                           type,
+                                           cl_addr,
+                                           hap_database,
+                                           len);
+      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_STACK_DB_AddRecord() returns status 0x%02X\n",status);
     }
     else
     {
@@ -132,7 +127,12 @@ void HAP_DB_StoreServices(uint16_t ConnHandle, uint8_t Peer_Address_Type, const 
     if ((status == BLE_STATUS_SUCCESS) && (len > 0u))
     {
       BLE_DBG_HAP_DB_MSG("%d bytes of HAP IAC Information database to store in NVM\n", len);
-      HAP_DB_StoreDatabase(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC, cl_addr, hap_database, len);
+      status = BLE_AUDIO_STACK_DB_AddRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC,
+                                           type,
+                                           cl_addr,
+                                           hap_database,
+                                           len);
+      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_STACK_DB_AddRecord() returns status 0x%02X\n",status);
     }
     else
     {
@@ -151,12 +151,14 @@ void HAP_DB_StoreServices(uint16_t ConnHandle, uint8_t Peer_Address_Type, const 
   */
 tBleStatus HAP_DB_CheckDatabaseChange(const UseCaseConnInfo_t *pBleConnInfo)
 {
-  uint8_t       cl_addr[6u] = {0u};
-  tBleStatus    status = BLE_STATUS_SUCCESS;
-  uint32_t dataLen = 0u;
-  HAP_HA_Restore_Context_t *p_restore_context;
+  uint8_t                       cl_addr[6u] = {0u};
+  uint8_t                       type;
+  tBleStatus                    status = BLE_STATUS_SUCCESS;
+  uint16_t                      dataLen = 0u;
+  HAP_HA_Restore_Context_t      *p_restore_context;
+  uint8_t                       temp_database[HAP_HA_GATT_DATABASE_SIZE];
 
-  status = HAP_DB_GetRemoteAddress(pBleConnInfo->Peer_Address_Type, &pBleConnInfo->Peer_Address[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(pBleConnInfo->Peer_Address_Type, &pBleConnInfo->Peer_Address[0], &type,&cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -173,24 +175,16 @@ tBleStatus HAP_DB_CheckDatabaseChange(const UseCaseConnInfo_t *pBleConnInfo)
   }
 
   /* Find in database the record associated to the remote device */
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, cl_addr, &dataLen) == BLEAUDIO_PLAT_NVM_OK)
+  if (BLE_AUDIO_STACK_DB_GetRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA,
+                                   type,
+                                   cl_addr,
+                                   temp_database,
+                                   HAP_HA_GATT_DATABASE_SIZE,
+                                   &dataLen) == BLE_STATUS_SUCCESS)
   {
     if (dataLen > 0)
     {
-      uint8_t  temp_database[HAP_HA_GATT_DATABASE_SIZE];
       BLE_DBG_HAP_DB_MSG("Peer Device has HAP information (%d bytes) in NVM\n",dataLen);
-
-      /* If len in header is bigger than given length, we will be out of memory */
-      if ( dataLen > HAP_HA_GATT_DATABASE_SIZE )
-      {
-        BLE_DBG_HAP_DB_MSG("Error length in header is bigger than HAP Database length\n");
-        p_restore_context->State = HAP_HA_RESTORE_STATE_IDLE;
-        return BLE_STATUS_FAILED;
-      }
-
-      /*get HAP Database*/
-      (void)BLE_AUDIO_PLAT_NvmGet( BLEAUDIO_PLAT_NVM_CURRENT, BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, BLENVM_HAP_HDR_LEN, temp_database, dataLen );
-      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_PLAT_NvmGet of HAP Database : len %d \n",dataLen);
 
       /*Check if the values of HAP have changed when bonded device was not connected*/
       status = HAP_HA_CheckDatabaseChange(pBleConnInfo->Connection_Handle, &temp_database[0], dataLen);
@@ -222,9 +216,9 @@ uint8_t HAP_HA_DB_IsPresent(uint8_t Peer_Address_Type,const uint8_t Peer_Address
 #if (BLE_CFG_HAP_HA_ROLE == 1u)
   tBleStatus    status = BLE_STATUS_SUCCESS;
   uint8_t       cl_addr[6u] = {0u};
-  uint32_t      dataLen = 0u;
+  uint8_t       type;
 
-  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -233,10 +227,14 @@ uint8_t HAP_HA_DB_IsPresent(uint8_t Peer_Address_Type,const uint8_t Peer_Address
   }
 
   /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
+  if (BLE_AUDIO_STACK_DB_FindRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, type, cl_addr) == BLE_STATUS_SUCCESS)
   {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HA information (%d bytes) in NVM\n",dataLen);
+    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HA information in NVM\n");
     return 1u;
+  }
+  else
+  {
+    BLE_DBG_HAP_DB_MSG("Peer Device has no HAP HA information in NVM\n");
   }
 #endif /* (BLE_CFG_HAP_HA_ROLE == 1u) */
   return 0u;
@@ -254,11 +252,11 @@ uint8_t HAP_HA_DB_IsPresent(uint8_t Peer_Address_Type,const uint8_t Peer_Address
 tBleStatus HAP_HA_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6])
 {
 #if (BLE_CFG_HAP_HA_ROLE == 1u)
-  tBleStatus status;
-  uint8_t cl_addr[6u] = {0};
-  uint32_t dataLen = 0u;
+  tBleStatus    status;
+  uint8_t       type;
+  uint8_t       cl_addr[6u] = {0};
 
-  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -266,18 +264,9 @@ tBleStatus HAP_HA_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const 
     return status;
   }
 
-  /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HA information (%d bytes) in NVM, remove it\n",dataLen);
-    /* Invalidate current record because data has changed */
-    BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
-  }
-  else
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has not HAP HA information in NVM\n");
-    status = BLE_STATUS_DEV_NOT_BONDED;
-  }
+  status = BLE_AUDIO_STACK_DB_RemoveRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HA,type,&cl_addr[0]);
+  BLE_DBG_HAP_DB_MSG("Remove HAP HA information in NVM returns status 0x%02X\n",status);
+
   return status;
 #else /* (BLE_CFG_HAP_HA_ROLE == 0u) */
   return HCI_COMMAND_DISALLOWED_ERR_CODE
@@ -292,67 +281,53 @@ tBleStatus HAP_HA_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const 
    */
 tBleStatus HAP_HARC_DB_RestoreClientDatabase(HAP_HARC_Inst_t *pHARC_Inst)
 {
-  uint8_t                 cl_addr[6u] = {0};
-  tBleStatus              status = BLE_STATUS_SUCCESS;
-  uint8_t                 temp_database[HAP_HARC_GATT_DATABASE_SIZE];
-  uint32_t                dataLen = 0u;
-  const UseCaseConnInfo_t *p_conn_info;
+  uint8_t               cl_addr[6u] = {0};
+  uint8_t               type;
+  tBleStatus            status = BLE_STATUS_SUCCESS;
+  uint8_t               temp_database[HAP_HARC_GATT_DATABASE_SIZE];
+  uint16_t              dataLen = 0u;
 
   BLE_DBG_HAP_DB_MSG("Start Restoration of HAP Profile\n",dataLen);
 
-  if (USECASE_DEV_MGMT_GetConnInfo(pHARC_Inst->pConnInfo->Connection_Handle,&p_conn_info) == BLE_STATUS_SUCCESS)
+  status = HAP_DB_GetRemoteAddress(pHARC_Inst->pConnInfo->Peer_Address_Type,
+                                   &pHARC_Inst->pConnInfo->Peer_Address[0],
+                                   &type,
+                                   &cl_addr[0u]);
+  if (status != BLE_STATUS_SUCCESS)
   {
+    /* Error during Get Remote Address */
+    BLE_DBG_HAP_DB_MSG("Restore HAP HARC is aborted because BLE Address has not been successfully resolved\n");
+    return status;
+  }
 
-    status = HAP_DB_GetRemoteAddress(p_conn_info->Peer_Address_Type, &p_conn_info->Peer_Address[0], &cl_addr[0u]);
-    if (status != BLE_STATUS_SUCCESS)
+  if (BLE_AUDIO_STACK_DB_GetRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC,
+                                   type,
+                                   cl_addr,
+                                   temp_database,
+                                   HAP_HARC_GATT_DATABASE_SIZE,
+                                   &dataLen) == BLE_STATUS_SUCCESS)
+  {
+    /*Restore the HAP */
+    status = HAP_HARC_RestoreDatabase(pHARC_Inst, &temp_database[0], dataLen);
+    BLE_DBG_HAP_DB_MSG("Restore HAP Database returns status 0x%02X\n",status);
+
+    if (status == BLE_STATUS_SUCCESS)
     {
-      /* Error during Get Remote Address */
-      BLE_DBG_HAP_DB_MSG("Restore HAP HARC is aborted because BLE Address has not been successfully resolved\n");
-      return status;
-    }
-
-    /*Find in database the record associated to the remote device*/
-    if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-    {
-      BLE_DBG_HAP_DB_MSG("Peer Device has HAP HARC information (%d bytes) in NVM\n",dataLen);
-
-      /* If len in header is bigger than given length, we will be out of memory */
-      if ( dataLen > HAP_HARC_GATT_DATABASE_SIZE )
-      {
-        BLE_DBG_HAP_DB_MSG("Error length in header is bigger than HAP Controller Database length\n");
-        return BLE_STATUS_FAILED;
-      }
-
-      /*get HAP Database*/
-      (void)BLE_AUDIO_PLAT_NvmGet( BLEAUDIO_PLAT_NVM_CURRENT, BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC,BLENVM_HAP_HDR_LEN, temp_database, dataLen );
-      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_PLAT_NvmGet of HAP Controller Database : len %d \n",dataLen);
-
-      /*Restore the HAP */
-      status = HAP_HARC_RestoreDatabase(pHARC_Inst, &temp_database[0], dataLen);
-      BLE_DBG_HAP_DB_MSG("Restore HAP Database returns status 0x%02X\n",status);
-
-      if (status == BLE_STATUS_SUCCESS)
-      {
-        HAP_HARC_NotificationEvt_t evt;
-        evt.Status = BLE_STATUS_SUCCESS;
-        pHARC_Inst->LinkupState = HAP_HARC_LINKUP_COMPLETE;
-        evt.EvtOpcode = HARC_LINKUP_COMPLETE_EVT;
-        evt.ConnHandle = pHARC_Inst->pConnInfo->Connection_Handle;
-        HAP_HARC_Notification(&evt);
-      }
-      else
-      {
-        status = BLE_STATUS_FAILED;
-      }
+      HAP_HARC_NotificationEvt_t evt;
+      evt.Status = BLE_STATUS_SUCCESS;
+      pHARC_Inst->LinkupState = HAP_HARC_LINKUP_COMPLETE;
+      evt.EvtOpcode = HARC_LINKUP_COMPLETE_EVT;
+      evt.ConnHandle = pHARC_Inst->pConnInfo->Connection_Handle;
+      HAP_HARC_Notification(&evt);
     }
     else
     {
-      BLE_DBG_HAP_DB_MSG("Peer Device has no HAP HARC information in NVM\n");
       status = BLE_STATUS_FAILED;
     }
   }
   else
   {
+    BLE_DBG_HAP_DB_MSG("Peer Device has no HAP HARC information in NVM\n");
     status = BLE_STATUS_FAILED;
   }
   return status;
@@ -369,10 +344,10 @@ uint8_t HAP_HARC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addr
 {
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   uint8_t       cl_addr[6u] = {0u};
+  uint8_t       type;
   tBleStatus    status = BLE_STATUS_SUCCESS;
-  uint32_t      dataLen = 0u;
 
-  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -381,10 +356,14 @@ uint8_t HAP_HARC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addr
   }
 
   /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
+  if (BLE_AUDIO_STACK_DB_FindRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC,type,cl_addr) == BLE_STATUS_SUCCESS)
   {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HARC information (%d bytes) in NVM\n",dataLen);
+    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HARC information in NVM\n");
     return 1u;
+  }
+  else
+  {
+    BLE_DBG_HAP_DB_MSG("Peer Device has no HAP HARC information in NVM\n");
   }
 #endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */
   return 0u;
@@ -402,11 +381,11 @@ uint8_t HAP_HARC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addr
 tBleStatus HAP_HARC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,const uint8_t PeerIdentityAddress[6])
 {
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
-  tBleStatus status;
-  uint8_t cl_addr[6u] = {0};
-  uint32_t dataLen = 0u;
+  tBleStatus    status;
+  uint8_t       type;
+  uint8_t       cl_addr[6u] = {0};
 
-  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -414,18 +393,9 @@ tBleStatus HAP_HARC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,cons
     return status;
   }
 
-  /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP HARC information (%d bytes) in NVM, remove it\n",dataLen);
-    /* Invalidate current record because data has changed */
-    BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
-  }
-  else
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has not HAP HARC information in NVM\n");
-    status = BLE_STATUS_DEV_NOT_BONDED;
-  }
+  status = BLE_AUDIO_STACK_DB_RemoveRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_HARC,type,&cl_addr[0]);
+  BLE_DBG_HAP_DB_MSG("Remove HAP HARC information in NVM returns status 0x%02X\n",status);
+
   return status;
 #else /*(BLE_CFG_HAP_HARC_ROLE == 0u)*/
   return HCI_COMMAND_DISALLOWED_ERR_CODE;
@@ -440,68 +410,53 @@ tBleStatus HAP_HARC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType,cons
    */
 tBleStatus HAP_IAC_DB_RestoreClientDatabase(HAP_IAC_Inst_t *pIAC_Inst)
 {
-  uint8_t                 cl_addr[6u] = {0};
-  tBleStatus              status = BLE_STATUS_SUCCESS;
-  uint8_t                 temp_database[HAP_IAC_GATT_DATABASE_SIZE];
-  uint32_t                dataLen = 0u;
-  const UseCaseConnInfo_t *p_conn_info;
+  uint8_t               cl_addr[6u] = {0};
+  uint8_t               type;
+  tBleStatus            status = BLE_STATUS_SUCCESS;
+  uint8_t               temp_database[HAP_IAC_GATT_DATABASE_SIZE];
+  uint16_t              dataLen = 0u;
 
   BLE_DBG_HAP_DB_MSG("Start Restoration of HAP IAC\n",dataLen);
 
-  if (USECASE_DEV_MGMT_GetConnInfo(pIAC_Inst->ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
+  status = HAP_DB_GetRemoteAddress(pIAC_Inst->pConnInfo->Peer_Address_Type,
+                                   &pIAC_Inst->pConnInfo->Peer_Address[0],
+                                   &type,
+                                   &cl_addr[0u]);
+  if (status != BLE_STATUS_SUCCESS)
   {
+    /* Error during Get Remote Address */
+    BLE_DBG_HAP_DB_MSG("Restore HAP IAC is aborted because BLE Address has not been successfully resolved\n");
+    return status;
+  }
 
-    status = HAP_DB_GetRemoteAddress(p_conn_info->Peer_Address_Type, &p_conn_info->Peer_Address[0], &cl_addr[0u]);
-    if (status != BLE_STATUS_SUCCESS)
+  if (BLE_AUDIO_STACK_DB_GetRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC,
+                                   type,
+                                   cl_addr,
+                                   temp_database,
+                                   HAP_HARC_GATT_DATABASE_SIZE,
+                                   &dataLen) == BLE_STATUS_SUCCESS)
+  {
+    /*Restore the HAP */
+    status = HAP_IAC_RestoreDatabase(pIAC_Inst, &temp_database[0], dataLen);
+    BLE_DBG_HAP_DB_MSG("Restore HAP IAC Database returns status 0x%02X\n",status);
+
+    if (status == BLE_STATUS_SUCCESS)
     {
-      /* Error during Get Remote Address */
-      BLE_DBG_HAP_DB_MSG("Restore HAP IAC is aborted because BLE Address has not been successfully resolved\n");
-      return status;
-    }
-
-    /*Find in database the record associated to the remote device*/
-    if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-    {
-      BLE_DBG_HAP_DB_MSG("Peer Device has HAP IAC information (%d bytes) in NVM\n",dataLen);
-
-      /* If len in header is bigger than given length, we will be out of memory */
-      if ( dataLen > HAP_IAC_GATT_DATABASE_SIZE )
-      {
-        BLE_DBG_HAP_DB_MSG("Error length in header is bigger than HAP Controller Database length\n");
-        return BLE_STATUS_FAILED;
-      }
-
-      /*get HAP Database*/
-      (void)BLE_AUDIO_PLAT_NvmGet( BLEAUDIO_PLAT_NVM_CURRENT, BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC, BLENVM_HAP_HDR_LEN,
-                                  temp_database, dataLen );
-      BLE_DBG_HAP_DB_MSG("BLE_AUDIO_PLAT_NvmGet of HAP Controller Database : len %d \n",dataLen);
-
-      /*Restore the HAP */
-      status = HAP_IAC_RestoreDatabase(pIAC_Inst, &temp_database[0], dataLen);
-      BLE_DBG_HAP_DB_MSG("Restore HAP IAC Database returns status 0x%02X\n",status);
-
-      if (status == BLE_STATUS_SUCCESS)
-      {
-        HAP_IAC_NotificationEvt_t evt;
-        evt.Status = BLE_STATUS_SUCCESS;
-        pIAC_Inst->LinkupState = HAP_IAC_LINKUP_COMPLETE;
-        evt.EvtOpcode = IAC_LINKUP_COMPLETE_EVT;
-        evt.ConnHandle = pIAC_Inst->ConnHandle;
-        HAP_IAC_Notification(&evt);
-      }
-      else
-      {
-        status = BLE_STATUS_FAILED;
-      }
+      HAP_IAC_NotificationEvt_t evt;
+      evt.Status = BLE_STATUS_SUCCESS;
+      pIAC_Inst->LinkupState = HAP_IAC_LINKUP_COMPLETE;
+      evt.EvtOpcode = IAC_LINKUP_COMPLETE_EVT;
+      evt.ConnHandle = pIAC_Inst->pConnInfo->Connection_Handle;
+      HAP_IAC_Notification(&evt);
     }
     else
     {
-      BLE_DBG_HAP_DB_MSG("Peer Device has no HAP IAC information in NVM\n");
       status = BLE_STATUS_FAILED;
     }
   }
   else
   {
+    BLE_DBG_HAP_DB_MSG("Peer Device has no HAP IAC information in NVM\n");
     status = BLE_STATUS_FAILED;
   }
   return status;
@@ -516,10 +471,10 @@ tBleStatus HAP_IAC_DB_RestoreClientDatabase(HAP_IAC_Inst_t *pIAC_Inst)
 uint8_t HAP_IAC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Address[6])
 {
   uint8_t       cl_addr[6u] = {0u};
+  uint8_t       type;
   tBleStatus    status = BLE_STATUS_SUCCESS;
-  uint32_t      dataLen = 0u;
 
-  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(Peer_Address_Type, &Peer_Address[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -528,10 +483,14 @@ uint8_t HAP_IAC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addre
   }
 
   /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
+  if (BLE_AUDIO_STACK_DB_FindRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC,type,cl_addr) == BLE_STATUS_SUCCESS)
   {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP IAC information (%d bytes) in NVM\n",dataLen);
+    BLE_DBG_HAP_DB_MSG("Peer Device has HAP IAC information in NVM\n");
     return 1u;
+  }
+  else
+  {
+    BLE_DBG_HAP_DB_MSG("Peer Device has no HAP IAC information in NVM\n");
   }
   return 0u;
 }
@@ -547,11 +506,11 @@ uint8_t HAP_IAC_DB_IsPresent(uint8_t Peer_Address_Type, const uint8_t Peer_Addre
   */
 tBleStatus HAP_IAC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType, const uint8_t PeerIdentityAddress[6])
 {
-  uint8_t cl_addr[6u] = {0};
-  tBleStatus status = BLE_STATUS_SUCCESS;
-  uint32_t dataLen = 0u;
+  uint8_t       cl_addr[6u] = {0};
+  uint8_t       type;
+  tBleStatus    status = BLE_STATUS_SUCCESS;
 
-  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &cl_addr[0u]);
+  status = HAP_DB_GetRemoteAddress(PeerIdentityAddressType, &PeerIdentityAddress[0], &type, &cl_addr[0u]);
   if (status != BLE_STATUS_SUCCESS)
   {
     /* Error during Get Remote Address */
@@ -559,18 +518,8 @@ tBleStatus HAP_IAC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType, cons
     return status;
   }
 
-  /*Find in database the record associated to the remote device*/
-  if (HAP_FindDatabaseRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC, cl_addr,&dataLen) == BLEAUDIO_PLAT_NVM_OK)
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has HAP IAC information (%d bytes) in NVM, remove it\n",dataLen);
-    /* Invalidate current record because data has changed */
-    BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
-  }
-  else
-  {
-    BLE_DBG_HAP_DB_MSG("Peer Device has not HAP IAC information in NVM\n");
-    status = BLE_STATUS_DEV_NOT_BONDED;
-  }
+  status = BLE_AUDIO_STACK_DB_RemoveRecord(BLEAUDIO_PLAT_NVM_TYPE_HAP_IAC,type,&cl_addr[0]);
+  BLE_DBG_HAP_DB_MSG("Remove HAP IAC information in NVM returns status 0x%02X\n",status);
 
   return status;
 }
@@ -579,135 +528,29 @@ tBleStatus HAP_IAC_DB_RemoveServicesRecord(uint8_t PeerIdentityAddressType, cons
 /* Private functions ----------------------------------------------------------*/
 
 /**
-  * @brief Store a database related to a service in NVM
-  * @param ClAddress: Address of the peer device
-  * @param pDatabase: A pointer to the database to store
-  * @param DatabaseLen: Length of the database to store
-  */
-void HAP_DB_StoreDatabase(uint8_t NvmType, uint8_t ClAddress[6], uint8_t *pDatabase, uint16_t DatabaseLen)
-{
-  uint8_t res;
-  uint32_t data_len = 0u;
-  uint32_t hdr[BLENVM_HAP_HDR_LEN / 4];
-
-  /*Find in database the record associated to the remote device*/
-  res = HAP_FindDatabaseRecord(NvmType, ClAddress, &data_len);
-  if (res == BLEAUDIO_PLAT_NVM_OK)
-  {
-
-    BLE_DBG_HAP_DB_MSG("Compare already stored HAP database of length %d bytes vs current HAP Database of length %d\n", data_len, DatabaseLen);
-    /* Compare data from byte 12 */
-    if ( (DatabaseLen == data_len) &&
-         (BLE_AUDIO_PLAT_NvmCompare( BLENVM_HAP_HDR_LEN, pDatabase, data_len)
-          == BLEAUDIO_PLAT_NVM_OK) )
-    {
-
-      BLE_DBG_HAP_DB_MSG("HAP database hasn't changed, no need to perform NVM Save operation\n");
-      /* Return directly as we have found the same data already in NVM */
-      return ;
-    }
-
-    BLE_DBG_HAP_DB_MSG("HAP database has changed\n");
-    /* Invalidate current record because data has changed */
-    BLE_AUDIO_PLAT_NvmDiscard( BLEAUDIO_PLAT_NVM_CURRENT );
-  }
-
-
-  ((uint8_t*)(hdr + 0))[0] = 0xFDU;
-  ((uint8_t*)(hdr + 0))[1] = ClAddress[0];
-  ((uint8_t*)(hdr + 0))[2] = ClAddress[1];
-  ((uint8_t*)(hdr + 0))[3] = ClAddress[2];
-  ((uint8_t*)(hdr + 1))[0] = ClAddress[3];
-  ((uint8_t*)(hdr + 1))[1] = ClAddress[4];
-  ((uint8_t*)(hdr + 1))[2] = ClAddress[5];
-  ((uint8_t*)(hdr + 1))[3] = 0xFFU;
-
-  /* the last byte of the flash word containing the address will have 0xFF.
-   * The length of the database will be at the next word offset in flash.
-   */
-  hdr[2] = DatabaseLen;
-  BLE_DBG_HAP_DB_MSG("Store %d bytes of HAP Information database in NVM for peer device 0x%02x%02x%02x%02x%02x%02x\n",
-                     DatabaseLen,
-                     ClAddress[5],
-                     ClAddress[4],
-                     ClAddress[3],
-                     ClAddress[2],
-                     ClAddress[1],
-                     ClAddress[0]);
-  res = BLE_AUDIO_PLAT_NvmAdd(NvmType,(uint8_t*)hdr, BLENVM_HAP_HDR_LEN, pDatabase, DatabaseLen );
-  BLE_DBG_HAP_DB_MSG("BLE_AUDIO_PLAT_NvmAdd() returns status 0x%02X\n",res);
-}
-
-static int HAP_FindDatabaseRecord(uint8_t NvmType, const uint8_t* devAddress,uint32_t* dataLen )
-{
-  /* Search a GATT record in the SDB
-   */
-  uint32_t hdr[BLENVM_HAP_HDR_LEN / 4];
-  int res;
-  uint8_t mode;
-  uint8_t i;
-  uint8_t is_diff;
-
-  /* Set NVM get mode as "first" */
-  mode = BLEAUDIO_PLAT_NVM_FIRST;
-
-  while ( 1 )
-  {
-    /* Get the header part of each record in order to find if there is already in NVM some data corresponding
-     * to the same remote device address
-     */
-    res = BLE_AUDIO_PLAT_NvmGet( mode, NvmType,0, (uint8_t*)hdr, BLENVM_HAP_HDR_LEN );
-
-    /* Set NVM get mode as "next" */
-    mode = BLEAUDIO_PLAT_NVM_NEXT;
-
-    if ( res == BLEAUDIO_PLAT_NVM_EOF )
-    {
-      /* No more record found */
-      return res;
-    }
-
-    /* We found a valid record */
-
-    /* Compare addresses */
-    is_diff = 0u;
-    for (i = 0u ; i < 6u ; i++)
-    {
-      if (((uint8_t*)hdr)[1+i] != devAddress[i])
-      {
-        is_diff = 1u;
-      }
-    }
-    if ( is_diff == 0u)
-    {
-      /* Extract data length of the record */
-      *dataLen = hdr[2];
-
-      return BLEAUDIO_PLAT_NVM_OK;
-    }
-  }
-}
-
-/**
   * @brief If an address is a resolvable private address, resolve it. Otherwise just copy the value of the address
   * @param Peer_Address_Type: Type of the address
   * @param Peer_Address: Peer Address
+  * @param type: Output Type of the address
   * @param Address: Output address
   * @retval status of the operation
   */
-tBleStatus HAP_DB_GetRemoteAddress(uint8_t Peer_Address_Type, const uint8_t Peer_Address[6u], uint8_t *Address)
+tBleStatus HAP_DB_GetRemoteAddress(uint8_t Peer_Address_Type,
+                                   const uint8_t Peer_Address[6u],
+                                   uint8_t *type,
+                                   uint8_t *Address)
 {
   uint8_t status = BLE_STATUS_SUCCESS;
 
   /* Check if the address is a resolvable private address */
   if (((Peer_Address_Type) == 1u) && ((Peer_Address[5] & 0xC0U) == 0x40U))
   {
-    uint8_t type;
-    status = aci_gap_check_bonded_device(1,&Peer_Address[0],&type,Address);
+    status = aci_gap_check_bonded_device(1,&Peer_Address[0],type,Address);
   }
   else
   {
     memcpy(Address, &Peer_Address[0], 6u);
+    *type = Peer_Address_Type;
   }
   return status;
 }

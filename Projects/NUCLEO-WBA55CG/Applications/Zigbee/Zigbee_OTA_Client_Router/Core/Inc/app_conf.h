@@ -297,9 +297,6 @@ typedef enum
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 #endif /* USE_RADIO_LOW_ISR */
 
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (1)
-
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:

@@ -113,7 +113,7 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
            {
                3,
                FLASH_BASE_S + FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE,
-               FLASH_BASE_S + FLASH_AREA_0_OFFSET - 1,
+               FLASH_BASE_S + FLASH_AREAS_TFM_SIZE + FLASH_AREA_0_OFFSET - 1,
                MPU_ARMV8M_MAIR_ATTR_DATANOCACHE_IDX,
                MPU_ARMV8M_XN_EXEC_NEVER,
                MPU_ARMV8M_AP_RW_PRIV_ONLY,

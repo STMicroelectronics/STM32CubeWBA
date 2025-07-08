@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "hrs.h"
 
 /* USER CODE BEGIN Includes */
@@ -161,7 +160,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
@@ -173,7 +172,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
                 LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_ENABLED\n");
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
@@ -373,11 +372,11 @@ void HRS_Init(void)
                              &(HRS_Context.HrsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: HRS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
 
   /**
@@ -400,7 +399,7 @@ void HRS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HRME\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrmeCharHdle = 0x%04X\n",HRS_Context.HrmeCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -427,7 +426,7 @@ void HRS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BSL\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BslCharHdle = 0x%04X\n",HRS_Context.BslCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -454,7 +453,7 @@ void HRS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HRCP\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrcpCharHdle = 0x%04X\n",HRS_Context.HrcpCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */

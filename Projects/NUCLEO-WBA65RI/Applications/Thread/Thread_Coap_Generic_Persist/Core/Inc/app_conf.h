@@ -280,12 +280,9 @@ typedef enum
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
 #if (USE_RADIO_LOW_ISR == 1)
-#define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
+#define RADIO_SW_LOW_INTR_NUM               ADC4_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 #endif /* USE_RADIO_LOW_ISR */
-
-/* Link Layer supported number of antennas */
-#define RADIO_NUM_OF_ANTENNAS               (4)
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
@@ -311,6 +308,10 @@ typedef enum
 
 /* Number of 32-bit random values stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
+
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,7 +26,7 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
@@ -66,7 +66,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -222,8 +221,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -240,11 +240,9 @@ void RCC_IRQHandler(void)
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
 #if (CFG_SCM_SUPPORTED == 1)
-#if (CFG_SW_HSE_WORKAROUND == 1)
-    HSE_MNGT_StartStabilizationTimer();
-#else
-    scm_hserdy_isr();
-#endif /* CFG_SW_HSE_WORKAROUND */
+    /* SCM HSE BEGIN */
+    SCM_HSE_StartStabilizationTimer();
+    /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
@@ -315,10 +313,12 @@ void TIM16_IRQHandler(void)
     /* Clear the update interrupt flag */
     LL_TIM_ClearFlag_UPDATE(TIM16);
 
-#if (CFG_SW_HSE_WORKAROUND == 1)
-    /* TIM16 update interrupt processing */
-    HSE_MNGT_SW_HSERDY_isr();
-#endif /* CFG_SW_HSE_WORKAROUND */
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
@@ -333,7 +333,6 @@ void RNG_IRQHandler(void)
   /* USER CODE BEGIN RNG_IRQn 0 */
 
   /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
   /* USER CODE BEGIN RNG_IRQn 1 */
 
   /* USER CODE END RNG_IRQn 1 */

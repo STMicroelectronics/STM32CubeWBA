@@ -51,9 +51,9 @@
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA52xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA52CG-Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
-<li><p>On STM32WBA52CG-Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:</p>
+<li><p>This example runs on STM32WBA65xx devices.</p></li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA65CG-Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>On STM32WBA65CG-Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:</p>
 <ul>
 <li>CN11: GND [OFF]</li>
 <li>JP4: VDDRF [ON]</li>
@@ -70,11 +70,11 @@
 <h3 id="how-to-use-it"><strong>How to use it ?</strong></h3>
 <p>Minimum requirements for the demo:</p>
 <ul>
-<li>1 STM32WBA52xx-Nucleo board in MAC 802.15.4 LPM mode using current generated binary.</li>
+<li>1 STM32WBA65xx-Nucleo board in MAC 802.15.4 LPM mode using current generated binary.</li>
 </ul>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
-<li>Connect a STM32WBA52xx-Nucleo board to your PC</li>
+<li>Connect a STM32WBA65xx-Nucleo board to your PC</li>
 <li>Open your preferred toolchain</li>
 <li>Rebuild all files of Mac_802_15_4/Mac_802_15_4_LPM_Periodic_Tx and load your image into the target memory</li>
 <li>The example run on Reset</li>
@@ -89,7 +89,7 @@
 <p>This MAC 802.15.4 example is to demonstrate a periodic data transmission from an End device configured in low power mode.</p>
 <p>By default, on reset, the board starts. Once the device and its MAC layer are configured, the 802.15.4 node is silently stated and enter in low power mode. A timer driven by the LPTIM1/RTC Timer is launch and configured to issue a Timeout interruption. On Timeout event, the application core exit from the low power state and a data transmit data is requested by transmitter task. The application core returns in low power state until it received the MCPS data confirmation from the RF protocol core. Before returning to the low power state, a new timer is then triggered on MCPS data confirmation to schedule a new data transmission. The demo runs in an infinite loops. If user want to restart the demo, he may simply reset the device.</p>
 <p>Power consumption can be measured using the X-Nucleo-LPM01A board solution.</p>
-<p>On STM32WBA52xx, the consumption should be:</p>
+<p>On STM32WBA65xx, the consumption should be:</p>
 <ul>
 <li>Stop mode: 25 uA</li>
 <li>Standby mode: 6 uA</li>

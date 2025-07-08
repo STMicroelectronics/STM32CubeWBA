@@ -67,14 +67,24 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gpio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Example/User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/main.c</locationURI>
-		</link>
-		<link>
-			<name>Example/User/secure_nsc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Src/secure_nsc.c</locationURI>
 		</link>
 		<link>
 			<name>Example/User/stm32wbaxx_hal_msp.c</name>
@@ -85,6 +95,11 @@
 			<name>Example/User/stm32wbaxx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/stm32wbaxx_it.c</locationURI>
+		</link>
+		<link>
+			<name>Example/User/startup_stm32wbaxx.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/startup_stm32wbaxx.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

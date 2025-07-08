@@ -21,7 +21,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
-#include "ble.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
 #include "skel_ble.h"
 #include "ll_sys_if.h"
 #include "stm_list.h"
@@ -53,7 +54,10 @@ static MyBLEServiceContext_t myBLEServiceContext;
                                      CFG_BLE_ATT_VALUE_ARRAY_SIZE)
 
 #define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_MBLOCK_COUNT))
+        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_MBLOCK_COUNT, 0))
+
+/* Dummy value for NVM buffer in RAM for BLE Host stack */
+#define CFG_BLE_NVM_SIZE_MAX            4
 
 /* Flag define */
 #define APP_FLAG_BLE_HOST               1
@@ -113,9 +117,12 @@ static const uint8_t a_MBdAddr[BD_ADDR_SIZE] =
 static const char a_GapDeviceName[] = {  'S', 'T', 'M', '3', '2', 'W', 'B', 'A' }; /* Gap Device Name */
 
 /* Host stack init variables */
-static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
+
+/* Host stack buffers */
+static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
+static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 /* USER CODE BEGIN PV */
 Service_UUID_t service_uuid;
@@ -148,7 +155,7 @@ void LINKLAYER_DEBUG_SIGNAL_RESET(void* signal);
 void LINKLAYER_DEBUG_SIGNAL_TOGGLE(void* signal);
 
 /* USER CODE BEGIN PFP */
-void CPU2_BLE_GATT_MyBLENotifyCharacteristic_Update(void);
+static void BLE_GATT_MyBLENotifyCharacteristic_Update(void);
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -180,7 +187,7 @@ void BLE_Init(void)
     SVCCTL_Init();
 
     /* USER CODE BEGIN APP_BLE_Init_3 */
-    CPU2_BLE_Service_Init();
+    BLE_Service_Init();
     /* USER CODE END APP_BLE_Init_3 */
   }
   /* USER CODE BEGIN APP_BLE_Init_4 */
@@ -327,7 +334,7 @@ void BLE_Process(void){
   if (APP_FLAG_GET(APP_FLAG_BT_PUSH) == 1)
   {
     APP_FLAG_RESET(APP_FLAG_BT_PUSH);
-    CPU2_BLE_GATT_MyBLENotifyCharacteristic_Update(); 
+    BLE_GATT_MyBLENotifyCharacteristic_Update(); 
   }
   /* USER CODE END BLE_Process */
 
@@ -352,10 +359,13 @@ uint8_t HOST_BLE_Init(void)
   pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
   pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
   pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
-  pInitParams.bleStartRamAddress      = (uint8_t*)buffer;
+  pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
+  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
+  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -425,7 +435,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 * @param  None
 * @retval None
 */
-void CPU2_BLE_Service_Init(void)
+void BLE_Service_Init(void)
 {
  tBleStatus ret = BLE_STATUS_SUCCESS;
   
@@ -484,7 +494,7 @@ void CPU2_BLE_Service_Init(void)
     Error_Handler(); /* UNEXPECTED */
   }
   
-  //Device n�1
+  /* Device nb 1 */
   Notif_Value[0] = 1;
 }
 
@@ -550,6 +560,28 @@ static SVCCTL_EvtAckStatus_t BLEService_EventHandler(void *Event)
   return(return_value);
 }
 
+static void BLE_GATT_MyBLENotifyCharacteristic_Update()
+{
+  tBleStatus ret = BLE_STATUS_SUCCESS;
+  
+  if(Notif_Value[1] == 0){
+    Notif_Value[1] = 1;
+  }else{
+    Notif_Value[1] = 0;
+  }
+  
+  if(Notif_Status==1){
+    ret = aci_gatt_update_char_value(myBLEServiceContext.MyBLEServiceHandle,
+                                     myBLEServiceContext.MyBLENotifyCharacteristicHandle,
+                                     0, /* charValOffset */
+                                     2, /* charValueLen */
+                                     Notif_Value);
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      Error_Handler(); /* UNEXPECTED */
+    }
+  }
+}
 
 /* USER CODE END FD_LOCAL_FUNCTION */
 
@@ -635,30 +667,6 @@ void ll_process(void)
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
-void CPU2_BLE_GATT_MyBLENotifyCharacteristic_Update()
-{
-  tBleStatus ret = BLE_STATUS_SUCCESS;
-  
-  if(Notif_Value[1] == 0){
-    Notif_Value[1] = 1;
-  }else{
-    Notif_Value[1] = 0;
-  }
-  
-  if(Notif_Status==1){
-    ret = aci_gatt_update_char_value(myBLEServiceContext.MyBLEServiceHandle,
-                                     myBLEServiceContext.MyBLENotifyCharacteristicHandle,
-                                     0, /* charValOffset */
-                                     2, /* charValueLen */
-                                     Notif_Value);
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      Error_Handler(); /* UNEXPECTED */
-    }
-  }
-}
-
 void APP_BLE_Key_Button1_Action(void)
 {
   APP_FLAG_SET(APP_FLAG_BT_PUSH);

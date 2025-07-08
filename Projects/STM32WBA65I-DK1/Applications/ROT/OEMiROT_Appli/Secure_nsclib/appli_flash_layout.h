@@ -19,10 +19,11 @@
 #ifndef __APPLI_FLASH_LAYOUT_H__
 #define __APPLI_FLASH_LAYOUT_H__
 
-/********** Flash layout configuration : begin **********/
+/********** Application Flash layout configuration : begin **********/
 
 #define S_HEAP_SIZE                    0x0000200  /* EWARM / MDK-ARM / STM32CubeIDE */
 #define S_C_STACK_SIZE                 0x0000400  /* EWARM / STM32CubeIDE */
+
 #define S_MSP_STACK_SIZE               0x0000200  /* MDK-ARM */
 #define S_PSP_STACK_SIZE               0x0000700  /* MDK-ARM */
 
@@ -30,17 +31,18 @@
 
 #define PARTITION_RESERVED             0x1C00
 
-/********** Flash layout configuration : end **********/
+/********** Application Flash layout configuration : end **********/
+
 
 /********** All define are updated automatically from ROT_BOOT project : begin **********/
 
-/*#define OEMUROT_ENABLE*/                         /* Defined: the project is used for OEMuRoT boot stage
-                                                  Undefined: the project is used for OEMuRoT boot stage */
+/*#define OEMUROT_ENABLE*/                      /* Defined: the project is used for OEMuRoT boot stage
+                                                  Undefined: the project is used for OEMiRoT boot stage */
 
-#define MCUBOOT_OVERWRITE_ONLY                 /* Defined: the FW installation uses overwrite method.
-                                                  UnDefined: The FW installation uses swap mode. */
+#define MCUBOOT_OVERWRITE_ONLY                  /* Defined: the FW installation uses overwrite method.
+                                                   UnDefined: The FW installation uses swap mode. */
 
-/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/          /* Defined: External OSPI flash used for all secondary slots.
+/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/       /* Defined: External OSPI flash used for all secondary slots.
                                                   Undefined: External OSPI flash not used. */
 
 #define MCUBOOT_APP_IMAGE_NUMBER       0x1      /* 1: S and NS application binaries are assembled in one single image.
@@ -52,7 +54,7 @@
 #define MCUBOOT_NS_DATA_IMAGE_NUMBER   0x0      /* 1: NS data image for NS application.
                                                    0: No NS data image. */
 
-#define FLASH_AREA_0_OFFSET            0x18000 /* Secure app image primary slot offset */
+#define FLASH_AREA_0_OFFSET            0x18000  /* Secure app image primary slot offset */
 
 #define FLASH_AREA_0_SIZE              0x8000   /* Secure app image primary slot size */
 
@@ -120,28 +122,20 @@
 #define SPI_FLASH_BASE_ADDRESS         (0x00000000)
 #endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
 
+/*
+ * Flash device name
+ */
+#define FLASH_DEV_NAME                             Driver_FLASH0
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define LOADER_FLASH_DEV_NAME             Driver_SPI_FLASH0
-#else
-#define LOADER_FLASH_DEV_NAME             Driver_FLASH0
-#endif  /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2)
-/* Flash Driver Used to Confirm Secure App Image */
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_SPI_FLASH0
-#else
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_FLASH0
+#define SPI_FLASH_DEV_NAME                         Driver_SPI_FLASH0
 #endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2) */
 
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
-/* Flash Driver Used to Confirm Secure Data Image */
+#define FLASH_PRIMARY_DEV_NAME                     FLASH_DEV_NAME
+
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_SPI_FLASH0
+#define FLASH_SECONDARY_DEV_NAME                   SPI_FLASH_DEV_NAME
 #else
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_FLASH0
+#define FLASH_SECONDARY_DEV_NAME                   FLASH_DEV_NAME
 #endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 
-#endif  /* __APPLI_FLASH_LAYOUT_H__  */
+#endif /* __APPLI_FLASH_LAYOUT_H__ */

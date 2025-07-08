@@ -58,6 +58,7 @@ typedef struct ZigbeeAppInfoT
   enum ZbStatusCodeT    eJoinStatus;
   uint32_t              lPersistNumWrites;
   uint32_t              lJoinDelay;
+  uint64_t              dlExtendedAddress;
   /* USER CODE BEGIN ZigbeeAppInfo_t */
 
   /* USER CODE END ZigbeeAppInfo_t */
@@ -99,6 +100,7 @@ extern void       APP_ZIGBEE_NwkFormOrJoin                ( void );
 extern void       APP_ZIGBEE_PermitJoin                   ( uint8_t cPermitJoinDelay );
 extern bool       APP_ZIGBEE_IsAppliJoinNetwork           ( void );
 extern void       APP_ZIGBEE_AddDeviceWithInstallCode     ( uint64_t dlExtendedAddress, uint8_t * szInstallCode, uint8_t cPermitJoinDelay );
+extern uint16_t   APP_ZIGBEE_GetDisplayBindTable          ( bool bDisplay );
 extern bool       APP_ZIGBEE_GetCurrentChannel            ( uint8_t * cCurrentChannel );
 extern bool       APP_ZIGBEE_SetTxPower                   ( uint8_t cTxPower );
 extern char *     APP_ZIGBEE_GetDisplaySecKey             ( const uint8_t * szCode, uint16_t iLength, bool bSpace );
@@ -106,12 +108,9 @@ extern void       APP_ZIGBEE_PrintGenericInfo             ( void );
 extern void       APP_ZIGBEE_PrintApplicationInfo         ( void );
 extern void       APP_ZIGBEE_Error                        ( uint32_t ErrId, uint32_t ErrCode );
 
-/* USER CODE BEGIN EFP */
-/* Exported functions found in app_zigbee_persistence.c */
-extern void       APP_ZIGBEE_Persistence_Init( void );
-extern bool       APP_ZIGBEE_Persistence_StartupNwk( ZigbeeAppInfo_t * pstZigbeeAppInfo, bool bSavePersistence );
-extern void       APP_ZIGBEE_Persistence_Delete ( void );
+extern void       APP_ZIGBEE_SerialCommandInstallCode     ( uint8_t * pRxBuffer, uint16_t iRxBufferSize );
 
+/* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
 

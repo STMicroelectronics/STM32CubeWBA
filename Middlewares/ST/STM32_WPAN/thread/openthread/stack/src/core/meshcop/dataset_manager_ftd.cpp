@@ -29,33 +29,13 @@
 /**
  * @file
  *   This file implements MeshCoP Datasets manager to process commands.
- *
  */
 
 #include "meshcop/dataset_manager.hpp"
 
 #if OPENTHREAD_FTD
 
-#include <stdio.h>
-
-#include <openthread/platform/radio.h>
-
-#include "coap/coap_message.hpp"
-#include "common/as_core_type.hpp"
-#include "common/code_utils.hpp"
-#include "common/debug.hpp"
-#include "common/locator_getters.hpp"
-#include "common/log.hpp"
-#include "common/random.hpp"
-#include "common/timer.hpp"
 #include "instance/instance.hpp"
-#include "meshcop/dataset.hpp"
-#include "meshcop/meshcop.hpp"
-#include "meshcop/meshcop_leader.hpp"
-#include "meshcop/meshcop_tlvs.hpp"
-#include "thread/thread_netif.hpp"
-#include "thread/thread_tlvs.hpp"
-#include "thread/uri_paths.hpp"
 
 namespace ot {
 namespace MeshCoP {
@@ -71,6 +51,7 @@ Error DatasetManager::ProcessSetOrReplaceRequest(MgmtCommand          aCommand,
 {
     Error              error = kErrorParse;
     Dataset            dataset;
+    OffsetRange        offsetRange;
     Timestamp          activeTimestamp;
     ChannelTlvValue    channelValue;
     uint16_t           sessionId;
@@ -81,7 +62,8 @@ Error DatasetManager::ProcessSetOrReplaceRequest(MgmtCommand          aCommand,
 
     aInfo.Clear();
 
-    SuccessOrExit(dataset.SetFrom(aMessage, aMessage.GetOffset(), aMessage.GetLength() - aMessage.GetOffset()));
+    offsetRange.InitFromMessageOffsetToEnd(aMessage);
+    SuccessOrExit(dataset.SetFrom(aMessage, offsetRange));
     SuccessOrExit(dataset.ValidateTlvs());
 
     // Verify that the request includes timestamps that are
@@ -241,7 +223,7 @@ Error DatasetManager::HandleSetOrReplace(MgmtCommand             aCommand,
         Ip6::Address destination;
 
         SuccessOrExit(Get<NetworkData::Leader>().FindCommissioningSessionId(localSessionId));
-        SuccessOrExit(Get<Mle::MleRouter>().GetCommissionerAloc(destination, localSessionId));
+        Get<Mle::Mle>().GetCommissionerAloc(localSessionId, destination);
         Get<Leader>().SendDatasetChanged(destination);
     }
 
@@ -299,6 +281,14 @@ Error ActiveDatasetManager::GenerateLocal(void)
 
         channelValue.SetChannelAndPage(Get<Mac::Mac>().GetPanChannel());
         IgnoreError(dataset.Write<ChannelTlv>(channelValue));
+    }
+
+    if (!dataset.Contains<WakeupChannelTlv>())
+    {
+        ChannelTlvValue channelValue;
+
+        channelValue.SetChannelAndPage(Get<Mac::Mac>().GetWakeupChannel());
+        IgnoreError(dataset.Write<WakeupChannelTlv>(channelValue));
     }
 
     if (!dataset.Contains<ChannelMaskTlv>())

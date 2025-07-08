@@ -20,6 +20,19 @@
   @Note Mbed-TLS release
    For additional information on the Mbed-TLS release, consult the changelog file.
 
+### 14-April-2025 ###
+========================
+    + Move to Mbed-TLS V3.6.3 to get fix for CVE-2025-27809 and CVE-2025-27810.
+    + Keep ST patchs from Mbed TLS V3.6.2
+    + Update st_readme.txt
+
+### 04-February-2025 ###
+========================
+    + Replace the Mbed TLS contribution file with the ST contribution file.
+    + Replace the Mbed TLS security file with the ST security file (PSIRT).
+    + Solve warning in pk.c : 'key_bits' may be used uninitialized.
+    + Update st_readme.txt.
+
 ### 24-January-2025 ###
 ========================
     + Add CODE_OF_CONDUCT.md

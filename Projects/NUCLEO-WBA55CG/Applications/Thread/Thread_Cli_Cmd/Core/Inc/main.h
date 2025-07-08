@@ -73,7 +73,6 @@ void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_LPUART1_UART_Init(void);
-void MX_RNG_Init(void);
 
 /* USER CODE BEGIN EFP */
 

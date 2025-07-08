@@ -5,7 +5,7 @@
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * <h2><center>&copy; Copyright (c) 2025 STMicroelectronics.
  * All rights reserved.</center></h2>
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -28,28 +28,51 @@
 /* USER CODE END include */
 
 /* Exported variables --------------------------------------------------------*/
-/** @defgroup TINY_LPM_IF_Exported_varaibles TINY LPM IF exported variables
+/** @defgroup TINY_LPM_IF_Exported_variables TINY LPM IF exported variables
   * @{
   */
 
 /**
- * @brief variable to provide all the functions corresponding to the different low power modes.
+ * @brief Array of LPM driver configurations.
+ *
+ * This array contains the configurations for different low power modes
+ * and the corresponding functions to handle those modes.
+ *
+ *@note It must be ordered from the less efficient (index 0) 
+ *      to the most efficient low power mode 
  */
-const struct UTIL_LPM_Driver_s UTIL_PowerDriver = 
+const UTIL_LPM_Driver_fp UTIL_LPM_Driver[] =
 {
-  PWR_EnterSleepMode,
-  PWR_ExitSleepMode,
-  
-  PWR_EnterStopMode,
-  PWR_ExitStopMode, 
-  
-  PWR_EnterOffMode,
-  PWR_ExitOffMode,
+  LPM_SleepMode,
+  LPM_Stop1Mode,
+  LPM_StandbyMode
 };
 
 /**
- * @}
+ * @brief Number of LPM drivers.
+ *
+ * This constant holds the number of entries in the UTIL_LPM_Driver array.
  */
+const uint32_t UTIL_LPM_Driver_num = sizeof(UTIL_LPM_Driver) / sizeof(UTIL_LPM_Driver_fp);
+
+/**
+ * @brief Assertion to ensure at least one driver is registered in interface file.
+ */
+static_assert(sizeof(UTIL_LPM_Driver) != 0, "at least one LPM driver is required");
+/* Check not too many drivers are registered in interface file */
+
+/**
+ * @brief Assertion to ensure registered drivers are within boundaries.
+ */
+static_assert((sizeof(UTIL_LPM_Driver) / sizeof(UTIL_LPM_Driver_fp)) <= UTIL_LPM_DRIVER_MAX_NUM, 
+              "too many LPM drivers registered");
+
+/**
+ * @brief Assertion to ensure drivers and associated enum type are aligned
+ */
+static_assert((sizeof(UTIL_LPM_Driver) / sizeof(UTIL_LPM_Driver_fp)) == UTIL_LPM_NUM_MODES, 
+              "UTIL_LPM_Mode_t enum not aligned with UTIL_LPM_Driver size");
+              
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN Private_Function_Prototypes */
 
@@ -75,46 +98,55 @@ const struct UTIL_LPM_Driver_s UTIL_PowerDriver =
  * @{
  */
 
-void PWR_EnterOffMode( void )
+/**
+ * @brief Puts the system into Sleep mode.
+ *
+ * This function configures the system to enter and exit Sleep mode. 
+ * Any specific behavior can be controlled by the `param` parameter.
+ *
+ * @param param Configuration parameter for Sleep mode.        
+ *
+ * @return None
+ */
+void LPM_SleepMode(uint32_t param)
 {
-/* USER CODE BEGIN PWR_EnterOffMode */
+/* USER CODE BEGIN LPM_SleepMode */
 
-/* USER CODE END PWR_EnterOffMode */
+/* USER CODE END LPM_SleepMode */
 }
 
-void PWR_ExitOffMode( void )
+/**
+ * @brief Puts the system into Stop1 mode.
+ *
+ * This function configures the system to enter and exit Stop1 mode. 
+ * Any specific behavior can be controlled by the `param` parameter.
+ *
+ * @param param Configuration parameter for Stop1 mode.        
+ *
+ * @return None
+ */
+void LPM_Stop1Mode(uint32_t param)
 {
-/* USER CODE BEGIN PWR_ExitOffMode */
+/* USER CODE BEGIN LPM_Stop1Mode */
 
-/* USER CODE END PWR_ExitOffMode */
+/* USER CODE END LPM_Stop1Mode */
 }
 
-void PWR_EnterStopMode( void )
+/**
+ * @brief Puts the system into Standby mode.
+ *
+ * This function configures the system to enter and exit Standby mode. 
+ * Any specific behavior can be controlled by the `param` parameter.
+ *
+ * @param param Configuration parameter for Standby mode.        
+ *
+ * @return None
+ */
+void LPM_StandbyMode(uint32_t param)
 {
-/* USER CODE BEGIN PWR_EnterStopMode */
+/* USER CODE BEGIN LPM_StandbyMode */
 
-/* USER CODE END PWR_EnterStopMode */
-}
-
-void PWR_ExitStopMode( void )
-{
-/* USER CODE BEGIN PWR_ExitStopMode */
-
-/* USER CODE END PWR_ExitStopMode */
-}
-
-void PWR_EnterSleepMode( void )
-{
-/* USER CODE BEGIN PWR_EnterSleepMode */
-
-/* USER CODE END PWR_EnterSleepMode */
-}
-
-void PWR_ExitSleepMode( void )
-{
-/* USER CODE BEGIN PWR_ExitSleepMode */
-
-/* USER CODE END PWR_ExitSleepMode */
+/* USER CODE END LPM_StandbyMode */
 }
 
 /* USER CODE BEGIN Private_Functions */

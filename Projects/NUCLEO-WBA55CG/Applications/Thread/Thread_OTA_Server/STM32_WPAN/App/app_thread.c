@@ -98,7 +98,7 @@ typedef struct
 #define C_RESSOURCE_FUOTA_PARAMETERS       "FUOTA_PARAMETERS"
 #define C_RESSOURCE_FUOTA_SEND             "FUOTA_SEND"
 
-#define HW_FLASH_WIDTH                      (16u)   // Write Lentgh in Bytes (128 bits = 4 words) 
+#define HW_FLASH_WIDTH                      (16u)   // Write Length in Bytes (128 bits = 4 words)
 
 /* Following CoAP resource is requested to reboot on Thread_Ota application */
 #define C_RESSOURCE_FUOTA_REBOOT           "FUOTA_REBOOT"
@@ -1040,7 +1040,7 @@ static bool APP_THREAD_SetBinCrc(uint32_t *fuotaBinaryCrcAddress)
   
     if (APP_THREAD_OTA_WriteWordToFlash(lCrcAddress, lCrc) != APP_THREAD_OK)
     {
-      LOG_ERROR_APP( "[OTA] Error, Writting CRC to Flash failed." );
+      LOG_ERROR_APP( "[OTA] Error, Writing CRC to Flash failed." );
       return false;
     }
     

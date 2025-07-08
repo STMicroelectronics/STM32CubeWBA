@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "pwr.h"
 
 /* USER CODE BEGIN Includes */
@@ -154,7 +153,7 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_2_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_2_Disabled_BEGIN */
@@ -166,7 +165,7 @@ static SVCCTL_EvtAckStatus_t PWR_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_2_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_2_COMSVC_Notification_BEGIN */
@@ -326,11 +325,11 @@ void PWR_Init(void)
                              &(PWR_Context.PwrSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: PWR, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: PWR, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: PWR \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: PwrSvcHdle = 0x%04X\n",PWR_Context.PwrSvcHdle);
   }
 
   /**
@@ -353,7 +352,7 @@ void PWR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : PWR_TX\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Pwr_TxCharHdle = 0x%04X\n",PWR_Context.Pwr_TxCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -381,7 +380,7 @@ void PWR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : PWR_RX\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Pwr_RxCharHdle = 0x%04X\n",PWR_Context.Pwr_RxCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -419,11 +418,11 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value PWR_TX command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value PWR_TX command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value PWR_TX command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value PWR_TX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -438,11 +437,11 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value PWR_RX command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value PWR_RX command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value PWR_RX command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value PWR_RX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 

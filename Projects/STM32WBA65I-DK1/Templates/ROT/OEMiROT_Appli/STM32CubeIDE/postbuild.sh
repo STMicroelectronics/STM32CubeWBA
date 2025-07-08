@@ -1,4 +1,40 @@
 #!/bin/bash -
+#=================================================================================================
+# Managing HOST OS diversity : begin
+#=================================================================================================
+OS=$(uname)
+
+echo ${OS} | grep -i -e windows -e mingw >/dev/null
+if [ $? == 0 ]; then
+  echo "=================================="
+  echo "HOST OS : Windows detected"
+  echo ""
+  echo ">>> Running ../postbuild.bat $@"
+  echo ""
+  # Enable : exit immediately if any commands returns a non-zero status
+  set -e
+  cd ../
+  cmd.exe /C postbuild.bat $@
+  # Return OK if no error detected during .bat script
+  exit 0
+fi
+
+if [ "$OS" == "Linux" ]; then
+  echo "HOST OS : Linux detected"
+elif [ "$OS" == "Darwin" ]; then
+  echo "HOST OS : MacOS detected"
+else
+  echo "!!!HOST OS not supported : >$OS<!!!"
+  exit 1
+fi
+
+#=================================================================================================
+# Managing HOST OS diversity : end
+#=================================================================================================
+echo "=================================="
+echo ">>> Running $0 $@"
+echo ""
+
 # arg1 is the binary type (1 nonsecure, 2 secure)
 signing=$1
 # arg2 is the config type (Debug, Release)
@@ -81,36 +117,34 @@ fi
 #postbuild
 echo "Postbuild $signing image" >> $current_log_file 2>&1
 
-if  [ $signing == "secure" ]; then
-    #update xml file : input file
-    $python$applicfg xmlval -v $s_app_bin_xml_field --string -n "$fw_in_bin_xml_field" $s_code_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+#update xml file : input file
+$python$applicfg xmlval -v $s_app_bin_xml_field --string -n "$fw_in_bin_xml_field" $s_code_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    #update xml file : output file
-    $python$applicfg xmlval -v $s_app_enc_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_code_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+#update xml file : output file
+$python$applicfg xmlval -v $s_app_enc_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_code_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    echo Creating secure image  >> $current_log_file 2>&1
-    "$stm32tpccli" -pb $s_code_xml >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+echo Creating secure image  >> $current_log_file 2>&1
+"$stm32tpccli" -pb $s_code_xml >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    #update xml file : input file
-    $python$applicfg xmlval -v $s_app_bin_xml_field --string -n "$fw_in_bin_xml_field" $s_code_init_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+#update xml file : input file
+$python$applicfg xmlval -v $s_app_bin_xml_field --string -n "$fw_in_bin_xml_field" $s_code_init_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    #update xml file : output file
-    $python$applicfg xmlval -v $s_app_init_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_code_init_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+#update xml file : output file
+$python$applicfg xmlval -v $s_app_init_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_code_init_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    "$stm32tpccli" -pb $s_code_init_xml >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+"$stm32tpccli" -pb $s_code_init_xml >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    #update xml file : output file
-    $python$applicfg xmlval -v $s_data_enc_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_data_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
+#update xml file : output file
+$python$applicfg xmlval -v $s_data_enc_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_data_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
-    $python$applicfg xmlval -v $s_data_init_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_data_init_xml --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
-fi
+$python$applicfg xmlval -v $s_data_init_sign_bin_xml_field --string -n "$fw_out_bin_xml_field" $s_data_init_xml --vb >> $current_log_file 2>&1
+if [ $? != 0 ]; then error; fi
 
 exit 0

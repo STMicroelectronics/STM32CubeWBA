@@ -3,7 +3,7 @@
  * @heading APS Layer
  * @brief APS header file
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_APS_H
@@ -493,7 +493,10 @@ enum ZbApsmeIbAttrIdT {
     /**< apsSuspendZclApsdeDataReq. When set to true transmission of ASPDE-DATA.requests
      * from ZCL is suspended and will return error right away.
      * (type: uint8_t, reset: yes, persist: yes) */
-
+    ZB_APS_IB_ID_PRECONFIGURED_PASSCODE = 0x050c,
+    /**< apsPreconfiguredPasscode. R23 addition. The 128 bit secret derived from short passcode
+     * and used for authenticated DLK. (type: array of uint8_t of size ZB_SEC_KEYSIZE,
+     * reset: yes, persist: no) */
     ZB_APS_IB_ID_MAX = 0x05ff
 };
 
@@ -587,7 +590,7 @@ struct ZbApsmeAddEndpointReqT {
     const uint16_t *inputClusterList; /**< Pointer to the input cluster list */
     uint8_t outputClusterCount; /* Supported Client Clusters */
     const uint16_t *outputClusterList; /**< Pointer to the output cluster list */
-    uint16_t bdbCommissioningGroupID; /**< e.g. DEFAULT_EP_BDB_COMMISSION_GRP_ID; */
+    uint16_t bdbCommissioningGroupID; /**< e.g. BDB_COMMISSION_EP_GROUP_ID_DEFAULT */
 };
 
 /** APSME-ADD-ENDPOINT.confirm - Exegin Custom */
@@ -787,75 +790,77 @@ enum ZbApsmeDeviceStatusT {
  * Warning, the bitmask used here does not match the ZigBee Spec
  * (R21: Table 4.29) */
 
-/* Unique Link Key (e.g. Install Code Generated Key) */
-#define ZB_APSME_KEY_ATTR_VERIFIED          0x00U
+enum ZbApsKeyAttribute {
+    ZB_APS_KEY_ATTR_PROVISIONAL_KEY = 0x00U,
+    /**< Provisional key to be updated using TCLK, DLK or application defined mechanism (e.g, CBKE). */
+    ZB_APS_KEY_ATTR_UNVERIFIED_KEY = 0x01U,
+    /**< Unverified key, used while the TCLK or DLK is in progress and the key is not yet verified. */
+    ZB_APS_KEY_ATTR_VERIFIED_KEY = 0x02U,
+    /**< Verified key, established after successful TCLK or DLK or application defined mechanism (e.g, CBKE). */
 
-/* Shared key (value stored in apsPreconfiguredLinkKey) */
-/* Global Link Key */
-#define ZB_APSME_KEY_ATTR_SHARED            0x01U
+    /* Exegin custom. */
+    ZB_APS_KEY_ATTR_VERIFIED_KEY_CBKE = 0xf0U
+        /**< This is an exegin custom key attribute value used to inticate that the key is CBKE derived or verified.
+         * This is only used with R22 or earlier stack revisions to differentiate a TCLK derived key from CBKE derived
+         * key. As with R23, we can use 'PostJoinKeyUpdateMethod' or 'KeyUpdateMethod' field of the APS Key-Pair entry
+         * to check if the TC link key is updated using CBKE or not. */
+};
 
-/* An unverified TCLK derived key. We should continue to use
- * apsPreconfiguredLinkKey until it gets verified by a
- * APSME-VERIFY-KEY.indication */
-#define ZB_APSME_KEY_ATTR_UNVERIFIED        0x02U
-
-/* ZCL KE/CBKE derived key (Unique Link Key) */
-#define ZB_APSME_KEY_ATTR_CBKE              0x04U
-
-/* TCLK update derived key. Set when we receive a APSME-REQUEST-KEY.indication
- * with key-type set to TCLK. ZB_APSME_KEY_ATTR_UNVERIFIED is set at the
- * same time */
-#define ZB_APSME_KEY_ATTR_TCLK_DERIVED      0x08U
-
-/* Distributed Security Global Key (value stored in apsDistributedGlobalKey) */
-/* Global Link Key */
-#define ZB_APSME_KEY_ATTR_DISTRIBUTED       0x10U
-
-/* Trust center link key derived using Dynamic Link key negotiation. */
-#define ZB_APSME_KEY_ATTR_DLK               0x20U
-
-/* Trust center link key which can only be used provisionally to allow
- * a device to establish/renegotiate a new trust center link key.
- *
- * KeyAttribute field for all the KeyPairTable entries on the new trust
- * center shall be set to ZB_APSME_KEY_ATTR_PROVISIONAL on TCSO, forcing
- * other devices to update the trust center link key with the new TC on
- * trust center rejoin using the mutually supported mechanism of choice
- * (e.g, TCLK, DLK or CBKE). Zigbee Direct also uses provisional link keys
- * in case of OOB join, these keys shall be updated once the join is complete
- * and connection to ZC is available. */
-#define ZB_APSME_KEY_ATTR_PROVISIONAL       0x40U
 /*-------------------------------------------------------------*/
 
 /* See R22 section 4.7.3 Trust Center Policy Values */
 /** Trust Center Policy Flags (ZB_APS_IB_ID_TRUST_CENTER_POLICY) */
 enum ZbApsmePolicyT {
-    ZB_APSME_POLICY_ALLOW_JOIN = 0x00000001, /**< allowJoins */
-    ZB_APSME_POLICY_WHITELIST = 0x00000002, /**< useWhiteList */ /* deprecated with R23  */
-    ZB_APSME_POLICY_IC_MASK = 0x0000000C, /**< allowInstallCodes */ /* requireInstallCodesOrPresetPassphrase */
-    ZB_APSME_POLICY_IC_NOT_SUPPORTED = 0x00000000, /**< 0x00 - Do not support Install Codes Or Preset Passphrase */
-    ZB_APSME_POLICY_IC_SUPPORTED = 0x00000004, /**< 0x01 - Support but do not require Install Codes Or Preset Passphrase */
-    ZB_APSME_POLICY_IC_REQUIRED = 0x00000008, /**< 0x02 - Require the use of Install Codes Or Preset Passphrase) */
-    ZB_APSME_POLICY_TCLK_UPDATE_REQUIRED = 0x00000010, /**< updateTrustCenterLinkKeysRequired */
-    /* allowRejoinsWithWellKnownKey - "This value indicates if the trust center allows rejoins using
-     * well known or default keys. A setting of FALSE means rejoins are only allowed with trust center
-     * link keys where the KeyAttributes of the apsDeviceKeyPairSet entry indicates VERIFIED_KEY." */
-    ZB_APSME_POLICY_ALLOW_REJOIN = 0x00000020, /**< allowRejoins */
-    ZB_APSME_POLICY_TC_KEY_REQ_MASK = 0x000000C0, /**< allowTrustCenterLinkKeyRequests */
-    ZB_APSME_POLICY_TC_KEY_REQ_ANY = 0x00000040, /**< 0x01 - Any device may request */
-    ZB_APSME_POLICY_TC_KEY_REQ_PROV = 0x00000080, /* 0x02 - Provisional */
+    ZB_APSME_POLICY_ALLOW_JOIN = 0x00000001,
+    /**< allowJoins */
+    ZB_APSME_POLICY_WHITELIST = 0x00000002,
+    /**< useWhiteList (deprecated with R23) */
+    ZB_APSME_POLICY_IC_MASK = 0x0000001C,
+    /**< allowInstallCodes - requireInstallCodesOrPresetPassphrase */
+    ZB_APSME_POLICY_IC_NOT_SUPPORTED = 0x00000000,
+    /**< 0x00 - Do not support Install Codes Or Preset Passphrase */
+    ZB_APSME_POLICY_IC_SUPPORTED = 0x00000004,
+    /**< 0x01 - Support but do not require Install Codes Or Preset Passphrase */
+    ZB_APSME_POLICY_IC_REQUIRED = 0x00000008,
+    /**< 0x02 - Require the use of Install Codes Or Preset Passphrase) */
+    ZB_APSME_POLICY_IC_ALLOW_ANON_DLK = 0x00000010,
+    /**< 0x03 - Support but do not require use of Install Codes or preset passphrases
+     * and support anonymous key negotiation, if DLK feature is enabled.
+     * EXEGIN - Please note that this flag and ZB_APSME_POLICY_IC_REQUIRED are mutually
+     * exclusive. And ZB_APSME_POLICY_IC_REQUIRED takes precedence, ensuring that
+     * unauthenticated joins or anonymous DLK are not permitted. */
+    ZB_APSME_POLICY_TCLK_UPDATE_REQUIRED = 0x00000020,
+    /**< updateTrustCenterLinkKeysRequired */
+    /* allowRejoinsWithWellKnownKey - "This value indicates if the trust center allows
+     * rejoins using well known or default keys. A setting of FALSE means rejoins are
+     * only allowed with trust center link keys where the KeyAttributes of the
+     * apsDeviceKeyPairSet entry indicates VERIFIED_KEY." */
+    ZB_APSME_POLICY_ALLOW_REJOIN = 0x00000040,
+    /**< allowRejoins */
+    ZB_APSME_POLICY_TC_KEY_REQ_MASK = 0x00000180,
+    /**< allowTrustCenterLinkKeyRequests */
+    ZB_APSME_POLICY_TC_KEY_REQ_ANY = 0x00000080,
+    /**< 0x01 - Any device may request */
+    ZB_APSME_POLICY_TC_KEY_REQ_PROV = 0x00000100,
+    /* 0x02 - Provisional */
 
 #if 0 /* not used and has no effect in stack */
       /* networkKeyUpdateMethod */
     ZB_APSME_POLICY_NWK_KEY_UNICAST = 0x00000100,
 #endif
 
-    ZB_APSME_POLICY_APP_KEY_REQ_MASK = 0x00000C00, /**< allowApplicationKeyRequests */
-    ZB_APSME_POLICY_APP_KEY_REQ_NEVER = ZB_APSME_POLICY_IC_NOT_SUPPORTED, /**< 0x00 - Never */
-    ZB_APSME_POLICY_APP_KEY_REQ_ANY = 0x00000400, /**< 0x01 - Any */
-    ZB_APSME_POLICY_APP_KEY_REQ_PROV = 0x00000800, /**< 0x02 - Provisional, requires "applicationKeyRequestList" to be implemented */
-    ZB_APSME_POLICY_TC_POLICY_CHANGE = 0x00001000, /**< allowRemoteTcPolicyChange */
-    ZB_APSME_POLICY_ALLOW_VIRTUAL_DEVICES = 0x00002000, /**< allowVirtualDevices */
+    ZB_APSME_POLICY_APP_KEY_REQ_MASK = 0x00000C00,
+    /**< allowApplicationKeyRequests */
+    ZB_APSME_POLICY_APP_KEY_REQ_NEVER = ZB_APSME_POLICY_IC_NOT_SUPPORTED,
+    /**< 0x00 - Never */
+    ZB_APSME_POLICY_APP_KEY_REQ_ANY = 0x00000400,
+    /**< 0x01 - Any */
+    ZB_APSME_POLICY_APP_KEY_REQ_PROV = 0x00000800,
+    /**< 0x02 - Provisional, requires "applicationKeyRequestList" to be implemented */
+    ZB_APSME_POLICY_TC_POLICY_CHANGE = 0x00001000,
+    /**< allowRemoteTcPolicyChange */
+    ZB_APSME_POLICY_ALLOW_VIRTUAL_DEVICES = 0x00002000,
+    /**< allowVirtualDevices */
 
     /* For certification testing only */
     /* Authenticate using dummy keys only (preconfigured NWK key in use) */
@@ -1071,12 +1076,20 @@ enum ZbApsKeyNegoStateT {
 
 /* Dynamic Link Key negotiation state. */
 enum ZbApsPreSharedKeyTypeT {
-    ZB_APS_PRE_SHARED_KEY_TYPE_INVALID = 0U,
-    /**< APS pre-shared key type invalid. */
+    ZB_APS_PRE_SHARED_KEY_TYPE_NONE = 0U,
+    /**< APS pre-shared key type none. */
     ZB_APS_PRE_SHARED_KEY_TYPE_IC_KEY = 1U,
     /**< APS pre-shared key type install code derived link key. */
     ZB_APS_PRE_SHARED_KEY_TYPE_PASSCODE = 2U
         /**< APS pre-shared key type variable length passcode. */
+};
+
+/** APS Link Key type. */
+enum ZbApsLinkKeyTypeT {
+    ZB_APS_LINK_KEY_TYPE_UNIQUE_LINK_KEY = 0x00U,
+    /**< Unique link key e.g. IC derived link key. */
+    ZB_APS_LINK_KEY_TYPE_GLOBAL_LINK_KEY = 0x01U
+        /**< Global link key e.g. 'ZigbeeAlliance09' key. */
 };
 
 /** APSME-ADD-KEY.request - Exegin Custom */
@@ -1085,8 +1098,12 @@ struct ZbApsmeAddKeyReqT {
     /**< Key type e.g, ZB_SEC_KEYTYPE_STANDARD_NWK. */
     uint8_t key[ZB_SEC_KEYSIZE];
     /**< Input Key. */
-    uint8_t keyAttribute;
-    /**< Key attribute e.g, ZB_APSME_KEY_ATTR_VERIFIED */
+    enum ZbApsKeyAttribute keyAttribute;
+    /**< Key attribute. E.g. ZB_APS_KEY_ATTR_PROVISIONAL_KEY. This is ignored for
+     * keyType equal to ZB_SEC_KEYTYPE_STANDARD_NWK. */
+    enum ZbApsLinkKeyTypeT apsLinkKeyType;
+    /**< The type of link key in use. This will determine the security policies associated
+     * with sending and receiving APS messages. e.g. ZB_APS_LINK_KEY_TYPE_UNIQUE_LINK_KEY. */
     uint8_t keySeqNumber;
     /**< Sequence number of the input key. */
     uint64_t partnerAddr;
@@ -1151,7 +1168,8 @@ struct ZbApsmeGetKeyConfT {
     uint8_t key[ZB_SEC_KEYSIZE]; /**< Key */
     uint32_t outgoingCounter; /**< outgoingCounter */
     uint32_t incomingCounter; /**< incomingCounter */
-    uint8_t apsKeyAttribute; /**< apsKeyAttribute - Only valid if req.keyType != ZB_SEC_KEYTYPE_STANDARD_NWK */
+    enum ZbApsKeyAttribute apsKeyAttribute;
+    /**< apsKeyAttribute - Only valid if req.keyType != ZB_SEC_KEYTYPE_STANDARD_NWK */
 
     /*
      * R23 additions
@@ -1224,6 +1242,11 @@ struct ZbApsmeKeyNegoIndT {
     /**< This indicates whether or not the response should be relayed through another router. */
     uint64_t relayLongAddr;
     /**< Extended address of intermediate relay device. */
+
+    /* R23.2 addition. */
+    bool apsSecured;
+    /**< If set to true, it indicates that the ZDO Security_Key_Negotiation_Req was APS secured.
+     * This is used to send ZDO Security_Key_Negotiation_Rsp with matching security level. */
 };
 
 /** APSME-SEC-CHALLENGE.request. R23 addition. */
@@ -1256,8 +1279,11 @@ struct ZbApsmeKeyPairT {
     /**< Persisted value of APS outgoing frame counter. */
     uint32_t persistInFrameCounter;
     /**< Persisted value of APS incoming frame counter. */
-    uint8_t keyAttribute;
-    /**< APS Key attribute e.g, ZB_APSME_KEY_ATTR_VERIFIED */
+    enum ZbApsKeyAttribute keyAttribute;
+    /**< APS Key attribute e.g, ZB_APS_KEY_ATTR_PROVISIONAL_KEY */
+    enum ZbApsLinkKeyTypeT apsLinkKeyType;
+    /**< The type of link key in use. This will determine the security policies associated
+     * with sending and receiving APS messages. e.g. ZB_APS_LINK_KEY_TYPE_UNIQUE_LINK_KEY. */
     ZbUptimeT cooldown;
     /**< APS frame counter cooldown period. */
 

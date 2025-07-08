@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    service2_app.c
+  * @file    dis_app.c
   * @author  MCD Application Team
-  * @brief   service2_app application definition.
+  * @brief   DIS application definition.
   ******************************************************************************
   * @attention
   *
@@ -21,10 +21,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
+#include "log_module.h"
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "dis_app.h"
 #include "dis.h"
 
@@ -189,7 +189,7 @@ void DIS_APP_Init(void)
 
   /* USER CODE BEGIN Service2_APP_Init */
   DIS_Data_t dis_information_data;
-  
+
   dis_information_data.p_Payload = (uint8_t*)DISAPP_MANUFACTURER_NAME;
   dis_information_data.Length = sizeof(DISAPP_MANUFACTURER_NAME);
   DIS_UpdateValue(DIS_MANS, &dis_information_data);

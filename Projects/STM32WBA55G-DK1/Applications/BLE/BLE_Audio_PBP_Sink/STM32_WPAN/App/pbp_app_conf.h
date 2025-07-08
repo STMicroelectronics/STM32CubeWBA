@@ -132,7 +132,7 @@ extern "C" {
                                                         MAX_NUM_BASS_BASE_SUBGROUPS)
 
 
-#define BLE_APP_ATT_VALUE_ARRAY_SIZE    (47u + BLE_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE    (52u + BLE_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
                                         + BLE_BASS_SRV_ATT_VALUE_ARRAY_SIZE)
 
 /* Exported types ------------------------------------------------------------*/

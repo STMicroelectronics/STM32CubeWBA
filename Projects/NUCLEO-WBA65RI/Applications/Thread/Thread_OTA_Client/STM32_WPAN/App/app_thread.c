@@ -792,8 +792,6 @@ static inline void APP_THREAD_DeleteSectors( uint32_t lBaseAddress, uint32_t lBi
   {
     stEraseInit.NbPages++;
   }
-  
- 
 
   LOG_DEBUG_APP( "stEraseInit" );
   LOG_DEBUG_APP( ".TypeErase     = 0x%08X", stEraseInit.TypeErase );
@@ -930,7 +928,7 @@ static APP_THREAD_StatusTypeDef APP_THREAD_CheckDeviceCapabilities(void)
   APP_THREAD_StatusTypeDef status = APP_THREAD_OK;
   
   /* Check that the OTA image can fit in the available Flash space */
-  if (FUOTA_APP_FW_BINARY_ADDRESS == FUOTA_APP_FW_BINARY_ADDRESS)
+  if (OtaContext.baseAddress == FUOTA_APP_FW_BINARY_ADDRESS)
   {
     if (OtaContext.binarySize > FUOTA_APP_FW_BINARY_MAX_SIZE)
     {
@@ -945,7 +943,7 @@ static APP_THREAD_StatusTypeDef APP_THREAD_CheckDeviceCapabilities(void)
   else
   {
     status = APP_THREAD_ERROR;
-    LOG_ERROR_APP("WARNING: Inavlid OTA Image Base address");
+    LOG_ERROR_APP("WARNING: Invalid OTA Image Base address");
   }
 
   return status;
@@ -971,7 +969,7 @@ static inline APP_THREAD_StatusTypeDef APP_THREAD_OTA_ClientWriteFirmwareData( u
     uint32_t    lWord2 = * ( ( uint32_t *)( &pcFirmwareBuffer[lIndex + 1 * sizeof( uint32_t )] ) );
     uint32_t    lWord3 = * ( ( uint32_t *)( &pcFirmwareBuffer[lIndex + 2 * sizeof( uint32_t )] ) );
     uint32_t    lWord4 = * ( ( uint32_t *)( &pcFirmwareBuffer[lIndex + 3 * sizeof( uint32_t )] ) );
-    LOG_DEBUG_APP( "0x%08X | 0x%08X | 0x%08X | 0x%08X", lWord1, lWord2, lWord3, lWord4 );
+    LOG_DEBUG_APP( "0x%08X | 0x%08X | 0x%08X | 0x%08", lWord1, lWord2, lWord3, lWord4 );
 
     HAL_FLASH_Unlock();
 
@@ -1327,7 +1325,14 @@ static bool CheckFwAppValidity( void )
 {
   bool status = true;
   uint32_t lMagicKeywordAddress = *(uint32_t*)FUOTA_M33_APP_OTA_TAG_ADDRESS;
-  uint32_t lMagicKeywordValue = *(uint32_t*)lMagicKeywordAddress;
+  uint32_t lMagicKeywordValue = 0;
+
+  if (lMagicKeywordAddress == 0xFFFFFFFF)
+  {
+    return false;
+  }
+
+  lMagicKeywordValue = *(uint32_t*)lMagicKeywordAddress;
 
   if( (lMagicKeywordAddress < FLASH_BASE) || (lMagicKeywordAddress > (FLASH_BASE + FLASH_SIZE) ) )
   {

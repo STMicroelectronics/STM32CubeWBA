@@ -27,6 +27,11 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+/* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
+#include "zdd_ble_interface.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -36,54 +41,10 @@ extern "C" {
 
 /* USER CODE END ED */
 
-/* Exported types ------------------------------------------------------------*/
-#ifdef BLE_MULTIPLE_DEFINITION
-typedef enum
-{
-  ZDDSECURITY_SECURITY25519AES,
-  ZDDSECURITY_SECURITY25519SHA,
-  ZDDSECURITY_P256SHA,
-  /* USER CODE BEGIN Service3_CharOpcode_t */
-
-  /* USER CODE END Service3_CharOpcode_t */
-  ZDDSECURITY_CHAROPCODE_LAST
-} ZDDSECURITY_CharOpcode_t;
-
-typedef enum
-{
-  ZDDSECURITY_SECURITY25519AES_WRITE_EVT,
-  ZDDSECURITY_SECURITY25519AES_INDICATE_ENABLED_EVT,
-  ZDDSECURITY_SECURITY25519AES_INDICATE_DISABLED_EVT,
-  ZDDSECURITY_SECURITY25519SHA_WRITE_EVT,
-  ZDDSECURITY_SECURITY25519SHA_INDICATE_ENABLED_EVT,
-  ZDDSECURITY_SECURITY25519SHA_INDICATE_DISABLED_EVT,
-  ZDDSECURITY_P256SHA_WRITE_EVT,
-  ZDDSECURITY_P256SHA_INDICATE_ENABLED_EVT,
-  ZDDSECURITY_P256SHA_INDICATE_DISABLED_EVT,
-  /* USER CODE BEGIN Service3_OpcodeEvt_t */
-
-  /* USER CODE END Service3_OpcodeEvt_t */
-  ZDDSECURITY_BOOT_REQUEST_EVT
-} ZDDSECURITY_OpcodeEvt_t;
-
 typedef struct
 {
-  uint8_t *p_Payload;
-  uint8_t Length;
-
-  /* USER CODE BEGIN Service3_Data_t */
-
-  /* USER CODE END Service3_Data_t */
-} ZDDSECURITY_Data_t;
-
-#else
-#include "zdd_ble_interface.h"
-#endif /* NO_SINGLE_INTERFACE */
-
-typedef struct
-{
-  ZDDSECURITY_OpcodeEvt_t       EvtOpcode;
-  ZDDSECURITY_Data_t             DataTransfered;
+  ZDDSECURITY_OpcodeEvt_t EvtOpcode;
+  ZDDSECURITY_Data_t      DataTransfered;
   uint16_t                ConnectionHandle;
   uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;

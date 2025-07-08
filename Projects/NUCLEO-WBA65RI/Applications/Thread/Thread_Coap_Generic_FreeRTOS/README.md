@@ -10,13 +10,13 @@ Connectivity, 802.15.4 protocol, Thread, COAP
 
 * This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA65RIV6_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA65RI_Nucleo board and can be easily tailored to any other supported device and development board.  
 
 ### __How to use it?__
 
 In order to make the program work, you must do the following:  
  
-- Connect 2 STM32WBA55xx_Nucleo boards to your PC 
+- Connect 2 STM32WBA65xx_Nucleo boards to your PC 
 - Open your preferred toolchain 
 - Rebuild all files and load your image into target memory
 - Run the application   

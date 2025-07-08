@@ -2,7 +2,7 @@
  * @file zcl.touchlink.h
  * @heading Touchlink
  * @brief  Touchlink API
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_TOUCHLINK_H
@@ -53,7 +53,7 @@
  *
  * Commands Generated
  * TC.C.C00.Tx | Scan request | True
- * TC.C.C02.Tx | Device information request | True
+ * TC.C.C02.Tx | Device information request | False
  * TC.C.C06.Tx | Identify request | True
  * TC.C.C07.Tx | Reset to factory new request | True
  * TC.C.C10.Tx | Network start request | True
@@ -218,8 +218,8 @@ enum ZclStatusCodeT ZbZclTouchlinkInitiatorGetEpListReq(struct ZigBeeT *zb, stru
  * @param callback Callback function that will be invoked when the response is received.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
-enum ZclStatusCodeT ZbZclTouchlinkTargetSendEpInfoCmd(struct ZigBeeT *zb, uint8_t endpoint,
-    const struct ZbApsAddrT *dst, void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+enum ZclStatusCodeT ZbZclTouchlinkTargetSendEpInfoCmd(struct ZigBeeT *zb, const struct ZbApsAddrT *dst,
+    void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
 
 /* For internal testing only ----------------------------------------------- */
 enum ZclStatusCodeT zcl_touchlink_nwk_update_req(struct ZigBeeT *zb, uint64_t extaddr, uint8_t update_id);

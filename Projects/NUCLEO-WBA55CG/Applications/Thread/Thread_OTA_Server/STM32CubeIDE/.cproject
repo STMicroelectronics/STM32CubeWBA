@@ -47,6 +47,7 @@
 									<listOptionValue builtIn="false" value="OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="MAC"/>
+									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="STM32WBA55xx"/>
@@ -181,6 +182,7 @@
 									<listOptionValue builtIn="false" value="OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="MAC"/>
+									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="STM32WBA55xx"/>

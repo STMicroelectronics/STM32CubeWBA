@@ -24,6 +24,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hw_if.h"
+#include "ble_defs.h"
 #include "utilities_conf.h"
 
 /* USER CODE BEGIN Includes */
@@ -96,12 +97,12 @@
 /**
 *   Identity root key used to derive IRK and DHK(Legacy)
 */
-#define CFG_BLE_IR      {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#define CFG_BLE_IR  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /**
 * Encryption root key used to derive LTK(Legacy) and CSRK
 */
-#define CFG_BLE_ER      {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
 
@@ -167,7 +168,12 @@
  *  - 2, if extended properties is used
  *  The total amount of memory needed is the sum of the above quantities for each attribute.
  */
-#define CFG_BLE_ATT_VALUE_ARRAY_SIZE    (47)
+#define CFG_BLE_ATT_VALUE_ARRAY_SIZE  (47)
+
+/**
+ * Maximum numbers of bearers that can be created for Enhanced ATT per ACL links
+ */
+#define CFG_BLE_EATT_BEARER_PER_LINK  (0)
 
 /**
  * depth of the PREPARE WRITE queue when PREPARE WRITE REQUEST
@@ -237,7 +243,16 @@
 #define CFG_LPM_LEVEL            (1)
 #define CFG_LPM_STDBY_SUPPORTED  (0)
 
-/* Defines time to wake up from standby before radio event to meet timings */
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
 #define CFG_LPM_STDBY_WAKEUP_TIME (1500)
 
 /* USER CODE BEGIN Low_Power 0 */
@@ -288,7 +303,6 @@ typedef enum
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
-/* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
@@ -299,10 +313,6 @@ extern UART_HandleTypeDef           huart1;
 
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
-
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
 
 /* USER CODE BEGIN Logs */
 
@@ -349,7 +359,7 @@ typedef enum
   CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
   CFG_TASK_AUDIO_ID,
-  CFG_TASK_BSP_JOY_TIMER,
+  CFG_TASK_BSP_JOY_SAMPLE,
   CFG_TASK_BSP_JOY_NONE,
   CFG_TASK_BSP_JOY_UP,
   CFG_TASK_BSP_JOY_DOWN,
@@ -410,19 +420,12 @@ typedef enum
 
 #define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
 
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_NVM_SIZE_MAX          ((2048/8)-4)
+
 /* USER CODE BEGIN NVM_Configuration */
 
 /* USER CODE END NVM_Configuration */
-
-/******************************************************************************
- * BLEPLAT configuration
- ******************************************************************************/
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLEPLAT_NVM_MAX_SIZE            ((2048/8)-4)
-
-/* USER CODE BEGIN BLEPLAT_Configuration */
-
-/* USER CODE END BLEPLAT_Configuration */
 
 /******************************************************************************
  * Debugger
@@ -444,8 +447,15 @@ typedef enum
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
-
 #define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
@@ -477,8 +487,11 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
+
+/* Threshold of random numbers available before triggering pool refill */
+#define CFG_HW_RNG_POOL_THRESHOLD           (16)
 
 /* USER CODE BEGIN HW_RNG_Configuration */
 
@@ -516,11 +529,10 @@ typedef enum
 #define CFG_LCD_SUPPORTED                       (1)
 
 /**
- * When CFG_JOYSTICK_TYPE_BUTTON is:
- *   - set to 1, Joystick state is checked periodically (ref JOYSTICK_PRESS_SAMPLE_MS) and Joystick callback is called only when Joystick state change
- *   - set to 0, Joystick callback is called periodically (ref JOYSTICK_PRESS_SAMPLE_MS) to report current state, except NONE state
+ *  Joystick Use configuration
  */
-#define CFG_JOYSTICK_TYPE_BUTTON                (1)
+#define CFG_JOYSTICK_USE_TYPE                   (JOYSTICK_USE_AS_CHANGE)
+#define CFG_JOYSTICK_MODE                       (JOY_MODE_POLLING)
 
 /**
  * Overwrite some configuration imposed by Low Power level selected.
@@ -591,13 +603,6 @@ typedef enum
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED != 0) && (CFG_LPM_LEVEL != 0)
-  #if CFG_LOG_SUPPORTED
-    #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
-  #endif /* CFG_LOG_SUPPORTED */
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) && (CFG_LPM_LEVEL != 0) */
-
 /* USER CODE BEGIN Defines_2 */
 #if (CFG_TEST_VALIDATION == 1)
   #undef  CFG_LOG_SUPPORTED
@@ -605,7 +610,7 @@ typedef enum
   #undef  APPLI_CONFIG_LOG_LEVEL
   #define APPLI_CONFIG_LOG_LEVEL    LOG_VERBOSE_INFO
   #undef  APPLI_CONFIG_LOG_REGION
-  #define APPLI_CONFIG_LOG_REGION   0x04
+  #define APPLI_CONFIG_LOG_REGION   (0x04)
 #endif /* CFG_TEST_VALIDATION */
 
 /* Set a medium gain for the headset microphone */
@@ -616,7 +621,7 @@ typedef enum
 #define ISO_PLL_DRIFT_TIME                      (7)
 #define ISO_PLL_DRIFT_TIME_EXTRA_GCC_DEBUG      (2)
 
-#define ISO_PLL_EXEC_TIME                       (8)
+#define ISO_PLL_EXEC_TIME                       (22)
 #define ISO_PLL_EXEC_TIME_EXTRA_GCC_DEBUG       (2)
 
 #define ISO_PLL_SCHDL_TIME                      (20)

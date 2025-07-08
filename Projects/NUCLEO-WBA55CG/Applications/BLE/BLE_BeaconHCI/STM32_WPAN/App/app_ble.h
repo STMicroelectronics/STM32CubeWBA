@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -86,6 +87,7 @@ typedef __PACKED_STRUCT __ALIGNED(4)
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
 const uint8_t* BleGetBdAddress(void);
+void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

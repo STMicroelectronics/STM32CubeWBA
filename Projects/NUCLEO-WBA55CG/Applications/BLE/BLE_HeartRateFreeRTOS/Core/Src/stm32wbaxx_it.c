@@ -186,8 +186,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -312,6 +313,20 @@ void RADIO_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)
@@ -342,13 +357,28 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles EXTI Line6 interrupt.
+  */
+void EXTI6_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B2);
+}
 
 /**
-  * @brief This function handles PWR global WKUP pin interrupt.
+  * @brief This function handles EXTI Line7 interrupt.
   */
-void WKUP_IRQHandler(void)
+void EXTI7_IRQHandler(void)
 {
-  HAL_PWR_WKUP_IRQHandler();
+  BSP_PB_IRQHandler(B3);
+}
+
+/**
+  * @brief This function handles EXTI Line13 interrupt.
+  */
+void EXTI13_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B1);
 }
 
 /* USER CODE END 1 */

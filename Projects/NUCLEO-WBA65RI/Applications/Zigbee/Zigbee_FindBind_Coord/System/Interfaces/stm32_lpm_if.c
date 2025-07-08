@@ -24,15 +24,16 @@
 #endif /*(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050) */
 #include "main.h"
 #include "scm.h"
+#include "app_sys.h"
 #include "stm32_lpm_if.h"
 #include "stm32_lpm.h"
 #include "stm32wbaxx_hal_pwr.h"
-#include "RTDebug.h"
 #include "stm32wbaxx_ll_icache.h"
 #include "stm32wbaxx.h"
 #include "utilities_common.h"
 #include "cmsis_compiler.h"
 #include "peripheral_init.h"
+#include "RTDebug.h"
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
@@ -43,6 +44,12 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#define LL_DEEPSLEEP_EXIT_TIME_US     230 /* Time in us needed for Link Layer deepsleep exit */
+#define DEVICE_WAKEUP_STANDBY_TIME_US 60  /* Time in us needed by the device to exit from standby */
+#define LSI2_FREQ_WORST_VALUE         24000 /* Worst value of LSI2 frequency */
+
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -108,6 +115,14 @@ static RAMCFG_HandleTypeDef sram2_ns =
   0U,                     /* RAMCFG Error Code */
 };
 #endif /* CFG_SCM_SUPPORTED */
+
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+static uint32_t lpm_wakeup_time_standby = 0;
+static uint8_t lpm_profiling_started_lsi2 = 0;
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -357,21 +372,21 @@ OPTIMIZED void PWR_EnterOffMode( void )
   __set_PSPLIM(backup_PSPLIM);
   __set_PSP(backup_PSP);
   __set_CONTROL(backup_CONTROL); /* SP may switch back to PSP */
-  
+
   if ( 1UL == boot_after_standby )
   {
 #if(CFG_RT_DEBUG_DTB == 1)
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  Standby_Restore_GPIO();
+    Standby_Restore_GPIO();
 
-  RT_DEBUG_DTBInit();
-  RT_DEBUG_DTBConfig();
+    RT_DEBUG_DTBInit();
+    RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)
-  RT_DEBUG_GPIO_Init();
+    RT_DEBUG_GPIO_Init();
 #endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
   }
 
@@ -460,6 +475,83 @@ OPTIMIZED void PWR_ExitOffMode( void )
     HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_B, PWR_GPIO_PIN_MASK);
     HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_C, PWR_GPIO_PIN_MASK);
     HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
+
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+    if(LPM_is_wakeup_time_profiling_done() == 0)
+    {
+      /* Compute amount of time spent to start from standby wakeup */
+      lpm_wakeup_time_standby = SysTick->LOAD;
+      lpm_wakeup_time_standby -= SysTick->VAL; /* Compute time the sysTick has counted */
+      lpm_wakeup_time_standby *= 1000000U;
+      if(LL_RCC_GetSystickClockSource() == LL_RCC_SYSTICK_CLKSOURCE_LSE)
+      {
+        lpm_wakeup_time_standby /= LSE_VALUE;
+      }
+      else if (LL_RCC_GetSystickClockSource() == LL_RCC_SYSTICK_CLKSOURCE_LSI)
+      {
+        lpm_wakeup_time_standby /= LSI2_FREQ_WORST_VALUE;
+      }
+      else
+      {
+        /* Such situation shall not happen, Systick clock source has changed during wakeup time profiling */
+        Error_Handler(); 
+      }
+      lpm_wakeup_time_standby += LL_DEEPSLEEP_EXIT_TIME_US + DEVICE_WAKEUP_STANDBY_TIME_US;
+
+      /** If LSI2 is used for profiling, since the profile value is based on the worst
+        * case for LSI2 frequency, the minimum value between the value profiled 
+        * and the defaut value is considered for lpm_wakeup_time_standby
+        */ 
+      if (LL_RCC_GetSystickClockSource() == LL_RCC_SYSTICK_CLKSOURCE_LSI)
+      {
+        lpm_wakeup_time_standby = MIN(lpm_wakeup_time_standby, CFG_LPM_STDBY_WAKEUP_TIME);
+      }
+      /* USER CODE BEGIN CFG_LPM_WAKEUP_TIME_PROFILING_1 */
+
+      /* USER CODE END CFG_LPM_WAKEUP_TIME_PROFILING_1 */
+
+      APP_SYS_SetWakeupOffset(lpm_wakeup_time_standby);
+
+      /* Disable LSI2 if used for wakeup time profiling */
+      if(lpm_profiling_started_lsi2 != 0)
+      {
+        uint8_t pwrclkchanged = 0;
+        if (__HAL_RCC_PWR_IS_CLK_ENABLED() != 1U)
+        {
+          __HAL_RCC_PWR_CLK_ENABLE();
+          pwrclkchanged = 1;
+        }
+
+        /* Enable write access to Backup domain */
+        LL_PWR_EnableBkUpAccess();
+        while (LL_PWR_IsEnabledBkUpAccess() == 0UL);
+
+        LL_RCC_LSI2_Disable();
+
+        if (pwrclkchanged == 1)
+        {
+          __HAL_RCC_PWR_CLK_DISABLE();
+        }
+      }
+
+      /* Disable SysTick Timer */
+      CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
+
+      /* Put back user sysTick clock source settings */
+      /* Select SysTick source clock */
+      HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+
+      /* Initialize SysTick */
+      HAL_StatusTypeDef hal_status;
+      hal_status = HAL_InitTick(TICK_INT_PRIORITY);
+      if (hal_status != HAL_OK)
+      {
+        assert_param(0);
+      }
+    }
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
   }
   else
   {
@@ -605,6 +697,59 @@ uint32_t is_boot_from_standby(void)
     __disable_irq( );
 
     boot_after_standby = 1;
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+    /* Perform standby wakeup time profiling if not already done */
+    if(LPM_is_wakeup_time_profiling_done() == 0)
+    {
+      /* Set Systick clock source on LSE if LSE is ready, if not use LSI2 */
+      CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_CLKSOURCE_Msk);
+      if(LL_RCC_LSE_IsReady() == 1UL)
+      {
+        /* Configure sysTick clock source to LSE */
+        LL_RCC_SetSystickClockSource(LL_RCC_SYSTICK_CLKSOURCE_LSE);
+      }
+      else
+      {
+        /* Enable LSI2 clock if not already done */
+        if(LL_RCC_LSI2_IsReady() == 0UL)
+        {
+          uint8_t pwrclkchanged = 0;
+          if (__HAL_RCC_PWR_IS_CLK_ENABLED() != 1U)
+          {
+            __HAL_RCC_PWR_CLK_ENABLE();
+            pwrclkchanged = 1;
+          }
+
+          /* Enable write access to Backup domain */
+          LL_PWR_EnableBkUpAccess();
+          while (LL_PWR_IsEnabledBkUpAccess() == 0UL);
+
+          LL_RCC_LSI2_Enable();
+          while (LL_RCC_LSI2_IsReady() != 1UL);
+
+          if (pwrclkchanged == 1)
+          {
+            __HAL_RCC_PWR_CLK_DISABLE();
+          }
+
+          /* Remember that LSI2 is used for wakeup time profiling */
+          lpm_profiling_started_lsi2 = 1;
+        }
+
+        /* Configure sysTick clock source to LSI2 */
+        LL_RCC_SetSystickClockSource(LL_RCC_SYSTICK_CLKSOURCE_LSI);
+      }
+
+      /* Configure SysTick to full scale */
+      WRITE_REG(SysTick->LOAD, 0x00FFFFFFUL);
+
+      /* Enable SysTick Timer, starts to count */
+      WRITE_REG(SysTick->VAL, 0UL);
+      SET_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
+    }
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
   }
   else
   {
@@ -614,8 +759,17 @@ uint32_t is_boot_from_standby(void)
   return boot_after_standby;
 }
 
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+/* returns 0 if wakeup time profiling is not done */
+uint32_t LPM_is_wakeup_time_profiling_done(void)
+{
+  return (lpm_wakeup_time_standby != 0);
+}
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-

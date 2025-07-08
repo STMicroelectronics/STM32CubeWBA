@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -131,10 +132,10 @@ enum
 enum
 {
   BOARD_ID_NUCLEO_WBA5X = 0x8B,
-  BOARD_ID_DK_WBA5X     = 0x8C,
+  BOARD_ID_DK_WBA5X     = 0x91,
   BOARD_ID_B_WBA5M_WPAN = 0x8D,
   BOARD_ID_NUCLEO_WBA6X = 0x8E,
-  BOARD_ID_DK_WBA6X     = 0x8F
+  BOARD_ID_DK_WBA6X     = 0x92
 };
 
 /* FIRMWARE ID */
@@ -182,6 +183,9 @@ APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
 const uint8_t* BleGetBdAddress(void);
+tBleStatus SetGapAppearance(uint16_t appearance);
+tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
+void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

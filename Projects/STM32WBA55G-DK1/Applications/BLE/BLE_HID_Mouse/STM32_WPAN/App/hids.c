@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "hids.h"
 
 /* USER CODE BEGIN Includes */
@@ -159,7 +158,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_1_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_1_Disabled_BEGIN */
@@ -171,7 +170,7 @@ static SVCCTL_EvtAckStatus_t HIDS_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_1_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_1_COMSVC_Notification_BEGIN */
@@ -357,11 +356,11 @@ void HIDS_Init(void)
                              &(HIDS_Context.HidsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HIDS, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HIDS, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: HIDS \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: HidsSvcHdle = 0x%04X\n",HIDS_Context.HidsSvcHdle);
   }
 
   /**
@@ -384,7 +383,7 @@ void HIDS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : INPUTREP\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : InputrepCharHdle = 0x%04X\n",HIDS_Context.InputrepCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -440,7 +439,7 @@ void HIDS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : REM\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : RemCharHdle = 0x%04X\n",HIDS_Context.RemCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -468,7 +467,7 @@ void HIDS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HII\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HiiCharHdle = 0x%04X\n",HIDS_Context.HiiCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -496,7 +495,7 @@ void HIDS_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HCP\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HcpCharHdle = 0x%04X\n",HIDS_Context.HcpCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char4 */
@@ -534,11 +533,11 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value INPUTREP command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value INPUTREP command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value INPUTREP command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value INPUTREP command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -553,11 +552,11 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value REM command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value REM command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value REM command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value REM command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -572,11 +571,11 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HII command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HII command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HII command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HII command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 
@@ -591,11 +590,11 @@ tBleStatus HIDS_UpdateValue(HIDS_CharOpcode_t CharOpcode, HIDS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HCP command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HCP command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HCP command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HCP command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_4 */
 

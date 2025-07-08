@@ -6,6 +6,7 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
+ *  Portions Copyright (C) STMicroelectronics, All Rights Reserved
  *  SPDX-License-Identifier: Apache-2.0
  */
 #ifndef MBEDTLS_PK_INTERNAL_H

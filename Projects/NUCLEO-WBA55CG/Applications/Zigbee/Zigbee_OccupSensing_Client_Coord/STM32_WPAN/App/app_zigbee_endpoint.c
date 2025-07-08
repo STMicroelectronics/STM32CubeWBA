@@ -165,18 +165,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -202,7 +190,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Occupancy Client Cluster */
   stZigbeeAppInfo.OccupancyClient = ZbZclOccupancyClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.OccupancyClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OccupancyClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OccupancyClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Occupancy Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Server Report callback */
@@ -439,7 +430,7 @@ static void APP_ZIGBEE_OccupancySensingServerReport( struct ZbZclClusterT * pstC
         {
           LOG_INFO_APP( "[OCCUPANCY SENSING] From " LOG_DISPLAY64() " , Room is empty.", LOG_NUMBER64( pstDataInd->src.extAddr ) );
         }
-        APP_LED_TOGGLE( LED_BLUE );
+        APP_LED_TOGGLE( LED_WORK );
         break;
 
     default:

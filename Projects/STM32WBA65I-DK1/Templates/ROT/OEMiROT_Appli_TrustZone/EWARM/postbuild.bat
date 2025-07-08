@@ -1,5 +1,7 @@
 @ECHO OFF
-:: arg1 is the binary type (1 nonsecure, 2 secure)
+:: arg1 is the security type (nonsecure, secure)
+:: When script is called from STM32CubeIDE : set signing="%2"
+:: When script is called from IAR or KEIL  : set "signing=%2"
 set "signing=%2"
 
 :: Getting the Trusted Package Creator CLI path

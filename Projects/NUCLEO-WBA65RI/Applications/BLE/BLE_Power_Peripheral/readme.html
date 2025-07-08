@@ -21,39 +21,62 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_power_peripheral-application-description"><strong>BLE_Power_Peripheral Application Description</strong></h2>
 <p>How to measure Peripheral power consumption using BLE.</p>
-<p>BLE_Power_Peripheral application usage: - Configuration phase (Red led is active or toggling): buttons are active and user can select the desired configuration to measure - Power consumption measurement phase (Red led if off): buttons are disabled and power measurement can be done.</p>
-<p>BLE_Power_Peripheral can be used to measure: - Advertising phase - Connected phase with : ST BLE Toolbox smartphone application.</p>
+<p>BLE_Power_Peripheral application usage:</p>
+<ul>
+<li>Configuration phase (Red led is active or toggling): buttons are active and user can select the desired configuration to measure.<br />
+</li>
+<li>Power consumption measurement phase (Red led if off): buttons are disabled, and power measurement can be done.</li>
+</ul>
+<p>BLE_Power_Peripheral can be used to measure:</p>
+<ul>
+<li>Advertising phase.<br />
+</li>
+<li>Connected phase with the ST BLE Toolbox smartphone application.</li>
+</ul>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65 Nucleo board.</li>
-<li>Another Nucleo board may be necessary to run BLE_Power_Peripheral application.</li>
+<li>This application runs on STM32WBA65 Nucleo board.<br />
+</li>
+<li>Another Nucleo board may be necessary to run BLE_Power_Central application.<br />
+</li>
 <li>For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following :</p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Open your preferred toolchain</li>
-<li>Rebuild all files and load your image into target memory</li>
-<li>Run the example</li>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and load your image into target memory.<br />
+</li>
+<li>Run the example.</li>
 </ul>
-<p>Once powered the application start advertising and the configuration phase start for 10sec: buttons can be used to select the desired configuration:</p>
+<p>Once powered the application starts advertising and the configuration phase begin for 10sec. Buttons can be used to select the desired configuration:</p>
 <ul>
-<li>B2 click : Switch the advertising interval</li>
-<li>B3 click : Switch the Advertising type</li>
+<li>B2 click : Switch the advertising interval.<br />
+</li>
+<li>B3 click : Switch the Advertising type.</li>
 </ul>
 <p><strong>You can interact with BLE_Power_Peripheral application with a smartphone:</strong></p>
 <ul>
-<li>Install and launch ST BLE Toolbox application on android or iOS smartphone
+<li>Install and launch ST BLE Toolbox application on android or iOS smartphone:
 <ul>
-<li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
-<li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
+<li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android.</a><br />
+</li>
+<li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS.</a></li>
 </ul></li>
-<li><p>Open ST BLE Toolbox application: select the PWR in the device list. Once connected, service and characteristics discovered enable notification.</p></li>
-<li>B1 click : Start/stop Notification</li>
-<li>B2 click : toggle PHY 1M/2M by HCI_LE_SET_PHY</li>
-<li><p>B3 click : Update connection interval by ACI_L2CAP_CONNECTION_UPDATE_REQ_EVENT</p></li>
+<li>Open ST BLE Toolbox application:
+<ul>
+<li>Select the PWR in the device list.<br />
+</li>
+<li>Once connected, service and characteristics discovered; enable notification.</li>
+</ul></li>
+<li>B1 click : Start/stop Notification.<br />
+</li>
+<li>B2 click : Toggle PHY 1M/2M by HCI_LE_SET_PHY.<br />
+</li>
+<li>B3 click : Update connection interval by ACI_L2CAP_CONNECTION_UPDATE_REQ_EVENT.</li>
 </ul>
 </div>
 </div>

@@ -33,7 +33,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 #define FX_SRAM_DISK_BASE_ADDRESS         0x20070000
-#define FX_SRAM_DISK_SIZE                 1024 * 64
+#define FX_SRAM_DISK_SIZE                 1024 * 4
 
 /* USER CODE BEGIN EC */
 

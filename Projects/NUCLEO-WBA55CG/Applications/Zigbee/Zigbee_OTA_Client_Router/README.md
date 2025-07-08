@@ -76,13 +76,13 @@ For this application it is requested to have at least:
     3. Start the second board. This board is configured as Zigbee router and will be attached to the network created by the Coordinator. Do the same for the other boards if applicable.
 &rarr; At this stage, the Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED turn ON before pushing buttons.
 
-    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully. You will see the Green LED toggling on the Client during OTA. Note that ZR_OTA is deleting the OTAImage - if any OTAImage was existing - before processing to OTA process. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by validation of the image on the Uart log, endding by: image is valid. The Client will NOT jump to the OTA image.
+    4. It is now possible to send OTA Cluster commands from the Client to the Server or vice-versa in unicast or broadcast mode by pressing on the SW1 push button on the Client or Server respecfully. You will see the Green LED toggling on the Client during OTA. Note that ZR_OTA is deleting the OTAImage - if any OTAImage was existing - before processing to OTA process. When the upgrade finishes, you shall see the Green LED stop toggling on the Client followed by validation of the image on the Uart log, ending by: image is valid. The Client will NOT jump to the OTA image.
     
     5. Once the Client has received the OTA image, it is possible to soft reset using push button SW2 on the Client to jump to the OTA image. 
 
     6. Once the Client has received the OTA image, it is also possible to hard reset using the Reset push button on the Client to restore the OTA Client and if existing it will NOT delete the OTA image to be abble to later switch to OTAImage with SW2.
     
-    7. By pressing the SW2 push button on the Server, all availible images for download on the Server will be logged.
+    7. By pressing the SW2 push button on the Server, all available images for download on the Server will be logged.
 
 **Note:** When the Red, Green, and Blue LED are toggling, it is indicates an error has occurred in the application.
 

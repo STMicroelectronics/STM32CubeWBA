@@ -142,7 +142,6 @@ VOID tx_application_define(VOID *first_unused_memory)
 
     /* USER CODE END  MX_USBX_Init_Success */
   }
-
 #else
 /*
  * Using dynamic memory allocation requires to apply some changes to the linker file.

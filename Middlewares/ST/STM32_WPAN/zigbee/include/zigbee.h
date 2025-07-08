@@ -3,7 +3,7 @@
  * @heading Zigbee Utilities
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  *
  * This file groups global/external definitions from all the layer specific header files
  * e.g, aps, nwk, zdo etc... into a single place, so that one can just include zigbee.h for
@@ -211,11 +211,11 @@ enum ZbTcsoStatusT {
 
 /* Zigbee defines of the scan type. These map directly to the MCP defines,
  * without having to include the entire MCP headers. */
-#define ZB_SCAN_TYPE_ENERGY             0 /* MCP_SCAN_ENERGY (0) */
-#define ZB_SCAN_TYPE_ACTIVE             1 /* MCP_SCAN_ACTIVE (1) */
-#define ZB_SCAN_TYPE_PASSIVE            2 /* MCP_SCAN_PASSIVE (2) */
-#define ZB_SCAN_TYPE_ORPHAN             3 /* MCP_SCAN_ORPHAN (3) */
-#define ZB_SCAN_TYPE_ENHANCED           4 /* MCP_SCAN_ENHANCED (4) */
+#define ZB_SCAN_TYPE_ENERGY             0U /* MCP_SCAN_ENERGY (0) */
+#define ZB_SCAN_TYPE_ACTIVE             1U /* MCP_SCAN_ACTIVE (1) */
+#define ZB_SCAN_TYPE_PASSIVE            2U /* MCP_SCAN_PASSIVE (2) */
+#define ZB_SCAN_TYPE_ORPHAN             3U /* MCP_SCAN_ORPHAN (3) */
+#define ZB_SCAN_TYPE_ENHANCED           4U /* MCP_SCAN_ENHANCED (4) */
 
 /*---------------------------------------------------------------
  * Exegin Manufacturing ID
@@ -312,20 +312,16 @@ struct ZbInitTblSizesT {
      * An FFD vs RFD type of stack is controlled by the CONFIG_ZB_ENDNODE when the stack is built. */
 
     /* NWK Table Sizes */
-    unsigned int nwkNeighborTblSz;
-    /**< Network Neighbor Table (NNT) number of entries.
-     * Default is 64. */
-    unsigned int nwkRouteTblSz;
-    /**< Default is 32. */
-    unsigned int nwkAddrMapTblSz;
-    /**< Default is 32. */
-    unsigned int nwkBttSz;
-    /**< Default is 32. */
-    unsigned int nwkRReqSz;
-    /**< Default is 16. */
+    unsigned int nwkNeighborTblSz; /**< Default: FFD:64, RFD:16 */
+    unsigned int nwkRouteTblSz; /**< Default: FFD:32, RFD:0 */
+    unsigned int nwkAddrMapTblSz; /**< Default: FFD:32, RFD:2 */
+    unsigned int nwkBttSz; /**< Default: FFD:32, RFD:9 */
+    unsigned int nwkRReqSz; /**< Default: FFD:16, RFD:0 */
 
     /* APS Table Sizes */
-    unsigned int apsPeerLinkKeyTblSz; /* Default: 32 */
+    unsigned int apsBindingTblSz; /**< Default: FFD:64, RFD:16 */
+    unsigned int apsGroupTblSz; /**< Default: FFD:16, RFD:4 */
+    unsigned int apsPeerLinkKeyTblSz; /**< Default: FFD:32, RFD:2 */
 };
 
 /** Same parameters as ZbSetLogging takes. Allows debug log output
@@ -721,5 +717,4 @@ unsigned long ZbHeapHighWaterMark(struct ZigBeeT *zb);
 #include "zigbee.nwk.h"
 #include "zigbee.startup.h"
 #include "zigbee.zdo.h"
-
 #endif

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -45,7 +45,6 @@ ADC_HandleTypeDef hadc4;
 CRC_HandleTypeDef hcrc;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
-RAMCFG_HandleTypeDef hramcfg_SRAM2;
 
 RNG_HandleTypeDef hrng;
 
@@ -63,8 +62,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 void MX_FREERTOS_Init(void);
-static void SystemPower_Config(void);
-
 
 /* USER CODE BEGIN PFP */
 
@@ -102,9 +99,6 @@ int main(void)
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
-  /* Configure the System Power */
-  SystemPower_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -114,17 +108,17 @@ int main(void)
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_RNG_Init();
   MX_ICACHE_Init();
- 
   /* USER CODE BEGIN 2 */
-  ConfigureStandbyWakeupPins();
+
   /* USER CODE END 2 */
+
   /* Init scheduler */
   osKernelInitialize();
 
-  /* Call init function for freertos objects (in freertos.c) */
+  /* Call init function for freertos objects (in app_freertos.c) */
   MX_FREERTOS_Init();
+
   /* Init code for STM32_WPAN */
   MX_APPE_Init(NULL);
 
@@ -132,6 +126,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -221,8 +216,7 @@ void PeriphCommonClock_Config(void)
 
   /** Initializes the peripherals clock
   */
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST|RCC_PERIPHCLK_SYSTICK;
-  PeriphClkInit.SystickClockSelection = RCC_SYSTICKCLKSOURCE_LSE;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RADIOST;
   PeriphClkInit.RadioSlpTimClockSelection = RCC_RADIOSTCLKSOURCE_LSE;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -230,20 +224,6 @@ void PeriphCommonClock_Config(void)
     Error_Handler();
   }
 }
-
-/**
-  * @brief Power Configuration
-  * @retval None
-  */
-static void SystemPower_Config(void)
-{
-  /* WKUP_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(WKUP_IRQn);
-/* USER CODE BEGIN PWR */
-/* USER CODE END PWR */
-}
-
 
 /**
   * @brief CRC Initialization Function
@@ -321,10 +301,12 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
-  /* No retention for ICACHE in stop mode */
-  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
 
   /* USER CODE END ICACHE_Init 1 */
+
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
 
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
@@ -359,47 +341,9 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
-
-  /** Initialize RAMCFG SRAM2
-  */
-  hramcfg_SRAM2.Instance = RAMCFG_SRAM2;
-  if (HAL_RAMCFG_Init(&hramcfg_SRAM2) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
-
-}
-
-/**
-  * @brief RNG Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_RNG_Init(void)
-{
-
-  /* USER CODE BEGIN RNG_Init 0 */
-
-  /* USER CODE END RNG_Init 0 */
-
-  /* USER CODE BEGIN RNG_Init 1 */
-
-  /* USER CODE END RNG_Init 1 */
-  hrng.Instance = RNG;
-  hrng.Init.ClockErrorDetection = RNG_CED_DISABLE;
-  if (HAL_RNG_Init(&hrng) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RNG_Init 2 */
-
-  /* Disable RNG peripheral and its RCC clock */
-  HW_RNG_Disable( );
-
-  /* USER CODE END RNG_Init 2 */
 
 }
 
@@ -495,7 +439,7 @@ void MX_USART1_UART_Init(void)
   huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_8;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
@@ -528,56 +472,20 @@ void MX_USART1_UART_Init(void)
   */
 void MX_GPIO_Init(void)
 {
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
 
-  /*RT DEBUG GPIO_Init */
-  RT_DEBUG_GPIO_Init();
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-  LL_DBGMCU_DisableDBGStopMode();
-  LL_DBGMCU_DisableDBGStandbyMode();
-
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-#if (CFG_LCD_SUPPORTED == 1)
-  /* GPIO are reinitialized after wakeup from stdby */
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin     = LCD_RST_PIN;
-  GPIO_InitStruct.Mode    = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull    = GPIO_NOPULL;
-  GPIO_InitStruct.Speed   = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_RST_GPIO_PORT, &GPIO_InitStruct);
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_A, LCD_RST_PIN);
-
-  GPIO_InitStruct.Pin     = LCD_DC_PIN;
-  HAL_GPIO_Init(LCD_DC_GPIO_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin     = LCD_CS_PIN;
-  HAL_GPIO_Init(LCD_CS_GPIO_PORT, &GPIO_InitStruct);
-#endif /* CFG_LCD_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void ConfigureStandbyWakeupPins(void)
-{
- /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
-  
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
-  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(WKUP_IRQn);
-}
 
 /* USER CODE END 4 */
 

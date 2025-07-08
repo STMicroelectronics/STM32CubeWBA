@@ -20,6 +20,10 @@
 #ifndef SCM_H
 #define SCM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
@@ -274,5 +278,9 @@ void scm_hserdy_isr(void);
 void scm_pllrdy_isr(void);
 
 #endif /* CFG_SCM_SUPPORTED */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SCM_H */

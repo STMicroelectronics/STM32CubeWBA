@@ -227,6 +227,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_adc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
@@ -352,6 +357,11 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/timer_if.c</locationURI>
 		</link>
 		<link>
+			<name>Common/WPAN/Modules/adc_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/adc_ctrl.c</locationURI>
+		</link>
+		<link>
 			<name>Common/WPAN/Modules/app_sys.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/app_sys.c</locationURI>
@@ -410,6 +420,11 @@
 			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/app_thread.c</name>
@@ -527,11 +542,7 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Modules/Nvm/nvm_emul.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Nvm/nvm_emul.c</locationURI>
-		</link>
-		<link>
+
 			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</locationURI>
@@ -555,6 +566,11 @@
 			<name>Middlewares/FreeRTOS/portable/MemMang/heap_4.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/System/Config/ADC_Ctrl/adc_ctrl_conf.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/CRC_Ctrl/crc_ctrl_conf.c</name>

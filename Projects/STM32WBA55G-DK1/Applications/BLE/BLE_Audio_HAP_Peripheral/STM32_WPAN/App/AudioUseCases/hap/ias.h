@@ -29,6 +29,9 @@ extern "C"
 
 
 /* Includes ------------------------------------------------------------------*/
+#include "cmsis_compiler.h"
+#include "ble_core.h"
+#include "svc_ctl.h"
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum
@@ -50,7 +53,6 @@ typedef struct
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 tBleStatus IAS_Init(void);
-tBleStatus IAS_Update_Char(uint16_t UUID, uint8_t *pPayload);
 void IAS_Notification(IAS_Notification_Evt_t *pNotification);
 SVCCTL_EvtAckStatus_t IAS_Event_Handler(void *Event);
 

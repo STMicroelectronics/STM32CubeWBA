@@ -94,7 +94,6 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   return ret;
 }
-
 /**
   * @brief  Function implementing the MainThread_Entry thread.
   * @param  thread_input: Hardcoded to 0.

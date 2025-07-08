@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA52CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums -mno-unaligned-access</MiscControls>
               <Define>_AEABI_PORTABILITY_LEVEL=1,WBx_OTLIB_BUILD_IAR_KEIL,USE_HAL_DRIVER,MBEDTLS_CONFIG_FILE=&lt;mbedtls-config.h&gt;,MBEDTLS_USER_CONFIG_FILE=&lt;stm32wba-mbedtls-config.h&gt;,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_FTD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\config;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\platform;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\include\hal;..\..\..\..\..\..\..\Third_Party\mbedtls\include</IncludePath>
+              <IncludePath>..\..\..\stack\src\diag;..\..\..\stack\src;..\..\..\stack\src\core;..\..\..\stack\include;..\..\..\stack\include\openthread;..\..\..\stack\include\openthread\platform;..\..\..\stack\examples\platforms;..\..\..\stack\examples\platforms\utils;..\..\..\stack\third_party\mbedtls;..\..\..\config;..\..\..\stack\wbx_include;..\..\..\stack\wbx_include\sys;..\..\..\platform;..\..\..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\mbedtls_alt\include\hal;..\..\..\..\..\..\..\Third_Party\mbedtls\include;..\..\..\stack\src\include;..\..\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include\;..\..\..\..\..\..\mbedtls_alt\interfaces\patterns</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -463,11 +463,6 @@
               <FileName>cli_network_data.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\cli\cli_network_data.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>cli_output.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\cli\cli_output.cpp</FilePath>
             </File>
             <File>
               <FileName>cli_srp_client.cpp</FileName>
@@ -850,6 +845,11 @@
           <GroupName>src_core_common</GroupName>
           <Files>
             <File>
+              <FileName>data.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\data.cpp</FilePath>
+            </File>
+            <File>
               <FileName>appender.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\appender.cpp</FilePath>
@@ -858,16 +858,6 @@
               <FileName>binary_search.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\binary_search.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>crc16.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\crc16.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>data.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\data.cpp</FilePath>
             </File>
             <File>
               <FileName>error.cpp</FileName>
@@ -898,11 +888,6 @@
               <FileName>heap_string.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\heap_string.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>instance.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\common\instance.cpp</FilePath>
             </File>
             <File>
               <FileName>log.cpp</FileName>
@@ -968,6 +953,11 @@
               <FileName>preference.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\preference.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>crc.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\crc.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1161,11 +1151,6 @@
               <FilePath>..\..\..\stack\src\core\meshcop\dataset.cpp</FilePath>
             </File>
             <File>
-              <FileName>dataset_local.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\meshcop\dataset_local.cpp</FilePath>
-            </File>
-            <File>
               <FileName>dataset_manager.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\meshcop\dataset_manager.cpp</FilePath>
@@ -1179,11 +1164,6 @@
               <FileName>dataset_updater.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\meshcop\dataset_updater.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>dtls.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\meshcop\dtls.cpp</FilePath>
             </File>
             <File>
               <FileName>energy_scan_client.cpp</FileName>
@@ -1609,11 +1589,6 @@
               <FileName>tmf.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\tmf.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>topology.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\thread\topology.cpp</FilePath>
             </File>
             <File>
               <FileName>uri_paths.cpp</FileName>

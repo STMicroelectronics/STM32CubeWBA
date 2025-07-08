@@ -46,13 +46,13 @@
   #define MAX_LC3_NBYTES        155     /* LC3 maximum encoded frame */
 
   /* Codec max Million Cycle Per Second for each frequency listed codec capabilities LTV structure, 0 if unsupported
-   * Values for codec V1.5
+   * Values for codec V1.6
    *                   kHz:      8,     N/A,    16,     N/A,    24,     32,     44.1,    48,    N/A----------
    */
-  #define LC3_MCPS_ENC_75MS     {14,     0,     18,     0,      22,     26,     33,      33,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_ENC_10MS     {13,     0,     17,     0,      21,     25,     31,      32,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_DEC_75MS     {5,      0,     8,      0,      12,     17,     22,      22,     0, 0, 0, 0, 0}
-  #define LC3_MCPS_DEC_10MS     {5,      0,     8,      0,      12,     16,     21,      21,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_ENC_75MS     {14,     0,     18,     0,      22,     26,     33,      32,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_ENC_10MS     {13,     0,     16,     0,      20,     24,     32,      31,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_DEC_75MS     {5,      0,     8,      0,      12,     16,     21,      21,     0, 0, 0, 0, 0}
+  #define LC3_MCPS_DEC_10MS     {5,      0,     7,      0,      11,     15,     20,      20,     0, 0, 0, 0, 0}
 
   #include "LC3.h"
   #define CODEC_GET_TOTAL_SESSION_BUFFER_SIZE(num_session, band)      (num_session * ((band <= CODEC_SSWB) ? LC3_SESSION_STRUCT_SIZE_24kHz : LC3_SESSION_STRUCT_SIZE_48kHz))
@@ -305,8 +305,8 @@ uint8_t CODEC_ReadLocalSupportedCodecsV2(uint8_t *num_stdr, uint8_t **stdr_codec
   * @param **codec_capability : pointer for returning an array of structure containing the capabilities
   * @retval HCI status
   */
-uint8_t CODEC_ReadSupportedCodecCapabilies(uint8_t* codecID, uint8_t transport, uint8_t dir,
-                                           uint8_t* num_codec_capabilities, uint8_t **codec_capability);
+uint8_t CODEC_ReadLocalSupportedCodecCapabilies(uint8_t* codecID, uint8_t transport, uint8_t dir,
+                                                uint8_t* num_codec_capabilities, uint8_t **codec_capability);
 
 /**
   * @brief  Function used for reading controller delay range

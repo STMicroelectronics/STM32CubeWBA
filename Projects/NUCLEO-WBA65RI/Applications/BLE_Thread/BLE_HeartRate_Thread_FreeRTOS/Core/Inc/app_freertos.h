@@ -1,13 +1,12 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    app_freertos.h
-  * @author  MCD Application Team
-  * @brief   FreeRTOS applicative header file
+  * File Name          : app_freertos.h
+  * Description        : FreeRTOS applicative header file
   ******************************************************************************
-    * @attention
+  * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,18 +18,17 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __APP_FREERTOS_H
-#define __APP_FREERTOS_H
+#ifndef __APP_FREERTOS_H__
+#define __APP_FREERTOS_H__
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
-
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
+#include "main.h"
 #include "cmsis_os2.h"
-//#include "cmsis_os.h"   
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -77,8 +75,7 @@ extern void* p_param;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-//void MX_FreeRTOS_Start(void);
-extern void MX_FreeRtos_Init        ( void );
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* USER CODE BEGIN EFP */
 

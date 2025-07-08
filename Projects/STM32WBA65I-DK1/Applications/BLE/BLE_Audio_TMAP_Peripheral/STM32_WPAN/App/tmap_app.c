@@ -20,7 +20,7 @@
 
 #include "tmap_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "stm32_timer.h"
@@ -32,7 +32,7 @@
 #include "app_menu_cfg.h"
 #include "log_module.h"
 #include "app_ble.h"
-
+#include "simple_nvm_arbiter.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,7 +92,7 @@
 #endif /*(APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)*/
 
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
@@ -143,6 +143,7 @@
 #define BAP_NVM_MGMT_DYN_ALLOC_SIZE  \
         BAP_NVM_MGMT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
 
+
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 #define BLE_CCP_CLT_DYN_ALLOC_SIZE \
         (BLE_CCP_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,APP_CCP_NUM_REMOTE_BEARER_INSTANCES,APP_CCP_CALL_URI_LENGTH))
@@ -151,7 +152,7 @@
 #if (APP_MCP_ROLE_CLIENT_SUPPORT == 1u)
 #define BLE_MCP_CLT_DYN_ALLOC_SIZE \
         BLE_MCP_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,APP_MCP_NUM_REMOTE_MEDIA_PLAYER_INSTANCES)
-#endif /*(APP_CCP_ROLE_CLIENT_SUPPORT == 1u)*/
+#endif /*(APP_MCP_ROLE_CLIENT_SUPPORT == 1u)*/
 
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
 #define BLE_VCP_RDR_DYN_ALLOC_SIZE\
@@ -161,10 +162,14 @@
 #endif /*(APP_VCP_ROLE_RENDERER_SUPPORT == 1u)*/
 
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)
-#define BLE_CSIP_SET_MEMBER_DYN_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES,CFG_BLE_NUM_LINK)
+#define BLE_CSIP_SET_MEMBER_DYN_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES, \
+                                                                                      CFG_BLE_NUM_LINK)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1) */
 
-#define TMAP_DYN_ALLOC_SIZE             TMAP_MEM_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
+#define TMAP_DYN_ALLOC_SIZE                     TMAP_MEM_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
+
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
 
 #define VOLUME_STEP                     10
 
@@ -269,6 +274,7 @@ static uint32_t aASCSSrvMemBuffer[DIVC(BAP_ASCS_SRV_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t audio_init_buffer[BLE_AUDIO_DYN_ALLOC_SIZE];
+static uint64_t audio_buffer_nvm[CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE] = {0};
 static BleAudioInit_t pBleAudioInit;
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 static uint32_t aCCPCltMemBuffer[DIVC(BLE_CCP_CLT_DYN_ALLOC_SIZE,4)];
@@ -380,6 +386,32 @@ extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
 
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* First register the APP BLE Audio buffer */
+  SNVMA_Register(APP_AUDIO_NvmBuffer,
+                 (uint32_t *)audio_buffer_nvm,
+                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  /* Realize a restore */
+  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+
+  /* Initialize the Audio IP*/
+  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  pBleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  pBleAudioInit.bleAudioStartRamAddress = (uint8_t*)audio_init_buffer;
+  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  pBleAudioInit.MaxNumOfBondedDevices = APP_MAX_NUM_BONDED_DEVICES;
+  pBleAudioInit.bleAudioStartRamAddress_NVM = audio_buffer_nvm;
+  pBleAudioInit.total_buffer_size_NVM = CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE;
+  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 void TMAPAPP_Init(uint8_t csip_config_id)
 {
   tBleStatus status;
@@ -500,7 +532,7 @@ tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle)
       }
       if (link != 0x00u)
       {
-        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
         LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -578,7 +610,7 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
         {
           p_conn->AudioProfile |= AUDIO_PROFILE_TMAP;
         }
-        current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(pNotification->ConnHandle);
 #if (APP_MCP_ROLE_CLIENT_SUPPORT == 1)
         if ((current_link & MCP_LINK) == MCP_LINK)
         {
@@ -598,7 +630,7 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
           }
           else
           {
-            p_conn->CurrentContentCtrlOp = MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
+            p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
             p_conn->MCPLinkupState = APP_MCP_LINKUP_STATE_CONFIGURE_TRACK_TITLE_NOTIF;
             LOG_INFO_APP("  Success: MCP_CLIENT_ConfigureTrackTitleNotification with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -626,7 +658,7 @@ void TMAP_Notification(TMAP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_CALL_STATE;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_CALL_STATE;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadCallState with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -867,7 +899,7 @@ tBleStatus TMAPAPP_NextTrack(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if ((current_link & MCP_LINK) == MCP_LINK)
         {
           status = MCP_CLIENT_MoveNextTrack(p_conn->Acl_Conn_Handle,
@@ -883,7 +915,7 @@ tBleStatus TMAPAPP_NextTrack(void)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = MCP_CLT_OP_MOVE_NEXT_TRACK;
+              p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_MOVE_NEXT_TRACK;
             }
             LOG_INFO_APP("  Success: MCP_CLIENT_MoveNextTrack with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
@@ -913,7 +945,7 @@ tBleStatus TMAPAPP_PreviousTrack(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if ((current_link & MCP_LINK) == MCP_LINK)
         {
           status = MCP_CLIENT_MovePreviousTrack(p_conn->Acl_Conn_Handle,
@@ -929,7 +961,7 @@ tBleStatus TMAPAPP_PreviousTrack(void)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = MCP_CLT_OP_MOVE_PREVIOUS_TRACK;
+              p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_MOVE_PREVIOUS_TRACK;
             }
             LOG_INFO_APP("  Success: MCP_CLIENT_MovePreviousTrack with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
@@ -959,7 +991,7 @@ tBleStatus TMAPAPP_PlayPause(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if ((current_link & MCP_LINK) == MCP_LINK)
         {
           status = MCP_CLIENT_ReadMediaState(p_conn->Acl_Conn_Handle,
@@ -975,7 +1007,7 @@ tBleStatus TMAPAPP_PlayPause(void)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = MCP_CLT_OP_READ_MEDIA_STATE;
+              p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_READ_MEDIA_STATE;
             }
             p_conn->PlayPauseOperation = 1u;
             LOG_INFO_APP("  Success: MCP_CLIENT_ReadMediaState with ConnHandle 0x%04X and CCID %d\n",
@@ -1006,7 +1038,7 @@ tBleStatus TMAPAPP_AnswerCall(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState == CCP_CS_INCOMING))
         {
           status = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
@@ -1023,7 +1055,7 @@ tBleStatus TMAPAPP_AnswerCall(void)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_ANSWER_INC_CALL;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_ANSWER_INC_CALL;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
@@ -1054,7 +1086,7 @@ tBleStatus TMAPAPP_TerminateCall(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(TMAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if ((p_conn != 0) && ((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState != CCP_CS_IDLE))
         {
           status = CCP_CLIENT_TerminateCall(p_conn->Acl_Conn_Handle,
@@ -1071,7 +1103,7 @@ tBleStatus TMAPAPP_TerminateCall(void)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_TERMINATE_CALL;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_TERMINATE_CALL;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
@@ -1222,34 +1254,34 @@ void TMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_
         break;
       }
     }
-  }
-  /* Set Available Audio Contexts */
-  p_conn->AvailableSnkAudioContext = TMAPAPP_Context.AvailableSnkAudioContext;
-  p_conn->AvailableSrcAudioContext = TMAPAPP_Context.AvailableSrcAudioContext;
+    /* Set Available Audio Contexts */
+    p_conn->AvailableSnkAudioContext = TMAPAPP_Context.AvailableSnkAudioContext;
+    p_conn->AvailableSrcAudioContext = TMAPAPP_Context.AvailableSrcAudioContext;
 
-  TMAPAPP_Context.NumConn++;
-  if (TMAPAPP_Context.NumConn < CFG_BLE_NUM_LINK )
-  {
-    tBleStatus status;
-    uint8_t enable_solicitation_request = 0;
-    TMAPAPP_StopAdvertising();
+    TMAPAPP_Context.NumConn++;
+    if (TMAPAPP_Context.NumConn < CFG_BLE_NUM_LINK )
+    {
+      tBleStatus status;
+      uint8_t enable_solicitation_request = 0;
+      TMAPAPP_StopAdvertising();
 
-    if (TMAPAPP_Context.BroadcastMode == APP_BROADCAST_MODE_SCAN_DELEGATOR)
-    {
-      enable_solicitation_request = 1;
-    }
+      if (TMAPAPP_Context.BroadcastMode == APP_BROADCAST_MODE_SCAN_DELEGATOR)
+      {
+        enable_solicitation_request = 1;
+      }
 
-    /* Start Advertising */
-    if (TMAPAPP_Context.CSIPRank > 0)
-    {
-      status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, enable_solicitation_request, GAP_APPEARANCE_EARBUD);
+      /* Start Advertising */
+      if (TMAPAPP_Context.CSIPRank > 0)
+      {
+        status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, enable_solicitation_request, GAP_APPEARANCE_EARBUD);
+      }
+      else
+      {
+        status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, enable_solicitation_request, GAP_APPEARANCE_HEADPHONES);
+      }
+      LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
+      UNUSED(status);
     }
-    else
-    {
-      status = TMAPAPP_StartAdvertising(CAP_GENERAL_ANNOUNCEMENT, enable_solicitation_request, GAP_APPEARANCE_HEADPHONES);
-    }
-    LOG_INFO_APP("TMAPAPP_StartAdvertising() returns status 0x%02X\n",status);
-    UNUSED(status);
   }
 }
 
@@ -1787,9 +1819,6 @@ uint8_t TMAPAPP_StopSink(void)
     }
   }
 
-  LOG_INFO_APP("   >>==  MX_AudioDeInit()\n");
-  MX_AudioDeInit();
-
   LOG_INFO_APP(">>==  End Stop Broadcast Sink\n");
   return ret;
 
@@ -1802,7 +1831,10 @@ void TMAPAPP_SetBroadcastMode(APP_BroadcastMode_t mode)
 {
   TMAPAPP_Context.BroadcastMode = mode;
 }
-
+void TMAPAPP_ClearDatabase(void)
+{
+  BLE_AUDIO_STACK_DB_ClearAllRecords();
+}
 /*************************************************************
  *
  * LOCAL FUNCTIONS
@@ -1828,18 +1860,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   Audio_Location_t audio_locations = FRONT_LEFT;
 
   LOG_INFO_APP("CAPAPP_Init() with audio role 0x%02X\n",AudioRole);
-
-  /* Initialize the Audio IP*/
-  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  pBleAudioInit.bleStartRamAddress = (uint8_t*)audio_init_buffer;
-  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
-  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
-  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
-  if(status != BLE_STATUS_SUCCESS)
-  {
-    return status;
-  }
 
   /*Clear the CAP Configuration*/
   memset(&APP_CAP_Config, 0, sizeof(CAP_Config_t));
@@ -1913,7 +1933,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   APP_BAP_Config.ASCSSrvConfig.MaxNumSrcASEs = APP_NUM_SRC_ASE;
   APP_BAP_Config.ASCSSrvConfig.MaxCodecConfSize = MAX_USR_CODEC_CONFIG_SIZE;
   APP_BAP_Config.ASCSSrvConfig.MaxMetadataLength = MAX_USR_METADATA_SIZE;
-  APP_BAP_Config.ASCSSrvConfig.CachingEn = 1u;
+  APP_BAP_Config.ASCSSrvConfig.CachingEn = APP_ASCS_CACHING;
   APP_BAP_Config.ASCSSrvConfig.pStartRamAddr = (uint8_t *)&aASCSSrvMemBuffer;
   APP_BAP_Config.ASCSSrvConfig.RamSize = BAP_ASCS_SRV_DYN_ALLOC_SIZE;
 
@@ -1943,6 +1963,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   APP_MCP_Config.Role = MCP_ROLE_CLIENT;
   APP_MCP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_MCP_Config.Clt.MaxNumMPInstPerConn = APP_MCP_NUM_REMOTE_MEDIA_PLAYER_INSTANCES;
+  APP_MCP_Config.Clt.OptionFeatures = APP_MCP_CLT_FEATURE_OPTIONS;
   APP_MCP_Config.Clt.pStartRamAddr = (uint8_t*)aMCPCltMemBuffer;
   APP_MCP_Config.Clt.RamSize = BLE_MCP_CLT_DYN_ALLOC_SIZE;
 #endif /*(APP_MCP_ROLE_CLIENT_SUPPORT == 1u)*/
@@ -2721,7 +2742,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
   {
     case CAP_LINKUP_COMPLETE_EVT:
     {
-      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
+      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(pNotification->ConnHandle);
       APP_ACL_Conn_t *p_conn;
       LOG_INFO_APP("CAP Linkup Complete on Connhandle 0x%04X with status 0x%02X\n",
                    pNotification->ConnHandle,
@@ -2797,7 +2818,10 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                           pNotification->ConnHandle,
                           ret);
             }
-            UNUSED(ret);
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              return;
+            }
           }
           else if (p_conn->ConfirmIndicationRequired == 1u)
           {
@@ -2834,7 +2858,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             {
               if (p_conn != 0)
               {
-                p_conn->CurrentContentCtrlOp = MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
+                p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
                 p_conn->MCPLinkupState = APP_MCP_LINKUP_STATE_CONFIGURE_TRACK_TITLE_NOTIF;
               }
               LOG_INFO_APP("  Success: MCP_CLIENT_ConfigureTrackTitleNotification with ConnHandle 0x%04X and CCID %d\n",
@@ -2864,7 +2888,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             {
               if (p_conn != 0)
               {
-                p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_CALL_STATE;
+                p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_CALL_STATE;
               }
               LOG_INFO_APP("  Success: CCP_CLIENT_ReadCallState with ConnHandle 0x%04X and CCID %d\n",
                            pNotification->ConnHandle,
@@ -3985,7 +4009,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         if (p_conn != 0)
         {
-          p_conn->CurrentContentCtrlOp = MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
+          p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
         }
         LOG_INFO_APP("  Success: MCP_CLIENT_ConfigureTrackTitleNotification with ConnHandle 0x%04X and CCID %d\n",
                      pNotification->ConnHandle,
@@ -4053,7 +4077,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     case CAP_BROADCAST_AUDIO_UP_EVT:
     {
       Sampling_Freq_t sampling_freq;
-      char freq_text[8];
+      char freq_text[8] = {0};
       LOG_INFO_APP(">>== CAP_BROADCAST_AUDIO_UP_EVT\n");
 
       sampling_freq = LTV_GetConfiguredSamplingFrequency(
@@ -4064,37 +4088,37 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         case SAMPLE_FREQ_8000_HZ:
         {
-          strcpy(&freq_text[0], "8KHz");
+          strncpy(&freq_text[0], "8KHz",5u);
           break;
         }
         case SAMPLE_FREQ_16000_HZ:
         {
-          strcpy(&freq_text[0], "16KHz");
+          strncpy(&freq_text[0], "16KHz",6u);
           break;
         }
         case SAMPLE_FREQ_24000_HZ:
         {
-          strcpy(&freq_text[0], "24KHz");
+          strncpy(&freq_text[0], "24KHz",6u);
           break;
         }
         case SAMPLE_FREQ_32000_HZ:
         {
-          strcpy(&freq_text[0], "32KHz");
+          strncpy(&freq_text[0], "32KHz",6u);
           break;
         }
         case SAMPLE_FREQ_44100_HZ:
         {
-          strcpy(&freq_text[0], "44.1KHz");
+          strncpy(&freq_text[0], "44.1KHz",8u);
           break;
         }
         case SAMPLE_FREQ_48000_HZ:
         {
-          strcpy(&freq_text[0], "48KHz");
+          strncpy(&freq_text[0], "48KHz",6u);
           break;
         }
         default:
         {
-          strcpy(&freq_text[0], "Unknown");
+          strncpy(&freq_text[0], "Unknown",8u);
           break;
         }
       }
@@ -4109,11 +4133,13 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
     }
     break;
- 
+
     case CAP_BROADCAST_AUDIO_DOWN_EVT:
     {
       uint8_t status;
       LOG_INFO_APP(">>== CAP_BROADCAST_AUDIO_DOWN_EVT\n");
+      
+      Stop_TxAudio();
       MX_AudioDeInit();
 
       if (TMAPAPP_Context.BroadcastMode == APP_BROADCAST_MODE_SCAN_DELEGATOR)
@@ -4487,7 +4513,6 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       {
         uint8_t status;
         BAP_BIGInfo_Report_Data_t *data = (BAP_BIGInfo_Report_Data_t *) pNotification->pInfo;
-        //uint8_t bis_index[2u] = {0x01, 0x02};
 
         LOG_INFO_APP("  CAP_Broadcast_StartBIGSync() function for %d BIEses:\n", TMAPAPP_Context.BSNK.num_sync_bis);
         for (uint8_t i = 0u; i < TMAPAPP_Context.BSNK.num_sync_bis;i++)
@@ -4549,7 +4574,6 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               TMAPAPP_Context.BSNK.PASyncState = APP_PA_SYNC_STATE_IDLE;
             }
           }
-          
           APP_BroadcastSetupAudio(AUDIO_ROLE_SINK);
         }
         else
@@ -5509,7 +5533,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -5538,7 +5562,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -5621,7 +5645,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -5647,7 +5671,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -5724,9 +5748,16 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
       p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
-        p_conn->CurrentContentCtrlOp = 0u;
+        if (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_READ_CALL_STATE)
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_READ_CALL_STATE;
+        }
+        else if (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_READ_FEATURES_STATUS)
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_READ_FEATURES_STATUS;
+        }
       }
-      /* Checdule pendning MCP/CCP operation if it exists*/
+      /* Schedule pendning MCP/CCP operation if it exists*/
       TMAP_SchedulePendingContentControlOp(p_conn);
       break;
     }
@@ -5738,7 +5769,19 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
                   pNotification->ConnHandle,
                   p_event_params->CallCtrlOp,
                   pNotification->Status);
-      UNUSED(p_event_params);
+      if (p_conn != 0)
+      {
+        if ((p_event_params->CallCtrlOp == CCP_CALL_CTRL_ACCEPT) && (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_ANSWER_INC_CALL))
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_ANSWER_INC_CALL;
+        }
+        else if ((p_event_params->CallCtrlOp == CCP_CALL_CTRL_TERMINATE) && (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_TERMINATE_CALL))
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_TERMINATE_CALL;
+        }
+      }
+      /* Schedule pendning MCP/CCP operation if it exists*/
+      TMAP_SchedulePendingContentControlOp(p_conn);
       break;
     }
 
@@ -6027,8 +6070,25 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
-        uint16_t CurrentContentCtrlOp = p_conn->CurrentContentCtrlOp;
-        p_conn->CurrentContentCtrlOp = 0u;
+        uint16_t CurrentContentCtrlOp = 0;
+
+        LOG_INFO_APP("CurrentContentCtrlOp 0x%08X, PlayPauseOperation : %d, MediaState : %d\n",
+                  p_conn->CurrentContentCtrlOp,
+                  p_conn->PlayPauseOperation,
+                  p_conn->MediaState);
+        if (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION)
+        {
+          CurrentContentCtrlOp = MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
+        }
+        else if (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_READ_MEDIA_STATE)
+        {
+          CurrentContentCtrlOp = MCP_CLT_OP_READ_MEDIA_STATE;
+        }
+        else if (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_READ_TRACK_TITLE)
+        {
+          CurrentContentCtrlOp = MCP_CLT_OP_READ_TRACK_TITLE;
+        }
+        p_conn->CurrentContentCtrlOp &= ~CurrentContentCtrlOp;
         if ((p_conn->PlayPauseOperation == 1u) && (CurrentContentCtrlOp == MCP_CLT_OP_READ_MEDIA_STATE))
         {
           p_conn->PlayPauseOperation = 0;
@@ -6051,7 +6111,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
             {
               if (p_conn != 0)
               {
-                p_conn->CurrentContentCtrlOp = MCP_CLT_OP_PLAY_TRACK;
+                p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_PLAY_TRACK;
               }
               LOG_INFO_APP("  Success: MCP_CLIENT_PlayTrack with ConnHandle 0x%04X and CCID %d\n",
                            pNotification->ConnHandle,
@@ -6077,7 +6137,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
             {
               if (p_conn != 0)
               {
-                p_conn->CurrentContentCtrlOp = MCP_CLT_OP_PAUSE_TRACK;
+                p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_PAUSE_TRACK;
               }
               LOG_INFO_APP("  Success: MCP_CLIENT_PauseTrack with ConnHandle 0x%04X and CCID %d\n",
                            pNotification->ConnHandle,
@@ -6093,7 +6153,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
           if (ret == BLE_STATUS_SUCCESS)
           {
             p_conn->MCPLinkupState = APP_MCP_LINKUP_STATE_READ_MEDIA_STATE;
-            p_conn->CurrentContentCtrlOp = MCP_CLT_OP_READ_MEDIA_STATE;
+            p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_READ_MEDIA_STATE;
             return;
           }
         }
@@ -6104,7 +6164,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
           if (ret == BLE_STATUS_SUCCESS)
           {
             p_conn->MCPLinkupState = APP_MCP_LINKUP_STATE_READ_TRACK_TITLE;
-            p_conn->CurrentContentCtrlOp = MCP_CLT_OP_READ_TRACK_TITLE;
+            p_conn->CurrentContentCtrlOp |= MCP_CLT_OP_READ_TRACK_TITLE;
             return;
           }
         }
@@ -6112,7 +6172,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
         {
           p_conn->MCPLinkupState = APP_MCP_LINKUP_STATE_IDLE;
         }
-        /* Checdule pendning MCP/CCP operation if it exists*/
+        /* schedule pending MCP/CCP operation if it exists*/
         TMAP_SchedulePendingContentControlOp(p_conn);
       }
       UNUSED(ret);
@@ -6128,6 +6188,28 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
                   pNotification->ConnHandle,
                   pNotification->Status);
       UNUSED(p_event_params);
+      APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
+      if (p_conn != 0)
+      {
+        if ((p_event_params->CtrlOp == MCP_MEDIA_CTRL_PLAY) && (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_PLAY_TRACK))
+        {
+          p_conn->CurrentContentCtrlOp &= ~MCP_CLT_OP_PLAY_TRACK;
+        }
+        else if ((p_event_params->CtrlOp == MCP_MEDIA_CTRL_PAUSE) && (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_PAUSE_TRACK))
+        {
+          p_conn->CurrentContentCtrlOp &= ~MCP_CLT_OP_PAUSE_TRACK;
+        }
+        else if ((p_event_params->CtrlOp == MCP_MEDIA_CTRL_NEXT_TRACK) && (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_MOVE_NEXT_TRACK))
+        {
+          p_conn->CurrentContentCtrlOp &= ~MCP_CLT_OP_MOVE_NEXT_TRACK;
+        }
+        else if ((p_event_params->CtrlOp == MCP_MEDIA_CTRL_PREVIOUS_TRACK) && (p_conn->CurrentContentCtrlOp & MCP_CLT_OP_MOVE_PREVIOUS_TRACK))
+        {
+          p_conn->CurrentContentCtrlOp &= ~MCP_CLT_OP_MOVE_PREVIOUS_TRACK;
+        }
+        /* schedule pending MCP/CCP operation if it exists*/
+        TMAP_SchedulePendingContentControlOp(p_conn);
+      }
       break;
     }
 
@@ -6202,7 +6284,7 @@ static void MCP_MetaEvt_Notification(MCP_Notification_Evt_t *pNotification)
         uint16_t speed_rate = ((uint32_t)(p_event_params->Speed) * 100);
         LOG_INFO_APP("[MP %d] MCP Client receives Playback Speed : %f (%d %) of normal playback speed\n",
                     pNotification->ContentControlID,
-                    p_event_params->Speed,
+                    (uint32_t) p_event_params->Speed,
                     speed_rate);
       UNUSED(speed_rate);
       break;
@@ -6300,10 +6382,16 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
   {
     tBleStatus ret;
     uint16_t PendingContentCtrlOp = pConn->PendingContentCtrlOp;
+    if (PendingContentCtrlOp != 0x0000)
+    {
+      LOG_INFO_APP("Content Control Operation 0x%04X on ConnHandle 0x%04X is pending\n",
+                   PendingContentCtrlOp,
+                   pConn->Acl_Conn_Handle);
+    }
 
 #if (APP_MCP_ROLE_CLIENT_SUPPORT == 1u)
     if ((PendingContentCtrlOp & MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & MCP_CLT_OP_ALL) == 0x0000))
     {
       ret = MCP_CLIENT_ConfigureTrackTitleNotification(pConn->Acl_Conn_Handle,
                                                        pConn->GenericMediaPlayerCCID,
@@ -6321,7 +6409,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
+        pConn->CurrentContentCtrlOp |= MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
         pConn->PendingContentCtrlOp &= ~MCP_CLT_OP_CONFIGURE_TRACK_TITLE_NOTIFICATION;
         LOG_INFO_APP("  Success: MCP_CLIENT_ConfigureTrackTitleNotification with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -6329,7 +6417,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
     }
     if ((PendingContentCtrlOp & MCP_CLT_OP_PLAY_TRACK) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & MCP_CLT_OP_ALL) == 0x0000))
     {
       ret = MCP_CLIENT_PlayTrack(pConn->Acl_Conn_Handle, pConn->GenericMediaPlayerCCID);
       if (ret != BLE_STATUS_SUCCESS)
@@ -6345,7 +6433,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = MCP_CLT_OP_PLAY_TRACK;
+        pConn->CurrentContentCtrlOp |= MCP_CLT_OP_PLAY_TRACK;
         pConn->PendingContentCtrlOp &= ~MCP_CLT_OP_PLAY_TRACK;
         LOG_INFO_APP("  Success: MCP_CLIENT_PlayTrack with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -6353,7 +6441,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
     }
     if ((PendingContentCtrlOp & MCP_CLT_OP_PAUSE_TRACK) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ( (pConn->CurrentContentCtrlOp & MCP_CLT_OP_ALL) == 0x0000))
     {
       ret = MCP_CLIENT_PauseTrack(pConn->Acl_Conn_Handle, pConn->GenericMediaPlayerCCID);
       if (ret != BLE_STATUS_SUCCESS)
@@ -6369,7 +6457,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = MCP_CLT_OP_PAUSE_TRACK;
+        pConn->CurrentContentCtrlOp |= MCP_CLT_OP_PAUSE_TRACK;
         pConn->PendingContentCtrlOp &= ~MCP_CLT_OP_PAUSE_TRACK;
         LOG_INFO_APP("  Success: MCP_CLIENT_PauseTrack with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -6379,7 +6467,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
 #endif /*(APP_MCP_ROLE_CLIENT_SUPPORT == 1u)*/
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
     if ((PendingContentCtrlOp & CCP_CLT_OP_READ_CALL_STATE) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & CCP_CLT_OP_ALL) == 0x0000))
     {
       ret = CCP_CLIENT_ReadCallState(pConn->Acl_Conn_Handle,
                                     pConn->GenericTelephoneBearerCCID);
@@ -6396,7 +6484,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = CCP_CLT_OP_READ_CALL_STATE;
+        pConn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_CALL_STATE;
         pConn->PendingContentCtrlOp &= ~CCP_CLT_OP_READ_CALL_STATE;
         LOG_INFO_APP("  Success: CCP_CLIENT_ReadCallState with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -6404,7 +6492,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
     }
     if ((PendingContentCtrlOp & CCP_CLT_OP_READ_FEATURES_STATUS) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & CCP_CLT_OP_ALL) == 0x0000))
     {
       ret = CCP_CLIENT_ReadFeaturesStatus(pConn->Acl_Conn_Handle,pConn->GenericTelephoneBearerCCID);
       if (ret != BLE_STATUS_SUCCESS)
@@ -6420,7 +6508,7 @@ static void TMAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+        pConn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
         pConn->PendingContentCtrlOp &= ~CCP_CLT_OP_READ_FEATURES_STATUS;
         LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,

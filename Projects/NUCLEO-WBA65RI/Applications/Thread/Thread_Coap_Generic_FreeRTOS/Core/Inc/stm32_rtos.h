@@ -54,7 +54,7 @@ extern "C" {
 #define TASK_PRIO_RCP_SPINEL_RX                 osPriorityNormal
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define TASK_PRIO_BUTTON_Bx                     osPriorityNormal
+#define TASK_PRIO_BUTTON_Bx                     osPriorityNormal3
 
 /* USER CODE END TASK_Priority_Define */
 
@@ -79,7 +79,7 @@ extern "C" {
 #define TASK_STACK_SIZE_PKA                     RTOS_STACK_SIZE_NORMAL
 #define TASK_STACK_SIZE_RCP_SPINEL_RX           RTOS_STACK_SIZE_NORMAL
 /* USER CODE BEGIN TASK_Size_Define */
-#define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 
 /* USER CODE END TASK_Size_Define */
 

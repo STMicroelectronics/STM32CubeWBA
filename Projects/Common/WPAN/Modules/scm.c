@@ -481,6 +481,7 @@ OPTIMIZED void scm_init()
         {
           scm_system_clock_config.pll.pll_mode = PLL_INTEGER_MODE;
         }
+        scm_system_clock_config.pll.are_pll_params_initialized = 1;
 
       break;
   }

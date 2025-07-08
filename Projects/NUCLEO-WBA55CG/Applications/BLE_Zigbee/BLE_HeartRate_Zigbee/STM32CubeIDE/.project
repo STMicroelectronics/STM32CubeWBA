@@ -514,11 +514,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Modules/Nvm/nvm_emul.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Nvm/nvm_emul.c</locationURI>
-		</link>
-		<link>
 			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</locationURI>

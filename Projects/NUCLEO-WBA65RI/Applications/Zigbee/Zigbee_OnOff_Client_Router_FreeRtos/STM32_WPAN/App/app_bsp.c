@@ -70,6 +70,11 @@ typedef struct
 
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
+/* Joystick Sample Management Task related defines */
+#define TASK_STACK_SIZE_JOYSTICK_SAMPLE       TASK_STACK_SIZE_JOYSTICK_x
+#define TASK_PRIO_JOYSTICK_SAMPLE             TASK_PRIO_JOYSTICK_x
+#define TASK_PREEMP_JOYSTICK_SAMPLE           TASK_PREEMP_JOYSTICK_x
+
 /* Push Joystick Up Task related defines */
 #define TASK_STACK_SIZE_JOYSTICK_UP           TASK_STACK_SIZE_JOYSTICK_x
 #define TASK_PRIO_JOYSTICK_UP                 TASK_PRIO_JOYSTICK_x
@@ -95,18 +100,61 @@ typedef struct
 #define TASK_PRIO_JOYSTICK_SELECT             TASK_PRIO_JOYSTICK_x
 #define TASK_PREEMP_JOYSTICK_SELECT           TASK_PREEMP_JOYSTICK_x
 
+/* Push Joystick None Task related defines */
+#define TASK_STACK_SIZE_JOYSTICK_NONE         TASK_STACK_SIZE_JOYSTICK_x
+#define TASK_PRIO_JOYSTICK_NONE               TASK_PRIO_JOYSTICK_x
+#define TASK_PREEMP_JOYSTICK_NONE             TASK_PREEMP_JOYSTICK_x
+
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 #endif /* CFG_BSP_ON_SEQUENCER */
 
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-#define JOYSTICK_PRESS_SAMPLE_MS              (100u)     /* Sample Joystick level rate in milli seconds. */
+#ifdef CFG_BSP_ON_SEQUENCER
+#define JOYSTICK_PRESS_SAMPLE_MS              (100u)    /* Sample Joystick level rate in milli seconds. */
+#define JOYSTICK_LONG_PRESS_THRESHOLD_MS      (500u)    /* Long pression time threshold in milliseconds. */
+#else // CFG_BSP_ON_SEQUENCER
+#define JOYSTICK_PRESS_SAMPLE_MS              (200u)    /* Sample Joystick level rate in milli seconds. */
+#define JOYSTICK_LONG_PRESS_THRESHOLD_MS      (800u)    /* Long pression time threshold in milliseconds. */
+#endif // CFG_BSP_ON_SEQUENCER
+
+#ifndef CFG_JOYSTICK_USE_TYPE
+#define CFG_JOYSTICK_USE_TYPE                 JOYSTICK_USE_AS_BUTTON  /* By Default Joystick used same as Button */
+#endif /* CFG_JOYSTICK_USE_TYPE */
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 /* Private macros ------------------------------------------------------------*/
 
 /* Private constants ---------------------------------------------------------*/
+#if (CFG_JOYSTICK_SUPPORTED == 1)
+  /* The ADC value gives the pad pressed. It's differents in function of DK board
+  WBA55-DK1   WBA65-DK
+  JOY_NONE    JOY_NONE  -> around 3,3V  -> ADC value around 4095.
+  JOY_DOWN    JOY_RIGHT -> around 2.6V  -> ADC value around 3288.
+  JOY_RIGHT   JOY_UP    -> around 2.0V  -> ADC value around 2494.
+  JOY_LEFT    JOY_DOWN  -> around 1.3V  -> ADC value around 1638.
+  JOY_UP      JOY_LEFT  -> around 0.6V  -> ADC value around 831.
+  JOY_SEL     JOY_SEL   -> around 0V    -> ADC value around 0. */
+#ifdef STM32WBA65xx
+const JOYPin_TypeDef eJoystickStateList[] = { JOY_RIGHT, JOY_UP, JOY_DOWN, JOY_LEFT, JOY_SEL };
+#else /* STM32WBA65xx */
+const JOYPin_TypeDef eJoystickStateList[] = { JOY_DOWN, JOY_RIGHT, JOY_LEFT, JOY_UP, JOY_SEL };
+#endif /* STM32WBA65xx */
+#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+
 #ifdef CFG_BSP_ON_FREERTOS
 #if (CFG_JOYSTICK_SUPPORTED == 1)
+/* FreeRtos Joystick Sample stack attributes */
+const osThreadAttr_t JoystickSampleThreadAttributes =
+{
+  .name         = "Joystick Sample Thread",
+  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
+  .cb_mem       = TASK_DEFAULT_CB_MEM,
+  .cb_size      = TASK_DEFAULT_CB_SIZE,
+  .stack_mem    = TASK_DEFAULT_STACK_MEM,
+  .priority     = TASK_PRIO_JOYSTICK_SAMPLE,
+  .stack_size   = TASK_STACK_SIZE_JOYSTICK_SAMPLE
+};
+
 /* FreeRtos Joystick Up stack attributes */
 const osThreadAttr_t JoystickUpThreadAttributes =
 {
@@ -158,13 +206,25 @@ const osThreadAttr_t JoystickLeftThreadAttributes =
 /* FreeRtos Joystick Select stack attributes */
 const osThreadAttr_t JoystickSelectThreadAttributes =
 {
-  .name         = "Joystick Up Thread",
+  .name         = "Joystick Select Thread",
   .attr_bits    = TASK_DEFAULT_ATTR_BITS,
   .cb_mem       = TASK_DEFAULT_CB_MEM,
   .cb_size      = TASK_DEFAULT_CB_SIZE,
   .stack_mem    = TASK_DEFAULT_STACK_MEM,
   .priority     = TASK_PRIO_JOYSTICK_SELECT,
   .stack_size   = TASK_STACK_SIZE_JOYSTICK_SELECT
+};
+
+/* FreeRtos Joystick None stack attributes */
+const osThreadAttr_t JoystickNoneThreadAttributes =
+{
+  .name         = "Joystick None Thread",
+  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
+  .cb_mem       = TASK_DEFAULT_CB_MEM,
+  .cb_size      = TASK_DEFAULT_CB_SIZE,
+  .stack_mem    = TASK_DEFAULT_STACK_MEM,
+  .priority     = TASK_PRIO_JOYSTICK_NONE,
+  .stack_size   = TASK_STACK_SIZE_JOYSTICK_NONE
 };
 
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
@@ -212,12 +272,12 @@ const osThreadAttr_t ButtonB3ThreadAttributes =
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
 #ifdef CFG_BSP_ON_THREADX
-TX_SEMAPHORE         ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
-TX_THREAD            ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
+TX_SEMAPHORE                ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
+static TX_THREAD            ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_FREERTOS
-osSemaphoreId_t      ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
-osThreadId_t         ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
+osSemaphoreId_t             ButtonB1Semaphore, ButtonB2Semaphore, ButtonB3Semaphore;
+static osThreadId_t         ButtonB1Thread, ButtonB2Thread, ButtonB3Thread;
 #endif /* CFG_BSP_ON_FREERTOS */
 #ifdef CFG_BSP_ON_CEB
 static ButtonDesc_t         buttonDesc[BUTTON_NB_MAX] = { { B2, { 0 } , 0, 0 } };
@@ -229,14 +289,18 @@ static ButtonDesc_t         buttonDesc[BUTTON_NB_MAX] = { { B1, { 0 }, 0, 0 } , 
 
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 /* Joystick management */
-static UTIL_TIMER_Object_t  joystickTimer;
+static UTIL_TIMER_Object_t  stJoystickTimer;
+static JOYPin_TypeDef       eJoystickPreviousState = JOY_NONE;
+static uint8_t              cJoystickLongPressed, cJoystickInitialPress;
 #ifdef CFG_BSP_ON_THREADX
-TX_SEMAPHORE         JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore;
-TX_THREAD            JoystickUpThread, JoystickRightThread, JoystickDownThread, JoystickLeftThread, JoystickSelectThread;
+TX_SEMAPHORE                JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore, JoystickNoneSemaphore;
+static TX_SEMAPHORE         JoystickSampleSemaphore;
+static TX_THREAD            JoystickSampleThread, JoystickUpThread, JoystickRightThread, JoystickDownThread, JoystickLeftThread, JoystickSelectThread, JoystickNoneThread;
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_FREERTOS
-osSemaphoreId_t      JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore;
-osThreadId_t         JoystickUpThread, JoystickRightThread, JoystickDownThread, JoystickLeftThread, JoystickSelectThread;
+osSemaphoreId_t             JoystickUpSemaphore, JoystickRightSemaphore, JoystickDownSemaphore, JoystickLeftSemaphore, JoystickSelectSemaphore, JoystickNoneSemaphore;
+static osSemaphoreId_t      JoystickSampleSemaphore;
+static osThreadId_t         JoystickSampleThread, JoystickUpThread, JoystickRightThread, JoystickDownThread, JoystickLeftThread, JoystickSelectThread, JoystickNoneThread;
 #endif /* CFG_BSP_ON_FREERTOS */
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
@@ -246,6 +310,9 @@ osThreadId_t         JoystickUpThread, JoystickRightThread, JoystickDownThread, 
 #if (CFG_BUTTON_SUPPORTED == 1)
 static void Button_TriggerActions         ( void * arg );
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+#if (CFG_JOYSTICK_SUPPORTED == 1)
+static void APP_BSP_JoystickTimerCallback ( void *arg );
+#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
 
 /* External variables --------------------------------------------------------*/
 
@@ -289,11 +356,20 @@ void APP_BSP_PostIdle( void )
   }
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-  if ( JOY_StandbyExitFlag == 1u )
+  /* Treatment of WakeUp Joystick */
+#ifdef STM32WBA65xx
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN5 ) != 0 ) 
   {
-    /* Could reconfigure Joystick here */
-    JOY_StandbyExitFlag = 0;
+    PWR->WUSCR = PWR_WAKEUP_PIN5;
+    APP_BSP_JoystickTimerCallback(NULL);
   }
+#else // STM32WBA65xx
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN3 ) != 0 ) 
+  {
+    PWR->WUSCR = PWR_WAKEUP_PIN3;
+    APP_BSP_JoystickTimerCallback(NULL);
+  }
+#endif // STM32WBA65xx  
 #endif /* CFG_JOYSTICK_SUPPORTED */
 #endif /* (CFG_LPM_STDBY_SUPPORTED != 0) */
 }
@@ -305,19 +381,26 @@ void APP_BSP_StandbyExit( void )
 {
 #if (CFG_LED_SUPPORTED == 1)
   /* Leds Initialization */
+#if defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx)
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_RED);
+#else /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
   BSP_LED_Init(LED_BLUE);
 #ifdef CFG_BSP_ON_NUCLEO
   BSP_LED_Init(LED_GREEN);
   BSP_LED_Init(LED_RED);
 #endif /* CFG_BSP_ON_NUCLEO */
+#endif /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
 #endif /* (CFG_LED_SUPPORTED == 1) */
 
-#if (CFG_BUTTON_SUPPORTED == 1)
+#if (CFG_JOYSTICK_SUPPORTED == 1)
 #ifdef CFG_BSP_ON_DISCOVERY
-  /* Joystick HW Initialization */
-  BSP_JOY_Init( JOY1, JOY_MODE_EXTI, JOY_ALL );
-#endif /* CFG_BSP_ON_DISCOVERY */
+  /* Joystick HW Initialization is not done after Standby */
 
+#endif /* CFG_BSP_ON_DISCOVERY */
+#endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
+  
+#if (CFG_BUTTON_SUPPORTED == 1)
 #ifdef CFG_BSP_ON_CEB
   /* Button HW Initialization */
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
@@ -335,7 +418,7 @@ void APP_BSP_StandbyExit( void )
 #if ( CFG_BUTTON_SUPPORTED == 1 )
 
 /**
- * @brief   Indicate if the selected button was pressedn during a 'long time' or not.
+ * @brief   Indicate if the selected button was pressed during a 'long time' or not.
  *
  * @param   btnIdx    Button to test, listed in enum Button_TypeDef
  * @return  '1' if pressed during a 'long time', else '0'.
@@ -394,6 +477,45 @@ __WEAK void APP_BSP_Button3Action( void )
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )
 
 /**
+ * @brief   In UseCase '1' & '3', indicate if the current Joystick was pressed during a 'long time' or not.
+ *
+ * @return  '1' if pressed during a 'long time', else '0'.
+ */
+uint8_t APP_BSP_JoystickIsLongPressed( void )
+{
+  return cJoystickLongPressed;
+}
+
+
+/**
+ * @brief   In UseCase '1' & '3', indicate if the current Joystick was pressed during a 'Short time' or not.
+ *
+ * @return  '1' if pressed during a 'Short time', else '0'.
+ */
+uint8_t APP_BSP_JoystickIsShortReleased( void )
+{
+  if ( cJoystickLongPressed == 0u )
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+
+/**
+ * @brief   In UseCase '1' & '3', indicate if the current Joystick was just pressed or not.
+ *
+ * @return  '1' if just pressed, else '0'.
+ */
+uint8_t APP_BSP_JoystickIsInitialPress( void )
+{
+  return cJoystickInitialPress;
+}
+
+/**
  * @brief  Action of Joystick UP when pressed, to be implemented by user.
  * @param  None
  * @retval None
@@ -438,6 +560,15 @@ __WEAK void APP_BSP_JoystickSelectAction( void )
 {
 }
 
+/**
+ * @brief  Action of Joystick when Joystick return to NONE after an Action, to be implemented by user.
+ * @param  None
+ * @retval None
+ */
+__WEAK void APP_BSP_JoystickNoneAction( void )
+{
+}
+
 #endif /* ( CFG_JOYSTICK_SUPPORTED == 1 ) */
 
 /*************************************************************
@@ -454,24 +585,16 @@ __WEAK void APP_BSP_JoystickSelectAction( void )
 void APP_BSP_LedInit( void )
 {
   /* Leds Initialization */
-#ifdef CFG_BSP_ON_DISCOVERY
-#ifdef STM32WBA65xx  
+#if defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx)
   BSP_LED_Init(LED_GREEN);
   BSP_LED_Init(LED_RED);
-#else // STM32WBA65xx
+#else /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
   BSP_LED_Init(LED_BLUE);
-#endif // STM32WBA65xx
-#endif // CFG_BSP_ON_DISCOVERY
-  
-#if CFG_BSP_ON_NUCLEO
-  BSP_LED_Init(LED_BLUE);
+#ifdef CFG_BSP_ON_NUCLEO
   BSP_LED_Init(LED_GREEN);
   BSP_LED_Init(LED_RED);
 #endif /* CFG_BSP_ON_NUCLEO */
-  
-#if CFG_BSP_ON_NUCLEO
-  BSP_LED_Init(LED_BLUE);
-#endif // CFG_BSP_ON_CEB
+#endif /* defined(CFG_BSP_ON_DISCOVERY) && defined(STM32WBA65xx) */
 }
 
 #endif /* (CFG_LED_SUPPORTED == 1) */
@@ -540,6 +663,10 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
     case JOY_SEL:
         osSemaphoreRelease( JoystickSelectSemaphore );
         break;
+        
+    case JOY_NONE:
+        osSemaphoreRelease( JoystickNoneSemaphore );
+        break;
 #endif /* CFG_BSP_ON_FREERTOS */
 #ifdef CFG_BSP_ON_THREADX
     case JOY_UP:
@@ -560,6 +687,10 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
 
     case JOY_SEL:
         tx_semaphore_put( &JoystickSelectSemaphore );
+        break;
+
+    case JOY_NONE:
+        tx_semaphore_put( JoystickNoneSemaphore );
         break;
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_SEQUENCER
@@ -582,39 +713,205 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
     case JOY_SEL:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_SELECT, CFG_SEQ_PRIO_0 );
         break;
+        
+    case JOY_NONE:
+        UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_NONE, CFG_SEQ_PRIO_0 );
+        break;
 #endif /* CFG_BSP_ON_SEQUENCER */
+
     default :   /* No Action */
                 break;
   }
 }
 
 /**
+  * @brief  Get Joystick state.
+  * @param  JOY Joystick.
+  *   This parameter can be JOY1
+  * @retval BSP error code if value negative or one of following value:
+  *     @arg JOY_NONE
+  *     @arg JOY_SEL
+  *     @arg JOY_DOWN
+  *     @arg JOY_LEFT
+  *     @arg JOY_RIGHT
+  *     @arg JOY_UP
+  */
+static JOYPin_TypeDef APP_BSP_JoystickGetState( JOY_TypeDef eJoy )
+{
+  JOYPin_TypeDef  eJoyPin;
+  uint16_t        iKeyConvertedValue;
+
+  /* Get the converted value of regular channel */
+  iKeyConvertedValue = HAL_ADC_GetValue( &hjoy_adc[eJoy] );
+
+  /* The ADC value gives the pad pressed. Function of DK*/
+  if ( ( iKeyConvertedValue >= 2800U ) && ( iKeyConvertedValue < 3600U ) )
+  {
+    eJoyPin = eJoystickStateList[0];
+  }
+  else if ( ( iKeyConvertedValue >= 2000U ) && ( iKeyConvertedValue < 2800U ) )
+  {
+    eJoyPin = eJoystickStateList[1];
+  }
+  else if ( ( iKeyConvertedValue >= 1200U ) && ( iKeyConvertedValue < 2000U ) )
+  {
+    eJoyPin = eJoystickStateList[2];
+  }
+  else if ( ( iKeyConvertedValue >= 400U ) && ( iKeyConvertedValue < 1200U ) )
+  {
+    eJoyPin = eJoystickStateList[3];
+  }
+  else if ( iKeyConvertedValue < 400U )
+  {
+    eJoyPin = eJoystickStateList[4];
+  }
+  else
+  {
+    eJoyPin = JOY_NONE;
+  }
+
+  return eJoyPin;
+}
+
+
+/**
+ *
+ */
+static void APP_BSP_JoystickSampleManage( void )
+{
+  JOYPin_TypeDef          eJoystickState;
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
+  static bool             bActionDone = false;
+  static uint32_t         lStartTime = 0;
+#endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
+
+  /* Init, Start, Sample & DeInit Joystick */
+  BSP_JOY_Init( JOY1, JOY_MODE_POLLING, JOY_ALL );
+  
+  HAL_ADC_Start( &hjoy_adc[JOY1] );
+  
+  /* Wait first conversion */
+  if ( HAL_ADC_PollForConversion( &hjoy_adc[JOY1], ( JOYSTICK_PRESS_SAMPLE_MS / 2u ) ) == HAL_OK )
+  {
+    eJoystickState = APP_BSP_JoystickGetState( JOY1 );
+
+    BSP_JOY_DeInit(JOY1, JOY_ALL);
+
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == 3)
+    /* Process Joystick information. */
+    if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState == eJoystickPreviousState ) )
+    {
+      /* Verify if it's a LongTime */
+      if ( bActionDone == false )
+      {
+        lStartTime += JOYSTICK_PRESS_SAMPLE_MS;
+        if ( lStartTime > JOYSTICK_LONG_PRESS_THRESHOLD_MS )
+        {
+          cJoystickLongPressed = 1;
+          bActionDone = true;
+          cJoystickInitialPress = 0;
+          Joystick_LaunchActionTask( eJoystickState );
+        }
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
+        else
+        {
+          if ( cJoystickInitialPress == 0 )
+          {
+            cJoystickInitialPress = 1;
+            Joystick_LaunchActionTask( eJoystickState );
+          }
+        }
+#endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
+      }
+    }
+    else
+    {
+      if ( ( eJoystickState == JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
+      {
+        /* Verify if it's a 'Short Pressed' case */
+        if ( ( lStartTime != 0u ) && ( bActionDone == false ) )
+        {
+          cJoystickInitialPress = 0;
+          Joystick_LaunchActionTask( eJoystickPreviousState );
+        }
+      }
+      else
+      {
+        cJoystickLongPressed = 0;
+        cJoystickInitialPress = 0;
+        bActionDone = false;
+        lStartTime = 0;
+      }
+    }
+#else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
+    /* Process Joystick information. */
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE)
+    if ( eJoystickState != eJoystickPreviousState )
+#else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE) */
+#if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK)
+    if ( eJoystickState != JOY_NONE )
+#else /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK) */
+    if ( ( eJoystickState != JOY_NONE ) && ( eJoystickState != eJoystickPreviousState ) )
+#endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_JOYSTICK) */
+#endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_CHANGE) */
+    {
+      Joystick_LaunchActionTask( eJoystickState );
+    }
+#endif /* (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER) */
+  
+    /* Set State */
+    eJoystickPreviousState = eJoystickState;
+  }
+  else
+  {
+    BSP_JOY_DeInit(JOY1, JOY_ALL);
+  }
+  
+  /* Restart Timer if needed */
+#if (CFG_LPM_STDBY_SUPPORTED != 0)
+  if ( eJoystickState != JOY_NONE )
+  {
+    UTIL_TIMER_Start( &stJoystickTimer );
+  }
+#else /* (CFG_LPM_STDBY_SUPPORTED != 0) */
+  UTIL_TIMER_Start( &stJoystickTimer );
+#endif /* (CFG_LPM_STDBY_SUPPORTED != 0) */
+}
+
+
+/**
  *
  */
 static void APP_BSP_JoystickTimerCallback(void *arg)
 {
-  static int32_t  joystickPreviousState = JOY_NONE;
-  int32_t         joystickState;
-
-  /* Init, Sample & DeInit Joystick */
-  BSP_JOY_Init( JOY1, JOY_MODE_EXTI, JOY_ALL );
-
-  /* Wait first conversion */
-  HAL_ADC_PollForConversion( &hjoy_adc[JOY1], ( JOYSTICK_PRESS_SAMPLE_MS / 2u ) );
-  joystickState = BSP_JOY_GetState( JOY1 );
-
-  BSP_JOY_DeInit(JOY1, JOY_ALL);
-
-  /* Process Joystick information */
-  if ( ( joystickState != JOY_NONE ) && ( joystickState != joystickPreviousState ) )
-  {
-    Joystick_LaunchActionTask( (JOYPin_TypeDef) joystickState );
-  }
-
-  joystickPreviousState = joystickState;
+#ifdef CFG_BSP_ON_SEQUENCER
+  UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_SAMPLE, CFG_SEQ_PRIO_0);
+#endif /* CFG_BSP_ON_SEQUENCER */
+#ifdef CFG_BSP_ON_FREERTOS
+  osSemaphoreRelease( JoystickSampleSemaphore );
+#endif /* CFG_BSP_ON_FREERTOS */
+#ifdef CFG_BSP_ON_THREADX
+  tx_semaphore_put( &JoystickSampleSemaphore );
+#endif /* CFG_BSP_ON_THREADX */
 }
 
 #ifdef CFG_BSP_ON_FREERTOS
+
+/**
+ * @brief  Management of the Joystick Sample task
+ * @param  argument  Not used.
+ * @retval None
+ */
+static void JoystickSampleTask( void * argument )
+{
+  UNUSED( argument );
+
+  for(;;)
+  {
+    osSemaphoreAcquire( JoystickSampleSemaphore, osWaitForever );
+    APP_BSP_JoystickSampleManage();
+  }
+}
 
 /**
  * @brief  Management of the Joystick Up task
@@ -697,10 +994,30 @@ static void JoystickSelectTask( void * argument )
 }
 
 /**
+ * @brief  Management of the Joystick None task
+ * @param  argument  Not used.
+ * @retval None
+ */
+static void JoystickNoneTask( void * argument )
+{
+  UNUSED( argument );
+
+  for(;;)
+  {
+    osSemaphoreAcquire( JoystickNoneSemaphore, osWaitForever );
+    APP_BSP_JoystickNoneAction();
+  }
+}
+
+/**
  * @brief  Initialisation of the Joystick Tasks & Semaphores
  */
 static void Joystick_InitTask( void )
 {
+  /* Register Semaphore & Task for the Joystick Sample Management Semaphore */
+  JoystickSampleSemaphore = osSemaphoreNew( 1, 0, NULL );
+  JoystickSampleThread = osThreadNew( JoystickSampleTask, NULL, &JoystickSampleThreadAttributes );
+  
   /* Register Semaphore & Task for the Joystick Up Semaphore */
   JoystickUpSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickUpThread = osThreadNew( JoystickUpTask, NULL, &JoystickUpThreadAttributes );
@@ -717,19 +1034,23 @@ static void Joystick_InitTask( void )
   JoystickLeftSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickLeftThread = osThreadNew( JoystickLeftTask, NULL, &JoystickLeftThreadAttributes );
 
-  /* Register Semaphore & Task for the Joystick Up Semaphore */
+  /* Register Semaphore & Task for the Joystick Select Semaphore */
   JoystickSelectSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickSelectThread = osThreadNew( JoystickSelectTask, NULL, &JoystickSelectThreadAttributes );
 
-  if ( ( JoystickUpSemaphore == NULL ) || ( JoystickRightSemaphore == NULL ) || ( JoystickDownSemaphore == NULL )
-      || ( JoystickLeftSemaphore == NULL ) || ( JoystickSelectSemaphore == NULL ) )
+  /* Register Semaphore & Task for the Joystick None Semaphore */
+  JoystickNoneSemaphore = osSemaphoreNew( 1, 0, NULL );
+  JoystickNoneThread = osThreadNew( JoystickNoneTask, NULL, &JoystickNoneThreadAttributes );
+
+  if ( ( JoystickSampleSemaphore == NULL ) || ( JoystickUpSemaphore == NULL ) || ( JoystickRightSemaphore == NULL ) || ( JoystickDownSemaphore == NULL )
+      || ( JoystickLeftSemaphore == NULL ) || ( JoystickSelectSemaphore == NULL ) || ( JoystickNoneSemaphore == NULL ) )
   {
     LOG_ERROR_APP( "FreeRtos : Error during creation of Semaphore for Joystick" );
     while(1);
   }
 
-  if ( ( JoystickUpThread == NULL ) || ( JoystickRightThread == NULL ) || ( JoystickDownThread == NULL )
-      || ( JoystickLeftThread == NULL ) || ( JoystickSelectThread == NULL ) )
+  if ( ( JoystickSampleThread == NULL ) || ( JoystickUpThread == NULL ) || ( JoystickRightThread == NULL ) || ( JoystickDownThread == NULL )
+      || ( JoystickLeftThread == NULL ) || ( JoystickSelectThread == NULL ) || ( JoystickNoneThread == NULL ) )
   {
     LOG_ERROR_APP( "FreeRtos : Error during creation of Task for Joystick" );
     while(1);
@@ -738,6 +1059,22 @@ static void Joystick_InitTask( void )
 
 #endif /* CFG_BSP_ON_FREERTOS */
 #ifdef CFG_BSP_ON_THREADX
+
+/**
+ * @brief  Management of the Joystick Sample task
+ * @param  lArgument  Not used.
+ * @retval None
+ */
+static void JoystickSampleTask( ULONG lArgument )
+{
+  UNUSED( lArgument );
+
+  for(;;)
+  {
+    tx_semaphore_get( &JoystickSampleSemaphore, TX_WAIT_FOREVER );
+    APP_BSP_JoystickSampleManage();
+  }
+}
 
 /**
  * @brief  Management of the Joystick Up task
@@ -820,6 +1157,22 @@ static void JoystickSelectTask( ULONG lArgument )
 }
 
 /**
+ * @brief  Management of the Joystick None task
+ * @param  lArgument  Not used.
+ * @retval None
+ */
+static void JoystickNoneTask( ULONG lArgument )
+{
+  UNUSED( lArgument );
+
+  for(;;)
+  {
+    tx_semaphore_get( &JoystickNoneSemaphore, TX_WAIT_FOREVER );
+    APP_BSP_JoystickNoneAction();
+  }
+}
+
+/**
  * @brief  Initialisation of the Joystick Tasks & Semaphores
  */
 static void Joystick_InitTask( void )
@@ -827,6 +1180,16 @@ static void Joystick_InitTask( void )
   UINT    ThreadXStatus;
   CHAR    *pStack;
 
+  /* Register Semaphore to launch the Joystick Sample Task */
+  ThreadXStatus = tx_semaphore_create( &JoystickSampleSemaphore, "JoystickSample Semaphore", 0 );
+  ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_SAMPLE, TX_NO_WAIT);
+  if ( ThreadXStatus == TX_SUCCESS )
+  {
+    ThreadXStatus = tx_thread_create( &JoystickSampleThread, "JoystickSample Thread", JoystickSampleTask, 0, pStack,
+                                      TASK_STACK_SIZE_JOYSTICK_SAMPLE, TASK_PRIO_JOYSTICK_SAMPLE, TASK_PREEMP_JOYSTICK_SAMPLE,
+                                      TX_NO_TIME_SLICE, TX_AUTO_START );
+  }
+  
   /* Register Semaphore to launch the Joystick Up Task */
   ThreadXStatus = tx_semaphore_create( &JoystickUpSemaphore, "JoystickUp Semaphore", 0 );
   ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_UP, TX_NO_WAIT);
@@ -876,10 +1239,10 @@ static void Joystick_InitTask( void )
     }
   }
 
-    /* Register Semaphore to launch the Joystick Select Task */
+  /* Register Semaphore to launch the Joystick Select Task */
   if ( ThreadXStatus == TX_SUCCESS )
   {
-    ThreadXStatus = tx_semaphore_create( &JoystickLeftSemaphore, "JoystickSelect Semaphore", 0 );
+    ThreadXStatus = tx_semaphore_create( &JoystickSelectSemaphore, "JoystickSelect Semaphore", 0 );
     ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_SELECT, TX_NO_WAIT);
     if ( ThreadXStatus == TX_SUCCESS )
     {
@@ -889,6 +1252,19 @@ static void Joystick_InitTask( void )
     }
   }
 
+  /* Register Semaphore to launch the Joystick None Task */
+  if ( ThreadXStatus == TX_SUCCESS )
+  {
+    ThreadXStatus = tx_semaphore_create( &JoystickNoneSemaphore, "JoystickSNone Semaphore", 0 );
+    ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_NONE, TX_NO_WAIT);
+    if ( ThreadXStatus == TX_SUCCESS )
+    {
+      ThreadXStatus = tx_thread_create( &JoystickNoneThread, "JoystickNone Thread", JoystickNoneTask, 0, pStack,
+                                        TASK_STACK_SIZE_JOYSTICK_NONE, TASK_PRIO_JOYSTICK_NONE, TASK_PREEMP_JOYSTICK_NONE,
+                                        TX_NO_TIME_SLICE, TX_AUTO_START );
+    }
+  }
+  
   /* Verify if it's OK */
   if ( ThreadXStatus != TX_SUCCESS )
   {
@@ -905,12 +1281,16 @@ static void Joystick_InitTask( void )
  */
 static void Joystick_InitTask( void)
 {
+  /* Stask to Sample management */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_SAMPLE, UTIL_SEQ_RFU, APP_BSP_JoystickSampleManage );
+  
   /* Task associated with Joystick */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_UP, UTIL_SEQ_RFU, APP_BSP_JoystickUpAction );
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_RIGHT, UTIL_SEQ_RFU, APP_BSP_JoystickRightAction );
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_DOWN, UTIL_SEQ_RFU, APP_BSP_JoystickDownAction );
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_LEFT, UTIL_SEQ_RFU, APP_BSP_JoystickLeftAction );
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_SELECT, UTIL_SEQ_RFU, APP_BSP_JoystickSelectAction );
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_NONE, UTIL_SEQ_RFU, APP_BSP_JoystickNoneAction );
 }
 
 #endif /* CFG_BSP_ON_SEQUENCER */
@@ -922,13 +1302,21 @@ void APP_BSP_JoystickInit( void )
 {
   /* Button task initialisation */
   Joystick_InitTask();
+  cJoystickLongPressed = 0;
+  cJoystickInitialPress = 0;
 
+#if (CFG_LPM_STDBY_SUPPORTED != 0)
   /* StandBy WakeUp via Joystick */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_HIGH_1);              /* JOY-PA1. */
+#ifdef STM32WBA65xx
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_1);     /* JOY-PA3 */
+#else // STM32WBA65xx
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);     /* JOY-PA1. */
+#endif // STM32WBA65xx  
+#endif /* (CFG_LPM_STDBY_SUPPORTED != 0) */
 
   /* Create periodic timer for joystick position reading */
-  UTIL_TIMER_Create(&joystickTimer, JOYSTICK_PRESS_SAMPLE_MS, UTIL_TIMER_PERIODIC, &APP_BSP_JoystickTimerCallback, 0);
-  UTIL_TIMER_Start(&joystickTimer);
+  UTIL_TIMER_Create( &stJoystickTimer, JOYSTICK_PRESS_SAMPLE_MS, UTIL_TIMER_ONESHOT, &APP_BSP_JoystickTimerCallback, 0 );
+  UTIL_TIMER_Start( &stJoystickTimer );
 }
 
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
@@ -1151,13 +1539,22 @@ void APP_BSP_ButtonInit( void )
   BSP_PB_Init( B1, BUTTON_MODE_EXTI );
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
   BSP_PB_Init( B3, BUTTON_MODE_EXTI );
+
+#if (CFG_LPM_STDBY_SUPPORTED != 0)
+  /* StandBy WakeUp via buttons */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);   /* WakeUp on B1 - GPIO PC13. */
+#ifdef STM32WBA65xx
+  SET_BIT(PWR->IORETENRC, ( B1_PIN | B2_PIN ) );    /* Retention for B1 & B2 */       
+  SET_BIT(PWR->IORETENRB, B3_PIN);                  /* Retention for B3 */
+#else /* STM32WBA65xx */
+  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */       
+  SET_BIT(PWR->IORETENRB, ( B2_PIN | B3_PIN ) );    /* Retention for B2 & B3 */
+#endif /* STM32WBA65xx  */
+#endif /* (CFG_LPM_STDBY_SUPPORTED != 0)   */
 #endif /* CFG_BSP_ON_NUCLEO */
 
   /* Button task initialisation */
   Button_InitTask();
-
-  /* StandBy WakeUp via buttons */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);              /* GPIO PC13. */
 
   /* Button timers initialisation (one for each button) */
 #ifdef CFG_BSP_ON_CEB

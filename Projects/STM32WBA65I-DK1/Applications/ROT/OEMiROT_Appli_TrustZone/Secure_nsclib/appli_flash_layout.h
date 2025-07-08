@@ -19,7 +19,7 @@
 #ifndef __APPLI_FLASH_LAYOUT_H__
 #define __APPLI_FLASH_LAYOUT_H__
 
-/********** Flash layout configuration : begin **********/
+/********** Application Flash layout configuration : begin **********/
 
 #define S_HEAP_SIZE                    0x0000200  /* EWARM / MDK-ARM / STM32CubeIDE */
 #define S_C_STACK_SIZE                 0x0000400  /* EWARM / STM32CubeIDE */
@@ -36,17 +36,18 @@
 
 #define PARTITION_RESERVED             0x1C00
 
-/********** Flash layout configuration : end **********/
+/********** Application Flash layout configuration : end **********/
+
 
 /********** All define are updated automatically from ROT_BOOT project : begin **********/
 
-/*#define OEMUROT_ENABLE*/                         /* Defined: the project is used for OEMuRoT boot stage
+/*#define OEMUROT_ENABLE*/                      /* Defined: the project is used for OEMuRoT boot stage
                                                   Undefined: the project is used for OEMiRoT boot stage */
 
-#define MCUBOOT_OVERWRITE_ONLY                 /* Defined: the FW installation uses overwrite method.
-                                                  UnDefined: The FW installation uses swap mode. */
+#define MCUBOOT_OVERWRITE_ONLY                  /* Defined: the FW installation uses overwrite method.
+                                                   UnDefined: The FW installation uses swap mode. */
 
-/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/          /* Defined: External OSPI flash used for all secondary slots.
+/*#define OEMIROT_EXTERNAL_FLASH_ENABLE*/       /* Defined: External OSPI flash used for all secondary slots.
                                                   Undefined: External OSPI flash not used. */
 
 #define MCUBOOT_APP_IMAGE_NUMBER       0x2      /* 1: S and NS application binaries are assembled in one single image.
@@ -58,21 +59,21 @@
 #define MCUBOOT_NS_DATA_IMAGE_NUMBER   0x0      /* 1: NS data image for NS application.
                                                    0: No NS data image. */
 
-#define FLASH_AREA_0_OFFSET            0x18000 /* Secure app image primary slot offset */
+#define FLASH_AREA_0_OFFSET            0x18000  /* Secure app image primary slot offset */
 
 #define FLASH_AREA_0_SIZE              0x8000   /* Secure app image primary slot size */
 
 #define FLASH_AREA_1_OFFSET            0x20000  /* Non-secure app image primary slot offset */
 
-#define FLASH_AREA_1_SIZE              0x32000   /* Non-secure app image primary slot size */
+#define FLASH_AREA_1_SIZE              0x32000  /* Non-secure app image primary slot size */
 
 #define FLASH_AREA_2_OFFSET            0x52000  /* Secure app image secondary slot */
 
 #define FLASH_AREA_2_SIZE              0x8000   /* Secure app image secondary slot size */
 
-#define FLASH_AREA_3_OFFSET            0x5A000 /* Non-secure app image secondary slot offset */
+#define FLASH_AREA_3_OFFSET            0x5A000  /* Non-secure app image secondary slot offset */
 
-#define FLASH_AREA_3_SIZE              0x32000   /* Non-secure app image secondary slot size */
+#define FLASH_AREA_3_SIZE              0x32000  /* Non-secure app image secondary slot size */
 
 #define FLASH_AREA_4_OFFSET            0x0 /* Secure data image primary slot offset */
 
@@ -100,7 +101,7 @@
 
 #define FLASH_NS_DATA_PARTITION_SIZE   0x0   /* non secure data partition size */
 
-#define FLASH_B_SIZE                   0x100000   /* flash bank size: 1 MBytes */
+#define FLASH_B_SIZE                   0x100000   /* flash bank size: 1 MBytes*/
 
 #define OEMIROT_AREA_0_OFFSET          0x0   /* Secure app image primary slot for OEMuRoT boot stage */
 
@@ -139,49 +140,20 @@
 #define NS_DATA_IMAGE_SECONDARY_PARTITION_OFFSET (FLASH_AREA_7_OFFSET)
 #endif /* MCUBOOT_NS_DATA_IMAGE_NUMBER == 1 */
 
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define LOADER_FLASH_DEV_NAME             Driver_SPI_FLASH0
-#else
-#define LOADER_FLASH_DEV_NAME             Driver_FLASH0
-#endif  /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define SPI_FLASH_DEV_NAME        Driver_SPI_FLASH0
-#endif /* OEMIROT_EXTERNAL_FLASH_ENABLE */
-#define FLASH_DEV_NAME             Driver_FLASH0
-
-/* Flash device name
- * Name is defined in flash driver file: low_level_flash.c
+/*
+ * Flash device name
  */
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2)
-/* Flash Driver Used to Confirm Secure App Image */
+#define FLASH_DEV_NAME                             Driver_FLASH0
 #if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_SPI_FLASH0
-#else
-#define  FLASH_PRIMARY_SECURE_DEV_NAME             Driver_FLASH0
+#define SPI_FLASH_DEV_NAME                         Driver_SPI_FLASH0
 #endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_APP_IMAGE_NUMBER == 2) */
-/* Flash Driver Used to Confirm NonSecure App Image or MCUBOOT_APP_IMAGE_NUMBER = 1 */
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_NONSECURE_DEV_NAME          Driver_SPI_FLASH0
-#else
-#define  FLASH_PRIMARY_NONSECURE_DEV_NAME          Driver_FLASH0
-#endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
-/* Flash Driver Used to Confirm Secure Data Image */
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_SPI_FLASH0
-#else
-#define  FLASH_PRIMARY_DATA_SECURE_DEV_NAME        Driver_FLASH0
-#endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
-#if !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_NS_DATA_IMAGE_NUMBER == 1)
-/* Flash Driver Used to Confirm NonSecure Data Image */
-#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
-#define  FLASH_PRIMARY_DATA_NONSECURE_DEV_NAME     Driver_SPI_FLASH0
-#else
-#define  FLASH_PRIMARY_DATA_NONSECURE_DEV_NAME     Driver_FLASH0
-#endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
-#endif /* !defined(MCUBOOT_OVERWRITE_ONLY) && (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 
-#endif  /* __APPLI_FLASH_LAYOUT_H__  */
+#define FLASH_PRIMARY_DEV_NAME                     FLASH_DEV_NAME
+
+#if  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)
+#define FLASH_SECONDARY_DEV_NAME                   SPI_FLASH_DEV_NAME
+#else
+#define FLASH_SECONDARY_DEV_NAME                   FLASH_DEV_NAME
+#endif /*  defined(OEMIROT_EXTERNAL_FLASH_ENABLE)  */
+
+#endif /* __APPLI_FLASH_LAYOUT_H__ */

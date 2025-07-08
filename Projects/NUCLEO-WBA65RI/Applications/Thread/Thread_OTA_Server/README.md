@@ -8,15 +8,15 @@ Connectivity, 802.15.4 protocol, Thread, OTA, COAP
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA55xx devices.  
+* This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA65CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 
 ### __How to use it?__
 
 In order to make the program work, you must do the following:  
  
-- Connect 2 STM32WBA55xx_Nucleo boards to your PC 
+- Connect 2 STM32WBA65xx_Nucleo boards to your PC 
 - Open your preferred toolchain 
 - Rebuild all files and load your image into target memory
 - Run the application   
@@ -43,14 +43,12 @@ Thread_OTA_Server can communicate Thread_OTA_Client for the FUOTA procedure and 
 for requesting the application to reset and give the control to Thread_OTA_Client .
 
 IMPORTANT PREREQUISITES:
-On Thread_OTA_Server a binary image has to be loaded at @0x08080000 before starting the process.
+On Thread_OTA_Server a binary image has to be loaded at @0x08100000 before starting the process.
 It can be FW application example (compatible with Ota settings, see Thread_Coap_Generic_Ota for details).
 
 - press the SW1 Push-Button on Thread_OTA_Server to send a **COAP command (Confirmable) "FUOTA_PROVISIONING" ** from Thread_OTA_Server to Thread_OTA_CLient .  
 if Thread_OTA_CLient confirm the message the Thread_OTA_Server will start the FUOTA procedure.
 
-- press the SW3 Push-Button on boad Thread_OTA_Server to send a **COAP command (Confirmable) "FUOTA_REBOOT"** from Thread_OTA_Server to Thread_Coap_Generic_Ota .  
-The board Thread_Coap_Generic_Ota  will receive COAP commands and send to board A a **Coap Data response** then reset and give the control to Thread_OTA_Client.
 
 
 

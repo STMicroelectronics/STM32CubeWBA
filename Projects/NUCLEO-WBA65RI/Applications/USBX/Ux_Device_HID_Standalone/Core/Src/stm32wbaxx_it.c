@@ -213,7 +213,7 @@ void EXTI13_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles USB OTG_HS Device global interrupt.
+  * @brief This function handles USB OTG_HS global interrupt.
   */
 void USB_OTG_HS_IRQHandler(void)
 {

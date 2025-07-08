@@ -38,3 +38,11 @@
 	path = Drivers/BSP/Components/wm8904
 	url = https://github.com/STMicroelectronics/stm32-wm8904
 	branch = main
+[submodule "b-wba5m-wpan-bsp"]
+	path = b-wba5m-wpan-bsp
+	url = https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/
+	branch = main
+[submodule "Drivers/BSP/B-WBA5M-WPAN"]
+	path = Drivers/BSP/B-WBA5M-WPAN
+	url = https://github.com/STMicroelectronics/b-wba5m-wpan-bsp
+	branch = main

@@ -21,7 +21,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "app_common.h"
-#include "ble.h"
+#include "log_module.h"
+#include "ble_core.h"
+#include "uuid.h"
+#include "svc_ctl.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -31,19 +34,14 @@
 #include "stm_list.h"
 #include "advanced_memory_manager.h"
 #include "blestack.h"
-#include "nvm.h"
 #include "simple_nvm_arbiter.h"
 #include "hrs.h"
 #include "hrs_app.h"
 #include "dis.h"
 #include "dis_app.h"
-#include "cmsis_os2.h"
-#include "log_module.h"
-#if (BLE_RADIO_ACTIVITY_ON_LED_SUPPORT != 0)  
-#include "stm32wbaxx_nucleo.h"
-#endif
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_freertos.h"
 #include "app_bsp.h"
 /* USER CODE END Includes */
 
@@ -99,7 +97,7 @@ typedef struct
    * processing
    */
   uint8_t initiateSecurity;
-  /* USER CODE BEGIN tSecurityParams*/
+  /* USER CODE BEGIN tSecurityParams */
 
   /* USER CODE END tSecurityParams */
 }SecurityParams_t;
@@ -157,7 +155,7 @@ typedef struct
                                    + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 #define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT))
+        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, CFG_BLE_EATT_BEARER_MAX))
 
 /* USER CODE BEGIN PD */
 #define ADV_TIMEOUT_MS                 (60 * 1000)
@@ -206,14 +204,16 @@ uint8_t a_AdvData[27] =
   3, AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST, 0x0D, 0x18,
   15, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */, 0x00 /*  */,
 };
-uint64_t buffer_nvm[CFG_BLEPLAT_NVM_MAX_SIZE] = {0};
 
 static AMM_VirtualMemoryCallbackFunction_t APP_BLE_ResumeFlowProcessCb;
 
 /* Host stack init variables */
-static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 static BleStack_init_t pInitParams;
+
+/* Host stack buffers */
+static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
+static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 /* BLE_STACK_TASK related resources */
 osSemaphoreId_t         BleStackSemaphore;
@@ -250,15 +250,15 @@ const osThreadAttr_t stHCIasyncEvtTaskAttributes = {
 /* USER CODE END GV */
 
 /* Private function prototypes -----------------------------------------------*/
+static uint8_t HOST_BLE_Init(void);
 static void BleStack_Process_BG(void);
 static void Ble_UserEvtRx(void);
 static void BLE_ResumeFlowProcessCallback(void);
+static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress(void);
 static void gap_cmd_resp_wait(void);
 static void gap_cmd_resp_release(void);
-static void BLE_NvmCallback (SNVMA_Callback_Status_t);
-static uint8_t HOST_BLE_Init(void);
 static void BleUserEvtRx_Task_Entry(void* thread_input);
 static void BleStack_Task_Entry(void* thread_input);
 /* USER CODE BEGIN PFP */
@@ -315,25 +315,19 @@ void APP_BLE_Init(void)
     Error_Handler();
   }
 
-  /* NVM emulation in RAM initialization */
-  NVM_Init(buffer_nvm, 0, CFG_BLEPLAT_NVM_MAX_SIZE);
+  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
+  host_nvm_buffer[0] = 0;
 
-  /* First register the APP BLE buffer */
-  SNVMA_Register (APP_BLE_NvmBuffer,
-                  (uint32_t *)buffer_nvm,
-                  (CFG_BLEPLAT_NVM_MAX_SIZE * 2));
+  /* Register A NVM buffer for BLE Host stack */
+  SNVMA_Register(APP_BLE_NvmBuffer,
+                  (uint32_t *)host_nvm_buffer,
+                  (CFG_BLE_NVM_SIZE_MAX * 2));
 
   /* Realize a restore */
   SNVMA_Restore (APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
-
-  /* Check consistency */
-  if (NVM_Get (NVM_FIRST, 0xFF, 0, 0, 0) != NVM_EOF)
-  {
-    NVM_Discard (NVM_ALL);
-  }
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -471,7 +465,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           p_conn_update_complete = (hci_le_connection_update_complete_event_rp0 *) p_meta_evt->data;
           conn_interval_us = p_conn_update_complete->Conn_Interval * 1250;
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_UPDATE_COMPLETE_SUBEVT_CODE\n");
-          LOG_INFO_APP("     - Connection Interval:   %d.%02d ms\n     - Connection latency:    %d\n     - Supervision Timeout:   %d ms\n",
+          LOG_INFO_APP("     - Connection Interval:   %d.%02d ms\n     - Connection latency:    %d\n     - Supervision Timeout:   %d ms\n     - Status:                0x%02X\n",
                        conn_interval_us / 1000,
                        (conn_interval_us%1000) / 10,
                        p_conn_update_complete->Conn_Latency,
@@ -1033,12 +1027,15 @@ void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId)
   return;
 }
 
+void APP_BLE_HostNvmStore(void)
+{
+  /* Start SNVMA write procedure */
+  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+}
 /* USER CODE BEGIN FD*/
 void APP_BLE_AdvStart(void)
 {
-  osMutexAcquire(LinkLayerMutex, osWaitForever);
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-  osMutexRelease(LinkLayerMutex);
   
   osTimerStart(advLowPowerTimerHandle, pdMS_TO_TICKS(ADV_TIMEOUT_MS));
 }
@@ -1047,19 +1044,15 @@ void APP_BLE_AdvLowPower(void)
 {
   osTimerStop(advLowPowerTimerHandle);
   
-  osMutexAcquire(LinkLayerMutex, osWaitForever);
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_LP);
-  osMutexRelease(LinkLayerMutex);
 }
 
 void APP_BLE_AdvStop(void)
 {
   osTimerStop(advLowPowerTimerHandle);
   
-  osMutexAcquire(LinkLayerMutex, osWaitForever);
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
-  osMutexRelease(LinkLayerMutex);
   
   osTimerStart(advLowPowerTimerHandle, pdMS_TO_TICKS(ADV_TIMEOUT_MS));
 }
@@ -1082,12 +1075,16 @@ uint8_t HOST_BLE_Init(void)
   pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
   pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
   pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
+  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_MAX;
   pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
   pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
-  pInitParams.bleStartRamAddress      = (uint8_t*)buffer;
+  pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
+  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
+  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -1424,82 +1421,12 @@ static void BLE_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
   if (CbkStatus != SNVMA_OPERATION_COMPLETE)
   {
     /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer,
-                 BLE_NvmCallback);
+    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
   }
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
 
-static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p_bd_addr)
-{
-  uint16_t i =0;
-  uint8_t bd_addr_1, bd_addr_0;
-  uint8_t ad_length, ad_type;  
-  
-  while(i < tab_size)
-  {
-    ad_length = p_adv_data[i];
-    ad_type = p_adv_data[i + 1];
-      
-    switch (ad_type)
-    {
-    case AD_TYPE_FLAGS:
-      break;
-    case AD_TYPE_TX_POWER_LEVEL:
-      break;
-    case AD_TYPE_COMPLETE_LOCAL_NAME:
-      {
-        if((p_adv_data[i + ad_length] == 'X') && (p_adv_data[i + ad_length - 1] == 'X'))
-        {
-          bd_addr_1 = ((p_bd_addr[0] & 0xF0)>>4);
-          bd_addr_0 = (p_bd_addr[0] & 0xF);
-          
-          /* Convert hex value into ascii */
-          if(bd_addr_1 > 0x09)
-          {
-            p_adv_data[i + ad_length - 1] = bd_addr_1 + '7';
-          }
-          else
-          {
-            p_adv_data[i + ad_length - 1] = bd_addr_1 + '0';
-          }
-          
-          if(bd_addr_0 > 0x09)
-          {
-            p_adv_data[i + ad_length] = bd_addr_0 + '7';
-          }
-          else
-          {
-            p_adv_data[i + ad_length] = bd_addr_0 + '0';
-          }
-        }
-        break;
-      }
-    case AD_TYPE_MANUFACTURER_SPECIFIC_DATA:
-      {
-        p_adv_data[i+2] = ST_MANUF_ID;
-        p_adv_data[i+3] = 0x00;
-        p_adv_data[i+4] = BLUESTSDK_V2; /* blueST SDK version */
-        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA; /* Board ID */
-        p_adv_data[i+6] = FW_ID_HEART_RATE; /* FW ID */
-        p_adv_data[i+7] = 0x00; /* FW data 1 */
-        p_adv_data[i+8] = 0x00; /* FW data 2 */
-        p_adv_data[i+9] = 0x00; /* FW data 3 */
-        p_adv_data[i+10] = p_bd_addr[5]; /* MSB BD address */
-        p_adv_data[i+11] = p_bd_addr[4];
-        p_adv_data[i+12] = p_bd_addr[3];
-        p_adv_data[i+13] = p_bd_addr[2];
-        p_adv_data[i+14] = p_bd_addr[1];
-        p_adv_data[i+15] = p_bd_addr[0]; /* LSB BD address */
-        break;
-      }
-    default:
-      break;
-    }
-    i += ad_length + 1; /* increment the iterator to go on next element*/
-  }
-}
 /* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************
@@ -1575,15 +1502,6 @@ static void BleStack_Task_Entry(void* argument)
   }
 }
 
-void NVMCB_Store( const uint32_t* ptr, uint32_t size )
-{
-  UNUSED(ptr);
-  UNUSED(size);
-
-  /* Call SNVMA for storing - Without callback */
-  SNVMA_Write (APP_BLE_NvmBuffer,
-               BLE_NvmCallback);
-}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 
@@ -1595,4 +1513,78 @@ static void Switch_OFF_Led(void *arg)
 }
 #endif
 
+static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p_bd_addr)
+{
+  uint16_t i =0;
+  uint8_t bd_addr_1, bd_addr_0;
+  uint8_t ad_length, ad_type;
+
+  while(i < tab_size)
+  {
+    ad_length = p_adv_data[i];
+    ad_type = p_adv_data[i + 1];
+
+    if( (i + ad_length) >= tab_size )
+    {
+      break;
+    }
+
+    switch (ad_type)
+    {
+    case AD_TYPE_FLAGS:
+      break;
+    case AD_TYPE_TX_POWER_LEVEL:
+      break;
+    case AD_TYPE_COMPLETE_LOCAL_NAME:
+      {
+        if((p_adv_data[i + ad_length] == 'X') && (p_adv_data[i + ad_length - 1] == 'X'))
+        {
+          bd_addr_1 = ((p_bd_addr[0] & 0xF0)>>4);
+          bd_addr_0 = (p_bd_addr[0] & 0xF);
+
+          /* Convert hex value into ascii */
+          if(bd_addr_1 > 0x09)
+          {
+            p_adv_data[i + ad_length - 1] = bd_addr_1 + '7';
+          }
+          else
+          {
+            p_adv_data[i + ad_length - 1] = bd_addr_1 + '0';
+          }
+
+          if(bd_addr_0 > 0x09)
+          {
+            p_adv_data[i + ad_length] = bd_addr_0 + '7';
+          }
+          else
+          {
+            p_adv_data[i + ad_length] = bd_addr_0 + '0';
+          }
+        }
+        break;
+      }
+    case AD_TYPE_MANUFACTURER_SPECIFIC_DATA:
+      {
+        p_adv_data[i+2] = ST_MANUF_ID;
+        p_adv_data[i+3] = 0x00;
+        p_adv_data[i+4] = BLUESTSDK_V2; /* blueST SDK version */
+        p_adv_data[i+5] = BOARD_ID_NUCLEO_WBA6X; /* Board ID */
+        p_adv_data[i+6] = FW_ID_HEART_RATE; /* FW ID */
+        p_adv_data[i+7] = 0x00; /* FW data 1 */
+        p_adv_data[i+8] = 0x00; /* FW data 2 */
+        p_adv_data[i+9] = 0x00; /* FW data 3 */
+        p_adv_data[i+10] = p_bd_addr[5]; /* MSB BD address */
+        p_adv_data[i+11] = p_bd_addr[4];
+        p_adv_data[i+12] = p_bd_addr[3];
+        p_adv_data[i+13] = p_bd_addr[2];
+        p_adv_data[i+14] = p_bd_addr[1];
+        p_adv_data[i+15] = p_bd_addr[0]; /* LSB BD address */
+        break;
+      }
+    default:
+      break;
+    }
+    i += ad_length + 1; /* increment the iterator to go on next element*/
+  }
+}
 /* USER CODE END FD_WRAP_FUNCTIONS */

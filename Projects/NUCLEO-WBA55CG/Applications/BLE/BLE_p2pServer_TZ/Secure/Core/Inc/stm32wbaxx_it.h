@@ -59,7 +59,6 @@ void SysTick_Handler(void);
 void GTZC_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

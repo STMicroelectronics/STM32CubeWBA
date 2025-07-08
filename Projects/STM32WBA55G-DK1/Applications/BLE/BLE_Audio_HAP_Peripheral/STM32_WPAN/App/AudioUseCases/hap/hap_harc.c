@@ -36,14 +36,15 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
-static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t ErrorCode);
+static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode);
 static void HAP_HARC_Receive_HAPresetControlPoint(HAP_HARC_Inst_t *pHARC_Inst, uint8_t *pData, uint8_t DataLen);
 static void HAP_HARC_Post_Linkup_Event(HAP_HARC_Inst_t *pHARC_Inst, tBleStatus const Status);
 tBleStatus HAP_HARC_Check_HAS_Service(HAP_HARC_Inst_t *pHARC_Inst);
 static HAP_HARC_Inst_t *HAP_HARC_GetAvailableInstance(void);
-static HAP_HARC_Inst_t *HAP_HARC_GetInstance(uint16_t ConnHandle);
+static HAP_HARC_Inst_t *HAP_HARC_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer);
 static void HAP_HARC_InitInstance(HAP_HARC_Inst_t *pHARC_Inst);
 HAP_HARC_Inst_t *HAP_HARC_GetOtherMember(HAP_HARC_Inst_t *pInst);
+static tBleStatus HAP_HARC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
 #endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */
 /* External functions prototype------------------------------------------------*/
 
@@ -80,23 +81,49 @@ tBleStatus HAP_HARC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
 {
   tBleStatus    hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
-  HAP_HARC_Inst_t  *p_hap_inst;
+  HAP_HARC_Inst_t       *p_hap_inst;
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  uint16_t              conn_handle = 0;
+  uint8_t               channel_index;
 
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
     BLE_DBG_HAP_HARC_MSG("Start HAP Link Up procedure on ACL Connection Handle 0x%04X\n", ConnHandle);
-    /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
-    if (p_hap_inst == 0)
+
+    if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
     {
-      /*Get an available HAP Client Instance*/
-      p_hap_inst = HAP_HARC_GetAvailableInstance();
-      if (p_hap_inst != 0)
+      if (LinkupMode == HAP_LINKUP_MODE_COMPLETE)
       {
-        const UseCaseConnInfo_t *pConnInfo;
-        if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &pConnInfo) == BLE_STATUS_SUCCESS)
+        conn_handle = p_conn_info->Connection_Handle;
+        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(conn_handle) > 0)
         {
-          p_hap_inst->pConnInfo = pConnInfo;
+          if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(conn_handle,&channel_index) == BLE_STATUS_SUCCESS)
+          {
+            conn_handle = (0xEA << 8) | (channel_index);
+          }
+          else
+          {
+            BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+            return BLE_STATUS_BUSY;
+          }
+        }
+        else if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_conn_info->Connection_Handle,0) == BLE_STATUS_SUCCESS)
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because ATT Bearer already used\n");
+          return BLE_STATUS_BUSY;
+        }
+      }
+
+      /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
+      p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
+      if (p_hap_inst == 0)
+      {
+        /*Get an available HAP Client Instance*/
+        p_hap_inst = HAP_HARC_GetAvailableInstance();
+        if (p_hap_inst != 0)
+        {
+          p_hap_inst->pConnInfo = p_conn_info;
           /*Check that HAP LinkUp process is not already started*/
           if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_IDLE)
           {
@@ -105,11 +132,22 @@ tBleStatus HAP_HARC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
             if (p_hap_inst->LinkupMode == HAP_LINKUP_MODE_COMPLETE)
             {
               /* First step of Link Up process : find the HAS in the remote GATT Database*/
-              hciCmdResult = aci_gatt_disc_all_primary_services(p_hap_inst->pConnInfo->Connection_Handle);
-              BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_primary_services() returns status 0x%x\n", hciCmdResult);
+              hciCmdResult = aci_gatt_disc_all_primary_services(conn_handle);
+              BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_primary_services() on ConnHandle 0x%04X returns status 0x%x\n",
+                             conn_handle,
+                             hciCmdResult);
               if (hciCmdResult == BLE_STATUS_SUCCESS)
               {
-                p_hap_inst->AttProcStarted = 1u;
+                /*Register the ATT procedure*/
+                if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+                {
+                  BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                }
+                else
+                {
+                  BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                           HAP_HARC_ATT_PROCEDURE_ID);
+                }
                 /*Start Hearing Access Service Linkup*/
                 p_hap_inst->LinkupState = HAP_HARC_LINKUP_DISC_SERVICE;
               }
@@ -144,29 +182,29 @@ tBleStatus HAP_HARC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode)
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("Did not find related Connection Info Structure\n");
+          BLE_DBG_HAP_HARC_MSG("No resource to use a HAP Client Instance\n");
           hciCmdResult = BLE_STATUS_FAILED;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("No resource to use a HAP Client Instance\n");
-        hciCmdResult = BLE_STATUS_FAILED;
+        BLE_DBG_HAP_HARC_MSG("HAP Client Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
+        if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
+        {
+          /*HAP Link Up is already performed*/
+          hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
+        }
+        else
+        {
+          /* HAP Link Up process is already in progress*/
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("HAP Client Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
-      if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
-      {
-        /*HAP Link Up is already performed*/
-        hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
-      }
-      else
-      {
-        /* HAP Link Up process is already in progress*/
-        hciCmdResult = BLE_STATUS_BUSY;
-      }
+      BLE_DBG_HAP_HARC_MSG("Did not find related Connection Info Structure\n");
+      hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
   else
@@ -189,47 +227,87 @@ tBleStatus HAP_HARC_ReadHAFeatures(uint16_t ConnHandle)
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Read Remote Hearing Aid Features on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
           if (p_hap_inst->HAFeaturesChar.ValueHandle != 0)
           {
-            hciCmdResult = aci_gatt_read_char_value(ConnHandle, p_hap_inst->HAFeaturesChar.ValueHandle);
+            hciCmdResult = aci_gatt_read_char_value(conn_handle, p_hap_inst->HAFeaturesChar.ValueHandle);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAFeaturesChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_READ_HA_FEATURES;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
-              BLE_DBG_HAP_HARC_MSG("Start HAP READ Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+              BLE_DBG_HAP_HARC_MSG("Start HAP READ Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -256,47 +334,88 @@ tBleStatus HAP_HARC_ReadActivePresetIndex(uint16_t ConnHandle)
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Read Remote Active Preset Index on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
           if (p_hap_inst->HAFeaturesChar.ValueHandle != 0)
           {
-            hciCmdResult = aci_gatt_read_char_value(ConnHandle, p_hap_inst->ActivePresetIndexChar.ValueHandle);
+            hciCmdResult = aci_gatt_read_char_value(conn_handle, p_hap_inst->ActivePresetIndexChar.ValueHandle);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->ActivePresetIndexChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
-              BLE_DBG_HAP_HARC_MSG("Start HAP READ Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+              BLE_DBG_HAP_HARC_MSG("Start HAP READ Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -325,13 +444,41 @@ tBleStatus HAP_HARC_ReadPresetsRequest(uint16_t ConnHandle, uint8_t StartIndex, 
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Read Remote Presets Request procedure on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
@@ -342,40 +489,53 @@ tBleStatus HAP_HARC_ReadPresetsRequest(uint16_t ConnHandle, uint8_t StartIndex, 
               StartIndex,
               NumPresets
             };
-            hciCmdResult = aci_gatt_write_char_value(ConnHandle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                      p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                                      3,
                                                      &a_value[0]);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_READ_PRESETS_REQUEST;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
               HAP_Context.HARC.OpParams.PresetIndex = StartIndex;
               HAP_Context.HARC.OpParams.NumPreset = NumPresets;
-              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_READ_PRESETS_REQUEST Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_READ_PRESETS_REQUEST Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -405,13 +565,41 @@ tBleStatus HAP_HARC_WritePresetName(uint16_t ConnHandle, uint8_t Index, uint8_t*
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Write Preset Name on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
@@ -422,41 +610,54 @@ tBleStatus HAP_HARC_WritePresetName(uint16_t ConnHandle, uint8_t Index, uint8_t*
             a_value[1] = Index;
             memcpy(&a_value[2], pName, NameLen);
 
-            hciCmdResult = aci_gatt_write_char_value(ConnHandle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                      p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                                      2 + NameLen,
                                                      &a_value[0]);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_WRITE_PRESET_NAME;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
               HAP_Context.HARC.OpParams.PresetIndex = Index;
               memcpy(&HAP_Context.HARC.OpParams.PresetName[0], pName, NameLen);
               HAP_Context.HARC.OpParams.NameLen = NameLen;
-              BLE_DBG_HAP_HARC_MSG("Start HAP WRITE Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_HARC_MSG("Start HAP WRITE Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -485,13 +686,41 @@ tBleStatus HAP_HARC_SetActivePreset(uint16_t ConnHandle, uint8_t Index, uint8_t 
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Active Preset on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
@@ -507,40 +736,53 @@ tBleStatus HAP_HARC_SetActivePreset(uint16_t ConnHandle, uint8_t Index, uint8_t 
               a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET_LOCAL_SYNC;
             }
 
-            hciCmdResult = aci_gatt_write_char_value(ConnHandle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                      p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                                      2,
                                                      &a_value[0]);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_SET_ACTIVE_PRESET;
               HAP_Context.HARC.OpParams.PresetIndex = Index;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
               HAP_Context.HARC.OpParams.SyncLocally = SyncLocally;
-              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_ACTIVE_PRESET Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_ACTIVE_PRESET Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -568,13 +810,41 @@ tBleStatus HAP_HARC_SetNextPreset(uint16_t ConnHandle, uint8_t SyncLocally)
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Next Preset on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
@@ -589,39 +859,52 @@ tBleStatus HAP_HARC_SetNextPreset(uint16_t ConnHandle, uint8_t SyncLocally)
               a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC;
             }
 
-            hciCmdResult = aci_gatt_write_char_value(ConnHandle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                      p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                                      1,
                                                      &a_value[0]);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_SET_NEXT_PRESET;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
               HAP_Context.HARC.OpParams.SyncLocally = SyncLocally;
-              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_NEXT_PRESET Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_NEXT_PRESET Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -649,13 +932,41 @@ tBleStatus HAP_HARC_SetPreviousPreset(uint16_t ConnHandle, uint8_t SyncLocally)
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
   if (HAP_Context.Role & HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER)
   {
-    HAP_HARC_Inst_t *p_hap_inst;
+    HAP_HARC_Inst_t     *p_hap_inst;
+    BleEATTBearer_t     *p_eatt_bearer = 0;
+    uint16_t            conn_handle;
+    uint8_t             channel_index;
     BLE_DBG_HAP_HARC_MSG("Start Previous Preset on connection handle 0x%04X\n",ConnHandle);
 
-    p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+    p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
     if (p_hap_inst != 0)
     {
-      if ((p_hap_inst->AttProcStarted) == 0 && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
+      if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+      {
+        if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_hap_inst->pConnInfo->Connection_Handle,
+                                                    &channel_index) == BLE_STATUS_SUCCESS)
+        {
+          conn_handle = (0xEA << 8) | (channel_index);
+        }
+        else
+        {
+          BLE_DBG_HAP_HARC_MSG("HAP Link Up procedure is aborted because no available EATT Bearer\n");
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+      else
+      {
+        if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,0) == BLE_STATUS_FAILED)
+        {
+          conn_handle = p_hap_inst->pConnInfo->Connection_Handle;
+        }
+        else
+        {
+          hciCmdResult = BLE_STATUS_BUSY;
+        }
+      }
+
+      if ((hciCmdResult != BLE_STATUS_BUSY) && (HAP_Context.HARC.Op == HAP_HARC_OP_NONE))
       {
         if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE)
         {
@@ -670,39 +981,52 @@ tBleStatus HAP_HARC_SetPreviousPreset(uint16_t ConnHandle, uint8_t SyncLocally)
               a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC;
             }
 
-            hciCmdResult = aci_gatt_write_char_value(ConnHandle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                      p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                                      1,
                                                      &a_value[0]);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                ConnHandle,
+                                conn_handle,
                                 p_hap_inst->HAPresetControlPointChar.ValueHandle,
                                 hciCmdResult);
             if (hciCmdResult == BLE_STATUS_SUCCESS)
             {
-              p_hap_inst->AttProcStarted = 1u;
+              /*Register the ATT procedure*/
+              if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_hap_inst->pConnInfo->Connection_Handle) > 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
               HAP_Context.HARC.Op = HAP_HARC_OP_SET_PREVIOUS_PRESET;
-              HAP_Context.HARC.OpParams.ConnHandle = ConnHandle;
+              HAP_Context.HARC.OpParams.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
               HAP_Context.HARC.OpParams.SyncLocally = SyncLocally;
-              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_PREVIOUS_PRESET Operation(ConnHandle 0x%04X)\n", ConnHandle);
+              BLE_DBG_HAP_HARC_MSG("Start HAP_HARC_OP_SET_PREVIOUS_PRESET Operation(ConnHandle 0x%04X)\n",
+                                   p_hap_inst->pConnInfo->Connection_Handle);
             }
           }
         }
         else
         {
-          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n", ConnHandle);
+          BLE_DBG_HAP_HARC_MSG("HAP Linkup is not complete on Connection Handle 0x%04X\n",
+                               p_hap_inst->pConnInfo->Connection_Handle);
           return HCI_COMMAND_DISALLOWED_ERR_CODE;
         }
       }
       else
       {
-        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n", ConnHandle);
+        BLE_DBG_HAP_HARC_MSG("An ATT Procedure is ongoing on Connection Handle 0x%04X\n",
+                             p_hap_inst->pConnInfo->Connection_Handle);
         return BLE_STATUS_BUSY;
       }
     }
     else
     {
-      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n", ConnHandle);
+      BLE_DBG_HAP_HARC_MSG("Connection Handle 0x%04X doesn't correspond to an allocated HAP Client Instance\n",
+                           ConnHandle);
       hciCmdResult = BLE_STATUS_INVALID_PARAMS;
     }
   }
@@ -728,11 +1052,12 @@ tBleStatus HAP_HARC_SetPreviousPreset(uint16_t ConnHandle, uint8_t SyncLocally)
    */
 tBleStatus HAP_HARC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t MaxDataLen, uint16_t *len)
 {
-  tBleStatus                    status = BLE_STATUS_SUCCESS;
-  uint16_t                      remain = MaxDataLen;
-  HAP_HARC_Inst_t *p_hap_inst;
+  tBleStatus            status = BLE_STATUS_SUCCESS;
+  uint16_t              remain = MaxDataLen;
+  HAP_HARC_Inst_t       *p_hap_inst;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
 
-  p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+  p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_hap_inst != 0)
   {
     *len = 0u;
@@ -973,9 +1298,10 @@ tBleStatus HAP_HARC_RestoreDatabase(HAP_HARC_Inst_t *pHARC_Inst, uint8_t *pData,
   */
 void HAP_HARC_AclDisconnection(uint16_t ConnHandle)
 {
-  HAP_HARC_Inst_t *p_hap_inst;
+  HAP_HARC_Inst_t       *p_hap_inst;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
   /* Check if a HAP Client Instance with specified Connection Handle is already allocated*/
-  p_hap_inst = HAP_HARC_GetInstance(ConnHandle);
+  p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_hap_inst != 0)
   {
     BLE_DBG_HAP_HARC_MSG("ACL Disconnection on Connection Handle 0x%04X : Reset HAP Client Instance\n",ConnHandle);
@@ -989,7 +1315,10 @@ void HAP_HARC_AclDisconnection(uint16_t ConnHandle)
       evt.EvtOpcode = (HAP_HARC_NotCode_t) HARC_LINKUP_COMPLETE_EVT;
       evt.pInfo = 0;
       HAP_HARC_Notification(&evt);
-      if (p_hap_inst->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                        HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                          HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         HAP_HARC_InitInstance(p_hap_inst);
       }
@@ -1002,7 +1331,10 @@ void HAP_HARC_AclDisconnection(uint16_t ConnHandle)
     else
     {
       /* Reset HAP Instance */
-      if (p_hap_inst->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                        HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                          HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         HAP_HARC_InitInstance(p_hap_inst);
       }
@@ -1021,8 +1353,9 @@ void HAP_HARC_AclDisconnection(uint16_t ConnHandle)
   */
 void HAP_HARC_LinkEncrypted(uint16_t ConnHandle)
 {
-  const UseCaseConnInfo_t *p_conn_info;
-  if ((USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info) == BLE_STATUS_SUCCESS)
+  UseCaseConnInfo_t     *p_conn_info;
+  BleEATTBearer_t       *p_eatt_bearer;
+  if ((USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS) \
       && (HAP_HARC_DB_IsPresent(p_conn_info->Peer_Address_Type,p_conn_info->Peer_Address) == 1u))
   {
     tBleStatus ret;
@@ -1042,7 +1375,9 @@ void HAP_HARC_LinkEncrypted(uint16_t ConnHandle)
 SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
 {
   SVCCTL_EvtAckStatus_t return_value;
-  hci_event_pckt *p_event_pckt;
+  hci_event_pckt        *p_event_pckt;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+
   return_value = SVCCTL_EvtNotAck;
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
 
@@ -1061,37 +1396,42 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
           uint16_t uuid;
 
           /* Check if a HAP Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
-            BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
-                             pr->Connection_Handle);
-
-            /*Check that HAP Link Up Process State is in Service Discovery state*/
-            if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_SERVICE) == HAP_HARC_LINKUP_DISC_SERVICE)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
+                               pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
-              numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
-              BLE_DBG_HAP_HARC_MSG("Number of services in the GATT response : %d\n",numServ);
-              if (pr->Attribute_Data_Length == 6)
+
+              /*Check that HAP Link Up Process State is in Service Discovery state*/
+              if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_SERVICE) == HAP_HARC_LINKUP_DISC_SERVICE)
               {
-                idx = 4;
-                for (i=0; i<numServ; i++)
+                numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
+                BLE_DBG_HAP_HARC_MSG("Number of services in the GATT response : %d\n",numServ);
+                if (pr->Attribute_Data_Length == 6)
                 {
-                  uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
-                  /*Check that UUID in the GATT response corresponds to the HAS */
-                  if (uuid == HEARING_ACCESS_SERVICE_UUID)
+                  idx = 4;
+                  for (i=0; i<numServ; i++)
                   {
-                    /* Save start handle and the end handle of the HAS
-                     * for the next step of the HAP Link Up process
-                     */
-                    p_hap_inst->HASServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
-                    p_hap_inst->HASServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
-                    BLE_DBG_HAP_HARC_MSG("Hearing Access Service has been found (start: %04X, end: %04X)\n",
-                                        p_hap_inst->HASServiceStartHandle,
-                                        p_hap_inst->HASServiceEndHandle);
+                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
+                    /*Check that UUID in the GATT response corresponds to the HAS */
+                    if (uuid == HEARING_ACCESS_SERVICE_UUID)
+                    {
+                      /* Save start handle and the end handle of the HAS
+                       * for the next step of the HAP Link Up process
+                       */
+                      p_hap_inst->HASServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
+                      p_hap_inst->HASServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
+                      BLE_DBG_HAP_HARC_MSG("Hearing Access Service has been found (start: %04X, end: %04X)\n",
+                                          p_hap_inst->HASServiceStartHandle,
+                                          p_hap_inst->HASServiceEndHandle);
+                    }
+                    idx += 6;
                   }
-                  idx += 6;
                 }
               }
             }
@@ -1107,86 +1447,92 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
           uint8_t data_length;
 
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
-            /* the event data will be
-             * 2 bytes start handle
-             * 1 byte char properties
-             * 2 bytes handle
-             * 2 or 16 bytes data
-             */
-            BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",pr->Connection_Handle);
-
-            /*Check that HAP Link Up Process State is in Characteristics Discovery state*/
-            if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_CHAR) == HAP_HARC_LINKUP_DISC_CHAR)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              idx = 5;
-              data_length = pr->Data_Length;
-              if (pr->Handle_Value_Pair_Length == 7)
+              /* the event data will be
+               * 2 bytes start handle
+               * 1 byte char properties
+               * 2 bytes handle
+               * 2 or 16 bytes data
+               */
+              BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",
+                                   pr->Connection_Handle);
+
+              return_value = SVCCTL_EvtAckFlowEnable;
+
+              /*Check that HAP Link Up Process State is in Characteristics Discovery state*/
+              if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_CHAR) == HAP_HARC_LINKUP_DISC_CHAR)
               {
-                data_length -= 1;
-                /*Check if characteristic handle corresponds to the Hearing Access Service range */
-                if (((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_hap_inst->HASServiceStartHandle)
-                     && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_hap_inst->HASServiceEndHandle)))
+                idx = 5;
+                data_length = pr->Data_Length;
+                if (pr->Handle_Value_Pair_Length == 7)
                 {
-                  return_value = SVCCTL_EvtAckFlowEnable;
-                  while (idx < data_length)
+                  data_length -= 1;
+                  /*Check if characteristic handle corresponds to the Hearing Access Service range */
+                  if (((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_hap_inst->HASServiceStartHandle)
+                       && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_hap_inst->HASServiceEndHandle)))
                   {
-                    /* extract the characteristic UUID */
-                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
-                    /*  extract the characteristic handle */
-                    handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
-                    /*  extract the start handle of the characteristic */
-                    start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
-
-                    /* Check that gatt characteristic is valid or not : this pointer corresponds
-                     * to the previous found characteristic :
-                     * the end handle of the previously found characteristic of each Service
-                     * is calculated thanks start handle of the next characteristic in the GATT Database
-                    */
-                    if (p_hap_inst->pGattChar != 0x00000000)
+                    while (idx < data_length)
                     {
-                      p_hap_inst->pGattChar->EndHandle = (start_handle -1u);
-                    }
+                      /* extract the characteristic UUID */
+                      uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
+                      /*  extract the characteristic handle */
+                      handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
+                      /*  extract the start handle of the characteristic */
+                      start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
 
-                    switch (uuid)
-                    {
-                      case HEARING_AID_FEATURES_UUID:
-                        BLE_DBG_HAP_HARC_MSG("Hearing Aid Features Characteristic has been found:\n");
-                        BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
-                        p_hap_inst->HAFeaturesChar.ValueHandle = handle;
-                        p_hap_inst->HAFeaturesChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                        p_hap_inst->HAFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_hap_inst->pGattChar = &p_hap_inst->HAFeaturesChar;
-                      break;
-                      case HEARING_AID_PRESET_CONTROL_POINT_UUID:
-                        BLE_DBG_HAP_HARC_MSG("Hearing Aid Preset Control Point Characteristic has been found:\n");
-                        BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
-                        p_hap_inst->HAPresetControlPointChar.ValueHandle = handle;
-                        p_hap_inst->HAPresetControlPointChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                        p_hap_inst->HAPresetControlPointChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_hap_inst->pGattChar = &p_hap_inst->HAPresetControlPointChar;
-                      break;
-                      case ACTIVE_PRESET_INDEX_UUID:
-                        BLE_DBG_HAP_HARC_MSG("Active Preset Index Characteristic has been found:\n");
-                        BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
-                        p_hap_inst->ActivePresetIndexChar.ValueHandle = handle;
-                        p_hap_inst->ActivePresetIndexChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                        p_hap_inst->ActivePresetIndexChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_hap_inst->pGattChar = &p_hap_inst->ActivePresetIndexChar;
-                      break;
+                      /* Check that gatt characteristic is valid or not : this pointer corresponds
+                       * to the previous found characteristic :
+                       * the end handle of the previously found characteristic of each Service
+                       * is calculated thanks start handle of the next characteristic in the GATT Database
+                      */
+                      if (p_hap_inst->pGattChar != 0x00000000)
+                      {
+                        p_hap_inst->pGattChar->EndHandle = (start_handle -1u);
+                      }
 
-                    default:
-                      break;
+                      switch (uuid)
+                      {
+                        case HEARING_AID_FEATURES_UUID:
+                          BLE_DBG_HAP_HARC_MSG("Hearing Aid Features Characteristic has been found:\n");
+                          BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
+                          p_hap_inst->HAFeaturesChar.ValueHandle = handle;
+                          p_hap_inst->HAFeaturesChar.EndHandle = p_hap_inst->HASServiceEndHandle;
+                          p_hap_inst->HAFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->pGattChar = &p_hap_inst->HAFeaturesChar;
+                        break;
+                        case HEARING_AID_PRESET_CONTROL_POINT_UUID:
+                          BLE_DBG_HAP_HARC_MSG("Hearing Aid Preset Control Point Characteristic has been found:\n");
+                          BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
+                          p_hap_inst->HAPresetControlPointChar.ValueHandle = handle;
+                          p_hap_inst->HAPresetControlPointChar.EndHandle = p_hap_inst->HASServiceEndHandle;
+                          p_hap_inst->HAPresetControlPointChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->pGattChar = &p_hap_inst->HAPresetControlPointChar;
+                        break;
+                        case ACTIVE_PRESET_INDEX_UUID:
+                          BLE_DBG_HAP_HARC_MSG("Active Preset Index Characteristic has been found:\n");
+                          BLE_DBG_HAP_HARC_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_HAP_HARC_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
+                          p_hap_inst->ActivePresetIndexChar.ValueHandle = handle;
+                          p_hap_inst->ActivePresetIndexChar.EndHandle = p_hap_inst->HASServiceEndHandle;
+                          p_hap_inst->ActivePresetIndexChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->pGattChar = &p_hap_inst->ActivePresetIndexChar;
+                        break;
+
+                      default:
+                        break;
+                      }
+                      idx += pr->Handle_Value_Pair_Length;
                     }
-                    idx += pr->Handle_Value_Pair_Length;
                   }
                 }
               }
@@ -1205,49 +1551,55 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
           uint8_t idx;
           uint16_t uuid, handle;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
-            BLE_DBG_HAP_HARC_MSG("ACI_ATT_FIND_INFO_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-
-            /*Check that HAS Link Up Process State is in Characteristics Descriptor Discovery state*/
-            if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_CHAR_DESC) == HAP_HARC_LINKUP_DISC_CHAR_DESC)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              idx = 0x03;
-              uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Value[idx]);
-              /* store the characteristic handle not the attribute handle */
-              handle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Value[idx-2]);
+              BLE_DBG_HAP_HARC_MSG("ACI_ATT_FIND_INFO_RESP_EVENT is received on conn handle %04X\n",
+                                   pr->Connection_Handle);
 
-              /*Check if characteristic descriptor handle corresponds to the Media Player Service range*/
-              if ((handle >= p_hap_inst->HASServiceStartHandle)   \
-                 && (handle <= p_hap_inst->HASServiceEndHandle))
+              return_value = SVCCTL_EvtAckFlowEnable;
+
+              /*Check that HAS Link Up Process State is in Characteristics Descriptor Discovery state*/
+              if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_CHAR_DESC) == HAP_HARC_LINKUP_DISC_CHAR_DESC)
               {
-                return_value = SVCCTL_EvtAckFlowEnable;
-                if (uuid == CLIENT_CHAR_CONFIG_DESCRIPTOR_UUID) /* Client Characteristic Configuration*/
+                idx = 0x03;
+                uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Value[idx]);
+                /* store the characteristic handle not the attribute handle */
+                handle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Value[idx-2]);
+
+                /*Check if characteristic descriptor handle corresponds to the Media Player Service range*/
+                if ((handle >= p_hap_inst->HASServiceStartHandle)   \
+                   && (handle <= p_hap_inst->HASServiceEndHandle))
                 {
-                  /* Store the handle of the Client Characteristic Configuration descriptor */
-                  switch (p_hap_inst->CurrentLinkupChar)
+                  if (uuid == CLIENT_CHAR_CONFIG_DESCRIPTOR_UUID) /* Client Characteristic Configuration*/
                   {
-                    case HAS_CHAR_HA_FEATURES:
+                    /* Store the handle of the Client Characteristic Configuration descriptor */
+                    switch (p_hap_inst->CurrentLinkupChar)
                     {
-                      p_hap_inst->HAFeaturesChar.DescHandle = handle;
-                      break;
-                    }
+                      case HAS_CHAR_HA_FEATURES:
+                      {
+                        p_hap_inst->HAFeaturesChar.DescHandle = handle;
+                        break;
+                      }
 
-                    case HAS_CHAR_HA_PRESET_CTRL_POINT:
-                    {
-                      p_hap_inst->HAPresetControlPointChar.DescHandle = handle;
-                      break;
-                    }
+                      case HAS_CHAR_HA_PRESET_CTRL_POINT:
+                      {
+                        p_hap_inst->HAPresetControlPointChar.DescHandle = handle;
+                        break;
+                      }
 
-                    case HAS_CHAR_ACTIVE_PRESET_INDEX:
-                    {
-                      p_hap_inst->ActivePresetIndexChar.DescHandle = handle;
-                      break;
-                    }
+                      case HAS_CHAR_ACTIVE_PRESET_INDEX:
+                      {
+                        p_hap_inst->ActivePresetIndexChar.DescHandle = handle;
+                        break;
+                      }
 
-                    default:
-                      break;
+                      default:
+                        break;
+                    }
                   }
                 }
               }
@@ -1261,48 +1613,52 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
           aci_att_read_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
 
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
-            BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-            /* Handle the ATT read response */
-            if ((HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
-                || (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
-                || ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR))
+            /* Check if an ATT Procedure was started*/
+            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              HAP_HARC_NotificationEvt_t evt;
-              evt.pInfo = &pr->Attribute_Value[0];
-              evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
-              evt.Status = BLE_STATUS_SUCCESS;
+              BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
 
               return_value = SVCCTL_EvtAckFlowEnable;
-
-              if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR)
+              /* Handle the ATT read response */
+              if ((HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
+                  || (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
+                  || ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR))
               {
-                switch (p_hap_inst->CurrentLinkupChar)
+                HAP_HARC_NotificationEvt_t evt;
+                evt.pInfo = &pr->Attribute_Value[0];
+                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+                evt.Status = BLE_STATUS_SUCCESS;
+
+                if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR)
                 {
-                  case HAS_CHAR_HA_FEATURES:
-                    evt.EvtOpcode = HARC_HA_FEATURES_EVT;
-                    p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
-                    HAP_HARC_Notification(&evt);
-                    break;
+                  switch (p_hap_inst->CurrentLinkupChar)
+                  {
+                    case HAS_CHAR_HA_FEATURES:
+                      evt.EvtOpcode = HARC_HA_FEATURES_EVT;
+                      p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
+                      HAP_HARC_Notification(&evt);
+                      break;
 
-                  case HAS_CHAR_ACTIVE_PRESET_INDEX:
-                    evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
-                    HAP_HARC_Notification(&evt);
-                    break;
+                    case HAS_CHAR_ACTIVE_PRESET_INDEX:
+                      evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+                      HAP_HARC_Notification(&evt);
+                      break;
+                  }
                 }
-              }
-              else if (HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
-              {
-                evt.EvtOpcode = HARC_HA_FEATURES_EVT;
-                p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
-                HAP_HARC_Notification(&evt);
-              }
-              else if  (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
-              {
-                evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
-                HAP_HARC_Notification(&evt);
+                else if (HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
+                {
+                  evt.EvtOpcode = HARC_HA_FEATURES_EVT;
+                  p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
+                  HAP_HARC_Notification(&evt);
+                }
+                else if  (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
+                {
+                  evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+                  HAP_HARC_Notification(&evt);
+                }
               }
             }
           }
@@ -1318,7 +1674,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                                pr->Connection_Handle);
 
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
             /* Chec if attribute belongs to HAP Service */
@@ -1368,7 +1724,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                                pr->Connection_Handle);
 
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
             /* Chec if attribute belongs to HAP Service */
@@ -1402,238 +1758,349 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
           aci_gatt_proc_complete_event_rp0 *pr = (void*)p_blecore_evt->data;
           HAP_HARC_Inst_t *p_csipmember_hap_inst = 0;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
+            uint8_t ack = 0u;
             BLE_DBG_HAP_HARC_MSG("ACI_GATT_PROC_COMPLETE_EVENT is received on conn handle %04X (ErrorCode %04X)\n",
                                 pr->Connection_Handle,
                                 pr->Error_Code);
-
-            /* Check if an ATT Procedure was started*/
-            if (p_hap_inst->AttProcStarted != 0u)
+            if (p_eatt_bearer != 0)
             {
-              p_hap_inst->AttProcStarted = 0u;
+              /* Check if an ATT Procedure was started*/
+              if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(p_eatt_bearer->ChannelIdx,
+                                                                      HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+              {
+                BLE_AUDIO_STACK_EATT_UnregisterATTProcedure(p_eatt_bearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+                ack = 1u;
+              }
+            }
+            else
+            {
+              /* Check if an ATT Procedure was started*/
+              if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                               HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+              {
+                BLE_AUDIO_STACK_ATT_UnregisterATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                           HAP_HARC_ATT_PROCEDURE_ID);
+                ack = 1u;
+              }
+            }
+            if (ack == 1u)
+            {
               return_value = SVCCTL_EvtAckFlowEnable;
-            }
-            /*Check if a HAP Linkup procudre is in progress*/
-            if ((p_hap_inst->LinkupState != HAP_HARC_LINKUP_IDLE) && (p_hap_inst->LinkupState != HAP_HARC_LINKUP_COMPLETE))
-            {
-              if (p_hap_inst->DelayDeallocation == 0u)
+              /*Check if a HAP Linkup procudre is in progress*/
+              if ((p_hap_inst->LinkupState != HAP_HARC_LINKUP_IDLE) && (p_hap_inst->LinkupState != HAP_HARC_LINKUP_COMPLETE))
               {
-                /* GATT Process is complete, continue, if needed, the HAP Link Up Process */
-                HAP_HARC_Linkup_Process(p_hap_inst,pr->Error_Code);
-              }
-            }
-
-            if ((p_hap_inst->DelayDeallocation == 1u) && (p_hap_inst->AttProcStarted == 0u))
-            {
-              BLE_DBG_HAP_HARC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
-              p_hap_inst->DelayDeallocation = 0u;
-              HAP_HARC_InitInstance(p_hap_inst);
-            }
-
-
-
-            if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
-            {
-              tBleStatus status = BLE_STATUS_SUCCESS;
-              uint8_t send_proc_complete = 1u;
-
-              if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
-                  && p_hap_inst->pConnInfo->Size > 1u)
-              {
-                p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
-              }
-
-              if ((p_csipmember_hap_inst != 0) \
-                  && (p_csipmember_hap_inst->pConnInfo->Connection_Handle != HAP_Context.HARC.OpParams.ConnHandle))
-              {
-                /* Start Operation on second set member */
-                BLE_DBG_HAP_HARC_MSG("Start procedure on Set member with Conn Handle 0x%02X\n",
-                                     p_csipmember_hap_inst->pConnInfo->Connection_Handle);
-                switch (HAP_Context.HARC.Op)
+                if (p_hap_inst->DelayDeallocation == 0u)
                 {
-                  case HAP_HARC_OP_READ_HA_FEATURES:
-                  {
-                    status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                      p_csipmember_hap_inst->HAFeaturesChar.ValueHandle);
-                    BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                        p_csipmember_hap_inst->HAFeaturesChar.ValueHandle,
-                                        status);
-                    if (status == BLE_STATUS_SUCCESS)
-                    {
-                      p_csipmember_hap_inst->AttProcStarted = 1u;
-                      send_proc_complete = 0u;
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX:
-                  {
-                    status = aci_gatt_read_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                      p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle);
-                    BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                        p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle,
-                                        status);
-                    if (status == BLE_STATUS_SUCCESS)
-                    {
-                      p_csipmember_hap_inst->AttProcStarted = 1u;
-                      send_proc_complete = 0u;
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_READ_PRESETS_REQUEST:
-                  {
-                    uint8_t a_value[3] = {
-                      HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST,
-                      HAP_Context.HARC.OpParams.PresetIndex,
-                      HAP_Context.HARC.OpParams.NumPreset
-                    };
-                    status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                       p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                       3,
-                                                       &a_value[0]);
-                    BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                        p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                        status);
-                    if (status == BLE_STATUS_SUCCESS)
-                    {
-                      p_csipmember_hap_inst->AttProcStarted = 1u;
-                      send_proc_complete = 0u;
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_WRITE_PRESET_NAME:
-                  {
-                    uint8_t a_value[2 + HAP_MAX_PRESET_NAME_LEN];
-                    a_value[0] = HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME,
-                    a_value[1] = HAP_Context.HARC.OpParams.PresetIndex;
-                    memcpy(&a_value[2], &HAP_Context.HARC.OpParams.PresetName[0], HAP_Context.HARC.OpParams.NameLen);
-
-                    status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                       p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                       2 + HAP_Context.HARC.OpParams.NameLen,
-                                                       &a_value[0]);
-                    BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                        p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                        p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                        status);
-                    if (status == BLE_STATUS_SUCCESS)
-                    {
-                      p_csipmember_hap_inst->AttProcStarted = 1u;
-                      send_proc_complete = 0u;
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_SET_ACTIVE_PRESET:
-                  {
-                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
-                    {
-                      /* Only execute on second device when Local Sync and independant presets are disabled */
-                      uint8_t a_value[2] = {
-                        HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET,
-                        HAP_Context.HARC.OpParams.PresetIndex
-                      };
-
-                      BLE_DBG_HAP_HARC_MSG("Preset Index = %d\n", a_value[1]);
-
-
-                      status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                         2,
-                                                         &a_value[0]);
-                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                          status);
-                      if (status == BLE_STATUS_SUCCESS)
-                      {
-                        p_csipmember_hap_inst->AttProcStarted = 1u;
-                        send_proc_complete = 0u;
-                      }
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_SET_NEXT_PRESET:
-                  {
-                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
-                    {
-                      /* Only execute on second device when Local Sync and independant presets are disabled */
-                      uint8_t a_value[1] = {
-                        HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET
-                      };
-
-                      if (HAP_Context.HARC.OpParams.SyncLocally == 1)
-                      {
-                        a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC;
-                      }
-
-                      status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                         1,
-                                                         &a_value[0]);
-                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                          status);
-                      if (status == BLE_STATUS_SUCCESS)
-                      {
-                        p_csipmember_hap_inst->AttProcStarted = 1u;
-                        send_proc_complete = 0u;
-                      }
-                    }
-                    break;
-                  }
-                  case HAP_HARC_OP_SET_PREVIOUS_PRESET:
-                  {
-                    if (HAP_Context.HARC.OpParams.SyncLocally == 0
-                        && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
-                    {
-                      /* Only execute on second device when Local Sync and independant presets are disabled */
-                      uint8_t a_value[1] = {
-                        HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET
-                      };
-
-                      if (HAP_Context.HARC.OpParams.SyncLocally == 1)
-                      {
-                        a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC;
-                      }
-
-                      status = aci_gatt_write_char_value(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                                         1,
-                                                         &a_value[0]);
-                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                                          p_csipmember_hap_inst->pConnInfo->Connection_Handle,
-                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
-                                          status);
-                      if (status == BLE_STATUS_SUCCESS)
-                      {
-                        p_csipmember_hap_inst->AttProcStarted = 1u;
-                        send_proc_complete = 0u;
-                      }
-                    }
-                    break;
-                  }
+                  /* GATT Process is complete, continue, if needed, the HAP Link Up Process */
+                  HAP_HARC_Linkup_Process(p_hap_inst,p_eatt_bearer,pr->Error_Code);
                 }
               }
 
-              if (send_proc_complete == 1u)
+              if ((p_hap_inst->DelayDeallocation == 1u) \
+                  && (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                                    HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+                  && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_hap_inst->pConnInfo->Connection_Handle,
+                                                                    HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
               {
-                HAP_HARC_NotificationEvt_t evt;
-                HAP_Context.HARC.Op = HAP_HARC_OP_NONE;
+                if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
+                {
+                  if (p_hap_inst->pConnInfo->CSIPDiscovered == 1u
+                    && p_hap_inst->pConnInfo->Size > 1u)
+                  {
+                    p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
+                  }
+                }
+                BLE_DBG_HAP_HARC_MSG("Free Completely the HAP Client on conn handle %04X\n",pr->Connection_Handle);
+                p_hap_inst->DelayDeallocation = 0u;
+                HAP_HARC_InitInstance(p_hap_inst);
+              }
 
-                /* Notify Proc complete */
-                evt.pInfo = 0;
-                evt.ConnHandle = pr->Connection_Handle;
-                evt.Status = status;
-                evt.EvtOpcode = HARC_PROC_COMPLETE_EVT;
+              if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
+              {
+                tBleStatus status = BLE_STATUS_SUCCESS;
+                uint8_t send_proc_complete = 1u;
+                if ((p_csipmember_hap_inst == 0) && (p_hap_inst != 0))
+                {
+                  if ((p_hap_inst->pConnInfo->CSIPDiscovered == 1u) && (p_hap_inst->pConnInfo->Size > 1u))
+                  {
+                    p_csipmember_hap_inst = HAP_HARC_GetOtherMember(p_hap_inst);
+                  }
+                }
 
-                HAP_HARC_Notification(&evt);
+                if ((p_csipmember_hap_inst != 0) \
+                    && (p_csipmember_hap_inst->pConnInfo->Connection_Handle != HAP_Context.HARC.OpParams.ConnHandle))
+                {
+                  uint16_t conn_handle = p_csipmember_hap_inst->pConnInfo->Connection_Handle;
+                  uint8_t channel_index;
+                  /* Start Operation on second set member */
+                  BLE_DBG_HAP_HARC_MSG("Start procedure on Set member with Conn Handle 0x%02X\n",
+                                       p_csipmember_hap_inst->pConnInfo->Connection_Handle);
+
+                  if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                  {
+                    if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                &channel_index) == BLE_STATUS_SUCCESS)
+                    {
+                      conn_handle = (0xEA << 8) | (channel_index);
+                    }
+                    else
+                    {
+                      BLE_DBG_HAP_HARC_MSG("Procedure on Set member with Conn Handle 0x%04X is aborted because no EATT is available\n",
+                                           p_csipmember_hap_inst->pConnInfo->Connection_Handle);
+                      break;
+                    }
+                  }
+                  switch (HAP_Context.HARC.Op)
+                  {
+                    case HAP_HARC_OP_READ_HA_FEATURES:
+                    {
+                      status = aci_gatt_read_char_value(conn_handle,p_csipmember_hap_inst->HAFeaturesChar.ValueHandle);
+                      BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                          conn_handle,
+                                          p_csipmember_hap_inst->HAFeaturesChar.ValueHandle,
+                                          status);
+                      if (status == BLE_STATUS_SUCCESS)
+                      {
+
+                        /*Register the ATT Procedure*/
+                        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                        {
+                          BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        else
+                        {
+                          BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                   HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        send_proc_complete = 0u;
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX:
+                    {
+                      status = aci_gatt_read_char_value(conn_handle,
+                                                        p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle);
+                      BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                          conn_handle,
+                                          p_csipmember_hap_inst->ActivePresetIndexChar.ValueHandle,
+                                          status);
+                      if (status == BLE_STATUS_SUCCESS)
+                      {
+
+                        /*Register the ATT Procedure*/
+                        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                        {
+                          BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        else
+                        {
+                          BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                   HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        send_proc_complete = 0u;
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_READ_PRESETS_REQUEST:
+                    {
+                      uint8_t a_value[3] = {
+                        HAP_HA_CONTROL_POINT_OP_READ_PRESETS_REQUEST,
+                        HAP_Context.HARC.OpParams.PresetIndex,
+                        HAP_Context.HARC.OpParams.NumPreset
+                      };
+                      status = aci_gatt_write_char_value(conn_handle,
+                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                         3,
+                                                         &a_value[0]);
+                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                          conn_handle,
+                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                          status);
+                      if (status == BLE_STATUS_SUCCESS)
+                      {
+                        /*Register the ATT Procedure*/
+                        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                        {
+                          BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        else
+                        {
+                         BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                  HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        send_proc_complete = 0u;
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_WRITE_PRESET_NAME:
+                    {
+                      uint8_t a_value[2 + HAP_MAX_PRESET_NAME_LEN];
+                      a_value[0] = HAP_HA_CONTROL_POINT_OP_WRITE_PRESET_NAME,
+                      a_value[1] = HAP_Context.HARC.OpParams.PresetIndex;
+                      memcpy(&a_value[2], &HAP_Context.HARC.OpParams.PresetName[0], HAP_Context.HARC.OpParams.NameLen);
+
+                      status = aci_gatt_write_char_value(conn_handle,
+                                                         p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                         2 + HAP_Context.HARC.OpParams.NameLen,
+                                                         &a_value[0]);
+                      BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                          conn_handle,
+                                          p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                          status);
+                      if (status == BLE_STATUS_SUCCESS)
+                      {
+                        /*Register the ATT Procedure*/
+                        if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                        {
+                          BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        else
+                        {
+                          BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                   HAP_HARC_ATT_PROCEDURE_ID);
+                        }
+                        send_proc_complete = 0u;
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_SET_ACTIVE_PRESET:
+                    {
+                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+                      {
+                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        uint8_t a_value[2] = {
+                          HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET,
+                          HAP_Context.HARC.OpParams.PresetIndex
+                        };
+
+                        BLE_DBG_HAP_HARC_MSG("Preset Index = %d\n", a_value[1]);
+
+
+                        status = aci_gatt_write_char_value(conn_handle,
+                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                           2,
+                                                           &a_value[0]);
+                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                            conn_handle,
+                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                            status);
+                        if (status == BLE_STATUS_SUCCESS)
+                        {
+                          /*Register the ATT Procedure*/
+                          if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                          {
+                            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          else
+                          {
+                            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                     HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          send_proc_complete = 0u;
+                        }
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_SET_NEXT_PRESET:
+                    {
+                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+                      {
+                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        uint8_t a_value[1] = {
+                          HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET
+                        };
+
+                        if (HAP_Context.HARC.OpParams.SyncLocally == 1)
+                        {
+                          a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET_LOCAL_SYNC;
+                        }
+
+                        status = aci_gatt_write_char_value(conn_handle,
+                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                           1,
+                                                           &a_value[0]);
+                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                            conn_handle,
+                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                            status);
+                        if (status == BLE_STATUS_SUCCESS)
+                        {
+                          /*Register the ATT Procedure*/
+                          if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                          {
+                            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          else
+                          {
+                            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                     HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          send_proc_complete = 0u;
+                        }
+                      }
+                      break;
+                    }
+                    case HAP_HARC_OP_SET_PREVIOUS_PRESET:
+                    {
+                      if (HAP_Context.HARC.OpParams.SyncLocally == 0
+                          && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
+                      {
+                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        uint8_t a_value[1] = {
+                          HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET
+                        };
+
+                        if (HAP_Context.HARC.OpParams.SyncLocally == 1)
+                        {
+                          a_value[0] = HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET_LOCAL_SYNC;
+                        }
+
+                        status = aci_gatt_write_char_value(conn_handle,
+                                                           p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                                           1,
+                                                           &a_value[0]);
+                        BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
+                                            conn_handle,
+                                            p_csipmember_hap_inst->HAPresetControlPointChar.ValueHandle,
+                                            status);
+                        if (status == BLE_STATUS_SUCCESS)
+                        {
+                          /*Register the ATT Procedure*/
+                          if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_csipmember_hap_inst->pConnInfo->Connection_Handle) > 0)
+                          {
+                            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          else
+                          {
+                            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_csipmember_hap_inst->pConnInfo->Connection_Handle,
+                                                                     HAP_HARC_ATT_PROCEDURE_ID);
+                          }
+                          send_proc_complete = 0u;
+                        }
+                      }
+                      break;
+                    }
+                  }
+                }
+
+                if (send_proc_complete == 1u)
+                {
+                  HAP_HARC_NotificationEvt_t evt;
+                  HAP_Context.HARC.Op = HAP_HARC_OP_NONE;
+
+                  /* Notify Proc complete */
+                  evt.pInfo = 0;
+                  evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+                  evt.Status = status;
+                  evt.EvtOpcode = HARC_PROC_COMPLETE_EVT;
+
+                  HAP_HARC_Notification(&evt);
+                }
               }
             }
           }
@@ -1644,51 +2111,39 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
         {
           aci_gatt_error_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
           /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle);
+          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_hap_inst != 0)
           {
-            BLE_DBG_HAP_HARC_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-            if (pr->Attribute_Handle >= p_hap_inst->HASServiceStartHandle
-                && pr->Attribute_Handle <= p_hap_inst->HASServiceEndHandle)
+            /* Check if an ATT Procedure was started*/
+            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_HAP_HARC_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
 
-              if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
+              if ((pr->Attribute_Handle >= p_hap_inst->HASServiceStartHandle) \
+                  && (pr->Attribute_Handle <= p_hap_inst->HASServiceEndHandle))
               {
-                HAP_HARC_NotificationEvt_t evt;
 
-                /* Notify Proc complete */
-                evt.pInfo = 0;
-                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
-                evt.Status = pr->Error_Code;
-                evt.EvtOpcode = HARC_PROC_COMPLETE_EVT;
+                if (HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
+                {
+                  HAP_HARC_NotificationEvt_t evt;
 
-                HAP_HARC_Notification(&evt);
-                HAP_Context.HARC.Op = HAP_HARC_OP_NONE;
+                  /* Notify Proc complete */
+                  evt.pInfo = 0;
+                  evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+                  evt.Status = pr->Error_Code;
+                  evt.EvtOpcode = HARC_PROC_COMPLETE_EVT;
+
+                  HAP_HARC_Notification(&evt);
+                  HAP_Context.HARC.Op = HAP_HARC_OP_NONE;
+                }
               }
-            }
-            else
-            {
-              if (((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_SERVICE) == HAP_HARC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u))
+              if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE
+                  && HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
               {
-                return_value = SVCCTL_EvtAckFlowEnable;
+                p_hap_inst->ErrorCode = pr->Error_Code;
               }
-              if ((((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_SERVICE) == HAP_HARC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u)) \
-                || (((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_SERVICE) == HAP_HARC_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x08u)) \
-                || (((p_hap_inst->LinkupState & HAP_HARC_LINKUP_DISC_CHAR) == HAP_HARC_LINKUP_DISC_CHAR) && (pr->Req_Opcode == 0x08u)))
-              {
-                /* Error response returned after :
-                 * aci_gatt_disc_all_primary_services()
-                 * -aci_gatt_find_included_services()
-                 * -aci_gatt_disc_all_char_of_service()
-                 */
-                return_value = SVCCTL_EvtAckFlowEnable;
-              }
-            }
-            if (p_hap_inst->LinkupState == HAP_HARC_LINKUP_COMPLETE
-                && HAP_Context.HARC.Op != HAP_HARC_OP_NONE)
-            {
-              p_hap_inst->ErrorCode = pr->Error_Code;
             }
           }
         }
@@ -1707,12 +2162,18 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
 /**
  * @brief HAP Link Up process
  * @param  pHARC_Inst: pointer on HAP Client Instance
+ * @param  pEATTBearer: pointer on EATT Bearer
  * @param  ErrorCode: Error Code from Host Stack when a GATT procedure is complete
  * @retval status of the operation
  */
-static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t ErrorCode)
+static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode)
 {
   tBleStatus hciCmdResult = BLE_STATUS_FAILED;
+  uint16_t conn_handle = pHARC_Inst->pConnInfo->Connection_Handle;
+  if (pEATTBearer != 0)
+  {
+    conn_handle = (0xEA << 8) | (pEATTBearer->ChannelIdx);
+  }
 
   BLE_DBG_HAP_HARC_MSG("HAP Link Up Process, state 0x%x\n",pHARC_Inst->LinkupState);
 
@@ -1733,7 +2194,7 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           BLE_DBG_HAP_HARC_MSG("GATT : Discover HAS Characteristics\n");
           pHARC_Inst->pGattChar = 0u;
           /* Discover all the characteristics of the HAS in the remote GATT Database */
-          hciCmdResult = aci_gatt_disc_all_char_of_service(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_disc_all_char_of_service(conn_handle,
                                                           pHARC_Inst->HASServiceStartHandle,
                                                           pHARC_Inst->HASServiceEndHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_char_of_service() (start: %04X, end: %04X) returns status 0x%x\n",
@@ -1743,7 +2204,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
 
           if (hciCmdResult == BLE_STATUS_SUCCESS)
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
             pHARC_Inst->LinkupState |= HAP_HARC_LINKUP_DISC_CHAR;
           }
           else
@@ -1770,10 +2240,10 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           pHARC_Inst->CurrentLinkupChar = HAS_CHAR_HA_FEATURES;
 
           /* read the characteristic value */
-          hciCmdResult = aci_gatt_read_char_value(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_read_char_value(conn_handle,
                                                   pHARC_Inst->HAFeaturesChar.ValueHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->HAFeaturesChar.ValueHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1783,7 +2253,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else
@@ -1798,10 +2277,10 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
         {
           pHARC_Inst->CurrentLinkupChar = HAS_CHAR_ACTIVE_PRESET_INDEX;
           /* read the characteristic value */
-          hciCmdResult = aci_gatt_read_char_value(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_read_char_value(conn_handle,
                                                   pHARC_Inst->ActivePresetIndexChar.ValueHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->ActivePresetIndexChar.ValueHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1811,7 +2290,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else if (pHARC_Inst->CurrentLinkupChar == HAS_CHAR_ACTIVE_PRESET_INDEX)
@@ -1820,11 +2308,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           pHARC_Inst->LinkupState |= HAP_HARC_LINKUP_DISC_CHAR_DESC;
           pHARC_Inst->CurrentLinkupChar = HAS_CHAR_HA_FEATURES;
           /* read the characteristic value */
-          hciCmdResult = aci_gatt_disc_all_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_disc_all_char_desc(conn_handle,
                                                      pHARC_Inst->HAFeaturesChar.ValueHandle,
                                                      pHARC_Inst->HASServiceEndHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_char_desc() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->HAFeaturesChar.ValueHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1834,7 +2322,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
       }
@@ -1844,11 +2341,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
         {
           pHARC_Inst->CurrentLinkupChar = HAS_CHAR_HA_PRESET_CTRL_POINT;
           /* read the characteristic value */
-          hciCmdResult = aci_gatt_disc_all_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_disc_all_char_desc(conn_handle,
                                                      pHARC_Inst->HAPresetControlPointChar.ValueHandle,
                                                      pHARC_Inst->HASServiceEndHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_char_desc() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->HAPresetControlPointChar.ValueHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1858,18 +2355,27 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else if (pHARC_Inst->CurrentLinkupChar == HAS_CHAR_HA_PRESET_CTRL_POINT)
         {
           pHARC_Inst->CurrentLinkupChar = HAS_CHAR_ACTIVE_PRESET_INDEX;
           /* read the characteristic value */
-          hciCmdResult = aci_gatt_disc_all_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_disc_all_char_desc(conn_handle,
                                                      pHARC_Inst->ActivePresetIndexChar.ValueHandle,
                                                      pHARC_Inst->HASServiceEndHandle);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_disc_all_char_desc() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->ActivePresetIndexChar.ValueHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1879,7 +2385,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else if (pHARC_Inst->CurrentLinkupChar == HAS_CHAR_ACTIVE_PRESET_INDEX)
@@ -1898,12 +2413,12 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
             a_client_cfg[1] = 0x00u;
 
             /* write the characteristic descriptor value */
-            hciCmdResult = aci_gatt_write_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+            hciCmdResult = aci_gatt_write_char_desc(conn_handle,
                                                     pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                     2,
                                                     a_client_cfg);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
-                                pHARC_Inst->pConnInfo->Connection_Handle,
+                                conn_handle,
                                 pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                 hciCmdResult);
             if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1913,7 +2428,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
             }
             else
             {
-              pHARC_Inst->AttProcStarted = 1u;
+              /*Register the ATT Procedure*/
+              if (pEATTBearer != 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
             }
           }
           else
@@ -1924,12 +2448,12 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
             a_client_cfg[1] = 0x00u;
 
             /* write the characteristic descriptor value */
-            hciCmdResult = aci_gatt_write_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+            hciCmdResult = aci_gatt_write_char_desc(conn_handle,
                                                     pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                     2,
                                                     a_client_cfg);
             BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
-                                pHARC_Inst->pConnInfo->Connection_Handle,
+                                conn_handle,
                                 pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                 hciCmdResult);
             if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1939,7 +2463,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
             }
             else
             {
-              pHARC_Inst->AttProcStarted = 1u;
+              /*Register the ATT Procedure*/
+              if (pEATTBearer != 0)
+              {
+                BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+              }
+              else
+              {
+                BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                         HAP_HARC_ATT_PROCEDURE_ID);
+              }
             }
           }
         }
@@ -1956,12 +2489,12 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           a_client_cfg[1] = 0x00u;
 
           /* write the characteristic descriptor value */
-          hciCmdResult = aci_gatt_write_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_write_char_desc(conn_handle,
                                                   pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                   2,
                                                   a_client_cfg);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->HAPresetControlPointChar.DescHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1971,7 +2504,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else if (pHARC_Inst->CurrentLinkupChar == HAS_CHAR_HA_PRESET_CTRL_POINT)
@@ -1984,12 +2526,12 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           a_client_cfg[1] = 0x00u;
 
           /* write the characteristic descriptor value */
-          hciCmdResult = aci_gatt_write_char_desc(pHARC_Inst->pConnInfo->Connection_Handle,
+          hciCmdResult = aci_gatt_write_char_desc(conn_handle,
                                                   pHARC_Inst->ActivePresetIndexChar.DescHandle,
                                                   2,
                                                   a_client_cfg);
           BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
-                              pHARC_Inst->pConnInfo->Connection_Handle,
+                              conn_handle,
                               pHARC_Inst->ActivePresetIndexChar.DescHandle,
                               hciCmdResult);
           if (hciCmdResult != BLE_STATUS_SUCCESS)
@@ -1999,7 +2541,16 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,uint8_t Er
           }
           else
           {
-            pHARC_Inst->AttProcStarted = 1u;
+            /*Register the ATT Procedure*/
+            if (pEATTBearer != 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,HAP_HARC_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pHARC_Inst->pConnInfo->Connection_Handle,
+                                                       HAP_HARC_ATT_PROCEDURE_ID);
+            }
           }
         }
         else if (pHARC_Inst->CurrentLinkupChar == HAS_CHAR_ACTIVE_PRESET_INDEX)
@@ -2240,7 +2791,6 @@ static void HAP_HARC_InitInstance(HAP_HARC_Inst_t *pHARC_Inst)
   pHARC_Inst->CurrentLinkupChar = 0;
   pHARC_Inst->ReqHandle = 0x0000;
   pHARC_Inst->pConnInfo = 0x0;
-  pHARC_Inst->AttProcStarted = 0u;
   pHARC_Inst->DelayDeallocation = 0u;
   pHARC_Inst->HAFeaturesChar.ValueHandle = 0x0000u;
   pHARC_Inst->HAFeaturesChar.DescHandle = 0x0000u;
@@ -2277,17 +2827,40 @@ static HAP_HARC_Inst_t *HAP_HARC_GetAvailableInstance(void)
   return 0u;
 }
 
-static HAP_HARC_Inst_t *HAP_HARC_GetInstance(uint16_t ConnHandle)
+static HAP_HARC_Inst_t *HAP_HARC_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer)
 {
   uint8_t i;
-
-  /*Get a free HAP Client Instance*/
-  for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+#if (CFG_BLE_EATT_BEARER_PER_LINK > 0u)
+  /*Check if the connection handle corresponds to a Connection Oriented Channel*/
+  if ((uint8_t) (ConnHandle >> 8) == 0xEA)
   {
-    if (HAP_Context.HARC.aHARCInst[i].pConnInfo != 0
-        && HAP_Context.HARC.aHARCInst[i].pConnInfo->Connection_Handle == ConnHandle)
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
     {
-      return &HAP_Context.HARC.aHARCInst[i];
+      if ((HAP_Context.HARC.aHARCInst[i].pConnInfo != 0) \
+          && (HAP_Context.HARC.aHARCInst[i].pConnInfo->Connection_Handle != 0xFFFFu))
+      {
+        for (uint8_t j = 0u; j < CFG_BLE_EATT_BEARER_PER_LINK; j++)
+        {
+          if ( (HAP_Context.HARC.aHARCInst[i].pConnInfo->aEATTBearer[j].State == 0u) \
+              && (HAP_Context.HARC.aHARCInst[i].pConnInfo->aEATTBearer[j].ChannelIdx == (uint8_t)(ConnHandle)))
+          {
+            *pEATTBearer = &HAP_Context.HARC.aHARCInst[i].pConnInfo->aEATTBearer[j];
+            return &HAP_Context.HARC.aHARCInst[i];
+          }
+        }
+      }
+    }
+  }
+  else
+#endif /*(CFG_BLE_EATT_BEARER_PER_LINK > 0u)*/
+  {
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+    {
+      if ((HAP_Context.HARC.aHARCInst[i].pConnInfo != 0) \
+          && (HAP_Context.HARC.aHARCInst[i].pConnInfo->Connection_Handle == ConnHandle))
+      {
+        return &HAP_Context.HARC.aHARCInst[i];
+      }
     }
   }
   return 0u;
@@ -2310,5 +2883,29 @@ HAP_HARC_Inst_t *HAP_HARC_GetOtherMember(HAP_HARC_Inst_t *pInst)
     }
   }
   return 0;
+}
+
+static tBleStatus HAP_HARC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer)
+{
+
+  tBleStatus status = BLE_STATUS_FAILED;
+
+  if (pEATTBearer != 0)
+  {
+    if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(pEATTBearer->ChannelIdx,
+                                                            HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  else
+  {
+    /* Check if an ATT Procedure was started*/
+    if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(ConnHandle,HAP_HARC_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  return status;
 }
 #endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */

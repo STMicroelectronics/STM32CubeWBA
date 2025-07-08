@@ -49,9 +49,9 @@
 </ul>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA52xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA52CG-Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
-<li><p>On STM32WBA52CG-Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:</p>
+<li><p>This example runs on STM32WBA65xx devices.</p></li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA65CG-Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>On STM32WBA65CG-Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:</p>
 <ul>
 <li>CN11: GND [OFF]</li>
 <li>JP4: VDDRF [ON]</li>
@@ -66,16 +66,16 @@
 </ul></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>This application requires two STM32WBA52xx-Nucleo boards. One device will act as 802.15.4 coordinator ensuring association response and network establishment. The other device will act as a MAC 802.15.4 Node. The Node request association on startup and send data to the coordinator.</p>
+<p>This application requires two STM32WBA65xx-Nucleo boards. One device will act as 802.15.4 coordinator ensuring association response and network establishment. The other device will act as a MAC 802.15.4 Node. The Node request association on startup and send data to the coordinator.</p>
 <p>Below example implements the CoordinatorDevices.</p>
 <p>Minimum requirements for the demo:</p>
 <ul>
-<li>1 STM32WBA52xx-Nucleo board in MAC 802.15.4 Coordinatormode using current generated binary.</li>
-<li>1 STM32WBA52xx-Nucleo board in MAC 802.15.4 Node (see MAC 802.14.4 Node example)</li>
+<li>1 STM32WBA65xx-Nucleo board in MAC 802.15.4 Coordinatormode using current generated binary.</li>
+<li>1 STM32WBA65xx-Nucleo board in MAC 802.15.4 Node (see MAC 802.14.4 Node example)</li>
 </ul>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
-<li><p>Connect 2 STM32WBA52xx-Nucleo boards to your PC</p>
+<li><p>Connect 2 STM32WBA65xx-Nucleo boards to your PC</p>
 <ul>
 <li><p>COORDINATOR :</p>
 <ul>

@@ -116,6 +116,11 @@ typedef struct
 
 /* Exported functions ---------------------------------------------*/
 /**
+  * @brief Init Audio Stack
+  * @retval Status of the operation
+  */
+tBleStatus APP_AUDIO_STACK_Init(void);
+/**
   * @brief Initialize PBP Source and Start Broadcast Audio Procedure.
   */
 uint8_t PBPAPP_InitSource(void);

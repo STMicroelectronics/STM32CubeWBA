@@ -66,7 +66,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
@@ -222,8 +221,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -314,9 +314,11 @@ void TIM16_IRQHandler(void)
     LL_TIM_ClearFlag_UPDATE(TIM16);
 
 #if (CFG_SCM_SUPPORTED == 1)
-    scm_hserdy_isr();
+    /* SCM HSE BEGIN */
+    /* Update interrupt processing */
+    SCM_HSE_SW_HSERDY_isr();
+    /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
-
   }
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
@@ -331,7 +333,6 @@ void RNG_IRQHandler(void)
   /* USER CODE BEGIN RNG_IRQn 0 */
 
   /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
   /* USER CODE BEGIN RNG_IRQn 1 */
 
   /* USER CODE END RNG_IRQn 1 */
@@ -360,13 +361,13 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles HASH global interrupt.
+  * @brief This function handles ADC4 (12bits) global interrupt.
   */
-void HASH_IRQHandler(void)
+void ADC4_IRQHandler(void)
 {
-  /* USER CODE BEGIN HASH_IRQn 0 */
+  /* USER CODE BEGIN ADC4_IRQn 0 */
 
-  /* USER CODE END HASH_IRQn 0 */
+  /* USER CODE END ADC4_IRQn 0 */
 
   /* Disable SW radio low interrupt to prevent nested calls */
   NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
@@ -384,9 +385,9 @@ void HASH_IRQHandler(void)
   /* Re-enable SW radio low interrupt */
   NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
 
-  /* USER CODE BEGIN HASH_IRQn 1 */
+  /* USER CODE BEGIN ADC4_IRQn 1 */
 
-  /* USER CODE END HASH_IRQn 1 */
+  /* USER CODE END ADC4_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

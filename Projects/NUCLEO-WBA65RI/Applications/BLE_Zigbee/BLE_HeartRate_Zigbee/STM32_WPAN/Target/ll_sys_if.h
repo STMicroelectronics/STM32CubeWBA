@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -39,6 +39,15 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
+#define DRIFT_TIME_DEFAULT                      (13)
+#define DRIFT_TIME_EXTRA_LSI2                   (9)
+#define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
+
+#define EXEC_TIME_DEFAULT                       (24)
+#define EXEC_TIME_EXTRA_LSI2                    (3)
+#define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
+
+#define SCHDL_TIME_DEFAULT                      (20)
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -54,6 +63,7 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

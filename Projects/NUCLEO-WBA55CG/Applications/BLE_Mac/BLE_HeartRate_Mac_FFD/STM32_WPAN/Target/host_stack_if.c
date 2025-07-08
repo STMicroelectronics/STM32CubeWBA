@@ -45,9 +45,6 @@ extern uint8_t missed_hci_event_flag;
 
 /* USER CODE END EFP */
 
-/* Trigger BLE Host stack process after calling any aci/hci functions */
-#define BLE_WRAP_POSTPROC BleStackCB_Process()
-
 /**
   * @brief  Host stack processing request from Link Layer.
   * @param  None

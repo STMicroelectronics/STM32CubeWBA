@@ -12,8 +12,8 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, distributed network
 
 For this application it is requested to have:  
 
-* One STM32WBA55xx Nucleo board loaded with application : **Zigbee_OnOff_Server_Distrib**  
-* One or more STM32WBA55xx board loaded with application : **Zigbee_OnOff_Client_Distrib**  
+* One STM32WBA65xx Nucleo board loaded with application : **Zigbee_OnOff_Server_Distrib**  
+* One or more STM32WBA65xx board loaded with application : **Zigbee_OnOff_Client_Distrib**  
 
 <pre>
     
@@ -32,7 +32,7 @@ For this application it is requested to have:
 
 ### __Application Setup__ 
 
-* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
+* First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
 * To run the application :
 	1. Start the first board (it can be either Device1 or Device2), wait for four seconds.   
 
@@ -63,7 +63,7 @@ You must see the RED LED (LED3) toggling on the server side.
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA55xx devices.  
+* This example runs on STM32WBA65xx devices.  
 
 * This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 

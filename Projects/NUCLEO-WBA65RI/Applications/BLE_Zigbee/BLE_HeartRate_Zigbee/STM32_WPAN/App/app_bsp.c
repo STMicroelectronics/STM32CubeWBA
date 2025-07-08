@@ -551,10 +551,13 @@ static void Button_InitTask( void )
 
 static void Button_InitTask( void )
 {
+#ifdef CFG_BSP_ON_CEB
+  /* Task associated with push button B2 */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
+#else /* CFG_BSP_ON_CEB */
   /* Task associated with push button B1 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B1, UTIL_SEQ_RFU, APP_BSP_Button1Action );
 
-#ifndef CFG_BSP_ON_CEB
   /* Task associated with push button B2 */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BUTTON_B2, UTIL_SEQ_RFU, APP_BSP_Button2Action );
 
@@ -645,17 +648,16 @@ static void Button_TriggerActions( void * arg )
   UTIL_TIMER_Stop( &p_buttonDesc->longTimerId );
 
 #ifdef CFG_BSP_ON_CEB
-  /* For B-WBA5M-WPAN board, Button B2 as same task as Button B1 on other boards */
   if ( p_buttonDesc->button == B2 )
   {
 #ifdef CFG_BSP_ON_FREERTOS
-    osSemaphoreRelease( ButtonB1Semaphore );
+    osSemaphoreRelease( ButtonB2Semaphore );
 #endif /* CFG_BSP_ON_FREERTOS */
 #ifdef CFG_BSP_ON_THREADX
-    tx_semaphore_put( &ButtonB1Semaphore );
+    tx_semaphore_put( &ButtonB2Semaphore );
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_SEQUENCER
-    UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_B1, CFG_SEQ_PRIO_0 );
+    UTIL_SEQ_SetTask( 1U << CFG_TASK_BUTTON_B2, CFG_SEQ_PRIO_0 );
 #endif /* CFG_BSP_ON_SEQUENCER */
   }
 #endif /* CFG_BSP_ON_CEB */
@@ -718,63 +720,62 @@ static void Button_TriggerActions( void * arg )
 uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   uint8_t   cReturn = 0;
-  uint16_t  eButton = UINT16_MAX;
+  uint16_t  iButton = UINT16_MAX;
 
   /* Parse received frame */
 #ifdef CFG_BSP_ON_CEB
-  /* For Board B_WBA5M_WPAN, the only button (same as B1 on other board) is named B2. */
-  if ( (strcmp( (char const*)pRxBuffer, "B1" ) == 0) ||
-       (strcmp( (char const*)pRxBuffer, "SW1" ) == 0) )
+  if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
+       (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
   {
-    eButton = B2;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B1L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW1L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B2);
-    eButton = B2;
-  }
-#else /* CFG_BSP_ON_CEB */
-  if ( (strcmp( (char const*)pRxBuffer, "B1" ) == 0) ||
-       (strcmp( (char const*)pRxBuffer, "SW1" ) == 0) )
-  {
-    eButton = B1;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B1L" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW1L" ) == 0) )
-  {
-    APP_BSP_SetButtonIsLongPressed(B1);
-    eButton = B1;
-  }
-  else if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
-            (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
-  {
-    eButton = B2;
+    iButton = B2;
   }
   else if ( (strcmp( (char const*)pRxBuffer, "B2L" ) == 0) ||
             (strcmp( (char const*)pRxBuffer, "SW2L" ) == 0) )
   {
     APP_BSP_SetButtonIsLongPressed(B2);
-    eButton = B2;
+    iButton = B2;
+  }
+#else /* CFG_BSP_ON_CEB */
+  if ( (strcmp( (char const*)pRxBuffer, "B1" ) == 0) ||
+       (strcmp( (char const*)pRxBuffer, "SW1" ) == 0) )
+  {
+    iButton = B1;
+  }
+  else if ( (strcmp( (char const*)pRxBuffer, "B1L" ) == 0) ||
+            (strcmp( (char const*)pRxBuffer, "SW1L" ) == 0) )
+  {
+    APP_BSP_SetButtonIsLongPressed(B1);
+    iButton = B1;
+  }
+  else if ( (strcmp( (char const*)pRxBuffer, "B2" ) == 0) ||
+            (strcmp( (char const*)pRxBuffer, "SW2" ) == 0) )
+  {
+    iButton = B2;
+  }
+  else if ( (strcmp( (char const*)pRxBuffer, "B2L" ) == 0) ||
+            (strcmp( (char const*)pRxBuffer, "SW2L" ) == 0) )
+  {
+    APP_BSP_SetButtonIsLongPressed(B2);
+    iButton = B2;
   }
   else if ( (strcmp( (char const*)pRxBuffer, "B3" ) == 0) ||
             (strcmp( (char const*)pRxBuffer, "SW3" ) == 0) )
   {
-    eButton = B3;
+    iButton = B3;
   }
   else if ( (strcmp( (char const*)pRxBuffer, "B3L" ) == 0) ||
             (strcmp( (char const*)pRxBuffer, "SW3L" ) == 0) )
   {
     APP_BSP_SetButtonIsLongPressed(B3);
-    eButton = B3;
+    iButton = B3;
   }
 #endif /* CFG_BSP_ON_CEB */
 
-  if ( eButton != UINT16_MAX )
+  if ( iButton != UINT16_MAX )
   {
     /* Launch Button Command */
     LOG_INFO_APP( "%s pressed by Serial Command.", pRxBuffer );
-    BSP_PB_Callback( (Button_TypeDef)eButton );
+    BSP_PB_Callback( (Button_TypeDef)iButton );
     cReturn = 1;
   }
 

@@ -43,7 +43,7 @@ extern "C" {
 #define DRIFT_TIME_EXTRA_LSI2                   (9)
 #define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
 
-#define EXEC_TIME_DEFAULT                       (10)
+#define EXEC_TIME_DEFAULT                       (24)
 #define EXEC_TIME_EXTRA_LSI2                    (3)
 #define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
 
@@ -63,6 +63,7 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

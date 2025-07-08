@@ -28,6 +28,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_compiler.h"
 #include "bap_types.h"
+#include "ble_audio_stack.h"
 #include "cap.h"
 
 /* Defines -------------------------------------------------------------------*/
@@ -57,6 +58,19 @@ extern "C" {
  */
 #define TMAP_MEM_TOTAL_BUFFER_SIZE(num_ble_links) (num_ble_links * TMAP_CLT_MEM_PER_CONN_SIZE_BYTES)
 
+/*
+ * TMAP_GATT_DATABASE_SIZE: memory size used to store information related to a device to store in Non Volatile Memory
+ */
+#define TMAP_GATT_DATABASE_SIZE            (17u)
+
+/*
+ * BLE_TMAP_CLT_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the
+ * storage in Non Volatile Memory of the Telephony and Media Audio Profile in Client role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ */
+#define BLE_TMAP_CLT_DB_BUFFER_SIZE(num_db_devices) BLE_AUDIO_DB_BUFFER_SIZE(num_db_devices,TMAP_GATT_DATABASE_SIZE)
+
 /* Types ---------------------------------------------------------------------*/
 /* Types of mask for roles of the Media Control Profile */
 typedef uint16_t TMAP_Role_t;
@@ -67,9 +81,6 @@ typedef uint16_t TMAP_Role_t;
 #define TMAP_ROLE_BROADCAST_MEDIA_SENDER        (0x10)
 #define TMAP_ROLE_BROADCAST_MEDIA_RECEIVER      (0x20)
 
-typedef uint8_t TMAP_Operation_t;
-#define TMAP_OP_NONE                            (0x00u)         /* No operation */
-#define TMAP_OP_READ                            (0x01u)         /* Read Operation */
 
 /* Types of Microphone Control Profile Linkup Mode */
 typedef uint8_t TMAP_LinkupMode_t;
@@ -79,21 +90,6 @@ typedef uint8_t TMAP_LinkupMode_t;
 #define TMAP_LINKUP_MODE_RESTORE           (0x01u) /* Link Up information is restored from previous
                                                     * complete Link Up from persistent memory.
                                                     */
-
-typedef uint8_t TMAP_LinkupProcState_t;
-#define TMAP_LINKUP_IDLE                   (0x00u)
-#define TMAP_LINKUP_DISC_SERVICE           (0x01u) /* Discover TMAS in remote GATT database */
-#define TMAP_LINKUP_DISC_CHAR              (0x02u) /* Discover all Characteristics of the
-                                                    * TMAS in remote GATT database
-                                                    */
-#define TMAP_LINKUP_DISC_CHAR_DESC         (0x04u) /* Discover all Characteristics descriptor
-                                                    * of the TMAS in remote GATT database
-                                                    */
-#define TMAP_LINKUP_READ_CHAR              (0x08u) /* Read Characteristic in the remote GATT
-                                                    * database.
-                                                    */
-#define TMAP_LINKUP_RESTORE                (0x10u) /* TMAP Linkup restore*/
-#define TMAP_LINKUP_COMPLETE               (0x20u) /* TMAP Link Up is complete with success */
 
 /* Types for Telephony and Media Audio Profile Events */
 typedef enum
@@ -121,43 +117,6 @@ typedef struct
   uint8_t               *pInfo;         /* Pointer on information associated to the event */
 }TMAP_Notification_Evt_t;
 
-/* Structure used to store GATT characteristic information */
-typedef struct
-{
-  uint16_t      ValueHandle;            /* Handle of the characteristic value */
-  uint16_t      DescHandle;             /* handle of the characteristic descriptor */
-  uint8_t       Properties;             /* Properties of the characteristic */
-  uint16_t      EndHandle;              /* Last handle of the characteristic */
-}TMAP_GATT_CharacteristicInfo_t;
-
-/* TMAP Controller Instance Structure */
-typedef struct
-{
-  uint16_t                       ConnHandle;                     /* Connection Handle associated to the link
-                                                                  * between the TMAP Client with the remote
-                                                                  * TMAP Server
-                                                                  */
-  TMAP_LinkupMode_t              LinkupMode;                     /* Linkup Mode */
-  uint16_t                       LinkupState;                    /* Bitmask of TMAP_LinkupProcState_t and
-                                                                  * TMAS_Characteristic_t
-                                                                  */
-  TMAP_GATT_CharacteristicInfo_t *pGattChar;                     /* Pointer on GATT Characteristic */
-  TMAP_Operation_t               Op;                             /* Current TMAP_Operation_t */
-  uint16_t                       ReqHandle;                      /* Att Handle under process during ATT operation */
-  uint8_t                        AttProcStarted;                 /* Flag to 1 if an ATT procedure is started */
-  uint8_t                        DelayDeallocation;              /* Indicate if the TMAP Client Instance deallocation
-                                                                  * should be delayed when ACI_GATT_PROC_COMPLETE_VSEVT_CODE
-                                                                  * event is received */
-  uint16_t                       ServiceStartHandle;             /* start handle of the Service in the
-                                                                  * GATT Database of the MICS Server
-                                                                  */
-  uint16_t                       ServiceEndHandle;               /* end handle of the Service in the
-                                                                  * GATT Database of the MICS Server
-                                                                  */
-  TMAP_GATT_CharacteristicInfo_t TMAPRoleChar;                   /* TMAP Role characteristic */
-
-  uint8_t                        ErrorCode;                      /* GATT Error Code */
-}TMAP_CltInst_t;
 
 /* TMAP Configuration */
 typedef struct

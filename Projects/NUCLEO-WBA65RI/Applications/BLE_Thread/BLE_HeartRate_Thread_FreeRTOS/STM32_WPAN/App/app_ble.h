@@ -27,8 +27,10 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-
+#include "cmsis_os2.h"
+  
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -132,7 +134,9 @@ enum
 **/
 enum
 {
-  BOARD_ID_NUCLEO_WBA =  0x8B
+  BOARD_ID_NUCLEO_WBA5X =  0x8B,
+  BOARD_ID_DK_WBA5X     =  0x8C,
+  BOARD_ID_NUCLEO_WBA6X =  0x8E
 };
 
 /** 
@@ -151,6 +155,8 @@ enum
 
 /* External variables --------------------------------------------------------*/
 
+extern osSemaphoreId_t    BleStackSemaphore;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -167,6 +173,7 @@ enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void APP_BLE_HostNvmStore(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);

@@ -28,8 +28,6 @@
   * @{
   */
 
-extern funcptr_NS pSecureFaultCallback;
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -155,7 +153,13 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+
+  /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
+  /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -171,7 +175,13 @@ void SysTick_Handler(void)
   */
 void GTZC_IRQHandler(void)
 {
+  /* USER CODE BEGIN GTZC_IRQn 0 */
+
+  /* USER CODE END GTZC_IRQn 0 */
   HAL_GTZC_IRQHandler();
+  /* USER CODE BEGIN GTZC_IRQn 1 */
+
+  /* USER CODE END GTZC_IRQn 1 */
 }
 
 /**

@@ -82,11 +82,6 @@ None
 
     + The "tx_initialize_low_level.S" should be also modified to enable the "USE_DYNAMIC_MEMORY_ALLOCATION" flag.
 
-#### <b>USBX usage hints</b>
-
-- The DTCM (0x20000000) memory region should not be used by application in case USB DMA is enabled
-- Should make sure to configure the USB pool memory region with attribute "Non-Cacheable" to ensure coherency between CPU and USB DMA
-
 ### <b>Keywords</b>
 
 Connectivity, USBX Host, ThreadX, USB, HID, Mouse, Keyboard, UART, USART,

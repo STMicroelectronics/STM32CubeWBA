@@ -20,7 +20,7 @@
 
 #include "gmap_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "codec_mngr.h"
@@ -31,6 +31,7 @@
 #include "app_menu_cfg.h"
 #include "log_module.h"
 #include "app_ble.h"
+#include "simple_nvm_arbiter.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +66,7 @@
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
@@ -111,6 +112,10 @@
 #endif /* (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u) */
 
 #define BLE_CSIP_SET_COORDINATOR_DYN_ALLOC_SIZE         BLE_CSIP_SET_COORDINATOR_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
+
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
+
 
 #define VOLUME_STEP 10
 #define BASE_VOLUME 128
@@ -268,6 +273,7 @@ static uint32_t aASCSCltMemBuffer[DIVC(BAP_ASCS_CLT_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t audio_init_buffer[BLE_AUDIO_DYN_ALLOC_SIZE];
+static uint64_t audio_buffer_nvm[CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE] = {0};
 static BleAudioInit_t pBleAudioInit;
 #if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
 static uint32_t aCltrMemBuffer[DIVC(BLE_VCP_CTLR_DYN_ALLOC_SIZE,4)];
@@ -391,6 +397,32 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void);
 extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* First register the APP BLE Audio buffer */
+  SNVMA_Register(APP_AUDIO_NvmBuffer,
+                 (uint32_t *)audio_buffer_nvm,
+                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  /* Realize a restore */
+  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+
+  /* Initialize the Audio IP*/
+  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  pBleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  pBleAudioInit.bleAudioStartRamAddress = (uint8_t*)audio_init_buffer;
+  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  pBleAudioInit.MaxNumOfBondedDevices = APP_MAX_NUM_BONDED_DEVICES;
+  pBleAudioInit.bleAudioStartRamAddress_NVM = audio_buffer_nvm;
+  pBleAudioInit.total_buffer_size_NVM = CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE;
+  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 
 void GMAPAPP_Init(void)
 {
@@ -424,7 +456,7 @@ tBleStatus GMAPAPP_Linkup(uint16_t ConnHandle)
     if (NVMLink != 0)
     {
       GAF_Profiles_Link_t link = 0x00u;
-      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
       LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                   current_link,
@@ -504,7 +536,7 @@ tBleStatus GMAPAPP_Linkup(uint16_t ConnHandle)
       }
       if (link != 0x00u)
       {
-        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
         LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -573,12 +605,15 @@ void GMAP_Notification(GMAP_Notification_Evt_t *pNotification)
       }
       Menu_SetNoStreamPage();
 
-      if (p_conn->ConfirmIndicationRequired == 1u)
+      if (p_conn != 0)
       {
-        /* Confirm indication now that the GATT is available */
-        ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-        LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
-        p_conn->ConfirmIndicationRequired = 0u;
+        if (p_conn->ConfirmIndicationRequired == 1u)
+        {
+          /* Confirm indication now that the GATT is available */
+          ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
+          LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          p_conn->ConfirmIndicationRequired = 0u;
+        }
       }
 
 #if (CFG_BLE_NUM_LINK > 0u)
@@ -1254,9 +1289,9 @@ tBleStatus GMAPAPP_StartBroadcastSource(uint8_t QOSConfId)
 
   GMAPAPP_SetupBASE(QOSConfId);
 
-  if (APP_CodecConf[Get_LC3_Broadcast_Conf_ID(QOSConfId)].freq == SAMPLE_FREQ_48000_HZ
-     && (BROADCAST_SOURCE_NUM_BIS == 2
-       || LTV_GetNumberOfChannelsSet(BROADCAST_SOURCE_CHANNEL_ALLOC_1) == 2))
+  if ((APP_CodecConf[Get_LC3_Broadcast_Conf_ID(QOSConfId)].freq == SAMPLE_FREQ_48000_HZ)
+     && ((BROADCAST_SOURCE_NUM_BIS == 2)
+       || (LTV_GetNumberOfChannelsSet(BROADCAST_SOURCE_CHANNEL_ALLOC_1) == 2)))
   {
     /* Reduce RTN */
     GMAPAPP_Context.RTN = 1;
@@ -1362,7 +1397,7 @@ void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data)
 
       }
     }
-    
+
     /* Process last packets */
     pData[i+1] = pData[i];
     for (j = 1; j < GMAPAPP_Context.SinkDecimation; j++)
@@ -1429,7 +1464,6 @@ void APP_NotifyRxAudioHalfCplt(void)
 
 void GMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_t Peer_Address[6], uint8_t role)
 {
-  uint8_t status;
   APP_ACL_Conn_t *p_conn = APP_GetACLConn(ConnHandle);
   if (p_conn == 0)
   {
@@ -1455,9 +1489,6 @@ void GMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_
       }
     }
   }
-  status = aci_gap_send_pairing_req(ConnHandle, 0x00);
-  LOG_INFO_APP("aci_gap_send_pairing_req returns %d\n",status);
-  UNUSED(status);
 }
 
 void GMAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle)
@@ -1632,6 +1663,10 @@ uint8_t APP_GetNumActiveACLConnections(void)
   return num;
 }
 
+void GMAPAPP_ClearDatabase(void)
+{
+  BLE_AUDIO_STACK_DB_ClearAllRecords();
+}
 /*************************************************************
  *
  * LOCAL FUNCTIONS
@@ -1644,17 +1679,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
 
   LOG_INFO_APP("CAPAPP_Init()\n");
 
-  /* Initialize the Audio IP*/
-  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  pBleAudioInit.bleStartRamAddress = (uint8_t*)audio_init_buffer;
-  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
-  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
-  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
-  if(status != BLE_STATUS_SUCCESS)
-  {
-    return status;
-  }
 
   /*Clear the CAP Configuration*/
   memset(&APP_CAP_Config, 0, sizeof(APP_CAP_Config));
@@ -1749,12 +1773,12 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
     return status;
   }
 #if (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1)
-    if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
-    {
+  if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
+  {
 #if (APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)
-      GMAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
+    GMAPAPP_Context.SetMemberDiscoveryProcActive = 1u;
 #endif /*(APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)*/
-    }
+  }
 #endif /* (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1) */
   for (uint8_t i = 0; i< APP_MAX_NUM_CIS; i++)
   {
@@ -2740,7 +2764,7 @@ static APP_ASE_Info_t * GMAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
 #if (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0u)
       for( i = 0; i < MAX_NUM_UCL_SRC_ASE_PER_LINK;i++)
       {
-        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSnkASE[i].allocated == 1u))
+        if((p_conn->pASEs->aSrcASE[i].ID == ASE_ID)  && (p_conn->pASEs->aSrcASE[i].allocated == 1u))
         {
           return &p_conn->pASEs->aSrcASE[i];
         }
@@ -3036,8 +3060,8 @@ static Sampling_Freq_t GMAPAPP_GetTargetFrequency(uint8_t Frequency, Audio_Role_
   uint8_t i;
   uint8_t j;
   Sampling_Freq_t target_frequency = Frequency;
-  APP_ASE_Info_t *p_app_ase2;
-  BAP_ASE_Info_t *p_ase2;
+  APP_ASE_Info_t *p_app_ase2 = 0;
+  BAP_ASE_Info_t *p_ase2 = 0;
   GMAPAPP_Context.SinkDecimation = 1;
   GMAPAPP_Context.SourceDecimation = 1;
   /* Check if other ASEs are configured with different sample rates */
@@ -3056,36 +3080,44 @@ static Sampling_Freq_t GMAPAPP_GetTargetFrequency(uint8_t Frequency, Audio_Role_
           p_app_ase2 = &GMAPAPP_Context.ACL_Conn[j].pASEs->aSrcASE[i-MAX_NUM_UCL_SNK_ASE_PER_LINK];
         }
 
-        if (p_app_ase2->ID != p_ase->ASE_ID
-            && p_app_ase2->type != p_ase->Type
-            && p_app_ase2->allocated == 1u)
+        if (p_app_ase2 != 0)
         {
-          /* Found another ASE allocated */
-          p_ase2 = CAP_Unicast_GetASEInfo(GMAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle,
-                                          GMAPAPP_Context.ACL_Conn[j].pASEs->aSnkASE[i].ID);
-          if (p_ase2->State == ASE_STATE_ENABLING)
+          if (p_app_ase2->ID != p_ase->ASE_ID
+              && p_app_ase2->type != p_ase->Type
+              && p_app_ase2->allocated == 1u)
           {
-            Sampling_Freq_t frequency2 = LTV_GetConfiguredSamplingFrequency(p_ase2->params.Codec.CodecConf.pSpecificConf,
-                                                                            p_ase2->params.Codec.CodecConf.SpecificConfLength);
-            if (target_frequency <= SAMPLE_FREQ_48000_HZ && frequency2 <= SAMPLE_FREQ_48000_HZ)
+            /* Found another ASE allocated */
+            p_ase2 = CAP_Unicast_GetASEInfo(GMAPAPP_Context.ACL_Conn[j].Acl_Conn_Handle,
+                                            p_app_ase2->ID);
+            if (p_ase2 != 0)
             {
-              LOG_INFO_APP("Target Frequency = %d, Frequency2 = %d\n", target_frequency, frequency2);
-              /* Retrieve frequency and decimation of combined frequencies */
-              if (role == AUDIO_ROLE_SINK)
+              if (p_ase2->State == ASE_STATE_ENABLING)
               {
-                GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
-                GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                Sampling_Freq_t frequency2 = LTV_GetConfiguredSamplingFrequency(p_ase2->params.Codec.CodecConf.pSpecificConf,
+                                                                                p_ase2->params.Codec.CodecConf.SpecificConfLength);
+                if (target_frequency <= SAMPLE_FREQ_48000_HZ && frequency2 <= SAMPLE_FREQ_48000_HZ)
+                {
+                  LOG_INFO_APP("Target Frequency = %d, Frequency2 = %d\n", target_frequency, frequency2);
+                  /* Retrieve frequency and decimation of combined frequencies */
+                  if (role == AUDIO_ROLE_SINK)
+                  {
+                    GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
+                    GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                  }
+                  else
+                  {
+                    GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
+                    GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
+                  }
+                  target_frequency = APP_CombinedFrequencyTable[target_frequency][frequency2].Frequency;
+                  LOG_INFO_APP("ASE id %d is also starting, using combined frequency %d\n",
+                               p_app_ase2->ID,
+                               target_frequency);
+                  LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n",
+                               GMAPAPP_Context.SourceDecimation, GMAPAPP_Context.SinkDecimation);
+                  return target_frequency;
+                }
               }
-              else
-              {
-                GMAPAPP_Context.SourceDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier1;
-                GMAPAPP_Context.SinkDecimation = APP_CombinedFrequencyTable[target_frequency][frequency2].Multiplier2;
-              }
-              target_frequency = APP_CombinedFrequencyTable[target_frequency][frequency2].Frequency;
-              LOG_INFO_APP("ASE id %d is also starting, using combined frequency %d\n", p_app_ase2->ID, target_frequency);
-              LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n",
-                           GMAPAPP_Context.SourceDecimation, GMAPAPP_Context.SinkDecimation);
-              return target_frequency;
             }
           }
         }

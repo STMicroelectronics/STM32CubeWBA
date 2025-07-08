@@ -3,7 +3,7 @@
  * @heading ZDO Layer
  * @brief Zigbee ZDO header file
  * @author Exegin Technologies Limited
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  *
  * This file provides the declaration of all the public API's and macros used by the ZDO layer.
  */
@@ -171,7 +171,7 @@ enum ZbZdoAddrReqTypeT {
 #define ZB_ZDP_NEIGHBOR_PERMIT_JOIN_UNKNOWN         0x02U
 
 /* Routing Descriptor Flags */
-#define ZB_ZDP_ROUTE_MASK_STATUS                    0x07U
+#define ZB_ZDP_ROUTE_MASK_STATUS                    0x07U /* E.g. ZB_NWK_ROUTE_STATUS_ACTIVE */
 #define ZB_ZDP_ROUTE_MASK_CONSTRAINED               0x08U
 #define ZB_ZDP_ROUTE_MASK_MANY_TO_ONE               0x10U
 #define ZB_ZDP_ROUTE_MASK_RECORD_REQUIRED           0x20U

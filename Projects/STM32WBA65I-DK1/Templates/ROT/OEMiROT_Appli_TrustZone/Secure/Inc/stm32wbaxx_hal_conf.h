@@ -179,7 +179,7 @@
  * Activated: CRC code is present inside driver
  * Deactivated: CRC code cleaned from driver
  */
-#define USE_SPI_CRC                   1U
+#define USE_SPI_CRC                   0U
 
 /* ################## CRYP peripheral configuration ########################## */
 

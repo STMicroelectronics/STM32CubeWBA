@@ -27,6 +27,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

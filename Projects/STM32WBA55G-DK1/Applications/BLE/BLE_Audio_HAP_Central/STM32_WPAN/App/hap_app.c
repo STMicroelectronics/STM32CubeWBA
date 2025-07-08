@@ -20,7 +20,7 @@
 
 #include "hap_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "codec_mngr.h"
@@ -31,6 +31,7 @@
 #include "app_menu_cfg.h"
 #include "log_module.h"
 #include "app_ble.h"
+#include "simple_nvm_arbiter.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -66,7 +67,7 @@
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
@@ -130,6 +131,9 @@
 #endif /* (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u) */
 
 #define BLE_CSIP_SET_COORDINATOR_DYN_ALLOC_SIZE         BLE_CSIP_SET_COORDINATOR_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
+
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
 
 #define VOLUME_STEP 10
 #define BASE_VOLUME 128
@@ -218,6 +222,7 @@ static uint32_t aASCSCltMemBuffer[DIVC(BAP_ASCS_CLT_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t audio_init_buffer[BLE_AUDIO_DYN_ALLOC_SIZE];
+static uint64_t audio_buffer_nvm[CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE] = {0};
 static BleAudioInit_t pBleAudioInit;
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 static uint32_t aCCPSrvMemBuffer[DIVC(BLE_CCP_SRV_DYN_ALLOC_SIZE,4)];
@@ -306,6 +311,32 @@ uint8_t LocalMute = 0x00;
 /* Exported functions --------------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* First register the APP BLE Audio buffer */
+  SNVMA_Register(APP_AUDIO_NvmBuffer,
+                 (uint32_t *)audio_buffer_nvm,
+                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  /* Realize a restore */
+  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+
+  /* Initialize the Audio IP*/
+  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  pBleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  pBleAudioInit.bleAudioStartRamAddress = (uint8_t*)audio_init_buffer;
+  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  pBleAudioInit.MaxNumOfBondedDevices = APP_MAX_NUM_BONDED_DEVICES;
+  pBleAudioInit.bleAudioStartRamAddress_NVM = audio_buffer_nvm;
+  pBleAudioInit.total_buffer_size_NVM = CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE;
+  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 
 void HAPAPP_Init(void)
 {
@@ -347,7 +378,7 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
     if (NVMLink != 0)
     {
       GAF_Profiles_Link_t link = 0x00u;
-      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
       LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                   current_link,
@@ -427,7 +458,7 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
       }
       if (link != 0x00u)
       {
-        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
         LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -491,7 +522,6 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
           p_conn->AudioProfile |= AUDIO_PROFILE_HAP;
         }
       }
-      Menu_SetNoStreamPage();
       if (p_conn != 0)
       {
         if (p_conn->ConfirmIndicationRequired == 1u)
@@ -509,9 +539,13 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
           p_conn->ConfirmIndicationRequired = 0u;
         }
       }
-      ret = HAP_HARC_ReadPresetsRequest(pNotification->ConnHandle, 0x01, HAP_MAX_PRESET_NUM);
-      LOG_INFO_APP("HAP_HARC_ReadPresetsRequest() returns status 0x%02X\n", ret);
-      HAPAPP_Context.InitState = HAP_APP_INIT_STATE_READ_PRESETS;
+      if (HAPAPP_Context.InitState == HAP_APP_INIT_STATE_HAP_LINKUP)
+      {
+        Menu_SetNoStreamPage();
+        ret = HAP_HARC_ReadPresetsRequest(pNotification->ConnHandle, 0x01, HAP_MAX_PRESET_NUM);
+        LOG_INFO_APP("HAP_HARC_ReadPresetsRequest() returns status 0x%02X\n", ret);
+        HAPAPP_Context.InitState = HAP_APP_INIT_STATE_READ_PRESETS;
+      }
       UNUSED(ret);
       break;
     }
@@ -939,7 +973,6 @@ uint8_t HAPAPP_StartMediaStream(void)
         {
           CodecConfSnk[i].AudioChannelAllocation = (FRONT_LEFT|FRONT_RIGHT);
           CodecConfSnk[i].ChannelPerCIS = 1u;
-          //CodecConfSnk[i].ChannelPerCIS = 2u;
           num_chnls = 2u;
         }
         else
@@ -1610,7 +1643,6 @@ void APP_NotifyRxAudioHalfCplt(void)
 
 void HAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_t Peer_Address[6], uint8_t role)
 {
-  uint8_t status;
   APP_ACL_Conn_t *p_conn = APP_GetACLConn(ConnHandle);
   if (p_conn == 0)
   {
@@ -1636,9 +1668,6 @@ void HAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_t
       }
     }
   }
-  status = aci_gap_send_pairing_req(ConnHandle, 0x00);
-  LOG_INFO_APP("aci_gap_send_pairing_req returns %d\n",status);
-  UNUSED(status);
 }
 
 void HAPAPP_ConfirmIndicationRequired(uint16_t Conn_Handle)
@@ -1810,6 +1839,10 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
   }
 }
 
+void HAPAPP_ClearDatabase(void)
+{
+  BLE_AUDIO_STACK_DB_ClearAllRecords();
+}
 /*************************************************************
  *
  * LOCAL FUNCTIONS
@@ -1821,18 +1854,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   tBleStatus status;
 
   LOG_INFO_APP("CAPAPP_Init()\n");
-
-  /* Initialize the Audio IP*/
-  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  pBleAudioInit.bleStartRamAddress = (uint8_t*)audio_init_buffer;
-  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
-  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
-  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
-  if(status != BLE_STATUS_SUCCESS)
-  {
-    return status;
-  }
 
   /*Clear the CAP Configuration*/
   memset(&APP_CAP_Config, 0, sizeof(APP_CAP_Config));
@@ -2268,7 +2289,10 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             LOG_INFO_APP("Complete HAP Linkup on ConnHandle 0x%04X is started with status 0x%02X\n",
                         pNotification->ConnHandle,
                         ret);
-            HAPAPP_Context.InitState = HAP_APP_INIT_STATE_HAP_LINKUP;
+            if (ret == BLE_STATUS_SUCCESS)
+            {
+              HAPAPP_Context.InitState = HAP_APP_INIT_STATE_HAP_LINKUP;
+            }
           }
           else
           {
@@ -2282,6 +2306,9 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         }
         else
         {
+          /*HAP Link is already up thanks to restoration*/
+          LOG_INFO_APP("HAP Profile already linked on Connhandle 0x%04X\n",pNotification->ConnHandle);
+          Menu_SetNoStreamPage();
           p_conn->ForceCompleteLinkup = 0;
           if (p_conn->ConfirmIndicationRequired == 1u)
           {

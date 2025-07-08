@@ -21,59 +21,83 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_serialcom_peripheral-application-description"><strong>BLE_SerialCom_Peripheral Application Description</strong></h2>
 <p>How to demonstrate Point-to-Point communication using BLE component.</p>
-<p>The Nucleo board flashed with BLE_SerialCom_Peripheral application acts as GAP peripheral.</p>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Serial communication wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Serial_Com#Serial_communication_profile"> Serial communication</a></p>
+<p>The Nucleo board flashed with the BLE_SerialCom_Peripheral application acts as a GAP peripheral.</p>
+<p>For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Serial_Com#Serial_communication_profile"> STM32WBA Bluetooth LE - Serial communication wiki.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx devices.</li>
+<li>This application runs on STM32WBA55xx devices.<br />
+</li>
 <li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following:</p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Open your prefered toolchain</li>
+<li>Open your preferred toolchain.<br />
+</li>
 <li>Rebuild all files and flash the board with the executable file.</li>
 </ul>
-<p>For this application, two STM32WBA nucleo boards are used or one STM32WBA and a smartphone. One board is configured as central thanks to BLE_SerialCom_Central and the other as peripheral thanks to BLE_SerialCom_Peripheral. The central board supports the Data transfer by sending L2CAP data through a COC link.</p>
+<p>For this application, two STM32WBA nucleo boards are used, or one STM32WBA and a smartphone.<br />
+One board is configured as central using BLE_SerialCom_Central and the other as peripheral using BLE_SerialCom_Peripheral.<br />
+The central board supports data transfer by sending L2CAP data through a COC link.</p>
 <p>No service is added.</p>
-<p>After BLE link is established, a Connection Oriented Channel (COC) is established (full stack is necessary for COC) Data are exchanged through the COC link.</p>
-<p>Open a VT100 terminal on Central and Peripheral side (ST Link Com Port, <span class="citation" data-cites="115200">@115200</span> bauds).</p>
+<p>After BLE link is established, a Connection Oriented Channel (COC) is established (full stack is necessary for COC).<br />
+Data are exchanged through the COC link.</p>
+<p>Open a VT100 terminal on both the Central and Peripheral sides (ST Link Com Port, <span class="citation" data-cites="115200">@115200</span> bauds).<br />
+This application has to be used in conjunction with BLE_SerialCom_Central.</p>
 <p>At reset application initialization is done.</p>
 <ul>
-<li>The peripheral device starts advertising.</li>
-<li>Push B1 on central: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_BLE_COC).</li>
-<li>After BLE connection:</li>
-<li><p>the client establishes a COC channel.</p></li>
-<li>When link is ready: display “CONNECTION READY”</li>
-<li>Configure the terminal with settings local echo.</li>
-<li><p>Append LF is configured, enter data using keyboard, check that data are correctly received on peer device.</p></li>
-</ul>
-<p>There are two different modes to send messages from an STM32WBA: “Send button” or “Real time”. After reset, “Real time” mode is selected. In terminal, when you type the message: - In “Send button” mode, data are sent when LF is sent. - In “Real time” mode, each character is immediately sent.</p>
-<p>On server side when connected:</p>
+<li>The peripheral device starts advertising.<br />
+</li>
+<li>Push B1 on central device: the central device scans and automatically connects to the peripheral (use of CFG_DEV_ID_BLE_COC).<br />
+</li>
+<li>After BLE connection:
 <ul>
-<li>B1 changes “send data mode”</li>
-<li>B2 sends slave security request</li>
+<li>The client establishes a COC channel.<br />
+</li>
+<li>When the link is ready it displays “CONNECTION READY”<br />
+</li>
+<li>Configure the terminal with settings for local echo.<br />
+</li>
+<li>When Append LF is configured, enter data using keyboard and check that the data are correctly received on the peer device.</li>
+</ul></li>
 </ul>
-<p>On server side when idle:</p>
+<p>There are two different modes to send messages from an STM32WBA: “Send button” or “Real time”.<br />
+After reset, “Real time” mode is selected.<br />
+In the terminal, when you type the message:</p>
 <ul>
-<li>B1 changes “send data mode”</li>
-<li>B2 clear database</li>
+<li>In “Send button” mode, data are sent when LF is sent.<br />
+</li>
+<li>In “Real time” mode, each character is immediately sent.</li>
 </ul>
-<p>On client side when connected:</p>
+<p>On the server side when connected:</p>
 <ul>
-<li>B1 changes “send data mode”</li>
-<li>B2 sends pairing request</li>
-<li>B3 changes connection interval update</li>
+<li>B1 changes “send data mode”.<br />
+</li>
+<li>B2 sends slave security request.</li>
 </ul>
-<p>On client side when idle:</p>
+<p>On the server side when idle:</p>
 <ul>
-<li>B2 clear database</li>
+<li>B1 changes “send data mode”.<br />
+</li>
+<li>B2 clears database.</li>
 </ul>
-<p>In case of the central is a smartphone, open ST BLE Toolbox, click on COC. Pairing is requested, click on “pair”.</p>
-<p>Please refer to dedicated wiki page describing how to setup and use this application: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Serial_Com#How_to_use_the_Bluetooth.C2.AE_Low_Energy_SerialCom_central_application"> Wiki: STM32WBA Bluetooth LE Serial Communication</a></p>
+<p>On the client side when connected:</p>
+<ul>
+<li>B1 changes “send data mode”.<br />
+</li>
+<li>B2 sends pairing request.<br />
+</li>
+<li>B3 changes connection interval update.</li>
+</ul>
+<p>On the client side when idle:</p>
+<ul>
+<li>B2 clears database.</li>
+</ul>
+<p>In case the central is a smartphone, open ST BLE Toolbox and click on COC.<br />
+Pairing is requested; click on “pair”.</p>
+<p>Please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Serial_Com#How_to_use_the_Bluetooth.C2.AE_Low_Energy_SerialCom_central_application"> STM32WBA Bluetooth LE Serial Communication.</a></p>
 </div>
 </div>
 </body>

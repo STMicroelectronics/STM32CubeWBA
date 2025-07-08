@@ -41,6 +41,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
 									<listOptionValue builtIn="false" value="BLE"/>
 									<listOptionValue builtIn="false" value="MAC"/>
+									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_FTD"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
@@ -91,7 +92,6 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core"/>
-									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/Third_Party/mbed-crypto/include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Drivers/CMSIS/RTOS2/Include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include"/>
@@ -194,6 +194,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
 									<listOptionValue builtIn="false" value="BLE"/>
 									<listOptionValue builtIn="false" value="MAC"/>
+									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_FTD"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
 									<listOptionValue builtIn="false" value="OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;"/>
@@ -255,7 +256,6 @@
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM33_NTZ/non_secure"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls"/>
-									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/Third_Party/mbed-crypto/include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Projects/Common/WPAN/Interfaces"/>
 									<listOptionValue builtIn="false" value="../../../../../../../Projects/Common/WPAN/Modules"/>

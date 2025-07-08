@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -155,18 +155,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -192,7 +180,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add MeterId Server Cluster */
   stZigbeeAppInfo.MeterIdServer = ZbZclMeterIdServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.MeterIdServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.MeterIdServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.MeterIdServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during MeterId Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 

@@ -27,7 +27,6 @@
 #include "svc_ctl.h"
 #include "ble_gatt_aci.h"
 #include "ble_vs_codes.h"
-#include "ble_common.h"
 #include "usecase_dev_mgmt.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,14 +37,14 @@
         (uint16_t)((((uint16_t)(*((uint8_t *)ptr + 1))) << 8)))
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
-static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t ErrorCode);
+static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode);
 static void GMAP_CLT_Post_Linkup_Event(GMAP_CltInst_t *pGMAP_Clt, tBleStatus const Status);
 tBleStatus GMAP_CLT_Check_GMAS_GMAPRoleCharacteristic(GMAP_CltInst_t *pGMAP_Clt);
 tBleStatus GMAP_CLT_Check_GMAS_FeaturesCharacteristics(GMAP_CltInst_t *pGMAP_Clt);
 static GMAP_CltInst_t *GMAP_CLT_GetAvailableInstance(void);
-static GMAP_CltInst_t *GMAP_CLT_GetInstance(uint16_t ConnHandle);
+static GMAP_CltInst_t *GMAP_CLT_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer);
 static void GMAP_CLT_InitInstance(GMAP_CltInst_t *pGMAP_Clt);
-
+static tBleStatus GMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
 /* External functions prototype------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
@@ -105,31 +104,60 @@ tBleStatus GMAP_Init(GMAP_Role_t GMAPRoles,
   */
 tBleStatus GMAP_Linkup(uint16_t ConnHandle)
 {
-  tBleStatus    hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
-  GMAP_CltInst_t  *p_gmap_clt;
-
+  tBleStatus            hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
+  GMAP_CltInst_t        *p_gmap_clt;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  UseCaseConnInfo_t     *p_conn_info;
+  uint16_t              conn_handle;
+  uint8_t               channel_index;
   BLE_DBG_GMAP_MSG("Start GMAP Link Up procedure on ACL Connection Handle 0x%04X\n", ConnHandle);
-  /* Check if a GMAP Client Instance with specified Connection Handle is already allocated*/
-  p_gmap_clt = GMAP_CLT_GetInstance(ConnHandle);
-  if (p_gmap_clt == 0)
+
+  if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle,&p_conn_info,&p_eatt_bearer) == BLE_STATUS_SUCCESS)
   {
-    /*Get an available GMAP Client Instance*/
-    p_gmap_clt = GMAP_CLT_GetAvailableInstance();
-    if (p_gmap_clt != 0)
+    conn_handle = p_conn_info->Connection_Handle;
+    if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(conn_handle) > 0)
     {
-      const UseCaseConnInfo_t *pConnInfo;
-      if (USECASE_DEV_MGMT_GetConnInfo(ConnHandle, &pConnInfo) == BLE_STATUS_SUCCESS)
+      if (BLE_AUDIO_STACK_EATT_GetAvailableBearer(conn_handle,&channel_index) == BLE_STATUS_SUCCESS)
       {
-        p_gmap_clt->pConnInfo = pConnInfo;
+        conn_handle = (0xEA << 8) | (channel_index);
+      }
+      else
+      {
+        BLE_DBG_GMAP_MSG("TMAP Link Up procedure is aborted because no available EATT Bearer\n");
+        return BLE_STATUS_BUSY;
+      }
+    }
+    else if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_conn_info->Connection_Handle,0) == BLE_STATUS_SUCCESS)
+    {
+      BLE_DBG_GMAP_MSG("TMAP Link Up procedure is aborted because ATT Bearer already used\n");
+      return BLE_STATUS_BUSY;
+    }
+
+    /* Check if a GMAP Client Instance with specified Connection Handle is already allocated*/
+    p_gmap_clt = GMAP_CLT_GetInstance(ConnHandle,&p_eatt_bearer);
+    if (p_gmap_clt == 0)
+    {
+      /*Get an available GMAP Client Instance*/
+      p_gmap_clt = GMAP_CLT_GetAvailableInstance();
+      if (p_gmap_clt != 0)
+      {
+        p_gmap_clt->pConnInfo = p_conn_info;
         /*Check that GMAP LinkUp process is not already started*/
         if (p_gmap_clt->LinkupState == GMAP_LINKUP_IDLE)
         {
           /* First step of Link Up process : find the GMAS in the remote GATT Database*/
-          hciCmdResult = aci_gatt_disc_all_primary_services(p_gmap_clt->pConnInfo->Connection_Handle);
+          hciCmdResult = aci_gatt_disc_all_primary_services(conn_handle);
           BLE_DBG_GMAP_MSG("aci_gatt_disc_all_primary_services() returns status 0x%x\n", hciCmdResult);
           if (hciCmdResult == BLE_STATUS_SUCCESS)
           {
-            p_gmap_clt->AttProcStarted = 1u;
+            if (BLE_AUDIO_STACK_EATT_GetNumSubscribedBearers(p_gmap_clt->pConnInfo->Connection_Handle) > 0)
+            {
+              BLE_AUDIO_STACK_EATT_RegisterATTProcedure(channel_index,GMAP_ATT_PROCEDURE_ID);
+            }
+            else
+            {
+              BLE_AUDIO_STACK_ATT_RegisterATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,GMAP_ATT_PROCEDURE_ID);
+            }
             /*Start Gaming Audio Service Linkup*/
             p_gmap_clt->LinkupState = GMAP_LINKUP_DISC_SERVICE;
           }
@@ -153,29 +181,28 @@ tBleStatus GMAP_Linkup(uint16_t ConnHandle)
       }
       else
       {
-        BLE_DBG_GMAP_MSG("Did not find related Connection Info Structure\n");
+        BLE_DBG_GMAP_MSG("No ressource to use a GMAP Client Instance\n");
         hciCmdResult = BLE_STATUS_FAILED;
       }
     }
     else
     {
-      BLE_DBG_GMAP_MSG("No ressource to use a GMAP Client Instance\n");
-      hciCmdResult = BLE_STATUS_FAILED;
+      BLE_DBG_GMAP_MSG("GMAP Client Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
+      if (p_gmap_clt->LinkupState == GMAP_LINKUP_COMPLETE)
+      {
+        /*GMAP Link Up is already performed*/
+        hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
+      }
+      else
+      {
+        /* GMAP Link Up process is already in progress*/
+        hciCmdResult = BLE_STATUS_BUSY;
+      }
     }
   }
   else
   {
-    BLE_DBG_GMAP_MSG("GMAP Client Instance is already associated to the connection handle 0x%04X\n",ConnHandle);
-    if (p_gmap_clt->LinkupState == GMAP_LINKUP_COMPLETE)
-    {
-      /*GMAP Link Up is already performed*/
-      hciCmdResult = HCI_COMMAND_DISALLOWED_ERR_CODE;
-    }
-    else
-    {
-      /* GMAP Link Up process is already in progress*/
-      hciCmdResult = BLE_STATUS_BUSY;
-    }
+    hciCmdResult = BLE_STATUS_INVALID_PARAMS;
   }
   return hciCmdResult;
 }
@@ -229,8 +256,9 @@ uint8_t GMAP_BuildAdvPacket(CAP_Announcement_t Announcement,
 void GMAP_AclDisconnection(uint16_t ConnHandle)
 {
   GMAP_CltInst_t *p_gmap_clt;
+  BleEATTBearer_t *p_eatt_bearer = 0;
   /* Check if a GMAP Client Instance with specified Connection Handle is already allocated*/
-  p_gmap_clt = GMAP_CLT_GetInstance(ConnHandle);
+  p_gmap_clt = GMAP_CLT_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_gmap_clt != 0)
   {
     BLE_DBG_GMAP_MSG("ACL Disconnection on Connection Handle 0x%04X : Reset GMAP Client Instance\n",ConnHandle);
@@ -244,7 +272,10 @@ void GMAP_AclDisconnection(uint16_t ConnHandle)
       evt.EvtOpcode = (GMAP_NotCode_t) GMAP_LINKUP_COMPLETE_EVT;
       evt.pInfo = 0;
       GMAP_Notification(&evt);
-      if (p_gmap_clt->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                        GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                          GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         GMAP_CLT_InitInstance(p_gmap_clt);
       }
@@ -256,7 +287,10 @@ void GMAP_AclDisconnection(uint16_t ConnHandle)
     }
     else
     {
-      if (p_gmap_clt->AttProcStarted == 0u)
+      if ((BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                        GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+        && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                          GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
       {
         GMAP_CLT_InitInstance(p_gmap_clt);
       }
@@ -277,7 +311,9 @@ void GMAP_AclDisconnection(uint16_t ConnHandle)
 SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
 {
   SVCCTL_EvtAckStatus_t return_value;
-  hci_event_pckt *p_event_pckt;
+  hci_event_pckt        *p_event_pckt;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+
   return_value = SVCCTL_EvtNotAck;
   p_event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)pEvent)->data);
 
@@ -296,37 +332,42 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
           uint16_t uuid;
 
           /* Check if a GMAP Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle);
+          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_gmap_clt != 0)
           {
-            BLE_DBG_GMAP_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
-                             pr->Connection_Handle);
-
-            /*Check that GMAP Link Up Process State is in Service Discovery state*/
-            if (p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_SERVICE)
+            /* Check if an ATT Procedure was started*/
+            if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_GMAP_MSG("ACI_ATT_READ_BY_GROUP_TYPE_RESP_EVENT is received on conn handle %04X\n",
+                               pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
-              numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
-              BLE_DBG_GMAP_MSG("Number of services in the GATT response : %d\n",numServ);
-              if (pr->Attribute_Data_Length == 6)
+
+              /*Check that GMAP Link Up Process State is in Service Discovery state*/
+              if (p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_SERVICE)
               {
-                idx = 4;
-                for (i=0; i<numServ; i++)
+                numServ = (pr->Data_Length) / pr->Attribute_Data_Length;
+                BLE_DBG_GMAP_MSG("Number of services in the GATT response : %d\n",numServ);
+                if (pr->Attribute_Data_Length == 6)
                 {
-                  uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
-                  /*Check that UUID in the GATT response corresponds to the MICS, a VOCS or a AICS */
-                  if (uuid == GAMING_AUDIO_SERVICE_UUID)
+                  idx = 4;
+                  for (i=0; i<numServ; i++)
                   {
-                    /* Save start handle and the end handle of the GMAS
-                     * for the next step of the GMAP Link Up process
-                     */
-                    p_gmap_clt->ServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
-                    p_gmap_clt->ServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
-                    BLE_DBG_GMAP_MSG("Gaming Audio Service has been found (start: %04X, end: %04X)\n",
-                                        p_gmap_clt->ServiceStartHandle,
-                                        p_gmap_clt->ServiceEndHandle);
+                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx]);
+                    /*Check that UUID in the GATT response corresponds to the MICS, a VOCS or a AICS */
+                    if (uuid == GAMING_AUDIO_SERVICE_UUID)
+                    {
+                      /* Save start handle and the end handle of the GMAS
+                       * for the next step of the GMAP Link Up process
+                       */
+                      p_gmap_clt->ServiceStartHandle = UNPACK_2_BYTE_PARAMETER(&pr->Attribute_Data_List[idx-4]);
+                      p_gmap_clt->ServiceEndHandle = UNPACK_2_BYTE_PARAMETER (&pr->Attribute_Data_List[idx-2]);
+                      BLE_DBG_GMAP_MSG("Gaming Audio Service has been found (start: %04X, end: %04X)\n",
+                                          p_gmap_clt->ServiceStartHandle,
+                                          p_gmap_clt->ServiceEndHandle);
+                    }
+                    idx += 6;
                   }
-                  idx += 6;
                 }
               }
             }
@@ -342,110 +383,115 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
           uint8_t data_length;
 
           /* Check if a GMAP Client Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle);
+          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_gmap_clt != 0)
           {
-            /* the event data will be
-             * 2 bytes start handle
-             * 1 byte char properties
-             * 2 bytes handle
-             * 2 or 16 bytes data
-             */
-            BLE_DBG_GMAP_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",pr->Connection_Handle);
-
-            /*Check that GMAP Link Up Process State is in Characteristics Discovery state*/
-            if (p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_CHAR)
+            /* Check if an ATT Procedure was started*/
+            if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              idx = 5;
-              data_length = pr->Data_Length;
-              if (pr->Handle_Value_Pair_Length == 7)
+              /* the event data will be
+               * 2 bytes start handle
+               * 1 byte char properties
+               * 2 bytes handle
+               * 2 or 16 bytes data
+               */
+              BLE_DBG_GMAP_MSG("ACI_ATT_READ_BY_TYPE_RESP_EVENT is received on connHandle %04X\n",pr->Connection_Handle);
+
+              return_value = SVCCTL_EvtAckFlowEnable;
+
+              /*Check that GMAP Link Up Process State is in Characteristics Discovery state*/
+              if (p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_CHAR)
               {
-                data_length -= 1;
-                /*Check if characteristic handle corresponds to the Gaming Audio Service range*/
-                if ((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_gmap_clt->ServiceStartHandle)  \
-                   && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_gmap_clt->ServiceEndHandle))
+                idx = 5;
+                data_length = pr->Data_Length;
+                if (pr->Handle_Value_Pair_Length == 7)
                 {
-                  return_value = SVCCTL_EvtAckFlowEnable;
-                  while (idx < data_length)
+                  data_length -= 1;
+                  /*Check if characteristic handle corresponds to the Gaming Audio Service range*/
+                  if ((UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u])>= p_gmap_clt->ServiceStartHandle)  \
+                     && (UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[0u]) <= p_gmap_clt->ServiceEndHandle))
                   {
-                    /* extract the characteristic UUID */
-                    uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
-                    /*  extract the characteristic handle */
-                    handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
-                    /*  extract the start handle of the characteristic */
-                    start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
-
-                    /* Check that gatt characteristic is valid or not : this pointer corresponds
-                     * to the previous found characteristic :
-                     * the end handle of the previously found characteristic of each Service
-                     * is calculated thanks start handle of the next characteristic in the GATT Database
-                    */
-                    if (p_gmap_clt->pGattChar != 0x00000000)
+                    while (idx < data_length)
                     {
-                      p_gmap_clt->pGattChar->EndHandle = (start_handle -1u);
+                      /* extract the characteristic UUID */
+                      uuid = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx]);
+                      /*  extract the characteristic handle */
+                      handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
+                      /*  extract the start handle of the characteristic */
+                      start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
+
+                      /* Check that gatt characteristic is valid or not : this pointer corresponds
+                       * to the previous found characteristic :
+                       * the end handle of the previously found characteristic of each Service
+                       * is calculated thanks start handle of the next characteristic in the GATT Database
+                      */
+                      if (p_gmap_clt->pGattChar != 0x00000000)
+                      {
+                        p_gmap_clt->pGattChar->EndHandle = (start_handle -1u);
+                      }
+
+                      switch (uuid)
+                      {
+                        case GMAP_ROLE_UUID:
+                          BLE_DBG_GMAP_MSG("GMAP Role Characteristic has been found:\n");
+                          BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
+                          p_gmap_clt->GMAPRoleChar.ValueHandle = handle;
+                          p_gmap_clt->GMAPRoleChar.EndHandle = p_gmap_clt->ServiceEndHandle;
+                          p_gmap_clt->GMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->pGattChar = &p_gmap_clt->GMAPRoleChar;
+                        break;
+
+                        case UGG_FEATURES_UUID:
+                          BLE_DBG_GMAP_MSG("UGG Features Characteristic has been found:\n");
+                          BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
+                          p_gmap_clt->UGGFeaturesChar.ValueHandle = handle;
+                          p_gmap_clt->UGGFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
+                          p_gmap_clt->UGGFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->pGattChar = &p_gmap_clt->UGGFeaturesChar;
+                        break;
+
+                        case UGT_FEATURES_UUID:
+                          BLE_DBG_GMAP_MSG("UGT Features Characteristic has been found:\n");
+                          BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
+                          p_gmap_clt->UGTFeaturesChar.ValueHandle = handle;
+                          p_gmap_clt->UGTFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
+                          p_gmap_clt->UGTFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->pGattChar = &p_gmap_clt->UGTFeaturesChar;
+                        break;
+
+                        case BGS_FEATURES_UUID:
+                          BLE_DBG_GMAP_MSG("BGS Features Characteristic has been found:\n");
+                          BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
+                          p_gmap_clt->BGSFeaturesChar.ValueHandle = handle;
+                          p_gmap_clt->BGSFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
+                          p_gmap_clt->BGSFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->pGattChar = &p_gmap_clt->BGSFeaturesChar;
+                        break;
+
+                        case BGR_FEATURES_UUID:
+                          BLE_DBG_GMAP_MSG("BGR Features Characteristic has been found:\n");
+                          BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
+                          BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
+                          BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
+                          p_gmap_clt->BGRFeaturesChar.ValueHandle = handle;
+                          p_gmap_clt->BGRFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
+                          p_gmap_clt->BGRFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->pGattChar = &p_gmap_clt->BGRFeaturesChar;
+                        break;
+
+                      default:
+                        break;
+                      }
+                      idx += pr->Handle_Value_Pair_Length;
                     }
-
-                    switch (uuid)
-                    {
-                      case GMAP_ROLE_UUID:
-                        BLE_DBG_GMAP_MSG("GMAP Role Characteristic has been found:\n");
-                        BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
-                        p_gmap_clt->GMAPRoleChar.ValueHandle = handle;
-                        p_gmap_clt->GMAPRoleChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                        p_gmap_clt->GMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_gmap_clt->pGattChar = &p_gmap_clt->GMAPRoleChar;
-                      break;
-
-                      case UGG_FEATURES_UUID:
-                        BLE_DBG_GMAP_MSG("UGG Features Characteristic has been found:\n");
-                        BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
-                        p_gmap_clt->UGGFeaturesChar.ValueHandle = handle;
-                        p_gmap_clt->UGGFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                        p_gmap_clt->UGGFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_gmap_clt->pGattChar = &p_gmap_clt->UGGFeaturesChar;
-                      break;
-
-                      case UGT_FEATURES_UUID:
-                        BLE_DBG_GMAP_MSG("UGT Features Characteristic has been found:\n");
-                        BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
-                        p_gmap_clt->UGTFeaturesChar.ValueHandle = handle;
-                        p_gmap_clt->UGTFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                        p_gmap_clt->UGTFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_gmap_clt->pGattChar = &p_gmap_clt->UGTFeaturesChar;
-                      break;
-
-                      case BGS_FEATURES_UUID:
-                        BLE_DBG_GMAP_MSG("BGS Features Characteristic has been found:\n");
-                        BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
-                        p_gmap_clt->BGSFeaturesChar.ValueHandle = handle;
-                        p_gmap_clt->BGSFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                        p_gmap_clt->BGSFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_gmap_clt->pGattChar = &p_gmap_clt->BGSFeaturesChar;
-                      break;
-
-                      case BGR_FEATURES_UUID:
-                        BLE_DBG_GMAP_MSG("BGR Features Characteristic has been found:\n");
-                        BLE_DBG_GMAP_MSG("Attribute Handle = %04X\n",start_handle);
-                        BLE_DBG_GMAP_MSG("Characteristic Properties = 0x%02X\n",pr->Handle_Value_Pair_Data[idx-3]);
-                        BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
-                        p_gmap_clt->BGRFeaturesChar.ValueHandle = handle;
-                        p_gmap_clt->BGRFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                        p_gmap_clt->BGRFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
-                        p_gmap_clt->pGattChar = &p_gmap_clt->BGRFeaturesChar;
-                      break;
-
-                    default:
-                      break;
-                    }
-                    idx += pr->Handle_Value_Pair_Length;
                   }
                 }
               }
@@ -463,36 +509,42 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
           aci_att_read_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
 
           /* Check if a GMAP Client Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle);
+          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_gmap_clt != 0)
           {
-            BLE_DBG_GMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-            /* Handle the ATT read response */
-            if (p_gmap_clt->LinkupState == GMAP_LINKUP_READ_CHAR)
+            /* Check if an ATT Procedure was started*/
+            if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
-              switch (GMAP_Context.CltInst->CurrentLinkupChar)
-              {
-                case GMAS_CHAR_GMAP_ROLE:
-                  GMAP_Context.CltInst->GMAPRole = pr->Attribute_Value[0] & 0x0F;
-                  break;
+              BLE_DBG_GMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
 
-                case GMAS_CHAR_UGG_FEATURES:
-                  GMAP_Context.CltInst->UGGFeatures = pr->Attribute_Value[0] & 0x07;
-                  break;
-
-                case GMAS_CHAR_UGT_FEATURES:
-                  GMAP_Context.CltInst->UGTFeatures = pr->Attribute_Value[0] & 0x7F;
-                  break;
-
-                case GMAS_CHAR_BGS_FEATURES:
-                  GMAP_Context.CltInst->BGSFeatures = pr->Attribute_Value[0] & 0x01;
-                  break;
-
-                case GMAS_CHAR_BGR_FEATURES:
-                  GMAP_Context.CltInst->BGRFeatures = pr->Attribute_Value[0] & 0x03;
-                  break;
-              }
               return_value = SVCCTL_EvtAckFlowEnable;
+
+              /* Handle the ATT read response */
+              if (p_gmap_clt->LinkupState == GMAP_LINKUP_READ_CHAR)
+              {
+                switch (GMAP_Context.CltInst->CurrentLinkupChar)
+                {
+                  case GMAS_CHAR_GMAP_ROLE:
+                    GMAP_Context.CltInst->GMAPRole = pr->Attribute_Value[0] & 0x0F;
+                    break;
+
+                  case GMAS_CHAR_UGG_FEATURES:
+                    GMAP_Context.CltInst->UGGFeatures = pr->Attribute_Value[0] & 0x07;
+                    break;
+
+                  case GMAS_CHAR_UGT_FEATURES:
+                    GMAP_Context.CltInst->UGTFeatures = pr->Attribute_Value[0] & 0x7F;
+                    break;
+
+                  case GMAS_CHAR_BGS_FEATURES:
+                    GMAP_Context.CltInst->BGSFeatures = pr->Attribute_Value[0] & 0x01;
+                    break;
+
+                  case GMAS_CHAR_BGR_FEATURES:
+                    GMAP_Context.CltInst->BGRFeatures = pr->Attribute_Value[0] & 0x03;
+                    break;
+                }
+              }
             }
           }
         }
@@ -502,37 +554,59 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
         {
           aci_gatt_proc_complete_event_rp0 *pr = (void*)p_blecore_evt->data;
           /* Check if a GMAP Client Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle);
+          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_gmap_clt != 0)
           {
+            uint8_t ack = 0u;
             BLE_DBG_GMAP_MSG("ACI_GATT_PROC_COMPLETE_EVENT is received on conn handle %04X (ErrorCode %04X)\n",
                                 pr->Connection_Handle,
                                 pr->Error_Code);
-
-            /* Check if an ATT Procedure was started*/
-            if (p_gmap_clt->AttProcStarted != 0u)
+            if (p_eatt_bearer != 0)
             {
-              p_gmap_clt->AttProcStarted = 0u;
-              return_value = SVCCTL_EvtAckFlowEnable;
-            }
-            /*Check if a GMAP Linkup procudre is in progress*/
-            if ((p_gmap_clt->LinkupState != GMAP_LINKUP_IDLE) && (p_gmap_clt->LinkupState != GMAP_LINKUP_COMPLETE))
-            {
-              if (p_gmap_clt->DelayDeallocation == 0u)
+              if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(p_eatt_bearer->ChannelIdx,
+                                                                      GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
               {
-                /* GATT Process is complete, continue, if needed, the GMAP Link Up Process */
-                GMAP_CLT_Linkup_Process(p_gmap_clt,pr->Error_Code);
+                BLE_AUDIO_STACK_EATT_UnregisterATTProcedure(p_eatt_bearer->ChannelIdx,GMAP_ATT_PROCEDURE_ID);
+                ack = 1u;
               }
             }
-            else if (p_gmap_clt->LinkupState == GMAP_LINKUP_COMPLETE)
+            else
             {
-              /* Should not happen */
+              /* Check if an ATT Procedure was started*/
+              if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                               GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+              {
+                BLE_AUDIO_STACK_ATT_UnregisterATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                           GMAP_ATT_PROCEDURE_ID);
+                ack = 1u;
+              }
             }
-            if ((p_gmap_clt->DelayDeallocation == 1u) && (p_gmap_clt->AttProcStarted == 0u))
+            if (ack == 1u)
             {
-              BLE_DBG_GMAP_MSG("Free Completely the GMAP Client on conn handle %04X\n",pr->Connection_Handle);
-              p_gmap_clt->DelayDeallocation = 0u;
-              GMAP_CLT_InitInstance(p_gmap_clt);
+              return_value = SVCCTL_EvtAckFlowEnable;
+              /*Check if a GMAP Linkup procudre is in progress*/
+              if ((p_gmap_clt->LinkupState != GMAP_LINKUP_IDLE) && (p_gmap_clt->LinkupState != GMAP_LINKUP_COMPLETE))
+              {
+                if (p_gmap_clt->DelayDeallocation == 0u)
+                {
+                  /* GATT Process is complete, continue, if needed, the GMAP Link Up Process */
+                  GMAP_CLT_Linkup_Process(p_gmap_clt,p_eatt_bearer,pr->Error_Code);
+                }
+              }
+              else if (p_gmap_clt->LinkupState == GMAP_LINKUP_COMPLETE)
+              {
+                /* Should not happen */
+              }
+              if ((p_gmap_clt->DelayDeallocation == 1u) \
+                    && (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                                     GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED) \
+                    && (BLE_AUDIO_STACK_EATT_IsRegisteredATTProcedure(p_gmap_clt->pConnInfo->Connection_Handle,
+                                                                      GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_FAILED))
+              {
+                BLE_DBG_GMAP_MSG("Free Completely the GMAP Client on conn handle %04X\n",pr->Connection_Handle);
+                p_gmap_clt->DelayDeallocation = 0u;
+                GMAP_CLT_InitInstance(p_gmap_clt);
+              }
             }
           }
         }
@@ -542,32 +616,15 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
         {
           aci_gatt_error_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
           /* Check if a GMAP Client Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle);
+          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
           if (p_gmap_clt != 0)
           {
-            BLE_DBG_GMAP_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-            if (pr->Attribute_Handle >= p_gmap_clt->ServiceStartHandle
-                && pr->Attribute_Handle <= p_gmap_clt->ServiceEndHandle)
+            /* Check if an ATT Procedure was started*/
+            if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
             {
+              BLE_DBG_GMAP_MSG("ACI_GATT_ERROR_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
+
               return_value = SVCCTL_EvtAckFlowEnable;
-            }
-            else
-            {
-              if ((p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u))
-              {
-                return_value = SVCCTL_EvtAckFlowEnable;
-              }
-              if (((p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x10u)) \
-                || ((p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_SERVICE) && (pr->Req_Opcode == 0x08u)) \
-                || ((p_gmap_clt->LinkupState == GMAP_LINKUP_DISC_CHAR) && (pr->Req_Opcode == 0x08u)))
-              {
-                /* Error response returned after :
-                 * aci_gatt_disc_all_primary_services()
-                 * -aci_gatt_find_included_services()
-                 * -aci_gatt_disc_all_char_of_service()
-                 */
-                return_value = SVCCTL_EvtAckFlowEnable;
-              }
             }
           }
         }
@@ -589,9 +646,14 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
  * @param  ErrorCode: Error Code from Host Stack when a GATT procedure is complete
  * @retval status of the operation
  */
-static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t ErrorCode)
+static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,BleEATTBearer_t *pEATTBearer,uint8_t ErrorCode)
 {
   tBleStatus hciCmdResult = BLE_STATUS_FAILED;
+  uint16_t conn_handle = pGMAP_Clt->pConnInfo->Connection_Handle;
+  if (pEATTBearer != 0)
+  {
+    conn_handle = (0xEA << 8) | (pEATTBearer->ChannelIdx);
+  }
 
   BLE_DBG_GMAP_MSG("GMAP Link Up Process, state 0x%x\n",pGMAP_Clt->LinkupState);
 
@@ -609,7 +671,7 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
         BLE_DBG_GMAP_MSG("GATT : Discover GMAS Characteristics\n");
         pGMAP_Clt->pGattChar = 0u;
         /* Discover all the characteristics of the GMAS in the remote GATT Database */
-        hciCmdResult = aci_gatt_disc_all_char_of_service(pGMAP_Clt->pConnInfo->Connection_Handle,
+        hciCmdResult = aci_gatt_disc_all_char_of_service(conn_handle,
                                                         pGMAP_Clt->ServiceStartHandle,
                                                         pGMAP_Clt->ServiceEndHandle);
         BLE_DBG_GMAP_MSG("aci_gatt_disc_all_char_of_service() (start: %04X, end: %04X) returns status 0x%x\n",
@@ -619,7 +681,14 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
 
         if (hciCmdResult == BLE_STATUS_SUCCESS)
         {
-          pGMAP_Clt->AttProcStarted = 1u;
+          if (pEATTBearer != 0)
+          {
+            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,GMAP_ATT_PROCEDURE_ID);
+          }
+          else
+          {
+            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pGMAP_Clt->pConnInfo->Connection_Handle,GMAP_ATT_PROCEDURE_ID);
+          }
           pGMAP_Clt->LinkupState = GMAP_LINKUP_DISC_CHAR;
         }
         else
@@ -644,12 +713,11 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
         pGMAP_Clt->LinkupState = GMAP_LINKUP_READ_CHAR;
         pGMAP_Clt->CurrentLinkupChar = GMAS_CHAR_GMAP_ROLE;
         /* read the characteristic value */
-        hciCmdResult = aci_gatt_read_char_value(pGMAP_Clt->pConnInfo->Connection_Handle,
-                                                pGMAP_Clt->GMAPRoleChar.ValueHandle);
+        hciCmdResult = aci_gatt_read_char_value(conn_handle,pGMAP_Clt->GMAPRoleChar.ValueHandle);
         BLE_DBG_GMAP_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                            pGMAP_Clt->pConnInfo->Connection_Handle,
-                            pGMAP_Clt->GMAPRoleChar.ValueHandle,
-                            hciCmdResult);
+                         conn_handle,
+                         pGMAP_Clt->GMAPRoleChar.ValueHandle,
+                         hciCmdResult);
         if (hciCmdResult != BLE_STATUS_SUCCESS)
         {
           pGMAP_Clt->LinkupState = GMAP_LINKUP_IDLE;
@@ -657,7 +725,14 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
         }
         else
         {
-          pGMAP_Clt->AttProcStarted = 1u;
+          if (pEATTBearer != 0)
+          {
+            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,GMAP_ATT_PROCEDURE_ID);
+          }
+          else
+          {
+            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pGMAP_Clt->pConnInfo->Connection_Handle,GMAP_ATT_PROCEDURE_ID);
+          }
         }
       }
       else
@@ -746,12 +821,11 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
       if (value_handle != 0x0000)
       {
         /* read the characteristic value */
-        hciCmdResult = aci_gatt_read_char_value(pGMAP_Clt->pConnInfo->Connection_Handle,
-                                                value_handle);
+        hciCmdResult = aci_gatt_read_char_value(conn_handle,value_handle);
         BLE_DBG_GMAP_MSG("aci_gatt_read_char_value() (connHandle: %04X, val_handle: %04X) returns status 0x%x\n",
-                            pGMAP_Clt->pConnInfo->Connection_Handle,
-                            value_handle,
-                            hciCmdResult);
+                         conn_handle,
+                         value_handle,
+                         hciCmdResult);
         if (hciCmdResult != BLE_STATUS_SUCCESS)
         {
           pGMAP_Clt->LinkupState = GMAP_LINKUP_IDLE;
@@ -759,7 +833,14 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,uint8_t Erro
         }
         else
         {
-          pGMAP_Clt->AttProcStarted = 1u;
+          if (pEATTBearer != 0)
+          {
+            BLE_AUDIO_STACK_EATT_RegisterATTProcedure(pEATTBearer->ChannelIdx,GMAP_ATT_PROCEDURE_ID);
+          }
+          else
+          {
+            BLE_AUDIO_STACK_ATT_RegisterATTProcedure(pGMAP_Clt->pConnInfo->Connection_Handle,GMAP_ATT_PROCEDURE_ID);
+          }
         }
       }
       else
@@ -787,31 +868,42 @@ static void GMAP_CLT_Post_Linkup_Event(GMAP_CltInst_t *pGMAP_Clt, tBleStatus con
 {
   GMAP_Notification_Evt_t evt;
   GMAP_AttServiceInfo_Evt_t parms;
-  BLE_DBG_GMAP_MSG("GMAP Client notifies GMAP Linkup is complete with status 0x%x\n",Status);
-  evt.ConnHandle = pGMAP_Clt->pConnInfo->Connection_Handle;
-  evt.Status = Status;
 
-  pGMAP_Clt->LinkupState = GMAP_LINKUP_COMPLETE;
-  evt.EvtOpcode = (GMAP_NotCode_t) GMAP_LINKUP_COMPLETE_EVT;
-  if (evt.Status == BLE_STATUS_SUCCESS)
+  BLE_DBG_GMAP_MSG("GMAP Client notifies GMAP Linkup is complete with status 0x%x\n",Status);
+
+  if (pGMAP_Clt->pConnInfo != 0)
   {
-    parms.GMAPRole = pGMAP_Clt->GMAPRole;
-    parms.UGGFeatures = pGMAP_Clt->UGGFeatures;
-    parms.UGTFeatures = pGMAP_Clt->UGTFeatures;
-    parms.BGSFeatures = pGMAP_Clt->BGSFeatures;
-    parms.BGRFeatures = pGMAP_Clt->BGRFeatures;
-    parms.StartAttHandle = pGMAP_Clt->ServiceStartHandle;
-    parms.EndAttHandle = pGMAP_Clt->ServiceEndHandle;
-    evt.pInfo = (void *) &parms;
+    evt.ConnHandle = pGMAP_Clt->pConnInfo->Connection_Handle;
+
+    evt.Status = Status;
+
+    pGMAP_Clt->LinkupState = GMAP_LINKUP_COMPLETE;
+    evt.EvtOpcode = (GMAP_NotCode_t) GMAP_LINKUP_COMPLETE_EVT;
+    if (evt.Status == BLE_STATUS_SUCCESS)
+    {
+      parms.GMAPRole = pGMAP_Clt->GMAPRole;
+      parms.UGGFeatures = pGMAP_Clt->UGGFeatures;
+      parms.UGTFeatures = pGMAP_Clt->UGTFeatures;
+      parms.BGSFeatures = pGMAP_Clt->BGSFeatures;
+      parms.BGRFeatures = pGMAP_Clt->BGRFeatures;
+      parms.StartAttHandle = pGMAP_Clt->ServiceStartHandle;
+      parms.EndAttHandle = pGMAP_Clt->ServiceEndHandle;
+      evt.pInfo = (void *) &parms;
+    }
+    else
+    {
+      evt.pInfo = 0;
+    }
+    GMAP_Notification(&evt);
+    if (Status != BLE_STATUS_SUCCESS)
+    {
+      BLE_DBG_GMAP_MSG("Linkup has failed, reset the GMAP Client Instance\n");
+      GMAP_CLT_InitInstance(pGMAP_Clt);
+    }
   }
   else
   {
-    evt.pInfo = 0;
-  }
-  GMAP_Notification(&evt);
-  if (evt.Status != BLE_STATUS_SUCCESS)
-  {
-    BLE_DBG_GMAP_MSG("Linkup has failed, reset the GMAP Client Instance\n");
+    BLE_DBG_GMAP_MSG("unknown connection, reset the GMAP Client Instance\n");
     GMAP_CLT_InitInstance(pGMAP_Clt);
   }
 }
@@ -938,7 +1030,6 @@ static void GMAP_CLT_InitInstance(GMAP_CltInst_t *pGMAP_Clt)
   pGMAP_Clt->LinkupState = GMAP_LINKUP_IDLE;
   pGMAP_Clt->ReqHandle = 0x0000;
   pGMAP_Clt->pConnInfo = 0;
-  pGMAP_Clt->AttProcStarted = 0u;
   pGMAP_Clt->DelayDeallocation = 0u;
   pGMAP_Clt->GMAPRoleChar.ValueHandle = 0x0000u;
   pGMAP_Clt->GMAPRoleChar.DescHandle = 0x0000u;
@@ -987,18 +1078,68 @@ static GMAP_CltInst_t *GMAP_CLT_GetAvailableInstance(void)
   return 0u;
 }
 
-static GMAP_CltInst_t *GMAP_CLT_GetInstance(uint16_t ConnHandle)
+static GMAP_CltInst_t *GMAP_CLT_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer)
 {
   uint8_t i;
-
-  /*Get a GMAP Client Instance*/
-  for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+#if (CFG_BLE_EATT_BEARER_PER_LINK > 0)
+  /*Check if the connection handle corresponds to a Connection Oriented Channel*/
+  if ((uint8_t) (ConnHandle >> 8) == 0xEA)
   {
-    if (GMAP_Context.CltInst[i].pConnInfo != 0
-        && GMAP_Context.CltInst[i].pConnInfo->Connection_Handle == ConnHandle)
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
     {
-      return &GMAP_Context.CltInst[i];
+      if (GMAP_Context.CltInst[i].pConnInfo != 0)
+      {
+        if (GMAP_Context.CltInst[i].pConnInfo->Connection_Handle != 0xFFFFu)
+        {
+          for (uint8_t j = 0u; j < CFG_BLE_EATT_BEARER_PER_LINK; j++)
+          {
+            if ( (GMAP_Context.CltInst[i].pConnInfo->aEATTBearer[j].State == 0u) \
+                && (GMAP_Context.CltInst[i].pConnInfo->aEATTBearer[j].ChannelIdx == (uint8_t)(ConnHandle)))
+            {
+              *pEATTBearer = &GMAP_Context.CltInst[i].pConnInfo->aEATTBearer[j];
+              return &GMAP_Context.CltInst[i];
+            }
+          }
+        }
+      }
+    }
+  }
+  else
+#endif /* (CFG_BLE_EATT_BEARER_PER_LINK > 0) */
+  {
+    for (i = 0 ; i < USECASE_DEV_MGMT_MAX_CONNECTION ; i++)
+    {
+      if (GMAP_Context.CltInst[i].pConnInfo != 0
+          && GMAP_Context.CltInst[i].pConnInfo->Connection_Handle == ConnHandle)
+      {
+        return &GMAP_Context.CltInst[i];
+      }
     }
   }
   return 0u;
+}
+
+
+static tBleStatus GMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer)
+{
+
+  tBleStatus status = BLE_STATUS_FAILED;
+
+  if (pEATTBearer != 0)
+  {
+    if (BLE_AUDIO_STACK_EATT_IsBearerRegisteredATTProcedure(pEATTBearer->ChannelIdx,
+                                                            GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  else
+  {
+    /* Check if an ATT Procedure was started*/
+    if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(ConnHandle,GMAP_ATT_PROCEDURE_ID) == BLE_STATUS_SUCCESS)
+    {
+      status = BLE_STATUS_SUCCESS;
+    }
+  }
+  return status;
 }

@@ -13,8 +13,8 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, Thermostat cluster
 
 For this application it is requested to have:  
 
-* One STM32WBA65xx Nucleo board loaded with application : **Zigbee_Thermostat_Client_Coord**  
-* One or more STM32WBA65xx board loaded with application : **Zigbee_Thermostat_Server_Router**  
+* One STM32WBA55xx Nucleo board loaded with application : **Zigbee_Thermostat_Client_Coord**  
+* One or more STM32WBA55xx board loaded with application : **Zigbee_Thermostat_Server_Router**  
 
 ### __Demo use case__
 
@@ -61,7 +61,7 @@ For this application it is requested to have:
 
 ### __Application Setup__
 
-* First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
+* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
 * To run the application :
 	1. Start the first board. It must be the coordinator of the Zigbee network, so in this demo application it is the device running Zigbee_Thermostat_Client_Coord application.  
     
@@ -166,11 +166,11 @@ For this application it is requested to have:
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA65xx devices.  
+* This example runs on STM32WBA55xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA65CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 
-* On STM32WBA65CGA_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+* On STM32WBA55CGA_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
 <br>    
 **JP1:**</br>
 1-2:  [ON]</br>

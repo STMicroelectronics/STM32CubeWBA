@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IROM(0x08000000,0x00100000) CPUTYPE("Cortex-M33") FPU3(SFPU) DSP TZ CLOCK(12000000) ESEL ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -338,7 +338,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>STM32WBA55xx,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,LOGGER_ENABLE=0,OS_BAREMETAL,MAC</Define>
+              <Define>STM32WBA55xx,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,LOGGER_ENABLE=0,OS_BAREMETAL,MAC,MAC_LAYER</Define>
               <Undefine></Undefine>
               <IncludePath>../Core/Inc;../System/Interfaces;../System/Config;..\..\..\..\..\Common\WPAN\Modules;..\..\..\..\..\Common\WPAN\Interfaces;..\STM32_WPAN\App;..\..\..\..\..\Common\WPAN\Modules\RTDebug;../STM32_WPAN/Target;..\System\Interfaces;../System/Config/Debug_GPIO;../System/Config/LowPower;..\System\Config\Log;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Utilities/trace/adv_trace;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/tim_serv;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\src\shrd_utils\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN</IncludePath>
             </VariousControls>

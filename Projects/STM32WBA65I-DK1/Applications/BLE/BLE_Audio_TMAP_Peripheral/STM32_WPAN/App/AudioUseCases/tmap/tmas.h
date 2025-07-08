@@ -44,28 +44,12 @@ typedef struct
   uint16_t      TMAPRoleHandle;                         /*TMAP Role Characteristic handle*/
 } TMAS_ServiceContext_t;
 
-typedef enum
-{
-  TMAS_TMAP_ROLE_EVT,              /* first byte in pData indicates the TMAP Role value*/
-} TMAS_NotCode_t;
-
-typedef struct
-{
-  TMAS_NotCode_t EvtOpcode;
-  uint16_t      ConnHandle;
-  uint8_t       *pData;
-  uint16_t      DataLen;
-} TMAS_NotificationEvt_t;
-
-
 /**
   * @}
   */
 tBleStatus TMAS_InitService(TMAS_ServiceContext_t *pSrvContext);
 tBleStatus TMAS_InitCharacteristics(TMAS_ServiceContext_t *pSrvContext);
 tBleStatus TMAS_SetTMAPRole(TMAS_ServiceContext_t *pSrvContext, TMAP_Role_t Role);
-uint8_t TMAS_ATT_Event_Handler(void *pEvent);
-void TMAS_Notification(TMAS_NotificationEvt_t const *pNotification);
 
 #ifdef __cplusplus
 }

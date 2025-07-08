@@ -87,9 +87,11 @@ tBleStatus CAP_Linkup(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t C
 
 /**
   * @brief Indicate the profiles in ATT Client role of the Generic Audio Framework present in the Persistent Memory
+  * @note CAP Layer shall be initialized thanks to the CAP_Init() function
   * @param Peer_Address_Type: Peer Address type
   * @param Peer_Address: Peer Address
   * @retval mask of present profiles of the Generic Audio Framework
+  *         (only profiles associated to the roles configured thanks to the CAP_Init() function are reported if present)
   */
 GAF_Profiles_Link_t CAP_DB_GetPresentGAFProfiles(uint8_t Peer_Address_Type,const uint8_t Peer_Address[6]);
 
@@ -99,7 +101,7 @@ GAF_Profiles_Link_t CAP_DB_GetPresentGAFProfiles(uint8_t Peer_Address_Type,const
   * @param ConnHandle: Connection handle
   * @retval mask of linked profiles of the Generic Audio Framework
   */
-GAF_Profiles_Link_t CAP_GetCurrentLinkedProfiles(uint16_t ConnHandle);
+GAF_Profiles_Link_t CAP_GetCurrentLinkedGAFProfiles(uint16_t ConnHandle);
 
 /**
   * @brief Unlink the linked profiles of the Generic Audio Framework issued from a previous CAP linkup procedure
@@ -123,19 +125,20 @@ tBleStatus CAP_Unlink(uint16_t ConnHandle,GAF_Profiles_Link_t LinkMask,uint8_t N
 tBleStatus CAP_DB_StoreGAFProfiles(uint16_t ConnHandle);
 
 /**
-  * @brief  Set supported audio contexts for reception and transmission
+  * @brief  Set supported audio contexts associated to reception and/or transmission of unicast audio data and/or
+  *         broadcast audio data.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
-  *                      (0x0000 : device not available to receive audio for any Context Type)
+  *                      (shall be 0x0000 if the device does not support the Sink PAC Records)
   * @param  SrcContexts: bitmap of Audio Data Contexts values available for transmission.
-  *                      (0x0000 : device not available to transmit audio for any Context Type)
+  *                      (shall be 0x0000 if the device does not support the Source PAC Records)
   * @retval status of the operation
   */
 tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
 
 /**
-  * @brief  Set available audio contexts for reception and transmission which will be used for BAP Announcement and for
-  *         future connections.
+  * @brief  Set available audio contexts associated to reception and/or transmission of unicast audio data only
+  *         which will be used for BAP Announcement and for future connections.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @note   This function is applicable only for Unicast Server role and Broadcast Sink role
   * @note   This function doesn't set Available Audio Contexts for connected device (the CAP_UpdateAvailableAudioContexts()
@@ -149,9 +152,10 @@ tBleStatus CAP_SetSupportedAudioContexts(Audio_Context_t SnkContexts,Audio_Conte
 tBleStatus CAP_SetAvailableAudioContexts(Audio_Context_t SnkContexts,Audio_Context_t SrcContexts);
 
 /**
-  * @brief  Update available audio contexts for reception and transmission associated to the specified remote CAP device
+  * @brief  Update available audio contexts associated to reception and/or transmission of unicast audio data only
+  *         associated to the specified remote CAP device.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
-  * @param  connHandle: connection handle of the PACS Client to notify update
+  * @param  ConnHandle: connection handle of the PACS Client to notify update
   * @param  SnkContexts: bitmap of Audio Data Contexts values available for reception.
   *                      (0x0000 : device not available to receive audio for any Context Type)
   * @param  SrcContexts: bitmap of Audio Data Contexts values available for transmission.
@@ -166,6 +170,8 @@ tBleStatus CAP_UpdateAvailableAudioContexts(uint16_t ConnHandle,
   * @brief  Set the supported Sink Audio Locations.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SnkAudioLocations: bitmap of supported Sink Audio Location values
+  *                            The value 0x00000000 indicates that the server supports receiving only mono audio
+  *                            (no specified Audio Location)
   * @retval status of the operation
   */
 tBleStatus CAP_SetSnkAudioLocations(Audio_Location_t SnkAudioLocations);
@@ -174,6 +180,8 @@ tBleStatus CAP_SetSnkAudioLocations(Audio_Location_t SnkAudioLocations);
   * @brief  Set the supported Source Audio Locations.
   * @note   This function is applicable only for CAP Acceptor/Commander in Unicast Server role or Scan Delegator role
   * @param  SrcAudioLocations: bitmap of supported Src Audio Location values
+  *                            The value 0x00000000 indicates that the server supports transmitting only mono audio
+  *                            (no specified Audio Location)
   * @retval status of the operation
   */
 tBleStatus CAP_SetSrcAudioLocations(Audio_Location_t SrcAudioLocations);
@@ -182,6 +190,8 @@ tBleStatus CAP_SetSrcAudioLocations(Audio_Location_t SrcAudioLocations);
   * @brief  Set the Source Audio Locations of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
   * @param  ConnHandle: connection handle
   * @param  AudioLocations: bitmap of Audio Location values
+  *                         The value 0x00000000 indicates that the server supports transmitting only mono audio
+  *                         (no specified Audio Location)
   * @retval status of the operation
   */
 tBleStatus CAP_SetRemoteSrcAudioLocations(uint16_t ConnHandle,Audio_Location_t AudioLocations);
@@ -190,6 +200,8 @@ tBleStatus CAP_SetRemoteSrcAudioLocations(uint16_t ConnHandle,Audio_Location_t A
   * @brief  Set the Sink Audio Locations of the remote CAP Acceptor/Commander in Unicast Server or Scan Delegator role
   * @param  ConnHandle: connection handle
   * @param  AudioLocations: bitmap of Audio Location values
+  *                         The value 0x00000000 indicates that the server supports receiving only mono audio
+  *                         (no specified Audio Location)
   * @retval status of the operation
   */
 tBleStatus CAP_SetRemoteSnkAudioLocations(uint16_t ConnHandle,Audio_Location_t AudioLocations);
@@ -482,6 +494,19 @@ tBleStatus CAP_Broadcast_CancelStartPASync();
 tBleStatus CAP_Broadcast_StopBIGSync(uint8_t BigHandle);
 
 /**
+ * @brief Parse and compare a periodic advertising data payload for the group
+ * @param pData: a pointer to the periodic advertising data payload to parse
+ * @param DataLen: the length of the periodic advertising data payload
+ * @param pGroup: a pointer to the group structure to compare
+ * @param pEndIndex: a pointer to the variable which will contain the index of the data following the group data parsed
+ * @retval status of the operation, 0 if it's the same, else if different
+*/
+tBleStatus CAP_Broadcast_IsBASEGroupDifferent(uint8_t *pData,
+                                        uint8_t DataLen,
+                                        BAP_BASE_Group_t *pGroup,
+                                        uint8_t *pEndIndex);
+
+/**
   * @brief Parse a periodic advertising data payload and fill the group structure
   * @param pData: a pointer to the periodic advertising data payload to parse
   * @param DataLen: the length of the periodic advertising data payload
@@ -493,6 +518,20 @@ tBleStatus CAP_Broadcast_ParseBASEGroup(uint8_t *pData,
                                         uint8_t DataLen,
                                         BAP_BASE_Group_t *pGroup,
                                         uint8_t *pEndIndex);
+
+/**
+ * @brief Parse and compare a periodic advertising data payload for the subgroup
+ * @param pData: a pointer to the periodic advertising data payload to parse
+ * @param DataLen: the length of the periodic advertising data payload
+ * @param pSubgroup: a pointer to the subgroup structure to compare
+ * @param pEndIndex: a pointer to the variable which will contain the index of the data following the subgroup
+ *                   data parsed
+ * @retval status of the operation, 0 if it's the same, else if different
+*/
+tBleStatus CAP_Broadcast_IsBASESubgroupDifferent(uint8_t *pData,
+                                           uint8_t DataLen,
+                                           BAP_BASE_Subgroup_t *pSubgroup,
+                                           uint8_t *pEndIndex);
 
 /**
   * @brief Parse a periodic advertising data payload and fill the subgroup structure
@@ -507,6 +546,19 @@ tBleStatus CAP_Broadcast_ParseBASESubgroup(uint8_t *pData,
                                            uint8_t DataLen,
                                            BAP_BASE_Subgroup_t *pSubgroup,
                                            uint8_t *pEndIndex);
+
+/**
+ * @brief Parse and compare a periodic advertising data payload for the BIS
+ * @param pData: a pointer to the periodic advertising data payload to parse
+ * @param DataLen: the length of the periodic advertising data payload
+ * @param pBis: a pointer to the BIS structure to compare
+ * @param pEndIndex: a pointer to the variable which will contain the index of the data following the BIS data parsed
+ * @retval status of the operation, 0 if it's the same, else if different
+*/
+tBleStatus CAP_Broadcast_IsBASEBISDifferent(uint8_t *pData,
+                                      uint8_t DataLen,
+                                      BAP_BASE_BIS_t *pBis,
+                                      uint8_t *pEndIndex);
 
 /**
   * @brief Parse a periodic advertising data payload and fill the BIS structure
@@ -782,7 +834,7 @@ tBleStatus CAP_VolumeController_StartSetVolumeMuteStateProcedure(uint16_t ConnHa
   *         for which the Volume Offset value changed.
   * @note   The CAP_SET_VOLUME_OFFSET_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
   * @param  pVolumeOffsetParms: Table of Volume Offset and VOC Instance of the CAP Acceptors
-  * @param  NumAcceptors:Number of CAP Acceptors composing the Coordinated Set and so the table of pVolumeOffsetParms
+  * @param  NumAcceptors: Number of CAP Acceptors composing the Coordinated Set and so the table of pVolumeOffsetParms
   */
 tBleStatus CAP_VolumeController_StartSetVolumeOffsetProcedure(CAP_VCP_VolumeOffsetParms_t *pVolumeOffsetParms,
                                                               uint8_t NumAcceptors);
@@ -814,7 +866,7 @@ tBleStatus CAP_MicrophoneController_StartSetMuteProcedure(uint16_t ConnHandle, M
   *         for which the Gain Setting changed.
   * @note   The CAP_SET_MICROPHONE_GAIN_SETTING_PROCEDURE_COMPLETE_EVT event will be notified once the procedure is complete.
   * @param  pGainSettingParms: Table of Microphone Gain Settings and AIC Instance of the CAP Acceptors
-  * @param  NumAcceptors:Number of CAP Acceptors composing the Coordinated Set and so the table of pGainSettingParms
+  * @param  NumAcceptors: Number of CAP Acceptors composing the Coordinated Set and so the table of pGainSettingParms
   */
 tBleStatus CAP_MicrophoneController_StartSetGainSettingProcedure(CAP_MICP_GainSettingParms_t *pGainSettingParms,
                                                                  uint8_t NumAcceptors);
@@ -836,6 +888,59 @@ tBleStatus CAP_StartCoordinatedSetMemberDiscoveryProcedure(uint16_t ConnHandle);
   * @retval status of the procedure
   */
 tBleStatus CAP_StopCoordinatedSetMemberDiscoveryProcedure(uint16_t ConnHandle);
+
+/**
+  * @brief  Update the SIRK in the instance of CSIS of the Coordinated Set Member
+  * @note   Supported only if CAP Acceptor role & Set Member are initialized.
+  * @param  Instance_ID: Coordinated Set Indentification Instance of the Set Member
+  * @param  SIRK : new SIRK (16 bytes)
+  * @param  SIRK_type : new SIRK type (0 is encrypted, 1 is not - plain text)
+  * @param  SIRK_OOB : if SIRK OOB (0 SIRK is set for classic; 1 SIRK is given to client over OOB)
+  * @retval status of the update
+  */
+tBleStatus CAP_CSIP_UpdateSIRK(uint8_t Instance_ID, uint8_t *SIRK, uint8_t SIRK_type, uint8_t SIRK_OOB);
+
+/**
+  * @brief  Update the Size in the instance of CSIS of the Coordinated Set Member
+  * @note   Supported only if CAP Acceptor role & Set Member are initialized.
+  * @param  Instance_ID: Coordinated Set Indentification Instance of the Set Member
+  * @param  Size : new Size value (shall be superior to 1 and superior or equal to the rank)
+  * @retval status of the update
+  */
+tBleStatus CAP_CSIP_UpdateSize(uint8_t Instance_ID, uint8_t Size);
+
+/**
+  * @brief  Start the Lock Request Procedure with one Coordinated Set.
+  * @note   Supported only if CAP Initiator or Commander role & Set Coordinated are initialized.
+  * @note   The procedure will be finished when the event CAP_CSIP_META_EVT, with CSIP_COO_LOCKED_COMPLETE_EVT
+  *         is received. If status if failed Lock Release Procedure will be automatically started.
+  * @param  nbConnHandle: number of Set Members in the Coordinated Set
+  * @param  ConnHandle : list of the Connection Handles of the Set Members
+  * @retval status of the Start the Lock Request Procedure
+  */
+tBleStatus CAP_CSIP_StartLockRequestProcedure(uint8_t nbConnHandle, uint16_t* ConnHandle);
+
+/**
+  * @brief  Start the Lock Release Procedure with one Coordinated Set.
+  * @note   Supported only if CAP Initiator or Commander role & Set Coordinated are initialized.
+  * @note   The procedure will be finished when the event CAP_CSIP_META_EVT, with CSIP_COO_UNLOCKED_COMPLETE_EVT
+  *         is received.
+  * @param  nbConnHandle: number of Set Members in the Coordinated Set
+  * @param  ConnHandle : list of the Connection Handles of the Set Members
+  * @retval status of the Start the Lock Release Procedure
+  */
+tBleStatus CAP_CSIP_StartLockReleaseProcedure(uint8_t nbConnHandle, uint16_t* ConnHandle);
+
+/**
+  * @brief  Start the Ordered Access Procedure with one Coordinated Set.
+  * @note   Supported only if CAP Initiator or Commander role & Set Coordinated are initialized.
+  * @note   The procedure will be finished when the event CAP_CSIP_META_EVT, with CSIP_COO_ORDERED_ACCESS_COMPLETE_EVT
+  *         is received. The result of the procedure will be the status of this event.
+  * @param  nbConnHandle: number of Set Members in the Coordinated Set
+  * @param  ConnHandle : list of the Connection Handles of the Set Members
+  * @retval status of the Start the Ordered Access Procedure
+  */
+tBleStatus CAP_CSIP_StartOrderedAccessProcedure(uint8_t nbConnHandle, uint16_t* ConnHandle);
 
 /**
   * @brief  Notify CAP Event

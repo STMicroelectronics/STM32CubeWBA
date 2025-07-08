@@ -21,40 +21,42 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_healththermometer-application-description"><strong>BLE_HealthThermometer Application Description</strong></h2>
 <p>The Health Thermometer Sensor is a GATT server:</p>
-<p>Measures the temperature and exposes it via the Health Thermometer Service<br />
-Contains the Device Information Service to be identified by the remote device</p>
-<p>How to use the Health Thermometer profile as specified by the BLE SIG and described in ST wiki.</p>
-<ul>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Health_Thermometer#Health_Thermometer_Profile"> Getting started with Health Thermometer Sensor</a></li>
-</ul>
+<p>Measures the temperature and exposes it via the Health Thermometer Service.<br />
+Contains the Device Information Service to be identified by the remote device.</p>
+<p>How to use the Health Thermometer profile as specified by the BLE SIG and described in the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Health_Thermometer#Health_Thermometer_Profile"> ST wiki.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA65xx devices.</li>
+<li>This application runs on STM32WBA65xx devices.<br />
+</li>
 <li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the board at the address 0x08000000 with the binary file</p>
-<p>Use one of the following remote interface to interact with your device<br />
+<p>In order to make the program work:</p>
+<ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the board at the address 0x08000000 with the binary file.</li>
+</ul>
+<p>Use one of the following remote interfaces to interact with your device:<br />
 <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
 <p>Reset the STM32WBAxx Nucleo board and launch remote interface on PC/android/ios device.</p>
 <ul>
-<li>Open remote interface:
+<li>Open the remote interface:
 <ul>
-<li>Select the HT_xx in the device list, where xx is the 2 last digits of the BD ADDRESS.<br />
+<li>Select the HT_xx in the device list, where xx are the last 2 digits of the BD ADDRESS.<br />
 </li>
-<li>Connect it.<br />
+<li>Connect to it.<br />
 </li>
 <li>Select the Health Thermometer service.</li>
 </ul></li>
-<li>Open Health Thermometer service<br />
-The temperature measurement is displayed on the remote interface,<br />
+<li>Open Health Thermometer service:<br />
+The temperature measurement is displayed on the remote interface.<br />
 Temperature min/max values are also displayed.</li>
 </ul>
-<p>For more information, please refer to STM32WBA Bluetooth LE - Health Thermometer Sensor ST wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Health_Thermometer#Health_Thermometer_Profile"> Health Thermometer Sensor</a></p>
+<p>For more information, please refer to the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Health_Thermometer#Health_Thermometer_Profile"> STM32WBA Bluetooth LE - Health Thermometer Sensor ST wiki.</a></p>
 </div>
 </div>
 </body>

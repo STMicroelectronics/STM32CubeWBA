@@ -38,7 +38,7 @@ void Error_Handler(void);
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -66,20 +66,41 @@ int main(void)
   /* Register SecureError callback defined in non-secure and to be called by secure handler */
   SECURE_RegisterCallback(GTZC_ERROR_CB_ID, (void *)SecureError_Callback);
 
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
 
-  /* Configure the System clock to have a frequency of 100 MHz */
-  SystemClock_Config();
-
-  /* Add your non-secure example code here
-     */
+  /* Resume SysTick timer in non-secure */
+  SECURE_ResumeTick();
 
   /* Infinite loop */
   while (1)
   {
-    HAL_Delay(1000);
-    
-    HAL_Delay(1000);
+    HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    SECURE_Delay(500);
   }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  LED_CLK_ENABLE();
+
+  /*Configure GPIO pin : LED1_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 }
 
 /**
@@ -98,7 +119,6 @@ void SecureFault_Callback(void)
   }
 }
 
-
 /**
   * @brief  Callback called by secure code following a GTZC TZIC secure interrupt (GTZC_IRQn)
   * @note   This callback is called by secure code thanks to the registration
@@ -116,77 +136,6 @@ void SecureError_Callback(void)
 }
 
 /**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow :
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 100000000
-  *            HCLK(Hz)                       = 100000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 1
-  *            APB2 Prescaler                 = 1
-  *            APB7 Prescaler                 = 1
-  *            HSE Frequency(Hz)              = 32000000
-  *            PLL_M                          = 4
-  *            PLL_N                          = 25
-  *            PLL_P                          = 2
-  *            PLL_Q                          = 2
-  *            PLL_R                          = 2
-  *            Flash Latency(WS)              = 3
-  * @param  None
-  * @retval None
-  */
-static void SystemClock_Config(void)
-{
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-
-  __HAL_RCC_PWR_CLK_ENABLE();
-  /* At reset, the regulator is the LDO, in range 2 */
-  /* Need to move to range 1 to reach 100 MHz */
-  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
-  {
-    /* Initialization Error */
-    Error_Handler();
-  }
-
-  /* Activate PLL with HSI as source  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.PLL1.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL1.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL1.PLLFractional = 0U;
-  RCC_OscInitStruct.PLL1.PLLM = 2U;
-  RCC_OscInitStruct.PLL1.PLLN = 25U;   /* VCO = HSI/M * N = 16 / 2 * 25 = 200 MHz */
-  RCC_OscInitStruct.PLL1.PLLR = 2U;    /* PLLSYS = 200 MHz / 2 = 100 MHz */
-  RCC_OscInitStruct.PLL1.PLLP = 2U;
-  RCC_OscInitStruct.PLL1.PLLQ = 2U;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    /* Initialization error */
-    Error_Handler();
-  }
-
-  /* Select PLL as system clock source and configure the HCLK, PCLK1, PCLK2 and PCLK7
-   *  clocks dividers
-   */
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 \
-                               | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_PCLK7 | RCC_CLOCKTYPE_HCLK5);
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV4;
-  RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
-
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-  {
-    /* Initialization Error */
-    Error_Handler();
-  }
-}
-
-/**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
@@ -195,9 +144,7 @@ void Error_Handler(void)
   NVIC_SystemReset();
 }
 
-
 #ifdef  USE_FULL_ASSERT
-
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

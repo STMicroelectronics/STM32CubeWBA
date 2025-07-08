@@ -120,16 +120,28 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialization of the Zigbee stack */
   APP_ZIGBEE_Init();
-
+  
+#ifdef ZDD_IS_ZC
+  
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
+  stZigbeeAppInfo.eStartupControl = ZbStartTypeForm ;
+  stZigbeeAppInfo.bPersistNotification = false;
+  
+  /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
+  stZigbeeAppInfo.bNwkStartup = true;
+  
+#else 
+
+  /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */  
   stZigbeeAppInfo.eStartupControl = ZbStartTypeJoin;
   stZigbeeAppInfo.bPersistNotification = false;
-  stZigbeeAppInfo.bNwkStartup = true;
-
+ 
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
   stZigbeeAppInfo.bNwkStartup = false; /* Override */
+
+#endif /* ZVD_IS_ZC */
   
-  /* Register a dedicated task for displaying infos */
+   /* Register a dedicated task for displaying infos */
   APP_ZIGBEE_InitStatusDebug();
   
   /* USER CODE END APP_ZIGBEE_ApplicationInit */

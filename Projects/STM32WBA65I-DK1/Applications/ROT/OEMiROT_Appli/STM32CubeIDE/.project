@@ -25,7 +25,7 @@
 		<nature>com.st.stm32cube.ide.mcu.MCUNonUnderRootProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUCubeExampleProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUEndUserDisabledTrustZoneProjectNature</nature>
-		<nature>com.st.stm32cube.ide.mcu.MCUSecureProjectNature</nature>
+		<nature>com.st.stm32cube.ide.mcu.MCUNonSecureProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUSingleCpuProjectNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
@@ -75,11 +75,6 @@
 			<name>Application/User/s_data.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/s_data.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/secure_nsc.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Src/secure_nsc.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/startup_stm32wbaxx.c</name>

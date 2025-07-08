@@ -75,7 +75,6 @@ __weak void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 }
 /* USER CODE END VPORT_SUPPORT_TICKS_AND_SLEEP */
 
-
 /**
   * @brief  FreeRTOS initialization
   * @param  None
@@ -135,5 +134,4 @@ void StartDefaultTask(void *argument)
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
-
 

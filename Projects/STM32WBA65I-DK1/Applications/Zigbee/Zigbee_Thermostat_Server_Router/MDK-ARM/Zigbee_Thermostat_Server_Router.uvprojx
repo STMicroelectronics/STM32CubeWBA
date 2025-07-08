@@ -1,4 +1,5 @@
-<?xml version="1.0" ?><Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
 
   <SchemaVersion>2.1</SchemaVersion>
 
@@ -13,33 +14,33 @@
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32WBA55CGUx</Device>
+          <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.4.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
-          <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE(&quot;Cortex-M33&quot;) ELITTLE TZ</Cpu>
-          <FlashUtilSpec/>
-          <StartupFile/>
-          <FlashDriverDll/>
+          <Cpu>IRAM(0x20000000,0x00080000) IROM(0x08000000,0x00200000) CPUTYPE("Cortex-M33") FPU3(SFPU) DSP TZ CLOCK(12000000) ELITTLE</Cpu>
+          <FlashUtilSpec></FlashUtilSpec>
+          <StartupFile></StartupFile>
+          <FlashDriverDll>UL2V8M(-S0 -C0 -P0 -FD20000000 -FC8000 -FN2 -FF0STM32WBAx_2M_0800 -FS08000000 -FL0200000 -FF1STM32WBAx_2M_0C00 -FS1C000000 -FL1200000 -FP0($$Device:STM32WBA65RIVx$CMSIS\Flash\STM32WBAx_2M_0800.FLM) -FP1($$Device:STM32WBA65RIVx$CMSIS\Flash\STM32WBAx_2M_0C00.FLM))</FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile/>
-          <MemoryEnv/>
-          <Cmp/>
-          <Asm/>
-          <Linker/>
-          <OHString/>
-          <InfinionOptionDll/>
-          <SLE66CMisc/>
-          <SLE66AMisc/>
-          <SLE66LinkerMisc/>
-          <SFDFile>$$Device:STM32WBA55CGUx$CMSIS\SVD\STM32WBA52.svd</SFDFile>
+          <RegisterFile>$$Device:STM32WBA65RIVx$Drivers\CMSIS\Device\ST\STM32WBAxx\Include\stm32wbaxx.h</RegisterFile>
+          <MemoryEnv></MemoryEnv>
+          <Cmp></Cmp>
+          <Asm></Asm>
+          <Linker></Linker>
+          <OHString></OHString>
+          <InfinionOptionDll></InfinionOptionDll>
+          <SLE66CMisc></SLE66CMisc>
+          <SLE66AMisc></SLE66AMisc>
+          <SLE66LinkerMisc></SLE66LinkerMisc>
+          <SFDFile>$$Device:STM32WBA65RIVx$CMSIS\SVD\STM32WBA65.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
-          <BinPath/>
-          <IncludePath/>
-          <LibPath/>
-          <RegisterFilePath/>
-          <DBRegisterFilePath/>
+          <BinPath></BinPath>
+          <IncludePath></IncludePath>
+          <LibPath></LibPath>
+          <RegisterFilePath></RegisterFilePath>
+          <DBRegisterFilePath></DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
             <ExitCodeStop>0</ExitCodeStop>
@@ -54,15 +55,15 @@
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath/>
+          <ListingPath></ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name/>
-            <UserProg2Name/>
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopU1X>0</nStopU1X>
@@ -71,8 +72,8 @@
           <BeforeMake>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name/>
-            <UserProg2Name/>
+            <UserProg1Name></UserProg1Name>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopB1X>0</nStopB1X>
@@ -82,14 +83,14 @@
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
             <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
-            <UserProg2Name/>
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>1</SelectedForBatchBuild>
-          <SVCSIdString/>
+          <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
           <UseCPPCompiler>0</UseCPPCompiler>
@@ -103,17 +104,17 @@
           <AssembleAssemblyFile>0</AssembleAssemblyFile>
           <PublicsOnly>0</PublicsOnly>
           <StopOnExitCode>3</StopOnExitCode>
-          <CustomArgument/>
-          <IncludeLibraryModules/>
+          <CustomArgument></CustomArgument>
+          <IncludeLibraryModules></IncludeLibraryModules>
           <ComprImg>0</ComprImg>
         </CommonProperty>
         <DllOption>
-          <SimDllName/>
-          <SimDllArguments/>
-          <SimDlgDll/>
-          <SimDlgDllArguments/>
+          <SimDllName></SimDllName>
+          <SimDllArguments></SimDllArguments>
+          <SimDlgDll></SimDlgDll>
+          <SimDlgDllArguments></SimDlgDllArguments>
           <TargetDllName>SARMV8M.DLL</TargetDllName>
-          <TargetDllArguments>-MPU</TargetDllArguments>
+          <TargetDllArguments> -MPU</TargetDllArguments>
           <TargetDlgDll>TCM.DLL</TargetDlgDll>
           <TargetDlgDllArguments>-pCM33</TargetDlgDllArguments>
         </DllOption>
@@ -137,11 +138,11 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2V8M.DLL</Flash2>
-          <Flash3/>
-          <Flash4/>
-          <pFcarmOut/>
-          <pFcarmGrp/>
-          <pFcArmRoot/>
+          <Flash3></Flash3>
+          <Flash4></Flash4>
+          <pFcarmOut></pFcarmOut>
+          <pFcarmGrp></pFcarmGrp>
+          <pFcArmRoot></pFcArmRoot>
           <FcArmLst>0</FcArmLst>
         </Utilities>
         <TargetArmAds>
@@ -173,8 +174,8 @@
             <AdsLsxf>1</AdsLsxf>
             <RvctClst>0</RvctClst>
             <GenPPlst>0</GenPPlst>
-            <AdsCpuType>&quot;Cortex-M33&quot;</AdsCpuType>
-            <RvctDeviceName/>
+            <AdsCpuType>"Cortex-M33"</AdsCpuType>
+            <RvctDeviceName></RvctDeviceName>
             <mOS>0</mOS>
             <uocRom>0</uocRom>
             <uocRam>0</uocRam>
@@ -194,7 +195,7 @@
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
-            <RwSelD>4</RwSelD>
+            <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
             <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
@@ -246,12 +247,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x20000</Size>
+                <Size>0x80000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x100000</Size>
+                <Size>0x200000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -276,7 +277,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x100000</Size>
+                <Size>0x200000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -301,7 +302,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x20000</Size>
+                <Size>0x80000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -309,7 +310,7 @@
                 <Size>0x0</Size>
               </OCR_RVCT10>
             </OnChipMemories>
-            <RvctStartVector/>
+            <RvctStartVector></RvctStartVector>
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
@@ -338,8 +339,8 @@
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
               <Define>STM32,STM32WBA,STM32WBA65xx,STM32WBA65RIx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,MAC,MAC_LAYER,APPLICATION_USE_BAREMETAL,APPLICATION_USE_NUCLEO,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,APPLICATION_USE_AMM,APPLICATION_USE_SMPS,</Define>
-              <Undefine/>
-              <IncludePath>../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/STM32WBA65I-DK1;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/stm32wba;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/utilities;../../../../../../Middlewares/ST/STM32_WPAN/interface;../../../../../../Utilities/conf;../../../../../../Utilities/LCD;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace;</IncludePath>
+              <Undefine></Undefine>
+              <IncludePath>../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/STM32WBA65I-DK1;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/stm32wba;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/utilities;../../../../../../Middlewares/ST/STM32_WPAN/interface;../../../../../../Utilities/conf;../../../../../../Utilities/LCD;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -354,10 +355,10 @@
             <useXO>0</useXO>
             <ClangAsOpt>1</ClangAsOpt>
             <VariousControls>
-              <MiscControls/>
-              <Define/>
-              <Undefine/>
-              <IncludePath/>
+              <MiscControls></MiscControls>
+              <Define></Define>
+              <Undefine></Undefine>
+              <IncludePath></IncludePath>
             </VariousControls>
           </Aads>
           <LDads>
@@ -367,31 +368,709 @@
             <noStLib>0</noStLib>
             <RepFail>1</RepFail>
             <useFile>0</useFile>
-            <TextAddressRange/>
-            <DataAddressRange/>
-            <pXoBase/>
+            <TextAddressRange></TextAddressRange>
+            <DataAddressRange></DataAddressRange>
+            <pXoBase></pXoBase>
             <ScatterFile>stm32wba65xx_flash.sct</ScatterFile>
-            <IncludeLibs/>
-            <IncludeLibsPath/>
+            <IncludeLibs></IncludeLibs>
+            <IncludeLibsPath></IncludeLibsPath>
             <Misc>--diag_suppress L6314W
 
 --diag_suppress 1296
 </Misc>
-            <LinkerInputFile/>
-            <DisabledWarnings/>
+            <LinkerInputFile></LinkerInputFile>
+            <DisabledWarnings></DisabledWarnings>
           </LDads>
         </TargetArmAds>
       </TargetOption>
       <Groups>
-      <Group><GroupName>Application/MDK-ARM</GroupName><Files><File><FileName>startup_stm32wba65xx.s</FileName><FileType>2</FileType><FilePath>startup_stm32wba65xx.s</FilePath></File></Files></Group><Group><GroupName>Application/User/Core</GroupName><Files><File><FileName>app_entry.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\app_entry.c</FilePath></File><File><FileName>app_menu.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\app_menu.c</FilePath></File><File><FileName>main.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\main.c</FilePath></File><File><FileName>stm32wbaxx_hal_msp.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\stm32wbaxx_hal_msp.c</FilePath></File><File><FileName>stm32wbaxx_it.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\stm32wbaxx_it.c</FilePath></File></Files></Group><Group><GroupName>Application/User/STM32_WPAN/App</GroupName><Files><File><FileName>app_bsp.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\App\app_bsp.c</FilePath></File><File><FileName>app_zigbee.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\App\app_zigbee.c</FilePath></File><File><FileName>app_zigbee_endpoint.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\App\app_zigbee_endpoint.c</FilePath></File></Files></Group><Group><GroupName>Application/User/STM32_WPAN/Target</GroupName><Files><File><FileName>linklayer_plat.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\linklayer_plat.c</FilePath></File><File><FileName>ll_sys_if.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\ll_sys_if.c</FilePath></File><File><FileName>mac_sys_if.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\mac_sys_if.c</FilePath></File><File><FileName>power_table.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\power_table.c</FilePath></File><File><FileName>zigbee_plat.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\zigbee_plat.c</FilePath></File><File><FileName>zigbee_sys_if.c</FileName><FileType>1</FileType><FilePath>..\STM32_WPAN\Target\zigbee_sys_if.c</FilePath></File></Files></Group><Group><GroupName>Application/User/System/Config/Debug_GPIO</GroupName><Files><File><FileName>app_debug.c</FileName><FileType>1</FileType><FilePath>..\System\Config\Debug_GPIO\app_debug.c</FilePath></File></Files></Group><Group><GroupName>Application/User/System/Config/LowPower</GroupName><Files><File><FileName>peripheral_init.c</FileName><FileType>1</FileType><FilePath>..\System\Config\LowPower\peripheral_init.c</FilePath></File><File><FileName>user_low_power_config.c</FileName><FileType>1</FileType><FilePath>..\System\Config\LowPower\user_low_power_config.c</FilePath></File></Files></Group><Group><GroupName>Application/User/System/Interfaces</GroupName><Files><File><FileName>stm32_lpm_if.c</FileName><FileType>1</FileType><FilePath>..\System\Interfaces\stm32_lpm_if.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Interfaces</GroupName><Files><File><FileName>adv_trace_usart_if.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</FilePath></File><File><FileName>hw_aes.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</FilePath></File><File><FileName>hw_rng.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_rng.c</FilePath></File><File><FileName>timer_if.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/BasicAES</GroupName><Files><File><FileName>baes_ccm.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ccm.c</FilePath></File><File><FileName>baes_cmac.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_cmac.c</FilePath></File><File><FileName>baes_ecb.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ecb.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/Log</GroupName><Files><File><FileName>log_module.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/MemoryManager</GroupName><Files><File><FileName>advanced_memory_manager.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</FilePath></File><File><FileName>stm32_mm.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/RFControl</GroupName><Files><File><FileName>rf_antenna_switch.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/RTDebug</GroupName><Files><File><FileName>RTDebug.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug.c</FilePath></File><File><FileName>RTDebug_dtb.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName><Files><File><FileName>serial_cmd_interpreter.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Modules</GroupName><Files><File><FileName>app_sys.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\app_sys.c</FilePath></File><File><FileName>crc_ctrl.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\crc_ctrl.c</FilePath></File><File><FileName>otp.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\otp.c</FilePath></File><File><FileName>scm.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\scm.c</FilePath></File><File><FileName>stm_list.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\stm_list.c</FilePath></File></Files></Group><Group><GroupName>Common/WPAN/Startup</GroupName><Files><File><FileName>stm32wbaxx_ResetHandler_MDK-ARM.s</FileName><FileType>2</FileType><FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Startup\stm32wbaxx_ResetHandler_MDK-ARM.s</FilePath></File></Files></Group><Group><GroupName>Doc</GroupName><Files><File><FileName>readme.md</FileName><FileType>5</FileType><FilePath>..\readme.md</FilePath></File></Files></Group><Group><GroupName>Drivers/BSP/STM32WBA65I-DK1</GroupName><Files><File><FileName>ssd1315.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\BSP\Components\ssd1315\ssd1315.c</FilePath></File><File><FileName>ssd1315_reg.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\BSP\Components\ssd1315\ssd1315_reg.c</FilePath></File><File><FileName>stm32wba65i_discovery_bus.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery_bus.c</FilePath></File><File><FileName>stm32wba65i_discovery_lcd.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery_lcd.c</FilePath></File><File><FileName>stm32wba65i_discovery.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery.c</FilePath></File></Files></Group><Group><GroupName>Drivers/CMSIS</GroupName><Files><File><FileName>system_stm32wbaxx.c</FileName><FileType>1</FileType><FilePath>..\Core\Src\system_stm32wbaxx.c</FilePath></File></Files></Group><Group><GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName><Files><File><FileName>stm32wbaxx_hal.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</FilePath></File><File><FileName>stm32wbaxx_hal_adc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc.c</FilePath></File><File><FileName>stm32wbaxx_hal_adc_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_comp.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_comp.c</FilePath></File><File><FileName>stm32wbaxx_hal_cortex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cortex.c</FilePath></File><File><FileName>stm32wbaxx_hal_crc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</FilePath></File><File><FileName>stm32wbaxx_hal_crc_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_cryp.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp.c</FilePath></File><File><FileName>stm32wbaxx_hal_cryp_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_dma.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</FilePath></File><File><FileName>stm32wbaxx_hal_dma_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_exti.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_exti.c</FilePath></File><File><FileName>stm32wbaxx_hal_flash.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash.c</FilePath></File><File><FileName>stm32wbaxx_hal_flash_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_gpio.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</FilePath></File><File><FileName>stm32wbaxx_hal_gtzc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gtzc.c</FilePath></File><File><FileName>stm32wbaxx_hal_hash.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hash.c</FilePath></File><File><FileName>stm32wbaxx_hal_hsem.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hsem.c</FilePath></File><File><FileName>stm32wbaxx_hal_i2c.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</FilePath></File><File><FileName>stm32wbaxx_hal_i2c_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_icache.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</FilePath></File><File><FileName>stm32wbaxx_hal_irda.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_irda.c</FilePath></File><File><FileName>stm32wbaxx_hal_iwdg.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_iwdg.c</FilePath></File><File><FileName>stm32wbaxx_hal_lptim.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_lptim.c</FilePath></File><File><FileName>stm32wbaxx_hal_pka.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pka.c</FilePath></File><File><FileName>stm32wbaxx_hal_pwr.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr.c</FilePath></File><File><FileName>stm32wbaxx_hal_pwr_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_ramcfg.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_ramcfg.c</FilePath></File><File><FileName>stm32wbaxx_hal_rcc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc.c</FilePath></File><File><FileName>stm32wbaxx_hal_rcc_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_rng.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng.c</FilePath></File><File><FileName>stm32wbaxx_hal_rng_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_rtc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc.c</FilePath></File><File><FileName>stm32wbaxx_hal_rtc_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_sai.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_sai.c</FilePath></File><File><FileName>stm32wbaxx_hal_sai_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_sai_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_smartcard.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smartcard.c</FilePath></File><File><FileName>stm32wbaxx_hal_smartcard_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smartcard_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_smbus.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smbus.c</FilePath></File><File><FileName>stm32wbaxx_hal_smbus_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smbus_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_spi.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi.c</FilePath></File><File><FileName>stm32wbaxx_hal_spi_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_tim.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim.c</FilePath></File><File><FileName>stm32wbaxx_hal_tim_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_tsc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tsc.c</FilePath></File><File><FileName>stm32wbaxx_hal_uart.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</FilePath></File><File><FileName>stm32wbaxx_hal_uart_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_usart.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_usart.c</FilePath></File><File><FileName>stm32wbaxx_hal_usart_ex.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_usart_ex.c</FilePath></File><File><FileName>stm32wbaxx_hal_wwdg.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_wwdg.c</FilePath></File><File><FileName>stm32wbaxx_ll_rcc.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_rcc.c</FilePath></File><File><FileName>stm32wbaxx_ll_tim.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</FilePath></File></Files></Group><Group><GroupName>Middlewares/STM32_WPAN</GroupName><Files><File><FileName>WBA6_LinkLayer15_4.a</FileName><FileType>4</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</FilePath></File><File><FileName>ll_sys_cs.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</FilePath></File><File><FileName>ll_sys_dp_slp.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</FilePath></File><File><FileName>ll_sys_intf.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</FilePath></File><File><FileName>ll_sys_startup.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</FilePath></File><File><FileName>wba_mac_lib.a</FileName><FileType>4</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</FilePath></File><File><FileName>ZigBeeClusters.a</FileName><FileType>4</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigBeeClusters.a</FilePath></File><File><FileName>ZigBeeProR23_FFD.a</FileName><FileType>4</FileType><FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</FilePath></File></Files></Group><Group><GroupName>Utilities</GroupName><Files><File><FileName>stm32_adv_trace.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\trace\adv_trace\stm32_adv_trace.c</FilePath></File><File><FileName>stm32_lpm.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</FilePath></File><File><FileName>stm32_mem.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\misc\stm32_mem.c</FilePath></File><File><FileName>stm32_seq.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\sequencer\stm32_seq.c</FilePath></File><File><FileName>stm32_timer.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\tim_serv\stm32_timer.c</FilePath></File><File><FileName>stm32_tiny_vsnprintf.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\misc\stm32_tiny_vsnprintf.c</FilePath></File><File><FileName>stm32_lcd.c</FileName><FileType>1</FileType><FilePath>..\..\..\..\..\..\Utilities\LCD\stm32_lcd.c</FilePath></File></Files></Group></Groups>
+        <Group>
+          <GroupName>Application/MDK-ARM</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32wba65xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>startup_stm32wba65xx.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/Core</GroupName>
+          <Files>
+            <File>
+              <FileName>app_entry.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\app_entry.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\app_menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_msp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\stm32wbaxx_hal_msp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\stm32wbaxx_it.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/STM32_WPAN/App</GroupName>
+          <Files>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\App\app_bsp.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_zigbee.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\App\app_zigbee.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_zigbee_endpoint.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\App\app_zigbee_endpoint.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/STM32_WPAN/Target</GroupName>
+          <Files>
+            <File>
+              <FileName>linklayer_plat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\linklayer_plat.c</FilePath>
+            </File>
+            <File>
+              <FileName>ll_sys_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\ll_sys_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>mac_sys_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\mac_sys_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>power_table.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\power_table.c</FilePath>
+            </File>
+            <File>
+              <FileName>zigbee_plat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\zigbee_plat.c</FilePath>
+            </File>
+            <File>
+              <FileName>zigbee_sys_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\Target\zigbee_sys_if.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Config/Debug_GPIO</GroupName>
+          <Files>
+            <File>
+              <FileName>app_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\Debug_GPIO\app_debug.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Config/LowPower</GroupName>
+          <Files>
+            <File>
+              <FileName>peripheral_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\LowPower\peripheral_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>user_low_power_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Config\LowPower\user_low_power_config.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/System/Interfaces</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32_lpm_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\System\Interfaces\stm32_lpm_if.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Interfaces</GroupName>
+          <Files>
+            <File>
+              <FileName>adv_trace_usart_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>hw_aes.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</FilePath>
+            </File>
+            <File>
+              <FileName>hw_rng.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_rng.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
+          <Files>
+            <File>
+              <FileName>baes_ccm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ccm.c</FilePath>
+            </File>
+            <File>
+              <FileName>baes_cmac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_cmac.c</FilePath>
+            </File>
+            <File>
+              <FileName>baes_ecb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES\baes_ecb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/Log</GroupName>
+          <Files>
+            <File>
+              <FileName>log_module.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
+          <Files>
+            <File>
+              <FileName>advanced_memory_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_mm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/RFControl</GroupName>
+          <Files>
+            <File>
+              <FileName>rf_antenna_switch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/RTDebug</GroupName>
+          <Files>
+            <File>
+              <FileName>RTDebug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug.c</FilePath>
+            </File>
+            <File>
+              <FileName>RTDebug_dtb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules/SerialCmdInterpreter</GroupName>
+          <Files>
+            <File>
+              <FileName>serial_cmd_interpreter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Modules</GroupName>
+          <Files>
+            <File>
+              <FileName>app_sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\app_sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\crc_ctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>otp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\otp.c</FilePath>
+            </File>
+            <File>
+              <FileName>scm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\scm.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm_list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\stm_list.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common/WPAN/Startup</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32wbaxx_ResetHandler_MDK-ARM.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Startup\stm32wbaxx_ResetHandler_MDK-ARM.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Doc</GroupName>
+          <Files>
+            <File>
+              <FileName>readme.md</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\readme.md</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/BSP/STM32WBA65I-DK1</GroupName>
+          <Files>
+            <File>
+              <FileName>ssd1315.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\BSP\Components\ssd1315\ssd1315.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1315_reg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\BSP\Components\ssd1315\ssd1315_reg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wba65i_discovery_bus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery_bus.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wba65i_discovery_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery_lcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wba65i_discovery.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1\stm32wba65i_discovery.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/CMSIS</GroupName>
+          <Files>
+            <File>
+              <FileName>system_stm32wbaxx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\system_stm32wbaxx.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32wbaxx_hal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_adc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_comp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_comp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cortex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_crc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_flash_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_flash_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_gtzc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gtzc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_hash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_hsem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hsem.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_i2c_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_icache.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_irda.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_irda.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_iwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_lptim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_lptim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pka.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pka.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pwr_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_ramcfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_ramcfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rcc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rcc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rng.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rng_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rng_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rtc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_sai.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_sai.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_sai_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_sai_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_smartcard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smartcard.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_smartcard_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smartcard_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_smbus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_smbus_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_smbus_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_spi_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_spi_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_tim_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_tsc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tsc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_uart_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_usart_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_usart_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_wwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_wwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/STM32_WPAN</GroupName>
+          <Files>
+            <File>
+              <FileName>WBA6_LinkLayer15_4.a</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</FilePath>
+            </File>
+            <File>
+              <FileName>ll_sys_cs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</FilePath>
+            </File>
+            <File>
+              <FileName>ll_sys_dp_slp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</FilePath>
+            </File>
+            <File>
+              <FileName>ll_sys_intf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</FilePath>
+            </File>
+            <File>
+              <FileName>ll_sys_startup.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</FilePath>
+            </File>
+            <File>
+              <FileName>wba_mac_lib.a</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</FilePath>
+            </File>
+            <File>
+              <FileName>ZigBeeClusters.a</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\clusters\ZigBeeClusters.a</FilePath>
+            </File>
+            <File>
+              <FileName>ZigBeeProR23_FFD.a</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\ZigBeeProR23_FFD.a</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Utilities</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32_adv_trace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\trace\adv_trace\stm32_adv_trace.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_lpm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\lpm\tiny_lpm\stm32_lpm.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\misc\stm32_mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_seq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\sequencer\stm32_seq.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\tim_serv\stm32_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_tiny_vsnprintf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\misc\stm32_tiny_vsnprintf.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Utilities\LCD\stm32_lcd.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
+      </Groups>
     </Target>
   </Targets>
 
   <RTE>
     <apis/>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="CMSIS Core">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.6.0" condition="ARMv6_7_8-M Device">
+        <package name="CMSIS" schemaVersion="1.7.7" url="http://www.keil.com/pack/" vendor="ARM" version="5.9.0"/>
         <targetInfos>
           <targetInfo name="Zigbee_Thermostat_Server_Router"/>
         </targetInfos>

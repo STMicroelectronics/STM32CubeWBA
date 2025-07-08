@@ -66,6 +66,27 @@ CMSE_NS_ENTRY void SECURE_RegisterCallback(SECURE_CallbackIDTypeDef CallbackId, 
 }
 
 /**
+  * @brief  Secure callable function to resume SysTick.
+  * @note   This function resumes the SysTick timer operation in the non-secure world.
+  * @retval None
+  */
+CMSE_NS_ENTRY void SECURE_ResumeTick(void)
+{
+  HAL_ResumeTick();
+}
+
+/**
+  * @brief  Secure callable function to create a delay.
+  * @param  delay  Duration of the delay in milliseconds.
+  * @note   This function uses the SysTick timer to create a delay in the non-secure world.
+  * @retval None
+  */
+CMSE_NS_ENTRY void SECURE_Delay(uint32_t delay)
+{
+  HAL_Delay(delay);
+}
+
+/**
   * @}
   */
 

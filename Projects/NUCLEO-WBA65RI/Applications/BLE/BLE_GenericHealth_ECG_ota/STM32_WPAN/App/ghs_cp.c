@@ -18,7 +18,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
+#include "stm32_wpan_common.h"
 #include "stm32_seq.h"
 #include "stm32_timer.h"
 #include "ghs.h"

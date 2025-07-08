@@ -268,8 +268,8 @@ void ll_sys_reset(void)
   uint8_t exec_time = EXEC_TIME_DEFAULT;
 
 /* USER CODE BEGIN ll_sys_reset_0 */
-    drift_time = DRIFT_TIME_OPTIMIZED;
-    exec_time = EXEC_TIME_OPTIMIZED;
+  drift_time = DRIFT_TIME_OPTIMIZED;
+  exec_time = EXEC_TIME_OPTIMIZED;
 /* USER CODE END ll_sys_reset_0 */
 
   /* Apply the selected link layer sleep timer source */
@@ -294,7 +294,7 @@ void ll_sys_reset(void)
   }
 
   /* USER CODE BEGIN ll_sys_reset_1 */
-    
+
   /* USER CODE END ll_sys_reset_1 */
 
   if((drift_time != DRIFT_TIME_DEFAULT) || (exec_time != EXEC_TIME_DEFAULT))
@@ -305,3 +305,4 @@ void ll_sys_reset(void)
 
   /* USER CODE END ll_sys_reset_2 */
 }
+

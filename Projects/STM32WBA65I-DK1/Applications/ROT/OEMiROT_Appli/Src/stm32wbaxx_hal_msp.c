@@ -28,7 +28,6 @@ void HAL_MspInit(void)
 #if defined(__GNUC__) && !defined(__ARMCC_VERSION)
   /* Temporary workaround because of any GDB server illegal access at startup */
   __HAL_RCC_GTZC1_CLK_ENABLE();
-  (void)HAL_GTZC_TZIC_ClearFlag(GTZC_PERIPH_ALL);
 #endif /* defined(__GNUC__) && !defined(__ARMCC_VERSION)  */
 
   __HAL_RCC_SYSCFG_CLK_ENABLE();

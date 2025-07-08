@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "p2pr_app.h"
 #include "p2pr.h"
 #include "stm32_rtos.h"
@@ -584,7 +583,9 @@ static void P2PR_Connect_Request(void)
   {
     if (P2PR_APP_Context.P2PR_device_status[device_index] == P2PR_DEV_FOUND)
     {
+      #if (CFG_LED_SUPPORTED == 1)
       BSP_LED_On(LED_BLUE);
+      #endif
       LOG_INFO_APP("Create connection to p2pServer stored in table at index %d\n",device_index);
       
       P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTING;
@@ -626,7 +627,7 @@ static void P2PR_Connect_Request(void)
         #if (CFG_LED_SUPPORTED == 1)
         BSP_LED_Off(LED_BLUE);
         #endif
-        
+
         P2PR_notifDevInfo(device_index);
       }
       else
@@ -690,4 +691,13 @@ static void P2PR_notifDevInfoTable(void)
   return;
 }
 
+void P2PR_setConnHdlFromIndex(uint8_t index, uint16_t connHdl)
+{
+  if (index < (P2P_DEVICE_COUNT_MAX * 2))
+  {
+    P2PR_APP_Context.P2PR_device_connHdl[index] = connHdl;
+  }
+
+  return;
+}
 /* USER CODE END FD_LOCAL_FUNCTIONS */

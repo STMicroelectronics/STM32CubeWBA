@@ -21,46 +21,71 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_heartratefreertos-application-description"><strong>BLE_HeartRateFreeRTOS Application Description</strong></h2>
 <p>The Heart Rate Profile, widely used in fitness applications, defines the communication process between a GATT-server of a Heart Rate Sensor device, such as a wrist band, and a GATT-client Collector device, such as a smartphone or tablet.</p>
-<p>How to use the Heart Rate profile is specified by the BLE SIG and described in ST wiki.</p>
-<p><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Getting started with Heart Rate Sensor</a></p>
+<p>How to use the Heart Rate profile as specified by the BLE SIG and described in the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> ST wiki.</a></p>
 <p>This example uses the X-CUBEFREERTOS pack.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, FreeRTOS</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, FreeRTOS.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx devices.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
-<li>This application is configured to support low power mode (No traces - No debugger)</li>
-<li>Traces and debugger could be acivated by setting in app_conf.h
+<li>This application runs on STM32WBA55xx devices.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
+<li>This application is configured to support low power mode (No traces - No debugger).<br />
+</li>
+<li>Traces and debugger could be acivated by setting the following in app_conf.h.
 <ul>
-<li>CFG_LPM_LEVEL (0)</li>
-<li>CFG_DEBUGGER_LEVEL (1)</li>
-<li>CFG_LOG_SUPPORTED (1)</li>
+<li>CFG_LPM_LEVEL to 0<br />
+</li>
+<li>CFG_DEBUGGER_LEVEL to 1<br />
+</li>
+<li>CFG_LOG_SUPPORTED to 1</li>
 </ul></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the board at the address 0x08000000 with the binary file</p>
-<p>Use one of the following remote interface to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
+<p>In order to make the program work:</p>
+<ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the board at the address 0x08000000 with the binary file.</li>
+</ul>
+<p>Use one of the following remote interfaces to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
 <p>Reset the STM32WBAxx Nucleo board and launch remote interface on PC/android/ios device.</p>
 <ul>
 <li>Open remote interface:
 <ul>
-<li>Select the HR__xx in the device list, where xx is the 2 last digits of the BD ADDRESS.<br />
+<li>Select the HR__xx in the device list, where xx are the last 2 digits of the BD ADDRESS.<br />
 </li>
-<li>Connect it.<br />
+<li>Connect to it.<br />
 </li>
 <li>Select the Heart Rate service.</li>
+</ul></li>
 </ul>
-HearRate value and Energy Expanded measurements are displayed in graphs.<br />
-Energy Expanded can be reset.</li>
+<p>Heart Rate value and Energy Expanded measurements are displayed in graphs.<br />
+Energy Expanded can be reset.</p>
+<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board, is associated with the following functions:</p>
+<ul>
+<li>B1 :
+<ul>
+<li>Not connected : Launch fast advertising.<br />
+</li>
+<li>Connected : Switch between 1Mbit and 2Mbit PHY.</li>
+</ul></li>
+<li>B2 :
+<ul>
+<li>Not connected : Clear security database.<br />
+</li>
+<li>Connected : Security request, pairing.</li>
+</ul></li>
+<li>B3 :
+<ul>
+<li>Not connected : Not used.<br />
+</li>
+<li>Connected : Update connection interval.</li>
+</ul></li>
 </ul>
-<p>Each button (B1, B2, B3) on STM32WBAxx Nucleo board, is associated to the following functions:</p>
-<p>B1 : - not connected : launch fast advertising - connected : switch between 1Mbits and 2Mbits PHY</p>
-<p>B2 : - not connected : clear security database - connected : security request, pairing</p>
-<p>B3 : - not connected : not - connected : update connection interval</p>
-<p>For more informations, please refer to Bluetooth LE - Heart Rate Sensor ST wiki<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Heart Rate Profile</a></p>
+<p>For more information, please refer to the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> STM32WBA Bluetooth LE - Heart Rate Sensor ST wiki.</a></p>
 </div>
 </div>
 </body>

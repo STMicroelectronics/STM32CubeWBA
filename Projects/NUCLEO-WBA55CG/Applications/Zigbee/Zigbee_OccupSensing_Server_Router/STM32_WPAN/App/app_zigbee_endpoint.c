@@ -158,18 +158,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -195,7 +183,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Occupancy Server Cluster */
   stZigbeeAppInfo.OccupancyServer = ZbZclOccupancyServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.OccupancyServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OccupancyServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OccupancyServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Occupancy Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 

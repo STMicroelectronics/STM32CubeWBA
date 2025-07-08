@@ -36,7 +36,7 @@ extern "C" {
 #define HAL_MODULE_ENABLED
 /*#define HAL_ADC_MODULE_ENABLED   */
 /*#define HAL_COMP_MODULE_ENABLED   */
-/*#define HAL_CRC_MODULE_ENABLED   */
+#define HAL_CRC_MODULE_ENABLED
 /*#define HAL_CRYP_MODULE_ENABLED   */
 /*#define HAL_GTZC_MODULE_ENABLED   */
 /*#define HAL_HASH_MODULE_ENABLED   */
@@ -360,3 +360,4 @@ void assert_failed(uint8_t *file, uint32_t line);
 #endif
 
 #endif /* STM32WBAxx_HAL_CONF_H */
+

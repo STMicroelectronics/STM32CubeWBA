@@ -36,7 +36,7 @@
                                                                          * public broadcast announcement advertising
                                                                          * data
                                                                          */
-#define BLE_PBP_MAX_ADDITIONAL_ADV_DATA                         (50u)   /* Maximum size of the Additional Adv Metadata
+#define BLE_PBP_MAX_ADDITIONAL_ADV_DATA                         (60u)   /* Maximum size of the Additional Adv Metadata
                                                                          * Field in the PBP Broadcast Start Audio function
                                                                          */
 #endif /* __PBP_CONFIG_H */

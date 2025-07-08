@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -66,8 +66,8 @@
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME
 #define APP_ZIGBEE_APPLICATION_OS_NAME    "."
 
-#define CFG_TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION                 CFG_TASK_ZIGBEE_APP1
-#define TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION_PRIORITY            CFG_SEQ_PRIO_1
+#define CFG_TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION         CFG_TASK_ZIGBEE_APP1
+#define TASK_ZIGBEE_APP_MESSAGE_CONFIRMATION_PRIORITY    CFG_SEQ_PRIO_1
 
 /* USER CODE END PD */
 
@@ -97,10 +97,10 @@ static UTIL_TIMER_Object_t          stDisplayTimerId;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Messaging Client Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo);
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo);
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientDisplayMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientCancelMessageCallback ( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgClientCallbacksT stMessagingClientCallbacks =
 {
@@ -170,18 +170,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -207,7 +195,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Messaging Client Cluster */
   stZigbeeAppInfo.MessagingClient = ZbZclMsgClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stMessagingClientCallbacks, NULL );
   assert( stZigbeeAppInfo.MessagingClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.MessagingClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Messaging Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -232,7 +223,6 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
   
   return true;
 }
-
 
 /**
  * @brief  Return the Startup Configuration
@@ -383,7 +373,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayMessageCallback( str
 /**
  * @brief  Messaging Client 'CancelMessage' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelT * pstMessageCancel, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientCancelMessageCallback */
@@ -411,7 +401,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelMessageCallback( stru
 /**
  * @brief  Messaging Client 'CancelAllMessages' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageCancelAllT * pstMessageCancelAll, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientCancelAllMessagesCallback */
@@ -423,7 +413,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientCancelAllMessagesCallback( 
 /**
  * @brief  Messaging Client 'DisplayProtectedMessage' command Callback
  */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void *arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo )
+static enum ZclStatusCodeT APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageT * pstMessage, struct ZbZclAddrInfoT * pstSrcInfo )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
   /* USER CODE BEGIN APP_ZIGBEE_MessagingClientDisplayProtectedMessageCallback */

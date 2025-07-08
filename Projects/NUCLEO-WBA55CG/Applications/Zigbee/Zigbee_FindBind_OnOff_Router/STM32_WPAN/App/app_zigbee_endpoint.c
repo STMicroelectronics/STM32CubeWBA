@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -98,7 +98,6 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-static void APP_ZIGBEE_DisplayBindTable      ( void );
 
 /* USER CODE END PFP */
 
@@ -138,7 +137,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 {
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationStart */
   /* Start Find-Bind */
-  APP_ZIGBEE_DisplayBindTable();
+  APP_ZIGBEE_GetDisplayBindTable( true );
 
   /* Display Short Address */
   LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
@@ -153,18 +152,6 @@ void APP_ZIGBEE_ApplicationStart( void )
   UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
 #endif /* CFG_LPM_STDBY_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
-}
-
-/**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
 /**
@@ -193,17 +180,26 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Identify Client Cluster */
   stZigbeeAppInfo.IdentifyClient = ZbZclIdentifyClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.IdentifyClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.IdentifyClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.IdentifyClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Identify Client Endpoint Register." );
+  }
 
   /* Add Scenes Client Cluster */
   stZigbeeAppInfo.ScenesClient = ZbZclScenesClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.ScenesClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.ScenesClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.ScenesClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during Scenes Client Endpoint Register." );
+  }
 
   /* Add OnOff Client Cluster */
   stZigbeeAppInfo.OnOffClient = ZbZclOnOffClientAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT );
   assert( stZigbeeAppInfo.OnOffClient != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffClient );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffClient ) == false )
+  {
+    LOG_ERROR_APP( "Error during OnOff Client Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -308,57 +304,6 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
-/**
- * @brief  Display Binding Table
- * @param  None
- * @retval None
- */
-static void APP_ZIGBEE_DisplayBindTable(void)
-{
-  bool                  bEndDone = false;  
-  uint16_t              iIndex = 0, iCount = 0;
-  struct ZbApsmeBindT   stBindEntry;
-  enum ZbStatusCodeT    eStatus;
-
-  LOG_INFO_APP( "[FIND-BIND] Printing Binding table below:" );
-  LOG_INFO_APP( "  Item | ClusterId | Dest. Ext. Address | Dst EP | Src EP |" );
-  LOG_INFO_APP( "  -----|-----------|--------------------|--------|--------|" );
-
-  /* Go through each elements */
-  do
-  {
-      /* Check the end of the table */
-      eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof(stBindEntry), iIndex );
-      if ( eStatus != ZB_APS_STATUS_SUCCESS)
-      {
-          if ( eStatus != ZB_APS_STATUS_INVALID_INDEX )
-          {
-              LOG_ERROR_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)", eStatus );
-          }
-          bEndDone = true;
-      }
-      else
-      {
-          /* If empty, ignore */
-          if ( stBindEntry.srcExtAddr != 0u )
-          {
-            /* Display element */
-            LOG_INFO_APP( "   %2d  |   0x%03X   | " LOG_DISPLAY64() " |  0x%02X  |  0x%02X  |", iIndex, stBindEntry.clusterId, 
-                         LOG_NUMBER64(stBindEntry.dst.extAddr), stBindEntry.dst.endpoint, stBindEntry.srcEndpt );
-            iCount++;
-          }
-      }
-      iIndex++;
-  }
-  while ( bEndDone == false );
-
-  LOG_INFO_APP( "  Found %d Binds", iCount );
-  if ( iCount != 0u ) 
-  {
-    APP_LED_ON(LED_GREEN);
-  }
-}
 
 /**
  * @brief  Management of the SW1 button : Send the OnOff Command

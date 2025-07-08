@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "p2pr.h"
 
 /* USER CODE BEGIN Includes */
@@ -169,7 +168,7 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_2_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_2_Disabled_BEGIN */
@@ -181,7 +180,7 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_2_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_2_COMSVC_Notification_BEGIN */
@@ -213,7 +212,7 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
               /* USER CODE END Service1_Char_3_attribute_modified */
 
               /* Disabled Notification management */
-              case (!(COMSVC_Notification)):
+              case (0x00):
                 /* USER CODE BEGIN Service1_Char_3_Disabled_BEGIN */
 
                 /* USER CODE END Service1_Char_3_Disabled_BEGIN */
@@ -225,7 +224,7 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case COMSVC_Notification:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service1_Char_3_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service1_Char_3_COMSVC_Notification_BEGIN */
@@ -388,11 +387,11 @@ void P2PR_Init(void)
                              &(P2PR_Context.P2prSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: p2pR, error code: 0x%x \n\r", ret);
+    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: p2pR, error code: 0x%x \n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: p2pR \n\r");
+    LOG_INFO_APP("  Success: aci_gatt_add_service command: P2prSvcHdle = 0x%04X\n",P2PR_Context.P2prSvcHdle);
   }
 
   /**
@@ -415,7 +414,7 @@ void P2PR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : WRITEFWD\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : WritefwdCharHdle = 0x%04X\n",P2PR_Context.WritefwdCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -442,7 +441,7 @@ void P2PR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : NOTIFFWD\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : NotiffwdCharHdle = 0x%04X\n",P2PR_Context.NotiffwdCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -469,7 +468,7 @@ void P2PR_Init(void)
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : DEVINFO\n");
+    LOG_INFO_APP("  Success: aci_gatt_add_char command   : DevinfoCharHdle = 0x%04X\n",P2PR_Context.DevinfoCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -506,11 +505,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value WRITEFWD command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value WRITEFWD command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value WRITEFWD command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value WRITEFWD command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -525,11 +524,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value NOTIFFWD command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value NOTIFFWD command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value NOTIFFWD command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value NOTIFFWD command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -544,11 +543,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value DEVINFO command, error code: 0x%2X\n", ret);
+        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value DEVINFO command, error code: 0x%2X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value DEVINFO command\n");
+        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value DEVINFO command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

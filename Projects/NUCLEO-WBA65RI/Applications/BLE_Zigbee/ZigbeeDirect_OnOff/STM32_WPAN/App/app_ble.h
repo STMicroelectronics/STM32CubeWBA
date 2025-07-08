@@ -179,6 +179,7 @@ enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void APP_BLE_HostNvmStore(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);

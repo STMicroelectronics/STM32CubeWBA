@@ -64,8 +64,8 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 #define APP_ZIGBEE_CHIP_VERSION                     0x20        // Cut 2.0
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
-#define APP_ZIGBEE_APP_DATE_CODE                    "20240915"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.6"
+#define APP_ZIGBEE_APP_DATE_CODE                    "20250512"
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.7"
 #define APP_ZIGBEE_APP_VERSION                      0x16        // Application Version v1.5
 #define APP_ZIGBEE_STACK_VERSION                    0x10        // Stack Version v1.0
 
@@ -175,6 +175,19 @@ void APP_ZIGBEE_StackLayersInit( void )
   memset( &stTableSizes, 0, sizeof( stTableSizes ) );
   stTableSizes.heapPtr = NULL;
   stTableSizes.heapSz = 0U;
+
+  /* NWK Table Sizes */
+  /* Note: Due to memory limitations on the WBA5, the stack is initialized 
+   *       with reduced table entries. These values are half of the default 
+   *       settings for a Full Function Device (FFD).
+   */
+  stTableSizes.nwkNeighborTblSz = 64/2; /**< Default: FFD:64, RFD:16 */
+  stTableSizes.nwkRouteTblSz = 32/2; /**< Default: FFD:32, RFD:0 */
+  stTableSizes.nwkAddrMapTblSz = 32/2; /**< Default: FFD:32, RFD:2 */
+  stTableSizes.nwkBttSz = 32/2; /**< Default: FFD:32, RFD:9 */
+  stTableSizes.nwkRReqSz = 16/2; /**< Default: FFD:16, RFD:0 */
+  stTableSizes.apsPeerLinkKeyTblSz = 32/2; /**< Default: FFD:32, RFD:2 */
+
 
   /* Initialise Zigbee */
   stZigbeeAppInfo.pstZigbee = ZbInit( 0U, &stTableSizes, NULL );

@@ -341,7 +341,7 @@ static tBleStatus GMAS_SetCharacteristic(uint16_t ServiceHandle, uint16_t CharHa
   hciCmdResult = aci_gatt_update_char_value_ext(0x0000,
                                                 ServiceHandle,
                                                 CharHandle,
-                                                0x01,                           /*Notification*/
+                                                0x00,                           /*Local*/
                                                 DataLen,                        /* Char_Length*/
                                                 0,                              /* charValOffset */
                                                 DataLen,                        /* charValueLen */

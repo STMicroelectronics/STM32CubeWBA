@@ -25,14 +25,13 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "p2pr_app.h"
 #include "p2pr.h"
 #include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 #include "gatt_client_app.h"
 /* USER CODE END Includes */
 
@@ -692,4 +691,13 @@ static void P2PR_notifDevInfoTable(void)
   return;
 }
 
+void P2PR_setConnHdlFromIndex(uint8_t index, uint16_t connHdl)
+{
+  if (index < (P2P_DEVICE_COUNT_MAX * 2))
+  {
+    P2PR_APP_Context.P2PR_device_connHdl[index] = connHdl;
+  }
+
+  return;
+}
 /* USER CODE END FD_LOCAL_FUNCTIONS */

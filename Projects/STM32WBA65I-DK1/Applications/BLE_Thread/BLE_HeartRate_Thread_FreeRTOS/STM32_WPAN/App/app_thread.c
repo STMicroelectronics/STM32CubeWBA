@@ -43,13 +43,13 @@
 #include "log_module.h"
 #include "joiner.h"
 #include "alarm.h"
+#include "stm32_lpm.h"
+#include "ll_sys_if.h"
 #include OPENTHREAD_CONFIG_FILE
-
+#include "scm.h"
+#include "app_bsp.h"
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "data_transfer.h"
-#include "udp.h"
-#include "stm32wba65i_discovery.h"
 #ifdef OT_CLI_USE
 #include "uart.h"
 #endif /* OT_CLI_USE */
@@ -74,11 +74,9 @@
 #define APP_THREAD_PERIODIC_TRANSMIT
 
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-#define APP_THREAD_TRANSMIT_PERIOD      (1*1000)        /**< 1000ms */
+#define APP_THREAD_TRANSMIT_PERIOD      (1000)        /**< 1000ms */
 #endif
 /* USER CODE END PD */
-
-/* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
@@ -196,7 +194,7 @@ os_thread_id          CliUartTaskId, TaskletsTaskId, SendCoapMsgTaskId;
  */
 static void Cli_Uart_Task( void * argument )
 {
-  UNUSED(p_param);  
+  UNUSED(argument);  
   while(1)
   {
     /* Wait for task semaphore to be released */
@@ -222,7 +220,7 @@ void APP_THREAD_ScheduleUsAlarm(void)
  */
 static void Alarm_Task( void * argument )
 {
-  UNUSED(p_param);  
+  UNUSED(argument);  
   while(1)
   {
     /* Wait for task semaphore to be released */
@@ -239,7 +237,7 @@ static void Alarm_Task( void * argument )
  */
 static void Us_Alarm_Task( void * argument )
 {
-  UNUSED(p_param);  
+  UNUSED(argument);  
   while(1)
   {
     /* Wait for task semaphore to be released */
@@ -256,7 +254,7 @@ static void Us_Alarm_Task( void * argument )
  */
 static void Tasklets_Task( void * argument )
 {
-  UNUSED(p_param);
+  UNUSED(argument);
   while(1)
   {
     /* Wait for task semaphore to be released */
@@ -273,7 +271,7 @@ static void Tasklets_Task( void * argument )
  */
 static void Send_Coap_Msg_Task( void * argument )
 {
-  UNUSED(p_param);  
+  UNUSED(argument);  
   while(1)
   {
     /* Wait for task semaphore to be released */
@@ -461,6 +459,9 @@ void otTaskletsSignalPending(otInstance *aInstance)
 
 void APP_THREAD_Init( void )
 {
+  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+
   Thread_Init();
 
   APP_THREAD_DeviceConfig();
@@ -507,8 +508,11 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
   }
 
-  otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
-
+  //error = otLinkSetExtendedAddress(PtOpenThreadInstance, &ext_addr);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_SET_EXTADDR,error);
+  }
   error = otIp6SetEnabled(PtOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
@@ -527,7 +531,6 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_LINK_MODE,error);
   }
 #endif
-  
   error = otThreadSetEnabled(PtOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
@@ -877,6 +880,7 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
     }
 
     memset(&OT_MessageInfo, 0, sizeof(OT_MessageInfo));
+    memcpy(&OT_MessageInfo.mSockAddr, otThreadGetLinkLocalIp6Address(PtOpenThreadInstance), sizeof(otIp6Address));
     OT_MessageInfo.mPeerPort = OT_DEFAULT_COAP_PORT;
 
     if((aPeerAddress == NULL) && (aStringAddress != NULL))
@@ -1045,7 +1049,7 @@ static void APP_THREAD_TransmitRequest(void *arg)
  * @param  None
  * @retval None
  */
-void Joystick_Right(void)
+void APP_BSP_JoystickRightAction(void)
 {
   APP_THREAD_SendCoapMsgWithNoConf();
 }
@@ -1055,11 +1059,12 @@ void Joystick_Right(void)
  * @param  None
  * @retval None
  */
-void Joystick_Left(void)
+void APP_BSP_JoystickLeftAction(void)
 {
   APP_THREAD_SendCoapMsgWithConf();
 }
 #endif
+
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

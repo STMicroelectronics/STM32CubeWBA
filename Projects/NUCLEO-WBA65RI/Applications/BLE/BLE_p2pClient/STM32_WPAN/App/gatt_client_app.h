@@ -85,7 +85,6 @@ typedef struct
 #define ST_P2P_SERVICE_UUID                                           (0xFE40)
 #define ST_P2P_WRITE_CHAR_UUID                                        (0xFE41)
 #define ST_P2P_NOTIFY_CHAR_UUID                                       (0xFE42)
-#define ST_P2P_WRITE_WITH_RES_CHAR_UUID                               (0xFE43)
 
 /* USER CODE END EC */
 

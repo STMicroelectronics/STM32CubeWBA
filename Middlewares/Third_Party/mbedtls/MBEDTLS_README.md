@@ -229,7 +229,7 @@ The build files for Microsoft Visual Studio are generated for Visual Studio 2017
 
 The solution file `mbedTLS.sln` contains all the basic projects needed to build the library and all the programs. The files in tests are not generated and compiled, as these need Python and perl environments as well. However, the selftest program in `programs/test/` is still available.
 
-In the development branch of Mbed TLS, the Visual Studio solution files need to be generated first as described in [“Generated source files in the development branch”](#generated-source-files-in-the-development-branch).
+In the development branch of Mbed TLS, the Visual Studio solution files need to be generated first as described in ["Generated source files in the development branch"](#generated-source-files-in-the-development-branch).
 
 Example programs
 ----------------

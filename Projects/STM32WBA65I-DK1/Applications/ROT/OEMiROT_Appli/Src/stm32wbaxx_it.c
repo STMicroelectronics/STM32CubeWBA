@@ -42,23 +42,17 @@
 
 
 /* External variables --------------------------------------------------------*/
-extern funcptr_NS pSecureFaultCallback;
-extern funcptr_NS pSecureErrorCallback;
 
 
 /******************************************************************************/
 /*           Cortex Processor Interruption and Exception Handlers          */
 /******************************************************************************/
-
 /**
   * @brief This function handles Hard fault interrupt.
   */
 void HardFault_Handler(void)
 {
-  /* Reset for Test, Non Secure Fault Memory Fault are escaladed in Secure HW fault  */
-  /* Since Non Secure Memory Fault Interrupt is not activated */
-  NVIC_SystemReset();  
-
+  NVIC_SystemReset();
 }
 
 /**
@@ -68,7 +62,6 @@ void MemManage_Handler(void)
 {
   while (1)
   {
-
   }
 }
 
@@ -79,7 +72,6 @@ void BusFault_Handler(void)
 {
   while (1)
   {
-
   }
 }
 
@@ -90,7 +82,6 @@ void UsageFault_Handler(void)
 {
   while (1)
   {
-
   }
 }
 
@@ -101,7 +92,6 @@ void SecureFault_Handler(void)
 {
   while (1)
   {
-
   }
 }
 

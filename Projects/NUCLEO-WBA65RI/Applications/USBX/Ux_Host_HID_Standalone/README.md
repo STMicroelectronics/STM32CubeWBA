@@ -40,11 +40,6 @@ User is familiar with USB 2.0 "Universal Serial BUS" specification and HID class
 
 None
 
-#### <b>USBX usage hints</b>
-
-- The DTCM (0x20000000) memory region should not be used by application in case USB DMA is enabled
-- Should make sure to configure the USB pool memory region with attribute "Non-Cacheable" to ensure coherency between CPU and USB DMA
-
 ### <b>Keywords</b>
 
 Standalone, USBX Host, USB, HID, Mouse, Keyboard, UART, USART

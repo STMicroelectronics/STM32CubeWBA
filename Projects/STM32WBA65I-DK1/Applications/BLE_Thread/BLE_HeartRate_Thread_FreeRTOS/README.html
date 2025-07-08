@@ -163,26 +163,13 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its <strong>
   |_____________________________|                       |_________________________|  
   |                             |                       |                         |
   |                             |                       |                         |
-  |              	 every 1sec |                       |                         |
-  |     or Joystick Right --&gt;|======&gt; COAP =========&gt;| BLUE LED TOGGLE (ON/OFF)|
-  |                             | Resource &quot;light&quot;      |               |
+  |                  every 1sec |                       |                         |
+  |                             |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)|
+  |                             | Resource :light       |                         |
   |                             | Mode: Multicast       |                         |
   |                             | Type: Non-Confirmable |                         |
   |                             | Code: Put             |                         |
   |                             |                       |                         |
-  |                             |                       |                         |
-  |       Joystick Left --&gt;  |=====&gt; COAP ==========&gt;|--------&gt;       |
-  |                   	        | Resource &quot;light&quot;      |               |
-  |                     	    | Mode: Multicast       |  CoapRequestHandler()   |
-  |                         	| Type: Confirmable     |         |               |
-  |                         	| Code: Put             |         |               |
-  |                         	|                       |         v               |
-  |                         	|                       |  CoapSendDataResponse() |
-  |                         	|                       |         |               |
-  |                         	|                       |         v               |
-  | CoapDataRespHandler()&lt;--|&lt;===== COAP &lt;==========| &lt;-------        |
-  |          	                |                       | BLUE LED TOGGLE (ON/OFF)| 
-  |             	            |                       |                         |  
   |-----------------------------|                       |-------------------------|
   | Role : Child                |                       | Role : Leader           |
   |                             |                       |                         |

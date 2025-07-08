@@ -810,12 +810,12 @@
     <File>
       <GroupNumber>5</GroupNumber>
       <FileNumber>51</FileNumber>
-      <FileType>2</FileType>
+      <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\startup_stm32wba65xx.s</PathWithFileName>
-      <FilenameWithoutPath>startup_stm32wba65xx.s</FilenameWithoutPath>
+      <PathWithFileName>./../Src/startup_stm32wbaxx.c</PathWithFileName>
+      <FilenameWithoutPath>startup_stm32wbaxx.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -823,7 +823,7 @@
 
   <Group>
     <GroupName>Example/User</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -846,18 +846,6 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../Src/secure_nsc.c</PathWithFileName>
-      <FilenameWithoutPath>secure_nsc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>54</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
       <PathWithFileName>../Src/stm32wbaxx_hal_msp.c</PathWithFileName>
       <FilenameWithoutPath>stm32wbaxx_hal_msp.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
@@ -865,7 +853,7 @@
     </File>
     <File>
       <GroupNumber>6</GroupNumber>
-      <FileNumber>55</FileNumber>
+      <FileNumber>54</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>

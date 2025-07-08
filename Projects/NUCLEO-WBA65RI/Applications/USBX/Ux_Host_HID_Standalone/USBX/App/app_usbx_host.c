@@ -43,6 +43,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PV */
 UX_HOST_CLASS_HID          *hid_instance;
 UX_HOST_CLASS_HID_MOUSE    *mouse;
@@ -68,7 +69,6 @@ UINT MX_USBX_Host_Init(VOID)
   /* USER CODE BEGIN MX_USBX_Host_Init0 */
 
   /* USER CODE END MX_USBX_Host_Init0 */
-
   /* Initialize the Stack Host USB*/
   if (MX_USBX_Host_Stack_Init() != UX_SUCCESS)
   {
@@ -311,7 +311,6 @@ UINT MX_USBX_Host_Stack_Init(void)
   {
     return UX_ERROR;
   }
-
   /* Register a callback error function */
   ux_utility_error_callback_register(&ux_host_error_callback);
 
@@ -346,7 +345,6 @@ UINT MX_USBX_Host_Stack_Init(void)
   ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
                              _ux_hcd_stm32_initialize, USB_OTG_HS_BASE,
                              (ULONG)&hhcd_USB_OTG_HS);
-
   /* USER CODE BEGIN MX_USBX_Host_Stack_Init_PreTreatment_1 */
   /* USER CODE END MX_USBX_Host_Stack_Init_PreTreatment_1 */
 
@@ -374,7 +372,6 @@ UINT MX_USBX_Host_Stack_DeInit(void)
   ux_host_stack_hcd_unregister(_ux_system_host_hcd_stm32_name,
                                USB_OTG_HS_BASE,
                                (ULONG)&hhcd_USB_OTG_HS);
-
 
   /* Unregister the host hid class */
   if (ux_host_stack_class_unregister(ux_host_class_hid_entry) != UX_SUCCESS)

@@ -92,6 +92,16 @@ extern "C" {
 
 
 /**
+ * Maximum Number of Bonded Devices to store in Non-Volatile Memory
+ */
+#define APP_MAX_NUM_BONDED_DEVICES                      (5u)
+
+/**
+ * Memory size used to store GATT Service information related to a device to store in Non Volatile Memory
+ */
+#define GATTSERVICE_GATT_DATABASE_SIZE                  (8u)
+
+/**
  * Audio Processing Delay Settings
  */
 /* These delays refers to the time at which the audio signal passes through an
@@ -125,7 +135,14 @@ extern "C" {
  * Allow the Unicast Server to accept Audio High Reliability during Audio setup process
  * Note High Reliability increases the audio latency
  */
-#define ENABLE_AUDIO_HIGH_RELIABILITY           (0u)
+#define ENABLE_AUDIO_HIGH_RELIABILITY           (1u)
+
+/**
+ * Indicate if ASCS Server caches the ASE codec configuration during autonomous Released operation when ASE
+ * is in Releasing state. Transition an ASE from Releasing state to the Idle state (caching = 0) or the
+ *  Codec Configured state (caching = 1)
+ */
+#define APP_ASCS_CACHING                        (0x01u)
 
 /**
  * Maximum number of Links supported in Unicast Server
@@ -291,6 +308,7 @@ extern "C" {
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
+#define BLE_HOST_NUM_GATT_SERVICES             (2u)
 #define BLE_APP_PACS_SRV_NUM_GATT_SERVICES              BAP_PACS_SRV_NUM_GATT_SERVICES
 #define BLE_APP_ASCS_SRV_NUM_GATT_SERVICES              BAP_ASCS_SRV_NUM_GATT_SERVICES
 #if (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1u)
@@ -320,7 +338,8 @@ extern "C" {
 #define BLE_APP_GMAP_NUM_GATT_SERVICES                  GMAP_NUM_GATT_SERVICES
 
 
-#define BLE_APP_NUM_GATT_SERVICES                       (2U + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
+#define BLE_APP_NUM_GATT_SERVICES                       (BLE_HOST_NUM_GATT_SERVICES \
+                                                        + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_ASCS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_BASS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_VCP_RENDERER_NUM_GATT_SERVICES \
@@ -331,6 +350,12 @@ extern "C" {
 /**
  * Maximum number of Attributes
  */
+#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
+#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (15u)
+#else
+#define BLE_HOST_NUM_GATT_ATTRIBUTES                    (11u)
+#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
+
 #define BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES            BAP_PACS_SRV_GATT_ATTRIBUTES(APP_NUM_SRC_PAC_RECORDS,APP_NUM_SNK_PAC_RECORDS)
 #define BLE_APP_ASCS_SRV_NUM_GATT_ATTRIBUTES            BAP_ASCS_SRV_GATT_ATTRIBUTES(APP_NUM_SNK_ASE,APP_NUM_SRC_ASE)
 #if (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1u)
@@ -359,7 +384,7 @@ extern "C" {
 #define BLE_APP_GMAP_NUM_GATT_ATTRIBUTES                GMAP_NUM_GATT_ATTRIBUTES
 
 
-#define BLE_APP_NUM_GATT_ATTRIBUTES                     (4u + 7u \
+#define BLE_APP_NUM_GATT_ATTRIBUTES                     (BLE_HOST_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_ASCS_SRV_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_BASS_SRV_NUM_GATT_ATTRIBUTES \
@@ -371,6 +396,11 @@ extern "C" {
 /**
  * Size of the storage area for Attribute values
  */
+#if ((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)
+#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (59u)
+#else
+#define BLE_HOST_ATT_VALUE_ARRAY_SIZE                   (49u)
+#endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
 #define BLE_TOTAL_PAC_RECORDS_ATT_VALUE_ARRAY_SIZE \
                 ((APP_NUM_SNK_PAC_RECORDS+ APP_NUM_SRC_PAC_RECORDS) \
                   * BAP_PAC_RECORD_ATT_VALUE_ARRAY_SIZE(CFG_BLE_NUM_LINK, \
@@ -425,7 +455,8 @@ extern "C" {
 
 #define BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE               GMAP_ATT_VALUE_ARRAY_SIZE
 
-#define BLE_APP_ATT_VALUE_ARRAY_SIZE                    (49u + BLE_APP_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
+#define BLE_APP_ATT_VALUE_ARRAY_SIZE                    (BLE_HOST_ATT_VALUE_ARRAY_SIZE \
+                                                        + BLE_APP_PACS_SRV_ATT_VALUE_ARRAY_SIZE \
                                                         + BLE_APP_ASCS_SRV_ATT_VALUE_ARRAY_SIZE \
                                                         + BLE_BASS_SRV_ATT_VALUE_ARRAY_SIZE \
                                                         + BLE_APP_VCP_RENDERER_ATT_VALUE_ARRAY_SIZE \
@@ -433,6 +464,42 @@ extern "C" {
                                                         + BLE_APP_CSIP_SET_MEMBER_ATT_VALUE_ARRAY_SIZE \
 														+ BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE \
                                                         + BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE)
+
+
+/**
+ * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
+ */
+/*Memory size required to store all devices in NVM for ASCS Server role*/
+#define BAP_ASCS_SRV_NVM_ALLOC_SIZE             BAP_ASCS_SRV_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
+                                                                            APP_ASCS_CACHING,\
+                                                                            APP_NUM_SNK_ASE, \
+                                                                            APP_NUM_SRC_ASE, \
+                                                                            MAX_USR_CODEC_CONFIG_SIZE)
+
+/*Memory size required to store all devices in NVM for PACS Server role*/
+#define BAP_PACS_SRV_NVM_ALLOC_SIZE             BAP_PACS_SRV_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
+                                                                            APP_NUM_SNK_PAC_RECORDS,\
+                                                                            APP_NUM_SRC_PAC_RECORDS)
+
+/*Memory size required to store all devices in NVM for CCP Client role*/
+#if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
+#define BLE_CCP_CLT_NVM_ALLOC_SIZE              BLE_CCP_CLT_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
+                                                                           APP_CCP_NUM_REMOTE_BEARER_INSTANCES)
+#else
+#define BLE_CCP_CLT_NVM_ALLOC_SIZE              (0u)
+#endif /*(APP_CCP_ROLE_CLIENT_SUPPORT == 1u)*/
+
+#if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)
+/*Memory size required to store all devices in NVM for CSIP in Set Member role*/
+#define BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
+                                                                                    APP_CSIP_SET_MEMBER_NUM_INSTANCES)
+#else
+#define BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE      (0u)
+#endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1) */
+
+#define BLE_APP_AUDIO_NVM_ALLOC_SIZE            (BAP_ASCS_SRV_NVM_ALLOC_SIZE + BAP_PACS_SRV_NVM_ALLOC_SIZE \
+                                                + BLE_CCP_CLT_NVM_ALLOC_SIZE + BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE \
+                                                + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,GATTSERVICE_GATT_DATABASE_SIZE))
 /* Exported types ------------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
 /* Exported macros -----------------------------------------------------------*/

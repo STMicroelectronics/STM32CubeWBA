@@ -522,33 +522,33 @@ void LINKLAYER_PLAT_RequestTemperature(void)
 }
 
 /**
-  * @brief  Enable RTOS context switch.
+  * @brief  PHY Start calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_EnableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStartClbr(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStartClbr_0 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_0 */
-  /* USER CODE BEGIN LINKLAYER_PLAT_EnableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStartClbr_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStartClbr_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_EnableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStartClbr_1 */
 }
 
 /**
-  * @brief  Disable RTOS context switch.
+  * @brief  PHY Stop calibration.
   * @param  None
   * @retval None
   */
-void LINKLAYER_PLAT_DisableOSContextSwitch(void)
+void LINKLAYER_PLAT_PhyStopClbr(void)
 {
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStopClbr_0 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_0 */
-  /* USER CODE BEGIN LINKLAYER_PLAT_DisableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStopClbr_0 */
+  /* USER CODE BEGIN LINKLAYER_PLAT_PhyStopClbr_1 */
 
-  /* USER CODE END LINKLAYER_PLAT_DisableOSContextSwitch_1 */
+  /* USER CODE END LINKLAYER_PLAT_PhyStopClbr_1 */
 }
 
 /**

@@ -135,10 +135,8 @@ static AMM_InitParameters_t ammInitConfig =
 };
 
 /* USER CODE BEGIN PV */
-#if (CFG_LCD_SUPPORTED == 1)
 static uint32_t Codec_Frequency = 0;
 static Audio_Role_t Audio_Role = 0;
-#endif /* (CFG_LCD_SUPPORTED == 1) */
 static uint32_t PLL_Target_Clock_Freq = 0;
 static uint8_t MxAudioInit_Flag = 0;
 uint32_t Sink_frame_size = 0;
@@ -153,6 +151,7 @@ JOYPin_TypeDef Joy_PreviousState = JOY_NONE;
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
+uint32_t gDefault_Exec_Time = 0; /* effective default exec time */
 
 /* USER CODE END GV */
 
@@ -352,19 +351,33 @@ static void SystemPower_Config(void)
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_LPM_LEVEL != 0)
@@ -392,6 +405,8 @@ static void SystemPower_Config(void)
  */
 static void APPE_RNG_Init(void)
 {
+  HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
+  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Register Random Number Generator task */
@@ -626,6 +641,7 @@ void PLL_Ready_ProcessIT(void)
 void PLL_Ready_Task(void)
 {
   /* set Link Layer audio timings */
+  uint32_t iso_exec_time;
   Evnt_timing_t event_time;
   event_time.drift_time    = ISO_PLL_DRIFT_TIME;
   event_time.exec_time     = ISO_PLL_EXEC_TIME;
@@ -636,7 +652,7 @@ void PLL_Ready_Task(void)
   event_time.exec_time += ISO_PLL_EXEC_TIME_EXTRA_GCC_DEBUG;
 #endif
 
-  ll_intf_config_schdling_time(&event_time);
+  ll_intf_config_schdling_time(&event_time, &iso_exec_time);
 
   CODEC_CLK_Init();
 
@@ -676,7 +692,7 @@ static void AudioClock_Deinit( void )
   event_time.exec_time += EXEC_TIME_EXTRA_GCC_DEBUG;
 #endif
 
-  ll_intf_config_schdling_time(&event_time);
+  ll_intf_config_schdling_time(&event_time, &gDefault_Exec_Time);
 
   LOG_INFO_APP("Audio Clock Deinitialization\n");
 
@@ -1027,9 +1043,9 @@ int32_t Start_RxAudio(void)
   if (status == 0)
   {
     LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-    
+
     Audio_Role |= AUDIO_ROLE_SOURCE;
-    
+
 #if (CFG_LCD_SUPPORTED == 1)
     switch (Codec_Frequency)
     {
@@ -1185,11 +1201,13 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE END UTIL_SEQ_PostIdle_1 */
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-  ll_sys_dp_slp_exit();
+  (void)ll_sys_dp_slp_exit();
   UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
+#if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STDBY_SUPPORTED != 0 ) )
   APP_BSP_PostIdle();
+#endif /* ( CFG_LPM_LEVEL && CFG_LPM_STDBY_SUPPORTED ) */
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }

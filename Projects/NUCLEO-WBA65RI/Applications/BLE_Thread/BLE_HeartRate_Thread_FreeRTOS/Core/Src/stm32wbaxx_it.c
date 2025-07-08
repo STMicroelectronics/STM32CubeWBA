@@ -26,8 +26,8 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
-#include "ral.h"
+#include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -87,9 +87,10 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+  while(1)
   {
   }
+
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -184,8 +185,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -288,35 +290,12 @@ void TIM16_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  HAL_RNG_IRQHandler(&hrng);
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
 {
   /* USER CODE BEGIN RADIO_IRQn 0 */
-  ral_instance_t radio_instance;
-  uint8_t channel;
 
-  /* Check current ral state to use AHB5 synchronization workaround only if radio is granted to BLE */
-  ral_event_state_enum_t radio_state = ral_get_current_event_state( &radio_instance, &channel );
-  if (radio_state == RAL_IDLE) {
-    /* WORKAROUND : Force AHB5 synchronization by waiting one edge of the LL Sleep Clock */
-    uint32_t mul,div;
-    ll_intf_get_aligned_us_now(&mul, &div);
-  }
   /* USER CODE END RADIO_IRQn 0 */
 
   if(NULL != radio_callback)
@@ -380,10 +359,17 @@ void EXTI5_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI Line13 interrupt.
+  * @brief This function handles PWR global WKUP pin interrupt.
   */
-void EXTI13_IRQHandler(void)
+void WKUP_IRQHandler(void)
 {
-  BSP_PB_IRQHandler(B1);
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
 }
+
 /* USER CODE END 1 */

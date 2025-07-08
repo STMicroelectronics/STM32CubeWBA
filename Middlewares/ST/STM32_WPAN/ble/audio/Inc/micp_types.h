@@ -118,6 +118,23 @@ extern "C" {
           (MICP_DEVICE_MEM_CONTEXT_SIZE_BYTES \
             + (MICP_DEVICE_MEM_PER_AIC_INST_SIZE_BYTES * num_aic_instances))
 
+/* #############################################################################
+   #       Defines and MACRO used to allocate memory resource required to      #
+   #       store information in Non Volatile Memory.                           #
+   ############################################################################ */
+
+/*
+ * BLE_MICP_CTLR_DB_BUFFER_SIZE: this macro returns the maximum amount of memory, in bytes, needed for the storage in
+ * Non Volatile Memory of the Microphone Control Profile in Controller role.
+ *
+ * @param num_db_devices: Maximum number of device to store in NVM
+ *
+ * @param num_aic_instances: Maximum number of supported Audio Input Control Instances.
+ */
+#define BLE_MICP_CTLR_DB_BUFFER_SIZE(num_db_devices,num_aic_instances) \
+        (num_db_devices \
+         * (16u + (DIVC((15u + (num_aic_instances * 55u)),4u) * 4u)))
+
 /* Types ---------------------------------------------------------------------*/
 
 /* Types of mask for roles of the Microphone Control Profile */

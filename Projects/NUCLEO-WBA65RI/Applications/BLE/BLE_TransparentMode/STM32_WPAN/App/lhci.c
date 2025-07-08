@@ -19,9 +19,10 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "ble_common.h"
+#include "cmsis_compiler.h"
+#include "stm32wbaxx_ll_system.h"
+#include "stm32wbaxx_ll_utils.h"
 #include "ble_std.h"
-
 #include "app_ble.h"
 #include "rf_antenna_switch.h"
 #include "lhci.h"

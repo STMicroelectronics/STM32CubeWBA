@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "ghs_app.h"
 #include "ghs.h"
 #include "stm32_rtos.h"
@@ -856,7 +855,7 @@ static tBleStatus ghsapp_send_segment(uint8_t segment_size,
   else
   {
     /* Multiple segments */
-    uint8_t current_index;
+    uint32_t current_index;
     
     /* Update with first segment */
     GHS_APP_Context.LHOChar.SegmentationHeader.FirstSegment = 1;

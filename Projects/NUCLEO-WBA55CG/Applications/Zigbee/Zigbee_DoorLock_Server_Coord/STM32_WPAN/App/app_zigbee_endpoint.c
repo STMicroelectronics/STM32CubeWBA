@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -57,7 +57,6 @@
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
 #define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_DOOR_LOCK
-#define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
 
 #define APP_ZIGBEE_CLUSTER1_ID            ZCL_CLUSTER_TIME
 #define APP_ZIGBEE_CLUSTER1_NAME          "Time Server"
@@ -73,12 +72,13 @@
 /* USER CODE BEGIN Alarm defines */
 /* USER CODE END Alarm defines */
 
+#define MAX_PIN_NB_USERS                  5u
+
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER3_NAME
 #define TIMER_SERVER_1S_NB_TICKS          ( 1u * 1000u )  /* 1 second */
 
 /* DoorLock specific defines -------------------------------------------------*/
-#define MAX_PIN_NB_USERS                            5u
 #define DOORLOCK_PASSAGE_MODE_DURATION              ( 10u * TIMER_SERVER_1S_NB_TICKS )
 #define DOORLOCK_AUTO_RELOCK_TIME                   5u
 
@@ -132,12 +132,17 @@
 #define DoorLockServer                    pstZbCluster[2]
 
 /* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
 struct DoorLockInfoT
 {
+  uint8_t  cDummy;
+  
+/* USER CODE BEGIN PTD_1 */
   uint8_t 	                      cCurrentNbUsers;
   struct ZbZclDoorLockSetPinReqT 	stUserTable[MAX_PIN_NB_USERS];
+/* USER CODE END PTD_1 */
 };
+
+/* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
 
@@ -162,9 +167,9 @@ static const struct ZbZclAttrT optionalAttrList[] =
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
+static struct DoorLockInfoT     stDoorLockInfo;
 
 /* USER CODE BEGIN PV */
-static struct DoorLockInfoT     stDoorLockInfo;
 static UTIL_TIMER_Object_t      stTimerPassageDuration, stTimerAutoRelockTime;
 
 
@@ -265,18 +270,6 @@ void APP_ZIGBEE_ApplicationStart( void )
 }
 
 /**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
-}
-
-/**
  * @brief  Configure Zigbee application endpoints
  * @param  None
  * @retval None
@@ -302,17 +295,26 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Add Time Server Cluster */
   stZigbeeAppInfo.TimeServer = ZbZclTimeServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stTimeServerCallbacks, NULL );
   assert( stZigbeeAppInfo.TimeServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.TimeServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.TimeServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Time Server Endpoint Register." );
+  }
 
   /* Add Alarm Server Cluster */
   stZigbeeAppInfo.AlarmServer = ZbZclAlarmServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, ZCL_ALARM_LOG_ENTRY_NB, stZigbeeAppInfo.TimeServer );
   assert( stZigbeeAppInfo.AlarmServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.AlarmServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.AlarmServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during Alarm Server Endpoint Register." );
+  }
 
   /* Add DoorLock Server Cluster */
   stZigbeeAppInfo.DoorLockServer = ZbZclDoorLockServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stDoorLockServerCallbacks, &stDoorLockInfo );
   assert( stZigbeeAppInfo.DoorLockServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.DoorLockServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.DoorLockServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during DoorLock Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
   /* Registering attributes */
@@ -328,16 +330,9 @@ void APP_ZIGBEE_ConfigEndpoints(void)
  */
 bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
-  struct ZbApsmeAddGroupReqT  stRequest;
-  struct ZbApsmeAddGroupConfT stConfig;
-
-  memset( &stRequest, 0, sizeof( stRequest ) );
-
-  stRequest.endpt = APP_ZIGBEE_ENDPOINT;
-  stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
-  ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
-
-  return true;
+  /* Not used */
+  
+  return false;
 }
 
 /**
@@ -1034,8 +1029,8 @@ static void APP_ZIGBEE_DoorLockServerPassageMode(void)
   /* Start passage mode duration timer */
   UTIL_TIMER_StartWithPeriod( &stTimerPassageDuration, DOORLOCK_PASSAGE_MODE_DURATION );
 
-  BSP_LED_On(LED_RED);
-  LOG_INFO_APP( "[DOORLOCK] 'Passage Mode' activated. Red Led 'ON'." );
+  BSP_LED_On(LED_WORK);
+  LOG_INFO_APP( "[DOORLOCK] 'Passage Mode' activated. Led 'ON'." );
 }
 
 
@@ -1055,8 +1050,8 @@ static void APP_ZIGBEE_DoorLockServerPassageModeEnded(void)
     LOG_ERROR_APP( "Error writing local attribute: cannot set 'operating mode' (0x%02X).", eStatus );
   }
 
-  APP_LED_OFF(LED_RED);
-  LOG_INFO_APP( "[DOORLOCK] 'Passage Mode' end. Red Led 'OFF'" );
+  APP_LED_OFF(LED_WORK);
+  LOG_INFO_APP( "[DOORLOCK] 'Passage Mode' end. Led 'OFF'" );
 }
 
 

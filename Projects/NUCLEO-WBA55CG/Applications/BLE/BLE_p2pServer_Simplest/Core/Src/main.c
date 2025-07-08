@@ -310,7 +310,7 @@ void MX_GPIO_Init(void)
   LL_EXTI_Init(&EXTI_InitStruct);
 
   /**/
-  LL_GPIO_SetPinPull(BT1_GPIO_Port, BT1_Pin, LL_GPIO_PULL_NO);
+  LL_GPIO_SetPinPull(BT1_GPIO_Port, BT1_Pin, LL_GPIO_PULL_UP);
 
   /**/
   LL_GPIO_SetPinMode(BT1_GPIO_Port, BT1_Pin, LL_GPIO_MODE_INPUT);
@@ -349,8 +349,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

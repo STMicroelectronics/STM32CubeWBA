@@ -221,8 +221,9 @@ void RTC_IRQHandler(void)
 
   /* USER CODE END RTC_IRQn 0 */
   HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_IRQn 1 */
   HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
   /* USER CODE END RTC_IRQn 1 */
 }
 
@@ -262,12 +263,14 @@ void RCC_IRQHandler(void)
 void EXTI13_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI13_IRQn 0 */
+
   /* USER CODE END EXTI13_IRQn 0 */
   if (LL_EXTI_IsActiveFallingFlag_0_31(LL_EXTI_LINE_13) != RESET)
   {
     LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_13);
     /* USER CODE BEGIN LL_EXTI_LINE_13_FALLING */
     APP_BLE_Key_Button1_Action();
+
     /* USER CODE END LL_EXTI_LINE_13_FALLING */
   }
   /* USER CODE BEGIN EXTI13_IRQn 1 */

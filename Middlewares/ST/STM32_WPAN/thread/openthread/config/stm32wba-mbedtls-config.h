@@ -117,8 +117,11 @@
   *        Uncomment a macro to enable ST SHA256 hardware alternative module.
   *        Requires: MBEDTLS_SHA256_C, MBEDTLS_SHA256_ALT.
   */
+
+#if defined(ST_HW_CONTEXT_SAVING)
 #define MBEDTLS_SHA256_ALT
 #define MBEDTLS_HAL_SHA256_ALT
+#endif /* ST_HW_CONTEXT_SAVING*/
 
 /**
   * @brief ST_HW_CONTEXT_SAVING Enables ST HASH save context

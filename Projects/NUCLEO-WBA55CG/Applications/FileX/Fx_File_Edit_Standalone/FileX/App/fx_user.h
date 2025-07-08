@@ -72,8 +72,6 @@
 /* Override various options with default values already assigned in fx_api.h or fx_port.h.
   Please also refer to fx_port.h for descriptions on each of these options.  */
 
-/* #define ULONG64_DEFINED */
-
 /* Defined, the direct read sector update of cache is disabled.  */
 
 /* #define FX_DISABLE_DIRECT_DATA_READ_CACHE_FILL */

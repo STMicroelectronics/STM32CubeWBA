@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "zddsecurity_app.h"
 #include "zddsecurity.h"
 #include "stm32_rtos.h"

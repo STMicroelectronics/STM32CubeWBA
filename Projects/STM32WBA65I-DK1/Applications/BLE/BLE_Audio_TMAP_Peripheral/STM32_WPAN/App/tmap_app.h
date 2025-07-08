@@ -323,12 +323,14 @@ typedef uint8_t APP_ScanState_t;
 #define MCP_CLT_OP_PAUSE_TRACK                                  0x0010u
 #define MCP_CLT_OP_READ_MEDIA_STATE                             0x0020u
 #define MCP_CLT_OP_READ_TRACK_TITLE                             0x0040u
+#define MCP_CLT_OP_ALL                                          0x007Fu
 
 /* CCP Client Operation type*/
 #define CCP_CLT_OP_READ_CALL_STATE                              0x0100u
 #define CCP_CLT_OP_ANSWER_INC_CALL                              0x0200u
 #define CCP_CLT_OP_TERMINATE_CALL                               0x0400u
 #define CCP_CLT_OP_READ_FEATURES_STATUS                         0x0800u
+#define CCP_CLT_OP_ALL                                          0x0F00u
 
 typedef uint8_t APP_BroadcastMode_t;
 #define APP_BROADCAST_MODE_NONE                                 (0x00)
@@ -552,9 +554,11 @@ typedef struct
 /* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void);
 void TMAPAPP_Init(uint8_t csip_config_id);
 tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle);
-uint8_t TMAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,uint8_t EnableSolicitationRequest,
+uint8_t TMAPAPP_StartAdvertising(CAP_Announcement_t AnnouncementType,
+                                 uint8_t EnableSolicitationRequest,
                                  uint16_t Appearance);
 uint8_t TMAPAPP_StopAdvertising(void);
 uint8_t TMAPAPP_VolumeUp(void);
@@ -583,6 +587,7 @@ uint8_t TMAPAPP_SyncToPA(uint8_t AdvSID, uint8_t *pAdvAddress, uint8_t AdvAddres
 uint8_t TMAPAPP_StartSink(void);
 uint8_t TMAPAPP_StopSink(void);
 void TMAPAPP_SetBroadcastMode(APP_BroadcastMode_t mode);
+void TMAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif

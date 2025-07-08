@@ -372,7 +372,7 @@
             <TextAddressRange></TextAddressRange>
             <DataAddressRange></DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile>stm32wba65xx_flash_s.sct</ScatterFile>
+            <ScatterFile>stm32wbaxx_flash_s.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc>--predefine=-I..\..\Secure_nsclib
@@ -2820,9 +2820,9 @@
           <GroupName>Example/MDK-ARM</GroupName>
           <Files>
             <File>
-              <FileName>startup_stm32wba65xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\startup_stm32wba65xx.s</FilePath>
+              <FileName>startup_stm32wbaxx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../Secure/Src/startup_stm32wbaxx.c</FilePath>
             </File>
           </Files>
         </Group>

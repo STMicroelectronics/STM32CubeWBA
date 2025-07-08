@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "ota_app.h"
 #include "ota.h"
 #include "stm32_rtos.h"
@@ -41,8 +40,8 @@
 /* USER CODE BEGIN PTD */
 typedef enum
 {
-  User_Conf,
-  Fw_App,
+  FILE_TYPE_USER_CONF = 0,
+  FILE_TYPE_FW_APP,
 } OTA_APP_FileType_t;
 
 /* USER CODE END PTD */
@@ -158,26 +157,24 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
     /* USER CODE BEGIN Service2_Notification_Service2_EvtOpcode */
     case OTA_CONF_EVT:
       {
-        /**
-         * The Remote notifies it has send all the data to be written in Flash
-         */
-        /**
-         * Decide now what to do after all the data has been written in Flash
-         */
+      /* The Remote notifies it has send all the data to be written in Flash */
+
+      /* Decide now what to do after all the data has been written in Flash */
+
         switch(OTA_APP_Context.file_type)
         {
-          case Fw_App:
+          case FILE_TYPE_FW_APP:
             {
               LOG_INFO_APP("OTA_CONF_EVT: Reboot on new application\n");
               /**
                * Reboot on FW Application
                */
-              CFG_OTA_REBOOT_VAL_MSG_ADDR = REBOOT_ON_FW_APP;
+              CFG_OTA_REBOOT_VAL_MSG = REBOOT_ON_FW_APP;
               
               /**
                * Give the download sector
                */
-              CFG_OTA_START_SECTOR_IDX_VAL_MSG_ADDR = (OTA_APP_Context.base_address - FLASH_BASE) >> 13;
+              CFG_OTA_START_SECTOR_IDX_VAL_MSG = (OTA_APP_Context.base_address - FLASH_BASE) >> 13;
      
               NVIC_SystemReset(); /* it waits until reset */
             }
@@ -206,7 +203,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               uint32_t first_valid_address;
               FM_Cmd_Status_t error = FM_ERROR;
 
-              OTA_APP_Context.file_type = User_Conf;
+              OTA_APP_Context.file_type = FILE_TYPE_USER_CONF;
               ((uint8_t*)&OTA_APP_Context.base_address)[0] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[2];
               ((uint8_t*)&OTA_APP_Context.base_address)[1] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[1];
               ((uint8_t*)&OTA_APP_Context.base_address)[2] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[0];
@@ -283,8 +280,8 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               }
               else
               {
-                LOG_INFO_APP("OTA_USER_CONF_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
-                LOG_INFO_APP("OTA_USER_CONF_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
+                LOG_INFO_APP("OTA_USER_CONF_UPLOAD: Not ready to receive file, oversized\n");
+                LOG_INFO_APP("OTA_USER_CONF_UPLOAD: First 128 bits aligned address to download should be: 0x%08\n", first_valid_address);
                 a_OTA_UpdateCharData[0] = OTA_NOT_READY_TO_RECEIVE_FILE;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
                 msg_conf.Length = 1;
@@ -298,7 +295,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               uint32_t first_valid_address;
               FM_Cmd_Status_t error = FM_ERROR;
               
-              OTA_APP_Context.file_type = Fw_App;
+              OTA_APP_Context.file_type = FILE_TYPE_FW_APP;
               ((uint8_t*)&OTA_APP_Context.base_address)[0] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[2];
               ((uint8_t*)&OTA_APP_Context.base_address)[1] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[1];
               ((uint8_t*)&OTA_APP_Context.base_address)[2] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[0];
@@ -365,24 +362,26 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   }
                   else
                   {
-                    LOG_INFO_APP("OTA_APPLICATION_UPLOAD: FM_ERROR\n");
-                    LOG_INFO_APP("OTA_APPLICATION_UPLOAD: Try to FM_Erase Number of sectors: %d from sector %d \n",
+                    LOG_ERROR_APP("OTA_APPLICATION_UPLOAD: FM_ERROR\n");
+                    LOG_ERROR_APP("OTA_APPLICATION_UPLOAD: Try to FM_Erase Number of sectors: %d from sector %d \n",
                                  (uint32_t)(OTA_APP_Context.sectors),
                                  (uint32_t)((OTA_APP_Context.base_address) >> 13));
                   }
                 } /* while(error != FM_OK) */
-                
-                msg_conf.Length = 1;
+
+                /* Flash zone tagetted has been erased, now ready to receive a file to write it */
+
                 a_OTA_UpdateCharData[0] = OTA_READY_TO_RECEIVE_FILE;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
+                msg_conf.Length = 1;
                 OTA_UpdateValue(OTA_CONF, &msg_conf);
               }
               else
               {
-                msg_conf.Length = 1;
-                LOG_INFO_APP("OTA_APPLICATION_UPLOAD: Not ready to receive file, oversized\n", OTA_APP_Context.base_address, OTA_APP_Context.sectors);
-                LOG_INFO_APP("OTA_APPLICATION_UPLOAD: First 128 bits aligned address to download should be: 0x%x\n", first_valid_address);
+                LOG_WARNING_APP("OTA_APPLICATION_UPLOAD: Not ready to receive file, oversized\n");
+                LOG_WARNING_APP("OTA_APPLICATION_UPLOAD: First 128 bits aligned address to download should be: 0x%08\n", first_valid_address);
                 a_OTA_UpdateCharData[0] = OTA_NOT_READY_TO_RECEIVE_FILE;
+                msg_conf.Length = 1;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
                 OTA_UpdateValue(OTA_CONF, &msg_conf);
               }
@@ -391,22 +390,23 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
           case OTA_UPLOAD_FINISHED:
             {
-              if(OTA_APP_Context.file_type == Fw_App)
+              if(OTA_APP_Context.file_type == FILE_TYPE_FW_APP)
               { /* Reboot only after new application download */
                 OTA_APP_Context.Conf_Indication_Status = OTA_APP_Pending;
-                msg_conf.Length = 1;
+
                 a_OTA_UpdateCharData[0] = OTA_REBOOT_CONFIRMED;
                 msg_conf.p_Payload = a_OTA_UpdateCharData;
+                msg_conf.Length = 1;
                 OTA_UpdateValue(OTA_CONF, &msg_conf);
               }
             }
             break;
 
           case OTA_CANCEL_UPLOAD:
-            {
-              LOG_INFO_APP("OTA_CANCEL_UPLOAD\n");
-            }
-            break;
+          {
+            LOG_INFO_APP("OTA_CANCEL_UPLOAD\n");
+          }
+          break;
 
           default:
             break;
@@ -587,7 +587,7 @@ static void DeleteSlot( uint8_t page_idx )
      * Something has been wrong as there is no case we should delete the BLE_BootMngr application
      * Reboot on the active firmware application
      */
-    CFG_OTA_REBOOT_VAL_MSG_ADDR = REBOOT_ON_FW_APP;
+    CFG_OTA_REBOOT_VAL_MSG = REBOOT_ON_FW_APP;
     NVIC_SystemReset(); /* it waits until reset */
   }
 

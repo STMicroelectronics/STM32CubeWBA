@@ -10,7 +10,7 @@ Connectivity, 802.15.4 protocol, Thread, COAP
 
 * This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA65RIV6_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics STM32WBA65RI_Nucleo board and can be easily tailored to any other supported device and development board.  
 
 ### __How to use it?__
 

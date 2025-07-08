@@ -65,11 +65,11 @@ None
        } >RAM_D1 AT> RAM_D1
     ```
 
-       The simplest way to provide memory for ThreadX is to define a new section, see ._threadx_heap above.
-       In the example above the ThreadX heap size is set to 64KBytes.
-       The ._threadx_heap must be located between the .bss and the ._user_heap_stack sections in the linker script.
-       Caution: Make sure that ThreadX does not need more than the provided heap memory (64KBytes in this example).
-       Read more in STM32CubeIDE User Guide, chapter: "Linker script".
+    The simplest way to provide memory for ThreadX is to define a new section, see ._threadx_heap above.
+    In the example above the ThreadX heap size is set to 64KBytes.
+    The ._threadx_heap must be located between the .bss and the ._user_heap_stack sections in the linker script.
+    Caution: Make sure that ThreadX does not need more than the provided heap memory (64KBytes in this example).
+    Read more in STM32CubeIDE User Guide, chapter: "Linker script".
 
     + The "tx_initialize_low_level.S" should be also modified to enable the "USE_DYNAMIC_MEMORY_ALLOCATION" flag.
 
@@ -79,9 +79,9 @@ RTOS, ThreadX, Threading, Message Queue, Event chaining
 
 ### <b>Hardware and Software environment</b>
 
-  - This application runs on STM32WBA56xx devices
-  - This application has been tested with STMicroelectronics NUCLEO-WBA65RI(MB1801-USB-D01 and MB2130-WBA65RI-A01)
-    board and can be easily tailored to any other supported device and development board.
+  - This application runs on STM32WBA65xx devices
+  - This application has been tested with STMicroelectronics NUCLEO-WBA65RI revision boards (MB1801-USB-D01 and MB2130-WBA65RI-A01)
+    and can be easily tailored to any other supported device and development board.
 
 
 ###  <b>How to use it ?</b>

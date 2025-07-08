@@ -20,7 +20,7 @@
 
 #include "hap_app.h"
 #include "main.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "ble_audio_stack.h"
 #include "stm32_seq.h"
 #include "stm32_timer.h"
@@ -33,6 +33,7 @@
 #include "log_module.h"
 #include "micp.h"
 #include "app_ble.h"
+#include "simple_nvm_arbiter.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -48,7 +49,7 @@
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
  * Theses macro are generic and could be overwriten by the user for a fine tuning
  */
- 
+
 /* Memory pool used by the codec manager for managing audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
@@ -73,7 +74,7 @@
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE                (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
@@ -136,7 +137,10 @@
 #define BLE_CSIP_SET_MEMBER_DYN_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_TOTAL_BUFFER_SIZE(APP_CSIP_SET_MEMBER_NUM_INSTANCES,CFG_BLE_NUM_LINK)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1) */
 
-#define VOLUME_STEP                     10
+/* Number of 64-bit words in NVM flash area */
+#define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
+
+#define VOLUME_STEP                             10
 
 /* Private macros ------------------------------------------------------------*/
 
@@ -236,6 +240,7 @@ static uint32_t aASCSSrvMemBuffer[DIVC(BAP_ASCS_SRV_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t audio_init_buffer[BLE_AUDIO_DYN_ALLOC_SIZE];
+static uint64_t audio_buffer_nvm[CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE] = {0};
 static BleAudioInit_t pBleAudioInit;
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
 static uint32_t aCCPCltMemBuffer[DIVC(BLE_CCP_CLT_DYN_ALLOC_SIZE,4)];
@@ -343,6 +348,32 @@ static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn);
 /* Exported functions --------------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
+tBleStatus APP_AUDIO_STACK_Init(void)
+{
+  tBleStatus status;
+
+  /* First register the APP BLE Audio buffer */
+  SNVMA_Register(APP_AUDIO_NvmBuffer,
+                 (uint32_t *)audio_buffer_nvm,
+                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  /* Realize a restore */
+  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+
+  /* Initialize the Audio IP*/
+  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
+  pBleAudioInit.NumOfEATTBearersPerLink = CFG_BLE_EATT_BEARER_PER_LINK;
+  pBleAudioInit.bleAudioStartRamAddress = (uint8_t*)audio_init_buffer;
+  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
+  pBleAudioInit.MaxNumOfBondedDevices = APP_MAX_NUM_BONDED_DEVICES;
+  pBleAudioInit.bleAudioStartRamAddress_NVM = audio_buffer_nvm;
+  pBleAudioInit.total_buffer_size_NVM = CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE;
+  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
+  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
+  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
+
+  return status;
+}
 
 void HAPAPP_Init(uint8_t csip_config_id)
 {
@@ -454,7 +485,7 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
       }
       if (link != 0x00u)
       {
-        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(ConnHandle);
+        GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(ConnHandle);
 
         LOG_INFO_APP("profiles 0x%02X of the GAF are already linked on ConnHandle 0x%04x\n",
                     current_link,
@@ -858,7 +889,7 @@ tBleStatus HAPAPP_AnswerCall(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
         if (((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState == CCP_CS_INCOMING))
         {
           status = CCP_CLIENT_AnswerIncomingCall(p_conn->Acl_Conn_Handle,
@@ -873,7 +904,7 @@ tBleStatus HAPAPP_AnswerCall(void)
           }
           else
           {
-            p_conn->CurrentContentCtrlOp = CCP_CLT_OP_ANSWER_INC_CALL;
+            p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_ANSWER_INC_CALL;
             LOG_INFO_APP("  Success: CCP_CLIENT_AnswerIncomingCall with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
                          p_conn->GenericTelephoneBearerCCID);
@@ -903,7 +934,7 @@ tBleStatus HAPAPP_TerminateCall(void)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
       if (p_conn != 0)
       {
-        current_link = CAP_GetCurrentLinkedProfiles(p_conn->Acl_Conn_Handle);
+        current_link = CAP_GetCurrentLinkedGAFProfiles(p_conn->Acl_Conn_Handle);
 
         if (((current_link & CCP_LINK) == CCP_LINK) && (p_conn->CurrentCallState != CCP_CS_IDLE))
         {
@@ -919,7 +950,7 @@ tBleStatus HAPAPP_TerminateCall(void)
           }
           else
           {
-            p_conn->CurrentContentCtrlOp = CCP_CLT_OP_TERMINATE_CALL;
+            p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_TERMINATE_CALL;
             LOG_INFO_APP("  Success: CCP_CLIENT_TerminateCall with ConnHandle 0x%04X and CCID %d\n",
                          p_conn->Acl_Conn_Handle,
                          p_conn->GenericTelephoneBearerCCID);
@@ -1058,10 +1089,10 @@ void HAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_t
         break;
       }
     }
+    /* Set Available Audio Contexts */
+    p_conn->AvailableSnkAudioContext = HAPAPP_Context.AvailableSnkAudioContext;
+    p_conn->AvailableSrcAudioContext = HAPAPP_Context.AvailableSrcAudioContext;
   }
-  /* Set Available Audio Contexts */
-  p_conn->AvailableSnkAudioContext = HAPAPP_Context.AvailableSnkAudioContext;
-  p_conn->AvailableSrcAudioContext = HAPAPP_Context.AvailableSrcAudioContext;
 
   HAPAPP_Context.NumConn++;
   if (HAPAPP_Context.NumConn < CFG_BLE_NUM_LINK )
@@ -1376,7 +1407,6 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
       HAPAPP_StopAdvertising();
       Menu_SetStartupPage();
     }
-    UNUSED(status);
   }
   else
   {
@@ -1442,6 +1472,12 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
       }
     }
   }
+  UNUSED(status);
+}
+
+void HAPAPP_ClearDatabase(void)
+{
+  BLE_AUDIO_STACK_DB_ClearAllRecords();
 }
 
 /*************************************************************
@@ -1467,18 +1503,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   uint8_t num_src_capabilities = 0;
 #endif /*(APP_NUM_SRC_PAC_RECORDS > 0u)*/
   Audio_Location_t audio_locations = FRONT_LEFT;
-
-  /* Initialize the Audio IP*/
-  pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
-  pBleAudioInit.bleStartRamAddress = (uint8_t*)audio_init_buffer;
-  pBleAudioInit.total_buffer_size = BLE_AUDIO_DYN_ALLOC_SIZE;
-  status = BLE_AUDIO_STACK_Init(&pBleAudioInit);
-  LOG_INFO_APP("BLE_AUDIO_STACK_Init() returns status 0x%02X\n",status);
-  LOG_INFO_APP("BLE Audio Stack Lib version: %s\n",BLE_AUDIO_STACK_GetFwVersion());
-  if(status != BLE_STATUS_SUCCESS)
-  {
-    return status;
-  }
 
   /*Clear the CAP Configuration*/
   memset(&APP_CAP_Config, 0, sizeof(CAP_Config_t));
@@ -1522,7 +1546,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   APP_BAP_Config.ASCSSrvConfig.MaxNumSrcASEs = APP_NUM_SRC_ASE;
   APP_BAP_Config.ASCSSrvConfig.MaxCodecConfSize = MAX_USR_CODEC_CONFIG_SIZE;
   APP_BAP_Config.ASCSSrvConfig.MaxMetadataLength = MAX_USR_METADATA_SIZE;
-  APP_BAP_Config.ASCSSrvConfig.CachingEn = 1u;
+  APP_BAP_Config.ASCSSrvConfig.CachingEn = APP_ASCS_CACHING;
   APP_BAP_Config.ASCSSrvConfig.pStartRamAddr = (uint8_t *)&aASCSSrvMemBuffer;
   APP_BAP_Config.ASCSSrvConfig.RamSize = BAP_ASCS_SRV_DYN_ALLOC_SIZE;
 
@@ -2133,7 +2157,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
   {
     case CAP_LINKUP_COMPLETE_EVT:
     {
-      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
+      GAF_Profiles_Link_t current_link = CAP_GetCurrentLinkedGAFProfiles(pNotification->ConnHandle);
       APP_ACL_Conn_t *p_conn;
       LOG_INFO_APP("CAP Linkup Complete on Connhandle 0x%04X with status 0x%02X\n",
                    pNotification->ConnHandle,
@@ -2203,7 +2227,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
             }
             p_conn->ConfirmIndicationRequired = 0u;
-            current_link = CAP_GetCurrentLinkedProfiles(pNotification->ConnHandle);
+            current_link = CAP_GetCurrentLinkedGAFProfiles(pNotification->ConnHandle);
 
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1)
             if ((current_link & CCP_LINK) == CCP_LINK)
@@ -2225,7 +2249,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               {
                 if (p_conn != 0)
                 {
-                  p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_CALL_STATE;
+                  p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_CALL_STATE;
                 }
                 LOG_INFO_APP("  Success: CCP_CLIENT_ReadCallState with ConnHandle 0x%04X and CCID %d\n",
                              pNotification->ConnHandle,
@@ -3698,7 +3722,6 @@ static APP_ACL_Conn_t *APP_AllocateConn(uint16_t ConnHandle)
     if ( HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle == 0xFFFFu)
     {
       HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle = ConnHandle;
-      HAPAPP_Context.ACL_Conn[i].PlayPauseOperation = 0;
       HAPAPP_Context.ACL_Conn[i].AudioProfile = AUDIO_PROFILE_NONE;
       HAPAPP_Context.ACL_Conn[i].CAPLinkupState = APP_CAP_LINKUP_STATE_NONE;
       HAPAPP_Context.ACL_Conn[i].LinkupRetry = 0;
@@ -4002,7 +4025,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -4031,7 +4054,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -4114,7 +4137,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -4140,7 +4163,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           {
             if (p_conn != 0)
             {
-              p_conn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+              p_conn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
             }
             LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                          pNotification->ConnHandle,
@@ -4217,9 +4240,16 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
       p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
-        p_conn->CurrentContentCtrlOp = 0u;
+        if (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_READ_CALL_STATE)
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_READ_CALL_STATE;
+        }
+        else if (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_READ_FEATURES_STATUS)
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_READ_FEATURES_STATUS;
+        }
       }
-      /* Checdule pendning MCP/CCP operation if it exists*/
+      /* Schedule pendning CCP operation if it exists*/
       HAP_SchedulePendingContentControlOp(p_conn);
       break;
     }
@@ -4231,7 +4261,19 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
                   pNotification->ConnHandle,
                   p_event_params->CallCtrlOp,
                   pNotification->Status);
-      UNUSED(p_event_params);
+      if (p_conn != 0)
+      {
+        if ((p_event_params->CallCtrlOp == CCP_CALL_CTRL_ACCEPT) && (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_ANSWER_INC_CALL))
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_ANSWER_INC_CALL;
+        }
+        else if ((p_event_params->CallCtrlOp == CCP_CALL_CTRL_TERMINATE) && (p_conn->CurrentContentCtrlOp & CCP_CLT_OP_TERMINATE_CALL))
+        {
+          p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_TERMINATE_CALL;
+        }
+      }
+      /* Schedule pendning CCP operation if it exists*/
+      HAP_SchedulePendingContentControlOp(p_conn);
       break;
     }
 
@@ -4431,7 +4473,7 @@ static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
 
 #if (APP_CCP_ROLE_CLIENT_SUPPORT == 1u)
     if ((PendingContentCtrlOp & CCP_CLT_OP_READ_CALL_STATE) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & CCP_CLT_OP_ALL) == 0x0000))
     {
       ret = CCP_CLIENT_ReadCallState(pConn->Acl_Conn_Handle,
                                     pConn->GenericTelephoneBearerCCID);
@@ -4448,7 +4490,7 @@ static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = CCP_CLT_OP_READ_CALL_STATE;
+        pConn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_CALL_STATE;
         pConn->PendingContentCtrlOp &= ~CCP_CLT_OP_READ_CALL_STATE;
         LOG_INFO_APP("  Success: CCP_CLIENT_ReadCallState with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -4456,7 +4498,7 @@ static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
     }
     if ((PendingContentCtrlOp & CCP_CLT_OP_READ_FEATURES_STATUS) \
-        && ( pConn->CurrentContentCtrlOp == 0))
+        && ((pConn->CurrentContentCtrlOp & CCP_CLT_OP_ALL) == 0x0000))
     {
       ret = CCP_CLIENT_ReadFeaturesStatus(pConn->Acl_Conn_Handle,pConn->GenericTelephoneBearerCCID);
       if (ret != BLE_STATUS_SUCCESS)
@@ -4472,7 +4514,7 @@ static void HAP_SchedulePendingContentControlOp(APP_ACL_Conn_t *pConn)
       }
       else
       {
-        pConn->CurrentContentCtrlOp = CCP_CLT_OP_READ_FEATURES_STATUS;
+        pConn->CurrentContentCtrlOp |= CCP_CLT_OP_READ_FEATURES_STATUS;
         pConn->PendingContentCtrlOp &= ~CCP_CLT_OP_READ_FEATURES_STATUS;
         LOG_INFO_APP("  Success: CCP_CLIENT_ReadFeaturesStatus with ConnHandle 0x%04X and CCID %d\n",
                      pConn->Acl_Conn_Handle,
@@ -4585,21 +4627,21 @@ static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification)
     case MICP_DEVICE_UPDATED_AUDIO_INPUT_STATE_EVT:
     {
       MICP_AudioInputState_Evt_t *p_info = (MICP_AudioInputState_Evt_t *)pNotification->pInfo;
-      APP_DBG_MSG("Updated Audio Input State :\n");
-      APP_DBG_MSG("     Instance ID : %d\n",p_info->AICInst);
-      APP_DBG_MSG("     Gain Setting : %d\n",p_info->State.GainSetting);
-      APP_DBG_MSG("     Mute : %d\n",p_info->State.Mute);
-      APP_DBG_MSG("     Gain Mode : %d\n",p_info->State.GainMode);
-      APP_DBG_MSG("     Change Counter : %d\n",p_info->ChangeCounter);
+      LOG_INFO_APP("Updated Audio Input State :\n");
+      LOG_INFO_APP("     Instance ID : %d\n",p_info->AICInst);
+      LOG_INFO_APP("     Gain Setting : %d\n",p_info->State.GainSetting);
+      LOG_INFO_APP("     Mute : %d\n",p_info->State.Mute);
+      LOG_INFO_APP("     Gain Mode : %d\n",p_info->State.GainMode);
+      LOG_INFO_APP("     Change Counter : %d\n",p_info->ChangeCounter);
       UNUSED(p_info);
       break;
     }
     case MICP_DEVICE_UPDATED_AUDIO_INPUT_DESCRIPTION_EVT:
     {
       MICP_AudioDescription_Evt_t *p_info = (MICP_AudioDescription_Evt_t *)pNotification->pInfo;
-      APP_DBG_MSG("Updated Audio Input Description :\n");
-      APP_DBG_MSG("     Instance ID : %d\n",p_info->Inst);
-      APP_DBG_MSG("     Description : %s\n",p_info->pData);
+      LOG_INFO_APP("Updated Audio Input Description :\n");
+      LOG_INFO_APP("     Instance ID : %d\n",p_info->Inst);
+      LOG_INFO_APP("     Description : %s\n",p_info->pData);
       UNUSED(p_info);
       break;
     }

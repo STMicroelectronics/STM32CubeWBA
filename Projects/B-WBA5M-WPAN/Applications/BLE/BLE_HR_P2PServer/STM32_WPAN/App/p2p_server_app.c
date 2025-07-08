@@ -25,7 +25,6 @@
 #include "app_ble.h"
 #include "ll_sys_if.h"
 #include "dbg_trace.h"
-#include "ble.h"
 #include "p2p_server_app.h"
 #include "p2p_server.h"
 #include "stm32_rtos.h"
@@ -139,7 +138,6 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
         LOG_INFO_APP("-- P2P APPLICATION SERVER : LED1 OFF\n");
         P2P_SERVER_APP_Context.LedControl.Led1 = 0x00; /* LED1 OFF */
       }
-
       /* USER CODE END Service3Char1_WRITE_NO_RESP_EVT */
       break;
 
@@ -221,7 +219,6 @@ void P2P_SERVER_APP_Init(void)
    */
   P2P_SERVER_APP_Context.Switch_c_Notification_Status= Switch_c_NOTIFICATION_OFF;
   P2P_SERVER_APP_LED_BUTTON_context_Init();
-
   /* USER CODE END Service3_APP_Init */
   return;
 }
@@ -244,6 +241,7 @@ __USED void P2P_SERVER_Switch_c_SendNotification(void) /* Property Notification 
   p2p_server_notification_data.Length = 0;
 
   /* USER CODE BEGIN Service3Char2_NS_1 */
+
   if(P2P_SERVER_APP_Context.ButtonControl.ButtonStatus == 0x00)
   {
     P2P_SERVER_APP_Context.ButtonControl.ButtonStatus = 0x01;

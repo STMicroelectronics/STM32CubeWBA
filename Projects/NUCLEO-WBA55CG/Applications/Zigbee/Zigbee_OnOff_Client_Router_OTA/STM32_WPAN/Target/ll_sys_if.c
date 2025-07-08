@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,10 +25,14 @@
 #include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
+#include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
 
 /* Private defines -----------------------------------------------------------*/
+/* Radio event scheduling method - must be set at 1 */
+#define USE_RADIO_LOW_ISR                   (1)
+#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
 /* USER CODE BEGIN PD */
 
@@ -50,7 +54,6 @@
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
-
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -157,4 +160,10 @@ void ll_sys_sleep_clock_source_selection(void)
       break;
   }
   ll_intf_cmn_le_select_slp_clk_src((uint8_t)linklayer_slp_clk_src, &freq_value);
+}
+
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time)
+{
+  /* first parameter otInstance *aInstance is unused */
+  radio_set_rtl_polling_time(NULL, rtl_polling_time);
 }

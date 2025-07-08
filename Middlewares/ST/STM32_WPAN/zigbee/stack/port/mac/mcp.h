@@ -1,4 +1,4 @@
-/* Copyright [2015 - 2022] Exegin Technologies Limited. All rights reserved. */
+/* Copyright [2015 - 2025] Exegin Technologies Limited. All rights reserved. */
 /*
  * This header file defines the MAC Control Protocol for communication with
  * IEEE 802.15.4 MAC devices. The MAC Control protocol is defined in
@@ -17,18 +17,8 @@ extern "C" {
 
 #include <stdint.h>
 
-#define C89_VERSION 199409L
-#define C99_VERSION 199901L
-#define C11_VERSION 201112L
-
-/* Cover the cases where older compilers did not define the __STDC_VERSION__ macro. */
-#ifndef __STDC_VERSION__
-# if defined(__GNUC__) && (__GNUC__ >= 4)
-#  define __STDC_VERSION__ C99_VERSION
-# else
-#  define __STDC_VERSION__ C89_VERSION
-# endif
-#endif
+/* EXEGIN - for this port, we do not support or require variable length arrays. */
+/* #define COND_MCP_SUPPORTS_VLA */
 
 /*lint -save -e9071 [ __mcp_bswap64() is reserved - 21.1 REQUIRED] */
 #define __mcp__bswap64(x) ( \
@@ -1312,7 +1302,7 @@ struct mcp_payload {
     uint16_t protocol; /* MCP_PAYLOAD_PROTOCOL_... */
     uint8_t rsv[2];
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t data[];
 #endif
     /*lint -restore */
@@ -1339,7 +1329,7 @@ struct mcp_energylist {
     uint16_t ch_offset; /* Channel Number (N) = index_into_energy[] + ch_offset */
     uint8_t rsv[4];
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t energy[]; /* In dB above IEEE specified radio sensitivity. */
 #endif
     /*lint -restore */
@@ -1434,7 +1424,7 @@ struct mcp_ie {
     uint8_t id;
     uint8_t oui[3]; /* Only for Vendor-specific IEs; else reserved. */
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t data[]; /* The IE content follows. */
 #endif
     /*lint -restore */
@@ -1457,7 +1447,7 @@ struct mcp_bbits {
     uint16_t index;
     uint16_t bitslen; /* number of 8bit groups (bytes) */
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t bits[];
 #endif
     /*lint -restore */
@@ -1512,7 +1502,7 @@ struct mcp_attr {
     uint8_t status; /* Only applicable in *.confirm for attributes that failed. */
     uint8_t padlen; /* Length of padding for unstructured blob attributes. */
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t value[];
 #endif
     /*lint -restore */
@@ -1535,7 +1525,7 @@ struct mcp_register {
     uint16_t offset;
     uint32_t value;
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     char name[]; /* Null terminated string. */
 #endif
     /*lint -restore */
@@ -1556,7 +1546,7 @@ struct mcp_pendaddr {
     uint8_t mode;
     uint8_t rsv[5];
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint64_t addrlist[];
 #endif
     /*lint -restore */
@@ -1654,7 +1644,7 @@ struct mcp_id_counter {
 struct mcp_counters {
     struct mcp_attr_hdr attr;
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     struct mcp_id_counter entry[];
 #endif
     /*lint -restore */
@@ -1680,7 +1670,7 @@ struct mcp_keydesc {
     uint64_t keysrc; /* Key source for explicit lookups, and address for implicit lookups. */
     uint8_t key[16];
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t devices[]; /* Variable sized bit mask */
 #endif
     /*lint -restore */
@@ -1766,7 +1756,7 @@ struct mcp_tsch_link {
 struct mcp_license_challenge {
     struct mcp_attr_hdr attr;
     /*lint -save -e9038 [flexible array member declared 18.7 REQUIRED] */
-#if (__STDC_VERSION__ >= C99_VERSION)
+#ifdef COND_MCP_SUPPORTS_VLA
     uint8_t challenge[];
 #endif
     /*lint -restore */

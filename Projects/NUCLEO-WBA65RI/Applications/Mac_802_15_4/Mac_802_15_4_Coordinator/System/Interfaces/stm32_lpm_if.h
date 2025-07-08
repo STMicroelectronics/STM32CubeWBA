@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -106,28 +106,33 @@ void PWR_EnterSleepMode( void );
 void PWR_ExitSleepMode( void );
 
 /**
-  * @brief will restore MCU context if wakeup from standby
-  * @note called in startup_stm32wl55xx_cm4.s
+  * @brief Enable Low Power Sleep Mode
+  */
+void PWR_EnableSleepMode( void );
+
+/**
+  * @brief Disable Low Power Sleep Mode
+  */
+void PWR_DisableSleepMode( void );
+
+/**
+  * @brief Check if the system is waking-up from standby low power mode.
   */
 uint32_t is_boot_from_standby(void);
 
+#if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
+#if (CFG_LPM_STDBY_SUPPORTED == 1)
+/**
+  * @brief returns 0 if wakeup time profiling is not done.
+  */
+uint32_t LPM_is_wakeup_time_profiling_done(void);
+#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+
 /**
   * @brief will save MCU context if before standby entry
-  * @note detined in startup_stm32wl55xx_cm4.s
   */
 void CPUcontextSave(void);
-
-/**
-  * @brief User notification for standby entry
-  * @note called from stm32wbaxx_ResetHandler.s
-  */
-void enter_standby_notification(void);
-
-/**
-  * @brief User notification for standby exit
-  * @note called from stm32wbaxx_ResetHandler.s
-  */
-void exit_standby_notification(void);
 
 /**
   * @brief Backup CPU peripheral registers selected in @ref register_backup_table
@@ -140,6 +145,11 @@ void backup_system_register(void);
   * @note Implemented in stm32wbaxx_ResetHandler.s
   */
 void restore_system_register(void);
+
+/**
+  * @brief Restore GPIOs configuration at standby exit
+  */
+void Standby_Restore_GPIO(void);
 
 /* USER CODE BEGIN EFP */
 

@@ -1,6 +1,6 @@
 /**
  * @file zcl.key.h
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  * @heading Key Exchange (CBKE)
  * @brief ZCL Key Exchange Cluster
  *
@@ -35,13 +35,13 @@
  * |struct ZbZclCbke2InfoT *cbke_v2* | CBKE version 2 certificate and security keys
  * configuration. Only applicable if ZCL_KEY_SUITE_CBKE2_ECMQV is set in `suite_mask`.
  *
- * |bool *tc_keepalive_server_enable* | Determines whether to allocate the Keep Alive Server
+ * |bool *server_enable* | Determines whether to allocate the Keep Alive Server
  * or Client cluster.
  *
- * |uint8_t *tc_keepalive_base* | Trust Center Keep Alive Server 'Base' attribute value in minutes.
+ * |uint8_t *server_base* | Trust Center Keep Alive Server 'Base' attribute value in minutes.
  * If zero, let the stack choose a default value.
  *
- * |uint8_t *tc_keepalive_jitter* | Trust Center Keep Alive Server 'Jitter' attribute value in seconds.
+ * |uint8_t *server_jitter* | Trust Center Keep Alive Server 'Jitter' attribute value in seconds.
  * If zero, let the stack choose a default value.
  *
  * |void (*tcso_callback)(enum ZbTcsoStatusT status, void *arg) | Application callback

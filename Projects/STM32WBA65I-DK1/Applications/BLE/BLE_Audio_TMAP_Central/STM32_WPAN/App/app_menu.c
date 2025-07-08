@@ -342,6 +342,26 @@ void Menu_Print_Task(void)
                                   (uint8_t *) pCurrentPage->ListEntry[i+pCurrentPage->CurrentStartId].Text, CENTER_MODE);
         }
       }
+      
+      if (pCurrentPage->CurrentStartId > 0)
+      {
+        uint32_t color = SSD1315_COLOR_WHITE;
+        if (pCurrentPage->SelectedEntry == pCurrentPage->CurrentStartId)
+        {
+          color = SSD1315_COLOR_BLACK;
+        }
+        UTIL_LCD_FillRect(0, 0, 5, (uint8_t) MENU_ENTRY_LINE_HEIGHT/2, color);
+      }
+      
+      if (pCurrentPage->NumEntry > pCurrentPage->CurrentStartId + 4)
+      {
+        uint32_t color = SSD1315_COLOR_WHITE;
+        if (pCurrentPage->SelectedEntry == pCurrentPage->CurrentStartId + 3)
+        {
+          color = SSD1315_COLOR_BLACK;
+        }
+        UTIL_LCD_FillRect(0, (uint8_t) 7*MENU_ENTRY_LINE_HEIGHT/2, 5, (uint8_t) MENU_ENTRY_LINE_HEIGHT/2, color);
+      }
       break;
     }
 

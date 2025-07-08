@@ -774,6 +774,10 @@ const st_gpio_debug_t general_debug_table[RT_DEBUG_SIGNALS_TOTAL_NUM] = {
   [RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2] = GPIO_DEBUG_LLHWC_GET_CH_IDX_ALGO_2,
 #endif /* USE_RT_DEBUG_LLHWC_GET_CH_IDX_ALGO_2 */
 
+#if (USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP == 1)
+  [RT_DEBUG_BACK_FROM_DEEP_SLEEP] = GPIO_DEBUG_BACK_FROM_DEEP_SLEEP,
+#endif /* USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP */  
+
 /************************************************/
 /** Application signals in general debug table **/
 /************************************************/
@@ -819,7 +823,7 @@ static uint32_t GPIO_PORT_TO_PWR_NUM(GPIO_TypeDef* gpio_port);
 void RT_DEBUG_GPIO_Init(void)
 {
 #if(CFG_RT_DEBUG_GPIO_MODULE == 1)
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   uint32_t pwr_gpio_port = 0;
   uint32_t general_table_size = sizeof(general_debug_table)/sizeof(general_debug_table[0]);
 
@@ -834,8 +838,8 @@ void RT_DEBUG_GPIO_Init(void)
     {
       GPIO_InitStruct.Pin = general_debug_table[cpt].GPIO_pin;
       pwr_gpio_port = GPIO_PORT_TO_PWR_NUM(general_debug_table[cpt].GPIO_port);
-      HAL_GPIO_Init(general_debug_table[cpt].GPIO_port, &GPIO_InitStruct);
-      HAL_PWREx_EnableStandbyIORetention(pwr_gpio_port, general_debug_table[cpt].GPIO_pin);
+      LL_GPIO_Init(general_debug_table[cpt].GPIO_port, &GPIO_InitStruct);
+      LL_PWR_EnableGPIOStandbyRetention(pwr_gpio_port, general_debug_table[cpt].GPIO_pin);
     }
   }
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */
@@ -845,10 +849,10 @@ void RT_DEBUG_GPIO_Init(void)
 static uint32_t GPIO_PORT_TO_PWR_NUM(GPIO_TypeDef* gpio_port)
 {
   uint32_t pwr_gpio_port = 0;
-  if(gpio_port == GPIOA){pwr_gpio_port = PWR_GPIO_A;}
-  else if(gpio_port == GPIOB){pwr_gpio_port = PWR_GPIO_B;}
-  else if(gpio_port == GPIOC){pwr_gpio_port = PWR_GPIO_C;}
-  else if(gpio_port == GPIOH){pwr_gpio_port = PWR_GPIO_H;}
+  if(gpio_port == GPIOA){pwr_gpio_port = LL_PWR_GPIO_STATE_RETENTION_ENABLE_PORTA;}
+  else if(gpio_port == GPIOB){pwr_gpio_port = LL_PWR_GPIO_STATE_RETENTION_ENABLE_PORTB;}
+  else if(gpio_port == GPIOC){pwr_gpio_port = LL_PWR_GPIO_STATE_RETENTION_ENABLE_PORTC;}
+  else if(gpio_port == GPIOH){pwr_gpio_port = LL_PWR_GPIO_STATE_RETENTION_ENABLE_PORTH;}
   return pwr_gpio_port;
 }
 #endif /* CFG_RT_DEBUG_GPIO_MODULE */

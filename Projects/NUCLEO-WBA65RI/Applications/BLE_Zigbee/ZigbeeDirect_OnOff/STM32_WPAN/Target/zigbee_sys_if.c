@@ -26,6 +26,11 @@
 #include "stm32_rtos.h"
 #include "zigbee.stm32wba.sys.h"
 
+void ZigbeeSys_Process(void);
+void ZigbeeSys_Resume(void);
+void ZigbeeSys_Init(void);
+
+
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 

@@ -21,7 +21,7 @@
 #include "log_module.h"
 #include "app_common.h"
 #include "dbg_trace.h"
-#include "ble.h"
+#include "ble_core.h"
 #include "app_ble.h"
 #include "coc_peripheral_app.h"
 #include "stm32_seq.h"
@@ -177,6 +177,6 @@ void PeriphSendData( void )
   {
     LOG_INFO_APP("==>> aci_l2cap_coc_tx_data : Fail, reason: 0x%02X\n", status);
   }
-  BleStackCB_Process();
+
   return;
 }

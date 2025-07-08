@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-	<fileVersion>3</fileVersion>
+	<fileVersion>4</fileVersion>
 	<configuration>
 		<name>BLE_HID_Mouse</name>
 		<toolchain>
@@ -11,7 +11,7 @@
 			<name>C-SPY</name>
 			<archiveVersion>2</archiveVersion>
 			<data>
-				<version>32</version>
+				<version>33</version>
 				<wantNonLocal>1</wantNonLocal>
 				<debug>1</debug>
 				<option>
@@ -80,7 +80,7 @@
 				</option>
 				<option>
 					<name>OCProductVersion</name>
-					<state>9.20.1.43525</state>
+					<state>9.60.3.7274</state>
 				</option>
 				<option>
 					<name>OCDynDriverList</name>
@@ -88,7 +88,7 @@
 				</option>
 				<option>
 					<name>OCLastSavedByProductVersion</name>
-					<state>9.20.1.43525</state>
+					<state>9.60.3.7274</state>
 				</option>
 				<option>
 					<name>UseFlashLoader</name>
@@ -495,10 +495,31 @@
 			</data>
 		</settings>
 		<settings>
+            <name>GPLINK_ID</name>
+            <archiveVersion>2</archiveVersion>
+            <data>
+                <version>0</version>
+                <wantNonLocal>1</wantNonLocal>
+                <debug>1</debug>
+                <option>
+                    <name>OCDriverInfo</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>DoLogfile</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>LogFile</name>
+                    <state>$PROJ_DIR$\cspycomm.log</state>
+                </option>
+            </data>
+        </settings>
+		<settings>
 			<name>IJET_ID</name>
 			<archiveVersion>2</archiveVersion>
 			<data>
-				<version>9</version>
+				<version>10</version>
 				<wantNonLocal>1</wantNonLocal>
 				<debug>1</debug>
 				<option>
@@ -516,11 +537,11 @@
 				</option>
 				<option>
 					<name>IjetHWResetDuration</name>
-					<state>300</state>
+					<state />
 				</option>
 				<option>
 					<name>IjetHWResetDelay</name>
-					<state>200</state>
+					<state />
 				</option>
 				<option>
 					<name>IjetPowerFromProbe</name>
@@ -774,6 +795,10 @@
 					<name>CatchV8ARREL3S</name>
 					<state>0</state>
 				</option>
+				 <option>
+                    <name>IjetHWResetTimingOverride</name>
+                    <state>0</state>
+                </option>
 			</data>
 		</settings>
 		<settings>
@@ -1473,6 +1498,10 @@
 			</data>
 		</settings>
 		<debuggerPlugins>
+		<plugin>
+                <file>$TOOLKIT_DIR$\plugins\rtos\Azure\AzureArmPlugin.ENU.ewplugin</file>
+                <loadFlag>0</loadFlag>
+            </plugin>
 			<plugin>
 				<file>$TOOLKIT_DIR$\plugins\rtos\CMX\CmxArmPlugin.ENU.ewplugin</file>
 				<loadFlag>0</loadFlag>

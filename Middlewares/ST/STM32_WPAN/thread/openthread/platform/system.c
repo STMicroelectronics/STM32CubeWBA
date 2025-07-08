@@ -83,12 +83,18 @@ void otSysInit(int argc, char *argv[])
 {
         (void)argc;
         (void)argv;
+#if (SUPPORT_CONFIG_LIB==1)
+        config_lib_st ll_config_thread = {.ack_all_received_frames_with_ar_bit_set = 0, .mac_layer_build = 0, .support_openthread_1_2 = 1};
+#endif
 	LL_LOCK();
 
 	if (FALSE == g_PseudoReset) {
 		
 		if (IsSystemInitCalled == 0)
 		{
+#if (SUPPORT_CONFIG_LIB==1)
+                  (void) radio_set_config_lib_params(NULL, &ll_config_thread);
+#endif
                   radio_init();
                   set_max_csma_be(CSMA_MAX_BE);
                   set_min_csma_be(CSMA_MIN_BE);

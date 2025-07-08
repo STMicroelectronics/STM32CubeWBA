@@ -49,9 +49,7 @@
 #include "common/locator.hpp"
 #include "common/owned_ptr.hpp"
 #include "common/owning_list.hpp"
-#include "common/retain_ptr.hpp"
 #include "common/timer.hpp"
-#include "crypto/sha256.hpp"
 #include "net/dns_types.hpp"
 
 #if OPENTHREAD_CONFIG_MULTICAST_DNS_AUTO_ENABLE_ON_INFRA_IF && !OPENTHREAD_CONFIG_BORDER_ROUTING_ENABLE
@@ -61,12 +59,10 @@
 /**
  * @file
  *   This file includes definitions for the Multicast DNS per RFC 6762.
- *
  */
 
 /**
  * Represents an opaque (and empty) type for an mDNS iterator.
- *
  */
 struct otMdnsIterator
 {
@@ -83,7 +79,6 @@ extern "C" void otPlatMdnsHandleReceive(otInstance                  *aInstance,
 
 /**
  * Implements Multicast DNS (mDNS) core.
- *
  */
 class Core : public InstanceLocator, private NonCopyable
 {
@@ -97,7 +92,6 @@ public:
      * Initializes a `Core` instance.
      *
      * @param[in] aInstance  The OpenThread instance.
-     *
      */
     explicit Core(Instance &aInstance);
 
@@ -126,14 +120,12 @@ public:
 
     /**
      * Represents a socket address info.
-     *
      */
     class AddressInfo : public otPlatMdnsAddressInfo, public Clearable<AddressInfo>, public Equatable<AddressInfo>
     {
     public:
         /**
          * Initializes the `AddressInfo` clearing all the fields.
-         *
          */
         AddressInfo(void) { Clear(); }
 
@@ -141,7 +133,6 @@ public:
          * Gets the IPv6 address.
          *
          * @returns the IPv6 address.
-         *
          */
         const Ip6::Address &GetAddress(void) const { return AsCoreType(&mAddress); }
     };
@@ -160,7 +151,6 @@ public:
      * @retval kErrorNone     Enabled or disabled the mDNS module successfully.
      * @retval kErrorAlready  mDNS is already enabled on an enable request, or is already disabled on a disable request.
      * @retval kErrorFailed   Failed to enable/disable mDNS.
-     *
      */
     Error SetEnabled(bool aEnable, uint32_t aInfraIfIndex);
 
@@ -169,14 +159,12 @@ public:
      *
      * @retval TRUE   The mDNS module is enabled.
      * @retval FALSE  The mDNS module is disabled.
-     *
      */
     bool IsEnabled(void) const { return mIsEnabled; }
 
 #if OPENTHREAD_CONFIG_MULTICAST_DNS_AUTO_ENABLE_ON_INFRA_IF
     /**
      * Notifies `AdvertisingProxy` that `InfraIf` state changed.
-     *
      */
     void HandleInfraIfStateChanged(void);
 #endif
@@ -191,7 +179,6 @@ public:
      * port.
      *
      * @param[in] aAllow        Indicates whether or not to allow "QU" questions.
-     *
      */
     void SetQuestionUnicastAllowed(bool aAllow) { mIsQuestionUnicastAllowed = aAllow; }
 
@@ -200,7 +187,6 @@ public:
      *
      * @retval TRUE  The mDNS module is allowed to send "QU" questions.
      * @retval FALSE The mDNS module is not allowed to send "QU" questions.
-     *
      */
     bool IsQuestionUnicastAllowed(void) const { return mIsQuestionUnicastAllowed; }
 
@@ -208,7 +194,6 @@ public:
      * Sets the conflict callback.
      *
      * @param[in] aCallback  The conflict callback. Can be `nullptr` is not needed.
-     *
      */
     void SetConflictCallback(ConflictCallback aCallback) { mConflictCallback = aCallback; }
 
@@ -244,7 +229,6 @@ public:
      *
      * @retval kErrorNone          Successfully started registration. @p aCallback will report the outcome.
      * @retval kErrorInvalidState  mDNS module is not enabled.
-     *
      */
     Error RegisterHost(const Host &aHost, RequestId aRequestId, RegisterCallback aCallback);
 
@@ -265,7 +249,6 @@ public:
      *
      * @retval kErrorNone           Successfully unregistered host.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error UnregisterHost(const Host &aHost);
 
@@ -302,7 +285,6 @@ public:
      *
      * @retval kErrorNone           Successfully started registration. @p aCallback will report the outcome.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error RegisterService(const Service &aService, RequestId aRequestId, RegisterCallback aCallback);
 
@@ -326,7 +308,6 @@ public:
      *
      * @retval kErrorNone            Successfully unregistered service.
      * @retval kErrorInvalidState    mDNS module is not enabled.
-     *
      */
     Error UnregisterService(const Service &aService);
 
@@ -355,7 +336,6 @@ public:
      *
      * @retval kErrorNone            Successfully started registration. @p aCallback will report the outcome.
      * @retval kErrorInvalidState    mDNS module is not enabled.
-     *
      */
     Error RegisterKey(const Key &aKey, RequestId aRequestId, RegisterCallback aCallback);
 
@@ -380,7 +360,6 @@ public:
      *
      * @retval kErrorNone            Successfully unregistered key
      * @retval kErrorInvalidState    mDNS module is not enabled.
-     *
      */
     Error UnregisterKey(const Key &aKey);
 
@@ -402,7 +381,6 @@ public:
      * @retval kErrorNone           Browser started successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
      * @retval kErrorAlready        An identical browser (same service and callback) is already active.
-     *
      */
     Error StartBrowser(const Browser &aBrowser);
 
@@ -415,7 +393,6 @@ public:
      *
      * @retval kErrorNone           Browser stopped successfully.
      * @retval kErrorInvalidSatet  mDNS module is not enabled.
-     *
      */
     Error StopBrowser(const Browser &aBrowser);
 
@@ -439,7 +416,6 @@ public:
      * @retval kErrorNone           Resolver started successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
      * @retval kErrorAlready        An identical resolver (same service and callback) is already active.
-     *
      */
     Error StartSrvResolver(const SrvResolver &aResolver);
 
@@ -452,7 +428,6 @@ public:
      *
      * @retval kErrorNone           Resolver stopped successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error StopSrvResolver(const SrvResolver &aResolver);
 
@@ -476,7 +451,6 @@ public:
      * @retval kErrorNone           Resolver started successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
      * @retval kErrorAlready        An identical resolver (same service and callback) is already active.
-     *
      */
     Error StartTxtResolver(const TxtResolver &aResolver);
 
@@ -489,7 +463,6 @@ public:
      *
      * @retval kErrorNone           Resolver stopped successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error StopTxtResolver(const TxtResolver &aResolver);
 
@@ -513,7 +486,6 @@ public:
      * @retval kErrorNone           Resolver started successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
      * @retval kErrorAlready        An identical resolver (same host and callback) is already active.
-     *
      */
     Error StartIp6AddressResolver(const AddressResolver &aResolver);
 
@@ -526,7 +498,6 @@ public:
      *
      * @retval kErrorNone           Resolver stopped successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error StopIp6AddressResolver(const AddressResolver &aResolver);
 
@@ -551,7 +522,6 @@ public:
      * @retval kErrorNone           Resolver started successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
      * @retval kErrorAlready        An identical resolver (same host and callback) is already active.
-     *
      */
     Error StartIp4AddressResolver(const AddressResolver &aResolver);
 
@@ -564,7 +534,6 @@ public:
      *
      * @retval kErrorNone           Resolver stopped successfully.
      * @retval kErrorInvalidState   mDNS module is not enabled.
-     *
      */
     Error StopIp4AddressResolver(const AddressResolver &aResolver);
 
@@ -574,7 +543,6 @@ public:
      * This method is mainly intended for testing. The max size threshold is used to break larger messages.
      *
      * @param[in] aMaxSize  The max message size threshold.
-     *
      */
     void SetMaxMessageSize(uint16_t aMaxSize) { mMaxMessageSize = aMaxSize; }
 
@@ -584,7 +552,6 @@ public:
      * Allocates a new iterator.
      *
      * @returns   A pointer to the newly allocated iterator or `nullptr` if it fails to allocate.
-     *
      */
     Iterator *AllocateIterator(void);
 
@@ -592,7 +559,6 @@ public:
      * Frees a previously allocated iterator.
      *
      * @param[in] aIterator  The iterator to free.
-     *
      */
     void FreeIterator(Iterator &aIterator);
 
@@ -609,7 +575,6 @@ public:
      * @retval kErrorNone         @p aHost, @p aState, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextHost(Iterator &aIterator, Host &aHost, EntryState &aState) const;
 
@@ -626,7 +591,6 @@ public:
      * @retval kErrorNone         @p aService, @p aState, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextService(Iterator &aIterator, Service &aService, EntryState &aState) const;
 
@@ -642,7 +606,6 @@ public:
      * @retval kErrorNone         @p aKey, @p aState, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextKey(Iterator &aIterator, Key &aKey, EntryState &aState) const;
 
@@ -659,7 +622,6 @@ public:
      * @retval kErrorNone         @p aBrowser, @p aInfo, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextBrowser(Iterator &aIterator, Browser &aBrowser, CacheInfo &aInfo) const;
 
@@ -676,7 +638,6 @@ public:
      * @retval kErrorNone         @p aResolver, @p aInfo, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextSrvResolver(Iterator &aIterator, SrvResolver &aResolver, CacheInfo &aInfo) const;
 
@@ -693,7 +654,6 @@ public:
      * @retval kErrorNone         @p aResolver, @p aInfo, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextTxtResolver(Iterator &aIterator, TxtResolver &aResolver, CacheInfo &aInfo) const;
 
@@ -711,7 +671,6 @@ public:
      * @retval kErrorNone         @p aResolver, @p aInfo, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextIp6AddressResolver(Iterator &aIterator, AddressResolver &aResolver, CacheInfo &aInfo) const;
 
@@ -729,7 +688,6 @@ public:
      * @retval kErrorNone         @p aResolver, @p aInfo, & @p aIterator are updated successfully.
      * @retval kErrorNotFound     Reached the end of the list.
      * @retval kErrorInvalidArg   @p aIterator is not valid.
-     *
      */
     Error GetNextIp4AddressResolver(Iterator &aIterator, AddressResolver &aResolver, CacheInfo &aInfo) const;
 
@@ -758,6 +716,10 @@ private:
     static constexpr uint32_t kMinInitialQueryDelay     = 20;  // msec
     static constexpr uint32_t kMaxInitialQueryDelay     = 120; // msec
     static constexpr uint32_t kRandomDelayReuseInterval = 2;   // msec
+
+    static constexpr uint32_t kMinResponseDelay            = 20;  // msec
+    static constexpr uint32_t kMaxResponseDelay            = 120; // msec
+    static constexpr uint32_t kResponseAggregationMaxDelay = 500; // msec
 
     static constexpr uint32_t kUnspecifiedTtl       = 0;
     static constexpr uint32_t kDefaultTtl           = 120;
@@ -793,7 +755,7 @@ private:
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Forward declarations
 
-    class EntryTimerContext;
+    struct EntryContext;
     class TxMessage;
     class RxMessage;
     class ServiceEntry;
@@ -855,8 +817,11 @@ private:
 
     struct AnswerInfo
     {
+        TimeMilli GetAnswerTime(void) const { return (mQueryRxTime + mAnswerDelay); }
+
         uint16_t  mQuestionRrType;
-        TimeMilli mAnswerTime;
+        uint16_t  mAnswerDelay;
+        TimeMilli mQueryRxTime;
         bool      mIsProbe;
         bool      mUnicastResponse;
         bool      mLegacyUnicastResponse;
@@ -913,11 +878,13 @@ private:
         void     UpdateTtl(uint32_t aTtl);
 
         void     StartAnnouncing(void);
-        bool     ShouldAppendTo(TxMessage &aResponse, TimeMilli aNow) const;
+        bool     ShouldAppendTo(EntryContext &aContext);
         bool     CanAnswer(void) const;
         void     ScheduleAnswer(const AnswerInfo &aInfo);
+        Error    ExtendAnswerDelay(EntryContext &aContext);
         void     UpdateStateAfterAnswer(const TxMessage &aResponse);
         void     UpdateFireTimeOn(FireTime &aFireTime);
+        void     DetermineNextAggrTxTime(NextFireTime &aNextAggrTxTime) const;
         uint32_t GetDurationSinceLastMulticast(TimeMilli aTime) const;
         Error    GetLastMulticastTime(TimeMilli &aLastMulticastTime) const;
 
@@ -941,6 +908,8 @@ private:
             kAppendedInUnicastMsg,
         };
 
+        TimeMilli GetAnswerTime(void) const { return mQueryRxTime + mAnswerDelay; }
+
         static constexpr uint32_t kMinIntervalBetweenMulticast = 1000; // msec
         static constexpr uint32_t kLastMulticastTimeAge        = 10 * Time::kOneHourInMsec;
 
@@ -950,12 +919,14 @@ private:
         bool        mMulticastAnswerPending : 1;
         bool        mUnicastAnswerPending : 1;
         bool        mIsLastMulticastValid : 1;
+        bool        mCanExtendAnswerDelay : 1;
         uint8_t     mAnnounceCounter;
         AppendState mAppendState;
         Section     mAppendSection;
+        uint16_t    mAnswerDelay;
         uint32_t    mTtl;
         TimeMilli   mAnnounceTime;
-        TimeMilli   mAnswerTime;
+        TimeMilli   mQueryRxTime;
         TimeMilli   mLastMulticastTime;
     };
 
@@ -1018,20 +989,22 @@ private:
                                 NameAppender     aNameAppender);
         bool ShouldAnswerNsec(TimeMilli aNow) const;
         void DetermineNextFireTime(void);
+        void DetermineNextAggrTxTime(NextFireTime &aNextAggrTxTime) const;
         void ScheduleTimer(void);
         void AnswerProbe(const AnswerInfo &aInfo, RecordAndType *aRecords, uint16_t aRecordsLength);
         void AnswerNonProbe(const AnswerInfo &aInfo, RecordAndType *aRecords, uint16_t aRecordsLength);
         void ScheduleNsecAnswer(const AnswerInfo &aInfo);
 
-        template <typename EntryType> void HandleTimer(EntryTimerContext &aContext);
+        template <typename EntryType> void HandleTimer(EntryContext &aContext);
 
         RecordInfo mKeyRecord;
 
     private:
-        void SetState(State aState);
-        void ClearKey(void);
-        void ScheduleCallbackTask(void);
-        void CheckMessageSizeLimitToPrepareAgain(TxMessage &aTxMessage, bool &aPrepareAgain);
+        void      SetState(State aState);
+        void      ClearKey(void);
+        void      ScheduleCallbackTask(void);
+        void      CheckMessageSizeLimitToPrepareAgain(TxMessage &aTxMessage, bool &aPrepareAgain);
+        TimeMilli GetNsecAnswerTime(void) const { return mNsecQueryRxTime + mNsecAnswerDelay; }
 
         State      mState;
         uint8_t    mProbeCount;
@@ -1039,7 +1012,8 @@ private:
         bool       mUnicastNsecPending : 1;
         bool       mAppendedNsec : 1;
         bool       mBypassCallbackStateCheck : 1;
-        TimeMilli  mNsecAnswerTime;
+        uint16_t   mNsecAnswerDelay;
+        TimeMilli  mNsecQueryRxTime;
         Heap::Data mKeyData;
         Callback   mCallback;
         Callback   mKeyCallback;
@@ -1069,10 +1043,11 @@ private:
         void  Unregister(const Host &aHost);
         void  Unregister(const Key &aKey);
         void  AnswerQuestion(const AnswerInfo &aInfo);
-        void  HandleTimer(EntryTimerContext &aContext);
+        void  HandleTimer(EntryContext &aContext);
         void  ClearAppendState(void);
-        void  PrepareResponse(TxMessage &aResponse, TimeMilli aNow);
+        void  PrepareResponse(EntryContext &aContext);
         void  HandleConflict(void);
+        void  DetermineNextAggrTxTime(NextFireTime &aNextAggrTxTime) const;
 #if OPENTHREAD_CONFIG_MULTICAST_DNS_ENTRY_ITERATION_API_ENABLE
         Error CopyInfoTo(Host &aHost, EntryState &aState) const;
         Error CopyInfoTo(Key &aKey, EntryState &aState) const;
@@ -1084,7 +1059,7 @@ private:
         void  ScheduleToRemoveIfEmpty(void);
         void  PrepareProbe(TxMessage &aProbe);
         void  StartAnnouncing(void);
-        void  PrepareResponseRecords(TxMessage &aResponse, TimeMilli aNow);
+        void  PrepareResponseRecords(EntryContext &aContext);
         void  UpdateRecordsState(const TxMessage &aResponse);
         void  DetermineNextFireTime(void);
         void  AppendAddressRecordsTo(TxMessage &aTxMessage, Section aSection);
@@ -1128,10 +1103,11 @@ private:
         void  AnswerServiceNameQuestion(const AnswerInfo &aInfo);
         void  AnswerServiceTypeQuestion(const AnswerInfo &aInfo, const char *aSubLabel);
         bool  ShouldSuppressKnownAnswer(uint32_t aTtl, const char *aSubLabel) const;
-        void  HandleTimer(EntryTimerContext &aContext);
+        void  HandleTimer(EntryContext &aContext);
         void  ClearAppendState(void);
-        void  PrepareResponse(TxMessage &aResponse, TimeMilli aNow);
+        void  PrepareResponse(EntryContext &aContext);
         void  HandleConflict(void);
+        void  DetermineNextAggrTxTime(NextFireTime &aNextAggrTxTime) const;
 #if OPENTHREAD_CONFIG_MULTICAST_DNS_ENTRY_ITERATION_API_ENABLE
         Error CopyInfoTo(Service &aService, EntryState &aState, EntryIterator &aIterator) const;
         Error CopyInfoTo(Key &aKey, EntryState &aState) const;
@@ -1157,7 +1133,7 @@ private:
         void  ScheduleToRemoveIfEmpty(void);
         void  PrepareProbe(TxMessage &aProbe);
         void  StartAnnouncing(void);
-        void  PrepareResponseRecords(TxMessage &aResponse, TimeMilli aNow);
+        void  PrepareResponseRecords(EntryContext &aContext);
         void  UpdateRecordsState(const TxMessage &aResponse);
         void  DetermineNextFireTime(void);
         void  DiscoverOffsetsAndHost(HostEntry *&aHost);
@@ -1220,11 +1196,12 @@ private:
         void     ClearAppendState(void);
         void     AnswerQuestion(const AnswerInfo &aInfo);
         bool     ShouldSuppressKnownAnswer(uint32_t aTtl) const;
-        void     HandleTimer(EntryTimerContext &aContext);
-        void     PrepareResponse(TxMessage &aResponse, TimeMilli aNow);
+        void     HandleTimer(EntryContext &aContext);
+        void     PrepareResponse(EntryContext &aContext);
+        void     DetermineNextAggrTxTime(NextFireTime &aNextAggrTxTime) const;
 
     private:
-        void PrepareResponseRecords(TxMessage &aResponse, TimeMilli aNow);
+        void PrepareResponseRecords(EntryContext &aContext);
         void AppendPtrRecordTo(TxMessage &aResponse, uint16_t aServiceTypeOffset);
 
         ServiceType *mNext;
@@ -1235,7 +1212,7 @@ private:
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    class TxMessage : public InstanceLocator
+    class TxMessage : public InstanceLocator, private NonCopyable
     {
     public:
         enum Type : uint8_t
@@ -1248,7 +1225,7 @@ private:
         };
 
         TxMessage(Instance &aInstance, Type aType, uint16_t aQueryId = 0);
-        TxMessage(Instance &aInstance, Type aType, const AddressInfo &aUnicastDest, uint16_t aQueryId = 0);
+        TxMessage(Instance &aInstance, Type aType, const AddressInfo &aUnicastDest, uint16_t aQueryId);
         Type          GetType(void) const { return mType; }
         Message      &SelectMessageFor(Section aSection);
         AppendOutcome AppendLabel(Section aSection, const char *aLabel, uint16_t &aCompressOffset);
@@ -1293,19 +1270,17 @@ private:
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    class EntryTimerContext : public InstanceLocator // Used by `HandleEntryTimer`.
+    struct EntryContext : private NonCopyable // Used when preparing entry response (e.g. from `HandleEntryTimer()`).
     {
-    public:
-        EntryTimerContext(Instance &aInstance);
-        TimeMilli     GetNow(void) const { return mNextFireTime.GetNow(); }
-        NextFireTime &GetNextFireTime(void) { return mNextFireTime; }
-        TxMessage    &GetProbeMessage(void) { return mProbeMessage; }
-        TxMessage    &GetResponseMessage(void) { return mResponseMessage; }
+        EntryContext(Instance &aInstance, TxMessage::Type aResponseType);
+        EntryContext(Instance &aInstance, TxMessage::Type aResponseType, const AddressInfo &aDest, uint16_t aQueryId);
 
-    private:
+        TimeMilli GetNow(void) const { return mNextFireTime.GetNow(); }
+
         NextFireTime mNextFireTime;
         TxMessage    mProbeMessage;
         TxMessage    mResponseMessage;
+        TimeMilli    mNextAggrTxTime;
     };
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1360,11 +1335,8 @@ private:
             bool     mIsForAllServicesDnssd : 1; // Is for "_services._dns-sd._udp" (all service types).
         };
 
-        static constexpr uint32_t kMinResponseDelay = 20;  // msec
-        static constexpr uint32_t kMaxResponseDelay = 120; // msec
-
         void ProcessQuestion(Question &aQuestion);
-        void AnswerQuestion(const Question &aQuestion, TimeMilli aAnswerTime);
+        void AnswerQuestion(const Question &aQuestion, uint16_t aDelay);
         void AnswerServiceTypeQuestion(const Question &aQuestion, const AnswerInfo &aInfo, ServiceEntry &aFirstEntry);
         bool ShouldSuppressKnownAnswer(const Name         &aServiceType,
                                        const char         *aSubLabel,
@@ -1374,7 +1346,7 @@ private:
                                         Name              &aServiceType) const;
         void AnswerAllServicesQuestion(const Question &aQuestion, const AnswerInfo &aInfo);
         bool ShouldSuppressKnownAnswer(const Question &aQuestion, const ServiceType &aServiceType) const;
-        void SendUnicastResponse(const AddressInfo &aUnicastDest);
+        void SendUnicastResponse(void);
         void IterateOnAllRecordsInResponse(RecordProcessor aRecordProcessor);
         void ProcessRecordForConflict(const Name &aName, const ResourceRecord &aRecord, uint16_t aRecordOffset);
         void ProcessPtrRecord(const Name &aName, const ResourceRecord &aRecord, uint16_t aRecordOffset);
@@ -1384,6 +1356,7 @@ private:
         void ProcessARecord(const Name &aName, const ResourceRecord &aRecord, uint16_t aRecordOffset);
 
         RxMessage            *mNext;
+        TimeMilli             mRxTime;
         OwnedPtr<Message>     mMessagePtr;
         Heap::Array<Question> mQuestions;
         AddressInfo           mSenderAddress;
@@ -1457,24 +1430,29 @@ private:
     private:
         static constexpr uint32_t kExpireInterval = TimeMilli::SecToMsec(10); // in msec
 
-        typedef Crypto::Sha256::Hash Hash;
-
-        struct HashEntry : public LinkedListEntry<HashEntry>, public Heap::Allocatable<HashEntry>
+        struct MsgInfo : public Clearable<MsgInfo>, public Equatable<MsgInfo>
         {
-            bool Matches(const Hash &aHash) const { return aHash == mHash; }
-            bool Matches(const ExpireChecker &aExpireChecker) const { return mExpireTime <= aExpireChecker.mNow; }
+            void InitFrom(const Message &aMessage);
 
-            HashEntry *mNext;
-            Hash       mHash;
-            TimeMilli  mExpireTime;
+            uint16_t mMsgLength;
+            uint16_t mCrc16;
+            uint32_t mCrc32;
         };
 
-        static void CalculateHash(const Message &aMessage, Hash &aHash);
+        struct MsgEntry : public LinkedListEntry<MsgEntry>, public Heap::Allocatable<MsgEntry>
+        {
+            bool Matches(const MsgInfo &aInfo) const { return mInfo == aInfo; }
+            bool Matches(const ExpireChecker &aExpireChecker) const { return mExpireTime <= aExpireChecker.mNow; }
+
+            MsgEntry *mNext;
+            MsgInfo   mInfo;
+            TimeMilli mExpireTime;
+        };
 
         using TxMsgHistoryTimer = TimerMilliIn<Core, &Core::HandleTxMessageHistoryTimer>;
 
-        OwningList<HashEntry> mHashEntries;
-        TxMsgHistoryTimer     mTimer;
+        OwningList<MsgEntry> mMsgEntries;
+        TxMsgHistoryTimer    mTimer;
     };
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1533,15 +1511,11 @@ private:
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    class CacheTimerContext : public InstanceLocator
+    struct CacheContext : private NonCopyable
     {
-    public:
-        CacheTimerContext(Instance &aInstance);
-        TimeMilli     GetNow(void) const { return mNextFireTime.GetNow(); }
-        NextFireTime &GetNextFireTime(void) { return mNextFireTime; }
-        TxMessage    &GetQueryMessage(void) { return mQueryMessage; }
+        CacheContext(Instance &aInstance);
+        TimeMilli GetNow(void) const { return mNextFireTime.GetNow(); }
 
-    private:
         NextFireTime mNextFireTime;
         TxMessage    mQueryMessage;
     };
@@ -1588,7 +1562,7 @@ private:
         // (e.g., query message construction).
 
     public:
-        void HandleTimer(CacheTimerContext &aContext);
+        void HandleTimer(CacheContext &aContext);
         void ClearEmptyCallbacks(void);
         void ScheduleQuery(TimeMilli aQueryTime);
 
@@ -1622,7 +1596,7 @@ private:
 
         void SetIsActive(bool aIsActive);
         bool ShouldQuery(TimeMilli aNow);
-        void PrepareQuery(CacheTimerContext &aContext);
+        void PrepareQuery(CacheContext &aContext);
         void ProcessExpiredRecords(TimeMilli aNow);
         void DetermineNextInitialQueryTime(void);
 

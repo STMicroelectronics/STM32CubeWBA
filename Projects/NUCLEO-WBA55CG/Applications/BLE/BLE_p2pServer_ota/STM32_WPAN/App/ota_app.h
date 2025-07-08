@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    STM32_WPAN
+  * @file    ota_app.h
   * @author  MCD Application Team
-  * @brief   Header for STM32_WPAN
+  * @brief   Header for ota_app.c
   ******************************************************************************
   * @attention
   *
@@ -27,6 +27,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "ble_types.h"
+#include "ble_core.h"
 /* USER CODE BEGIN Includes */
 #include "ota.h"
 /* USER CODE END Includes */

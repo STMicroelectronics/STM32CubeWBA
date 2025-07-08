@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "log_module.h"
-#include "common_blesvc.h"
 #include "zddsecurity.h"
 
 /* USER CODE BEGIN Includes */
@@ -173,7 +172,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_1_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
                 /* USER CODE BEGIN Service3_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_1_Disabled_BEGIN */
@@ -185,15 +184,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
-                /* USER CODE BEGIN Service3_Char_1_COMSVC_Indication_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
+                /* USER CODE BEGIN Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
 
-                /* USER CODE END Service3_Char_1_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_SECURITY25519AES_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_1_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
 
-                /* USER CODE END Service3_Char_1_COMSVC_Indication_END */
+                /* USER CODE END Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
                 break;
 
               default:
@@ -218,7 +217,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_2_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
                 /* USER CODE BEGIN Service3_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_2_Disabled_BEGIN */
@@ -230,15 +229,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
-                /* USER CODE BEGIN Service3_Char_2_COMSVC_Indication_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
+                /* USER CODE BEGIN Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
 
-                /* USER CODE END Service3_Char_2_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_SECURITY25519SHA_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_2_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
 
-                /* USER CODE END Service3_Char_2_COMSVC_Indication_END */
+                /* USER CODE END Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
                 break;
 
               default:
@@ -264,7 +263,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_3_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(COMSVC_Indication)):
+              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
                 /* USER CODE BEGIN Service3_Char_3_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_3_Disabled_BEGIN */
@@ -276,15 +275,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case COMSVC_Indication:
-                /* USER CODE BEGIN Service3_Char_3_COMSVC_Indication_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
+                /* USER CODE BEGIN Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
 
-                /* USER CODE END Service3_Char_3_COMSVC_Indication_BEGIN */
+                /* USER CODE END Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_P256SHA_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_3_COMSVC_Indication_END */
+                /* USER CODE BEGIN Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
 
-                /* USER CODE END Service3_Char_3_COMSVC_Indication_END */
+                /* USER CODE END Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
                 break;
 
               default:

@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    log_module.h
+  * @file    log_module_conf.h
   * @author  MCD Application Team
   * @brief   Header file of the log module.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -176,6 +176,10 @@ typedef enum
 #define LOG_WARNING_BLE(...)      do {} while(0)
 #define LOG_DEBUG_BLE(...)        do {} while(0)
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/* macro ensuring retrocompatibility with old applications */
+#define APP_DBG                   LOG_INFO_APP
+#define APP_DBG_MSG               LOG_INFO_APP
 
 /* USER CODE BEGIN LOG_REGION_BLE */
 /**

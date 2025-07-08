@@ -91,11 +91,11 @@ Please refer to AN5347 for more details.
        } >RAM_D1 AT> RAM_D1
     ```
 
-       The simplest way to provide memory for ThreadX is to define a new section, see ._threadx_heap above.
-       In the example above the ThreadX heap size is set to 64KBytes.
-       The ._threadx_heap must be located between the .bss and the ._user_heap_stack sections in the linker script.
-       Caution: Make sure that ThreadX does not need more than the provided heap memory (64KBytes in this example).
-       Read more in STM32CubeIDE User Guide, chapter: "Linker script".
+    The simplest way to provide memory for ThreadX is to define a new section, see ._threadx_heap above.
+    In the example above the ThreadX heap size is set to 64KBytes.
+    The ._threadx_heap must be located between the .bss and the ._user_heap_stack sections in the linker script.
+    Caution: Make sure that ThreadX does not need more than the provided heap memory (64KBytes in this example).
+    Read more in STM32CubeIDE User Guide, chapter: "Linker script".
 
     + The "tx_initialize_low_level.S" should be also modified to enable the "USE_DYNAMIC_MEMORY_ALLOCATION" flag.
 
@@ -105,9 +105,9 @@ RTOS, ThreadX, Threading, TrustZone, TZEN
 
 ### <b>Hardware and Software environment</b>
 
-  - This application runs on STM32WBAxx devices with security enabled (TZEN=1).
+  - This application runs on STM32WBA65xx devices with security enabled (TZEN=1).
 
-  - This application has been tested with STMicroelectronics NUCLEO-WBA65RI boards revision MB2130-WBA65RI-A01
+  - This application has been tested with STMicroelectronics NUCLEO-WBA65RI revision boards (MB2130-WBA65RI-A01 and MB1801-USB-D01)
     and can be easily tailored to any other supported device and development board.
 
   - User Option Bytes requirement (with STM32CubeProgrammer tool)
@@ -131,3 +131,30 @@ EWARM
  - Rebuild xxxxx_NS project
  - Load the secure and non-secures images into target memory (Ctrl + D)
  - Run the application
+
+MDK-ARM
+
+ - Open your toolchain
+ - Open Multi-projects workspace file Project.uvmpw
+ - Select the xxxxx_S project as Active Project (Set as Active Project)
+ - Build xxxxx_S project
+ - Select the xxxxx_NS project as Active Project (Set as Active Project)
+ - Build xxxxx_NS project
+ - Load the non-secure binary (F8)
+   (this shall download the \MDK-ARM\xxxxx_ns\Exe\Project_ns.axf to flash memory)
+ - Select the xxxxx_S project as Active Project (Set as Active Project)
+ - Load the secure binary (F8)
+   (this shall download the \MDK-ARM\xxxxx_s\Exe\Project_s.axf to flash memory)
+ - Run the application
+
+STM32CubeIDE
+
+ - Open STM32CubeIDE
+ - File > Import. Point to the STM32CubeIDE folder of the example project. Click Finish.
+ - Build configuration: Set the same active build configuration: Debug (default) or Release for both projects xxxxx_S & xxxxx_NS
+ - Select and build the xxxxx_NS project, this will automatically trigger the build of xxxxx_S project
+ - Select the xxxxx_S project and select "Debug configuration" or "Run configuration" in function of the active build configuration
+   - Double click on "STM32 Cortex-M C/C++ Application"
+   - Select  "Startup" > "Add" >
+     - Select the xxxxx_NS project
+ - Click Debug/Run to debug/run the application

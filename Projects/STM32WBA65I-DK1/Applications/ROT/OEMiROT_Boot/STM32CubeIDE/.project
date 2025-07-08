@@ -423,6 +423,16 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/mcuboot/platform/ext/common/uart_stdout.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/mcuboot/boot_record.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/mcuboot/boot/bootutil/src/boot_record.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/mcuboot/shared_data.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/mcuboot/bl2/src/shared_data.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/mbedtls_alt/sha256_alt.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/ST/mbedtls_alt/interfaces/patterns/sha256_alt.c</locationURI>

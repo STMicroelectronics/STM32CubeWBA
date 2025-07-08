@@ -3,8 +3,8 @@
 Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones 
 or tablets without the need for a dedicated Zigbee hub or gateway.
 Inside the Zigbee Direct ecosystem, you have two main actors : the ZVD (Zigbee Virtual Device) and the ZDD 
-(Zigbee Direct Device). On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by 
-sending On and Off commands.
+(Zigbee Direct Device). 
+On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbee device by sending On/Off and level control commands.
 
 
 ### __Keywords__
@@ -16,10 +16,10 @@ Connectivity, ZigbeeDirect, Zigbee protocol, BLE, 802.15.4 protocol
 For this application it is requested to have at least:
 
 * One STM32WBA55xx or STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff**
-* One STM32WBA55xx or STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff_Server_Router_Identify**(For demo use case 2 only)
 * One IOS device loaded with Ubisys Smart Home application
+* One STM32WBA55xx or STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff_Server_Router_Identify** 
 
-
+By default the ZDD is the coordinator, if you want the ZVD to be the coordinator remove the ZDD_IS_ZC flag on your IDE preprocessor options and take a look at the part __Demo use case 2__ .
 
 ### __Demo use case 1__
 
@@ -27,40 +27,9 @@ For this application it is requested to have at least:
 
 <pre>
 
+In this Demo, ZDD is the Coordinator.
 
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)                                                       
-                   +-------------------------------+           +-----------------+
-                   |                               |           |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |
-                   |      (running on IOS)         |           | Nucleo board    |
-                   |                               |           |                 |
- Use the dedicated |                               |           |                 |
- smartphone apps =>|                               | --------> |                 |=> LED toggle
- to control the    |                               |           |                 |
- LED on the ZDD    |                               |           |                 |
- switch item       |                               |           |                 |
-                   |-------------------------------|           |-----------------|
-
-
-</pre> 
-
-### __Application Setup__
-
-* First, open the project, build it and load your generated application on your STM32WBAxx device 
-* To run the application :
-
-    1. Start the board. This board is configured and is acting as a Zigbee Direct Device. 
-    2. Launch the Ubisys Application and follow the instructions described in the chapter " Demo 1 procedure" of following wiki page :
-       https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup
-
-
-### __Demo use case 2__
-
-</br>
-
-<pre>
-
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)             ZD (Zigbee Device)                                                       
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
                    +-------------------------------+           +-----------------+              +-----------------+
                    |                               |           |                 |              |                 |
                    | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
@@ -72,14 +41,48 @@ For this application it is requested to have at least:
   to control the   |                               |           |                 |              |                 |
   LED on the ZDD   |                               |           |                 |              |                 |
    switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
+................   |                               |           |                 |              |                 |
+                   |-------------------------------|           |-----------------|              |-----------------|
+
+
+</pre> 
+
+### __Application Setup__
+
+* First, open the project, build it and load your generated application on your STM32WBAxx device 
+* To run the application :
+
+	1. Start the board. This board is configured and is acting as a Zigbee Direct Device. 
+	2. Launch the Ubisys Application and follow the instructions described in the chapter " Demo 1 procedure" of following wiki page :
+	   https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup
+
+
+### __Demo use case 2__
+
+</br>
+
+<pre>
+In this Demo, ZVD is the Coordinator.
+
+                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
+                   +-------------------------------+           +-----------------+              +-----------------+
                    |                               |           |                 |              |                 |
+                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
+                   |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
+                   |                               |           |                 |              |                 |
+     Use the    => |                               | --------> |                 |=> LED toggle |                 |
+    dedicated      |                               |           |                 |              |                 |
+ smartphone apps   |                               |           |                 |              |                 |
+  to control the   |                               |           |                 |              |                 |
+  LED on the ZDD   |                               |           |                 |              |                 |
+   switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
+................   |                               |           |                 |              |                 |
                    |-------------------------------|           |-----------------|              |-----------------|
 
 </pre> 
 
 ### __Application Setup__
 
-* First, open the ZDD project , build it and load your generated application on your STM32WBA55xx or STM32WBA65xx devices.
 * To run the application :
     1. Start the first board. This board is configured as Zigbee Direct Device. 
     Launch the Ubisys Application and follow the instructions described in the chapter " Demo 2 procedure" of following wiki page :

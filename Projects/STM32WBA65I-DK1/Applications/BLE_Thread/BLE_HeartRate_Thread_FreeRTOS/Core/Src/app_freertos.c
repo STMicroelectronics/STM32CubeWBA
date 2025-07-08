@@ -18,11 +18,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "app_freertos.h"
 #include "stm32_rtos.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "main.h"
-#include "cmsis_os2.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_ble.h"
@@ -91,16 +88,15 @@ const osSemaphoreAttr_t HRSAPPMeasurementsSemaphore_attributes = {
 
 /* USER CODE END FunctionPrototypes */
 
-void advertisingTask_Entry(void *argument);
-void HRSAPPMeasurementsTask_Entry(void *argument);
-void advLowPowerTimer_cb(void *argument);
-void HRSAPPMeasurementsTimer_cb(void *argument);
-
-void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
+/* USER CODE BEGIN 4 */
+void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
+{
+   /* Run time stack overflow checking is performed if
+   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+   called if a stack overflow is detected. */
+  Error_Handler();
+}
+/* USER CODE END 4 */
 
 /* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
@@ -166,7 +162,7 @@ void MX_FREERTOS_Init(void) {
   HRSAPPMeasurementsTaskHandle = osThreadNew(HRSAPPMeasurementsTask_Entry, NULL, &HRSAPPMeasurementsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-
+  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -186,7 +182,7 @@ void advertisingTask_Entry(void *argument)
   /* USER CODE BEGIN advertisingTask */
   uint16_t advCmd;
   uint8_t advCmdPrio;
-  /* Infinite loop */
+
   for(;;)
   {
     osMessageQueueGet(advertisingCmdQueueHandle, &advCmd, &advCmdPrio, osWaitForever);
@@ -223,9 +219,7 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
   for(;;)
   {
     osSemaphoreAcquire(HRSAPPMeasurementsSemaphoreHandle, osWaitForever);
-    osMutexAcquire(LinkLayerMutex, osWaitForever);
     HRS_APP_Measurements();
-    osMutexRelease(LinkLayerMutex);
     osThreadYield();
   }
   /* USER CODE END HRSAPPMeasurementsTask */

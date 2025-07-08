@@ -20,35 +20,48 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2prouter-application-description"><strong>BLE_p2pRouter Application Description</strong></h2>
-<p>Demonstrate STM32WBA acting at the same time as both: BLE central and peripheral, GATT server and client.</p>
-<p>p2pRouter application scans to connect to p2pServer devices and accept connection of ST BLE Toolbox smartphone app.<br />
-It routes BLE messages received from both side.</p>
-<p><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer_Router
-"> STM32WBA Bluetooth LE - P2P router</a></p>
+<p>Demonstrates STM32WBA acting simultaneously as both a BLE central and a BLE peripheral, as well as a GATT server and client.</p>
+<p>The BLE_p2pRouter application scans to connect to p2pServer devices and accepts connections of ST BLE Toolbox smartphone app.<br />
+It routes BLE messages received from both sides.</p>
+<p>For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer_Router"> STM32WBA Bluetooth LE - P2P router.</a></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE</p>
+<p>Connectivity, BLE, BLE protocol, BLE pairing.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx Nucleo board.</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
-<li>At least another STM32WBA Nucleo board is necessary to run p2pServer application.</li>
+<li>This application runs on STM32WBA55xx Nucleo board.<br />
+</li>
+<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
+</li>
+<li>At least another STM32WBA Nucleo board is necessary to run the BLE_p2pServer application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work: - Open your prefered toolchain - Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file</p>
-<p>Use one of the following remote application to interact with your device<br />
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
-"> Bluetooth LE collector applications for STM32WBA</a></p>
+<p>In order to make the program work:</p>
+<ul>
+<li>Open your preferred toolchain.<br />
+</li>
+<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file.</li>
+</ul>
+<p>Use one of the following remote applications to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
+"> Bluetooth LE collector applications for STM32WBA.</a></p>
 <p>Reset the STM32WBAxx Nucleo board and launch remote interface application on PC/android/ios device.</p>
 <ul>
-<li>Connect to STM32WBA BLE p2pRouter device.</li>
-<li>Open P2pRouter service<br />
-1 - Switch on a STM32WBAxx Nucleo board with p2pServer application<br />
-2 - Click on B1 to start BLE p2pRouter scanning and then connect to a p2pServer device surrounding</li>
-<li><p>once connected blue Led is switched off on BLE p2pRouter STM32WBAxx Nucleo board and coonected p2pS-xx is displayed on the remote interface.</p></li>
-<li><p>Up to 7 p2pServer devices can be connected to BLE p2pRouter device:<br />
-if needed, do step 1 and 2 to connect a new p2pServer</p></li>
-<li>On p2pServer device, a click on B1 send a notification to the remote interface through BLE p2pRouter .</li>
-<li><p>On remote interface turning on/off the Led send a write message to selected p2pServer device through BLE p2pRouter to switch on/off the blue Led on the STM32WBAxx Nucleo board.</p></li>
+<li>Connect to STM32WBA BLE_p2pRouter device.<br />
+</li>
+<li>Open BLE_P2pRouter service:
+<ul>
+<li>1: Switch on an STM32WBAxx Nucleo board with the BLE_p2pServer application.<br />
+</li>
+<li>2: Click on B1 to start BLE_p2pRouter scanning and then connect to a BLE_p2pServer device nearby.<br />
+</li>
+</ul></li>
+<li>Once connected blue Led is switched off on BLE_p2pRouter STM32WBAxx Nucleo board and coonected p2pS-xx is displayed on the remote interface.<br />
+</li>
+<li>Up to 7 BLE_p2pServer devices can be connected to BLE p2pRouter device:<br />
+if needed, repeat steps 1 and 2 to connect a new BLE_p2pServer.<br />
+</li>
+<li>On the BLE_p2pServer device, a click on B1 sends a notification to the remote interface through BLE_p2pRouter.<br />
+</li>
+<li>On remote interface, turning on/off the Led sends a write message to selected BLE_p2pServer device through the BLE_p2pRouter to switch the blue Led on/off on the STM32WBAxx Nucleo board.</li>
 </ul>
 </div>
 </div>

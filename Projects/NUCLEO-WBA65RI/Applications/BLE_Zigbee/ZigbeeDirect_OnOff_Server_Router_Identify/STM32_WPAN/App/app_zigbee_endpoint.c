@@ -42,13 +42,13 @@
 #include "zcl/zcl.h"
 #include "zcl/general/zcl.onoff.h"
 #include "zcl/general/zcl.identify.h"
+#include "zcl/general/zcl.level.h"
 /* USER CODE BEGIN PI */
 #include "app_bsp.h"
 
 /* USER CODE END PI */
 #define APP_ZIGBEE_IDENTIFY_MODE_DELAY    200u   /* 30s  */
 /* Private defines -----------------------------------------------------------*/
-
 #define APP_ZIGBEE_CHANNEL_MASK           0x07FFF800u // Channels 11 to 26
 #define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
 
@@ -57,11 +57,15 @@
 #define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_ONOFF_SWITCH
 #define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
 
-#define APP_ZIGBEE_CLUSTER1_ID             ZCL_CLUSTER_ONOFF
-#define APP_ZIGBEE_CLUSTER1_NAME           "OnOff Client"
+#define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_ONOFF
+#define APP_ZIGBEE_CLUSTER_NAME           "OnOff Client"
 
-#define APP_ZIGBEE_CLUSTE2_ID            ZCL_CLUSTER_IDENTIFY
-#define APP_ZIGBEE_CLUSTER2_NAME          "Identify Server"
+#define APP_ZIGBEE_CLUSTER1_ID            ZCL_CLUSTER_IDENTIFY
+#define APP_ZIGBEE_CLUSTER1_NAME          "Identify Server"
+
+#define APP_ZIGBEE_CLUSTER_LEVEL_CONTROL_ID      ZCL_CLUSTER_LEVEL_CONTROL
+#define APP_ZIGBEE_CLUSTER_LEVEL_CONTROL_NAME    "Level Control Server" 
+
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_APPLICATION_NAME       "ZD: onOff/Identify App"
 #define APP_ZIGBEE_APPLICATION_OS_NAME    ""
@@ -73,6 +77,8 @@
 // -- Redefine Clusters to better code read --
 #define OnOffServer                       pstZbCluster[0]
 #define IdentifyServer                    pstZbCluster[1]
+#define LevelControlServer                pstZbCluster[2]
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -87,6 +93,7 @@
 /* USER CODE BEGIN PV */
 
 static UTIL_TIMER_Object_t      stTimerToggle;
+static int16_t                  LightLevel;
 
 /* USER CODE END PV */
 
@@ -105,12 +112,20 @@ static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOffCallback               ( st
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOnCallback                ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerToggleCallback            ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 
+static enum ZclStatusCodeT  APP_ZIGBEE_Current_Level_Callback              ( struct ZbZclClusterT * pstCluster, struct ZbZclLevelClientMoveToLevelReqT * pstSrcInfo ,struct ZbZclAddrInfoT *srcInfo,void * arg );
+
 static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
 {
   .off = APP_ZIGBEE_OnOffServerOffCallback,
   .on = APP_ZIGBEE_OnOffServerOnCallback,
   .toggle = APP_ZIGBEE_OnOffServerToggleCallback,
 };
+
+struct ZbZclLevelServerCallbacksT stLevelServerCallbacks = 
+{
+  .move_to_level = APP_ZIGBEE_Current_Level_Callback,
+};
+
 /**
  * @brief  Zigbee application initialization
  * @param  None
@@ -210,6 +225,10 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   assert( stZigbeeAppInfo.IdentifyServer != NULL );
   ZbZclClusterEndpointRegister( stZigbeeAppInfo.IdentifyServer );
   
+  stZigbeeAppInfo.LevelControlServer = ZbZclLevelServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, NULL, &stLevelServerCallbacks, NULL );
+  assert( stZigbeeAppInfo.LevelControlServer != NULL );
+  ZbZclClusterEndpointRegister( stZigbeeAppInfo.LevelControlServer );
+  
   LOG_INFO_APP( "Turn on 'Identify Mode' during %ds", APP_ZIGBEE_IDENTIFY_MODE_DELAY );
   ZbZclIdentifyServerSetTime( stZigbeeAppInfo.IdentifyServer, APP_ZIGBEE_IDENTIFY_MODE_DELAY );
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
@@ -301,8 +320,8 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
+  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
   LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER1_NAME, APP_ZIGBEE_ENDPOINT );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER2_NAME, APP_ZIGBEE_ENDPOINT );
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo2 */
@@ -343,7 +362,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
   {
     LOG_INFO_APP( "[ONOFF] Red Led 'OFF'" );
     APP_LED_OFF( LED_RED );
-    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 0 );
+    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_LEVEL_ATTR_CURRLEVEL, 0 );
   }
   else
   {
@@ -359,15 +378,15 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
 static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
-  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOnCallback */
-  uint8_t   cEndpoint;
+  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOffCallback */
+  uint8_t cEndpoint;
 
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
-  if ( cEndpoint == APP_ZIGBEE_ENDPOINT )
+  if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
   {
     LOG_INFO_APP( "[ONOFF] Red Led 'ON'" );
     APP_LED_ON( LED_RED );
-    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_ONOFF_ATTR_ONOFF, 1 );
+    (void)ZbZclAttrIntegerWrite( pstCluster, ZCL_LEVEL_ATTR_CURRLEVEL, 1 );
   }
   else
   {
@@ -375,9 +394,10 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
     eStatus = ZCL_STATUS_FAILURE;
   }
 
-  /* USER CODE END APP_ZIGBEE_OnOffServerOnCallback */
+  /* USER CODE END APP_ZIGBEE_OnOffServerOffCallback */
   return eStatus;
 }
+
 
 static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
 {
@@ -385,7 +405,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClu
   /* USER CODE BEGIN APP_ZIGBEE_OnOffServerToggleCallback */
   uint8_t   cAttrVal;
 
-  if ( ZbZclAttrRead( pstCluster, ZCL_ONOFF_ATTR_ONOFF, NULL, &cAttrVal, sizeof(cAttrVal), false) != ZCL_STATUS_SUCCESS )
+  if ( ZbZclAttrRead( pstCluster, ZCL_LEVEL_ATTR_CURRLEVEL, NULL, &cAttrVal, sizeof(cAttrVal), false) != ZCL_STATUS_SUCCESS )
   {
     eStatus =  ZCL_STATUS_FAILURE;
   }
@@ -407,7 +427,18 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClu
 
 
 
+static enum ZclStatusCodeT APP_ZIGBEE_Current_Level_Callback( struct ZbZclClusterT * pstCluster, struct ZbZclLevelClientMoveToLevelReqT * pstSrcInfo,struct ZbZclAddrInfoT *srcInfo, void * arg )
+{
+  enum ZclStatusCodeT   eStatus1 = ZCL_STATUS_SUCCESS;
 
+      LOG_INFO_APP( "[Level] Current Level value attribute is %d", pstSrcInfo->level );
+      LightLevel = pstSrcInfo->level;
+      LightLevel = LightLevel*21/53;  // percentage correction to be in line with ZVD value 
+      
+      LOG_INFO_APP( "[Level] Current Level percentage is %d %", LightLevel);
+
+    return eStatus1;
+}
 
 /**
  * @brief  Management of the SW1 button : Send the OnOff Command
@@ -436,31 +467,3 @@ static void APP_ZIGBEE_TimerToggleCallback( void * arg )
 }
 
 
-/**
- * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
- * @param  None
- * @retval None
- */
-void APP_BSP_Button3Action(void)
-{
-  static  uint8_t   cToggleOn = 0;
-  
-  /* First, verify if Appli has already Join a Network  */ 
-  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
-  {
-    if ( cToggleOn == 0u )
-    {
-      LOG_INFO_APP( "[ONOFF] SW3 pushed, Start automatic On/Off." );
-      UTIL_TIMER_Start( &stTimerToggle );
-      cToggleOn = 1;
-    }
-    else
-    {
-      LOG_INFO_APP( "[ONOFF] SW3 pushed, Stop automatic On/Off." );
-      UTIL_TIMER_Stop( &stTimerToggle ); 
-      cToggleOn = 0;
-    }
-  }
-}
-
-/* USER CODE END FD_LOCAL_FUNCTIONS */
