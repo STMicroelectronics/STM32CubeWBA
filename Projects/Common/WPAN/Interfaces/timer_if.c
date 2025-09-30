@@ -342,5 +342,11 @@ static uint32_t TIMER_IF_BkUp_Read_MSBticks(void)
 
 static inline uint32_t GetTimerTicks(void)
 {
-  return (UINT32_MAX - LL_RTC_TIME_GetSubSecond(RTC));
+  uint32_t ssr = LL_RTC_TIME_GetSubSecond(RTC);
+  /* read twice to make sure value it valid*/
+  while (ssr != LL_RTC_TIME_GetSubSecond(RTC))
+  {
+    ssr = LL_RTC_TIME_GetSubSecond(RTC);
+  }
+  return UINT32_MAX - ssr;
 }
