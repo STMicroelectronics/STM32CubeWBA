@@ -117,19 +117,13 @@ UTIL_ADV_TRACE_Status_t UART_TransmitDMA ( uint8_t * pData, uint16_t iSize )
   UTIL_ADV_TRACE_Status_t eStatus = UTIL_ADV_TRACE_OK;
   HAL_StatusTypeDef eResult;
   IRQn_Type         eUseDmaTx;
-  IRQn_Type         eUseDmaRx;
 
   eUseDmaTx = get_IRQn_Type_from_DMA_HandleTypeDef( LOG_UART_HANDLER.hdmatx );
-  eUseDmaRx = get_IRQn_Type_from_DMA_HandleTypeDef( LOG_UART_HANDLER.hdmarx );
 
   if ( ( eUseDmaTx == GPDMA1_Channel0_IRQn ) || ( eUseDmaTx == GPDMA1_Channel1_IRQn ) ||
        ( eUseDmaTx == GPDMA1_Channel2_IRQn ) || ( eUseDmaTx == GPDMA1_Channel3_IRQn ) ||
        ( eUseDmaTx == GPDMA1_Channel4_IRQn ) || ( eUseDmaTx == GPDMA1_Channel5_IRQn ) ||
-       ( eUseDmaTx == GPDMA1_Channel6_IRQn ) || ( eUseDmaTx == GPDMA1_Channel7_IRQn ) ||
-       ( eUseDmaRx == GPDMA1_Channel0_IRQn ) || ( eUseDmaRx == GPDMA1_Channel1_IRQn ) ||
-       ( eUseDmaRx == GPDMA1_Channel2_IRQn ) || ( eUseDmaRx == GPDMA1_Channel3_IRQn ) ||
-       ( eUseDmaRx == GPDMA1_Channel4_IRQn ) || ( eUseDmaRx == GPDMA1_Channel5_IRQn ) ||
-       ( eUseDmaRx == GPDMA1_Channel6_IRQn ) || ( eUseDmaRx == GPDMA1_Channel7_IRQn ) )
+       ( eUseDmaTx == GPDMA1_Channel6_IRQn ) || ( eUseDmaTx == GPDMA1_Channel7_IRQn ) )
   {
     eResult = HAL_UART_Transmit_DMA( &LOG_UART_HANDLER, pData, iSize );
   }

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -49,6 +49,7 @@ typedef struct
   uint16_t              MaxTpLatency;
   uint32_t              PresentationDelay;
 } PBPAPP_QoSConf_t;
+
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
@@ -63,7 +64,7 @@ typedef struct
 /* Audio in and out buffers used by the BSP
  * (max LC3 frame len (Freq, 10ms)) x (Max Channels Number (mono vs stereo)) x 2 (double buffer configuration)
  */
-#define SAI_SRC_MAX_BUFF_SIZE                   (CODEC_MAX_BAND <= CODEC_SSWB ? 240 : 480)*CODEC_LC3_NUM_ENCODER_CHANNEL*2
+#define SAI_SRC_MAX_BUFF_SIZE                   ((CODEC_MAX_BAND <= CODEC_SSWB ? 240 : 480) * CODEC_LC3_NUM_ENCODER_CHANNEL * 2)
 
 /* Buffers used by the LC3 codec */
 #define CODEC_LC3_SESSION_DYN_ALLOC_SIZE \
@@ -77,8 +78,6 @@ typedef struct
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-#define SOURCE_ID_LIST_SIZE                     (3u)
-
 /* Broadcast Source Config
  *  16_2_1 is 3
  *  32_2_1 is 7
@@ -89,7 +88,7 @@ typedef struct
 #define BROADCAST_SOURCE_NUM_BIS                (1u)
 #define BROADCAST_SOURCE_CHANNEL_ALLOC_1        (FRONT_LEFT|FRONT_RIGHT)
 #define BROADCAST_SOURCE_CHANNEL_ALLOC_2        (FRONT_RIGHT)
-#define BROADCAST_CONTROLLER_DELAY              (22000u)
+#define BROADCAST_CONTROLLER_DELAY              (20000u)
 #define BAP_BROADCAST_MAX_TRANSPORT_LATENCY     (20u)
 #define BAP_BROADCAST_ENCRYPTION                (0u)
 #define BIG_HANDLE                              (0u)
@@ -113,18 +112,18 @@ typedef struct
 /* Length of the ST Manufacturer Data */
 #define MANUFACTURER_DATA_LENGTH                11
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory required for CAP*/
-#define CAP_DYN_ALLOC_SIZE      CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_INITIATOR,CFG_BLE_NUM_LINK, \
-                                    MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
-                                    MAX_NUM_UCL_SNK_ASE, \
-                                    MAX_NUM_UCL_SRC_ASE, \
-                                    0u,0u,\
-                                    0u,0u, \
-                                    0u,0u, \
-                                    0u,0u,0u, \
-                                    0u,0u)
+#define CAP_DYN_ALLOC_SIZE CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_INITIATOR,CFG_BLE_NUM_LINK, \
+                                                     MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
+                                                     MAX_NUM_UCL_SNK_ASE, \
+                                                     MAX_NUM_UCL_SRC_ASE, \
+                                                     0u,0u,\
+                                                     0u,0u, \
+                                                     0u,0u, \
+                                                     0u,0u,0u, \
+                                                     0u,0u)
 
 /* Private macros ------------------------------------------------------------*/
 
@@ -142,57 +141,59 @@ static uint32_t aCAPMemBuffer[DIVC(CAP_DYN_ALLOC_SIZE,4)];
 static uint32_t aAudioInitBuffer[BLE_AUDIO_DYN_ALLOC_SIZE];
 static BleAudioInit_t BleAudioInit;
 
-const PBPAPP_QoSConf_t aPBPAPP_BroadcastQoSConf[NUM_LC3_QOS_CONFIG] =    \
-                  {{SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,2,8,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,2,10,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,2,8,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,2,10,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,2,8,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,2,8,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,2,10,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,4,24,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,4,31,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,4,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,4,20,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,4,15,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,4,20,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,7500,BAP_FRAMING_UNFRAMED,26,4,45,40000}, \
-                  {SAMPLE_FREQ_8000_HZ,10000,BAP_FRAMING_UNFRAMED,30,4,60,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,4,45,40000}, \
-                  {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,4,60,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,4,45,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,4,60,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,4,45,40000}, \
-                  {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,4,60,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,4,54,40000}, \
-                  {SAMPLE_FREQ_44100_HZ,10884,BAP_FRAMING_FRAMED,130,4,60,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,75,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,100,4,65,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,90,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,4,65,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,4,50,40000}, \
-                  {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,4,65,40000}};
+const PBPAPP_QoSConf_t aPBPAPP_BroadcastQoSConf[NUM_LC3_QOS_CONFIG] = {
+  {SAMPLE_FREQ_8000_HZ, 7500, BAP_FRAMING_UNFRAMED, 26, 2, 8, 40000},
+  {SAMPLE_FREQ_8000_HZ, 10000, BAP_FRAMING_UNFRAMED, 30, 2, 10, 40000},
+  {SAMPLE_FREQ_16000_HZ, 7500, BAP_FRAMING_UNFRAMED, 30, 2, 8, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED, 40, 2, 10, 40000},
+  {SAMPLE_FREQ_24000_HZ, 7500, BAP_FRAMING_UNFRAMED, 45, 2, 8, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED, 60, 2, 10, 40000},
+  {SAMPLE_FREQ_32000_HZ, 7500, BAP_FRAMING_UNFRAMED, 60, 2, 8, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED, 80, 2, 10, 40000},
+  {SAMPLE_FREQ_44100_HZ, 8163, BAP_FRAMING_FRAMED, 97, 4, 24, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED, 130, 4, 31, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 75, 4, 15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 4, 20, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 90, 4, 15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 4, 20, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 117, 4, 15, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 4, 20, 40000},
+  {SAMPLE_FREQ_8000_HZ, 7500, BAP_FRAMING_UNFRAMED, 26, 4, 45, 40000},
+  {SAMPLE_FREQ_8000_HZ, 10000, BAP_FRAMING_UNFRAMED, 30, 4, 60, 40000},
+  {SAMPLE_FREQ_16000_HZ, 7500, BAP_FRAMING_UNFRAMED, 30, 4, 45, 40000},
+  {SAMPLE_FREQ_16000_HZ, 10000, BAP_FRAMING_UNFRAMED, 40, 4, 60, 40000},
+  {SAMPLE_FREQ_24000_HZ, 7500, BAP_FRAMING_UNFRAMED, 45, 4, 45, 40000},
+  {SAMPLE_FREQ_24000_HZ, 10000, BAP_FRAMING_UNFRAMED, 60, 4, 60, 40000},
+  {SAMPLE_FREQ_32000_HZ, 7500, BAP_FRAMING_UNFRAMED, 60, 4, 45, 40000},
+  {SAMPLE_FREQ_32000_HZ, 10000, BAP_FRAMING_UNFRAMED, 80, 4, 60, 40000},
+  {SAMPLE_FREQ_44100_HZ, 8163, BAP_FRAMING_FRAMED, 97, 4, 54, 40000},
+  {SAMPLE_FREQ_44100_HZ, 10884, BAP_FRAMING_FRAMED, 130, 4, 60, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 75, 4, 50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 100, 4, 65, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 90, 4, 50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 120, 4, 65, 40000},
+  {SAMPLE_FREQ_48000_HZ, 7500, BAP_FRAMING_UNFRAMED, 117, 4, 50, 40000},
+  {SAMPLE_FREQ_48000_HZ, 10000, BAP_FRAMING_UNFRAMED, 155, 4, 65, 40000}
+};
 
-const PBPAPP_CodecConf_t aPBPAPP_CodecConf[NUM_LC3_CODEC_CONFIG] =    \
-                  {{SAMPLE_FREQ_8000_HZ,FRAME_DURATION_7_5_MS,26u}, \
-                  {SAMPLE_FREQ_8000_HZ,FRAME_DURATION_10_MS,30u}, \
-                  {SAMPLE_FREQ_16000_HZ,FRAME_DURATION_7_5_MS,30u}, \
-                  {SAMPLE_FREQ_16000_HZ,FRAME_DURATION_10_MS,40u}, \
-                  {SAMPLE_FREQ_24000_HZ,FRAME_DURATION_7_5_MS,45u}, \
-                  {SAMPLE_FREQ_24000_HZ,FRAME_DURATION_10_MS,60u}, \
-                  {SAMPLE_FREQ_32000_HZ,FRAME_DURATION_7_5_MS,60u}, \
-                  {SAMPLE_FREQ_32000_HZ,FRAME_DURATION_10_MS,80u}, \
-                  {SAMPLE_FREQ_44100_HZ,FRAME_DURATION_7_5_MS,97u}, \
-                  {SAMPLE_FREQ_44100_HZ,FRAME_DURATION_10_MS,130u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,75u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,100u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,90u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,120u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_7_5_MS,117u}, \
-                  {SAMPLE_FREQ_48000_HZ,FRAME_DURATION_10_MS,155u}};
+const PBPAPP_CodecConf_t aPBPAPP_CodecConf[NUM_LC3_CODEC_CONFIG] = {
+  {SAMPLE_FREQ_8000_HZ, FRAME_DURATION_7_5_MS, 26u},
+  {SAMPLE_FREQ_8000_HZ, FRAME_DURATION_10_MS, 30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_7_5_MS, 30u},
+  {SAMPLE_FREQ_16000_HZ, FRAME_DURATION_10_MS, 40u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_7_5_MS, 45u},
+  {SAMPLE_FREQ_24000_HZ, FRAME_DURATION_10_MS, 60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_7_5_MS, 60u},
+  {SAMPLE_FREQ_32000_HZ, FRAME_DURATION_10_MS, 80u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_7_5_MS, 97u},
+  {SAMPLE_FREQ_44100_HZ, FRAME_DURATION_10_MS, 130u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 75u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 100u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 90u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 120u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_7_5_MS, 117u},
+  {SAMPLE_FREQ_48000_HZ, FRAME_DURATION_10_MS, 155u}
+};
 
 /* Buffers allocation for LC3*/
 static uint32_t aLC3SessionMemBuffer[DIVC(CODEC_LC3_SESSION_DYN_ALLOC_SIZE,4)];
@@ -242,11 +243,10 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
                              uint8_t BAPConfID,
                              uint32_t *pChannelAllocation,
                              uint8_t FrameBlockPerSDU);
-static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
-static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen);
+static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
+static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
 static int32_t start_audio_source(void);
-static int32_t start_audio_sink(void);
 /* Exported functions --------------------------------------------------------*/
 extern void APP_NotifyToRun(void);
 
@@ -269,6 +269,7 @@ tBleStatus APP_AUDIO_STACK_Init(void)
 
   return status;
 }
+
 /**
   * @brief  Notify CAP Events
   * @param  pNotification: pointer on notification information
@@ -282,7 +283,6 @@ void CAP_Notification(CAP_Notification_Evt_t *pNotification)
   CAP_App_Notification(pNotification);
 }
 
-
 /**
   * @brief  Notify PBP Events
   * @param  pNotification: pointer on notification information
@@ -291,39 +291,35 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 {
   switch (pNotification->EvtOpcode)
   {
-
     case PBP_PBS_BROADCAST_AUDIO_STARTED_EVT:
-      {
-        CAP_Broadcast_AudioStarted_Info_t *data = (CAP_Broadcast_AudioStarted_Info_t*) pNotification->pInfo;
-        LOG_INFO_APP(">>== PBP_PBS_BROADCAST_AUDIO_STARTED_EVT\n");
-        LOG_INFO_APP("     - Status = 0x%02X\n",pNotification->Status);
-        LOG_INFO_APP("     - BIG_Handle : 0x%02x\n",BIG_HANDLE);
-        if (pNotification->Status == BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("     - Num Created BISes = %d\n",data->NumBISes);
-        }
-        PBPAPP_Context.current_num_bis = data->NumBISes;
-
-        UTIL_MEM_cpy_8(&(PBPAPP_Context.current_BIS_conn_handles[0]),
-                       data->pConnHandle,
-                       (data->NumBISes * sizeof(uint16_t)));
-
-        (void)PBPAPP_BroadcastSetupAudio(AUDIO_ROLE_SOURCE);
-      }
-      break;
-    case PBP_BROADCAST_AUDIO_UP_EVT:
-      {
-      }
-      break;
-    case PBP_BROADCAST_AUDIO_DOWN_EVT:
     {
+      CAP_Broadcast_AudioStarted_Info_t *data = (CAP_Broadcast_AudioStarted_Info_t*) pNotification->pInfo;
+      LOG_INFO_APP(">>== PBP_PBS_BROADCAST_AUDIO_STARTED_EVT\n");
+      LOG_INFO_APP("     - Status = 0x%02X\n",pNotification->Status);
+      LOG_INFO_APP("     - BIG_Handle : 0x%02x\n",BIG_HANDLE);
+      if (pNotification->Status == BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("     - Num Created BISes = %d\n",data->NumBISes);
+      }
+      PBPAPP_Context.current_num_bis = data->NumBISes;
+
+      UTIL_MEM_cpy_8(&(PBPAPP_Context.current_BIS_conn_handles[0]),
+                      data->pConnHandle,
+                      (data->NumBISes * sizeof(uint16_t)));
+
+      (void)PBPAPP_BroadcastSetupAudio(AUDIO_ROLE_SOURCE);
+      break;
+    }
+
+    case PBP_BROADCAST_AUDIO_UP_EVT:
+      break;
+
+    case PBP_BROADCAST_AUDIO_DOWN_EVT:
       MX_AudioDeInit();
       LOG_INFO_APP(">>== PBP_BROADCAST_AUDIO_DOWN_EVT\n");
-    }
-    break;
+      break;
 
-
-   default:
+    default:
       break;
   }
   return;
@@ -457,7 +453,6 @@ uint8_t PBPAPP_StartSource(void)
   cap_audio_start_params.pAdditionalAdvData = &a_additional_adv_data[0];
   cap_audio_start_params.AdditionalAdvDataLen = 18;
 
-
   if (BROADCAST_SOURCE_BAP_CONFIG%16 == 3 || BROADCAST_SOURCE_BAP_CONFIG%16 == 5)
   {
     pbp_audio_start_params.StandardQuality = 1u;
@@ -555,18 +550,17 @@ void APP_NotifyTxAudioHalfCplt(void)
  */
 static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
 {
-
   switch (pNotification->EvtOpcode)
   {
     case CAP_AUDIO_CLOCK_REQ_EVT:
-      {
-        LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
-        Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
-        LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
-        LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
-        AudioClock_Init(*freq);
-      }
+    {
+      LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
+      Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
+      LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
+      LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
+      AudioClock_Init(*freq);
       break;
+    }
 
     default:
       break;
@@ -592,7 +586,7 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
   /*Clear the VCP Configuration*/
   memset(&PBPAPP_VCP_Config,0,sizeof(VCP_Config_t));
 
-  /*Clear the VCP Configuration*/
+  /*Clear the MICP Configuration*/
   memset(&PBPAPP_MICP_Config,0,sizeof(MICP_Config_t));
 
   /*Clear the CSIP Configuration*/
@@ -745,123 +739,6 @@ static void PBPAPP_SetupBASE(uint8_t Encryption,
   }
 }
 
-static void PBPAPP_StartBroadcastAudio(Audio_Role_t role)
-{
-  if (role == AUDIO_ROLE_SOURCE)
-  {
-    CODEC_RegisterTriggerClbk(1,0,&start_audio_source);
-  }
-  else if (role == AUDIO_ROLE_SINK)
-  {
-    CODEC_RegisterTriggerClbk(1,1,&start_audio_sink);
-  }
-}
-
-static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
-{
-  Sampling_Freq_t sampling_freq;
-  Frame_Duration_t frame_duration;
-  uint8_t direction = DATA_PATH_INPUT;
-  uint32_t controller_delay;
-  uint32_t controller_delay_min = 0;
-  uint32_t controller_delay_max = 0;
-  uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
-  tBleStatus ret;
-
-  LOG_INFO_APP("==>> Start PBPAPP_BroadcastSetupAudio function\n");
-
-  a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
-
-  sampling_freq = LTV_GetConfiguredSamplingFrequency(
-      &PBPAPP_Context.base_group.pSubgroups[0].pCodecSpecificConf[0],
-      PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength);
-
-  frame_duration = LTV_GetConfiguredFrameDuration(
-      &PBPAPP_Context.base_group.pSubgroups[0].pCodecSpecificConf[0],
-      PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength);
-
-  if ((sampling_freq != 0) && (frame_duration != 0xFF))
-  {
-    PBPAPP_StartBroadcastAudio(role);
-    MX_AudioInit(role,
-                 sampling_freq,
-                 frame_duration,
-                 NULL,
-                 (uint8_t *)aSrcBuff,
-                 (AudioDriverConfig)PBPAPP_Context.audio_driver_config);
-
-    /* AUDIO_ROLE_SOURCE */
-    direction = DATA_PATH_INPUT;
-    CAP_Broadcast_ReadSupportedControllerDelay(PBPAPP_Context.current_num_bis,
-                                               DATA_PATH_INPUT,
-                                               a_codec_id,
-                                               &controller_delay_min,
-                                               &controller_delay_max);
-
-    /* at source we don't have to respect a presentation delay */
-    if((controller_delay_min <= BROADCAST_CONTROLLER_DELAY) \
-      && (controller_delay_max > BROADCAST_CONTROLLER_DELAY))
-    {
-      controller_delay = BROADCAST_CONTROLLER_DELAY;
-    }
-    else if (controller_delay_min > BROADCAST_CONTROLLER_DELAY)
-    {
-      controller_delay = controller_delay_min;
-    }
-    else /* (info->ControllerDelayMax < BROADCAST_CONTROLLER_DELAY) */
-    {
-      controller_delay = controller_delay_max;
-    }
-    LOG_INFO_APP("Controller delay chosen to value %d us\n", controller_delay);
-
-
-    CODEC_DataPathParam_t param;
-    /* sample coded on 16bits */
-    param.SampleDepth = 16;
-
-    /* SAI/I2C peripheral driver requests to set decimation to 2 (stereo buffer)*/
-    param.Decimation = 2;
-
-    ret = CAP_Broadcast_SetupAudioDataPath(PBPAPP_Context.current_num_bis,
-                                            &PBPAPP_Context.current_BIS_conn_handles[0],
-                                            direction,
-                                            a_codec_id,
-                                            controller_delay,
-                                            DATA_PATH_CIRCULAR_BUF,
-                                            CONFIGURE_DATA_PATH_CONFIG_LEN,
-                                            (const uint8_t*) &param);
-
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : CAP_Broadcast_SetupAudioDataPath() function, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: CAP_Broadcast_SetupAudioDataPath() function\n");
-    }
-  }
-  else
-  {
-    LOG_INFO_APP("Sampling Frequency in LTV is invalid\n");
-    ret = BLE_STATUS_FAILED;
-  }
-  LOG_INFO_APP("==>> End PBPAPP_BroadcastSetupAudio function\n");
-  return ret;
-}
-
-
-/* Audio Source */
-static int32_t start_audio_source(void)
-{
-  return Start_RxAudio();
-}
-
-/* Audio Sink */
-static int32_t start_audio_sink(void)
-{
-  return Start_TxAudio();
-}
-
 static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t AdvDataLen)
 {
   if (AdvDataLen >= MANUFACTURER_DATA_LENGTH + 1)
@@ -905,3 +782,109 @@ static uint8_t PBPAPP_BuildManufacturerAvertisingData(uint8_t *pAdvData, uint8_t
     return 0;
   }
 }
+
+static void PBPAPP_StartBroadcastAudio(Audio_Role_t role)
+{
+  if (role == AUDIO_ROLE_SOURCE)
+  {
+    CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_INPUT, &start_audio_source);
+  }
+}
+
+static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
+{
+  Sampling_Freq_t sampling_freq;
+  Frame_Duration_t frame_duration;
+  uint8_t direction = DATA_PATH_INPUT;
+  uint32_t controller_delay;
+  uint32_t controller_delay_min = 0;
+  uint32_t controller_delay_max = 0;
+  uint8_t a_codec_id[5] = {0x00,0x00,0x00,0x00,0x00};
+  tBleStatus ret;
+
+  LOG_INFO_APP("==>> Start PBPAPP_BroadcastSetupAudio function\n");
+
+  a_codec_id[0] = AUDIO_CODING_FORMAT_LC3;
+
+  sampling_freq = LTV_GetConfiguredSamplingFrequency(
+      &PBPAPP_Context.base_group.pSubgroups[0].pCodecSpecificConf[0],
+      PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength);
+
+  frame_duration = LTV_GetConfiguredFrameDuration(
+      &PBPAPP_Context.base_group.pSubgroups[0].pCodecSpecificConf[0],
+      PBPAPP_Context.base_group.pSubgroups[0].CodecSpecificConfLength);
+
+  if ((sampling_freq != 0) && (frame_duration != 0xFF))
+  {
+    PBPAPP_StartBroadcastAudio(role);
+    MX_AudioInit(role,
+                 sampling_freq,
+                 frame_duration,
+                 NULL,
+                 (uint8_t *)aSrcBuff,
+                 (AudioDriverConfig)PBPAPP_Context.audio_driver_config);
+
+    /* AUDIO_ROLE_SOURCE */
+    direction = DATA_PATH_INPUT;
+    CAP_Broadcast_ReadSupportedControllerDelay(PBPAPP_Context.current_num_bis,
+                                               direction,
+                                               a_codec_id,
+                                               &controller_delay_min,
+                                               &controller_delay_max);
+
+    /* at source we don't have to respect a presentation delay */
+    if ((controller_delay_min <= BROADCAST_CONTROLLER_DELAY) \
+      && (controller_delay_max > BROADCAST_CONTROLLER_DELAY))
+    {
+      controller_delay = BROADCAST_CONTROLLER_DELAY;
+    }
+    else if (controller_delay_min > BROADCAST_CONTROLLER_DELAY)
+    {
+      controller_delay = controller_delay_min;
+    }
+    else /* (info->ControllerDelayMax < BROADCAST_CONTROLLER_DELAY) */
+    {
+      controller_delay = controller_delay_max;
+    }
+    LOG_INFO_APP("Controller delay chosen to value %d us\n", controller_delay);
+
+    CODEC_DataPathSampleParam_t param;
+    /* sample coded on 16bits */
+    param.SampleDepth = 16;
+
+    /* SAI/I2C peripheral driver requests to set decimation to 2 (stereo buffer)*/
+    param.Decimation = 2;
+
+    ret = CAP_Broadcast_SetupAudioDataPath(PBPAPP_Context.current_num_bis,
+                                            &PBPAPP_Context.current_BIS_conn_handles[0],
+                                            direction,
+                                            a_codec_id,
+                                            controller_delay,
+                                            DATA_PATH_SAMPLE_CIRC_BUF,
+                                            CONFIGURE_DATA_PATH_SAMPLE_LEN,
+                                            (const uint8_t*) &param);
+
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("  Fail   : CAP_Broadcast_SetupAudioDataPath() function, result: 0x%02X\n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("  Success: CAP_Broadcast_SetupAudioDataPath() function\n");
+    }
+  }
+  else
+  {
+    LOG_INFO_APP("Sampling Frequency in LTV is invalid\n");
+    ret = BLE_STATUS_FAILED;
+  }
+  LOG_INFO_APP("==>> End PBPAPP_BroadcastSetupAudio function\n");
+  return ret;
+}
+
+/* Audio Source */
+static int32_t start_audio_source(void)
+{
+  return Start_RxAudio();
+}
+

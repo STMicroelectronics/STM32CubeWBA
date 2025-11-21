@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -85,7 +86,7 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode);
 
 #if (OT_CLI_USE == 1)
 static void APP_THREAD_CliInit(otInstance *aInstance);
-static void APP_THREAD_ProcessUart(void *argument);
+void APP_THREAD_ProcessUart(void *argument);
 #endif // OT_CLI_USE
 
 static void APP_THREAD_PersistenceStartup(void);
@@ -120,57 +121,6 @@ static void APP_THREAD_CoapDataRespHandler( void                * aContext,
 /* Private variables -----------------------------------------------*/
 static otInstance * PtOpenThreadInstance;
 
-osThreadId_t        AlarmTask, TaskletsTask;
-osSemaphoreId_t     AlarmSemaphore, TaskletSemaphore;
-osThreadId_t        AlarmUsTask;
-osSemaphoreId_t     AlarmUsSemaphore;
-#if (OT_CLI_USE == 1)
-osThreadId_t        CliUartTask;
-osSemaphoreId_t     CliUartSemaphore;
-#endif // OT_CLI_USE
-
-const osThreadAttr_t AlarmTask_attr = {
-  .name         = "Alarm Task",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE,
-  .stack_mem    = TASK_DEFAULT_STACK_MEM,
-  .priority     = TASK_PRIO_ALARM,
-  .stack_size   = TASK_STACK_SIZE_ALARM
-};
-
-const osThreadAttr_t AlarmUsTask_attr = {
-  .name         = "AlarmUs Task",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE,
-  .stack_mem    = TASK_DEFAULT_STACK_MEM,
-  .priority     = TASK_PRIO_US_ALARM,
-  .stack_size   = TASK_STACK_SIZE_ALARM_US
-};
-
-const osThreadAttr_t TaskletsTask_attr = {
-  .name         = "Tasklets Task",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE,
-  .stack_mem    = TASK_DEFAULT_STACK_MEM,
-  .priority     = TASK_PRIO_TASKLETS,
-  .stack_size   = TASK_STACK_SIZE_TASKLETS
-};
-
-#if (OT_CLI_USE == 1)
-const osThreadAttr_t CliUartTask_attr = {
-  .name         = "CliUart Task",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE,
-  .stack_mem    = TASK_DEFAULT_STACK_MEM,
-  .priority     = TASK_PRIO_CLI_UART,
-  .stack_size   = TASK_STACK_SIZE_CLI_UART
-};
-#endif // OT_CLI_USE
-
 /* USER CODE BEGIN PV */
 static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler, "MyOwnContext", NULL};
 static otMessageInfo OT_MessageInfo = {0};
@@ -183,26 +133,18 @@ static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
 
 /* Functions Definition ------------------------------------------------------*/
 
-static void APP_THREAD_ProcessAlarm(void *argument)
+void APP_THREAD_ProcessAlarm(void *argument)
 {
   UNUSED(argument);
 
-  for(;;)
-  {
-    osSemaphoreAcquire(AlarmSemaphore, osWaitForever);
-    arcAlarmProcess(PtOpenThreadInstance);
-  }
+  arcAlarmProcess(PtOpenThreadInstance);
 }
 
-static void APP_THREAD_ProcessUsAlarm(void *argument)
+void APP_THREAD_ProcessUsAlarm(void *argument)
 {
   UNUSED(argument);
 
-  for(;;)
-  {
-    osSemaphoreAcquire(AlarmUsSemaphore, osWaitForever);
-    arcUsAlarmProcess(PtOpenThreadInstance);
-  }
+  arcUsAlarmProcess(PtOpenThreadInstance);
 }
 
 /**
@@ -211,25 +153,12 @@ static void APP_THREAD_ProcessUsAlarm(void *argument)
  * @param  None
  * @retval None
  */
-static void APP_THREAD_ProcessOpenThreadTasklets(void *argument)
+void APP_THREAD_ProcessOpenThreadTasklets(void *argument)
 {
   UNUSED(argument);
 
-  for(;;)
-  {
-    osSemaphoreAcquire(TaskletSemaphore, osWaitForever);
-
-    /* wakeUp the system */
-    //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-    //ll_sys_dp_slp_exit();
-
-    /* process the tasklet */
-    otTaskletsProcess(PtOpenThreadInstance);
-
-    /* put the IP802_15_4 back to sleep mode */
-    //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
-
-  }
+  /* process the tasklet */
+  otTaskletsProcess(PtOpenThreadInstance);
 }
 
 /**
@@ -239,62 +168,19 @@ static void APP_THREAD_ProcessOpenThreadTasklets(void *argument)
  */
 void otTaskletsSignalPending(otInstance *aInstance)
 {
-  osSemaphoreRelease(TaskletSemaphore);
+  UNUSED(aInstance);
+
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_OT_Tasklet);
 }
 
 void APP_THREAD_ScheduleAlarm(void)
 {
-  osSemaphoreRelease(AlarmSemaphore);
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_OT_Alarm_ms);
 }
 
 void APP_THREAD_ScheduleUsAlarm(void)
 {
-  osSemaphoreRelease(AlarmUsSemaphore);
-}
-
-static void APP_THREAD_AlarmsInit(void)
-{
-  /* Register semaphores to launch tasks */
-  AlarmSemaphore = osSemaphoreNew(1, 0, NULL);
-
-  if (AlarmSemaphore == NULL)
-  {
-    LOG_ERROR_APP("ERROR FREERTOS : ALARM SEMAPHORE CREATION FAILED");
-    while(1);
-  }
-
-  AlarmTask = osThreadNew(APP_THREAD_ProcessAlarm, NULL, &AlarmTask_attr);
-  if (AlarmTask == NULL)
-  {
-    LOG_ERROR_APP("ERROR FREERTOS : ALARM TASK CREATION FAILED");
-    while(1);
-  }
-
-  AlarmUsSemaphore = osSemaphoreNew(1, 0, NULL);
-  if (AlarmUsSemaphore == NULL)
-  {
-    LOG_ERROR_APP("ERROR FREERTOS : ALARM US SEMAPHORE CREATION FAILED");
-    while(1);
-  }
-
-  AlarmUsTask = osThreadNew(APP_THREAD_ProcessUsAlarm, NULL, &AlarmUsTask_attr);
-  if (AlarmTask == NULL)
-  {
-    LOG_ERROR_APP("ERROR FREERTOS : ALARM US TASK CREATION FAILED");
-    while(1);
-  }
-
-}
-
-static void APP_THREAD_TaskletsInit(void)
-{
-  /* Semaphore already created */
-  TaskletsTask = osThreadNew(APP_THREAD_ProcessOpenThreadTasklets, NULL, &TaskletsTask_attr);
-  if (TaskletsTask == NULL)
-  {
-    APP_DBG( "ERROR FREERTOS : TASKLETS TASK CREATION FAILED" );
-    while(1);
-  }
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_OT_Alarm_us);
 }
 
 /**
@@ -310,9 +196,6 @@ void Thread_Init(void)
   APP_THREAD_PersistenceStartup();
 
   otSysInit(0, NULL);
-
-  /* Semaphore used by otTaskletsSignalPending() that is called by otInstanceInit() */
-  TaskletSemaphore = osSemaphoreNew(1, 0, NULL);
 
 #if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
   // Call to query the buffer size
@@ -334,10 +217,6 @@ void Thread_Init(void)
   APP_THREAD_CliInit(PtOpenThreadInstance);
 #endif // OT_CLI_USE
   otDispatch_tbl_init(PtOpenThreadInstance);
-
-  /* Register tasks */
-  APP_THREAD_AlarmsInit();
-  APP_THREAD_TaskletsInit();
 
   ll_sys_thread_init();
 
@@ -417,8 +296,7 @@ static void APP_THREAD_DeviceConfig(void)
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();
@@ -615,37 +493,20 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
 
 #if (OT_CLI_USE == 1)
 /* OT CLI UART functions */
-static void APP_THREAD_ProcessUart(void *argument)
+void APP_THREAD_ProcessUart(void *argument)
 {
   UNUSED(argument);
 
-  for(;;)
-  {
-    osSemaphoreAcquire(CliUartSemaphore, osWaitForever);
-    arcUartProcess();
-  }
+  arcUartProcess();
 }
 
 void APP_THREAD_ScheduleUART(void)
 {
-  osSemaphoreRelease(CliUartSemaphore);
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_OT_CLIuart);
 }
 
 static void APP_THREAD_CliInit(otInstance *aInstance)
 {
-  CliUartSemaphore = osSemaphoreNew( 1, 0, NULL );
-  if (CliUartSemaphore == NULL)
-  {
-    APP_DBG( "ERROR FREERTOS : CLI UART SEMAPHORE CREATION FAILED" );
-    while(1);
-  }
-
-  CliUartTask = osThreadNew( APP_THREAD_ProcessUart, NULL, &CliUartTask_attr );
-  if (CliUartTask == NULL)
-  {
-    APP_DBG( "ERROR FREERTOS : CLI UART TASK CREATION FAILED" );
-    while(1);
-  }
 
   (void)otPlatUartEnable();
   otCliInit(aInstance, CliUartOutput, aInstance);

@@ -30,6 +30,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
+#include "cmsis_os2.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

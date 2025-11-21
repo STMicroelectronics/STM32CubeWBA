@@ -379,7 +379,8 @@ void HASH_IRQHandler(void)
   */
 void GPDMA1_Channel1_IRQHandler(void)
 {
-  BSP_AUDIO_IN_IRQHandler(0,0);
+  BSP_AUDIO_IN_IRQHandler(0, AUDIO_IN_DEVICE_ANALOG_MIC);
+  /* Also suitable with AUDIO_IN_DEVICE_LINE_IN */
 }
 
 /**
@@ -387,7 +388,7 @@ void GPDMA1_Channel1_IRQHandler(void)
   */
 void GPDMA1_Channel2_IRQHandler(void)
 {
-  BSP_AUDIO_OUT_IRQHandler(0,0);
+  BSP_AUDIO_OUT_IRQHandler(0, AUDIO_OUT_DEVICE_HEADPHONE);
 }
 
 /**

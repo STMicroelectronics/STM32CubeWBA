@@ -65,6 +65,7 @@ static const ARM_DRIVER_VERSION DriverVersion =
 /* Chip erase capability values */
 #define CHIP_ERASE_NOT_SUPPORTED    (0u)
 #define CHIP_ERASE_SUPPORTED        (1u)
+#define SIZEOF_QUAD_WORD            (2*sizeof(uint64_t))
 
 /* Driver Capabilities */
 static const ARM_FLASH_CAPABILITIES DriverCapabilities =
@@ -362,13 +363,7 @@ static int32_t Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
   is_valid = is_range_valid(&ARM_FLASH0_DEV, addr + cnt - 1);
   if (is_valid != true)
   {
-    if (ARM_FLASH0_DEV.dev->read_error)
-    {
-      ARM_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
-      return ARM_DRIVER_ERROR_PARAMETER;
-    }
-    memset(data, 0xff, cnt);
-    return ARM_DRIVER_OK;
+    return ARM_DRIVER_ERROR_PARAMETER;
   }
   /*  ECC to implement with NMI */
   /*  do a memcpy */
@@ -406,7 +401,7 @@ static int32_t Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
   return ret;
 }
 
-static int32_t Flash_ProgramData(uint32_t addr,
+static int32_t Flash_ProgramData(uint32_t address,
                                  const void *data, uint32_t cnt)
 {
   uint32_t loop = 0;
@@ -414,6 +409,9 @@ static int32_t Flash_ProgramData(uint32_t addr,
   uint32_t write_type = FLASH_TYPEPROGRAM_QUADWORD;
   HAL_StatusTypeDef err;
   uint32_t flashError;
+  uint32_t addr = address;
+  /* buffer aligned on the maximum write granularity (burst mode) */
+  uint32_t buf[16] = {0};
 #if defined(CHECK_WRITE) || defined(DEBUG_FLASH_ACCESS)
   void *dest;
 #endif
@@ -453,15 +451,15 @@ static int32_t Flash_ProgramData(uint32_t addr,
   ARM_FLASH0_STATUS.busy = DRIVER_STATUS_BUSY;
   do
   {
-    /* quadword api*/
-    uint64_t dword[2];
-    memcpy(dword, (void *)((uint32_t)data + loop), sizeof(dword));
-    if ((dword[0] != -1) || (dword[1] != -1))
-        err = HAL_FLASH_Program(write_type, (flash_base + addr), (uint32_t)&dword[0]);
+    memcpy(buf, (void *)((uint32_t)data + loop), SIZEOF_QUAD_WORD);
+    if ((buf[0] != -1) || (buf[1] != -1) || (buf[2] != -1) || (buf[3] != -1))
+        err = HAL_FLASH_Program(write_type, (flash_base + addr), (uint32_t)&buf[0]);
     else
+    {
         err = HAL_OK;
-    loop += sizeof(dword);
-    addr += sizeof(dword);
+    }
+    loop += SIZEOF_QUAD_WORD;
+    addr += SIZEOF_QUAD_WORD;
   } while ((loop != cnt) && (err == HAL_OK));
 
   ARM_FLASH0_STATUS.busy = DRIVER_STATUS_IDLE;
@@ -477,6 +475,15 @@ static int32_t Flash_ProgramData(uint32_t addr,
 #endif /* DEBUG_FLASH_ACCESS */
   }
 #endif /* CHECK_WRITE */
+
+  /* Check that the flash base address is consistent with the range (Secure or Non Secure) */
+  if (((is_range_secure(&ARM_FLASH0_DEV, address, cnt)) &&
+       ((flash_base != (uint32_t)FLASH_BASE_S) || (write_type != FLASH_TYPEPROGRAM_QUADWORD)))
+      || ((!is_range_secure(&ARM_FLASH0_DEV, address, cnt)) &&
+      ((flash_base != (uint32_t)FLASH_BASE_NS) || (write_type != FLASH_TYPEPROGRAM_QUADWORD_NS))))
+  {
+    err = HAL_ERROR;
+  }
 
   if (err != HAL_OK)
   {
@@ -560,7 +567,7 @@ static int32_t Flash_EraseSector(uint32_t addr)
 #else
   pt = (uint32_t *)((uint32_t)FLASH_BASE + addr);
 #endif
-  for (i = 0; i < (FLASH0_SECTOR_SIZE / 8); i++)
+  for (i = 0; i < (FLASH0_SECTOR_SIZE / 4); i++)
   {
     if (pt[i] != 0xffffffff)
     {
@@ -572,6 +579,14 @@ static int32_t Flash_EraseSector(uint32_t addr)
     }
   }
 #endif /* CHECK_ERASE */
+
+  /* Check that the flash base address is consistent with the range (Secure or Non Secure) */
+  if (((is_range_secure(&ARM_FLASH0_DEV, addr, 4)) && (EraseInit.TypeErase != FLASH_TYPEERASE_PAGES))
+     || ((!is_range_secure(&ARM_FLASH0_DEV, addr, 4)) && (EraseInit.TypeErase != FLASH_TYPEERASE_PAGES_NS)))
+  {
+    err = HAL_ERROR;
+  }
+
   return (err == HAL_OK) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR;
 }
 

@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -86,11 +87,11 @@
 const uint64_t dlMyExtendedAdress       = 0x00u;
 
 /* To obtains theses keys, you need to connect to Certicom site (www.certicom.com). */
-const uint8_t szZibgeeCbkeCert[CBKE2_CERTIFICATE_SIZE] = { 0, };  /* To fiil by user */
+const uint8_t szZibgeeCbkeCert[CBKE2_CERTIFICATE_SIZE] = { 0, }; /* To fiil by user */
  
 const uint8_t szZibgeeCbkeCaPublic[CBKE2_COMPRESSED_PUBLIC_KEY_SIZE] = { 0, }; /* To fiil by user */
  
-const uint8_t szZibgeeCbkePrivate[CBKE2_PRIVATE_KEY_SIZE] = { 0, }; /* To fiil by user */
+const uint8_t szZibgeeCbkePrivate[CBKE2_PRIVATE_KEY_SIZE] = { 0, };  /* To fiil by user */
 
 /* USER CODE BEGIN PC */
 const uint8_t  szMessageImmediate[] = "Hello";
@@ -108,9 +109,9 @@ static struct ZbZclMsgMessageT          stDelayedMessage;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Messaging Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgServerCallbacksT stMessagingServerCallbacks =
 {
@@ -271,7 +272,7 @@ static void APP_ZIGBEE_GetCbkeConfig( struct ZbStartupT * pstConfig )
 {
   /* Update CBKE Certificate & Keys  */
   pstConfig->security.cbke.endpoint = ZB_ENDPOINT_CBKE_DEFAULT;
-    
+
   pstConfig->security.cbke.suite_mask = ZCL_KEY_SUITE_CBKE2_ECMQV;
   memcpy( pstConfig->security.cbke.cbke_v2.cert, szZibgeeCbkeCert, CBKE2_CERTIFICATE_SIZE );
   memcpy( pstConfig->security.cbke.cbke_v2.keys.publicCaKey, szZibgeeCbkeCaPublic, CBKE2_COMPRESSED_PUBLIC_KEY_SIZE );
@@ -287,7 +288,7 @@ static void APP_ZIGBEE_GetCbkeConfig( struct ZbStartupT * pstConfig )
  */
 static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
 {
-  uint8_t   cTempVal;
+  uint8_t     cTempVal;
   enum ZbStatusCodeT  eStatus;
 
   /* Update Trust Center Client */
@@ -297,7 +298,7 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
   pstConfig->security.keepalive.server_jitter = ZCL_KEEPALIVE_CLIENT_JITTER_DEFAULT;
   pstConfig->security.keepalive.tcso_callback = APP_ZIGBEE_TcsoNotifyCallback;
   pstConfig->cb_arg = NULL;
-  
+
   /* Messaging Appli performs CBKE through ZbStartup. For this application, let's use ZbZclKeWithDevice to test that API. */
   cTempVal = BDB_LINKKEY_EXCHANGE_METHOD_CBKE;
   eStatus = ZbBdbSet(stZigbeeAppInfo.pstZigbee, ZB_BDB_TCLinkKeyExchangeMethod, &cTempVal, sizeof(cTempVal));
@@ -305,7 +306,7 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
   {
     LOG_ERROR_APP( "Error : ZbBdbSet  'Accept New Unsolicited TC LinkKey' failed. (0x%02X) \n", eStatus);
   }
-  
+
   /* Setting to accept Unsolicited 'Transport/Link Key' (from unknown sender) */
   cTempVal = 1;
   eStatus = ZbBdbSet( stZigbeeAppInfo.pstZigbee, ZB_BDB_AcceptNewUnsolicitedTCLinkKey, &cTempVal, sizeof( cTempVal ) );
@@ -313,10 +314,10 @@ static void APP_ZIGBEE_GetTrustCenterConfig( struct ZbStartupT * pstConfig )
   {
     LOG_ERROR_APP( "Error : ZbBdbSet  'Accept New Unsolicited TC LinkKey' failed. (0x%02X) \n", eStatus );
   }
-  
+
   /* USER CODE BEGIN APP_ZIGBEE_GetTrustCenterConfig */
 
-  /* USER CODE END APP_ZIGBEE_GetTrustCenterConfig */  
+  /* USER CODE END APP_ZIGBEE_GetTrustCenterConfig */
 }
 
 /**

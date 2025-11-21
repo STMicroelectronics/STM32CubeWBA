@@ -69,31 +69,31 @@ typedef enum {
 /** @brief TX status
  */
 typedef enum {
-  TX_SUCCESS = 0,
-  TX_ACK_TIMEOUT,
-  TX_FAILED,
-  TX_CHANNEL_ACCESS_FAILURE,
+  ST_TX_SUCCESS = 0,
+  ST_TX_ACK_TIMEOUT,
+  ST_TX_FAILED,
+  ST_TX_CHANNEL_ACCESS_FAILURE,
 } MAC_RAW_TX_Status_t;
 
 /** @brief TX status
  */
 typedef enum {
-  RX_SUCCESS = 0,
-  RX_NO_PAYLOAD,
-  RX_REJECTED,
-  RX_FILTERED,
-  RX_INVALID_FCS,
+  ST_RX_SUCCESS = 0,
+  ST_RX_NO_PAYLOAD,
+  ST_RX_REJECTED,
+  ST_RX_FILTERED,
+  ST_RX_INVALID_FCS,
 } MAC_RAW_RX_Status_t;
 
 /** @brief Initialisation config 
  */
 typedef enum {
   /*! 802.15.4 PHY ONLY */
-  RAW_CONFIG = 0,
+  ST_RAW_CONFIG = 0,
   /*! 802.15.4 custom/proprietary */
-  EXT_CONFIG, // NOT YET AVAILABLE
+  ST_EXT_CONFIG, // NOT YET AVAILABLE
   /*! 802.15.4 PHY + BLE */
-  CR_CONFIG
+  ST_CR_CONFIG
 } ST_MAC_Config_Mode;
 
 /* Raw MAC requests */

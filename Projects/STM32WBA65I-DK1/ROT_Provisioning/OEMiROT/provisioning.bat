@@ -1,5 +1,6 @@
 @ECHO OFF
-call ../env.bat
+:: Get the escape character (for ANSI colors)
+for /f %%a in ('echo prompt $E^| cmd') do set "ESC=%%a"
 
 :: Getting the CubeProgammer_cli path
 call ../env.bat
@@ -20,7 +21,9 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
-del -rf *.log
+
+:: Remove all log files (*.log)
+if exist *.log del /f /q *.log
 
 :: Environment variable for path project
 set appli_dir=..\..\%oemirot_appli_path_project%
@@ -34,35 +37,37 @@ set ns_data_xml="%projectdir%Images\OEMiROT_NS_Data_Image.xml"
 set s_data_init_xml="%projectdir%Images\OEMiROT_S_Data_Init_Image.xml"
 set ns_data_init_xml="%projectdir%Images\OEMiROT_NS_Data_Init_Image.xml"
 
-set   boot_cfg_h="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\boot_hal_cfg.h"
+set boot_cfg_h="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\boot_hal_cfg.h"
 set flash_layout="%cube_fw_path%\Projects\STM32WBA65I-DK1\Applications\ROT\OEMiROT_Boot\Inc\flash_layout.h
 
 :: Initial configuration
 set connect_no_reset=-c port=SWD mode=HotPlug
 set connect_reset=-c port=SWD mode=UR
 
-goto exe:
-goto py:
-:exe
-::line for window executable
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\dist\AppliCfg.exe"
-set "python="
-if exist %applicfg% (
-echo run config Appli with windows executable
-goto prov
+:: Check if Python is installed
+python3 --version >nul 2>&1
+if %errorlevel% neq 0 (
+ python --version >nul 2>&1
+ if !errorlevel! neq 0 (
+    echo Python installation missing. Refer to Utilities\PC_Software\ROT_AppliConfig\README.md
+    goto :error
+ )
+  set "python=python "
+) else (
+  set "python=python3 "
 )
-:py
-::line for python
-echo run config Appli with python script
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
-set "python=python "
 
-:prov
+:: Environment variable for AppliCfg
+set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
+
+
 :: Display Boot path
 echo =====
 echo ===== Provisioning of OEMiRoT boot path
 echo ===== Application selected through env.bat:
 echo ===== %oemirot_appli_path_project%
+echo %ESC%[91m===== Python and some python packages are required to execute this script: Refer to%ESC%[0m
+echo %ESC%[91m===== Utilities\PC_Software\ROT_AppliConfig\README.md for more details%ESC%[0m
 echo =====
 echo.
 
@@ -193,6 +198,7 @@ if !errorlevel! neq 0 goto :step_error
 if !errorlevel! neq 0 goto :step_error
 :no_s_data
 
+if "%app_full_secure%" == "1" (goto :no_ns_data)
 echo    * Data non secure generation (if Data non secure image is enabled)
 echo        Select OEMiROT_NS_Data_Image.xml(Default path is \ROT_Provisioning\OEMiROT\Images\OEMiROT_NS_Data_Image.xml)
 echo        Generate the data_enc_sign.bin image

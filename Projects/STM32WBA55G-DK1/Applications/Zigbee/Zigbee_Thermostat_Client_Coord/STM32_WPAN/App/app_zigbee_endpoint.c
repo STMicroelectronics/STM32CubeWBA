@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -99,6 +100,7 @@ static uint16_t                       iDeviceShortAddress;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN PFP */
 static void APP_ZIGBEE_ApplicationTaskInit        ( void );
 static void APP_ZIGBEE_LaunchReportTimerCallback  ( void * arg );
@@ -152,14 +154,15 @@ void APP_ZIGBEE_ApplicationStart( void )
   LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
-  /* USER CODE END APP_ZIGBEE_ApplicationStart */
 #if (CFG_LCD_SUPPORTED == 1)
-  
+
   /* Initialize LCD Screen */
   UTIL_LCD_Clear( LCD_COLOR_BLACK );
   UTIL_LCD_DisplayStringAtLine( 0, (uint8_t *)"Therm. Clt:" );
   BSP_LCD_Refresh( LCD1 );
 #endif /* (CFG_LCD_SUPPORTED == 1) */
+
+  /* USER CODE END APP_ZIGBEE_ApplicationStart */
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
@@ -288,13 +291,13 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
 {
   LOG_INFO_APP( "**********************************************************" );
   LOG_INFO_APP( "Network config : CENTRALIZED COORDINATOR" );
-  
+
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Application Flashed : Zigbee %s %s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
-  
+
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );

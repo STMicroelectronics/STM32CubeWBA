@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_url_service.h
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -62,7 +62,7 @@ typedef struct
 /* Exported Macros -----------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init);
-void EddystoneURL_Process(void);
+tBleStatus EddystoneURL_Process(void);
 
 #ifdef __cplusplus
 }

@@ -927,6 +927,19 @@ struct ZbZdoSecKeyUpdateIndT {
     /**< Contains required information to relay the APS packet. */
 };
 
+/* Security_Retrieve_Auth_Token_Req (R23) */
+struct ZbZdoSecRetrieveAuthTokenReqT {
+    uint16_t destAddr;
+    /**< Destination short address. */
+    enum zb_tlv_type authTokenId;
+    /**< Authentication token ID. */
+};
+
+/* Security_Retrieve_Auth_Token_Rsp (R23) */
+struct ZbZdoSecRetrieveAuthTokenRspT {
+    enum ZbStatusCodeT status; /**< Status */
+};
+
 /**
  * Return and increment the next ZDO sequence number.
  * @param zb Zigbee stack instance
@@ -1318,5 +1331,16 @@ unsigned int ZbZdoNwkIeeeJoinListBcastAll(struct ZigBeeT *zb);
  */
 enum ZbStatusCodeT ZbZdoSecKeyUpdateReq(struct ZigBeeT *zb, struct ZbZdoSecKeyUpdateReqT *req,
     void (*callback)(struct ZbZdoSecKeyUpdateRspT *rsp, void *cb_arg), void *arg);
+
+/**
+ * Send a ZDO Security Retrieve authentication token request command.
+ * @param zb Zigbee stack instance.
+ * @param req get device token req struct
+ * @param callback Function to call on completion
+ * @param arg argument to response handler function
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZbStatusCodeT ZbZdoSecRetrieveAuthTokenReq(struct ZigBeeT *zb, struct ZbZdoSecRetrieveAuthTokenReqT *req,
+    void (*callback)(struct ZbZdoSecRetrieveAuthTokenRspT *rsp, void *cb_arg), void *arg);
 
 #endif

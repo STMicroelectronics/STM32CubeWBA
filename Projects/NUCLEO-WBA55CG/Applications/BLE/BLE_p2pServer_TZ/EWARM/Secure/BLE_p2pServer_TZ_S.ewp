@@ -15,12 +15,16 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
-          <name>BrowseInfoPath</name>
-          <state>BLE_p2pServer_TZ_S\BrowseInfo</state>
+          <name>FPU64</name>
+          <state>1</state>
         </option>
         <option>
-          <name>BuildFilesPath</name>
-          <state>BLE_p2pServer_TZ_S\</state>
+          <name>BrowseInfoPath</name>
+          <state>Debug\BrowseInfo</state>
+        </option>
+        <option>
+          <name>OGProductVersion</name>
+          <state>9.30.1.0</state>
         </option>
         <option>
           <name>ExePath</name>
@@ -40,11 +44,11 @@
         </option>
         <option>
           <name>Input description</name>
-          <state>Full formatting, without multibyte support.</state>
+          <state></state>
         </option>
         <option>
           <name>Output description</name>
-          <state>Full formatting, without multibyte support.</state>
+          <state></state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -57,20 +61,16 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
-        </option>
-        <option>
-          <name>OGProductVersion</name>
-          <state>6.50.1.4445</state>
+          <state></state>
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
@@ -98,12 +98,12 @@
         </option>
         <option>
           <name>RTConfigPath2</name>
-          <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Full.h</state>
+          <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
           <version>34</version>
-          <state>61</state>
+          <state>0</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -204,12 +204,12 @@
           <state>0</state>
         </option>
         <option>
-          <name>PointerAuthentication</name>
-          <state>0</state>
+          <name>BuildFilesPath</name>
+          <state>Debug</state>
         </option>
         <option>
-          <name>FPU64</name>
-          <state>1</state>
+          <name>PointerAuthentication</name>
+          <state>0</state>
         </option>
         <option>
           <name>OG_32_64DeviceCoreSlave</name>
@@ -230,9 +230,12 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCDefines</name>
           <state>USE_HAL_DRIVER</state>
-          <state>USE_FULL_ASSERT</state>
           <state>STM32WBA55xx</state>
         </option>
         <option>
@@ -326,7 +329,7 @@
         </option>
         <option>
           <name>CCRequirePrototypes</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCDiagWarnAreErr</name>
@@ -357,19 +360,11 @@
           <state>$PROJ_DIR$/../../Secure/Core/Inc</state>
           <state>$PROJ_DIR$/../../Secure_nsclib</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
+          <state>$PROJ_DIR$/../../Drivers/STM32U5xx_HAL_Driver/Inc</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Include</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -434,10 +429,6 @@
         </option>
         <option>
           <name>IccFloatSemantics</name>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCOptimizationNoSizeConstraints</name>
           <state>0</state>
         </option>
         <option>
@@ -683,15 +674,15 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_S.hex</state>
+          <state>BLE_p2pServer_TZ_S.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -720,16 +711,16 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>IlinkOutputFile</name>
+          <state>BLE_p2pServer_TZ_S.out</state>
+        </option>
+        <option>
           <name>IlinkLibIOConfig</name>
           <state>1</state>
         </option>
         <option>
           <name>IlinkInputFileSlave</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>IlinkOutputFile</name>
-          <state>BLE_p2pServer_TZ_S.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>
@@ -1116,11 +1107,6 @@
       <archiveVersion>2</archiveVersion>
       <data></data>
     </settings>
-    <settings>
-      <name>Coder</name>
-      <archiveVersion>0</archiveVersion>
-      <data></data>
-    </settings>
   </configuration>
   <group>
     <name>Application</name>
@@ -1130,7 +1116,7 @@
         <name>$PROJ_DIR$\..\startup_stm32wba55xx.s</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\stm32wbaxx_ResetHandler_S.s</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\NUCLEO-WBA65RI\Applications\BLE\BLE_p2pServer_TZ\EWARM\stm32wbaxx_ResetHandler_S.s</name>
       </file>
     </group>
     <group>
@@ -1190,12 +1176,6 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
       </file>
       <file>
@@ -1212,6 +1192,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</name>

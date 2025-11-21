@@ -139,7 +139,10 @@ Our Application uses two devices :
 - the BLE_HeartRate_Thread_FreeRTOS device will act as an End Device (mode child). 
 
 After the reset of the Thread_Coap_Generic device, it will be in Leader mode (**Green LED2 ON**).    
-Then power on the BLE_HeartRate_Thread_FreeRTOS device, it will be in Child mode (**Red LED3 ON**).  
+Then power on the BLE_HeartRate_Thread_FreeRTOS device, it will be in Child mode (**Red LED3 ON**).
+After a while, the roles being not fixed with thread, the roles can be switching. The Thread_Coap_Generic device might switch to Router mode (**Red LED3 ON**).
+And at the same time, the BLE_HeartRate_Thread_FreeRTOS device, might switch to the Leader mode (**Green LED2 ON**). 
+In case of switching role, the periodic toggling every one second will be stopped until the joystick right is resuming it.
 
 Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread_FreeRTOS device) starts sending **COAP command (Non-Confirmable)**
 to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its **blue LED1**.  
@@ -154,18 +157,63 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its **blue L
   |_____________________________|                       |_________________________|  
   |                             |                       |                         |
   |                             |                       |                         |
-  |               every 1sec    |                       |                         |
-  |       or Joystick right-->  |======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
-  |                             | Resource "light"      |                         |
+  |   every 1sec (after PowerUp)|                       |                         |
+  |       or Joystick right-->	|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
+  |                         	| Resource "light"      |                         |
   |                             | Mode: Multicast       |                         |
-  |                             | Type: Non-Confirmable |                         |
+  |          	                | Type: Non-Confirmable |                         |
   |                             | Code: Put             |                         |
   |                             |                       |                         |
+  |                             |                       |                         |
+  |           Joystick left-->  |=====> COAP ==========>|-------->                |
+  |                             | Resource "light"      |         |               |
+  |                             | Mode: Multicast       |  CoapRequestHandler()   |
+  |                             | Type: Confirmable     |         |               |
+  |                             | Code: Put             |         |               |
+  |                             |                       |         v               |
+  |                             |                       |  CoapSendDataResponse() |
+  |                             |                       |         |               |
+  |                             |                       |         v               |
+  | CoapDataRespHandler()<--    |<===== COAP <==========| <-------                |
+  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
   |-----------------------------|                       |-------------------------|
   | Role : Child                |                       | Role : Leader           |
   |                             |                       |                         |
   | LED : Red                   |                       | LED : Green             |
+  |-----------------------------|                       |-------------------------|
+  | ROLE re-negociation phase   | Details not described | ROLE negociation phase  |
+  |            every 1sec -->   |==>  NOTHING!          |                         | 
+  |-----------------------------|                       |-------------------------|
   |                             |                       |                         |
+  | Role : Leader               |                       | Role : Router           |
+  |                             |                       |                         |
+  | LED : Green                 |                       | LED : Red               |
+  |-----------------------------|                       |-------------------------|
+  |            every 1sec -->   |==>  NOTHING!          |                         | 
+  |                             |                       |                         |
+  |-----------------------------|                       |-------------------------|
+  |         Joystick right-->	|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
+  |--> every 1sec (restarting   | Resource "light"      |                         |
+  |         with Joystick Right)| Mode: Multicast       |                         |
+  |          	                | Type: Non-Confirmable |                         |
+  |                             | Code: Put             |                         |
+  |                             |                       |                         |
+  |                             |                       |                         |
+  |           Joystick left-->  |=====> COAP ==========>|-------->                |
+  |                             | Resource "light"      |         |               |
+  |                             | Mode: Multicast       |  CoapRequestHandler()   |
+  |                             | Type: Confirmable     |         |               |
+  |                             | Code: Put             |         |               |
+  |                             |                       |         v               |
+  |                             |                       |  CoapSendDataResponse() |
+  |                             |                       |         |               |
+  |                             |                       |         v               |
+  | CoapDataRespHandler()<--    |<===== COAP <==========| <-------                |
+  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
+  |-----------------------------|                       |-------------------------|
+  | Role : Leader               |                       | Role : Router           |
+  |                             |                       |                         |
+  | LED : Green                 |                       | LED : Red               |
   |_____________________________|                       |_________________________|
 
   

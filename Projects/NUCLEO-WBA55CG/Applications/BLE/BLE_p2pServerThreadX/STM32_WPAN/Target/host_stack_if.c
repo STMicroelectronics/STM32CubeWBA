@@ -22,6 +22,7 @@
 #include "host_stack_if.h"
 #include "app_conf.h"
 #include "ll_sys.h"
+#include "app_entry.h"
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "app_threadx.h"
@@ -81,7 +82,6 @@ void BleStackCB_Process(void)
   }
   /* BLE Host stack processing through background task */
   tx_semaphore_put(&BleHostSemaphore);
-
   /* USER CODE BEGIN BleStackCB_Process 1 */
 
   /* USER CODE END BleStackCB_Process 1 */

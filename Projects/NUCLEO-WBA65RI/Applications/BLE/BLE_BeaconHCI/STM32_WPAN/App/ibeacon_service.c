@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    ibeacon_service.c
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -110,14 +110,13 @@ static tBleStatus IBeacon_Init(IBeacon_InitTypeDef *IBeacon_Init)
   hci_le_set_scan_response_data(0, NULL);
 
   /* Put the device in a non-connectable mode. */
-  ret = hci_le_set_advertising_parameters( AdvertisingInterval,
-                                           AdvertisingInterval,
-                                           ADV_NONCONN_IND,
-                                           CFG_BD_ADDRESS_TYPE,
-                                           CFG_BD_ADDRESS_TYPE,
-                                           BleGetBdAddress(),
-                                           0x07, /* On channels: 37, 38 and 39 */ 
-                                           0x00  /* Allow Scan Request and Connect Request from Any */
+  ret = hci_le_set_advertising_parameters( AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
+                                           ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
+                                           CFG_BD_ADDRESS_TYPE,                      /*< Use the public address for Own */
+                                           CFG_BD_ADDRESS_TYPE,                      /*< Use the public address for Peer */
+                                           BleGetBdAddress(),                        /*< Peer Address */
+                                           0x07,                                     /* On channels: 37, 38 and 39 */
+                                           0x00                                      /* Allow Scan Request and Connect Request from Any */
                                          );
 
   if (ret != BLE_STATUS_SUCCESS)
@@ -144,7 +143,7 @@ static tBleStatus IBeacon_Init(IBeacon_InitTypeDef *IBeacon_Init)
   return ret;
 }
 
-void IBeacon_Process(void)
+tBleStatus IBeacon_Process(void)
 {
 /* USER CODE BEGIN IBeacon_Process_1 */
 
@@ -163,7 +162,7 @@ void IBeacon_Process(void)
     .CalibratedTxPower   = CALIBRATED_TX_POWER_AT_1_M
   };
 
-  IBeacon_Init(&IBeacon_InitStruct);
+  return(IBeacon_Init(&IBeacon_InitStruct));
 /* USER CODE BEGIN IBeacon_Process_2 */
 
 /* USER CODE END IBeacon_Process_2 */

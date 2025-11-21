@@ -56,7 +56,10 @@ RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
 
+UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef handle_GPDMA1_Channel3;
+DMA_HandleTypeDef handle_GPDMA1_Channel2;
 DMA_HandleTypeDef handle_GPDMA1_Channel1;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
@@ -390,6 +393,10 @@ void MX_GPDMA1_Init(void)
     HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
     HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
+    HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);
+    HAL_NVIC_SetPriority(GPDMA1_Channel3_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel3_IRQn);
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -628,6 +635,54 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * @brief LPUART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_LPUART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN LPUART1_Init 0 */
+
+  /* USER CODE END LPUART1_Init 0 */
+
+  /* USER CODE BEGIN LPUART1_Init 1 */
+
+  /* USER CODE END LPUART1_Init 1 */
+  hlpuart1.Instance = LPUART1;
+  hlpuart1.Init.BaudRate = 115200;
+  hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
+  hlpuart1.Init.StopBits = UART_STOPBITS_1;
+  hlpuart1.Init.Parity = UART_PARITY_NONE;
+  hlpuart1.Init.Mode = UART_MODE_TX_RX;
+  hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  hlpuart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
+  if (HAL_UART_Init(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPUART1_Init 2 */
+
+  /* USER CODE END LPUART1_Init 2 */
 
 }
 

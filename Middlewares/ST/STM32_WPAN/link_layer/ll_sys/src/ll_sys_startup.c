@@ -34,7 +34,7 @@
 uint8_t missed_hci_event_flag = 0;
 
 static void ll_sys_dependencies_init(void);
-#ifdef BLE
+#if SUPPORT_BLE
 static void ll_sys_event_missed_cb( ble_buff_hdr_t* ptr_evnt_hdr )
 {
   missed_hci_event_flag = 1;
@@ -59,7 +59,7 @@ void ll_sys_ble_cntrl_init(hst_cbk hostCallback)
 
   ll_sys_dependencies_init();
 }
-#endif /* BLE */
+#endif /* SUPPORT_BLE */
 
 #if defined(MAC)
 #ifndef OPENTHREAD_CONFIG_FILE

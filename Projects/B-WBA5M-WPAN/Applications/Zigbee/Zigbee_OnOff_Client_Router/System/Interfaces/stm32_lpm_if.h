@@ -47,6 +47,9 @@ extern "C" {
 /* USER CODE END PD */
 
 /* Exported types ------------------------------------------------------------*/
+
+#define UTIL_LPM_MAX_MODE (UTIL_LPM_NUM_MODES - 1) /**< Highest (most efficient )supported modes */
+
 /* USER CODE BEGIN ET */
 
 /* USER CODE END ET */
@@ -81,15 +84,27 @@ extern "C" {
   * @brief Enters Low Power Off Mode
   */
 void PWR_EnterOffMode( void );
+
 /**
   * @brief Exits Low Power Off Mode
   */
 void PWR_ExitOffMode( void );
 
 /**
+  * @brief Enters Low Power Stop2 Mode
+  */
+void PWR_EnterStop2Mode( void );
+
+/**
+  * @brief Exits Low Power Stop2 Mode
+  */
+void PWR_ExitStop2Mode( void );
+
+/**
   * @brief Enters Low Power Stop Mode
   */
 void PWR_EnterStopMode( void );
+
 /**
   * @brief Exits Low Power Stop Mode
   */
@@ -121,12 +136,12 @@ void PWR_DisableSleepMode( void );
 uint32_t is_boot_from_standby(void);
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /**
   * @brief returns 0 if wakeup time profiling is not done.
   */
 uint32_t LPM_is_wakeup_time_profiling_done(void);
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 /**

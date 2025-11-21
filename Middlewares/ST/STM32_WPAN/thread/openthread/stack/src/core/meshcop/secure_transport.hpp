@@ -118,6 +118,7 @@ public:
     static constexpr ConnectEvent kDisconnectedLocalClosed = OT_COAP_SECURE_DISCONNECTED_LOCAL_CLOSED;
     static constexpr ConnectEvent kDisconnectedMaxAttempts = OT_COAP_SECURE_DISCONNECTED_MAX_ATTEMPTS;
     static constexpr ConnectEvent kDisconnectedError       = OT_COAP_SECURE_DISCONNECTED_ERROR;
+    static constexpr ConnectEvent kDisconnectedTimeout     = OT_COAP_SECURE_DISCONNECTED_TIMEOUT;
 
     /**
      * Function pointer which is called reporting a session connection event.
@@ -177,6 +178,11 @@ public:
     void Disconnect(void) { Disconnect(kDisconnectedLocalClosed); }
 
     /**
+     * Disconnects the session due to timeout.
+     */
+    void DisconnectTimeout(void) { Disconnect(kDisconnectedTimeout); }
+
+    /**
      * Sends message to the secure session.
      *
      * When successful (returning `kErrorNone`), this method takes over the ownership of @p aMessage and will free
@@ -221,6 +227,7 @@ public:
 
 protected:
     explicit SecureSession(SecureTransport &aTransport);
+    ~SecureSession(void) { FreeMbedtls(); }
 
     bool IsSessionInUse(void) const { return (mNext != this); }
 
@@ -592,10 +599,13 @@ public:
     /**
      * Opens the transport.
      *
+     * @param[in] aNetifIdentifier A network interface identifier. If not explicitly provided, kNetifUnspecified will
+     *                             be used by default.
+     *
      * @retval kErrorNone     Successfully opened the socket.
      * @retval kErrorAlready  The connection is already open.
      */
-    Error Open(void);
+    Error Open(Ip6::NetifIdentifier aNetifIdentifier = Ip6::NetifIdentifier::kNetifUnspecified);
 
     /**
      * Sets the maximum number of allowed connection requests before socket is automatically closed.
@@ -711,6 +721,7 @@ public:
 
 protected:
     SecureTransport(Instance &aInstance, LinkSecurityMode aLayerTwoSecurity, bool aDatagramTransport);
+    ~SecureTransport(void) { Close(); }
 
 #if OPENTHREAD_CONFIG_TLS_API_ENABLE
     void SetExtension(Extension &aExtension) { mExtension = &aExtension; }

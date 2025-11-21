@@ -54,7 +54,8 @@ extern "C" {
                              tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER); \
                            }while(0)
 
-/* Put Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
+/* Put Link Layer Mutex */
+/* Trigger BLE Host stack process after calling any aci/hci functions */
 #define BLE_WRAP_POSTPROC() do{ \
                               tx_mutex_put(&LinkLayerMutex); \
                               BleStackCB_Process(); \

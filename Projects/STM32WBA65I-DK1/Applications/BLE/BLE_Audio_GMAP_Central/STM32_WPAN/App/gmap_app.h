@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    gmap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __GMAP_APP_H
@@ -31,7 +29,7 @@ extern "C" {
 #include "gmap.h"
 #include "gmap_app_conf.h"
 #include "app_conf.h"
-#include "stm32_timer.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -320,45 +318,50 @@ typedef uint8_t GMAPAPP_InitState_t;
 /*Structure used for ASE information storage*/
 typedef struct
 {
-  uint8_t               ID;
-  ASE_State_t           state;
-  ASE_Type_t            type;           /*Source or Sink*/
-  uint8_t               allocated;
-  uint8_t               num_channels;
-  uint32_t              presentation_delay;
-  uint32_t              controller_delay;
+  uint8_t                       ID;
+  ASE_State_t                   state;
+  ASE_Type_t                    type;           /*Source or Sink*/
+  uint8_t                       allocated;
+  uint8_t                       num_channels;
+  uint32_t                      presentation_delay;
+  uint32_t                      controller_delay;
 }APP_ASE_Info_t;
 
 typedef struct
 {
-  uint16_t              acl_conn_handle;
+  uint16_t                      acl_conn_handle;
 #if (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0)
-  APP_ASE_Info_t        aSnkASE[MAX_NUM_UCL_SNK_ASE_PER_LINK];
+  APP_ASE_Info_t                aSnkASE[MAX_NUM_UCL_SNK_ASE_PER_LINK];
 #endif /* (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0) */
 #if (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0)
-  APP_ASE_Info_t        aSrcASE[MAX_NUM_UCL_SRC_ASE_PER_LINK];
+  APP_ASE_Info_t                aSrcASE[MAX_NUM_UCL_SRC_ASE_PER_LINK];
 #endif /* (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0) */
 }APP_ASEs_t;
+
+#if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
+typedef struct
+{
+  uint8_t                       CCID;
+}GMAPAPP_Bearer_t;
+#endif /* (APP_CCP_ROLE_SERVER_SUPPORT == 1u) */
 
 /*Structure used for connection information strorage*/
 typedef struct
 {
-  uint16_t                  Acl_Conn_Handle;
-  uint8_t                   Peer_Address_Type;
-  uint8_t                   Peer_Address[6];
-  uint8_t                   Role;
-  audio_profile_t           AudioProfile;
-  uint8_t                   CSIPDiscovered; /*Set to 1 if Set Member has been discovered (but not yet CAP linked)*/
-  uint8_t                   SIRK_type;
-  uint8_t                   SIRK[16];
-  uint8_t                   Rank;
-  uint8_t                   Size;
-  uint8_t                   ForceCompleteLinkup;
-  uint8_t                   ConfirmIndicationRequired;
-
-  BAP_Unicast_Server_Info_t UnicastServerInfo;
-  APP_ASEs_t                *pASEs;
-
+  uint16_t                      Acl_Conn_Handle;
+  uint8_t                       Peer_Address_Type;
+  uint8_t                       Peer_Address[6];
+  uint8_t                       Role;
+  audio_profile_t               AudioProfile;
+  uint8_t                       ConfirmIndicationRequired;
+  uint8_t                       ForceCompleteLinkup;
+  APP_ASEs_t                    *pASEs;
+  uint8_t                       CSIPDiscovered; /*Set to 1 if Set Member has been discovered (but not yet CAP linked)*/
+  uint8_t                       SIRK_type;
+  uint8_t                       SIRK[16];
+  uint8_t                       Rank;
+  uint8_t                       Size;
+  BAP_Unicast_Server_Info_t     UnicastServerInfo;
 }APP_ACL_Conn_t;
 
 typedef struct
@@ -383,15 +386,15 @@ typedef struct
 
   uint8_t                       num_cis_established;
 
-  Sampling_Freq_t               ConfiguredSinkSampleFrequency;
-
-  Sampling_Freq_t               ConfiguredSourceSampleFrequency;
-
   BAP_AudioCodecController_t    AudioCodecInController;
 
   BAP_SupportedStandardCodec_t  aStandardCodec[1];
 
   APP_ASEs_t                    aASEs[CFG_BLE_NUM_LINK];
+
+  Sampling_Freq_t               ConfiguredSinkSampleFrequency;
+
+  Sampling_Freq_t               ConfiguredSourceSampleFrequency;
 
   uint8_t                       NumOutputChannels;
 
@@ -450,9 +453,6 @@ typedef struct
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);
@@ -461,7 +461,6 @@ tBleStatus GMAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t GMAPAPP_StartScanning(void);
 uint8_t GMAPAPP_StopScanning(void);
 uint8_t GMAPAPP_CreateConnection(uint8_t *pAddress, uint8_t AddressType);
-uint8_t GMAPAPP_Disconnect(void);
 uint8_t GMAPAPP_RemoteVolumeUp(void);
 uint8_t GMAPAPP_RemoteVolumeDown(void);
 uint8_t GMAPAPP_RemoteToggleMute(void);
@@ -469,6 +468,7 @@ void GMAPAPP_LocalVolumeUp(void);
 void GMAPAPP_LocalVolumeDown(void);
 void GMAPAPP_LocalToggleMute(void);
 uint8_t GMAPAPP_RemoteToggleMicMute(void);
+uint8_t GMAPAPP_Disconnect(void);
 uint8_t GMAPAPP_StartStream(uint8_t QOSConfIdSink, uint8_t NumChannelSink, Audio_Context_t AudioContextSink,
                             uint8_t QOSConfIdSource, uint8_t NumChannelSource, Audio_Context_t AudioContextSource,
                             uint8_t DriverConfig);
@@ -485,5 +485,5 @@ void GMAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* __GMAP_APP_H */
 
+#endif /*__GMAP_APP_H */

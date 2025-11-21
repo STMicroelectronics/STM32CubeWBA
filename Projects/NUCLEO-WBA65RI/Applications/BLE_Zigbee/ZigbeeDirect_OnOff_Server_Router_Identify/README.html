@@ -19,7 +19,7 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<h2 id="__zigbeedirect_onoff-application-description__"><strong>## __ZigbeeDirect_OnOff_Server_Router_Identify Application Description__</strong></h2>
+<h2 id="__ZigbeeDirect_OnOff_Server_Router_Identify-description__"><strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong></h2>
 <p></br>
 Zigbee Direct is a communication protocol designed to enable direct communication between Zigbee devices and smartphones 
 or tablets without the need for a dedicated Zigbee hub or gateway.
@@ -31,47 +31,12 @@ On this Application, the ZVD joins the ZDD Zigbee network and controls the Zigbe
 <h3 id="__hardware-requirements__"><strong>Hardware Requirements</strong></h3>
 <p>For this application it is requested to have at least:</p>
 <ul>
-<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff</strong></li>
+<li>One STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff</strong></li>
 <li>One IOS device loaded with Ubisys Smart Home application</li>
-<li>One STM32WBA55xx or STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong> </li>
-</ul>
-<p>By default the ZDD is the coordinator, if you want the ZVD to be the coordinator remove the ZDD_IS_ZC flag on your IDE preprocessor options and take a look at the part __Demo use case 2__.</p>
-<h3 id="__demo-use-case-1__"><strong>Demo use case 1</strong></h3>
-<p></br></p>
-<pre>
-
-In this Demo, ZDD is the Coordinator.
-
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
-                   +-------------------------------+           +-----------------+              +-----------------+
-                   |                               |           |                 |              |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
-                   |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
-                   |                               |           |                 |              |                 |
-     Use the    => |                               | --------> |                 |=> LED toggle |                 |
-    dedicated      |                               |           |                 |              |                 |
- smartphone apps   |                               |           |                 |              |                 |
-  to control the   |                               |           |                 |              |                 |
-  LED on the ZDD   |                               |           |                 |              |                 |
-   switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
-................   |                               |           |                 |              |                 |
-                   |-------------------------------|           |-----------------|              |-----------------|
-
-
-</pre> 
-
-<h3 id="__application-setup__"><strong>Application Setup</strong></h3>
-<ul>
-<li>First, open the project, build it and load your generated application on your STM32WBAxx device </li>
-<li><p>To run the application :</p>
-<ol>
-<li>Start the board. This board is configured and is acting as a Zigbee Direct Device. </li>
-<li>Launch the Ubisys Application and follow the instructions described in the chapter &quot; Demo 1 procedure&quot; of following wiki page :
-<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup">https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup</a></li>
-</ol>
+<li>One STM32WBA65xx board loaded with the application <strong>ZigbeeDirect_OnOff_Server_Router_Identify</strong> </li>
 </li>
 </ul>
-<h3 id="__demo-use-case-2__"><strong>Demo use case 2</strong></h3>
+<h3 id="__demo-use-case-__"><strong>Demo use case </strong></h3>
 <p></br></p>
 <pre>
 In this Demo, ZVD is the Coordinator.
@@ -79,7 +44,7 @@ In this Demo, ZVD is the Coordinator.
                        ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
                    +-------------------------------+           +-----------------+              +-----------------+
                    |                               |           |                 |              |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
+                   | Ubisys Smart Home Application |           | WBA6            |              | WBA6            |
                    |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
                    |                               |           |                 |              |                 |
      Use the    => |                               | --------> |                 |=> LED toggle |                 |
@@ -118,11 +83,11 @@ You will get access to the following commands :  </p>
 </ul>
 <h3 id="__hardware-and-software-environment__"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA55xx and STM32WBA65xx devices.  </p>
+<li><p>This example runs on STM32WBA65xx devices.  </p>
 </li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo and STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.</p>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.</p>
 </li>
-<li><p>On STM32WBA55CGA_Nucleo or on STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+<li><p>On STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
 <br><br><strong>JP1:</strong></br>
 1-2:  [ON]</br>
 3-4:  [OFF]</br>

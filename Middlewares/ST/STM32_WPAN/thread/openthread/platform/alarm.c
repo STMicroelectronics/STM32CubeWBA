@@ -31,6 +31,7 @@
 #include "platform/time.h"
 #include "platform/radio.h"
 #include "linklayer_plat.h"
+#include "logging_stm32wba.h"
 
 #define OT_INSTANCE_NUMBER                1
 #define OT_ALARM_MILLI_MAX_EVENT          1
@@ -40,14 +41,17 @@
 #define FROM_US_TO_MS(us)        (us/1000)
 #define FROM_MS_TO_US(ms)        (ms*1000)
 #define FROM_MS_TO_SLP_STEP(ms)  (ms*32) /* Current Sleep timer has 31.25 us step */
+#define FROM_US_TO_SLP_STEP(us)  (((us)*4)/125)
 
 
 #define MAX_UINT32 0xFFFFFFFF
 #define MILLI_START_THRESHOLD 0  //ms, do not start milli timer if <= MILLI_START_THRESHOLD
 #define MICRO_START_THRESHOLD 100  //us, do not start micro timer if <= MICRO_START_THRESHOLD
+#define SLP_STEP_START_THRESHOLD 1  //steps, do not start if steps <= SLP_STEP_START_THRESHOLD
 
 extern void ral_set_ot_base_slp_time_value(uint32_t time);
 extern uint32_t get_current_time(void);
+extern uint16_t get_num_of_ovrflw_sw_cycles(void);
 
 static void ms_alarm_timer_cbk(void *arg);
 #if OPENTHREAD_CONFIG_PLATFORM_USEC_TIMER_ENABLE
@@ -56,13 +60,13 @@ static void us_alarm_timer_cbk(void *arg);
 
 typedef struct ms_alarm_struct
 {
-  uint32_t expires;
+  //uint64_t expires;
   uint8_t sIsRunning;
 } ms_alarm_struct;
 
 typedef struct csl_alarm_struct
 {
-  uint32_t expires;
+  //uint64_t expires;
   uint8_t sIsRunning;
 }csl_alarm_struct;
 
@@ -75,7 +79,7 @@ static os_timer_id csl_timer_id;
 #endif
 
 static uint32_t notnull_intance;
-/* stubs for external functions 
+/* stubs for external functions
    prevent linking errors when not defined in application */
 __WEAK void APP_THREAD_ScheduleAlarm(void)
 {
@@ -124,44 +128,61 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 {
   (void)(aInstance);
   uint64_t alarm_expire_step = 0;
+  uint64_t target_expire_ms = 0;
+  uint32_t alarm_duration_ms = 0;
+  uint64_t curr_time_ms_64 = 0;
   uint32_t curr_time_ms = 0;
   uint32_t ret = 0;
-  uint32_t alarm_expire_ms;
 
   /* Start critical section */
   LINKLAYER_PLAT_DisableIRQ();
-  
-  milli_alarm_struct_st[0].expires = aT0 + aDt;
-  milli_alarm_struct_st[0].sIsRunning = 1;
+
+  target_expire_ms = aT0 + aDt;
 
   /* Stop Alarm */
   os_timer_stop(milli_timer_id);
 
-  curr_time_ms = otPlatAlarmMilliGetNow();
-  
+  curr_time_ms_64   = FROM_US_TO_MS(otPlatRadioGetNow((otInstance *)&notnull_intance));
+  curr_time_ms = (uint32_t)curr_time_ms_64;
+
   /* check if Alarm in the Past */
-  if (curr_time_ms > (aT0 + aDt))
+  if(aT0 >= (MAX_UINT32 - aDt))
   {
     /* Set alarm_expire_ms to 0 if alarm in the past */
-    alarm_expire_ms = 0;
+    if(curr_time_ms_64 >= MAX_UINT32 && curr_time_ms_64 > target_expire_ms)
+    {
+      alarm_duration_ms = 0;
+    }
+    else if(curr_time_ms_64 >= MAX_UINT32 && curr_time_ms_64 < target_expire_ms)
+    {
+      alarm_duration_ms = (uint32_t)(target_expire_ms - curr_time_ms_64);
+    }
+    else if(curr_time_ms_64 < MAX_UINT32)
+    {
+      alarm_duration_ms = (uint32_t)(target_expire_ms - curr_time_ms);
+    }
   }
   else
   {
-    alarm_expire_ms = milli_alarm_struct_st[0].expires - curr_time_ms;
+    if(curr_time_ms >= (aT0 + aDt))
+    {
+      alarm_duration_ms = 0;
   }
-
+    else if(curr_time_ms <= aT0)
   /* Check for overflow */
-  if (aT0 > (MAX_UINT32 - aDt))
   {
-    if (curr_time_ms >= aT0)
+      alarm_duration_ms = (uint32_t)(aDt + (aT0 - curr_time_ms));
+    }
+    else if(curr_time_ms >= aT0 && curr_time_ms < (aT0 + aDt))
     {
       /* In this case curr_time_ms has not overflowed  */
-      alarm_expire_ms = aDt - (curr_time_ms - aT0);
+      alarm_duration_ms = (uint32_t)(aT0 + aDt - curr_time_ms);;
     }
   }
 
+  milli_alarm_struct_st[0].sIsRunning = 1;
   /* check if alarm need to be scheduled now */
-  if(alarm_expire_ms <= MILLI_START_THRESHOLD)
+  if(alarm_duration_ms <= MILLI_START_THRESHOLD)
   {
     /* schedule alarm right now */
     APP_THREAD_ScheduleAlarm();
@@ -169,7 +190,7 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
   else
   {
     /* Convert in sleeptimer step */
-    alarm_expire_step = FROM_MS_TO_SLP_STEP((uint64_t)alarm_expire_ms);
+      alarm_expire_step = (uint32_t)FROM_MS_TO_SLP_STEP(alarm_duration_ms);
 
     /* check if alarm_expire_step overflows */
     if (alarm_expire_step > MAX_UINT32)
@@ -177,7 +198,6 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
       // In this case do nothing
       // It only happens when OT stack asks for alarm in more than 37hours
       // Ot stack will trigger new alarm before 37hours
-      milli_alarm_struct_st[0].expires = UINT32_MAX;
       milli_alarm_struct_st[0].sIsRunning = 2;
     }
     else
@@ -187,15 +207,17 @@ void otPlatAlarmMilliStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 
       if (ret != 0)
       {
+            milli_alarm_struct_st[0].sIsRunning = 0;
         /* os_timer_start shouldn't return error */
-        while(1);
+          //otPlatLog(OT_LOG_LEVEL_WARN, OT_LOG_REGION_PLATFORM, "Failed to start timer");
       }
     }
   }
-  
+
   /* end critical section */
   LINKLAYER_PLAT_EnableIRQ();
-  
+
+  //otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "otPlatAlarmMilliStartAt: Current time = 0x%016llX, Current time (32 bits) = 0x%X, aT0 = 0x%X , aDt = %u ms, target expiry = 0x%016llX, alarm_duration_ms = %u ms, alarm_expire_step = %u, number of overflow cycles = 0x%X", curr_time_ms_64, curr_time_ms, aT0, aDt, target_expire_ms, alarm_duration_ms, (uint32_t)alarm_expire_step, get_num_of_ovrflw_sw_cycles());
 }
 
 void otPlatAlarmMilliStop(otInstance *aInstance)
@@ -209,61 +231,89 @@ void otPlatAlarmMilliStop(otInstance *aInstance)
 void otPlatAlarmMicroStartAt(otInstance *aInstance, uint32_t aT0, uint32_t aDt)
 {
   (void)(aInstance);
-  uint32_t ret = 0;
+  uint64_t alarm_expire_step = 0;
+  uint64_t curr_time_us_64 = 0;
+  uint64_t target_expire_us = 0;
+  uint32_t alarm_duration_us = 0;
   uint32_t curr_time_us= 0;
-  uint32_t alarm_expire_us;
+  uint32_t ret = 0;
 
-  micro_alarm_struct_st[0].sIsRunning = 1;
-  micro_alarm_struct_st[0].expires = (uint32_t)(aT0 + aDt);
+  /* Start critical section */
 
   /* After getting time in us otPlatAlarmMicroStartAt shouldn't be preempted */
   LINKLAYER_PLAT_DisableIRQ();
 
-  /* Get current time in us */
-  curr_time_us = otPlatAlarmMicroGetNow();
+  target_expire_us = aT0 + aDt;
 
   /* Stop alarm */
   os_timer_stop(csl_timer_id);
 
   /* check if Alarm in the Past */
-  if (curr_time_us > (aT0 + aDt))
+  curr_time_us_64 = otPlatRadioGetNow((otInstance *)&notnull_intance);
+  curr_time_us = (uint32_t)curr_time_us_64;
+  if(aT0 >= (MAX_UINT32 - aDt))
   {
     /* Set alarm_expire_ms to 0 if alarm in the past */
-    alarm_expire_us = 0;
+    if(curr_time_us_64 >= MAX_UINT32 && curr_time_us_64 > target_expire_us)
+    {
+      alarm_duration_us = 0;
+    }
+    else if(curr_time_us_64 >= MAX_UINT32 && curr_time_us_64 < target_expire_us)
+    {
+      alarm_duration_us = (uint32_t)(target_expire_us - curr_time_us_64);
+    }
+    else if(curr_time_us_64 < MAX_UINT32)
+    {
+      alarm_duration_us = (uint32_t)(target_expire_us - curr_time_us);
+    }
   }
   else
   {
-    alarm_expire_us = micro_alarm_struct_st[0].expires - curr_time_us;
+    if(curr_time_us >= (aT0 + aDt))
+    {
+      alarm_duration_us = 0;
   }
-
+    else if(curr_time_us <= aT0)
   /* Check for overflow */
-  if (aT0 > MAX_UINT32 - aDt)
   {
-    if (curr_time_us >= aT0)
+      alarm_duration_us = (uint32_t)(aDt + (aT0 - curr_time_us));
+    }
+    else if(curr_time_us >= aT0 && curr_time_us < (aT0 + aDt))
     {
       /* In this case curr_time_ms has not overflowed */
-      alarm_expire_us = aDt - (curr_time_us - aT0);
+      alarm_duration_us = (uint32_t)(aT0 + aDt - curr_time_us);;
     }
   }
 
+  micro_alarm_struct_st[0].sIsRunning = 1;
   /* check if alarm need to be scheduled now */
-  if(alarm_expire_us <= MICRO_START_THRESHOLD)
+  if(alarm_duration_us <= MICRO_START_THRESHOLD)
   {
     /* schedule alarm right now */
     APP_THREAD_ScheduleUsAlarm();
   }
   else
   {
+      alarm_expire_step = FROM_US_TO_SLP_STEP(alarm_duration_us);
+      if (alarm_expire_step > MAX_UINT32)
+      {
+        micro_alarm_struct_st[0].sIsRunning = 2;
+      }
+      else
+      {
     /* Start Sleeptimer to schedule alarm */
-    ret = os_timer_start_in_us(csl_timer_id, alarm_expire_us);
+        ret = os_timer_start(csl_timer_id, (uint32_t)alarm_expire_step);
     if (ret != 0)
     {
+            micro_alarm_struct_st[0].sIsRunning = 0;
       /* os_timer_start shouldn't return error */
-      while(1);
+          //otPlatLog(OT_LOG_LEVEL_WARN, OT_LOG_REGION_PLATFORM, "Failed to start timer");
     }
   }
+    }
 
   LINKLAYER_PLAT_EnableIRQ();
+  //otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "otPlatAlarmMicroStartAt: Current time = %016llX, Current time (32 bit) = 0x%X, aT0 = 0x%X , aDt = %u us, target_expiry_time_us_64 = 0x%016llX, alarm_expire_step = %u, number of overflow cycles = 0x%X", curr_time_us_64, curr_time_us, aT0, aDt, target_expire_us, (uint32_t)alarm_expire_step, get_num_of_ovrflw_sw_cycles());
 }
 
 void otPlatAlarmMicroStop(otInstance *aInstance)
@@ -291,6 +341,7 @@ void arcAlarmProcess(otInstance *aInstance)
   if (milli_alarm_struct_st[0].sIsRunning == 1)
   {
     milli_alarm_struct_st[0].sIsRunning = 0;
+    //otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_PLATFORM, "otPlatAlarmMilliFired");
     otPlatAlarmMilliFired(aInstance);
   }
 }
@@ -309,6 +360,7 @@ void arcUsAlarmProcess(otInstance *aInstance)
   {
     micro_alarm_struct_st[0].sIsRunning = 0;
     otPlatAlarmMicroFired(aInstance);
+    //otPlatLog(OT_LOG_LEVEL_INFO, OT_LOG_REGION_CORE, "otPlatAlarmMicroFired");
   }
 }
 #endif

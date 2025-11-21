@@ -66,32 +66,30 @@
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-
 #define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
-        CAP_MEM_TOTAL_BUFFER_SIZE((CAP_ROLE_INITIATOR|CAP_ROLE_COMMANDER),CFG_BLE_NUM_LINK, \
-                                    MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
-                                    MAX_NUM_UCL_SNK_ASE_PER_LINK, \
-                                    MAX_NUM_UCL_SRC_ASE_PER_LINK, \
-                                    0,0,\
-                                    0,0, \
-                                    0,0, \
-                                    APP_VCP_ROLE_CONTROLLER_SUPPORT,APP_VCP_CTLR_NUM_AIC_INSTANCES,APP_VCP_CTLR_NUM_VOC_INSTANCES, \
-                                    APP_MICP_ROLE_CONTROLLER_SUPPORT,APP_MICP_CTLR_NUM_AIC_INSTANCES)
+        CAP_MEM_TOTAL_BUFFER_SIZE(APP_CAP_ROLE, CFG_BLE_NUM_LINK, \
+                                  MAX_NUM_CIG, MAX_NUM_CIS_PER_CIG, \
+                                  MAX_NUM_UCL_SNK_ASE_PER_LINK, MAX_NUM_UCL_SRC_ASE_PER_LINK, \
+                                  0, 0,\
+                                  0, 0, \
+                                  0, 0, \
+                                  APP_VCP_ROLE_CONTROLLER_SUPPORT, APP_VCP_CTLR_NUM_AIC_INSTANCES, APP_VCP_CTLR_NUM_VOC_INSTANCES, \
+                                  APP_MICP_ROLE_CONTROLLER_SUPPORT, APP_MICP_CTLR_NUM_AIC_INSTANCES)
 
 /*Memory size required to allocate resource for Audio Stream Endpoint in Unicats Server Context*/
 #define BAP_UCL_ASE_BLOCKS_SIZE \
-          BAP_MEM_BLOCKS_ASE_PER_CONN_SIZE_BYTES(MAX_NUM_UCL_SNK_ASE_PER_LINK,MAX_NUM_UCL_SRC_ASE_PER_LINK,MAX_UCL_CODEC_CONFIG_SIZE,MAX_UCL_METADATA_SIZE)
+          BAP_MEM_BLOCKS_ASE_PER_CONN_SIZE_BYTES(MAX_NUM_UCL_SNK_ASE_PER_LINK, MAX_NUM_UCL_SRC_ASE_PER_LINK, MAX_UCL_CODEC_CONFIG_SIZE, MAX_UCL_METADATA_SIZE)
 
 /* Memory size required to allocate resource for Published Audio Capabilities for Unicast Client and/or Broadcast Assistant*/
 #define BAP_PACS_CLT_DYN_ALLOC_SIZE  \
-              BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_UCL_LINK,0,(MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
+              BAP_PACS_CLT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MAX_NUM_UCL_LINK, 0, (MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK + MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK))
 
 /*Memory size required for Audio Stream management in Unicast Client Context*/
 #define BAP_ASCS_CLT_DYN_ALLOC_SIZE \
-            BAP_ASCS_CLT_TOTAL_BUFFER_SIZE(MAX_NUM_UCL_LINK,MAX_NUM_UCL_SNK_ASE_PER_LINK,MAX_NUM_UCL_SRC_ASE_PER_LINK,BAP_UCL_ASE_BLOCKS_SIZE)
+            BAP_ASCS_CLT_TOTAL_BUFFER_SIZE(MAX_NUM_UCL_LINK, MAX_NUM_UCL_SNK_ASE_PER_LINK, MAX_NUM_UCL_SRC_ASE_PER_LINK, BAP_UCL_ASE_BLOCKS_SIZE)
 
 /* Memory size required to allocate resource for CIG*/
 #define BAP_ISO_CHNL_DYN_ALLOC_SIZE  \
@@ -135,8 +133,8 @@
 /* Number of 64-bit words in NVM flash area */
 #define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
 
-#define VOLUME_STEP 10
-#define BASE_VOLUME 128
+#define VOLUME_STEP                             10
+#define BASE_VOLUME                             128
 
 #define MEDIA_STREAM_QOS_CONFIG LC3_QOS_24_2_1
 #define MEDIA_STREAM_AUDIO_CHANNEL_ALLOC 0x03
@@ -257,6 +255,9 @@ static uint16_t *aSnkBuff = NULL;
 static uint16_t* pPrevData = NULL;
 static uint8_t Nb_Active_Ch = 0;
 
+static HAPAPP_Preset_t aPresetRecord[APP_HAP_NUM_PRESETS] = {0};
+static uint8_t ActivePreset = 0;
+
 #define MAX_UNICAST_ACCEPTORS      2u
 /* Structures used as Unicast Audio Start parameters */
 CAP_Unicast_AudioStart_Stream_Params_t StartStreamParams[MAX_UNICAST_ACCEPTORS];
@@ -267,25 +268,35 @@ CAP_Unicast_AudioStart_QoS_Conf_t QosConfSrc[MAX_UNICAST_ACCEPTORS];
 uint8_t aMetadataSnk[MAX_UNICAST_ACCEPTORS][20];
 uint8_t aMetadataSrc[MAX_UNICAST_ACCEPTORS][20];
 
+uint8_t LocalVolume = BASE_VOLUME;
+uint8_t LocalMute = 0x00;
+
+#if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
+uint8_t RemoteVolume = BASE_VOLUME;
+uint8_t RemoteMute = 0x00;
+#endif /*(APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)*/
+
+#if (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u)
+uint8_t RemoteMicMute = 0x00;
+#endif /*(APP_MICP_ROLE_SERVER_SUPPORT == 1u)*/
+
+extern uint32_t Sink_frame_size;
+
 /* Private functions prototypes-----------------------------------------------*/
 static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole);
-static tBleStatus HAPAPP_HAPInit(uint16_t Role);
+static tBleStatus HAPAPP_HAPInit(HAP_Role_t Role);
 static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification);
 static APP_ACL_Conn_t *APP_GetACLConn(uint16_t ConnHandle);
 static APP_ACL_Conn_t *APP_AllocateACLConn(uint16_t ConnHandle);
 static uint8_t APP_GetNumActiveACLConnections(void);
-static APP_ASE_Info_t * HAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle);
-static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
-                                         uint16_t CIS_ConnHandle,
-                                         uint8_t ASE_ID,
-                                         uint32_t ControllerDelay);
+static APP_ASE_Info_t *APP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle);
+static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
+                                             uint16_t CIS_ConnHandle,
+                                             uint8_t ASE_ID,
+                                             uint32_t ControllerDelay);
 static int32_t start_audio_source(void);
 static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
-
-static HAPAPP_Preset_t aPresetRecord[APP_HAP_NUM_PRESETS] = {0};
-static uint8_t ActivePreset = 0;
-
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 static tBleStatus HAPAPP_RegisterGenericTelephonyBearer(uint8_t *pCCID);
 #if (APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)
@@ -295,19 +306,12 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification);
 #endif /*(APP_CCP_ROLE_SERVER_SUPPORT == 1u)*/
 
 #if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
-uint8_t RemoteVolume = BASE_VOLUME;
-uint8_t RemoteMute = 0x00;
 static void VCP_MetaEvt_Notification(VCP_Notification_Evt_t *pNotification);
 #endif /*(APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)*/
 
 #if (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u)
-uint8_t RemoteMicMute = 0x00;
 static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification);
 #endif /*(APP_MICP_ROLE_SERVER_SUPPORT == 1u)*/
-
-uint8_t LocalVolume = BASE_VOLUME;
-uint8_t LocalMute = 0x00;
-
 /* Exported functions --------------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
@@ -345,8 +349,8 @@ void HAPAPP_Init(void)
   /* Init Initiator/Commander with Unicast Client */
   status = CAPAPP_Init(AUDIO_ROLE_SOURCE | AUDIO_ROLE_SINK);
   LOG_INFO_APP("CAPAPP_Init() returns status 0x%02X\n",status);
-  Set_Volume(BASE_VOLUME);
-  Menu_SetLocalVolume(BASE_VOLUME);
+  Set_Volume(LocalVolume);
+  Menu_SetLocalVolume(LocalVolume);
 
   for (i = 0; i < APP_HAP_NUM_PRESETS; i++)
   {
@@ -358,8 +362,8 @@ void HAPAPP_Init(void)
     /* Initialize the HAP layer*/
     status = HAPAPP_HAPInit(APP_HAP_ROLE);
     LOG_INFO_APP("HAPAPP_HAPInit() with role 0x%02X returns status 0x%02X\n", APP_HAP_ROLE, status);
-    UNUSED(status);
   }
+  UNUSED(status);
 }
 
 tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
@@ -370,11 +374,13 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle)
   {
     /* Perform CAP linkup restoration if profiles are already present in NVM, else start Complete linkup process */
     GAF_Profiles_Link_t NVMLink = 0;
+
     if (p_conn->ForceCompleteLinkup == 0)
     {
       NVMLink = CAP_DB_GetPresentGAFProfiles(p_conn->Peer_Address_Type,p_conn->Peer_Address);
       LOG_INFO_APP("GAF Profiles Mask 0x%02X present in NVM\n",NVMLink);
     }
+
     if (NVMLink != 0)
     {
       GAF_Profiles_Link_t link = 0x00u;
@@ -932,7 +938,6 @@ uint8_t HAPAPP_StartMediaStream(void)
       }
     }
   }
-
 
   for( uint8_t i = 0u; i < num_acceptors ; i++)
   {
@@ -1573,9 +1578,7 @@ void APP_NotifyTxAudioHalfCplt(void)
   }
 }
 
-extern uint32_t Sink_frame_size;
-
-void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data)
+void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data, uint8_t channel_idx, uint8_t channel_nb)
 {
   /* When only one channel is active, duplicate it for fake stereo on SAI */
   uint32_t i;
@@ -1747,7 +1750,6 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
     p_conn->pASEs->acl_conn_handle = 0xFFFFu;
     p_conn->pASEs = 0;
 
-
     /* Check if the disconnection is issued to a User action in remote device  or local device */
     if ((Reason == HCI_REMOTE_USER_TERMINATED_CONNECTION_ERR_CODE) \
         || (Reason == HCI_CONNECTION_TERMINATED_BY_LOCAL_HOST_ERR_CODE))
@@ -1831,7 +1833,9 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
         {
           LOG_INFO_APP("Deinitialized Audio Peripherals\n");
           MX_AudioDeInit();
+#if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
+#endif /* (CFG_LCD_SUPPORTED == 1) */
         }
         break;
       }
@@ -1843,6 +1847,7 @@ void HAPAPP_ClearDatabase(void)
 {
   BLE_AUDIO_STACK_DB_ClearAllRecords();
 }
+
 /*************************************************************
  *
  * LOCAL FUNCTIONS
@@ -1856,10 +1861,10 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   LOG_INFO_APP("CAPAPP_Init()\n");
 
   /*Clear the CAP Configuration*/
-  memset(&APP_CAP_Config, 0, sizeof(APP_CAP_Config));
+  memset(&APP_CAP_Config, 0, sizeof(CAP_Config_t));
 
   /*Clear the BAP Configuration*/
-  memset(&APP_BAP_Config, 0, sizeof(APP_BAP_Config));
+  memset(&APP_BAP_Config, 0, sizeof(BAP_Config_t));
 
   /*Clear the MICP Configuration*/
   memset(&APP_MICP_Config, 0, sizeof(MICP_Config_t));
@@ -1963,6 +1968,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   {
     return status;
   }
+
 #if (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1)
   if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
   {
@@ -1971,6 +1977,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
 #endif /*(APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)*/
   }
 #endif /* (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1) */
+
   for (uint8_t i = 0; i< APP_MAX_NUM_CIS; i++)
   {
     HAPAPP_Context.cis_src_handle[i] = 0xFFFFu;
@@ -1979,6 +1986,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   }
 
   HAPAPP_Context.bap_role = APP_BAP_Config.Role;
+
   for (uint8_t conn = 0; conn< CFG_BLE_NUM_LINK; conn++)
   {
     HAPAPP_Context.aASEs[conn].acl_conn_handle = 0xFFFFu;
@@ -2083,7 +2091,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   return status;
 }
 
-static tBleStatus HAPAPP_HAPInit(uint16_t Role)
+static tBleStatus HAPAPP_HAPInit(HAP_Role_t Role)
 {
   USECASE_DEV_MGMT_Init();
   return HAP_Init(Role);
@@ -2211,7 +2219,6 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
   switch(pNotification->EvtOpcode)
   {
-
     case CAP_REM_ACC_AVAIL_AUDIO_CONTEXTS_UPDATED_EVT:
     {
       BAP_Audio_Contexts_t *p_context = (BAP_Audio_Contexts_t *) pNotification->pInfo;
@@ -2251,21 +2258,24 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     case CAP_UNICAST_AUDIOSTARTED_EVT:
     {
       LOG_INFO_APP("CAP Unicast Start Procedure is Complete with status 0x%02X\n",
-                  pNotification->Status);
+                   pNotification->Status);
       break;
     }
+
     case CAP_UNICAST_AUDIOSTOPPED_EVT:
     {
       LOG_INFO_APP("CAP Unicast Stop Procedure is Complete with status 0x%02X\n",
-                  pNotification->Status);
+                   pNotification->Status);
       break;
     }
+
     case CAP_UNICAST_AUDIO_UPDATED_EVT:
     {
       LOG_INFO_APP("CAP Unicast Update Procedure is Complete with status 0x%02X\n",
-                  pNotification->Status);
+                   pNotification->Status);
       break;
     }
+
     case CAP_LINKUP_COMPLETE_EVT:
     {
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
@@ -2336,6 +2346,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_UNICAST_LINKUP_EVT:
     {
       APP_ACL_Conn_t *p_conn;
@@ -2359,6 +2370,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_UNICAST_ASE_METADATA_UPDATED_EVT:
     {
       BAP_ASE_State_Params_t *p_info = (BAP_ASE_State_Params_t *)pNotification->pInfo;
@@ -2368,12 +2380,14 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       UNUSED(p_info);
       break;
     }
+
     case CAP_UNICAST_AUDIO_DATA_PATH_SETUP_REQ_EVT:
     {
       BAP_SetupAudioDataPathReq_t *info = (BAP_SetupAudioDataPathReq_t *)pNotification->pInfo;
       uint32_t controller_delay;
       APP_ASE_Info_t *p_ase;
-      if (info->PathDirection == BAP_AUDIO_PATH_INPUT){
+      if (info->PathDirection == BAP_AUDIO_PATH_INPUT)
+      {
         LOG_INFO_APP("Setup Input Audio Data Path is requested for ASE ID %d on ACL Conn Handle 0x%04X (CIS Conn Handle 0x%04X)\n",
                      info->ASE_ID,
                      pNotification->ConnHandle,
@@ -2410,7 +2424,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         controller_delay = info->ControllerDelayMax;
       }
 
-      p_ase = HAPAPP_GetASE(info->ASE_ID,pNotification->ConnHandle);
+      p_ase = APP_GetASE(info->ASE_ID,pNotification->ConnHandle);
       if (p_ase != 0)
       {
         p_ase->controller_delay = controller_delay;
@@ -2421,9 +2435,10 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         }
       }
 
-      HAPAPP_SetupAudioDataPath(pNotification->ConnHandle,info->CIS_ConnHandle,info->ASE_ID,controller_delay);
+      APP_UnicastSetupAudioDataPath(pNotification->ConnHandle,info->CIS_ConnHandle,info->ASE_ID,controller_delay);
       break;
     }
+
     case CAP_AUDIO_CLOCK_REQ_EVT:
     {
       Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
@@ -2431,6 +2446,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       AudioClock_Init(*freq);
       break;
     }
+
     case CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT:
     case CAP_REM_ACC_SRC_PAC_RECORD_INFO_EVT:
     {
@@ -2473,7 +2489,6 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       remote_supported_octet_per_codec_frame_max = (int16_t) ((remote_supported_octet_per_codec_frame & 0xFFFF0000) >> 16);
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-
       remote_supported_audio_chan = LTV_GetSupportedAudioChannelCounts(p_cap->pSpecificCap,
                                                                        p_cap->SpecificCapLength);
       if (remote_supported_audio_chan == 0)
@@ -2496,7 +2511,6 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                                     p_cap->MetadataLength,
                                     &remote_preferred_audio_contexts);
 
-
       LOG_INFO_APP("Remote Record: \n");
       LOG_INFO_APP("    Supported Sample Freq: \n");
       APP_ReportSupportedSampleFreq(remote_supported_sampling_freq);
@@ -2512,6 +2526,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
       break;
     }
+
     case CAP_UNICAST_AUDIO_CONNECTION_UP_EVT:
     {
       BAP_Unicast_Audio_Path_t *info = (BAP_Unicast_Audio_Path_t *)pNotification->pInfo;
@@ -2544,6 +2559,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_UNICAST_AUDIO_CONNECTION_DOWN_EVT:
     {
       BAP_Unicast_Audio_Path_t *info = (BAP_Unicast_Audio_Path_t *)pNotification->pInfo;
@@ -2619,7 +2635,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
-        p_ase = HAPAPP_GetASE(p_info->ASE_ID,pNotification->ConnHandle);
+        p_ase = APP_GetASE(p_info->ASE_ID,pNotification->ConnHandle);
         if (p_ase == 0)
         {
           if (p_info->Type == ASE_SINK)
@@ -2674,6 +2690,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 #endif /* (APP_CCP_ROLE_SERVER_SUPPORT == 1u) */
       break;
     }
+
     case CAP_VCP_META_EVT:
     {
       VCP_Notification_Evt_t *p_vcp_evt = (VCP_Notification_Evt_t *)pNotification->pInfo;
@@ -2685,6 +2702,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
       break;
     }
+
     case CAP_MICP_META_EVT:
     {
       MICP_Notification_Evt_t *p_micp_evt = (MICP_Notification_Evt_t *)pNotification->pInfo;
@@ -2696,6 +2714,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 #endif /* (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u) */
       break;
     }
+
     case CAP_MICROPHONE_CTRL_LINKUP_EVT:
     {
       APP_ACL_Conn_t *p_conn;
@@ -2708,6 +2727,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_SET_MICROPHONE_MUTE_PROCEDURE_COMPLETE_EVT:
     {
       LOG_INFO_APP("Set Microphone Mute procedure is complete\n");
@@ -2718,6 +2738,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_VOLUME_CTRL_LINKUP_EVT:
     {
       APP_ACL_Conn_t *p_conn;
@@ -2730,6 +2751,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_SET_VOLUME_PROCEDURE_COMPLETE_EVT:
     {
       LOG_INFO_APP("CAP Set Volume Procedure is complete with status 0x%02X\n",pNotification->Status);
@@ -2783,112 +2805,113 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     }
 
     case CAP_CSIP_META_EVT:
+    {
+      CSIP_Notification_Evt_t *p_csip_evt = (CSIP_Notification_Evt_t *)pNotification->pInfo;
+      LOG_INFO_APP("Coordinated Set Identification Meta Event 0x%02X is received on ConnHandle 0x%04X:\n",
+                  p_csip_evt->EvtOpcode,
+                  p_csip_evt->ConnHandle);
+      switch (p_csip_evt->EvtOpcode)
       {
-        CSIP_Notification_Evt_t *p_csip_evt = (CSIP_Notification_Evt_t *)pNotification->pInfo;
-        LOG_INFO_APP("Coordinated Set Identification Meta Event 0x%02X is received on ConnHandle 0x%04X:\n",
-                    p_csip_evt->EvtOpcode,
-                    p_csip_evt->ConnHandle);
-        switch (p_csip_evt->EvtOpcode)
+        case CSIP_COO_ADV_REPORT_NEW_SET_MEMBER_DISCOVERED_EVT:
         {
-          case CSIP_COO_ADV_REPORT_NEW_SET_MEMBER_DISCOVERED_EVT:
-            {
-              CSIP_New_Member_Evt_Params_t *p_info = (CSIP_New_Member_Evt_Params_t *) p_csip_evt->pInfo;
-              LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : %02x:%02x:%02x:%02x:%02x:%02x\n",
-                              p_info->AddressType,
-                              p_info->Address[5],
-                              p_info->Address[4],
-                              p_info->Address[3],
-                              p_info->Address[2],
-                              p_info->Address[1],
-                              p_info->Address[0]);
+          CSIP_New_Member_Evt_Params_t *p_info = (CSIP_New_Member_Evt_Params_t *) p_csip_evt->pInfo;
+          LOG_INFO_APP("New Set Member has been discovered with bdaddr (type : 0x%02X) : %02x:%02x:%02x:%02x:%02x:%02x\n",
+                       p_info->AddressType,
+                       p_info->Address[5],
+                       p_info->Address[4],
+                       p_info->Address[3],
+                       p_info->Address[2],
+                       p_info->Address[1],
+                       p_info->Address[0]);
 
-              if( HAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
-              {
-                tBleStatus status;
-                status = HAPAPP_CreateConnection(p_info->Address, p_info->AddressType);
-                LOG_INFO_APP("HAPAPP_CreateConnection with status 0x%02X\n", status);
-                UNUSED(status);
-              }
-            }
-          break;;
-
-          case CSIP_COO_NEW_SET_MEMBER_DISCOVERED_EVT:
+          if( HAPAPP_Context.SetMemberDiscoveryProcActive == 1u)
           {
-            LOG_INFO_APP("Set Member discovery is Complete with ConnHandle 0x%04X with status 0x%02X\n",
-                         p_csip_evt->ConnHandle,
-                         p_csip_evt->Status);
-            if (p_csip_evt->Status == BLE_STATUS_SUCCESS)
-            {
-              APP_ACL_Conn_t *p_conn = APP_GetACLConn(p_csip_evt->ConnHandle);
-              if (p_conn == 0)
-              {
-                  APP_ACL_Conn_t *p_conn = APP_AllocateACLConn(p_csip_evt->ConnHandle);
-                  if (p_conn != 0)
-                  {
-                    p_conn->AudioProfile = AUDIO_PROFILE_NONE;
-                    Menu_SetProfilesLinked(p_conn->AudioProfile);
-                    p_conn->Rank = 0u;
-                    p_conn->Size = 0u;
-                    p_conn->CSIPDiscovered = 0u;
-                  }
-              }
-              if (p_conn != 0)
-              {
-                /* Indicate that the Set Member has been discovered */
-                p_conn->CSIPDiscovered = 1u;
-              }
-            }
-          break;
+            tBleStatus status;
+            status = HAPAPP_CreateConnection(p_info->Address, p_info->AddressType);
+            LOG_INFO_APP("HAPAPP_CreateConnection with status 0x%02X\n", status);
+            UNUSED(status);
           }
-
-          case CSIP_COO_SET_MEMBER_DISCOVERY_PROCEDURE_COMPLETE_EVT:
-          {
-            tBleStatus hciCmdResult;
-            LOG_INFO_APP("CSIP Set Members Discovery Procedure is complete with status 0x%02X\n",
-                         pNotification->Status);
-            if (pNotification->Status != BLE_STATUS_SUCCESS)
-            {
-              hciCmdResult = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
-              if (hciCmdResult != BLE_STATUS_SUCCESS)
-              {
-                LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc command, result: 0x%02X\n", hciCmdResult);
-              }
-              else
-              {
-                LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc command\n");
-              }
-            }
-#if (CFG_BLE_NUM_LINK > 0u)
-            /*Check if a CAP Linkup witha discovered Set Member should started*/
-            for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
-            {
-              if (HAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)
-              {
-                hciCmdResult = HAPAPP_Linkup(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
-                LOG_INFO_APP("HAPAPP_Linkup() on ConnHandle 0x%04X returns status 0x%02X\n",
-                             HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle,
-                             hciCmdResult);
-                if (hciCmdResult == BLE_STATUS_SUCCESS)
-                {
-                  return;
-                }
-              }
-            }
-#endif /*(CFG_BLE_NUM_LINK > 0u)*/
-#if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
-            hciCmdResult = CAP_VolumeController_StartSetVolumeProcedure(pNotification->ConnHandle, BASE_VOLUME);
-            LOG_INFO_APP("CAP_VolumeController_StartSetVolumeProcedure() returns status 0x%02X\n", hciCmdResult);
-            Menu_SetRemoteVolume(BASE_VOLUME);
-#endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
-            UNUSED(hciCmdResult);
-          break;
-          }
-
-          default:
           break;
         }
+
+        case CSIP_COO_NEW_SET_MEMBER_DISCOVERED_EVT:
+        {
+          LOG_INFO_APP("Set Member discovery is Complete with ConnHandle 0x%04X with status 0x%02X\n",
+                       p_csip_evt->ConnHandle,
+                       p_csip_evt->Status);
+          if (p_csip_evt->Status == BLE_STATUS_SUCCESS)
+          {
+            APP_ACL_Conn_t *p_conn = APP_GetACLConn(p_csip_evt->ConnHandle);
+            if (p_conn == 0)
+            {
+              APP_ACL_Conn_t *p_conn = APP_AllocateACLConn(p_csip_evt->ConnHandle);
+              if (p_conn != 0)
+              {
+                p_conn->AudioProfile = AUDIO_PROFILE_NONE;
+                Menu_SetProfilesLinked(p_conn->AudioProfile);
+                p_conn->Rank = 0u;
+                p_conn->Size = 0u;
+                p_conn->CSIPDiscovered = 0u;
+              }
+            }
+
+            if (p_conn != 0)
+            {
+              /* Indicate that the Set Member has been discovered */
+              p_conn->CSIPDiscovered = 1u;
+            }
+          }
+          break;
+        }
+
+        case CSIP_COO_SET_MEMBER_DISCOVERY_PROCEDURE_COMPLETE_EVT:
+        {
+          tBleStatus hciCmdResult;
+          LOG_INFO_APP("CSIP Set Members Discovery Procedure is complete with status 0x%02X\n",
+                       pNotification->Status);
+          if (pNotification->Status != BLE_STATUS_SUCCESS)
+          {
+            hciCmdResult = aci_gap_terminate_gap_proc(GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC);
+            if (hciCmdResult != BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Fail   : aci_gap_terminate_gap_proc command, result: 0x%02X\n", hciCmdResult);
+            }
+            else
+            {
+              LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc command\n");
+            }
+          }
+#if (CFG_BLE_NUM_LINK > 0u)
+          /*Check if a CAP Linkup witha discovered Set Member should started*/
+          for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
+          {
+            if (HAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)
+            {
+              hciCmdResult = HAPAPP_Linkup(HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle);
+              LOG_INFO_APP("HAPAPP_Linkup() on ConnHandle 0x%04X returns status 0x%02X\n",
+                           HAPAPP_Context.ACL_Conn[i].Acl_Conn_Handle,
+                           hciCmdResult);
+              if (hciCmdResult == BLE_STATUS_SUCCESS)
+              {
+                return;
+              }
+            }
+          }
+#endif /*(CFG_BLE_NUM_LINK > 0u)*/
+#if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
+          hciCmdResult = CAP_VolumeController_StartSetVolumeProcedure(pNotification->ConnHandle, BASE_VOLUME);
+          LOG_INFO_APP("CAP_VolumeController_StartSetVolumeProcedure() returns status 0x%02X\n", hciCmdResult);
+          Menu_SetRemoteVolume(BASE_VOLUME);
+#endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
+          UNUSED(hciCmdResult);
+          break;
+        }
+
+        default:
+          break;
       }
       break;
+    }
 
     default:
       break;
@@ -2934,7 +2957,7 @@ static APP_ACL_Conn_t *APP_AllocateACLConn(uint16_t ConnHandle)
   return 0;
 }
 
-static APP_ASE_Info_t * HAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
+static APP_ASE_Info_t *APP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
 {
   uint8_t i;
   APP_ACL_Conn_t *p_conn = APP_GetACLConn(ACL_ConnHandle);
@@ -2965,10 +2988,10 @@ static APP_ASE_Info_t * HAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
   return 0;
 }
 
-static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
-                                  uint16_t CIS_ConnHandle,
-                                  uint8_t ASE_ID,
-                                  uint32_t ControllerDelay)
+static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
+                                             uint16_t CIS_ConnHandle,
+                                             uint8_t ASE_ID,
+                                             uint32_t ControllerDelay)
 {
   tBleStatus status;
   Audio_Role_t role;
@@ -3038,7 +3061,7 @@ static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
       if ((HAPAPP_Context.audio_role_setup & role) == 0x00)
       {
         LOG_INFO_APP("Register callback to Start Audio Peripheral Rx\n");
-        CODEC_RegisterTriggerClbk(1,0,&start_audio_source);
+        CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_INPUT, &start_audio_source);
       }
     }
     else if (role == AUDIO_ROLE_SINK)
@@ -3056,10 +3079,10 @@ static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
       if ((HAPAPP_Context.audio_role_setup & role) == 0x00)
       {
         LOG_INFO_APP("Register callback to Start Audio Peripheral Tx\n");
-        CODEC_RegisterTriggerClbk(1,1,&start_audio_sink);
+        CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_OUTPUT, &start_audio_sink);
       }
     }
-    CODEC_DataPathParam_t param;
+    CODEC_DataPathSampleParam_t param;
     /* input data path */
     param.SampleDepth = 16;
 
@@ -3077,9 +3100,9 @@ static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
     /*Data Path ID is vendor-specific transport interface : 0x01 for "Shared memory of SAI"*/
     status = CAP_Unicast_SetupAudioDataPath(CIS_ConnHandle,
                                             ASE_ID,
-                                            DATA_PATH_CIRCULAR_BUF,
+                                            DATA_PATH_SAMPLE_CIRC_BUF,
                                             ControllerDelay,
-                                            CONFIGURE_DATA_PATH_CONFIG_LEN,
+                                            CONFIGURE_DATA_PATH_SAMPLE_LEN,
                                             (uint8_t *)&param);
     LOG_INFO_APP("Setup Unicast Audio Data Path for ASE ID %d on CIS connection handle 0x%04X with controller delay at %d us returns status 0x%02X\n",
                 ASE_ID,
@@ -3117,19 +3140,19 @@ static uint8_t HAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
     else
     {
       APP_ASE_Info_t *p_app_ase;
-      p_app_ase = HAPAPP_GetASE(ASE_ID,ACL_ConnHandle);
+      p_app_ase = APP_GetASE(ASE_ID,ACL_ConnHandle);
       if (p_app_ase != 0)
       {
         LOG_INFO_APP("Audio Data Path is complete with remaining Application delay for audio process to respect : %dus\n",
-                     (p_app_ase->presentation_delay - p_app_ase->controller_delay));
+                    (p_app_ase->presentation_delay - p_app_ase->controller_delay));
       }
     }
   }
   else
   {
     LOG_INFO_APP("No Audio Stream Endpoint with ASE ID %d on ACL connection handle 0x%04X status 0x%02X\n",
-                 ASE_ID,
-                 ACL_ConnHandle);
+                ASE_ID,
+                ACL_ConnHandle);
     status = BLE_STATUS_INVALID_PARAMS;
   }
   UNUSED(num_chnls);
@@ -3152,14 +3175,13 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
   return bits;
 }
 
-/* Audio Source */
+/*Audio Source */
 static int32_t start_audio_source(void)
 {
   return Start_RxAudio();
 }
 
-
-/* Audio Sink */
+/*Audio Sink */
 static int32_t start_audio_sink(void)
 {
   /* reset numbers of active channels */
@@ -3203,7 +3225,6 @@ tBleStatus HAPAPP_RegisterTelephonyBearerInstance(uint8_t *pCCID)
   uint8_t i = 0u;
   uint8_t index = 0u;
   CCP_BearerInit_t BearerInit;
-
 
   for(i = 0u ; i < APP_CCP_NUM_LOCAL_BEARER_INSTANCES ; i++)
   {
@@ -3373,7 +3394,7 @@ static void VCP_MetaEvt_Notification(VCP_Notification_Evt_t *pNotification)
       RemoteMute = p_info->Mute;
       if (RemoteMute == 0)
       {
-        Menu_SetRemoteVolume(p_info->VolSetting);
+        Menu_SetRemoteVolume(RemoteVolume);
       }
       else
       {
@@ -3475,8 +3496,4 @@ static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification)
   }
 }
 #endif /* (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u) */
-
-/* USER CODE BEGIN FD */
-
-/* USER CODE END FD */
 

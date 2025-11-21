@@ -246,7 +246,7 @@
 
 /* Define the common timer tick reference for use by other middleware components. */
 
-#define TX_TIMER_TICKS_PER_SECOND                128
+#define TX_TIMER_TICKS_PER_SECOND                1000
 
 /* Determine if there is a FileX pointer in the thread control block.
    By default, the pointer is there for legacy/backwards compatibility.

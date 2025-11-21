@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    tmap_app_conf.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __TMAP_APP_CONF_H
@@ -38,7 +36,6 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 /*Audio Profiles Roles configuration*/
 #define APP_TMAP_ROLE                                   (TMAP_ROLE_CALL_TERMINAL | TMAP_ROLE_UNICAST_MEDIA_RECEIVER | TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)
 #define APP_CAP_ROLE                                    (CAP_ROLE_ACCEPTOR)
@@ -108,7 +105,6 @@ extern "C" {
 #endif /*(((APP_TMAP_ROLE & TMAP_ROLE_UNICAST_MEDIA_RECEIVER) == TMAP_ROLE_UNICAST_MEDIA_RECEIVER) \
           || ((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER))*/
 
-
 #define APP_MICP_ROLE_CONTROLLER_SUPPORT                (0u)
 #define APP_MICP_ROLE_DEVICE_SUPPORT                    (0u)
 
@@ -128,7 +124,6 @@ extern "C" {
 /**
  * Audio Processing Delay Settings
  */
-
 /* These delays refers to the time at which the audio signal passes through an
  * audio interface (such an electroacoustic transducer ) to or from
  * the Codec interface.
@@ -183,7 +178,6 @@ extern "C" {
 #define MAX_NUM_BIS_PER_BIG                     (2u)    /* Maximum number of BISes per BIG */
 #define APP_MAX_NUM_CIS                         (MAX_NUM_CIS_PER_CIG * MAX_NUM_CIG)
 #define APP_MAX_NUM_BIS                         (MAX_NUM_BIS_PER_BIG * MAX_NUM_BIG)
-
 
 /**
  * Default Audio Locations Settings
@@ -251,7 +245,6 @@ extern "C" {
 #define APP_NUM_SRC_PAC_RECORDS                 (0u)
 #endif /* ((APP_AUDIO_ROLE & AUDIO_ROLE_SOURCE) == AUDIO_ROLE_SOURCE) */
 
-
 /**
  * Audio Stream Endpoint Settings used in Unicast mode
  */
@@ -298,9 +291,6 @@ extern "C" {
 #define TMAP_USR_ADV_DATA_LEN                   (10u)
 #define ADV_LEN                                 (ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN+CAP_ADV_DATA_LEN+ADV_EXT_LEN+TMAP_USR_ADV_DATA_LEN+10)
 
-
-
-
 /**
  * Call Control Profile Settings
  */
@@ -312,7 +302,6 @@ extern "C" {
 #define APP_CCP_CLT_FEATURE_SUPPORT                     (0u)
 #define APP_CCP_NUM_REMOTE_BEARER_INSTANCES             (0u)
 #endif /* (APP_CCP_ROLE_CLIENT_SUPPORT == 1u) */
-
 
 /**
  * Media Control Profile Settings
@@ -331,9 +320,8 @@ extern "C" {
 #define APP_MCP_NUM_REMOTE_MEDIA_PLAYER_INSTANCES       (0u)
 #endif /* (APP_MCP_ROLE_CLIENT_SUPPORT == 1u) */
 
-
 /**
- * Volume Renderer Profile Settings
+ * Volume Control Profile Settings
  */
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
 #define APP_VCP_RDR_NUM_AIC_INSTANCES                   (0u)
@@ -347,7 +335,6 @@ extern "C" {
 #define APP_VCP_RDR_VOC_DESCRIPTION_LENGTH              (0u)
 #endif /* (APP_VCP_ROLE_RENDERER_SUPPORT == 1u) */
 
-
 /**
  * Coordinated Set Profile Settings
  */
@@ -358,7 +345,6 @@ extern "C" {
 #else /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 0u)*/
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (0u)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */
-
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
@@ -387,7 +373,6 @@ extern "C" {
 #define BLE_APP_CAP_ACC_NUM_GATT_SERVICES               CAP_ACC_COM_NUM_GATT_SERVICES
 #define BLE_APP_TMAP_NUM_GATT_SERVICES                  TMAP_NUM_GATT_SERVICES
 
-
 #define BLE_APP_NUM_GATT_SERVICES                       (BLE_HOST_NUM_GATT_SERVICES \
                                                         + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_ASCS_SRV_NUM_GATT_SERVICES \
@@ -396,6 +381,7 @@ extern "C" {
                                                         + BLE_APP_CAP_ACC_NUM_GATT_SERVICES \
                                                         + BLE_APP_CSIP_SET_MEMBER_NUM_GATT_SERVICES \
                                                         + BLE_APP_TMAP_NUM_GATT_SERVICES)
+
 /**
  * Maximum number of Attributes
  */
@@ -424,7 +410,6 @@ extern "C" {
 #endif /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)*/
 
 #define BLE_APP_TMAP_NUM_GATT_ATTRIBUTES                TMAP_NUM_GATT_ATTRIBUTES
-
 
 #define BLE_APP_NUM_GATT_ATTRIBUTES                     ( BLE_HOST_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
@@ -497,7 +482,6 @@ extern "C" {
                                                         + BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE \
                                                         + TMAP_ATT_VALUE_ARRAY_SIZE)
 
-
 /**
  * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
  */
@@ -543,9 +527,13 @@ extern "C" {
                                                 + BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE \
                                                 + BLE_TMAP_CLT_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES) \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,GATTSERVICE_GATT_DATABASE_SIZE))
+
 /* Exported types ------------------------------------------------------------*/
+
 /* External variables --------------------------------------------------------*/
+
 /* Exported macros -----------------------------------------------------------*/
+
 /* Exported functions --------------------------------------------------------*/
 
 #ifdef __cplusplus
@@ -553,4 +541,3 @@ extern "C" {
 #endif
 
 #endif /*__TMAP_APP_CONF_H */
-

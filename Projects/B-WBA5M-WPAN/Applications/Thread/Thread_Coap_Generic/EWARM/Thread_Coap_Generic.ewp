@@ -398,8 +398,9 @@
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbed-crypto/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers\BSP\B-WBA5M-WPAN</state>
                 </option>
@@ -715,7 +716,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -723,7 +724,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>Thread_Coap_Generic.hex</state>
+                    <state>Thread_Coap_Generic.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -1461,7 +1462,7 @@
             <group>
                 <name>LinkLayer</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_Thread_lib.a</name>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA5_LinkLayer_Thread_lib.a</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>

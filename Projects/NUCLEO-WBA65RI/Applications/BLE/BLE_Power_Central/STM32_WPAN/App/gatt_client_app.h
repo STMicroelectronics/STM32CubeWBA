@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -30,12 +30,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-typedef enum
-{
-  PWR_CO_GPIO_OFF,
-  PWR_CO_GPIO_ON,
-  PWR_CO_GPIO_TIM_RESET_ON,
-} PWR_CO_GPIO_Status_t;
 
 /* USER CODE END Includes */
 
@@ -83,34 +77,12 @@ typedef struct
   uint16_t                              ConnHdl;
 }GATT_CLIENT_APP_ConnHandle_Notif_evt_t;
 /* USER CODE BEGIN ET */
-typedef struct
-{
-  uint8_t *pPayload;
-  uint32_t pPayload_n_1;
-  uint32_t pPayload_n;
-  uint32_t Length;
-} DTC_STM_Payload_t;
-
 typedef enum
 {
-  DTC_APP_FLOW_OFF,
-  DTC_APP_FLOW_ON
-} DTC_App_Flow_Status_t;
-
-typedef enum
-{
-  DTC_APP_TRANSFER_REQ_OFF,
-  DTC_APP_TRANSFER_REQ_ON
-} DTC_App_Transfer_Req_Status_t;
-
-typedef struct
-{
-  DTC_STM_Payload_t TxData;
-  DTC_App_Transfer_Req_Status_t NotificationTransferReq;
-  DTC_App_Transfer_Req_Status_t ButtonTransferReq;
-  DTC_App_Flow_Status_t DtFlowStatus;
-  uint8_t connectionstatus;
-} DTC_Context_t;
+  PWR_CO_GPIO_OFF,
+  PWR_CO_GPIO_ON,
+  PWR_CO_GPIO_TIM_RESET_ON,
+} PWR_CO_GPIO_Status_t;
 
 /* USER CODE END ET */
 

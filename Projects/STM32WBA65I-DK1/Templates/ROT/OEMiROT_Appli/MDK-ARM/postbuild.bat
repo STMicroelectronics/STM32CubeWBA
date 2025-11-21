@@ -57,24 +57,22 @@ set s_app_enc_sign_bin_xml_field="%bin_path_xml_field%\oemirot_tz_s_app_enc_sign
 set s_app_init_sign_bin_xml_field="%bin_path_xml_field%\%oemirot_appli_secure%"
 )
 
-:start
-goto exe:
-goto py:
-:exe
-::line for window executable
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\dist\AppliCfg.exe"
-set "python="
-IF exist %applicfg% (
-echo Postbuild with windows executable
-goto postbuild
+:: Check if Python is installed
+python3 --version >nul 2>&1
+if %errorlevel% neq 0 (
+ python --version >nul 2>&1
+ if !errorlevel! neq 0 (
+    echo Python installation missing. Refer to Utilities\PC_Software\ROT_AppliConfig\README.md
+    goto :error
+ )
+  set "python=python "
+) else (
+  set "python=python3 "
 )
-:py
-::called if we just want to use AppliCfg python (think to comment "goto exe:")
-echo Postbuild with python script
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
-set "python=python "
 
-:postbuild
+:: Environment variable for AppliCfg
+set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
+
 echo Postbuild %signing% image >> %current_log_file% 2>>&1
 
 ::update xml file : input file

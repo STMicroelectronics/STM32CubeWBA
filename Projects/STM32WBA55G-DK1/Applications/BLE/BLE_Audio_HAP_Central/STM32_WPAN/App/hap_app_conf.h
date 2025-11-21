@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    hap_app_conf.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HAP_APP_CONF_H
@@ -37,7 +35,6 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 /*Audio Profiles Roles configuration*/
 #define APP_HAP_ROLE                                    (HAP_ROLE_HEARING_AID_REMOTE_CONTROLLER \
                                                          | HAP_ROLE_HEARING_AID_UNICAST_CLIENT \
@@ -65,6 +62,7 @@ extern "C" {
 
 #define APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT           (1u)
 #define APP_CSIP_ROLE_SET_MEMBER_SUPPORT                (0u)
+
 /**
  * Maximum Number of Bonded Devices to store in Non-Volatile Memory
  */
@@ -93,8 +91,7 @@ extern "C" {
 #define APP_DELAY_SNK_MAX                       (APP_DELAY_SNK_MIN + 0u)        /* No extra buffering of audio data*/
 
 /*Preferred Controller Delay in us*/
-#define PREFFERED_CONTROLLER_DELAY              (22000u)
-
+#define PREFFERED_CONTROLLER_DELAY              (20000u)
 
 /**
  * Maximum number of Links supported in Unicast Server
@@ -122,7 +119,6 @@ extern "C" {
 #define MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK    (12u)                   /* Maximum number of Source PAC records per link supported by Unicast Client and Broadcast Assistant */
 #define MAX_NUM_UCL_SNK_ASE                     (MAX_NUM_UCL_LINK * MAX_NUM_UCL_SNK_ASE_PER_LINK)
 #define MAX_NUM_UCL_SRC_ASE                     (MAX_NUM_UCL_LINK * MAX_NUM_UCL_SRC_ASE_PER_LINK)
-
 
 /**
  * GAP Configuration Settings
@@ -208,10 +204,10 @@ extern "C" {
 #define BLE_APP_CAP_COM_NUM_GATT_SERVICES      0u
 #endif /*((APP_CAP_ROLE & CAP_ROLE_ACCEPTOR) == CAP_ROLE_ACCEPTOR)*/
 
-
 #define BLE_APP_NUM_GATT_SERVICES              (BLE_HOST_NUM_GATT_SERVICES \
                                                + BLE_APP_CCP_SRV_NUM_GATT_SERVICES \
                                                + BLE_APP_CAP_COM_NUM_GATT_SERVICES)
+
 /**
  * Maximum number of Attributes
  */
@@ -220,6 +216,7 @@ extern "C" {
 #else
 #define BLE_HOST_NUM_GATT_ATTRIBUTES                    (11u)
 #endif /*((CFG_BLE_OPTIONS & BLE_OPTIONS_ENHANCED_ATT) == BLE_OPTIONS_ENHANCED_ATT)*/
+
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 #define BLE_APP_CCP_SRV_NUM_GATT_ATTRIBUTES    CCP_SRV_NUM_GATT_ATTRIBUTES((APP_CCP_NUM_LOCAL_BEARER_INSTANCES+1u),\
                                                                             APP_CCP_FEATURES)
@@ -291,13 +288,12 @@ extern "C" {
 #define BLE_CSIP_SET_COORDINATOR_NVM_ALLOC_SIZE 0u
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
 
-
-
 #define BLE_APP_AUDIO_NVM_ALLOC_SIZE            (BAP_ASCS_CLT_NVM_ALLOC_SIZE + BAP_PACS_CLT_NVM_ALLOC_SIZE \
                                                 + BLE_VCP_CTLR_NVM_ALLOC_SIZE + BLE_CSIP_SET_COORDINATOR_NVM_ALLOC_SIZE \
                                                 + BLE_MICP_CTLR_NVM_ALLOC_SIZE \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,HAP_HARC_GATT_DATABASE_SIZE) \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,HAP_IAC_GATT_DATABASE_SIZE))
+
 /* Exported types ------------------------------------------------------------*/
 
 /* External variables --------------------------------------------------------*/
@@ -305,8 +301,10 @@ extern "C" {
 /* Exported macros ------------------------------------------------------------*/
 
 /* Exported functions ---------------------------------------------*/
+
 #ifdef __cplusplus
 }
 #endif
-#endif /* __HAP_APP_CONF_H */
+
+#endif /*__HAP_APP_CONF_H */
 

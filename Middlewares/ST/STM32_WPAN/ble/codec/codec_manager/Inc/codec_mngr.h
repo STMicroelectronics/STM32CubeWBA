@@ -29,13 +29,17 @@
 /* Exported defines -----------------------------------------------------------*/
 
 /* Configuration*/
-#define MAX_PATH_ID             2       /* interface number : HCI + Shared RAM */
+#define MAX_PATH_ID             3       /* interface number: HCI + Shared RAM (sample or frame) */
 
-#define MAX_PATH_NB             4       /* max number of data path, a path may support multi channel */
+#define MAX_PATH_NB             6       /* max number of data path, a path may support multi channel */
 #define MAX_CHANNEL_PER_PATH    4       /* max channel per data path */
-#define MAX_CHANNEL             4       /* number of channel supported, can be <= MAX_PATH_NB*MAX_CHANNEL_PER_PATH */
+#define MAX_CHANNEL             6       /* number of channel supported, can be <= MAX_PATH_NB*MAX_CHANNEL_PER_PATH */
 #define MAX_ISO_GROUP_NB        1       /* linked to LL capabilities */
-#define MAX_ISO_STRM_PER_GRP    2       /* linked to LL capabilities */
+#define MAX_ISO_STRM_PER_GRP    6       /* linked to LL capabilities */
+
+#define MIN_PATH_POOL_SIZE      20      /* minimum value of media_packet_pool_size / MAX_PATH_NB,
+                                          If LC3 codec is used, this value SHALL be greater than LC3 packet size,
+                                          2*MAX_LC3_NBYTES is recommended */
 
 #define SUPPORT_LC3             1
 
@@ -71,11 +75,9 @@
 
 #endif /*SUPPORT_LC3*/
 
-#define SUPPORTED_PRERECEIVED_PACKET    1   /* FIFO margin in media packet size */
+#define FIFO_MEDIA_PCKT_MARGIN          1   /* FIFO margin in media packet size */
 
-#define LL_SETUP_TIME_WINDOWS_US        50  /* Margin given to the setup time for defining a forbidden windows */
-
-#define ISO_DATA_PACK_MAX_SIZE          310 /* MAX value of an SDU supported by the controller before fragmentation */
+#define LL_SETUP_TIME_WINDOWS_US        50  /* Margin given to the setup time for defining a forbidden window */
 
 #define USE_SW_SYNC_METHOD              1   /* Synchronization method used */
 
@@ -83,22 +85,68 @@
 
 /* Exported typedef -----------------------------------------------------------*/
 
-/* Vendor specific parameters used in HCI Configure Data Path command */
+/************************************** Data path config *************************************/
+typedef enum
+{
+  DATA_PATH_HCI_LEGACY      =      0,
+  DATA_PATH_SAMPLE_CIRC_BUF =      1, /* data path used for PCM samples */
+  DATA_PATH_FRAME_CIRC_BUF  =      2  /* data path used for raw frames (AUDIO_CODING_FORMAT_TRANSPARENT) */
+} CODEC_DataPathID_t;
+
+
+/* Vendor specific parameters used in HCI Configure Data Path command for DATA_PATH_SAMPLE_CIRC_BUF
+   This data path should be configured before calling Setup Iso Data Path command */
 typedef struct
 {
-  uint8_t SampleDepth;          /* depth in bits of the sample */
+  uint8_t SampleDepth;          /* resolution of the sample in bits (16, 24 or 32) */
   uint8_t Decimation;           /* pointer increment between two samples of the same channel */
-} CODEC_DataPathParam_t;
+} CODEC_DataPathSampleParam_t;
 
-#define CONFIGURE_DATA_PATH_CONFIG_LEN sizeof(CODEC_DataPathParam_t)
+#define CONFIGURE_DATA_PATH_SAMPLE_LEN  sizeof(CODEC_DataPathSampleParam_t)
 
-/* Codec Mode */
+/* Vendor specific parameters used in HCI Configure Data Path command for DATA_PATH_FRAME_CIRC_BUF
+   This data path should be configured before calling Read Local Supported Controller Delay
+   or Setup Iso Data Path commands */
+typedef struct
+{
+  uint32_t FrameIntervalUs;     /* frame interval in microseconds */
+  uint16_t FrameSize;           /* frame size in bytes */
+} CODEC_DataPathFrameParam_t;
+
+#define CONFIGURE_DATA_PATH_FRAME_LEN  sizeof(CODEC_DataPathFrameParam_t)
+
+
+/************************************ Codec Manager mode *************************************/
 typedef uint8_t CODEC_Mode_t;
-#define CODEC_MODE_DEFAULT      (CODEC_MODE_FLOW_CTRL)
+#define CODEC_MODE_DEFAULT                  (CODEC_MODE_FLOW_CTRL)
 
-#define CODEC_MODE_FLOW_CTRL    (0x01)
-#define CODEC_MODE_WAIT_SYNC    (0x02)
+#define CODEC_MODE_FLOW_CTRL                (0x01)  /* Enable flow control between controller and codec manager */
 
+#define CODEC_MODE_WAIT_SYNC                (0x02)  /* Allows to reduce jitter on the clock corrector, but audio trigger
+                                                       callback are not called during the first initialMinSampling duration */
+
+#define CODEC_MODE_FORCE_TRANSPARENT_CDC_ID (0x04)  /* Force codec ID to AUDIO_CODING_FORMAT_TRANSPARENT when receiving HCI commands
+                                                       mainly used when LC3 processing is done outside the codec manager, but
+                                                       the generic audio framework still deals with LC3 coding format */
+
+/* Status of the codec operation */
+typedef enum
+{
+  CODEC_STATUS_SUCCESS  =  0,
+  CODEC_STATUS_ERROR    =  1
+} codec_status_t;
+
+/* Status of the codec when received packet from link layer
+  Busy means the packet has been handled but memory is currently full */
+typedef enum
+{
+  CODEC_RCV_STATUS_OK =    0,
+  CODEC_RCV_STATUS_FAIL =  1,
+  CODEC_RCV_STATUS_BUSY =  2
+} codec_rcv_status_t;
+
+
+/************************************ LC3 Codec settings *************************************/
 /* Structure for allocating RAM used by the LC3 codec */
 typedef struct
 {
@@ -110,6 +158,22 @@ typedef struct
   void *pChannelStart;          /* pointer to the allocated RAM for channels */
   void *pStackStart;            /* pointer to the allocated RAM for LC3 stack */
 } CODEC_LC3Config_t;
+
+/* bandwith used by the codec */
+typedef enum
+{
+  CODEC_NB =    1, /* narrow band,          sampling at 8kHz */
+  CODEC_WB =    2, /* wide band,            sampling at 16kHz */
+  CODEC_SSWB =  3, /* semi super wide band, sampling at 24kHz */
+  CODEC_SWB =   4, /* super wide band,      sampling at 32kHz */
+  CODEC_FBCD =  5, /* full band CD,         sampling at 44.1kHz */
+  CODEC_FB =    6, /* full band,            sampling at 48kHz */
+  CODEC_FBHR =  7, /* full band high res    sampling at 48kHz */
+  CODEC_UBHR =  8, /* ultra band high res   sampling at 96kHz */
+} codec_band_t;
+
+
+/************************************ others structures .*************************************/
 
 /* Structure containing clock tree information needed for the frequency corrector */
 typedef struct
@@ -131,51 +195,6 @@ typedef __PACKED_STRUCT
   uint8_t codec_conf[19];
 } CODEC_SetupIsoDataPathCmd_t;
 
-/* Structure for HCI Configure Data Path command */
-typedef __PACKED_STRUCT
-{
-  uint8_t direction;
-  uint8_t path_ID;
-  uint8_t config_len;
-  uint8_t sample_depth;
-  uint8_t decimation;
-} CODEC_ConfigureDataPathCmd_t;
-
-/* Data path types */
-typedef enum
-{
-  DATA_PATH_HCI_LEGACY   =      0,
-  DATA_PATH_CIRCULAR_BUF =      1
-} CODEC_DataPath_t;
-
-/* Status of the codec operation */
-typedef enum
-{
-  CODEC_STATUS_SUCCESS  =       0,
-  CODEC_STATUS_ERROR    =       1
-} codec_status_t;
-
-/* Status of the codec when received packet from link layer
-  Busy means the packet has been handled but memory are currently full */
-typedef enum
-{
-  CODEC_RCV_STATUS_OK =    0,
-  CODEC_RCV_STATUS_FAIL =  1,
-  CODEC_RCV_STATUS_BUSY =  2
-} codec_rcv_status_t;
-
-/* bandwith */
-typedef enum
-{
-  CODEC_NB =    1, /* narrow band,          sampling at 8kHz */
-  CODEC_WB =    2, /* wide band,            sampling at 16kHz */
-  CODEC_SSWB =  3, /* semi super wide band, sampling at 24kHz */
-  CODEC_SWB =   4, /* super wide band,      sampling at 32kHz */
-  CODEC_FBCD =  5, /* full band CD,         sampling at 44.1kHz */
-  CODEC_FB =    6, /* full band,            sampling at 48kHz */
-  CODEC_FBHR =  7, /* full band high res    sampling at 48kHz */
-  CODEC_UBHR =  8, /* ultra band high res   sampling at 96kHz */
-} codec_band_t;
 
 /*********************************************************************************************/
 /******************************** interface with local application ***************************/
@@ -186,7 +205,7 @@ typedef enum
   * @brief Initialize codec manager with given memories for codec and data buffering
   * @param media_packet_pool_size : size in bytes of the provided pool
   * @param media_packet_pool : pointer to the provided pool
-  * @param codecRAMConfig : pointer to the RAM dedicated to the LC3 codec
+  * @param codecRAMConfig : pointer to the RAM dedicated to the LC3 codec, can be null if LC3 lib is not linked
   * @param margin_processing_us :  extra latency in microseconds added to the controller delay
   *                               for including higher priority processing over a codec frame interval
   * @param rf_max_setup_time_us : maximum timing in microseconds measured from the radio interrupt to the beginning of
@@ -219,8 +238,8 @@ void CODEC_ManagerProcess( void );
 /*---------------- local interfaces for audio triggering and data providing -----------------*/
 /**
   * @brief Register a function that is called once for triggering audio interface in order to respect a controller delay
-  * @note At source, the trigger happen one controller delay plus one media packet before an anchor point
-  * @note At sink, the trigger happen one controller delay after the SDU reference timing
+  * @note At source, the trigger happens ((1 * controller delay) + (1 * media packet duration)) before an anchor point
+  * @note At sink,   the trigger happens  (1 * controller delay) after the SDU reference timing (first SDU discarded)
   * @param path_id : path id
   * @param dir : direction (input or output)
   * @param clbk_function : callback function that will be called after de CIS/BIS is established
@@ -252,9 +271,11 @@ void CODEC_ReceiveData(uint16_t iso_con_hdl, uint8_t path_id, void* pdata);
   * @note  Could be redefined for triggering other processing on that data at the application level
   * @param iso_con_hdl: isochronous connection handle
   * @param pdecoded_data : pointer to the decoded data
+  * @param channel_idx : channel index on the connection handle
+  * @param channel_nb : total channel nb on the connection handle
   * @retval none
   */
-void CODEC_NotifyDataReady(uint16_t iso_con_hdl, void* pdecoded_data);
+void CODEC_NotifyDataReady(uint16_t iso_con_hdl, void* pdecoded_data, uint8_t channel_idx, uint8_t channel_nb);
 
 /*--------------------------------- integration with clock ----------------------------------*/
 /**
@@ -328,11 +349,14 @@ uint8_t CODEC_ReadLocalSupportedControllerDelay(uint8_t* codecID, uint8_t transp
                                                 uint32_t* min_controller_delay, uint32_t* max_controller_delay);
 
 /**
-  * @brief  Parse HCI buffer for the HCI configure data path command, this function also reset the interface state
-  * @param *hciparam : pointer to an array containing HCI parameters
+  * @brief  HCI configure data path command, this function also reset the interface state
+  * @param direction : direction 0 for input, 1 for output
+  * @param path_id : vendor specific path ID, other than DATA_PATH_HCI_LEGACY
+  * @param vs_config_len : vendor specific config len, see CONFIGURE_DATA_PATH_XXXX_CONFIG_LEN, depending on path ID
+  * @param *vs_config : vendor specific configuration, depending on path ID
   * @retval HCI status
   */
-uint8_t CODEC_ConfigureDataPath(uint8_t *hciparam);
+uint8_t CODEC_ConfigureDataPath(uint8_t direction, uint8_t path_id, uint8_t vs_config_len, uint8_t *vs_config);
 
 /**
   * @brief HCI setup ISO data path command used for path and codec initialization
@@ -344,10 +368,11 @@ uint8_t CODEC_SetupIsoDataPath(uint8_t *hciparam);
 
 /**
   * @brief  HCI remove data path command for removing a data path defined by CODEC_SetupIsoDataPath
-  * @param *hciparam : pointer to an array containing HCI parameters
+  * @param iso_con_hdl : isochronous connection handle
+  * @param direction_mask : direction of the stream (bit field)
   * @retval HCI status
   */
-uint8_t CODEC_RemoveIsoDataPath(uint8_t *hciparam);
+uint8_t CODEC_RemoveIsoDataPath(uint16_t iso_con_hdl, uint8_t direction_mask);
 
 /*--------------------------------- Callbacks and events ------------------------------------*/
 /**

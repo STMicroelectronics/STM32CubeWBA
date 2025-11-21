@@ -113,6 +113,16 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cryp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cryp_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_dma.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</locationURI>
@@ -146,26 +156,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gtzc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_hsem.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_hsem.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_i2c_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_i2c_ex.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_icache.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr.c</name>
@@ -213,16 +203,6 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</locationURI>
-		</link>
-		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_uart.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</locationURI>
@@ -266,31 +246,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/Middlewares/ll_sys_cs.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/Middlewares/ll_sys_dp_slp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/Middlewares/ll_sys_intf.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/Middlewares/ll_sys_startup.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/Middlewares/svc_ctl.c</name>
-			<type>1</type>
-			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/Core/app_entry.c</name>
@@ -398,14 +353,34 @@
 			<locationURI>PARENT-7-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/Middlewares/BLE/svc_ctl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/Middlewares/LinkLayer/ll_sys_cs.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/Middlewares/LinkLayer/ll_sys_dp_slp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_dp_slp.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/Middlewares/LinkLayer/ll_sys_intf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_intf.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/Middlewares/LinkLayer/ll_sys_startup.c</name>
+			<type>1</type>
+			<locationURI>PARENT-7-PROJECT_LOC/Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/App/app_ble.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/NonSecure/STM32_WPAN/App/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/p2p_server.c</name>
@@ -521,6 +496,11 @@
 			<name>Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/Common/WPAN/Interface/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Common/WPAN/Interfaces/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>

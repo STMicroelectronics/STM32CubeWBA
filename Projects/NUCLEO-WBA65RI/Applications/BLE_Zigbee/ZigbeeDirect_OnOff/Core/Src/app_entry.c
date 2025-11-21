@@ -353,18 +353,18 @@ static void SystemPower_Config(void)
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
   GPIO_InitTypeDef DbgIOsInit = {0};
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
   HAL_GPIO_Init(GPIOA, &DbgIOsInit);
 
   DbgIOsInit.Mode = GPIO_MODE_ANALOG;
   DbgIOsInit.Pull = GPIO_NOPULL;
   DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
   HAL_GPIO_Init(GPIOB, &DbgIOsInit);
 #endif /* CFG_DEBUGGER_LEVEL */
 
@@ -414,6 +414,9 @@ static void APPE_RNG_Init(void)
  */
 static void APPE_FLASH_MANAGER_Init(void)
 {
+  /* Init the Flash Manager module */
+  FM_Init();
+
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
 

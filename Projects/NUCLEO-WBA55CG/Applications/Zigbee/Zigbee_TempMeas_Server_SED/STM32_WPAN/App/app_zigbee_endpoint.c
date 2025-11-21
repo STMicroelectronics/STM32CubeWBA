@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -107,6 +108,7 @@ static int16_t                  iTemperatureCurrent;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN PFP */
 static void APP_ZIGBEE_ApplicationTaskInit        ( void );
 static void APP_ZIGBEE_TempMeasAttributeUpdate    ( void );
@@ -270,7 +272,6 @@ void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress
 
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
 }
-
 
 /**
  * @brief  Print application information to the console

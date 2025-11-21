@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_uid_service.c
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -41,7 +41,7 @@ tBleStatus EddystoneUID_Init(EddystoneUID_InitTypeDef *EddystoneUID_Init)
 {
   tBleStatus ret = BLE_STATUS_SUCCESS;
   uint16_t AdvertisingInterval = (EddystoneUID_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
-  uint8_t service_data[] =
+  uint8_t UID_data[] =
   {
     2,                                                                       /*< Length. */
     AD_TYPE_FLAGS,                                                           /*< Flags data type value. */
@@ -73,7 +73,7 @@ tBleStatus EddystoneUID_Init(EddystoneUID_InitTypeDef *EddystoneUID_Init)
     0x00,                                                                   /*< Reserved. */
     0x00                                                                    /*< Reserved. */
   };
-  
+
   /* Disable scan response. */
   hci_le_set_scan_response_data(0, NULL);
 
@@ -84,17 +84,17 @@ tBleStatus EddystoneUID_Init(EddystoneUID_InitTypeDef *EddystoneUID_Init)
                                            CFG_BD_ADDRESS_TYPE,
                                            CFG_BD_ADDRESS_TYPE,
                                            BleGetBdAddress(),
-                                           0x07, /* On channels: 37, 38 and 39 */ 
+                                           0x07, /* On channels: 37, 38 and 39 */
                                            0x00  /* Allow Scan Request and Connect Request from Any */
                                          );
-  
+
   if (ret != BLE_STATUS_SUCCESS)
   {
     return ret;
   }
 
-  ret = hci_le_set_advertising_data(sizeof(service_data),
-                                    service_data);
+  ret = hci_le_set_advertising_data(sizeof(UID_data),
+                                    UID_data);
   if (ret != BLE_STATUS_SUCCESS)
   {
     return ret;
@@ -110,7 +110,7 @@ tBleStatus EddystoneUID_Init(EddystoneUID_InitTypeDef *EddystoneUID_Init)
   return ret;
 }
 
-void EddystoneUID_Process(void)
+tBleStatus EddystoneUID_Process(void)
 {
   uint8_t NamespaceID[] = { NAMESPACE_ID };
   uint8_t BeaconID[] = { BEACON_ID };
@@ -123,5 +123,5 @@ void EddystoneUID_Process(void)
     .BeaconID = BeaconID
   };
 
-  EddystoneUID_Init(&EddystoneUID_InitStruct);
+  return(EddystoneUID_Init(&EddystoneUID_InitStruct));
 }

@@ -37,7 +37,7 @@ extern "C" {
 #define HAL_ADC_MODULE_ENABLED
 /*#define HAL_COMP_MODULE_ENABLED   */
 #define HAL_CRC_MODULE_ENABLED
-/*#define HAL_CRYP_MODULE_ENABLED   */
+#define HAL_CRYP_MODULE_ENABLED
 /*#define HAL_GTZC_MODULE_ENABLED   */
 /*#define HAL_HASH_MODULE_ENABLED   */
 /*#define HAL_HSEM_MODULE_ENABLED   */
@@ -144,7 +144,7 @@ extern "C" {
   * @brief Uncomment the line below to expanse the "assert_param" macro in the
   *        HAL drivers code
   */
-/* #define USE_FULL_ASSERT    1U */
+ #define USE_FULL_ASSERT    1U
 
 /* ################## Register callback feature configuration ############### */
 /**

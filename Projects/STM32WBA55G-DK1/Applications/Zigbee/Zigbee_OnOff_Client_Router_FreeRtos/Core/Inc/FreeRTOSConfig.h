@@ -28,8 +28,8 @@
  */
 /* USER CODE END Header */
 
-#ifndef FREERTOS_CONFIG_H
-#define FREERTOS_CONFIG_H
+#ifndef __FREERTOS_CONFIG_H
+#define __FREERTOS_CONFIG_H
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -61,7 +61,6 @@ extern uint32_t SystemCoreClock;
 #define configRUN_FREERTOS_SECURE_ONLY           0
 #define configENABLE_FPU                         0
 #define configENABLE_MPU                         0
-
 #define configUSE_PREEMPTION                     1
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
@@ -88,7 +87,6 @@ extern uint32_t SystemCoreClock;
 #define configHEAP_CLEAR_MEMORY_ON_FREE          0
 #define configUSE_MINI_LIST_ITEM                 1
 #define configUSE_SB_COMPLETED_CALLBACK          0
-
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
@@ -134,7 +132,7 @@ to exclude the API function. */
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
- /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+ /* __NVIC_PRIO_BITS will be specified when CMSIS is being used. */
  #define configPRIO_BITS         __NVIC_PRIO_BITS
 #else
  #define configPRIO_BITS         4
@@ -169,4 +167,4 @@ header file. */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
 /* USER CODE END Defines */
 
-#endif /* FREERTOS_CONFIG_H */
+#endif /* __FREERTOS_CONFIG_H */

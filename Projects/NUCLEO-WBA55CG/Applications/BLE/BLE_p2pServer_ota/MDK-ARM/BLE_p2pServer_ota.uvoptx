@@ -1603,7 +1603,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_lib.a</PathWithFileName>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA5_LinkLayer_BLE_Basic_lib.a</PathWithFileName>
       <FilenameWithoutPath>LinkLayer_BLE_Basic_lib.a</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

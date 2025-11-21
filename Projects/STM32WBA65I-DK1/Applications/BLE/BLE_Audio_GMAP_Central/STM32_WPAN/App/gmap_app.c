@@ -17,7 +17,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-
 #include "gmap_app.h"
 #include "main.h"
 #include "ble_core.h"
@@ -32,9 +31,16 @@
 #include "log_module.h"
 #include "app_ble.h"
 #include "simple_nvm_arbiter.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
+typedef struct
+{
+  Sampling_Freq_t Frequency;
+  uint8_t         Multiplier1;
+  uint8_t         Multiplier2;
+} CombinedFreqParameters;
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -65,20 +71,18 @@
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-
 #define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory size required for CAP*/
 #define CAP_DYN_ALLOC_SIZE \
-        CAP_MEM_TOTAL_BUFFER_SIZE((CAP_ROLE_INITIATOR|CAP_ROLE_COMMANDER),CFG_BLE_NUM_LINK, \
-                                    MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
-                                    MAX_NUM_UCL_SNK_ASE_PER_LINK, \
-                                    MAX_NUM_UCL_SRC_ASE_PER_LINK, \
-                                    0,0,\
-                                    0,0, \
-                                    0,0, \
-                                    APP_VCP_ROLE_CONTROLLER_SUPPORT,APP_VCP_CTLR_NUM_AIC_INSTANCES,APP_VCP_CTLR_NUM_VOC_INSTANCES, \
-                                    APP_MICP_ROLE_CONTROLLER_SUPPORT,APP_MICP_CTLR_NUM_AIC_INSTANCES)
+        CAP_MEM_TOTAL_BUFFER_SIZE(APP_CAP_ROLE, CFG_BLE_NUM_LINK, \
+                                  MAX_NUM_CIG,MAX_NUM_CIS_PER_CIG, \
+                                  MAX_NUM_UCL_SNK_ASE_PER_LINK, MAX_NUM_UCL_SRC_ASE_PER_LINK, \
+                                  0,0, \
+                                  0,0, \
+                                  0,0, \
+                                  APP_VCP_ROLE_CONTROLLER_SUPPORT,APP_VCP_CTLR_NUM_AIC_INSTANCES,APP_VCP_CTLR_NUM_VOC_INSTANCES, \
+                                  APP_MICP_ROLE_CONTROLLER_SUPPORT,APP_MICP_CTLR_NUM_AIC_INSTANCES)
 
 /*Memory size required to allocate resource for Audio Stream Endpoint in Unicats Server Context*/
 #define BAP_UCL_ASE_BLOCKS_SIZE \
@@ -116,9 +120,8 @@
 /* Number of 64-bit words in NVM flash area */
 #define CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE         ((BLE_APP_AUDIO_NVM_ALLOC_SIZE/8) + 4u)
 
-
-#define VOLUME_STEP 10
-#define BASE_VOLUME 128
+#define VOLUME_STEP                             10
+#define BASE_VOLUME                             128
 
 #define TARGET_MEDIA_STREAM_QOS_CONFIG LC3_QOS_48_4_1
 
@@ -168,7 +171,7 @@ const APP_QoSConf_t APP_QoSConf[NUM_LC3_QoSConf + NUM_GMAP_LC3_QoSConf] =    \
                   {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,2,8,40000}, \
                   {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,2,10,40000}, \
                   {SAMPLE_FREQ_24000_HZ,7500,BAP_FRAMING_UNFRAMED,45,2,8,40000}, \
-                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,10000}, \
+                  {SAMPLE_FREQ_24000_HZ,10000,BAP_FRAMING_UNFRAMED,60,2,10,40000}, \
                   {SAMPLE_FREQ_32000_HZ,7500,BAP_FRAMING_UNFRAMED,60,2,8,40000}, \
                   {SAMPLE_FREQ_32000_HZ,10000,BAP_FRAMING_UNFRAMED,80,2,10,40000}, \
                   {SAMPLE_FREQ_44100_HZ,8163,BAP_FRAMING_FRAMED,97,5,24,40000}, \
@@ -196,7 +199,6 @@ const APP_QoSConf_t APP_QoSConf[NUM_LC3_QoSConf + NUM_GMAP_LC3_QoSConf] =    \
                   {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,120,13,100,40000}, \
                   {SAMPLE_FREQ_48000_HZ,7500,BAP_FRAMING_UNFRAMED,117,13,75,40000}, \
                   {SAMPLE_FREQ_48000_HZ,10000,BAP_FRAMING_UNFRAMED,155,13,100,40000}, \
-
 
                   {SAMPLE_FREQ_16000_HZ,7500,BAP_FRAMING_UNFRAMED,30,1,15,60000}, \
                   {SAMPLE_FREQ_16000_HZ,10000,BAP_FRAMING_UNFRAMED,40,1,20,60000}, \
@@ -336,12 +338,19 @@ BAP_Periodic_Advertising_Params_t periodic_adv_params = {
   0x00 /* Advertising Properties */
 };
 
-typedef struct
-{
-  Sampling_Freq_t Frequency;
-  uint8_t         Multiplier1;
-  uint8_t         Multiplier2;
-} CombinedFreqParameters;
+uint8_t LocalVolume = BASE_VOLUME;
+uint8_t LocalMute = 0x00;
+
+#if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
+uint8_t RemoteVolume = BASE_VOLUME;
+uint8_t RemoteMute = 0x00;
+#endif /*(APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)*/
+
+#if (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u)
+uint8_t RemoteMicMute = 0x00;
+#endif /*(APP_MICP_ROLE_SERVER_SUPPORT == 1u)*/
+
+extern uint32_t Sink_frame_size;
 
 const CombinedFreqParameters APP_CombinedFrequencyTable[9][9] =
              /*                         8KHz                         16KHz                                    24 KHz                          32 KHz                                   48KHz       */
@@ -362,38 +371,30 @@ static tBleStatus GMAPAPP_GMAPInit(GMAP_Role_t Role);
 static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification);
 static APP_ACL_Conn_t *APP_GetACLConn(uint16_t ConnHandle);
 static APP_ACL_Conn_t *APP_AllocateACLConn(uint16_t ConnHandle);
-static APP_ASE_Info_t * GMAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle);
-uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
-                                         uint16_t CIS_ConnHandle,
-                                         uint8_t ASE_ID,
-                                         uint32_t ControllerDelay);
+static APP_ASE_Info_t *APP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle);
+static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
+                                             uint16_t CIS_ConnHandle,
+                                             uint8_t ASE_ID,
+                                             uint32_t ControllerDelay);
 static int32_t start_audio_source(void);
 static int32_t start_audio_sink(void);
 static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocations);
-
 #if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)
-uint8_t RemoteVolume = BASE_VOLUME;
-uint8_t RemoteMute = 0x00;
 static void VCP_MetaEvt_Notification(VCP_Notification_Evt_t *pNotification);
 #endif /*(APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)*/
 
 #if (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u)
-uint8_t RemoteMicMute = 0x00;
 static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification);
 #endif /*(APP_MICP_ROLE_SERVER_SUPPORT == 1u)*/
 
-uint8_t LocalVolume = BASE_VOLUME;
-uint8_t LocalMute = 0x00;
-
-static char Hex_To_Char(uint8_t Hex);
 static uint8_t Get_LC3_Conf_ID(uint8_t QoSConfId);
 static uint8_t Get_LC3_Broadcast_Conf_ID(uint8_t QoSConfId);
 static Sampling_Freq_t GMAPAPP_GetTargetFrequency(uint8_t Frequency, Audio_Role_t role, BAP_ASE_Info_t *p_ase);
 static void GMAPAPP_SetupBASE(uint8_t QoSConfID);
 static tBleStatus GMAPAPP_BroadcastSetupAudio(void);
+static char Hex_To_Char(uint8_t Hex);
 
 /* Exported functions --------------------------------------------------------*/
-
 extern void APP_NotifyToRun(void);
 
 /* Functions Definition ------------------------------------------------------*/
@@ -430,14 +431,15 @@ void GMAPAPP_Init(void)
   /* Init Initiator/Commander with Unicast Client */
   status = CAPAPP_Init(AUDIO_ROLE_SOURCE | AUDIO_ROLE_SINK);
   LOG_INFO_APP("CAPAPP_Init() returns status 0x%02X\n",status);
-  Set_Volume(BASE_VOLUME);
-  Menu_SetLocalVolume(BASE_VOLUME);
+  Set_Volume(LocalVolume);
+  Menu_SetLocalVolume(LocalVolume);
   if (status == BLE_STATUS_SUCCESS)
   {
     /* Initialize the GMAP layer*/
     status = GMAPAPP_GMAPInit(APP_GMAP_ROLE);
     LOG_INFO_APP("GMAPAPP_GMAPInit() with role 0x%02X returns status 0x%02X\n", APP_GMAP_ROLE, status);
   }
+  UNUSED(status);
 }
 
 tBleStatus GMAPAPP_Linkup(uint16_t ConnHandle)
@@ -590,7 +592,6 @@ void GMAP_Notification(GMAP_Notification_Evt_t *pNotification)
       LOG_INFO_APP("GMAP Linkup Complete Event with ConnHandle 0x%04X is received with status 0x%02X\n",
                   pNotification->ConnHandle,
                   pNotification->Status);
-      p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
         LOG_INFO_APP("GMAP Role = 0x%02X\n", p_gmap_info->GMAPRole);
@@ -598,21 +599,31 @@ void GMAP_Notification(GMAP_Notification_Evt_t *pNotification)
         LOG_INFO_APP("UGT Features = 0x%02X\n", p_gmap_info->UGTFeatures);
         LOG_INFO_APP("BGS Features = 0x%02X\n", p_gmap_info->BGSFeatures);
         LOG_INFO_APP("BGR Features = 0x%02X\n", p_gmap_info->BGRFeatures);
-        if (p_conn != 0)
-        {
-          p_conn->AudioProfile |= AUDIO_PROFILE_GMAP;
-        }
       }
+
       Menu_SetNoStreamPage();
 
+      p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
         if (p_conn->ConfirmIndicationRequired == 1u)
         {
           /* Confirm indication now that the GATT is available */
           ret = aci_gatt_confirm_indication(pNotification->ConnHandle);
-          LOG_INFO_APP("aci_gatt_confirm_indication() returns status 0x%02X\n", ret);
+          if (ret != BLE_STATUS_SUCCESS)
+          {
+            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+          }
+          else
+          {
+            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
+          }
           p_conn->ConfirmIndicationRequired = 0u;
+        }
+
+        if (pNotification->Status == BLE_STATUS_SUCCESS)
+        {
+          p_conn->AudioProfile |= AUDIO_PROFILE_GMAP;
         }
       }
 
@@ -691,6 +702,7 @@ void GMAP_Notification(GMAP_Notification_Evt_t *pNotification)
         GMAPAPP_Context.OperationConnHandle = pNotification->ConnHandle;
       }
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
+
       UNUSED(ret);
       UNUSED(p_gmap_info);
       break;
@@ -1366,9 +1378,7 @@ void APP_NotifyTxAudioHalfCplt(void)
   }
 }
 
-extern uint32_t Sink_frame_size;
-
-void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data)
+void CODEC_NotifyDataReady(uint16_t conn_handle, void* decoded_data, uint8_t channel_idx, uint8_t channel_nb)
 {
   /* When only one channel is active, duplicate it for fake stereo on SAI */
   uint32_t i;
@@ -1488,6 +1498,7 @@ void GMAPAPP_AclConnected(uint16_t ConnHandle, uint8_t Peer_Address_Type, uint8_
         break;
       }
     }
+
   }
 }
 
@@ -1642,7 +1653,9 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
         {
           LOG_INFO_APP("Deinitialized Audio Peripherals\n");
           MX_AudioDeInit();
+#if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
+#endif /* (CFG_LCD_SUPPORTED == 1) */
         }
         break;
       }
@@ -1667,24 +1680,23 @@ void GMAPAPP_ClearDatabase(void)
 {
   BLE_AUDIO_STACK_DB_ClearAllRecords();
 }
+
 /*************************************************************
  *
  * LOCAL FUNCTIONS
  *
  *************************************************************/
-
 static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
 {
   tBleStatus status;
 
-  LOG_INFO_APP("CAPAPP_Init()\n");
-
+  LOG_INFO_APP("CAPAPP_Init() with audio role 0x%02X\n", AudioRole);
 
   /*Clear the CAP Configuration*/
-  memset(&APP_CAP_Config, 0, sizeof(APP_CAP_Config));
+  memset(&APP_CAP_Config, 0, sizeof(CAP_Config_t));
 
   /*Clear the BAP Configuration*/
-  memset(&APP_BAP_Config, 0, sizeof(APP_BAP_Config));
+  memset(&APP_BAP_Config, 0, sizeof(BAP_Config_t));
 
   /*Clear the MICP Configuration*/
   memset(&APP_MICP_Config, 0, sizeof(MICP_Config_t));
@@ -1766,12 +1778,12 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
                     &APP_CCP_Config,
                     &APP_MCP_Config,
                     &APP_CSIP_Config);
-
   LOG_INFO_APP("CAP_Init() returns status 0x%02X\n",status);
   if (status != BLE_STATUS_SUCCESS)
   {
     return status;
   }
+
 #if (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1)
   if (APP_CSIP_Config.Role & CSIP_ROLE_SET_COORDINATOR)
   {
@@ -1780,6 +1792,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
 #endif /*(APP_CSIP_AUTOMATIC_SET_MEMBERS_DISCOVERY == 1)*/
   }
 #endif /* (APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT == 1) */
+
   for (uint8_t i = 0; i< APP_MAX_NUM_CIS; i++)
   {
     GMAPAPP_Context.cis_src_handle[i] = 0xFFFFu;
@@ -1788,6 +1801,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   }
 
   GMAPAPP_Context.bap_role = APP_BAP_Config.Role;
+
   for (uint8_t conn = 0; conn< CFG_BLE_NUM_LINK; conn++)
   {
     GMAPAPP_Context.aASEs[conn].acl_conn_handle = 0xFFFFu;
@@ -2001,18 +2015,21 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   pNotification->Status);
       break;
     }
+
     case CAP_UNICAST_AUDIOSTOPPED_EVT:
     {
       LOG_INFO_APP("CAP Unicast Stop Procedure is Complete with status 0x%02X\n",
                   pNotification->Status);
       break;
     }
+
     case CAP_UNICAST_AUDIO_UPDATED_EVT:
     {
       LOG_INFO_APP("CAP Unicast Update Procedure is Complete with status 0x%02X\n",
                   pNotification->Status);
       break;
     }
+
     case CAP_LINKUP_COMPLETE_EVT:
     {
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
@@ -2132,6 +2149,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_UNICAST_LINKUP_EVT:
     {
       APP_ACL_Conn_t *p_conn;
@@ -2164,6 +2182,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       UNUSED(p_info);
       break;
     }
+
     case CAP_UNICAST_AUDIO_DATA_PATH_SETUP_REQ_EVT:
     {
       BAP_SetupAudioDataPathReq_t *info = (BAP_SetupAudioDataPathReq_t *)pNotification->pInfo;
@@ -2206,7 +2225,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         controller_delay = info->ControllerDelayMax;
       }
 
-      p_ase = GMAPAPP_GetASE(info->ASE_ID,pNotification->ConnHandle);
+      p_ase = APP_GetASE(info->ASE_ID,pNotification->ConnHandle);
       if (p_ase != 0)
       {
         p_ase->controller_delay = controller_delay;
@@ -2217,15 +2236,18 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         }
       }
 
-      GMAPAPP_SetupAudioDataPath(pNotification->ConnHandle,info->CIS_ConnHandle,info->ASE_ID,controller_delay);
+      APP_UnicastSetupAudioDataPath(pNotification->ConnHandle,info->CIS_ConnHandle,info->ASE_ID,controller_delay);
       break;
     }
+
     case CAP_AUDIO_CLOCK_REQ_EVT:
     {
-      LOG_INFO_APP("Init Audio Clock with freq %d\n", (Sampling_Freq_t) *(pNotification->pInfo));
-      AudioClock_Init((Sampling_Freq_t) *(pNotification->pInfo));
+      Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
+      LOG_INFO_APP("Init Audio Clock with freq %d\n",*freq);
+      AudioClock_Init(*freq);
       break;
     }
+
     case CAP_REM_ACC_SNK_PAC_RECORD_INFO_EVT:
     case CAP_REM_ACC_SRC_PAC_RECORD_INFO_EVT:
     {
@@ -2292,6 +2314,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       LOG_INFO_APP("    Supported Preferred Audio Contexts: 0x%04X\n",remote_preferred_audio_contexts);
       break;
     }
+
     case CAP_UNICAST_AUDIO_CONNECTION_UP_EVT:
     {
       BAP_Unicast_Audio_Path_t *info = (BAP_Unicast_Audio_Path_t *)pNotification->pInfo;
@@ -2330,6 +2353,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_UNICAST_AUDIO_CONNECTION_DOWN_EVT:
     {
       BAP_Unicast_Audio_Path_t *info = (BAP_Unicast_Audio_Path_t *)pNotification->pInfo;
@@ -2414,7 +2438,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       APP_ACL_Conn_t *p_conn = APP_GetACLConn(pNotification->ConnHandle);
       if (p_conn != 0)
       {
-        p_ase = GMAPAPP_GetASE(p_info->ASE_ID,pNotification->ConnHandle);
+        p_ase = APP_GetASE(p_info->ASE_ID,pNotification->ConnHandle);
         if (p_ase == 0)
         {
           if (p_info->Type == ASE_SINK)
@@ -2516,6 +2540,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       }
       break;
     }
+
     case CAP_SET_VOLUME_PROCEDURE_COMPLETE_EVT:
     {
       LOG_INFO_APP("CAP Set Volume Procedure is complete with status 0x%02X\n",
@@ -2744,7 +2769,7 @@ static APP_ACL_Conn_t *APP_AllocateACLConn(uint16_t ConnHandle)
   return 0;
 }
 
-static APP_ASE_Info_t * GMAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
+static APP_ASE_Info_t *APP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
 {
   uint8_t i;
   APP_ACL_Conn_t *p_conn = APP_GetACLConn(ACL_ConnHandle);
@@ -2775,10 +2800,10 @@ static APP_ASE_Info_t * GMAPAPP_GetASE(uint8_t ASE_ID,uint16_t ACL_ConnHandle)
   return 0;
 }
 
-uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
-                                  uint16_t CIS_ConnHandle,
-                                  uint8_t ASE_ID,
-                                  uint32_t ControllerDelay)
+static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
+                                             uint16_t CIS_ConnHandle,
+                                             uint8_t ASE_ID,
+                                             uint32_t ControllerDelay)
 {
   tBleStatus status;
   Audio_Role_t role;
@@ -2799,6 +2824,10 @@ uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
                                                    p_ase->params.Codec.CodecConf.SpecificConfLength);
     frame_duration = LTV_GetConfiguredFrameDuration(p_ase->params.Codec.CodecConf.pSpecificConf,
                                                     p_ase->params.Codec.CodecConf.SpecificConfLength);
+    if ((frame_duration != FRAME_DURATION_7_5_MS) && (frame_duration != FRAME_DURATION_10_MS))
+    {
+      return BLE_STATUS_INVALID_PARAMS;
+    }
 
    if (((p_ase->Type == ASE_SOURCE) && (GMAPAPP_Context.bap_role & BAP_ROLE_UNICAST_SERVER)) || \
       ((p_ase->Type == ASE_SINK) && (GMAPAPP_Context.bap_role & BAP_ROLE_UNICAST_CLIENT)))
@@ -2854,7 +2883,7 @@ uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
       if ((GMAPAPP_Context.audio_role_setup & role) == 0x00)
       {
         LOG_INFO_APP("Register callback to Start Audio Peripheral Rx\n");
-        CODEC_RegisterTriggerClbk(1,0,&start_audio_source);
+        CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_INPUT, &start_audio_source);
       }
     }
     else if (role == AUDIO_ROLE_SINK)
@@ -2872,10 +2901,10 @@ uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
       if ((GMAPAPP_Context.audio_role_setup & role) == 0x00)
       {
         LOG_INFO_APP("Register callback to Start Audio Peripheral Tx\n");
-        CODEC_RegisterTriggerClbk(1,1,&start_audio_sink);
+        CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_OUTPUT, &start_audio_sink);
       }
     }
-    CODEC_DataPathParam_t param;
+    CODEC_DataPathSampleParam_t param;
     /* input data path */
     param.SampleDepth = 16;
 
@@ -2900,9 +2929,9 @@ uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
     /*Data Path ID is vendor-specific transport interface : 0x01 for "Shared memory of SAI"*/
     status = CAP_Unicast_SetupAudioDataPath(CIS_ConnHandle,
                                             ASE_ID,
-                                            DATA_PATH_CIRCULAR_BUF,
+                                            DATA_PATH_SAMPLE_CIRC_BUF,
                                             ControllerDelay,
-                                            CONFIGURE_DATA_PATH_CONFIG_LEN,
+                                            CONFIGURE_DATA_PATH_SAMPLE_LEN,
                                             (uint8_t *)&param);
     LOG_INFO_APP("Setup Unicast Audio Data Path for ASE ID %d on CIS connection handle 0x%04X with controller delay at %d us returns status 0x%02X\n",
                 ASE_ID,
@@ -2940,7 +2969,7 @@ uint8_t GMAPAPP_SetupAudioDataPath(uint16_t ACL_ConnHandle,
     else
     {
       APP_ASE_Info_t *p_app_ase;
-      p_app_ase = GMAPAPP_GetASE(ASE_ID,ACL_ConnHandle);
+      p_app_ase = APP_GetASE(ASE_ID,ACL_ConnHandle);
       if (p_app_ase != 0)
       {
         LOG_INFO_APP("Audio Data Path is complete with remaining Application delay for audio process to respect : %dus\n",
@@ -2973,18 +3002,6 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
     }
   }
   return bits;
-}
-
-static char Hex_To_Char(uint8_t Hex)
-{
-  if (Hex < 0xA)
-  {
-    return (char) Hex + 48;
-  }
-  else
-  {
-    return (char) Hex + 55;
-  }
 }
 
 static uint8_t Get_LC3_Conf_ID(uint8_t QoSConfId)
@@ -3182,7 +3199,6 @@ static void GMAPAPP_SetupBASE(uint8_t QoSConfID)
 
   GMAPAPP_Context.BaseGroup.pSubgroups[0].CodecSpecificConfLength += 3;
 
-
   for (i = 0; i < BROADCAST_SOURCE_NUM_BIS; i++)
   {
     uint8_t bis_i = 0;
@@ -3239,7 +3255,7 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void)
 
   if ((sampling_freq != 0) && (frame_duration != 0xFF))
   {
-    CODEC_RegisterTriggerClbk(1,0,&start_audio_source);
+    CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_INPUT, &start_audio_source);
 
     MX_AudioInit(AUDIO_ROLE_SOURCE,
                  sampling_freq,
@@ -3272,7 +3288,7 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void)
     }
     LOG_INFO_APP("Controller delay chosen to value %d us\n", controller_delay);
 
-    CODEC_DataPathParam_t param;
+    CODEC_DataPathSampleParam_t param;
     /* sample coded on 16bits */
     param.SampleDepth = 16;
 
@@ -3284,8 +3300,8 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void)
                                            direction,
                                            a_codec_id,
                                            controller_delay,
-                                           DATA_PATH_CIRCULAR_BUF,
-                                           CONFIGURE_DATA_PATH_CONFIG_LEN,
+                                           DATA_PATH_SAMPLE_CIRC_BUF,
+                                           CONFIGURE_DATA_PATH_SAMPLE_LEN,
                                            (const uint8_t*) &param);
 
     LOG_INFO_APP("CAP_Broadcast_SetupAudioDataPath() returns status 0x%02X\n", ret);
@@ -3306,7 +3322,9 @@ static int32_t start_audio_source(void)
   LOG_INFO_APP("START AUDIO SOURCE (input)\n");
   status = Start_RxAudio();
 
-  if (GMAPAPP_Context.num_cis_established > 0)
+#if (CFG_LCD_SUPPORTED == 1)
+
+  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
   {
     char sink_samplerate_text[8];
     char source_samplerate_text[8];
@@ -3363,9 +3381,9 @@ static int32_t start_audio_source(void)
 
     Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
   }
+#endif /* (CFG_LCD_SUPPORTED == 1) */
   return status;
 }
-
 
 /*Audio Sink */
 static int32_t start_audio_sink(void)
@@ -3377,7 +3395,9 @@ static int32_t start_audio_sink(void)
   LOG_INFO_APP("START AUDIO SINK (output)\n");
   status = Start_TxAudio();
 
-  if (GMAPAPP_Context.num_cis_established > 0)
+#if (CFG_LCD_SUPPORTED == 1)
+
+  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
   {
     char sink_samplerate_text[8];
     char source_samplerate_text[8];
@@ -3434,6 +3454,7 @@ static int32_t start_audio_sink(void)
 
     Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
   }
+#endif /* (CFG_LCD_SUPPORTED == 1) */
   return status;
 }
 
@@ -3454,7 +3475,7 @@ static void VCP_MetaEvt_Notification(VCP_Notification_Evt_t *pNotification)
       RemoteMute = p_info->Mute;
       if (RemoteMute == 0)
       {
-        Menu_SetRemoteVolume(p_info->VolSetting);
+        Menu_SetRemoteVolume(RemoteVolume);
       }
       else
       {
@@ -3557,7 +3578,15 @@ static void MICP_MetaEvt_Notification(MICP_Notification_Evt_t *pNotification)
 }
 #endif /* (APP_MICP_ROLE_CONTROLLER_SUPPORT == 1u) */
 
-/* USER CODE BEGIN FD */
-
-/* USER CODE END FD */
+static char Hex_To_Char(uint8_t Hex)
+{
+  if (Hex < 0xA)
+  {
+    return (char) Hex + 48;
+  }
+  else
+  {
+    return (char) Hex + 55;
+  }
+}
 

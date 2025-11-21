@@ -33,8 +33,11 @@
 
 /* External variables --------------------------------------------------------*/
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern UART_HandleTypeDef hlpuart1;
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
@@ -96,10 +99,15 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_DEBUGGER_LEVEL */
 
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
+  memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
   memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
   memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
 #if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
+#if (OT_CLI_USE == 1)
+  memset(&hlpuart1, 0, sizeof(hlpuart1));
+#endif  /* (OT_CLI_USE == 1) */
 #endif
 
   MX_GPIO_Init();
@@ -107,6 +115,9 @@ void MX_StandbyExit_PeripheralInit(void)
   MX_RAMCFG_Init();
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
+#if (OT_CLI_USE == 1)
+  MX_LPUART1_UART_Init();
+#endif  /* (OT_CLI_USE == 1) */
 #endif
   MX_ICACHE_Init();
   CRCCTRL_Init();

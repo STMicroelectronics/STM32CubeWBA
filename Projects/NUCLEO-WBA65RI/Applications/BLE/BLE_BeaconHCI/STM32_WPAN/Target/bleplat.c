@@ -23,7 +23,6 @@
 #include "app_ble.h"
 #include "baes.h"
 #include "bpka.h"
-#include "ble_timer.h"
 #include "blestack.h"
 #include "host_stack_if.h"
 
@@ -35,7 +34,6 @@ void BLEPLAT_Init( void )
 {
   BAES_Reset( );
   BPKA_Reset( );
-  BLE_TIMER_Init();
 }
 
 /*****************************************************************************/
@@ -46,7 +44,6 @@ void BLEPLAT_NvmStore( const uint64_t* ptr,
   UNUSED(ptr);
   UNUSED(size);
 
-  APP_BLE_HostNvmStore();
   return;
 }
 
@@ -138,21 +135,6 @@ void BPKACB_Complete( void )
   BLEPLATCB_PkaComplete( );
 
   BleStackCB_Process( );
-}
-
-/*****************************************************************************/
-
-uint8_t BLEPLAT_TimerStart( uint16_t id,
-                            uint32_t timeout )
-{
-  return BLE_TIMER_Start( id, timeout );
-}
-
-/*****************************************************************************/
-
-void BLEPLAT_TimerStop( uint16_t id )
-{
-  BLE_TIMER_Stop( id );
 }
 
 /*****************************************************************************/

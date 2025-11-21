@@ -230,10 +230,18 @@ set first_boot_stage_binary=OEMiROT_Boot_NUCLEO_WBA65RI_SWAP.bin
 
 IF "%is_wba_board_dk%"  == "1" (
 IF "%select_wba_target%" == "0x65" (
+IF "%external_flash%" == "1" (
+IF "%overwrite%" == "1" (
+set first_boot_stage_binary=OEMiROT_Boot_ExtFlsh_STM32WBA65I_DK1_OVERWRITE.bin
+) else (
+set first_boot_stage_binary=OEMiROT_Boot_ExtFlsh_STM32WBA65I_DK1_SWAP.bin
+)
+) else (
 IF "%overwrite%" == "1" (
 set first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_OVERWRITE.bin
 ) else (
 set first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_SWAP.bin
+)
 )
 )
 )

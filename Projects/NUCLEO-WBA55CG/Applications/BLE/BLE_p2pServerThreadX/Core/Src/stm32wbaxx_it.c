@@ -26,7 +26,7 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+#include "app_bsp.h"
 
 /* USER CODE END Includes */
 
@@ -70,8 +70,6 @@ extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
-extern TIM_HandleTypeDef htim2;
-
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -253,20 +251,6 @@ void GPDMA1_Channel1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM2 global interrupt.
-  */
-void TIM2_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM2_IRQn 0 */
-
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
-
-  /* USER CODE END TIM2_IRQn 1 */
-}
-
-/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -329,6 +313,20 @@ void RADIO_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)
@@ -359,28 +357,5 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-/**
-  * @brief This function handles EXTI Line6 interrupt.
-  */
-void EXTI6_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/**
-  * @brief This function handles EXTI Line7 interrupt.
-  */
-void EXTI7_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
 
 /* USER CODE END 1 */

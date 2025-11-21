@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -75,7 +75,7 @@ extern "C" {
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     (13u)
 #define TASK_PREEMP_BUTTON_Bx                   (13u)
-  
+
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)

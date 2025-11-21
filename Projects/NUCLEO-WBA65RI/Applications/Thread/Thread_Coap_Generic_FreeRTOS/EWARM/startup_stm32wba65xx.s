@@ -150,7 +150,7 @@ __vector_table
         DCD     I2C2_EV_IRQHandler               ; I2C2 event interrupt
         DCD     I2C2_ER_IRQHandler               ; I2c2 error interrupt
         DCD     SPI2_IRQHandler                  ; SPI2 global interrupt
-        DCD     OTG_HS_IRQHandler                ; USB OTG_HS global interrupt
+        DCD     USB_OTG_HS_IRQHandler            ; USB OTG_HS global interrupt
         DCD     I2C4_EV_IRQHandler               ; I2C4 event global interrupt
         DCD     I2C4_ER_IRQHandler               ; I2C4 error global interrupt
         DCD     USART3_IRQHandler                ; USART3 global interrupt
@@ -605,10 +605,10 @@ I2C2_ER_IRQHandler
 SPI2_IRQHandler
         B SPI2_IRQHandler
 
-        PUBWEAK OTG_HS_IRQHandler
+        PUBWEAK USB_OTG_HS_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
-OTG_HS_IRQHandler
-        B OTG_HS_IRQHandler
+USB_OTG_HS_IRQHandler
+        B USB_OTG_HS_IRQHandler
 
         PUBWEAK I2C4_EV_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)

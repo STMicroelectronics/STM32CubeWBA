@@ -23,6 +23,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ble_audio_plat.h"
 #include "pbp_config.h"
+#include "app_conf.h"
 
 /* Defines -------------------------------------------------------------------*/
 #ifndef BLE_DBG_PBP_ENABLE
@@ -30,11 +31,11 @@
 #endif /* BLE_DBG_PBP_ENABLE */
 
 
-#if BLE_DBG_PBP_ENABLE == 1
+#if (BLE_DBG_PBP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1)
 #define BLE_DBG_PBP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[PBP] " fmt, ##__VA_ARGS__ )
-#else /*BLE_DBG_PBP_ENABLE != 1*/
+#else /* (BLE_DBG_PBP_ENABLE != 1) || (CFG_LOG_SUPPORTED != 1) */
 #define BLE_DBG_PBP_MSG(fmt, ...)               (void)0
-#endif /* BLE_DBG_PBP_ENABLE == 1*/
+#endif /* (BLE_DBG_PBP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1) */
 
 #endif /* __PBP_LOG_H */
 

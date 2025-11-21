@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -158,15 +159,8 @@ void ProcessTasklets(void)
  */
 void ProcessOpenThreadTasklets(void)
 {
-  /* wakeUp the system */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-  //ll_sys_dp_slp_exit();
-
   /* process the tasklet */
   otTaskletsProcess(PtOpenThreadInstance);
-
-  /* put the IP802_15_4 back to sleep mode */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
 
   /* reschedule the tasklets if any */
   ProcessTasklets();
@@ -358,8 +352,7 @@ static void APP_THREAD_DeviceConfig(void)
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();
@@ -846,10 +839,7 @@ static void APP_THREAD_AppInit(void)
 static void APP_THREAD_Child_Role_Handler(void)
 {
 #if ( CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_ENABLE);
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_ENABLE);
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   if (UTIL_TIMER_IsRunning(&coapSendTimer) == 0)
   {

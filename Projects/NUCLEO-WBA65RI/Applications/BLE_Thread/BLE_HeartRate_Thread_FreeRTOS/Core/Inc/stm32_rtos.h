@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,7 +27,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "cmsis_os2.h"
 #include "app_freertos.h"
+#include "task.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -38,76 +40,29 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
+/* FreeRTOS priorities by default  */
+#define TASK_PRIO_WPAN                          osPriorityNormal
 
-/* USER CODE END EC */
-
-/* Exported macros -----------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-#define CFG_TASK_PRIO_HW_RNG                    osPriorityRealtime3
-
-#define CFG_TASK_PRIO_AMM_BCKG                  osPriorityRealtime4
-  
-#define CFG_TASK_PRIO_FLASH_MANAGER_BCKGND      osPriorityRealtime4
-
-#define CFG_TASK_PRIO_LINK_LAYER                osPriorityRealtime5
-  
-#define LINK_LAYER_TEMP_MEAS_TASK_PRIO          osPriorityHigh2
-
-#define CFG_TASK_PRIO_BPKA                      osPriorityRealtime2
-
-#define CFG_TASK_PRIO_HRS_APP_MEAS              osPriorityRealtime2
-
-#define CFG_TASK_PRIO_ADVERTISING               osPriorityRealtime2
-
-#define CFG_TASK_PRIO_HCI_ASYNCH_EVT            osPriorityRealtime2
-
-#define CFG_TASK_PRIO_BLE_STACK                 osPriorityRealtime2
-
-#define CFG_TASK_PRIO_BLE_TIMER                 osPriorityRealtime2
-
-#define CFG_TASK_PRIO_ALARM                     osPriorityRealtime1
-
-#define CFG_TASK_PRIO_US_ALARM                  CFG_TASK_PRIO_ALARM
-
-#define CFG_TASK_PRIO_TASKLETS                  osPriorityRealtime1
-
-#define CFG_TASK_PRIO_CLI_UART                  osPriorityHigh1
-
-#define CFG_TASK_PRIO_SEND_COAP_MSG             osPriorityHigh
-  
 /* USER CODE BEGIN TASK_Priority_Define */
-#define TASK_PRIO_BUTTON_Bx                     osPriorityNormal
+#define TASK_PRIO_BUTTON_Bx                     osPriorityNormal3
+#define TASK_PRIO_SEND_COAP_MSG                 osPriorityNormal1
+/* USER CODE END TASK_Priority_Define */
+
+#define RTOS_MAX_THREAD                         (20u)
 
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
-#define RTOS_STACK_SIZE_ENHANCED                ( 1024u * 2u )
+#define RTOS_STACK_SIZE_MODERATE                ( 2048u )
 #define RTOS_STACK_SIZE_NORMAL                  ( 1024u )
 #define RTOS_STACK_SIZE_REDUCED                 ( 512u )
-#define RTOS_STACK_SIZE_SMALL                   ( 384u )
+#define RTOS_STACK_SIZE_SMALL                   ( 256u )
+#define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
-#define RTOS_MAX_THREAD                         20
-  
 /* Tasks stack sizes by default  */
-#define TASK_LINK_LAYER_STACK_SIZE              RTOS_STACK_SIZE_LARGE
-#define TASK_HW_RNG_STACK_SIZE                  RTOS_STACK_SIZE_REDUCED
-#define TASK_ALARM_STACK_SIZE                   RTOS_STACK_SIZE_ENHANCED
-#define TASK_ALARM_US_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
-#define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
-#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
-#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
-#define TASK_BPKA_STACK_SIZE                    RTOS_STACK_SIZE_NORMAL
-#define TASK_HCI_ASYNCH_EVT_STACK_SIZE          RTOS_STACK_SIZE_ENHANCED
-#define TASK_BLE_STACK_STACK_SIZE               RTOS_STACK_SIZE_ENHANCED
-#define TASK_BLE_TIMER_STACK_SIZE               RTOS_STACK_SIZE_NORMAL
-#define TASK_FLASH_MANAGER_BCKGND_STACK_SIZE    RTOS_STACK_SIZE_SMALL
-#define TASK_AMM_BCKG_STACK_SIZE                RTOS_STACK_SIZE_REDUCED
-#define TASK_ADVERTISING_STACK_SIZE             RTOS_STACK_SIZE_NORMAL
-#define TASK_HRS_APP_MEAS_STACK_SIZE            RTOS_STACK_SIZE_NORMAL
-#define TASK_LINK_LAYER_TEMP_MEAS_STACK_SIZE    RTOS_STACK_SIZE_NORMAL
-
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
 /* USER CODE BEGIN TASK_Size_Define */
-#define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_NORMAL
-/* USER CODE END EM */
+#define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
+#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL  
+/* USER CODE END TASK_Size_Define */
 
 /* Attributes needed by CMSIS */
 #define TASK_DEFAULT_ATTR_BITS                  ( 0u )
@@ -122,7 +77,20 @@ extern "C" {
 #define MUTEX_DEFAULT_ATTR_BITS                 ( 0u )
 #define MUTEX_DEFAULT_CB_MEM                    ( 0u )
 #define MUTEX_DEFAULT_CB_SIZE                   ( 0u )
-  
+
+/* USER CODE BEGIN Attributes_Define */
+
+/* USER CODE END Attributes_Define */
+
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* Exported macros -----------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
 /* Exported variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
 

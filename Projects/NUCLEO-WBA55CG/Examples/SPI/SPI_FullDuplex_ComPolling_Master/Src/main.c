@@ -276,8 +276,6 @@ static void MX_SPI3_Init(void)
 
   /* USER CODE END SPI3_Init 0 */
 
-  SPI_AutonomousModeConfTypeDef HAL_SPI_AutonomousMode_Cfg_Struct = {0};
-
   /* USER CODE BEGIN SPI3_Init 1 */
 
   /* USER CODE END SPI3_Init 1 */
@@ -305,11 +303,6 @@ static void MX_SPI3_Init(void)
   hspi3.Init.ReadyMasterManagement = SPI_RDY_MASTER_MANAGEMENT_INTERNALLY;
   hspi3.Init.ReadyPolarity = SPI_RDY_POLARITY_HIGH;
   if (HAL_SPI_Init(&hspi3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  HAL_SPI_AutonomousMode_Cfg_Struct.TriggerState = SPI_AUTO_MODE_DISABLE;
-  if (HAL_SPIEx_SetConfigAutonomousMode(&hspi3, &HAL_SPI_AutonomousMode_Cfg_Struct) != HAL_OK)
   {
     Error_Handler();
   }

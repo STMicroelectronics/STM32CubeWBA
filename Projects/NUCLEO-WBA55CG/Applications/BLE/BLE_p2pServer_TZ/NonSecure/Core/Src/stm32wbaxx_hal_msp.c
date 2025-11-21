@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -81,6 +81,9 @@ void HAL_MspInit(void)
   /* RADIO_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
 

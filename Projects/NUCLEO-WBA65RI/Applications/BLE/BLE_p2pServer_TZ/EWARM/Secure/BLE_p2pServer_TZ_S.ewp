@@ -361,6 +361,7 @@
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Include</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
+          <state>$PROJ_DIR$/../../Drivers/STM32U5xx_HAL_Driver/Inc</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -674,7 +675,7 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -682,7 +683,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_S.hex</state>
+          <state>BLE_p2pServer_TZ_S.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1158,15 +1159,18 @@
       </file>
     </group>
     <group>
+      <name>BSP</name>
+      <group>
+        <name>STM32WBAxx_Nucleo</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
       <name>STM32WBAxx_HAL_Driver</name>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
@@ -1185,6 +1189,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</name>

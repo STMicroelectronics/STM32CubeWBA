@@ -148,6 +148,8 @@ typedef struct
                                      CFG_BLE_NUM_GATT_SERVICES, \
                                      CFG_BLE_ATT_VALUE_ARRAY_SIZE)
 
+#define BLE_HOST_EVENT_BUF_SIZE   CFG_BLE_HOST_EVENT_BUF_SIZE
+
 #define MBLOCK_COUNT              (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
                                                     CFG_BLE_ATT_MTU_MAX, \
                                                     CFG_BLE_NUM_LINK) \
@@ -209,6 +211,7 @@ static BleStack_init_t pInitParams;
 /* Host stack buffers */
 static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 4)];
 static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 static osThreadId_t     BleHostTaskHandle;
@@ -1195,6 +1198,8 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.host_event_fifo_buffer  = host_event_buffer;
+  pInitParams.host_event_fifo_buffer_size = BLE_HOST_EVENT_BUF_SIZE;
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
   pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
   pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;

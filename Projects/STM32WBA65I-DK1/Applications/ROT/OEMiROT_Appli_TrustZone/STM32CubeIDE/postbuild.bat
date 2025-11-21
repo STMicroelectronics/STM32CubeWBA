@@ -87,24 +87,22 @@ set image_ns_size=0x32000
 set image_s_size=0x8000
 set app_image_number=2
 
-:start
-goto exe:
-goto py:
-:exe
-::line for window executable
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\dist\AppliCfg.exe"
-set "python="
-IF exist %applicfg% (
-echo Postbuild with windows executable
-goto postbuild
+:: Check if Python is installed
+python3 --version >nul 2>&1
+if %errorlevel% neq 0 (
+ python --version >nul 2>&1
+ if !errorlevel! neq 0 (
+    echo Python installation missing. Refer to Utilities\PC_Software\ROT_AppliConfig\README.md
+    goto :error
+ )
+  set "python=python "
+) else (
+  set "python=python3 "
 )
-:py
-::called if we just want to use AppliCfg python (think to comment "goto exe:")
-echo Postbuild with python script
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
-set "python=python "
 
-:postbuild
+:: Environment variable for AppliCfg
+set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
+
 echo Postbuild %signing% image >> %current_log_file% 2>>&1
 
 IF "%app_image_number%" == "2" (

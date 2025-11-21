@@ -71,6 +71,14 @@ typedef enum
 #define APP_READ32_REG(base_addr)           (*(volatile uint32_t *)(base_addr))
 #define APP_WRITE32_REG(base_addr, data)    (*(volatile uint32_t *)(base_addr) = (data))
 
+#define OT_API_CALL(...) do                                                                  \
+                         {                                                                   \
+                           osMutexAcquire(LinkLayerMutex, osWaitForever);                       \
+                           __VA_ARGS__;                                                      \
+                           osMutexRelease(LinkLayerMutex);                                      \
+                           osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_OT_Tasklet); \
+                         } while(0)
+
 /* ipv6-addressing defines        */
 /* Key Point: A major difference between FTDs and MTDs are that FTDs subscribe to the ff03::2 multicast address.
  * MTDs do not. */
@@ -87,6 +95,12 @@ void Thread_Init(void);
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
+void APP_THREAD_ProcessAlarm(void *argument);
+void APP_THREAD_ProcessUsAlarm(void *argument);
+void APP_THREAD_ProcessOpenThreadTasklets(void *argument);
+#if (OT_CLI_USE == 1)
+void APP_THREAD_ProcessUart(void *argument);
+#endif
 
 /* USER CODE BEGIN EFP */
 

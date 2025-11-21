@@ -133,16 +133,11 @@ For more details, refer to STM32WBA Wiki articles:
   - [OEMiRoT OEMuRoT for STM32WBA](https://wiki.st.com/stm32mcu/wiki/Security:OEMiRoT_OEMuRoT_for_STM32WBA).
   - [How to start with ROT on STM32WBA](https://wiki.st.com/stm32mcu/wiki/Category:How_to_start_with_RoT_on_WBA).
 
-#### <b>Note:</b>
+#### <b>Notes</b>
 
   1. The most efficient way to develop and debug an application is to boot directly on user flash in RDL level 0 by setting with
      STM32CubeProgrammer the RDP to 0xAA and the SECBOOTADD to (0x0C006000 + offset of the firmware execution slot).
 
-  2. Two versions of ROT_AppliConfig are available: windows executable and python version. By default, the windows executable is selected. It
-     is possible to switch to python version by:
-        - installing python (Python 3.10 or newer) with the required modules listed in requirements.txt.
-        ```
-        pip install -r requirements.txt
-        ```
-        - having python in execution path variable
-        - deleting main.exe in Utilities\PC_Software\ROT_AppliConfig\dist
+  2. **AppliCfg.py** (located in Utilities/PC_Software/ROT_AppliConfig) is used during provisioning
+     process. It is needed to have python and some python packages installed in your
+     environment. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md for more details.

@@ -198,6 +198,11 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the buffer used to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
@@ -297,7 +302,11 @@ typedef enum
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
  * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
+#ifdef GRL_TEST
+#define CFG_LOG_SUPPORTED           (0U)
+#else
 #define CFG_LOG_SUPPORTED           (1U)
+#endif
 
 /* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
@@ -337,6 +346,19 @@ extern UART_HandleTypeDef           huart1;
 /* USER CODE END Log_level */
 
 /******************************************************************************
+ * Configure Serial Link used for Thread Command Line.
+ * LOG over UART in the application must be enabled.
+ ******************************************************************************/
+#define OT_CLI_USE                  (1U)
+#ifdef GRL_TEST
+extern UART_HandleTypeDef           huart1;
+#define OT_CLI_UART_HANDLER         huart1
+#else
+extern UART_HandleTypeDef           hlpuart1;
+#define OT_CLI_UART_HANDLER         hlpuart1
+#endif
+
+/******************************************************************************
  * Sequencer
  ******************************************************************************/
 
@@ -365,7 +387,7 @@ typedef enum
   CFG_TASK_BUTTON_B1,
   CFG_TASK_BUTTON_B2,
   CFG_TASK_BUTTON_B3,
-
+  CFG_TASK_COAP_MSG_RATE,
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
   /* USER CODE END CFG_Task_Id_t */
@@ -412,6 +434,8 @@ typedef enum
 #define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
 #define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
+
+#define TASK_COAP_MSG_RATE                  ( 1u << CFG_TASK_COAP_MSG_RATE )
 
 /* USER CODE END TASK_ID_Define */
 

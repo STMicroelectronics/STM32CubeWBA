@@ -27,9 +27,9 @@ Example execution:
 
 One of the below scenario can occur :
 
-   - LD3 (pin PA.00) toggles 2 times : The system woke up from standby.
-   - LD3 (pin PA.00) is ON after 15 seconds : Test is over, result is OK.
-   - LD3 (pin PA.00) is toggling in infinite loop at a frequency of 5Hz: An error occurred.
+   - LD3 (pin PB.15) toggles 2 times : The system woke up from standby.
+   - LD3 (pin PB.15) is ON after 15 seconds : Test is over, result is OK.
+   - LD3 (pin PB.15) is toggling in infinite loop at a frequency of 5Hz: An error occurred.
 
 #### <b>Notes</b>
 

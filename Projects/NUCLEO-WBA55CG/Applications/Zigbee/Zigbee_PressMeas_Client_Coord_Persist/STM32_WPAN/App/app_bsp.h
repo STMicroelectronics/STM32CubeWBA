@@ -49,11 +49,17 @@ extern "C" {
 #endif /* STM32WBA65xx */
 
 #ifdef CFG_BSP_ON_CEB
+#ifdef STM32WBA6Mxx
+#include "b_wba6m_wpan.h"
+#endif /* STM32WBA6Mxx */
+#ifdef STM32WBA55xx
 #include "b_wba5m_wpan.h"
+#endif /* STM32WBA55xx */
 #endif /* CFG_BSP_ON_CEB */
+
 #ifdef CFG_BSP_ON_NUCLEO
 #include "stm32wbaxx_nucleo.h"
-#endif /* CFG_BSP_ON_CEB */
+#endif /* CFG_BSP_ON_NUCLEO */
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -69,6 +75,11 @@ extern "C" {
 #define    LED_BLUE                       LED_RED
 #endif /* (defined CFG_BSP_ON_DISCOVERY) && (defined STM32WBA65xx) */
 
+#if (defined CFG_BSP_ON_CEB) && (defined STM32WBA6Mxx)
+/* On CEB with WBA6, retrieve B2 = B1 */
+#define B2                                B1
+#endif /* (defined CFG_BSP_ON_CEB) && (defined STM32WBA6Mxx) */
+  
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 #define JOYSTICK_USE_AS_JOYSTICK          (0u)    /* When Joystick is not 'none', call according 'Joystick Action' every JOYSTICK_PRESS_SAMPLE_MS. */
 #define JOYSTICK_USE_AS_BUTTON            (1u)    /* When Joystick is pressed, call according 'Joystick Action' one time. */

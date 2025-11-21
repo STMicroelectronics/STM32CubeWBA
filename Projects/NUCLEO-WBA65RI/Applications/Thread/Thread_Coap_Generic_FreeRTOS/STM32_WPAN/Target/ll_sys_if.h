@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stdint.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,6 +45,8 @@ extern "C" {
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
+extern osMutexId_t LinkLayerMutex;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -54,6 +57,7 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
+
 void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time);
 /* USER CODE BEGIN EFP */
 

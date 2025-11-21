@@ -631,7 +631,7 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
                       handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-2]);
                       /*  extract the start handle of the characteristic */
                       start_handle = UNPACK_2_BYTE_PARAMETER(&pr->Handle_Value_Pair_Data[idx-5]);
-
+                      UNUSED(start_handle);
                       switch (uuid)
                       {
                         case ALERT_LEVEL_CHARACTERISTIC_UUID:

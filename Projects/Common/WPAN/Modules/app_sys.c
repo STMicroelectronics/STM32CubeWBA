@@ -24,6 +24,9 @@
 #include "stm32_lpm.h"
 #include "ll_intf.h"
 #include "ll_sys.h"
+#if (UTIL_LPM_LEGACY_ENABLED == 0)  
+#include "stm32_lpm_if.h"
+#endif
 
 #if MAC
 #include "ral.h"
@@ -41,7 +44,7 @@ static uint32_t wakeup_offset = RADIO_DEEPSLEEP_WAKEUP_TIME_US;
 /**
  *
  */
-#if BLE
+#if SUPPORT_BLE
 void APP_SYS_BLE_EnterDeepSleep(void)
 {
   ble_stat_t cmd_status;
@@ -68,13 +71,20 @@ void APP_SYS_BLE_EnterDeepSleep(void)
     }
     else
     {
+#if (UTIL_LPM_LEGACY_ENABLED == 1)      
       UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_DISABLE);
+#else /*  (UTIL_LPM_LEGACY_ENABLED == 1) */
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
+      UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_STOP1_MODE);
+#else /* (CFG_LPM_STOP1_SUPPORTED == 1) */
+      UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_STOP1_SUPPORTED == 1) */
+#endif /*  (UTIL_LPM_LEGACY_ENABLED == 1) */      
     }
-
   }
 }
 
-#else /* BLE */
+#else /* SUPPORT_BLE */
 
 /**
  *
@@ -105,7 +115,7 @@ void APP_SYS_LPM_EnterLowPowerMode(void)
   }
 }
 
-#endif /* BLE */
+#endif /* SUPPORT_BLE */
 
 void APP_SYS_SetWakeupOffset(uint32_t wakeup_offset_us)
 {

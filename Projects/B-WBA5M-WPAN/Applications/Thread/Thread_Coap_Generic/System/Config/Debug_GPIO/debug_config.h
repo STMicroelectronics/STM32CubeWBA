@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -609,7 +609,7 @@ extern "C" {
 #define GPIO_DEBUG_LLHWC_GET_CH_IDX_ALGO_2                    {GPIOA, LL_PWR_GPIO_PIN_0}
 
 #define USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP                     (0)
-#define GPIO_DEBUG_BACK_FROM_DEEP_SLEEP                       {GPIOA, LL_PWR_GPIO_PIN_0}  
+#define GPIO_DEBUG_BACK_FROM_DEEP_SLEEP                       {GPIOA, LL_PWR_GPIO_PIN_0}
 
 /* Application signal selection and GPIO assignment.
    CAN BE MODIFIED BY USER */

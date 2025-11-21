@@ -14,9 +14,9 @@
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32WBA5MJGHx</Device>
+          <Device>STM32WBA5MMGHx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.2.1.0</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32WBA5MJGHx$CMSIS\SVD\STM32WBA55.svd</SFDFile>
+          <SFDFile>$$Device:STM32WBA5MMGHx$CMSIS\SVD\STM32WBA55.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -80,9 +80,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
-            <RunUserProg2>1</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <RunUserProg1>1</RunUserProg1>
+            <RunUserProg2>0</RunUserProg2>
+            <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums</MiscControls>
               <Define>USE_FULL_LL_DRIVER,OPENTHREAD_FTD,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,MAC,MAC_LAYER,USE_HAL_DRIVER,USE_FULL_ASSERT,STM32WBA55xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../../../../../../Drivers/BSP/B-WBA5M-WPAN;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace;../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces</IncludePath>
+              <IncludePath>../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/stm32wba;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/utilities;../../../../../../Middlewares/ST/STM32_WPAN/interface;../../../../../../Utilities/conf;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace;../../../../../../Drivers/BSP/B-WBA5M-WPAN;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/Third_Party/mbedtls/include;../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace;../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -389,46 +389,6 @@
               <FileName>startup_stm32wba5mxx.s</FileName>
               <FileType>2</FileType>
               <FilePath>startup_stm32wba5mxx.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Application/User/Core</GroupName>
-          <Files>
-            <File>
-              <FileName>app_entry.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/app_entry.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/main.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_msp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/stm32wbaxx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/stm32wbaxx_it.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Application/User/STM32_WPAN/App</GroupName>
-          <Files>
-            <File>
-              <FileName>app_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../STM32_WPAN/App/app_bsp.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_thread.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../STM32_WPAN/App/app_thread.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -534,6 +494,46 @@
               <FileName>timer_if.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../Common/WPAN/Interfaces/timer_if.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/Core</GroupName>
+          <Files>
+            <File>
+              <FileName>app_entry.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/app_entry.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/main.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_msp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/stm32wbaxx_hal_msp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/stm32wbaxx_it.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User/STM32_WPAN/App</GroupName>
+          <Files>
+            <File>
+              <FileName>app_thread.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/app_thread.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../STM32_WPAN/App/app_bsp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -853,7 +853,7 @@
             <File>
               <FileName>LinkLayer_Thread_lib.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_Thread_lib.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA5_LinkLayer_Thread_lib.a</FilePath>
             </File>
           </Files>
         </Group>

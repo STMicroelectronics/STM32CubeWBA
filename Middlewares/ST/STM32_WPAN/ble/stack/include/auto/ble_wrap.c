@@ -16,6 +16,7 @@
  */
 
 #include "ble_const.h"
+#include "auto/ble_gen_aci.h"
 #include "auto/ble_gap_aci.h"
 #include "auto/ble_gatt_aci.h"
 #include "auto/ble_hal_aci.h"
@@ -2784,46 +2785,6 @@
 #define BLE_WRAP_ACI_GATT_WRITE_CHAR_RELIABLE_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GATT_WRITE_LONG_CHAR_DESC pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_PREPROC
-#define BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GATT_WRITE_LONG_CHAR_DESC post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_POSTPROC
-#define BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
-/* ACI_GATT_READ_LONG_CHAR_DESC pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_PREPROC
-#define BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GATT_READ_LONG_CHAR_DESC post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_POSTPROC
-#define BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
-/* ACI_GATT_WRITE_CHAR_DESC pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_PREPROC
-#define BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GATT_WRITE_CHAR_DESC post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_POSTPROC
-#define BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
-/* ACI_GATT_READ_CHAR_DESC pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_READ_CHAR_DESC_PREPROC
-#define BLE_WRAP_ACI_GATT_READ_CHAR_DESC_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GATT_READ_CHAR_DESC post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_READ_CHAR_DESC_POSTPROC
-#define BLE_WRAP_ACI_GATT_READ_CHAR_DESC_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
 /* ACI_GATT_WRITE_WITHOUT_RESP pre-processing macro */
 #ifndef BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_PREPROC
 #define BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_PREPROC BLE_WRAP_PREPROC
@@ -2854,24 +2815,24 @@
 #define BLE_WRAP_ACI_GATT_CONFIRM_INDICATION_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GATT_WRITE_RESP pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_RESP_PREPROC
-#define BLE_WRAP_ACI_GATT_WRITE_RESP_PREPROC BLE_WRAP_PREPROC
+/* ACI_GATT_PERMIT_WRITE pre-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_PERMIT_WRITE_PREPROC
+#define BLE_WRAP_ACI_GATT_PERMIT_WRITE_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* ACI_GATT_WRITE_RESP post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_WRITE_RESP_POSTPROC
-#define BLE_WRAP_ACI_GATT_WRITE_RESP_POSTPROC BLE_WRAP_POSTPROC
+/* ACI_GATT_PERMIT_WRITE post-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_PERMIT_WRITE_POSTPROC
+#define BLE_WRAP_ACI_GATT_PERMIT_WRITE_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GATT_ALLOW_READ pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_ALLOW_READ_PREPROC
-#define BLE_WRAP_ACI_GATT_ALLOW_READ_PREPROC BLE_WRAP_PREPROC
+/* ACI_GATT_PERMIT_READ pre-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_PERMIT_READ_PREPROC
+#define BLE_WRAP_ACI_GATT_PERMIT_READ_PREPROC BLE_WRAP_PREPROC
 #endif
 
-/* ACI_GATT_ALLOW_READ post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_ALLOW_READ_POSTPROC
-#define BLE_WRAP_ACI_GATT_ALLOW_READ_POSTPROC BLE_WRAP_POSTPROC
+/* ACI_GATT_PERMIT_READ post-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_PERMIT_READ_POSTPROC
+#define BLE_WRAP_ACI_GATT_PERMIT_READ_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_GATT_SET_SECURITY_PERMISSION pre-processing macro */
@@ -2914,16 +2875,6 @@
 #define BLE_WRAP_ACI_GATT_UPDATE_CHAR_VALUE_EXT_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
-/* ACI_GATT_DENY_READ pre-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_DENY_READ_PREPROC
-#define BLE_WRAP_ACI_GATT_DENY_READ_PREPROC BLE_WRAP_PREPROC
-#endif
-
-/* ACI_GATT_DENY_READ post-processing macro */
-#ifndef BLE_WRAP_ACI_GATT_DENY_READ_POSTPROC
-#define BLE_WRAP_ACI_GATT_DENY_READ_POSTPROC BLE_WRAP_POSTPROC
-#endif
-
 /* ACI_GATT_SET_ACCESS_PERMISSION pre-processing macro */
 #ifndef BLE_WRAP_ACI_GATT_SET_ACCESS_PERMISSION_PREPROC
 #define BLE_WRAP_ACI_GATT_SET_ACCESS_PERMISSION_PREPROC BLE_WRAP_PREPROC
@@ -2962,6 +2913,26 @@
 /* ACI_GATT_READ_MULTIPLE_VAR_CHAR_VALUE post-processing macro */
 #ifndef BLE_WRAP_ACI_GATT_READ_MULTIPLE_VAR_CHAR_VALUE_POSTPROC
 #define BLE_WRAP_ACI_GATT_READ_MULTIPLE_VAR_CHAR_VALUE_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_GATT_WRITE_WITHOUT_RESP_EXT pre-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_PREPROC
+#define BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_GATT_WRITE_WITHOUT_RESP_EXT post-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_POSTPROC
+#define BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_POSTPROC BLE_WRAP_POSTPROC
+#endif
+
+/* ACI_GATT_WRITE_WITH_RESP_EXT pre-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_PREPROC
+#define BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_PREPROC BLE_WRAP_PREPROC
+#endif
+
+/* ACI_GATT_WRITE_WITH_RESP_EXT post-processing macro */
+#ifndef BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_POSTPROC
+#define BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_POSTPROC BLE_WRAP_POSTPROC
 #endif
 
 /* ACI_L2CAP_CONNECTION_PARAMETER_UPDATE_REQ pre-processing macro */
@@ -7159,62 +7130,6 @@ tBleStatus aci_gatt_write_char_reliable( uint16_t Connection_Handle,
   return status;
 }
 
-/* ACI_GATT_WRITE_LONG_CHAR_DESC wrapper function */
-tBleStatus aci_gatt_write_long_char_desc( uint16_t Connection_Handle,
-                                          uint16_t Attr_Handle,
-                                          uint16_t Val_Offset,
-                                          uint8_t Attribute_Val_Length,
-                                          const uint8_t* Attribute_Val )
-{
-  BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_PREPROC( );
-  tBleStatus status = ACI_GATT_WRITE_LONG_CHAR_DESC( Connection_Handle,
-                                                     Attr_Handle,
-                                                     Val_Offset,
-                                                     Attribute_Val_Length,
-                                                     Attribute_Val );
-  BLE_WRAP_ACI_GATT_WRITE_LONG_CHAR_DESC_POSTPROC( );
-  return status;
-}
-
-/* ACI_GATT_READ_LONG_CHAR_DESC wrapper function */
-tBleStatus aci_gatt_read_long_char_desc( uint16_t Connection_Handle,
-                                         uint16_t Attr_Handle,
-                                         uint16_t Val_Offset )
-{
-  BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_PREPROC( );
-  tBleStatus status = ACI_GATT_READ_LONG_CHAR_DESC( Connection_Handle,
-                                                    Attr_Handle,
-                                                    Val_Offset );
-  BLE_WRAP_ACI_GATT_READ_LONG_CHAR_DESC_POSTPROC( );
-  return status;
-}
-
-/* ACI_GATT_WRITE_CHAR_DESC wrapper function */
-tBleStatus aci_gatt_write_char_desc( uint16_t Connection_Handle,
-                                     uint16_t Attr_Handle,
-                                     uint8_t Attribute_Val_Length,
-                                     const uint8_t* Attribute_Val )
-{
-  BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_PREPROC( );
-  tBleStatus status = ACI_GATT_WRITE_CHAR_DESC( Connection_Handle,
-                                                Attr_Handle,
-                                                Attribute_Val_Length,
-                                                Attribute_Val );
-  BLE_WRAP_ACI_GATT_WRITE_CHAR_DESC_POSTPROC( );
-  return status;
-}
-
-/* ACI_GATT_READ_CHAR_DESC wrapper function */
-tBleStatus aci_gatt_read_char_desc( uint16_t Connection_Handle,
-                                    uint16_t Attr_Handle )
-{
-  BLE_WRAP_ACI_GATT_READ_CHAR_DESC_PREPROC( );
-  tBleStatus status = ACI_GATT_READ_CHAR_DESC( Connection_Handle,
-                                               Attr_Handle );
-  BLE_WRAP_ACI_GATT_READ_CHAR_DESC_POSTPROC( );
-  return status;
-}
-
 /* ACI_GATT_WRITE_WITHOUT_RESP wrapper function */
 tBleStatus aci_gatt_write_without_resp( uint16_t Connection_Handle,
                                         uint16_t Attr_Handle,
@@ -7254,31 +7169,37 @@ tBleStatus aci_gatt_confirm_indication( uint16_t Connection_Handle )
   return status;
 }
 
-/* ACI_GATT_WRITE_RESP wrapper function */
-tBleStatus aci_gatt_write_resp( uint16_t Connection_Handle,
-                                uint16_t Attr_Handle,
-                                uint8_t Write_status,
-                                uint8_t Error_Code,
-                                uint8_t Attribute_Val_Length,
-                                const uint8_t* Attribute_Val )
+/* ACI_GATT_PERMIT_WRITE wrapper function */
+tBleStatus aci_gatt_permit_write( uint16_t Connection_Handle,
+                                  uint16_t Attr_Handle,
+                                  uint8_t Write_status,
+                                  uint8_t Error_Code,
+                                  uint8_t Attribute_Val_Length,
+                                  const uint8_t* Attribute_Val )
 {
-  BLE_WRAP_ACI_GATT_WRITE_RESP_PREPROC( );
-  tBleStatus status = ACI_GATT_WRITE_RESP( Connection_Handle,
-                                           Attr_Handle,
-                                           Write_status,
-                                           Error_Code,
-                                           Attribute_Val_Length,
-                                           Attribute_Val );
-  BLE_WRAP_ACI_GATT_WRITE_RESP_POSTPROC( );
+  BLE_WRAP_ACI_GATT_PERMIT_WRITE_PREPROC( );
+  tBleStatus status = ACI_GATT_PERMIT_WRITE( Connection_Handle,
+                                             Attr_Handle,
+                                             Write_status,
+                                             Error_Code,
+                                             Attribute_Val_Length,
+                                             Attribute_Val );
+  BLE_WRAP_ACI_GATT_PERMIT_WRITE_POSTPROC( );
   return status;
 }
 
-/* ACI_GATT_ALLOW_READ wrapper function */
-tBleStatus aci_gatt_allow_read( uint16_t Connection_Handle )
+/* ACI_GATT_PERMIT_READ wrapper function */
+tBleStatus aci_gatt_permit_read( uint16_t Connection_Handle,
+                                 uint8_t Read_status,
+                                 uint8_t Error_Code,
+                                 uint16_t Attr_Handle )
 {
-  BLE_WRAP_ACI_GATT_ALLOW_READ_PREPROC( );
-  tBleStatus status = ACI_GATT_ALLOW_READ( Connection_Handle );
-  BLE_WRAP_ACI_GATT_ALLOW_READ_POSTPROC( );
+  BLE_WRAP_ACI_GATT_PERMIT_READ_PREPROC( );
+  tBleStatus status = ACI_GATT_PERMIT_READ( Connection_Handle,
+                                            Read_status,
+                                            Error_Code,
+                                            Attr_Handle );
+  BLE_WRAP_ACI_GATT_PERMIT_READ_POSTPROC( );
   return status;
 }
 
@@ -7356,17 +7277,6 @@ tBleStatus aci_gatt_update_char_value_ext( uint16_t Conn_Handle_To_Notify,
   return status;
 }
 
-/* ACI_GATT_DENY_READ wrapper function */
-tBleStatus aci_gatt_deny_read( uint16_t Connection_Handle,
-                               uint8_t Error_Code )
-{
-  BLE_WRAP_ACI_GATT_DENY_READ_PREPROC( );
-  tBleStatus status = ACI_GATT_DENY_READ( Connection_Handle,
-                                          Error_Code );
-  BLE_WRAP_ACI_GATT_DENY_READ_POSTPROC( );
-  return status;
-}
-
 /* ACI_GATT_SET_ACCESS_PERMISSION wrapper function */
 tBleStatus aci_gatt_set_access_permission( uint16_t Serv_Handle,
                                            uint16_t Attr_Handle,
@@ -7412,6 +7322,42 @@ tBleStatus aci_gatt_read_multiple_var_char_value( uint16_t Connection_Handle,
                                                              Number_of_Handles,
                                                              Handle_Entry );
   BLE_WRAP_ACI_GATT_READ_MULTIPLE_VAR_CHAR_VALUE_POSTPROC( );
+  return status;
+}
+
+/* ACI_GATT_WRITE_WITHOUT_RESP_EXT wrapper function */
+tBleStatus aci_gatt_write_without_resp_ext( uint16_t Connection_Handle,
+                                            uint16_t Attr_Handle,
+                                            uint8_t Signed_Mode,
+                                            uint16_t Data_Length,
+                                            uint32_t Data_Pointer )
+{
+  BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_PREPROC( );
+  tBleStatus status = ACI_GATT_WRITE_WITHOUT_RESP_EXT( Connection_Handle,
+                                                       Attr_Handle,
+                                                       Signed_Mode,
+                                                       Data_Length,
+                                                       Data_Pointer );
+  BLE_WRAP_ACI_GATT_WRITE_WITHOUT_RESP_EXT_POSTPROC( );
+  return status;
+}
+
+/* ACI_GATT_WRITE_WITH_RESP_EXT wrapper function */
+tBleStatus aci_gatt_write_with_resp_ext( uint16_t Connection_Handle,
+                                         uint16_t Attr_Handle,
+                                         uint8_t Write_Mode,
+                                         uint16_t Val_Offset,
+                                         uint16_t Data_Length,
+                                         uint32_t Data_Pointer )
+{
+  BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_PREPROC( );
+  tBleStatus status = ACI_GATT_WRITE_WITH_RESP_EXT( Connection_Handle,
+                                                    Attr_Handle,
+                                                    Write_Mode,
+                                                    Val_Offset,
+                                                    Data_Length,
+                                                    Data_Pointer );
+  BLE_WRAP_ACI_GATT_WRITE_WITH_RESP_EXT_POSTPROC( );
   return status;
 }
 
@@ -7684,9 +7630,7 @@ static tBleStatus hci_le_cs_subevent_result_continue_event_process( const uint8_
 static tBleStatus hci_le_cs_test_end_complete_event_process( const uint8_t* in );
 static tBleStatus hci_le_monitored_advertisers_report_event_process( const uint8_t* in );
 static tBleStatus hci_le_frame_space_update_complete_event_process( const uint8_t* in );
-static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in );
 static tBleStatus aci_warning_event_process( const uint8_t* in );
-static tBleStatus aci_hal_sync_event_process( const uint8_t* in );
 static tBleStatus aci_gap_limited_discoverable_event_process( const uint8_t* in );
 static tBleStatus aci_gap_pairing_complete_event_process( const uint8_t* in );
 static tBleStatus aci_gap_pass_key_req_event_process( const uint8_t* in );
@@ -7738,6 +7682,8 @@ static tBleStatus aci_gatt_notification_complete_event_process( const uint8_t* i
 static tBleStatus aci_gatt_read_ext_event_process( const uint8_t* in );
 static tBleStatus aci_gatt_indication_ext_event_process( const uint8_t* in );
 static tBleStatus aci_gatt_notification_ext_event_process( const uint8_t* in );
+static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in );
+static tBleStatus aci_hal_sync_event_process( const uint8_t* in );
 
 /* HCI event process functions table */
 static const hci_event_table_t hci_event_table[HCI_EVENT_TABLE_SIZE] =
@@ -7813,9 +7759,7 @@ static const hci_event_table_t hci_le_event_table[HCI_LE_EVENT_TABLE_SIZE] =
 /* HCI VS event process functions table */
 static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
 {
-  { 0x0004U, aci_hal_end_of_radio_activity_event_process },
   { 0x0006U, aci_warning_event_process },
-  { 0x0008U, aci_hal_sync_event_process },
   { 0x0400U, aci_gap_limited_discoverable_event_process },
   { 0x0401U, aci_gap_pairing_complete_event_process },
   { 0x0402U, aci_gap_pass_key_req_event_process },
@@ -7867,6 +7811,8 @@ static const hci_event_table_t hci_vs_event_table[HCI_VS_EVENT_TABLE_SIZE] =
   { 0x0C1DU, aci_gatt_read_ext_event_process },
   { 0x0C1EU, aci_gatt_indication_ext_event_process },
   { 0x0C1FU, aci_gatt_notification_ext_event_process },
+  { 0x1804U, aci_hal_end_of_radio_activity_event_process },
+  { 0x1808U, aci_hal_sync_event_process },
 };
 
 /* HCI_DISCONNECTION_COMPLETE_EVENT callback function */
@@ -9349,27 +9295,6 @@ static tBleStatus hci_le_frame_space_update_complete_event_process( const uint8_
                                                    rp0->Spacing_Types );
 }
 
-/* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT callback function */
-__WEAK tBleStatus aci_hal_end_of_radio_activity_event( uint8_t Last_State,
-                                                       uint8_t Next_State,
-                                                       uint32_t Next_State_SysTime,
-                                                       uint8_t Last_State_Slot,
-                                                       uint8_t Next_State_Slot )
-{
-  return HCI_SUCCESS_ERR_CODE;
-}
-
-/* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT process function */
-static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in )
-{
-  aci_hal_end_of_radio_activity_event_rp0 *rp0 = (void*)in;
-  return aci_hal_end_of_radio_activity_event( rp0->Last_State,
-                                              rp0->Next_State,
-                                              rp0->Next_State_SysTime,
-                                              rp0->Last_State_Slot,
-                                              rp0->Next_State_Slot );
-}
-
 /* ACI_WARNING_EVENT callback function */
 __WEAK tBleStatus aci_warning_event( uint8_t Warning_Type,
                                      uint8_t Data_Length,
@@ -9385,25 +9310,6 @@ static tBleStatus aci_warning_event_process( const uint8_t* in )
   return aci_warning_event( rp0->Warning_Type,
                             rp0->Data_Length,
                             rp0->Data );
-}
-
-/* ACI_HAL_SYNC_EVENT callback function */
-__WEAK tBleStatus aci_hal_sync_event( uint8_t Group_Id,
-                                      uint32_t Next_Anchor_Point,
-                                      uint32_t Time_Stamp,
-                                      uint32_t Next_Sdu_Delivery_Timeout )
-{
-  return HCI_SUCCESS_ERR_CODE;
-}
-
-/* ACI_HAL_SYNC_EVENT process function */
-static tBleStatus aci_hal_sync_event_process( const uint8_t* in )
-{
-  aci_hal_sync_event_rp0 *rp0 = (void*)in;
-  return aci_hal_sync_event( rp0->Group_Id,
-                             rp0->Next_Anchor_Point,
-                             rp0->Time_Stamp,
-                             rp0->Next_Sdu_Delivery_Timeout );
 }
 
 /* ACI_GAP_LIMITED_DISCOVERABLE_EVENT callback function */
@@ -10285,6 +10191,46 @@ static tBleStatus aci_gatt_notification_ext_event_process( const uint8_t* in )
                                           rp0->Attribute_Value );
 }
 
+/* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT callback function */
+__WEAK tBleStatus aci_hal_end_of_radio_activity_event( uint8_t Last_State,
+                                                       uint8_t Next_State,
+                                                       uint32_t Next_State_SysTime,
+                                                       uint8_t Last_State_Slot,
+                                                       uint8_t Next_State_Slot )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT process function */
+static tBleStatus aci_hal_end_of_radio_activity_event_process( const uint8_t* in )
+{
+  aci_hal_end_of_radio_activity_event_rp0 *rp0 = (void*)in;
+  return aci_hal_end_of_radio_activity_event( rp0->Last_State,
+                                              rp0->Next_State,
+                                              rp0->Next_State_SysTime,
+                                              rp0->Last_State_Slot,
+                                              rp0->Next_State_Slot );
+}
+
+/* ACI_HAL_SYNC_EVENT callback function */
+__WEAK tBleStatus aci_hal_sync_event( uint8_t Group_Id,
+                                      uint32_t Next_Anchor_Point,
+                                      uint32_t Time_Stamp,
+                                      uint32_t Next_Sdu_Delivery_Timeout )
+{
+  return HCI_SUCCESS_ERR_CODE;
+}
+
+/* ACI_HAL_SYNC_EVENT process function */
+static tBleStatus aci_hal_sync_event_process( const uint8_t* in )
+{
+  aci_hal_sync_event_rp0 *rp0 = (void*)in;
+  return aci_hal_sync_event( rp0->Group_Id,
+                             rp0->Next_Anchor_Point,
+                             rp0->Time_Stamp,
+                             rp0->Next_Sdu_Delivery_Timeout );
+}
+
 /* ACI/HCI events processing */
 uint8_t BLE_EventProcess( const uint8_t* buffer )
 {
@@ -10307,7 +10253,7 @@ uint8_t BLE_EventProcess( const uint8_t* buffer )
         }
       break;
 
-    case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE:
+    case HCI_VENDOR_SPECIFIC_EVT_CODE:
       code = (((uint16_t)(buffer[4])) <<  8) | buffer[3];
       for ( int i = 0; i < HCI_VS_EVENT_TABLE_SIZE; i++ )
         if ( code == hci_vs_event_table[i].evt_code )

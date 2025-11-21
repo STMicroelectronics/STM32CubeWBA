@@ -23,6 +23,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ble_audio_plat.h"
 #include "gmap_config.h"
+#include "app_conf.h"
 
 /* Defines -------------------------------------------------------------------*/
 #ifndef BLE_DBG_GMAP_ENABLE
@@ -30,13 +31,13 @@
 #endif /* BLE_DBG_GMAP_ENABLE */
 
 
-#if BLE_DBG_GMAP_ENABLE == 1
+#if (BLE_DBG_GMAP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1)
 #define BLE_DBG_GMAP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[GMAP] " fmt, ##__VA_ARGS__ )
 #define BLE_DBG_GMAS_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[GMAS] " fmt, ##__VA_ARGS__ )
-#else /*BLE_DBG_GMAP_ENABLE != 1*/
+#else /* (BLE_DBG_GMAP_ENABLE != 1) || (CFG_LOG_SUPPORTED != 1) */
 #define BLE_DBG_GMAP_MSG(fmt, ...)               (void)0
 #define BLE_DBG_GMAS_MSG(fmt, ...)               (void)0
-#endif /* BLE_DBG_GMAP_ENABLE == 1*/
+#endif /* (BLE_DBG_GMAP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1) */
 
 #endif /* __GMAP_LOG_H */
 

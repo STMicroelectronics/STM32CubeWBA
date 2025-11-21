@@ -272,7 +272,7 @@ static int32_t Spi_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("read spi 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+  printf("read spi 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
 #endif /*  DEBUG_SPI_FLASH_ACCESS */
 
   /* Check Flash memory boundaries */
@@ -365,7 +365,7 @@ static int32_t Spi_Flash_ProgramData(uint32_t addr,
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("write spi 0x%x n=%x \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+  printf("write spi 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
 #endif /* DEBUG_SPI_FLASH_ACCESS */
   /* Check Flash memory boundaries and alignment with minimum write size
    * (program_unit), data size also needs to be a multiple of program_unit.
@@ -412,7 +412,7 @@ static int32_t Spi_Flash_EraseSector(uint32_t addr)
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("erase spi 0x%x\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
+  printf("erase spi 0x%lx\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
 #endif /* DEBUG_SPI_FLASH_ACCESS */
   if (!(is_range_valid(&ARM_SPI_FLASH0_DEV, addr)) ||
       !(is_erase_aligned(&ARM_SPI_FLASH0_DEV, addr)) ||

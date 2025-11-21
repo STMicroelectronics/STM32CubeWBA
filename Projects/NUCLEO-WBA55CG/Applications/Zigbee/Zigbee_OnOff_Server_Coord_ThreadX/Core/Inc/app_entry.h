@@ -48,7 +48,8 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
-extern TX_BYTE_POOL *pBytePool; /* ThreadX byte pool pointer for whole WPAN middleware */
+/* ThreadX byte pool pointer for whole WPAN middleware */
+extern TX_BYTE_POOL         *pBytePool;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */

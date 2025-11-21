@@ -332,12 +332,12 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
               * received a correct value
               */
               
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00, /* write_status = 0 (no error))*/
-                                  0x00, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x00, /* write_status = 0 (no error))*/
+                                    0x00, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
               
               /**
               * Notify to the application a new interval has been received
@@ -351,12 +351,12 @@ static SVCCTL_EvtAckStatus_t HTS_EventHandler(void *p_Event)
               /**
               * received a value out of range
               */
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x1, /* write_status = 1 (error))*/
-                                  INTERVAL_OUT_OF_RANGE, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x1, /* write_status = 1 (error))*/
+                                    INTERVAL_OUT_OF_RANGE, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
             }
             /*USER CODE END Service1_Char_4_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
           }
@@ -484,11 +484,11 @@ void HTS_Init(void)
                              &(HTS_Context.HtsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HTS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: HTS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: HtsSvcHdle = 0x%04X\n",HTS_Context.HtsSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: HtsSvcHdle = 0x%04X\n",HTS_Context.HtsSvcHdle);
   }
 
   /**
@@ -507,11 +507,11 @@ void HTS_Init(void)
                           &(HTS_Context.TemmCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : TEMM, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : TEMM, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : TemmCharHdle = 0x%04X\n",HTS_Context.TemmCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : TemmCharHdle = 0x%04X\n",HTS_Context.TemmCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -534,11 +534,11 @@ void HTS_Init(void)
                           &(HTS_Context.MnbsCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : MNBS, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : MNBS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MnbsCharHdle = 0x%04X\n",HTS_Context.MnbsCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : MnbsCharHdle = 0x%04X\n",HTS_Context.MnbsCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -561,11 +561,11 @@ void HTS_Init(void)
                           &(HTS_Context.IntCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : INT, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : INT, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : IntCharHdle = 0x%04X\n",HTS_Context.IntCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : IntCharHdle = 0x%04X\n",HTS_Context.IntCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -588,11 +588,11 @@ void HTS_Init(void)
                           &(HTS_Context.MeiCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : MEI, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : MEI, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MeiCharHdle = 0x%04X\n",HTS_Context.MeiCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : MeiCharHdle = 0x%04X\n",HTS_Context.MeiCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char4 */
@@ -660,11 +660,11 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value TEMM command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value TEMM command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value TEMM command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value TEMM command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -679,11 +679,11 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MNBS command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value MNBS command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MNBS command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value MNBS command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -698,11 +698,11 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value INT command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value INT command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value INT command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value INT command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 
@@ -717,11 +717,11 @@ tBleStatus HTS_UpdateValue(HTS_CharOpcode_t CharOpcode, HTS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value MEI command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value MEI command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value MEI command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value MEI command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_4 */
 

@@ -49,6 +49,8 @@
 
 #include "tcp_const.h"
 
+static void reinitialize_tcb(struct tcpcb* tp);
+
 /*
  * samkumar: This is rewritten to have the host network stack to generate the
  * ISN with appropriate randomness.
@@ -146,6 +148,15 @@ void initialize_tcb(struct tcpcb* tp) {
 	tcp_sack_init(tp);
 }
 
+/* Re-initialize the TCB. */
+static void reinitialize_tcb(struct tcpcb* tp)
+{
+	uint32_t ntraversed;
+	lbuf_pop(&tp->sendbuf, lbuf_used_space(&tp->sendbuf), &ntraversed);
+	cbuf_pop(&tp->recvbuf, cbuf_used_space(&tp->recvbuf));
+	tp->accepted_from = NULL;
+	initialize_tcb(tp);
+}
 
 /*
  * samkumar: Most of this function was no longer needed. It did things like
@@ -166,6 +177,8 @@ tcp_discardcb(struct tcpcb *tp)
 		CC_ALGO(tp)->cb_destroy(tp->ccv);
 
 	tcp_free_sackholes(tp);
+
+	reinitialize_tcb(tp);
 }
 
 
@@ -353,7 +366,7 @@ struct tcpcb *
 tcp_drop(struct tcpcb *tp, int errnum)
 {
 	if (TCPS_HAVERCVDSYN(tp->t_state)) {
-		tcp_state_change(tp, TCPS_CLOSED);
+		tcp_state_change(tp, TCP6S_CLOSED);
 		(void) tcplp_output(tp);
 	}
 	if (errnum == ETIMEDOUT && tp->t_softerror)

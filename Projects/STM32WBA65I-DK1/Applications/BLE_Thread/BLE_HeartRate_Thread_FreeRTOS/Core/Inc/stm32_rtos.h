@@ -63,7 +63,7 @@ extern "C" {
 
 #define CFG_TASK_PRIO_TASKLETS                  osPriorityRealtime1
 
-#define CFG_TASK_PRIO_CLI_UART                  osPriorityHigh1
+#define CFG_TASK_PRIO_CLI_UART                  osPriorityRealtime1
 
 #define CFG_TASK_PRIO_SEND_COAP_MSG             osPriorityHigh
 
@@ -93,7 +93,7 @@ extern "C" {
 #define TASK_ALARM_STACK_SIZE                   (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_REDUCED)
 #define TASK_ALARM_US_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
 #define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
-#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
+#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_LARGE
 #define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
 #define TASK_ADVERTISING_STACK_SIZE		RTOS_STACK_SIZE_MODERATE
 #define TASK_HRS_APP_MEAS_STACK_SIZE		RTOS_STACK_SIZE_MODERATE

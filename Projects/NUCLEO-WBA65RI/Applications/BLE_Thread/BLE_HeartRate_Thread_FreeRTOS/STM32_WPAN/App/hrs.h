@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -99,10 +99,10 @@ typedef struct{
 /* USER CODE BEGIN EC */
 typedef enum
 {
-  HRS_HRM_VALUE_FORMAT_UINT16 = 1,
-  HRS_HRM_SENSOR_CONTACTS_PRESENT = 2,
-  HRS_HRM_SENSOR_CONTACTS_SUPPORTED = 4,
-  HRS_HRM_ENERGY_EXPENDED_PRESENT = 8,
+  HRS_HRM_VALUE_FORMAT_UINT16 = 0x01,
+  HRS_HRM_SENSOR_CONTACTS_PRESENT = 0x02,
+  HRS_HRM_SENSOR_CONTACTS_SUPPORTED = 0x04,
+  HRS_HRM_ENERGY_EXPENDED_PRESENT = 0x08,
   HRS_HRM_RR_INTERVAL_PRESENT = 0x10
 }HRS_HrmFlags_t;
 

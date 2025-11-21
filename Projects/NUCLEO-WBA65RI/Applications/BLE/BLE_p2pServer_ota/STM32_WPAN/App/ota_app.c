@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -34,6 +34,7 @@
 #include "stm32_timer.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -75,6 +76,7 @@ typedef struct
 /* USER CODE BEGIN PD */
 /* Define list of reboot reason */
 #define REBOOT_ON_FW_APP          (0x00)
+
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -107,6 +109,7 @@ uint8_t a_OTA_UpdateCharData[247];
 /* USER CODE BEGIN PV */
 static uint32_t size_left;
 static uint32_t address_offset;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,10 +121,10 @@ static void FM_WriteCallback (FM_FlashOp_Status_t Status);
 /* Flag for write status  */
 static FM_FlashOp_Status_t FM_WriteStatus;
 /* Write test callback */
-static FM_CallbackNode_t FM_WriteStatusCallback = 
+static FM_CallbackNode_t FM_WriteStatusCallback =
 {
   /* Header for chained list */
-  .NodeList = 
+  .NodeList =
   {
     .next = NULL,
     .prev = NULL
@@ -133,10 +136,10 @@ static void FM_EraseCallback (FM_FlashOp_Status_t Status);
 /* Flag for write status  */
 static FM_FlashOp_Status_t FM_EraseStatus;
 /* Write test callback */
-static FM_CallbackNode_t FM_EraseStatusCallback = 
+static FM_CallbackNode_t FM_EraseStatusCallback =
 {
   /* Header for chained list */
-  .NodeList = 
+  .NodeList =
   {
     .next = NULL,
     .prev = NULL
@@ -144,6 +147,7 @@ static FM_CallbackNode_t FM_EraseStatusCallback =
   /* Callback for request status */
   .Callback = FM_EraseCallback
 };
+
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -599,7 +603,7 @@ static void DeleteSlot( uint8_t page_idx )
   p_erase_init.TypeErase = FLASH_TYPEERASE_PAGES;
   p_erase_init.NbPages = NbrOfPageToBeErased;
   p_erase_init.Page = (uint32_t)(page_idx & (FLASH_PAGE_NB - 1u));
-  
+
 #if defined(FLASH_DBANK_SUPPORT)
   if ((FLASH_PAGE_NB & page_idx) ^ (1u & READ_BIT (FLASH->OPTR, FLASH_OPTR_SWAP_BANK_Msk)))
   {
@@ -608,23 +612,23 @@ static void DeleteSlot( uint8_t page_idx )
   else
   {
     p_erase_init.Banks = FLASH_BANK_1;
-  } 
+  }
 #endif
 
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
-  
+
   HAL_FLASH_Unlock();
 
   HAL_FLASHEx_Erase(&p_erase_init, &page_error);
 
   HAL_FLASH_Lock();
-  
+
   return;
 }
 
 static void FM_WriteCallback (FM_FlashOp_Status_t Status)
 {
-  /* Update status */ 
+  /* Update status */
   FM_WriteStatus = Status;
 
   /* Set event on Process request call */
@@ -633,12 +637,13 @@ static void FM_WriteCallback (FM_FlashOp_Status_t Status)
 
 static void FM_EraseCallback (FM_FlashOp_Status_t Status)
 {
-  /* Update status */ 
+  /* Update status */
   FM_EraseStatus = Status;
 
   /* Set event on Process request call */
   UTIL_SEQ_SetEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 }
+
 /* USER CODE END FD */
 
 /*************************************************************

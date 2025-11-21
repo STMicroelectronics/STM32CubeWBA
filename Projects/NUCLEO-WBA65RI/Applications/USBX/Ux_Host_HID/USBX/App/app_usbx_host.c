@@ -57,8 +57,11 @@ UX_HOST_CLASS_HID_KEYBOARD *keyboard;
 static VOID app_ux_host_thread_entry(ULONG thread_input);
 static UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *current_instance);
 static VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
-/* USER CODE BEGIN PFP */
+
 extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
+
+/* USER CODE BEGIN PFP */
+
 /* USER CODE END PFP */
 
 /**
@@ -377,6 +380,7 @@ UINT MX_USBX_Host_Stack_Init(void)
   {
     return UX_ERROR;
   }
+
   /* Register a callback error function */
   ux_utility_error_callback_register(&ux_host_error_callback);
 

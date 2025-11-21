@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,6 +32,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "host_stack_if.h"
+#include "app_freertos.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -370,8 +372,6 @@ void HRS_APP_Measurements(void)
     LOG_INFO_APP("HRS_UpdateValue fails\n");
   }
 
-  BleStackCB_Process();
-
   return;
 }
 /* USER CODE END FD */
@@ -389,22 +389,22 @@ __USED void HRS_Hrme_SendNotification(void) /* Property Notification */
   hrs_notification_data.p_Payload = (uint8_t*)a_HRS_UpdateCharData;
   hrs_notification_data.Length = 0;
 
-  /* USER CODE BEGIN Service1Char1_NS_1*/
+  /* USER CODE BEGIN Service1Char1_NS_1 */
 
-  /* USER CODE END Service1Char1_NS_1*/
+  /* USER CODE END Service1Char1_NS_1 */
 
   if (notification_on_off != Hrme_NOTIFICATION_OFF)
   {
     HRS_UpdateValue(HRS_HRME, &hrs_notification_data);
   }
 
-  /* USER CODE BEGIN Service1Char1_NS_Last*/
+  /* USER CODE BEGIN Service1Char1_NS_Last */
 
-  /* USER CODE END Service1Char1_NS_Last*/
+  /* USER CODE END Service1Char1_NS_Last */
 
   return;
 }
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

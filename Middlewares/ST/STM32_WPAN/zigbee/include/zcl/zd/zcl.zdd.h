@@ -3,7 +3,7 @@
  * @heading Zigbee Direct Configuration Cluster
  * @brief ZCL Zigbee Direct Configuration Cluster header
  * Zigbee Direct Specification 20-27688-030
- * @copyright Copyright [2021 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2021 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_ZDD_H
@@ -11,10 +11,8 @@
 
 #include "zcl/zcl.h"
 
-/* EXEGIN - PICS? */
-
 /** Zigbee Direct Configuration Server Attribute IDs */
-enum {
+enum ZbZclZddServerAttrT {
     ZCL_ZDD_ATTR_IFC_STATE = 0x0000, /**< Interface State */
     ZCL_ZDD_ATTR_ANON_JOIN_TIMEOUT = 0x0001, /**< Anonymous Join Timeout */
 };
@@ -33,13 +31,13 @@ enum {
 #define ZCL_ZDD_IFC_STATE_ENABLED           0x01U
 
 /* Zigbee Direct Configuration Client Generated Commands */
-enum {
+enum ZbZclZddClientCmdT {
     ZCL_ZDD_CLI_CMD_CONFIG_ZDD_IFC = 0x00U, /* Configure Zigbee Direct Interface */
     ZCL_ZDD_CLI_CMD_CONFIG_ZDD_ANON_JOIN_TIMEOUT = 0x01U /* Configure Zigbee Direct Anonymous Join Timeout. */
 };
 
 /* Zigbee Direct Configuration Server Generated Commands */
-enum {
+enum ZbZclZddServerCmdT {
     ZCL_ZDD_SVR_CONFIG_ZDD_IFC = 0x00U /* Configure Zigbee Direct Interface response. */
 };
 

@@ -28,7 +28,6 @@
 #include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
-
 /* Private defines -----------------------------------------------------------*/
 /* Radio event scheduling method - must be set at 1 */
 #define USE_RADIO_LOW_ISR                   (1)
@@ -49,33 +48,20 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-/* FreeRTOS objects declaration */
-
-static osThreadId_t     LinkLayerTaskHandle;
-static osSemaphoreId_t  LinkLayerSemaphore;
-
-const osThreadAttr_t LinkLayerTask_attributes = {
-  .name         = "Link Layer Task",
-  .priority     = TASK_PRIO_LINK_LAYER,
-  .stack_size   = TASK_STACK_SIZE_LINK_LAYER,
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE,
-  .stack_mem    = TASK_DEFAULT_STACK_MEM
-};
-
-const osSemaphoreAttr_t LinkLayerSemaphore_attributes = {
-  .name         = "Link Layer Semaphore",
-  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
-  .cb_mem       = TASK_DEFAULT_CB_MEM,
-  .cb_size      = TASK_DEFAULT_CB_SIZE
-};
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+
+osMutexId_t             LinkLayerMutex;
+
+const osMutexAttr_t LinkLayerMutex_attributes = {
+  .name         = "Link Layer Mutex",
+  .attr_bits    = TASK_DEFAULT_ATTR_BITS,
+  .cb_mem       = TASK_DEFAULT_CB_MEM,
+  .cb_size      = TASK_DEFAULT_CB_SIZE
+};
 
 /* USER CODE BEGIN GV */
 
@@ -95,21 +81,6 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
-/**
- * @brief  Link Layer Task for FreeRTOS
- * @param  void *argument
- * @retval None
- */
-static void LinkLayer_Task_Entry(void *argument)
-{
-  UNUSED(argument);
-
-  for(;;)
-  {
-    osSemaphoreAcquire(LinkLayerSemaphore, osWaitForever);
-    ll_sys_bg_process();
-  }
-}
 
 /**
   * @brief  Link Layer background process initialization
@@ -120,11 +91,9 @@ void ll_sys_bg_process_init(void)
 {
   /* Create Link Layer FreeRTOS objects */
 
-  LinkLayerSemaphore = osSemaphoreNew(1U, 0U, &LinkLayerSemaphore_attributes);
+  LinkLayerMutex = osMutexNew(&LinkLayerMutex_attributes);
 
-  LinkLayerTaskHandle = osThreadNew(LinkLayer_Task_Entry, NULL, &LinkLayerTask_attributes);
-
-  if ((LinkLayerTaskHandle == NULL) || (LinkLayerSemaphore == NULL))
+  if (LinkLayerMutex == NULL)
   {
     LOG_ERROR_APP( "Link Layer FreeRTOS objects creation FAILED");
     Error_Handler();
@@ -138,10 +107,7 @@ void ll_sys_bg_process_init(void)
   */
 void ll_sys_schedule_bg_process(void)
 {
-  if ( osSemaphoreGetCount(LinkLayerSemaphore) == 0 )
-  {
-    osSemaphoreRelease( LinkLayerSemaphore );
-  }
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_LinkLayer);
 }
 
 /**
@@ -151,10 +117,7 @@ void ll_sys_schedule_bg_process(void)
   */
 void ll_sys_schedule_bg_process_isr(void)
 {
-  if ( osSemaphoreGetCount(LinkLayerSemaphore) == 0 )
-  {
-    osSemaphoreRelease( LinkLayerSemaphore );
-  }
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_LinkLayer);
 }
 
 /**
@@ -182,6 +145,7 @@ void ll_sys_config_params(void)
 
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+
 /* USER CODE BEGIN ll_sys_config_params_2 */
 
 /* USER CODE END ll_sys_config_params_2 */

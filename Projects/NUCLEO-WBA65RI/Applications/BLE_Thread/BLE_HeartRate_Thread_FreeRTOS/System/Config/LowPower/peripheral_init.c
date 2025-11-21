@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "app_conf.h"
 #include "peripheral_init.h"
@@ -38,6 +37,9 @@
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
+extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
 
@@ -45,6 +47,7 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* Functions Definition ------------------------------------------------------*/
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /**
   * @brief  Configure the SoC peripherals at Standby mode exit.
   * @param  None
@@ -57,20 +60,20 @@ void MX_StandbyExit_PeripheralInit(void)
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_1 */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
   /* Do not configure sysTick if currently used by wakeup time profiling mechanism */
   if(LPM_is_wakeup_time_profiling_done() != 0)
   {
-  /* Select SysTick source clock */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
+    /* Select SysTick source clock */
+    HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
     /* Initialize SysTick */
-  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
-  {
-    assert_param(0);
+    if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
+    {
+      assert_param(0);
+    }
   }
-  }
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #else
   /* Select SysTick source clock */
   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
@@ -82,34 +85,57 @@ void MX_StandbyExit_PeripheralInit(void)
   }
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
+#if (CFG_DEBUGGER_LEVEL == 0)
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIOA->PUPDR &= ~0xFC000000;
+  GPIOA->MODER |= 0xFC000000;
+  __HAL_RCC_GPIOA_CLK_DISABLE();
+
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  GPIOB->PUPDR &= ~0x3C0;
+  GPIOB->MODER |= 0x3C0;
+  __HAL_RCC_GPIOB_CLK_DISABLE();
+#endif /* CFG_DEBUGGER_LEVEL */
+
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
   memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+  memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
+  memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
+  memset(&huart1, 0, sizeof(huart1));
 
   MX_GPIO_Init();
   MX_GPDMA1_Init();
+  MX_USART1_UART_Init();
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
+  CRCCTRL_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
-#if (CFG_DEBUGGER_LEVEL == 0)
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
-
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
-#endif /* CFG_DEBUGGER_LEVEL */
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 }
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+void MX_Stop2Exit_PeripheralInit(void)
+{
+  /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
+  /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
+
+    memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
+    memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ADCCTRL_Init();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+  /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_2 */
+  /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_2 */
+}
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */

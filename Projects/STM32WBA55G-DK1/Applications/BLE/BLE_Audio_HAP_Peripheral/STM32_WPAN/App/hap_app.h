@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    hap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HAP_APP_H
@@ -31,6 +29,7 @@ extern "C" {
 #include "hap.h"
 #include "hap_app_conf.h"
 #include "app_conf.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -273,6 +272,7 @@ extern "C" {
                                          *      - Sink Audio Locations (at least 1 bits set to 0b1 different to the Sink Audio Locations of the 2nd USR )
                                          *      - Source Audio Locations (at least 1 bits set to 0b1 different to the Source Audio Locations of the 2nd USR )
                                          */
+
 /* Exported types ------------------------------------------------------------*/
 /* Audio Profile Link State type */
 typedef uint8_t audio_profile_t;
@@ -284,6 +284,7 @@ typedef uint8_t audio_profile_t;
 #define AUDIO_PROFILE_MCP                       0x10u
 #define AUDIO_PROFILE_VCP                       0x20u
 #define AUDIO_PROFILE_MICP                      0x40u
+#define AUDIO_PROFILE_HAP                       0x80u
 
 /* CAP Linkup State */
 typedef uint8_t APP_CAP_Linkup_State_t;
@@ -303,48 +304,48 @@ typedef uint8_t APP_CAP_Linkup_State_t;
 /*Structure used for ASE information storage*/
 typedef struct
 {
-  uint8_t               ID;
-  ASE_State_t           state;
-  ASE_Type_t            type;           /*Source of Sink*/
-  uint8_t               allocated;
-  uint8_t               num_channels;
-  uint32_t              presentation_delay;
-  uint32_t              controller_delay;
-  Audio_Context_t       streaming_audio_context;
-  uint8_t               enable_req;
+  uint8_t                       ID;
+  ASE_State_t                   state;
+  ASE_Type_t                    type;           /*Source or Sink*/
+  uint8_t                       allocated;
+  uint8_t                       num_channels;
+  uint32_t                      presentation_delay;
+  uint32_t                      controller_delay;
+  Audio_Context_t               streaming_audio_context;
+  uint8_t                       enable_req;
 }APP_ASE_Info_t;
 
 typedef struct
 {
-  uint16_t              acl_conn_handle;
+  uint16_t                      acl_conn_handle;
 #if (APP_NUM_SNK_ASE > 0)
-  APP_ASE_Info_t        aSnkASE[APP_NUM_SNK_ASE];
+  APP_ASE_Info_t                aSnkASE[APP_NUM_SNK_ASE];
 #endif /* (APP_NUM_SNK_ASE > 0) */
 #if (APP_NUM_SRC_ASE > 0)
-  APP_ASE_Info_t        aSrcASE[APP_NUM_SRC_ASE];
+  APP_ASE_Info_t                aSrcASE[APP_NUM_SRC_ASE];
 #endif /* (APP_NUM_SRC_ASE > 0) */
 }APP_ASEs_t;
 
 /*Structure used for connection information strorage*/
 typedef struct
 {
-  uint16_t               Acl_Conn_Handle;
-  uint8_t                Peer_Address_Type;
-  uint8_t                Peer_Address[6];
-  uint8_t                Role;
-  audio_profile_t        AudioProfile;
-  uint8_t                ConfirmIndicationRequired;
-  uint8_t                ForceCompleteLinkup;
-  uint8_t                LinkupRetry;
-  APP_CAP_Linkup_State_t CAPLinkupState;
-  uint8_t                GenericTelephoneBearerCCID;
-  uint8_t                CurrentCallID;
-  CCP_CallState_t        CurrentCallState;
-  uint16_t               CurrentContentCtrlOp;
-  uint16_t               PendingContentCtrlOp;
-  APP_ASEs_t             *pASEs;
-  Audio_Context_t        AvailableSnkAudioContext;
-  Audio_Context_t        AvailableSrcAudioContext;
+  uint16_t                      Acl_Conn_Handle;
+  uint8_t                       Peer_Address_Type;
+  uint8_t                       Peer_Address[6];
+  uint8_t                       Role;
+  audio_profile_t               AudioProfile;
+  uint8_t                       ConfirmIndicationRequired;
+  uint8_t                       ForceCompleteLinkup;
+  APP_ASEs_t                    *pASEs;
+  uint8_t                       LinkupRetry;
+  APP_CAP_Linkup_State_t        CAPLinkupState;
+  uint8_t                       GenericTelephoneBearerCCID;
+  uint8_t                       CurrentCallID;
+  CCP_CallState_t               CurrentCallState;
+  uint16_t                      CurrentContentCtrlOp;
+  uint16_t                      PendingContentCtrlOp;
+  Audio_Context_t               AvailableSnkAudioContext;
+  Audio_Context_t               AvailableSrcAudioContext;
 }APP_ACL_Conn_t;
 
 typedef struct
@@ -439,7 +440,6 @@ typedef struct
   Supported_Frame_Duration_t    FrameDuration;
   uint16_t                      MinOctetsPerCodecFrame;
   uint16_t                      MaxOctetsPerCodecFrame;
-
 } APP_CodecCap_t;
 
 typedef struct
@@ -451,7 +451,6 @@ typedef struct
   uint8_t               rtx_num;
   uint16_t              max_tp_latency;
   uint32_t              presentation_delay;
-
 } APP_QoSConf_t;
 
 typedef struct
@@ -464,7 +463,6 @@ typedef struct
   uint8_t       MinSrcAudioLocations;
   uint8_t       NumCISes;
   uint16_t      NumAudioStreams;
-
 } APP_UnicastAudioConf_t;
 
 typedef struct
@@ -474,13 +472,9 @@ typedef struct
   char Name[HAP_MAX_PRESET_NAME_LEN+1];
 } HAPAPP_Preset_t;
 
-
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);
@@ -493,11 +487,11 @@ uint8_t HAPAPP_VolumeUp(void);
 uint8_t HAPAPP_VolumeDown(void);
 uint8_t HAPAPP_ToggleMute(void);
 uint8_t HAPAPP_ToggleMicrophoneMute(void);
+uint8_t HAPAPP_Disconnect(void);
 tBleStatus HAPAPP_NextPreset(void);
 tBleStatus HAPAPP_PreviousPreset(void);
 tBleStatus HAPAPP_AnswerCall(void);
 tBleStatus HAPAPP_TerminateCall(void);
-uint8_t HAPAPP_Disconnect(void);
 void HAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void HAPAPP_CISConnected(uint16_t Conn_Handle);
 void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);

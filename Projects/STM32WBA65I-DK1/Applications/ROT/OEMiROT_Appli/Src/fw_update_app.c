@@ -471,11 +471,7 @@ static void FW_Valid_AppImage(void)
 #endif
   if (FLASH_PRIMARY_DEV_NAME.ProgramData(ConfirmAddress, FlagPattern, sizeof(FlagPattern)) == ARM_DRIVER_OK)
   {
-#if defined(__ARMCC_VERSION)
-    printf("  --  Confirm Flag  correctly written %x %x \r\n\n",ConfirmAddress ,FlagPattern[0] );
-#else
-    printf("  --  Confirm Flag  correctly written %lx %x \r\n\n",ConfirmAddress , FlagPattern[0] );
-#endif
+    printf("  -- Secure App Firmware Confirm Done\r\n\n");
   }
   else
   {

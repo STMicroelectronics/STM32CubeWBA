@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -175,7 +176,7 @@ static const struct MenuButtonsT stMenuButtonList[] =
 /* Private function prototypes -----------------------------------------------*/
 
 /* Thermostat Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_ThermostatServerGetRelayStatusLogCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_ThermostatServerGetRelayStatusLogCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclThermServerCallbacksT stThermostatServerCallbacks =
 {

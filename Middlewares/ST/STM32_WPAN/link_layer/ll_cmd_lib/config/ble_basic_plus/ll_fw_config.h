@@ -1,10 +1,9 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_fw_config.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/ll_fw_config.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_fw_config.h
  * @brief   This file contains the major configurations to the BLE controller.
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
@@ -44,6 +43,10 @@
 
 /*************************** BLE Configuration *************************************/
 /*Configurations of BLE will apply only when BLE is enabled*/
+
+/* Variant configuration */
+#define CFG_LL_BLE_BASIC_PLUS                           1
+
 /* Roles configurations */
 #ifndef SUPPORT_EXPLCT_OBSERVER_ROLE
 #define SUPPORT_EXPLCT_OBSERVER_ROLE                1 /* Enable\Disable Explicit observer role. Enable:1 - Disable:0 */
@@ -193,6 +196,10 @@
 #define SUPPORT_AUTONOMOUS_POWER_CONTROL_REQ        1
 #endif /* SUPPORT_AUTONOMOUS_POWER_CONTROL_REQ */
 
+#ifndef SUPPORT_PROFILE
+#define SUPPORT_PROFILE                             PROFILE_LIGHTWEIGHT /* Enable\Disable profiling LL timing framework */
+#endif /* SUPPORT_PROFILE */
+
 #ifndef LL_BASIC
 #define LL_BASIC                                    0
 #endif /* LL_BASIC */
@@ -228,10 +235,22 @@
 #ifndef RADIO_CSMA
 #define RADIO_CSMA                                  0 /* Enable\Disable CSMA Algorithm in Radio Layer, Must be Enabled if MAC_LAYER_BUILD */
 #endif /* RADIO_CSMA */
-
+ 
+#ifndef ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY
+#define ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY		1 /* Enable\Disable RX WITH CSMA Feature */
+#endif /* ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY */
+ 
+#ifndef SUPPORT_ANT_DIV
+#define SUPPORT_ANT_DIV                             1 /* Enable/Disable Antenna Diversity Feature */
+#endif /* SUPPORT_ANT_DIV */
+ 
 #ifndef SUPPORT_A_MAC
 #define SUPPORT_A_MAC                               0
 #endif /* SUPPORT_A_MAC */
+ 
+#ifndef SUPPORT_CONFIG_LIB
+#define SUPPORT_CONFIG_LIB							1 /* Enable\Disable Configurable Library feature */
+#endif /* SUPPORT_CONFIG_LIB */
 
 #ifndef SMPL_PRTCL_TEST_ENABLE
 #define SMPL_PRTCL_TEST_ENABLE                      0

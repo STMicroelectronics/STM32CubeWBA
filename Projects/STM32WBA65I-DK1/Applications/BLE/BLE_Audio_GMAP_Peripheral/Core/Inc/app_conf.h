@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -69,8 +69,6 @@
  * Define IO Authentication
  */
 #define CFG_BONDING_MODE                  (1)
-#define CFG_USED_FIXED_PIN                (1) /* 0->fixed pin is used ; 1->No fixed pin used*/
-#define CFG_FIXED_PIN                     (111111)
 #define CFG_ENCRYPTION_KEY_SIZE_MAX       (16)
 #define CFG_ENCRYPTION_KEY_SIZE_MIN       (8)
 
@@ -192,6 +190,21 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the RAM buffer allocated to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
+ * Size of the RAM buffer allocated for the extension of BLE host commands
+ */
+#define CFG_BLE_EXTRA_DATA_BUF_SIZE (0)
+
+/**
+ * Size of the RAM buffer allocated for long write commands, can be 0 or 256.
+ */
+#define CFG_BLE_LONG_WRITE_DATA_BUF_SIZE (0)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
@@ -212,6 +225,7 @@
 
 /* USER CODE BEGIN BLE_Stack */
 #include "gmap_app_conf.h"
+
 /* GATT Services Configuration */
 #undef CFG_BLE_NUM_GATT_SERVICES
 #define CFG_BLE_NUM_GATT_SERVICES               BLE_APP_NUM_GATT_SERVICES
@@ -231,29 +245,26 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
  *   - 2 : In addition log and debug are disabled to reach lowest power figures.
- *
- * When CFG_LPM_STDBY_SUPPORTED is set to:
- *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
- *   - 1 : Standby is used as low power mode.
- *   - 0 : Stop mode 1 is used as low power mode.
- *
  ******************************************************************************/
-#define CFG_LPM_LEVEL            (1)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_LEVEL               (1U)
+
+#define CFG_LPM_STOP1_SUPPORTED     (1U)
+#define CFG_LPM_STOP2_SUPPORTED     (0U)
+#define CFG_LPM_STANDBY_SUPPORTED   (1U)
 
 /**
  * Defines to use dynamic low power wakeup time profilling.
  * With this option at boot wake up time is profiled and then is used.
  */
-#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
 /**
  * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
  */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -271,6 +282,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   /* USER CODE BEGIN CFG_LPM_Id_t */
   CFG_LPM_AUDIO,
+
   /* USER CODE END CFG_LPM_Id_t */
 } CFG_LPM_Id_t;
 
@@ -299,7 +311,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
+ * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
@@ -333,7 +345,7 @@ extern UART_HandleTypeDef           huart1;
  *   the value assigned to the define is :
  *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
@@ -369,6 +381,7 @@ typedef enum
   CFG_TASK_MENU_PRINT_ID,
   CFG_TASK_PLL_READY_ID,
   CFG_TASK_APP_ADV_TIMER_ID,
+
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -411,6 +424,12 @@ typedef enum
 
 /* USER CODE END EVENT_ID_Define */
 
+/******************************************************************************
+ * RTOS configuration
+ ******************************************************************************/
+/* USER CODE BEGIN RTOS_config */
+
+/* USER CODE END RTOS_config */
 /******************************************************************************
  * NVM configuration
  ******************************************************************************/
@@ -460,6 +479,9 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
+/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
+#define USE_CTE_DEGRADATION                 (0)
+
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -470,10 +492,10 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
-#define CFG_RF_TX_POWER_TABLE_ID            (0)
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* Radio sleep clock LSE accuracy configuration */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
@@ -500,14 +522,12 @@ typedef enum
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (2000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (1024U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
-#define CFG_AMM_VIRTUAL_STACK_BLE                         (1U)
-#define CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
-#define CFG_AMM_VIRTUAL_APP_BLE                           (2U)
-#define CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE     (200U)  /* words (32 bits) */
-#define CFG_AMM_POOL_SIZE                                 ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) \
-                                                          + (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
+#define CFG_AMM_VIRTUAL_BLE_TIMERS                        (1U)
+#define CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE     (64U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_BLE_EVENTS                        (2U)
+#define CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE     (64U)  /* words (32 bits) */
 
 /* USER CODE BEGIN MEMORY_MANAGER_Configuration */
 
@@ -547,7 +567,6 @@ typedef enum
   #endif /* CFG_LCD_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
 
-
 /******************************************************************************
  * CODEC MANAGER
  ******************************************************************************/
@@ -567,25 +586,17 @@ typedef enum
 
 /* Extra audio latency due to maximum radio preparation time */
 #if defined(__GNUC__) && defined(DEBUG)
-#define CODEC_RF_SETUP_US                       (1250u)
+#define CODEC_RF_SETUP_US                       (1130u)
 #else
-#define CODEC_RF_SETUP_US                       (1100u)
+#define CODEC_RF_SETUP_US                       (980u)
 #endif /* defined(__GNUC__) && defined(DEBUG) */
-/******************************************************************************
- * Power Table
- ******************************************************************************/
-#define CFG_OUTPUT_POWER_TABLE_DEFAULT  (0)
-#define CFG_OUTPUT_POWER_TABLE_PS0_0x20 (1)
-#define CFG_OUTPUT_POWER_TABLE_PS2_0x10 (2)
-
-
-#define CFG_OUTPUT_POWER_TABLE_VERSION  (CFG_OUTPUT_POWER_TABLE_PS0_0x20)
 
 /******************************************************************************
  * TEST VALIDATION
  ******************************************************************************/
 /* Enable or disable configuration of project to run validation test : only used for project validation test */
 #define CFG_TEST_VALIDATION                     (0u)
+
 /* USER CODE END Defines */
 
 /**
@@ -594,13 +605,33 @@ typedef enum
 #if (CFG_LPM_LEVEL > 1)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
+    #define CFG_LOG_SUPPORTED       (0U)
   #endif /* CFG_LOG_SUPPORTED */
   #if CFG_DEBUGGER_LEVEL
     #undef  CFG_DEBUGGER_LEVEL
-    #define CFG_DEBUGGER_LEVEL      (0)
+    #define CFG_DEBUGGER_LEVEL      (0U)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
+
+#if (CFG_LPM_LEVEL == 0)
+  #undef CFG_LPM_STOP1_SUPPORTED
+  #define CFG_LPM_STOP1_SUPPORTED   (0U)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
+  #undef CFG_LPM_STANDBY_SUPPORTED
+  #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+/*********************************************************************
+ * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
+ * Please use a combination of previous defines instead
+ * Temporary define for backward compatibility
+ *********************************************************************/
+ #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
+ #define CFG_LPM_STDBY_SUPPORTED (1U)
+ #else
+ #define CFG_LPM_STDBY_SUPPORTED (0U)
+ #endif
 
 /* USER CODE BEGIN Defines_2 */
 #if (CFG_TEST_VALIDATION == 1)
@@ -624,7 +655,7 @@ typedef enum
 #define ISO_PLL_DRIFT_TIME                      (7)
 #define ISO_PLL_DRIFT_TIME_EXTRA_GCC_DEBUG      (2)
 
-#define ISO_PLL_EXEC_TIME                       (22)
+#define ISO_PLL_EXEC_TIME                       (18)
 #define ISO_PLL_EXEC_TIME_EXTRA_GCC_DEBUG       (2)
 
 #define ISO_PLL_SCHDL_TIME                      (20)

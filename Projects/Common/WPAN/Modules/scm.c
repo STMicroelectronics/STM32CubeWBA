@@ -23,6 +23,18 @@
 
 #if (CFG_SCM_SUPPORTED == 1)
 
+#define SCM_TIMER_COUNT    3200U /* SCM timer loading value */
+#if (CFG_SCM_USE_TIM17 == 1)
+#define SCM_TIMER_INSTANCE TIM17
+#define SCM_TIMER_IRQ      TIM17_IRQn
+#define SCM_TIMER_CLOCK    LL_APB2_GRP1_PERIPH_TIM17
+#else
+#define SCM_TIMER_INSTANCE TIM16
+#define SCM_TIMER_IRQ      TIM16_IRQn
+#define SCM_TIMER_CLOCK    LL_APB2_GRP1_PERIPH_TIM16
+#endif /* CFG_SCM_USE_TIM17 == 1 */
+
+
 __weak void SCM_HSI_CLK_ON(void)
 {
   LL_RCC_HSI_Enable();
@@ -252,6 +264,7 @@ OPTIMIZED static void SwitchHse16toHse32(void)
 
   /* first switch to VOS1 */
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1); /* Double write for flag readiness to cope with hw latency */
   while (LL_PWR_IsActiveFlag_VOS() == 0);
 
   /* Switch to 32Mhz */
@@ -370,20 +383,28 @@ static void SCM_HSE_TimerInit(void)
   LL_TIM_InitTypeDef TIM_InitStruct = {0};
 
   /* Peripheral clock enable */
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+  LL_APB2_GRP1_EnableClock(SCM_TIMER_CLOCK);
 
-  /* TIM16 interrupt Init */
-  NVIC_SetPriority(TIM16_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
-  NVIC_EnableIRQ(TIM16_IRQn);
-
+  /* TIMxx interrupt Init */
+  NVIC_SetPriority(SCM_TIMER_IRQ, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),1, 0));
+  NVIC_EnableIRQ(SCM_TIMER_IRQ);
+  
+  /*** Preliminary actions prior to initialization ***/
+  /* Disable event generation */
+  LL_TIM_DisableUpdateEvent(SCM_TIMER_INSTANCE);
+  /* Generate an event only on counter under/overflow */
+  LL_TIM_SetUpdateSource(SCM_TIMER_INSTANCE, LL_TIM_UPDATESOURCE_COUNTER);
+  /* Disable pre-reload */
+  LL_TIM_DisableARRPreload(SCM_TIMER_INSTANCE);
+  /* Set timer in one-shot */
+  LL_TIM_SetOnePulseMode(SCM_TIMER_INSTANCE, LL_TIM_ONEPULSEMODE_SINGLE);
+  
   TIM_InitStruct.Prescaler = 0;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_DOWN;
-  TIM_InitStruct.Autoreload = 3200;
+  TIM_InitStruct.Autoreload = SCM_TIMER_COUNT;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM16, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM16);
-  LL_TIM_SetOnePulseMode(TIM16, LL_TIM_ONEPULSEMODE_SINGLE);
+  LL_TIM_Init(SCM_TIMER_INSTANCE, &TIM_InitStruct);
 }
 /* SCM HSE END */
 
@@ -553,7 +574,7 @@ OPTIMIZED void scm_setup(void)
     else
     {      
       /* Disable RCC IRQs */
-      HAL_NVIC_DisableIRQ(RCC_IRQn);
+      NVIC_DisableIRQ(RCC_IRQn);
       
       /* Enable HSERDY interrupt */      
       __HAL_RCC_ENABLE_IT(RCC_IT_HSERDY);
@@ -568,7 +589,7 @@ OPTIMIZED void scm_setup(void)
       }
       
       /* Enable RCC IRQs */
-      HAL_NVIC_EnableIRQ(RCC_IRQn);
+      NVIC_EnableIRQ(RCC_IRQn);
     }
   }
   SYSTEM_DEBUG_SIGNAL_RESET(SCM_SETUP);
@@ -964,82 +985,79 @@ OPTIMIZED void SCM_HSE_Clear_SW_HSERDY(void)
 
 OPTIMIZED void SCM_HSE_WaitUntilReady(void)
 {  
-  if(SCM_HSE_Get_SW_HSERDY() == 0)
+  /* As we go for polling, disable interrupt */  
+  NVIC_DisableIRQ(SCM_TIMER_IRQ);
+  
+  if (SCM_HSE_Get_SW_HSERDY() == 0)
   {
     /* Is timer already running ? */
-    if (LL_TIM_IsEnabledCounter(TIM16) != 0)
-    {  
-      /* Disable update event */
-      LL_TIM_DisableIT_UPDATE(TIM16);
-      
-      /* Blocking wait until the end of stabilization */
-      while(LL_TIM_GetCounter(TIM16) != 0);
-    }
-    else
+    if (LL_TIM_IsEnabledIT_UPDATE(SCM_TIMER_INSTANCE) == 0U)
     {
-      /* Check whether update interrupt is pending */
-      if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
-      {
-        /* Clear the update interrupt flag */
-        LL_TIM_ClearFlag_UPDATE(TIM16);
-      }
-      else
-      {
-        /* Active wait on HSERDY flag */
-        while (LL_RCC_HSE_IsReady() == 0);
-            
-        /* Clear the update flag */
-        LL_TIM_ClearFlag_UPDATE(TIM16);
-            
-        LL_TIM_DisableIT_UPDATE(TIM16);
-
-        LL_TIM_EnableCounter(TIM16);
-        
-        /* Wait until the timer is ready */
-        while(LL_TIM_IsEnabledCounter(TIM16) == 0);
-        
-        /* Wait until the timer is over - ie: Stabilization done */
-        while(LL_TIM_GetCounter(TIM16) != 0);
-
-        LL_TIM_EnableIT_UPDATE(TIM16);
-      }
+      /* Active wait on HSERDY flag */
+      while (LL_RCC_HSE_IsReady() == 0);
+      
+      /* Reload counter */
+      LL_TIM_GenerateEvent_UPDATE(SCM_TIMER_INSTANCE);
+    
+      /* Clear any pending event */
+      LL_TIM_ClearFlag_UPDATE(SCM_TIMER_INSTANCE);
+    
+      /* Enable event generation, 
+         to allow automatic disabling when count is reached */
+      LL_TIM_EnableUpdateEvent(SCM_TIMER_INSTANCE);
+  
+      /* Enable counter */
+      LL_TIM_EnableCounter(SCM_TIMER_INSTANCE);
     }
+    
+    /* Blocking wait until event is rised */
+    while(LL_TIM_IsActiveFlag_UPDATE(SCM_TIMER_INSTANCE) == 0);
     
     /* Stop timer and switch clock 
        Keep same post process than if timer interrupt has been served */
     SCM_HSE_SW_HSERDY_isr();
   }
+  
+  NVIC_ClearPendingIRQ(SCM_TIMER_IRQ);
+  NVIC_EnableIRQ(SCM_TIMER_IRQ);
 }
 
 OPTIMIZED void SCM_HSE_StartStabilizationTimer(void)
 {  
-  if((SCM_HSE_Get_SW_HSERDY() == 0) && (LL_TIM_IsEnabledCounter(TIM16) == 0))
+  if((SCM_HSE_Get_SW_HSERDY() == 0) && (LL_TIM_IsEnabledCounter(SCM_TIMER_INSTANCE) == 0))
   {   
-    /* Clear the update flag */
-    LL_TIM_ClearFlag_UPDATE(TIM16);
+    /* Reload counter */
+    LL_TIM_GenerateEvent_UPDATE(SCM_TIMER_INSTANCE);
     
-    LL_TIM_EnableUpdateEvent(TIM16);
+    /* Clear any pending event */
+    LL_TIM_ClearFlag_UPDATE(SCM_TIMER_INSTANCE);
     
-    /* Enable the update interrupt */
-    LL_TIM_EnableIT_UPDATE(TIM16);
+    /* Enable event generation, 
+       to allow automatic disabling when count is reached */
+    LL_TIM_EnableUpdateEvent(SCM_TIMER_INSTANCE);
+    
+    /* Enable interrupt */
+    LL_TIM_EnableIT_UPDATE(SCM_TIMER_INSTANCE);
     
     /* Enable counter */
-    LL_TIM_EnableCounter(TIM16);
+    LL_TIM_EnableCounter(SCM_TIMER_INSTANCE);
   }
 }
 
 OPTIMIZED void SCM_HSE_StopStabilizationTimer(void)
-{
-  UTILS_ENTER_CRITICAL_SECTION();
+{  
+  /* Disable event generation */
+  LL_TIM_DisableUpdateEvent(SCM_TIMER_INSTANCE);
   
+  /* Disable interrupt */
+  LL_TIM_DisableIT_UPDATE(SCM_TIMER_INSTANCE);
+ 
   /* Disable counter */
-  LL_TIM_DisableCounter(TIM16);
+  LL_TIM_DisableCounter(SCM_TIMER_INSTANCE);
   
-  LL_TIM_DisableUpdateEvent(TIM16);
-  
-  LL_TIM_DisableIT_UPDATE(TIM16);
-  
-  UTILS_EXIT_CRITICAL_SECTION();
+  /* Clear pending event */
+  LL_TIM_ClearFlag_UPDATE(SCM_TIMER_INSTANCE);
+
 }
 
 OPTIMIZED void SCM_HSE_SW_HSERDY_isr(void)

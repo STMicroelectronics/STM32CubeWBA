@@ -338,7 +338,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>TX_SINGLE_MODE_NON_SECURE=1,USE_HAL_DRIVER,STM32WBA65xx</Define>
+              <Define>TX_SINGLE_MODE_NON_SECURE=1,USE_HAL_DRIVER,STM32WBA65xx,TX_INCLUDE_USER_DEFINE_FILE</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Middlewares/ST/threadx/common/inc;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/threadx/ports/cortex_m33/ac6/inc;../../../../../../Middlewares/ST/threadx/utility/low_power;../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>

@@ -307,16 +307,12 @@ void DTS_Button1TriggerReceived( void )
     {
       if(DTS_Context.ButtonTransferReq != DTS_APP_TRANSFER_REQ_OFF)
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_Off(LED_BLUE);
-        #endif
+        APP_BSP_LED_Off(LED_BLUE);
         DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_OFF;
       }
       else
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_On(LED_BLUE);
-        #endif
+        APP_BSP_LED_On(LED_BLUE);
         DTS_Context.ButtonTransferReq = DTS_APP_TRANSFER_REQ_ON;
         UTIL_SEQ_SetTask(1 << CFG_TASK_DATA_TRANSFER_UPDATE_ID, CFG_SEQ_PRIO_0);
       }

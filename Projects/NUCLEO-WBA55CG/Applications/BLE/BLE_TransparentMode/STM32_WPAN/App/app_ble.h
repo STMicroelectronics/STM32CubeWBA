@@ -36,25 +36,9 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 
-typedef enum
-{
-  APP_BLE_IDLE,
-  APP_BLE_LP_CONNECTING,
-  APP_BLE_CONNECTED_SERVER,
-  APP_BLE_CONNECTED_CLIENT,
-  /* USER CODE BEGIN APP_BLE_ConnStatus_t */
-
-  /* USER CODE END APP_BLE_ConnStatus_t */
-} APP_BLE_ConnStatus_t;
-
 /**
   * HCI Event Packet Types
   */
-typedef __PACKED_STRUCT
-{
-  uint32_t *next;
-  uint32_t *prev;
-} BleEvtPacketHeader_t;
 
 typedef __PACKED_STRUCT
 {
@@ -69,25 +53,9 @@ typedef __PACKED_STRUCT
   BleEvt_t  evt;
 } BleEvtSerial_t;
 
-typedef __PACKED_STRUCT __ALIGNED(4)
-{
-  BleEvtPacketHeader_t  header;
-  BleEvtSerial_t        evtserial;
-} BleEvtPacket_t;
-
 /**
   * Event type
   */
-
-/**
-  * This the payload of TL_Evt_t for a command status event
-  */
-typedef __PACKED_STRUCT
-{
-  uint8_t   status;
-  uint8_t   numcmd;
-  uint16_t  cmdcode;
-} TL_CsEvt_t;
 
 /**
   * This the payload of TL_Evt_t for a command complete event
@@ -100,22 +68,8 @@ typedef __PACKED_STRUCT
 } TL_CcEvt_t;
 
 /**
-  * This the payload of TL_Evt_t for an asynchronous event
-  */
-typedef __PACKED_STRUCT
-{
-  uint16_t  subevtcode;
-  uint8_t   payload[1];
-} TL_AsynchEvt_t;
-
-/**
   * LHCI Command Types
   */
-typedef __PACKED_STRUCT
-{
-  uint32_t *next;
-  uint32_t *prev;
-} BleCmdPacketHeader_t;
 
 typedef __PACKED_STRUCT
 {
@@ -130,12 +84,6 @@ typedef __PACKED_STRUCT
   BleCmd_t  cmd;
 } BleCmdSerial_t;
 
-typedef __PACKED_STRUCT
-{
-  BleCmdPacketHeader_t  header;
-  BleCmdSerial_t     cmdserial;
-} BleCmdPacket_t;
-
 /* USER CODE BEGIN ET */
 
 /* USER CODE END ET */
@@ -149,7 +97,6 @@ typedef __PACKED_STRUCT
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
-
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -161,6 +108,7 @@ typedef __PACKED_STRUCT
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void BleStack_Process_BG(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

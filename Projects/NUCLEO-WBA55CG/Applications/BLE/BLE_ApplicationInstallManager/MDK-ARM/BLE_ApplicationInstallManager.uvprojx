@@ -335,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls />
-              <Define>USE_FULL_LL_DRIVER,USE_HAL_DRIVER,STM32WBA55xx,USE_FULL_ASSERT</Define>
+              <Define>USE_FULL_LL_DRIVER,USE_HAL_DRIVER,STM32WBA55xx,USE_FULL_ASSERT,PHY_40nm_3_00_a</Define>
               <Undefine />
               <IncludePath>../Core/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
@@ -432,9 +432,24 @@
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
             </File>
             <File>
-              <FileName>stm32wbaxx_ll_gpio.c</FileName>
+              <FileName>stm32wbaxx_hal_cryp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</FilePath>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal.c</FileName>
@@ -472,16 +487,6 @@
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32wbaxx_hal_dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32wbaxx_hal_exti.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</FilePath>
@@ -495,6 +500,11 @@
               <FileName>stm32wbaxx_hal_pwr_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_icache.c</FileName>

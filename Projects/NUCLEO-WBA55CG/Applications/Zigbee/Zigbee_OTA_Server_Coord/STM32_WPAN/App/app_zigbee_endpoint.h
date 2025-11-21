@@ -48,7 +48,7 @@ extern "C" {
 #define FUOTA_COPRO_FW_BINARY_ADDRESS           ( FLASH_BASE + ( CFG_APP_START_SECTOR_INDEX * FLASH_PAGE_SIZE ) )     /* Address for Wireless Coprocessor FW Update. For WB Compatibility */ */
 
 #define FUOTA_M4_APP_OTA_TAG_OFFSET             0x140u            /* Offset of the OTA tag from the base address in flash for M4 Applciation Processor binary */
-#define FUOTA_M33_APP_OTA_TAG_OFFSET            0x160u            /* Offset of the OTA tag from the base address in flash for M33 Applciation Processor binary */
+#define FUOTA_M33_APP_OTA_TAG_OFFSET            0x400u            /* Offset of the OTA tag from the base address in flash for M33 Applciation Processor binary */
 #define FUOTA_M4_APP_OTA_TAG_ADDRESS            ( FUOTA_APP_FW_BINARY_ADDRESS + FUOTA_M4_APP_OTA_TAG_OFFSET )        /* Address of the OTA tag in flash for M4 Application Processor binary */
 #define FUOTA_M33_APP_OTA_TAG_ADDRESS           ( FUOTA_APP_FW_BINARY_ADDRESS + FUOTA_M33_APP_OTA_TAG_OFFSET )       /* Address of the OTA tag in flash for M33 Application Processor binary */
 

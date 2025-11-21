@@ -12,18 +12,18 @@ Connectivity, Concurrency, BLE protocol, Thread, COAP, STM32WBA, FreeRTOS
 
 ### __Directory contents__
 
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_common.h                               			 App Common application configuration file for STM32WPAN Middleware
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_conf.h                                   		 Application configuration file for STM32WPAN Middleware
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_entry.h                         					 Interface to the application 
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/main.h                                             	 Header for main.c file. This file contains the common defines of the application
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_hal_conf.h                              	 HAL configuration file
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_it.h                                    	 This file contains the headers of the interrupt handlers
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_nucleo_conf.h                           	 STM32WBAXX nucleo board configuration file. This file should be copied to the application folder and renamed to stm32wbaxx_nucleo_conf.h
-  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/utilities_conf.h                                   	 Header for configuration file for STM32 Utilities
-  - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/app_ble.h                                    	 Header for ble application 
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_common.h                                          App Common application configuration file for STM32WPAN Middleware
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_conf.h                                            Application configuration file for STM32WPAN Middleware
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/app_entry.h                                           Interface to the application 
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/main.h                                                Header for main.c file. This file contains the common defines of the application
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_hal_conf.h                                 HAL configuration file
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_it.h                                       This file contains the headers of the interrupt handlers
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/stm32wbaxx_nucleo_conf.h                              STM32WBAXX nucleo board configuration file. This file should be copied to the application folder and renamed to stm32wbaxx_nucleo_conf.h
+  - BLE_HeartRate_Thread_FreeRTOS/Core/Inc/utilities_conf.h                                      Header for configuration file for STM32 Utilities
+  - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/app_ble.h                                       Header for ble application 
   - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/app_thread.h                                    Header for thread application 
   - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/ble_conf.h                                      Configuration file for BLE Middleware
-  - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/ble_dbg_conf.h                               	 Debug configuration file for BLE Middleware
+  - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/ble_dbg_conf.h                                  Debug configuration file for BLE Middleware
   - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/dis.h                                           Header for service2.c 
   - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/dis_app.h                                       Header for service2_app.c 
   - BLE_HeartRate_Thread_FreeRTOS/STM32_WPAN/App/hrs.h                                           Header for service1.c 
@@ -140,48 +140,97 @@ Our Application uses two devices :
 - the BLE_HeartRate_Thread_FreeRTOS device will act as an End Device (mode child). 
 
 After the reset of the Thread_Coap_Generic device, it will be in Leader mode (**Green LED2 ON**).    
-Then power on the BLE_HeartRate_Thread_FreeRTOS device, it will be in Child mode (**Red LED3 ON**).  
+Then power on the BLE_HeartRate_Thread_FreeRTOS device, it will be in Child mode (**Red LED3 ON**).
+After a while, the roles being not fixed with thread, the roles can be switching. The Thread_Coap_Generic device might switch to Router mode (**Red LED3 ON**).
+And at the same time, the BLE_HeartRate_Thread_FreeRTOS device, might switch to the Leader mode (**Green LED2 ON**). 
+In case of switching role, the periodic toggling every one second will be stopped until the SW1 is resuming it.
 
-Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread_FreeRTOS device) starts sending **COAP command (Non-Confirmable)**
-to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its **blue LED1**.  
+Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread device) starts sending COAP command (Non-Confirmable) to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its blue LED1 unless stoppedwith button SW2.
 
-- press the SW1 Push-Button on board A to send a **COAP command (Non-Confirmable)** from BLE_HeartRate_Thread_FreeRTOS device to Thread_Coap_Generic device.  
-The Thread_Coap_Generic device will receive COAP commands to toggle its **blue LED1**.
-- press the SW2 Push-Button on boad A to send a **COAP command (Confirmable)** from BLE_HeartRate_Thread_FreeRTOS device to Thread_Coap_Generic device.  
-The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartRate_Thread_FreeRTOS device a **Coap Data response** and toggle its **blue LED1**.
+press the SW1 Push-Button on board A to restart (if stopped) the periodic 1 sec sending of a COAP command (Non-Confirmable) from BLE_HeartRate_Thread device to Thread_Coap_Generic device.
+The Thread_Coap_Generic device will receive COAP commands to toggle its blue LED1.
+press the SW2 Push-Button on boad A to stop the periodic (1 second) sending of Coap messages and send once a COAP command (Confirmable) from BLE_HeartRate_Thread device to Thread_Coap_Generic device.
+The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartRate_Thread_FreeRTOS device a Coap Data response and toggle its blue LED1 once.
 
 <pre>
 	
-  _______________________________                       __________________________
-  |BLE_HeartRate_Thread_FreeRTOS|                       | Thread_Coap_Generic     |
-  |_____________________________|                       |_________________________|  
-  |                             |                       |                         |
-  |                  every 1sec |                       |                         |
-  |                   or SW1 -->|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
-  |                             | Resource "light"      |                         |
-  |                             | Mode: Multicast       |                         |
-  |                             | Type: Non-Confirmable |                         |
-  |                             | Code: Put             |                         |
-  |                             |                       |                         |
-  |                             |                       |                         |
-  |                    SW2 -->  |=====> COAP ==========>|-------->                |
-  |                             | Resource "light"      |         |               |
-  |                             | Mode: Multicast       |  CoapRequestHandler()   |
-  |                             | Type: Confirmable     |         |               |
-  |                             | Code: Put             |         |               |
-  |                             |                       |         v               |
-  |                             |                       |  CoapSendDataResponse() |
-  |                             |                       |         |               |
-  |                             |                       |         v               |
-  |     CoapDataRespHandler()<--|<===== COAP <==========| <-------                |
-  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
-  |                             |                       |                         |  
-  ------------------------------|                       |-------------------------|
-  | Role : Child                |                       | Role : Leader           |
-  |                             |                       |                         |
-  | LED : Red                   |                       | LED : Green             |
-  |                             |                       |                         |
-  |_____________________________|                       |_________________________|
+                   __________________________________                       __________________________________
+                   |  BLE_HeartRate_Thread_FreeRTOS |                       | Thread_Coap_Generic            |
+                   |________________________________|                       |________________________________|
+                   | USART1                         |                       | USART1                         |
+                   |  every 1 sec (after reset) --> |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)       |
+                   |  or restarting (if stopped)    | Resource :light       |  every 1 sec                   |
+                   |     with SW1                   | Mode: Multicast       |                                |
+                   |                                | Type: Non-Confirmable |                                |
+                   |                                | Code: Put             |                                |
+                   |                                |                       |                                |
+                   |                                |                       |                                |
+       PushB SW2=> | SW2 stop the periodic toggling |=====>  COAP =========>|----------                      |
+                   | every 1 sec                    | Resource light        |         |                      |
+                   | SW1 re-start the periodic      | Mode: Multicast       |  CoapRequestHandler()          |
+                   | toggling every 1 sec           | Type: Confirmable     |         |                      |
+                   |                                | Code: Put             |         v                      |
+                   |                                |                       |  CoapSendDataResponse()        |
+                   |                                |                       |         |                      |
+                   |                                |                       |         v                      |
+                   |    CoapDataRespHandler() <--   |<===== COAP ========== | -------                        |
+                   |                                |                       | BLUE LED TOGGLE ONCE (ON/OFF)  | 
+                   |                                |                       |                                |
+       PushB SW1=> |     restarting every 1 sec --> |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)       |
+                   |       with SW1 (if stopped)    | Resource :light       |  every 1 sec                   |
+                   |                                | Mode: Multicast       |                                |
+                   |                                | Type: Non-Confirmable |                                |
+                   |                                | Code: Put             |                                |
+                   |                                |                       |                                |
+                   |--------------------------------|                       |--------------------------------|
+                   | Role : Child                   |                       | Role : Leader                  |
+                   |                                |                       |                                |
+                   | LED : Red                      |                       | LED : Green                    |
+                   |--------------------------------|                       |--------------------------------|
+                   | ROLE re-negociation phase      | Details not described | ROLE negociation phase         |
+                   |            every 1sec -->      |==>  NOTHING!          |                                |  
+                   |--------------------------------|                       |--------------------------------|
+                   | Role : Leader                  |                       | Role : Router                  |
+                   |                                |                       |                                |
+                   | LED : Green                    |                       | LED : Red                      |
+                   |--------------------------------|                       |--------------------------------|
+                   |            every 1sec -->      |==>  NOTHING!          |                                | 
+                   |                                |                       |                                |
+                   |--------------------------------|                       |--------------------------------|
+       PushB SW1=> |     restarting every 1 sec --> |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)       |
+                   |       with SW1 (if stopped)    | Resource :light       |  every 1 sec                   |
+                   |                                | Mode: Multicast       |                                |
+                   |                                | Type: Non-Confirmable |                                |
+                   |                                | Code: Put             |                                |
+                   |                                |                       |                                |
+       PushB SW2=> | SW2 stop the periodic toggling |=====>  COAP =========>|----------                      |
+                   | every 1 sec                    | Resource light        |         |                      |
+                   | SW1 re-start the periodic      | Mode: Multicast       |  CoapRequestHandler()          |
+                   | toggling every 1 sec           | Type: Confirmable     |         |                      |
+                   |                                | Code: Put             |         v                      |
+                   |                                |                       |  CoapSendDataResponse()        |
+                   |                                |                       |         |                      |
+                   |                                |                       |         v                      |
+                   |    CoapDataRespHandler() <--   |<===== COAP ========== | -------                        |
+                   |                                |                       | BLUE LED TOGGLE ONCE (ON/OFF)  | 
+                   |                                |                       |                                |  
+                   |--------------------------------|                       |--------------------------------|
+                   | Role : Leader                  |                       | Role : Router                  |
+                   |                                |                       |                                |
+                   | LED : Green                    |                       | LED : Red                      |
+                   |________________________________|                       |________________________________|
+                   |                                |                       |                                |
+                   |       _________________________|                       |       _________________________|
+                   |      |COM2                     |                       |      |LPUART1                    |
+                   |      |                         |                       |      |                         |
+                   |      |     Thread stack control|                       |      |     Thread stack control|
+                   |      |       via Cli commands  |                       |      |       via Cli commands  |
+                   |      |                         |                       |      |                         |
+                   |      |                         |                       |      |                Tx CN3-32|
+                   |      |                         |                       |      |                Rx CN3-34|
+                   |      |_________________________|                       |      |_________________________|
+                   |                                |                       |                                |
+                   |________________________________|                       |________________________________|
 
   
 </pre> 
@@ -192,29 +241,37 @@ to accept incoming connection in BLE.
 On the android/ios device, enable the Bluetooth communications, and if not done before:
 
 - Install the ST BLE Toolbox application on the android device:
-	- <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
+    - <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
     - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a>
 
-- You can also install the ST BLE Sensor application on the android/ios device:
-	- <a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
-	- <a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a>
 
-- Then, click on the App icon, ST BLE Toolbox (android/ios device),
-   You can either open ST BLE Sensor application (android/ios device).
+- Then, click on the App icon, ST BLE Toolbox (android/ios device).
 
 - In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs,
   you can reset the energy measurement.
+  
 - After 60s of advertising, the application switch from fast advertising to low power advertising.
 
 ### __Traces__
 
-* To get the traces you need to connect your Board to the Hyperterminal (through the STLink Virtual COM Port).  
+* To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port).
 
-* The UART must be configured as follows:  
-<br>
-BaudRate       = 115200 baud</br>
-Word Length    = 8 Bits</br>
-Stop Bit       = 1 bit</br>
-Parity         = none</br>
-Flow control   = none</br>
-Terminal   "Go to the Line" : &lt;LF&gt;  
+* The UART must be configured as follows:<br>
+  - BaudRate       = 115200 baud</br>
+  - Word Length    = 8 Bits</br>
+  - Stop Bit       = 1 bit</br>
+  - Parity         = none</br>
+  - Flow control   = none</br>
+  - Terminal   "Go to the Line" :    <LF>   
+
+* It is also possible to control and configure the Thread stack through Cli commands. For that, connect the COM2 of your board to an Hyperterminal through STLink cable.<br>
+The Serial interface must be configured as follows:<br>
+  - BaudRate       = 115200 baud</br>
+  - Word Length    = 8 Bits</br>
+  - Stop Bit       = 1 bit</br>
+  - Parity         = none</br>
+  - Flow control   = none</br>
+  - Terminal   "Go to the Line" :    <LF>   <br>
+
+  The command 'help' can be used to display the list of all available cli commands.<br>
+

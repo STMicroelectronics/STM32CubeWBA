@@ -4,3 +4,4 @@ first_boot_stage=0
 oemurot_enabled=1
 s_data_image_number=0
 ns_data_image_number=0
+external_flash=0

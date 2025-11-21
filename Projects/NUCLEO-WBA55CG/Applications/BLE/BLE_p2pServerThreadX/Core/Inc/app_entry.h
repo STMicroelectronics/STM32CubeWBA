@@ -58,12 +58,14 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (7)
+#define WPAN_FW_MINOR_VERSION      (8)
 #define WPAN_FW_MAJOR_VERSION      (1)
+
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
-extern TX_BYTE_POOL *pBytePool; /* ThreadX byte pool pointer for whole WPAN middleware */
+/* ThreadX byte pool pointer for whole WPAN middleware */
+extern TX_BYTE_POOL         *pBytePool;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */

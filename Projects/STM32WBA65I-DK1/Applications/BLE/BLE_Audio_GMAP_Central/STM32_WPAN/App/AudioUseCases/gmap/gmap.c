@@ -45,6 +45,9 @@ static GMAP_CltInst_t *GMAP_CLT_GetAvailableInstance(void);
 static GMAP_CltInst_t *GMAP_CLT_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer);
 static void GMAP_CLT_InitInstance(GMAP_CltInst_t *pGMAP_Clt);
 static tBleStatus GMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
+static SVCCTL_EvtAckStatus_t GMAP_ReadAttRespHandle(uint16_t ConnHandle,
+                                                    uint8_t *pAttribute_Value,
+                                                    uint16_t Offset);
 /* External functions prototype------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
@@ -507,46 +510,31 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
         case ACI_ATT_READ_RESP_VSEVT_CODE:
         {
           aci_att_read_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
-
-          /* Check if a GMAP Client Instance with specified Connection Handle exists*/
-          p_gmap_clt = GMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
-          if (p_gmap_clt != 0)
+          
+          return_value = GMAP_ReadAttRespHandle(pr->Connection_Handle,
+                                                pr->Attribute_Value,
+                                                0u);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
           {
-            /* Check if an ATT Procedure was started*/
-            if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
-            {
-              BLE_DBG_GMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
-
-              return_value = SVCCTL_EvtAckFlowEnable;
-
-              /* Handle the ATT read response */
-              if (p_gmap_clt->LinkupState == GMAP_LINKUP_READ_CHAR)
-              {
-                switch (GMAP_Context.CltInst->CurrentLinkupChar)
-                {
-                  case GMAS_CHAR_GMAP_ROLE:
-                    GMAP_Context.CltInst->GMAPRole = pr->Attribute_Value[0] & 0x0F;
-                    break;
-
-                  case GMAS_CHAR_UGG_FEATURES:
-                    GMAP_Context.CltInst->UGGFeatures = pr->Attribute_Value[0] & 0x07;
-                    break;
-
-                  case GMAS_CHAR_UGT_FEATURES:
-                    GMAP_Context.CltInst->UGTFeatures = pr->Attribute_Value[0] & 0x7F;
-                    break;
-
-                  case GMAS_CHAR_BGS_FEATURES:
-                    GMAP_Context.CltInst->BGSFeatures = pr->Attribute_Value[0] & 0x01;
-                    break;
-
-                  case GMAS_CHAR_BGR_FEATURES:
-                    GMAP_Context.CltInst->BGRFeatures = pr->Attribute_Value[0] & 0x03;
-                    break;
-                }
-              }
-            }
+            BLE_DBG_GMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",
+                             pr->Connection_Handle);
           }
+        }
+        break;
+
+        case ACI_GATT_READ_EXT_VSEVT_CODE:
+        {
+          aci_gatt_read_ext_event_rp0 *pr = (void*)p_blecore_evt->data;
+          
+          return_value = GMAP_ReadAttRespHandle(pr->Connection_Handle,
+                                                pr->Attribute_Value,
+                                                pr->Offset);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
+          {
+            BLE_DBG_GMAP_MSG("ACI_GATT_READ_EXT_EVENT is received on conn handle %04X\n",
+                             pr->Connection_Handle);
+          }
+
         }
         break;
 
@@ -1142,4 +1130,54 @@ static tBleStatus GMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBeare
     }
   }
   return status;
+}
+
+static SVCCTL_EvtAckStatus_t GMAP_ReadAttRespHandle(uint16_t ConnHandle,
+                                                    uint8_t *pAttribute_Value,
+                                                    uint16_t Offset)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  GMAP_CltInst_t        *p_gmap_clt;
+
+  /* Check if a GMAP Client Instance with specified Connection Handle exists*/
+  p_gmap_clt = GMAP_CLT_GetInstance(ConnHandle,&p_eatt_bearer);
+  if (p_gmap_clt != 0)
+  {
+    /* Check if an ATT Procedure was started*/
+    if (GMAP_IsATTProcedureInProgress(p_gmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
+    {
+      return_value = SVCCTL_EvtAckFlowEnable;
+      if (Offset == 0u)
+      {
+        /* Handle the ATT read response */
+        if (p_gmap_clt->LinkupState == GMAP_LINKUP_READ_CHAR)
+        {
+          switch (GMAP_Context.CltInst->CurrentLinkupChar)
+          {
+            case GMAS_CHAR_GMAP_ROLE:
+              GMAP_Context.CltInst->GMAPRole = pAttribute_Value[0] & 0x0F;
+              break;
+
+            case GMAS_CHAR_UGG_FEATURES:
+              GMAP_Context.CltInst->UGGFeatures = pAttribute_Value[0] & 0x07;
+              break;
+
+            case GMAS_CHAR_UGT_FEATURES:
+              GMAP_Context.CltInst->UGTFeatures = pAttribute_Value[0] & 0x7F;
+              break;
+
+            case GMAS_CHAR_BGS_FEATURES:
+              GMAP_Context.CltInst->BGSFeatures = pAttribute_Value[0] & 0x01;
+              break;
+
+            case GMAS_CHAR_BGR_FEATURES:
+              GMAP_Context.CltInst->BGRFeatures = pAttribute_Value[0] & 0x03;
+              break;
+          }
+        }
+      }
+    }
+  }
+  return return_value;
 }

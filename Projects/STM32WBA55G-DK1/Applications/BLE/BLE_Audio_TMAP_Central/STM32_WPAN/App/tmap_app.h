@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    tmap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __TMAP_APP_H
@@ -32,10 +30,10 @@ extern "C" {
 #include "tmap_app_conf.h"
 #include "app_conf.h"
 #include "stm32_timer.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 #define NUM_LC3_CODEC_CAP       16
 #define NUM_LC3_CODEC_CONFIG    16
 #define LC3_8_1                 0
@@ -323,7 +321,6 @@ typedef uint8_t seeking_direction_t;
 #define SEEKING_DIR_FAST_FORWARD                (0u)
 #define SEEKING_DIR_FAST_REWIND                 (1u)
 
-
 typedef struct
 {
   uint32_t      Duration;
@@ -354,20 +351,18 @@ typedef struct
   uint8_t                   Peer_Address[6];
   uint8_t                   Role;
   audio_profile_t           AudioProfile;
+  uint8_t                   ConfirmIndicationRequired;
+  uint8_t                   ForceCompleteLinkup;
+  APP_ASEs_t                *pASEs;
   uint8_t                   CSIPDiscovered; /*Set to 1 if Set Member has been discovered (but not yet CAP linked)*/
   uint8_t                   SIRK_type;
   uint8_t                   SIRK[16];
   uint8_t                   Rank;
   uint8_t                   Size;
-  uint8_t                   ForceCompleteLinkup;
-  uint8_t                   ConfirmIndicationRequired;
-
   BAP_Unicast_Server_Info_t UnicastServerInfo;
-  APP_ASEs_t                *pASEs;
   uint8_t                   TargetedMediaQoSConfSupported;
   uint8_t                   TargetedTelephonySrcQoSConfSupported;
   uint8_t                   TargetedTelephonySnkQoSConfSupported;
-
 }APP_ACL_Conn_t;
 
 typedef struct
@@ -400,6 +395,8 @@ typedef struct
 
   APP_ASEs_t                    aASEs[CFG_BLE_NUM_LINK];
 
+  uint8_t                       NumOutputChannels;
+
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
   TMAPAPP_Bearer_t              GenericBearer;
 #if (APP_CCP_NUM_LOCAL_BEARER_INSTANCES > 0u)
@@ -417,8 +414,6 @@ typedef struct
 
 #endif /* (APP_CCP_ROLE_SERVER_SUPPORT == 1u) */
 
-  uint8_t                       NumOutputChannels;
-
   uint8_t                       SetMemberDiscoveryProcActive;
 
   /* Broadcast context */
@@ -432,45 +427,41 @@ typedef struct
   uint16_t                      MaxTransportLatency;
   uint16_t                      CurrentBISConnHandle[APP_MAX_NUM_BIS];
   uint8_t                       CurrentNumBIS;
-
 } TMAPAPP_Context_t;
 
 typedef struct
 {
-  Sampling_Freq_t       freq;
-  Frame_Duration_t      frame_duration;
-  uint16_t              octets_per_codec_frame;
+  Sampling_Freq_t               freq;
+  Frame_Duration_t              frame_duration;
+  uint16_t                      octets_per_codec_frame;
 } APP_CodecConf_t;
 
 typedef struct
 {
-  Sampling_Freq_t       freq;
-  uint32_t              sdu_interval;
-  BAP_Framing_t         framing;
-  uint16_t              max_sdu;
-  uint8_t               rtx_num;
-  uint16_t              max_tp_latency;
-  uint32_t              presentation_delay;
+  Sampling_Freq_t               freq;
+  uint32_t                      sdu_interval;
+  BAP_Framing_t                 framing;
+  uint16_t                      max_sdu;
+  uint8_t                       rtx_num;
+  uint16_t                      max_tp_latency;
+  uint32_t                      presentation_delay;
 } APP_QoSConf_t;
 
 typedef struct
 {
-  uint8_t       NumSnkASEs;
-  uint8_t       NumSrcASEs;
-  uint8_t       NumAudioChnlsPerSnkASE;
-  uint8_t       MinSnkAudioLocations;
-  uint8_t       NumAudioChnlsPerSrcASE;
-  uint8_t       MinSrcAudioLocations;
-  uint8_t       NumCISes;
-  uint16_t      NumAudioStreams;
+  uint8_t                       NumSnkASEs;
+  uint8_t                       NumSrcASEs;
+  uint8_t                       NumAudioChnlsPerSnkASE;
+  uint8_t                       MinSnkAudioLocations;
+  uint8_t                       NumAudioChnlsPerSrcASE;
+  uint8_t                       MinSrcAudioLocations;
+  uint8_t                       NumCISes;
+  uint16_t                      NumAudioStreams;
 } APP_UnicastAudioConf_t;
 
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);
@@ -479,7 +470,6 @@ tBleStatus TMAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t TMAPAPP_StartScanning(void);
 uint8_t TMAPAPP_StopScanning(void);
 uint8_t TMAPAPP_CreateConnection(uint8_t *pAddress, uint8_t AddressType);
-uint8_t TMAPAPP_Disconnect(void);
 uint8_t TMAPAPP_RemoteVolumeUp(void);
 uint8_t TMAPAPP_RemoteVolumeDown(void);
 uint8_t TMAPAPP_RemoteToggleMute(void);
@@ -497,6 +487,7 @@ uint8_t TMAPAPP_StartTelephonyStream(void);
 uint8_t TMAPAPP_StopStream(void);
 tBleStatus TMAPAPP_StartBroadcastSource(uint8_t BAPConfID);
 tBleStatus TMAPAPP_StopBroadcastSource(void);
+uint8_t TMAPAPP_Disconnect(void);
 void TMAPAPP_AclConnected(uint16_t Conn_Handle,uint8_t Peer_Address_Type,uint8_t Peer_Address[6],uint8_t role);
 void TMAPAPP_CISConnected(uint16_t Conn_Handle);
 void TMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason);
@@ -506,5 +497,5 @@ void TMAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* __TMAP_APP_H */
 
+#endif /*__TMAP_APP_H */

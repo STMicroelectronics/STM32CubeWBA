@@ -53,8 +53,11 @@ UX_HOST_CLASS_HID_KEYBOARD *keyboard;
 /* Private function prototypes -----------------------------------------------*/
 static UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *current_instance);
 static VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
-/* USER CODE BEGIN PFP */
+
 extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
+
+/* USER CODE BEGIN PFP */
+
 /* USER CODE END PFP */
 
 /**

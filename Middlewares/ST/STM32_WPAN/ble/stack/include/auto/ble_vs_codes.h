@@ -191,10 +191,10 @@
  */
 
 /* ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT code */
-#define ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE          0x0004U
+#define ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE          0x1804U
 
 /* ACI_HAL_SYNC_EVENT code */
-#define ACI_HAL_SYNC_VSEVT_CODE                           0x0008U
+#define ACI_HAL_SYNC_VSEVT_CODE                           0x1808U
 
 
 #endif /* BLE_VS_CODES_H__ */

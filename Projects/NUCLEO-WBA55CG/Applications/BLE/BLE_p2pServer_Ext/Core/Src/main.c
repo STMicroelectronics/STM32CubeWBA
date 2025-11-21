@@ -59,6 +59,7 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,6 +96,9 @@ int main(void)
 
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
+
+  /* Configure the System Power */
+  SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
 
@@ -210,6 +214,19 @@ void PeriphCommonClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief Power Configuration
+  * @retval None
+  */
+static void SystemPower_Config(void)
+{
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
 }
 
 /**
@@ -384,6 +401,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }

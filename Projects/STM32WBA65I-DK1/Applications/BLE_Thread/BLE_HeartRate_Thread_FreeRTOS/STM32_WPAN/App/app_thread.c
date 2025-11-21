@@ -74,9 +74,11 @@
 #define APP_THREAD_PERIODIC_TRANSMIT
 
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-#define APP_THREAD_TRANSMIT_PERIOD      (1000)        /**< 1000ms */
+#define APP_THREAD_TRANSMIT_PERIOD      (1*1000)        /**< 1000ms */
 #endif
 /* USER CODE END PD */
+
+/* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
@@ -139,6 +141,7 @@ static otMessage* pOT_MessageResponse = NULL;
 
 static uint8_t PayloadWrite[COAP_PAYLOAD_LENGTH]= {0};
 static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
+static uint8_t CounterRole= {0};
 
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
 osTimerId_t APP_Thread_transmitTimerHandle;
@@ -204,6 +207,11 @@ static void Cli_Uart_Task( void * argument )
   }
 }
 #endif // (OT_CLI_USE == 1)
+
+
+#ifdef GRL_TEST
+osSemaphoreId_t       TaskletsMutex;
+#endif
 
 void APP_THREAD_ScheduleAlarm(void)
 {
@@ -303,6 +311,7 @@ void Thread_Init(void)
 #else
   PtOpenThreadInstance = otInstanceInitSingle();
 #endif
+
   assert(PtOpenThreadInstance);
 
 #if (OT_CLI_USE == 1)
@@ -373,6 +382,16 @@ void Thread_Init(void)
     APP_DBG( "ERROR FREERTOS : TASKLETS TASK CREATION FAILED" );
     while(1);
   }
+
+#ifdef GRL_TEST
+  /* Create Mutex to protect OT thread */
+  TaskletsMutex = osSemaphoreNew( 1, 1, NULL );
+  if ( TaskletsMutex == NULL )
+  {
+    APP_DBG( "ERROR FREERTOS : TASKLETS SEMAPHORE CREATION FAILED" );
+    while(1);
+  }
+#endif
 
   ll_sys_thread_init();
 
@@ -475,8 +494,10 @@ void APP_THREAD_Init( void )
 static void APP_THREAD_DeviceConfig(void)
 {
   otError error = OT_ERROR_NONE;
+  
+  #ifndef GRL_TEST
   otNetworkKey networkKey = {{0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00}};
-
+  #endif
 
   error = otSetStateChangedCallback(PtOpenThreadInstance, APP_THREAD_StateNotif, NULL);
   if (error != OT_ERROR_NONE)
@@ -489,7 +510,8 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_SET_THRESHOLD,error);
   }
-
+  
+#ifndef GRL_TEST
   error = otLinkSetChannel(PtOpenThreadInstance, C_CHANNEL_NB);
   if (error != OT_ERROR_NONE)
   {
@@ -507,23 +529,23 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
   }
+#endif
+  otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
 
-  //error = otLinkSetExtendedAddress(PtOpenThreadInstance, &ext_addr);
-  if (error != OT_ERROR_NONE)
-  {
-    APP_THREAD_Error(ERR_THREAD_SET_EXTADDR,error);
-  }
   error = otIp6SetEnabled(PtOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_IPV6_ENABLE,error);
   }
   
+#ifndef GRL_TEST
 #ifdef OPENTHREAD_MTD
   /* Set MTD device type */
-  OT_LinkMode.mRxOnWhenIdle = 1;
-  OT_LinkMode.mDeviceType = 0; /* 0: MTD, 1: FTD */
-  OT_LinkMode.mNetworkData = 1;
+  static otLinkModeConfig OT_LinkMode = {
+  .mRxOnWhenIdle = 1,
+  .mDeviceType   = 0, /* 0: MTD, 1: FTD */
+  .mNetworkData  = 1
+  };
 
   error = otThreadSetLinkMode(PtOpenThreadInstance,OT_LinkMode);
   if (error != OT_ERROR_NONE)
@@ -531,7 +553,13 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_LINK_MODE,error);
   }
 #endif
+#endif 
+  
+#ifdef GRL_TEST
+  error = otThreadSetEnabled(PtOpenThreadInstance, false);
+#else
   error = otThreadSetEnabled(PtOpenThreadInstance, true);
+#endif 
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_START,error);
@@ -750,16 +778,33 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           BSP_LED_Off(LED_GREEN);
           BSP_LED_Off(LED_RED);
 #endif
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+          /* Stop timer for periodic CoAp msg transmission */
+          osTimerStop(APP_Thread_transmitTimerHandle);
+          LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DISABLED. CounterRole value = %d",CounterRole);
+
+#endif
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
+
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
 #if (CFG_LED_SUPPORTED == 1)
           BSP_LED_Off(LED_GREEN);
           BSP_LED_Off(LED_RED);
 #endif
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+          /* Stop timer for periodic CoAp msg transmission */
+          osTimerStop(APP_Thread_transmitTimerHandle);
+          LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DETACHED. CounterRole value = %d",CounterRole);
+#endif
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
+
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
 #if (CFG_LED_SUPPORTED == 1)
@@ -767,11 +812,19 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           BSP_LED_On(LED_RED);
 #endif
 #ifdef APP_THREAD_PERIODIC_TRANSMIT  
-          /* Start timer for periodic CoAp msg transmission */
-          osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is CHILD. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
+
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
 #if (CFG_LED_SUPPORTED == 1)
@@ -779,16 +832,35 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           BSP_LED_On(LED_RED);
 #endif
 #ifdef APP_THREAD_PERIODIC_TRANSMIT  
-          /* Start timer for periodic CoAp msg transmission */
-          osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is ROUTER. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
+
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
 #if (CFG_LED_SUPPORTED == 1)
           BSP_LED_On(LED_GREEN);
           BSP_LED_Off(LED_RED);
+#endif
+#ifdef APP_THREAD_PERIODIC_TRANSMIT  
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is LEADER. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
@@ -820,7 +892,7 @@ void APP_THREAD_ScheduleUART(void)
 static void APP_THREAD_CliInit(otInstance *aInstance)
 {
 
-  otPlatUartEnable();
+  (void) otPlatUartEnable();
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
@@ -880,7 +952,6 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
     }
 
     memset(&OT_MessageInfo, 0, sizeof(OT_MessageInfo));
-    memcpy(&OT_MessageInfo.mSockAddr, otThreadGetLinkLocalIp6Address(PtOpenThreadInstance), sizeof(otIp6Address));
     OT_MessageInfo.mPeerPort = OT_DEFAULT_COAP_PORT;
 
     if((aPeerAddress == NULL) && (aStringAddress != NULL))
@@ -1052,6 +1123,17 @@ static void APP_THREAD_TransmitRequest(void *arg)
 void APP_BSP_JoystickRightAction(void)
 {
   APP_THREAD_SendCoapMsgWithNoConf();
+  /* USER CODE BEGIN Button1Action */
+  #ifdef APP_THREAD_PERIODIC_TRANSMIT
+    /* If timer for periodic CoAp msg transmission running */
+    if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+    {
+    /* Stop timer for periodic CoAp msg transmission */
+    osTimerStart(APP_Thread_transmitTimerHandle,100);
+    LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+  }
+  #endif
+  /* USER CODE END Button1Action */
 }
 
 /**
@@ -1062,9 +1144,12 @@ void APP_BSP_JoystickRightAction(void)
 void APP_BSP_JoystickLeftAction(void)
 {
   APP_THREAD_SendCoapMsgWithConf();
+  /* USER CODE BEGIN Button2Action */
+  osTimerStop(APP_Thread_transmitTimerHandle);
+  LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+  /* USER CODE END Button2Action */
 }
 #endif
-
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

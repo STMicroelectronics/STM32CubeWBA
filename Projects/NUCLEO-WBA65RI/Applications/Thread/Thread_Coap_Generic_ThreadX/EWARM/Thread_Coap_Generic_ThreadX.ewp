@@ -370,7 +370,6 @@
                     <state>$PROJ_DIR$/../STM32_WPAN/App</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
                     <state>$PROJ_DIR$/../AZURE_RTOS/App</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
@@ -401,8 +400,6 @@
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/psa</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/threadx/ports/cortex_m33/iar/inc</state>
@@ -723,7 +720,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -731,7 +728,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>Thread_Coap_Generic_ThreadX.hex</state>
+                    <state>Thread_Coap_Generic_ThreadX.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -353,11 +353,11 @@ void P2P_SERVER_Init(void)
                              &(P2P_SERVER_Context.P2p_serverSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: P2P_Server, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: P2P_Server, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: P2p_serverSvcHdle = 0x%04X\n",P2P_SERVER_Context.P2p_serverSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: P2p_serverSvcHdle = 0x%04X\n",P2P_SERVER_Context.P2p_serverSvcHdle);
   }
 
   /**
@@ -376,11 +376,11 @@ void P2P_SERVER_Init(void)
                           &(P2P_SERVER_Context.Led_CCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : LED_C, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : LED_C, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Led_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Led_CCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Led_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Led_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -403,11 +403,11 @@ void P2P_SERVER_Init(void)
                           &(P2P_SERVER_Context.Switch_CCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : SWITCH_C, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : SWITCH_C, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Switch_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Switch_CCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Switch_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Switch_CCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -444,11 +444,11 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value LED_C command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value LED_C command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value LED_C command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value LED_C command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -463,11 +463,11 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value SWITCH_C command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value SWITCH_C command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value SWITCH_C command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value SWITCH_C command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 

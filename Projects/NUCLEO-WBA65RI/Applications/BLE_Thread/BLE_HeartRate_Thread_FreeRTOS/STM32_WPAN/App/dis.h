@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,10 +43,6 @@ extern "C" {
 typedef enum
 {
   DIS_MANS,
-  DIS_MNBS,
-  DIS_SNS,
-  DIS_HRS,
-  DIS_FRS,
   /* USER CODE BEGIN Service2_CharOpcode_t */
 
   /* USER CODE END Service2_CharOpcode_t */
@@ -56,10 +52,6 @@ typedef enum
 typedef enum
 {
   DIS_MANS_READ_EVT,
-  DIS_MNBS_READ_EVT,
-  DIS_SNS_READ_EVT,
-  DIS_HRS_READ_EVT,
-  DIS_FRS_READ_EVT,
   /* USER CODE BEGIN Service2_OpcodeEvt_t */
 
   /* USER CODE END Service2_OpcodeEvt_t */

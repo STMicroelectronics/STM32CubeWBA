@@ -77,18 +77,11 @@ uint8_t BLE_ConfigureDataPath( uint8_t data_path_direction,
                                    const uint8_t* vendor_specific_config )
 {
   tBleStatus ret;
-  CODEC_ConfigureDataPathCmd_t param;
-  param.direction = data_path_direction;
-  param.path_ID = data_pathID;
-  param.config_len = vendor_specific_config_length;
-  param.sample_depth = vendor_specific_config[0];
-  param.decimation = vendor_specific_config[1];
   LOG_INFO_APP("==>> CODEC Configure Data Path with following parameters:\n");
   LOG_INFO_APP("  Direction : %d\n",data_path_direction);
   LOG_INFO_APP("  Data Path ID : 0x%02X\n",data_pathID);
-  LOG_INFO_APP("  Sample Depth : %d\n",param.sample_depth);
-  LOG_INFO_APP("  Decimation : %d\n",param.decimation);
-  ret = CODEC_ConfigureDataPath((uint8_t*)&param);
+
+  ret = CODEC_ConfigureDataPath(data_path_direction, data_pathID, vendor_specific_config_length, (uint8_t*)vendor_specific_config);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("==>> CODEC_ConfigureDataPath() : Fail, reason: 0x%02X\n", ret);
@@ -230,16 +223,11 @@ uint8_t BLE_RemoveIsoDataPath( uint16_t connection_handle,
                                uint8_t data_path_direction )
 {
   int32_t ret;
-  uint8_t a_param[3];
-
-  a_param[0] = (uint8_t) (connection_handle);
-  a_param[1] = (uint8_t) ((connection_handle >> 8 ));
-  a_param[2] = data_path_direction;
 
   LOG_INFO_APP("==>> CODEC Remove ISO Data Path for CIS Connection Handle 0x%04X and path direction mask 0x%02X\n",
               connection_handle,
               data_path_direction);
-  ret = CODEC_RemoveIsoDataPath((uint8_t*)&a_param);
+  ret = CODEC_RemoveIsoDataPath(connection_handle, data_path_direction);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("==>> CODEC_RemoveIsoDataPath() : Fail, reason: 0x%02X\n", ret);

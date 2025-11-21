@@ -43,7 +43,6 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -91,6 +90,7 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 /* Private functions prototypes-----------------------------------------------*/
 
 /* USER CODE BEGIN PFP */
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/

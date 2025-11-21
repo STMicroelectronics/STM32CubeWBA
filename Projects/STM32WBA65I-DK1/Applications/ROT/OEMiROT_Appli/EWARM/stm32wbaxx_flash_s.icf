@@ -19,16 +19,25 @@ define symbol __ICFEDIT_size_heap__   = S_HEAP_SIZE;
 /**** End of ICF editor section. ###ICF###*/
 
 define memory mem with size = 4G;
-define region ROM_region      = mem:[from __ICFEDIT_region_ROM_start__      to __ICFEDIT_region_ROM_end__];
-define region RAM_region      = mem:[from __ICFEDIT_region_RAM_start__      to __ICFEDIT_region_RAM_end__];
+define region ROM_region      = mem:[from __ICFEDIT_region_ROM_start__ to __ICFEDIT_region_ROM_end__];
+define region RAM_region      = mem:[from __ICFEDIT_region_RAM_start__ to __ICFEDIT_region_RAM_end__];
+
+define region BOOT_SHARED_MEM_region  = mem:[from BOOT_SHARED_DATA_BASE size BOOT_SHARED_DATA_SIZE];
+define region BOOT_RAM_MEM_region     = mem:[from BOOT_RAM_BASE size BOOT_RAM_SIZE];
 
 define block CSTACK    with alignment = 8, size = __ICFEDIT_size_cstack__   { };
 define block HEAP      with alignment = 8, size = __ICFEDIT_size_heap__     { };
 
+define block BOOT_SHARED_MEM  with  alignment = 8 { section .Boot_Shared_Data };
+define block BOOT_RAM_MEM     with  alignment = 8 { section .Boot_Ram_Data };
+
 initialize by copy { readwrite };
-do not initialize  { section .noinit };
+do not initialize  { section .noinit, section .Boot_Shared_Data, section .Boot_Ram_Data };
 
 place at address mem:__ICFEDIT_intvec_start__ { readonly section .intvec };
 
 place in ROM_region     { readonly };
 place in RAM_region     { readwrite, block HEAP, block CSTACK };
+
+place in BOOT_RAM_MEM_region    { block BOOT_RAM_MEM };
+place in BOOT_SHARED_MEM_region { block BOOT_SHARED_MEM };

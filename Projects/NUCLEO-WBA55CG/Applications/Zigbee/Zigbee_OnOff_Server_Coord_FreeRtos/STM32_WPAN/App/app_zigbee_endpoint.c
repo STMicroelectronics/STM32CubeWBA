@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -75,6 +76,7 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
+
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */

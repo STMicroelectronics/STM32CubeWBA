@@ -58,24 +58,22 @@ set auth_s_xml_field="Authentication secure key"
 set auth_ns_xml_field="Authentication non secure key"
 set scratch_sector_number_xml_field="Number of scratch sectors"
 
-:: Environment variable for AppliCfg
-goto exe:
-goto py:
-:exe
-::line for window executable
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\dist\AppliCfg.exe"
-set "python="
-if exist %applicfg% (
-echo run config Appli with windows executable
-goto postbuild
+:: Check if Python is installed
+python3 --version >nul 2>&1
+if %errorlevel% neq 0 (
+ python --version >nul 2>&1
+ if !errorlevel! neq 0 (
+    echo Python installation missing. Refer to Utilities\PC_Software\ROT_AppliConfig\README.md
+    goto :error
+ )
+  set "python=python "
+) else (
+  set "python=python3 "
 )
-:py
-::line for python
-echo run config Appli with python script
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
-set "python= "
 
-:postbuild
+:: Environment variable for AppliCfg
+set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
+
 :: =============================================================== Generate OEMuROT image ===============================================================
 IF "%oemurot_enabled%" == "1" (
 echo.
@@ -107,6 +105,10 @@ set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b ns_data_
 IF !errorlevel! NEQ 0 goto :error
 
 set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b app_full_secure -m  RE_OEMIROT_APPLI_FULL_SECURE --decimal --vb %img_config% >> %current_log_file% 2>>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% flash --layout %preprocess_bl2_file% -b external_flash -m RE_EXTERNAL_FLASH_ENABLE --decimal %img_config% --vb >> %current_log_file% 2>>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 
@@ -440,6 +442,22 @@ set "command=%python%%applicfg% setdefine -a uncomment -n OEMUROT_ENABLE -v 1 %a
 ) else (
 set "command=%python%%applicfg% setdefine -a comment -n OEMUROT_ENABLE -v 1 %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 )
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_BOOT_SHARED_DATA_BASE -n BOOT_SHARED_DATA_BASE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_BOOT_SHARED_DATA_SIZE -n BOOT_SHARED_DATA_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_BOOT_RAM_BASE -n BOOT_RAM_BASE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
+%command%
+IF !errorlevel! NEQ 0 goto :error
+
+set "command=%python%%applicfg% definevalue --layout %preprocess_bl2_file% -m RE_BOOT_RAM_SIZE -n BOOT_RAM_SIZE %appli_flash_layout% --vb >> %current_log_file% 2>&1"
 %command%
 IF !errorlevel! NEQ 0 goto :error
 

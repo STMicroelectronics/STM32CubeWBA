@@ -31,6 +31,7 @@
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
 #include "stm32wbaxx_nucleo.h"
+#include "stm32wbaxx_ll_icache.h"
 
 #include "zigbee.h"
 
@@ -274,98 +275,93 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
     iPersistenceCurrentCount++;
 
     /* Disable ICache */
-    if ( HAL_ICACHE_Disable() == HAL_OK )
+    LL_ICACHE_Disable();
+
+    do
     {
+      bStatus = true;
+      iBufferIndex = 0;
+
+      /* Copy first Persistence Data */
+      iNbCopy = HW_FLASH_WIDTH - sizeof(stPersistHeader);
+      if ( iNbCopy > iBufferLength )
+      {
+        iNbCopy = iBufferLength - sizeof(stPersistHeader);
+      }
+      memcpy( &szFlashData[sizeof(stPersistHeader)], pBuffer, iNbCopy );
+
+      /* Flash NVM with Persistence Data */
+      LOG_INFO_APP( "  Save %d data on NVM @ 0x%08X ...", iBufferLength, lPersistenceCurrentAddress );
+
+      lPersistenceStartAddress = lPersistenceCurrentAddress;
+
+      /* Unlock the Flash to enable the flash control register access */
+      HAL_FLASH_Unlock();
+
       do
       {
-        bStatus = true;
-        iBufferIndex = 0;
-
-        /* Copy first Persistence Data */
-        iNbCopy = HW_FLASH_WIDTH - sizeof(stPersistHeader);
-        if ( iNbCopy > iBufferLength )
+        if ( HAL_FLASH_Program( FLASH_TYPEPROGRAM_QUADWORD, lPersistenceCurrentAddress, ( uint32_t )&szFlashData ) != HAL_OK )
         {
-          iNbCopy = iBufferLength - sizeof(stPersistHeader);
+          bStatus = false;
+          LOG_ERROR_APP( "  Error, Flash Data failed @ 0x%08X ...", lPersistenceCurrentAddress );
         }
-        memcpy( &szFlashData[sizeof(stPersistHeader)], pBuffer, iNbCopy );
-
-        /* Flash NVM with Persistence Data */
-        LOG_INFO_APP( "  Save %d data on NVM @ 0x%08X ...", iBufferLength, lPersistenceCurrentAddress );
-
-        lPersistenceStartAddress = lPersistenceCurrentAddress;
-
-        /* Unlock the Flash to enable the flash control register access */
-        HAL_FLASH_Unlock();
-
-        do
+        else
         {
-          if ( HAL_FLASH_Program( FLASH_TYPEPROGRAM_QUADWORD, lPersistenceCurrentAddress, ( uint32_t )&szFlashData ) != HAL_OK )
+          /* Read back the value for verification */
+          if ( memcmp( ( void * )(lPersistenceCurrentAddress), &szFlashData, HW_FLASH_WIDTH ) != 0x00u )
           {
+            LOG_ERROR_APP( "  Error, Flash verification failed @ 0x%08X ...", lPersistenceCurrentAddress );
             bStatus = false;
-            LOG_ERROR_APP( "  Error, Flash Data failed @ 0x%08X ...", lPersistenceCurrentAddress );
           }
           else
           {
-            /* Read back the value for verification */
-            if ( memcmp( ( void * )(lPersistenceCurrentAddress), &szFlashData, HW_FLASH_WIDTH ) != 0x00u )
+            /* Update Data for next iteration */
+            lPersistenceCurrentAddress += HW_FLASH_WIDTH;
+            iBufferIndex += iNbCopy;
+
+            iNbCopy = HW_FLASH_WIDTH;
+            if ( ( iBufferIndex + iNbCopy ) > iBufferLength )
             {
-              LOG_ERROR_APP( "  Error, Flash verification failed @ 0x%08X ...", lPersistenceCurrentAddress );
-              bStatus = false;
+              iNbCopy = iBufferLength - iBufferIndex;
             }
-            else
+            memcpy( szFlashData, &pBuffer[iBufferIndex], iNbCopy );
+            if ( iNbCopy < HW_FLASH_WIDTH )
             {
-              /* Update Data for next iteration */
-              lPersistenceCurrentAddress += HW_FLASH_WIDTH;
-              iBufferIndex += iNbCopy;
-
-              iNbCopy = HW_FLASH_WIDTH;
-              if ( ( iBufferIndex + iNbCopy ) > iBufferLength )
-              {
-                iNbCopy = iBufferLength - iBufferIndex;
-              }
-              memcpy( szFlashData, &pBuffer[iBufferIndex], iNbCopy );
-              if ( iNbCopy < HW_FLASH_WIDTH )
-              {
-                memset( &szFlashData[iNbCopy], 0, (HW_FLASH_WIDTH - iNbCopy ) );
-              }
+              memset( &szFlashData[iNbCopy], 0, (HW_FLASH_WIDTH - iNbCopy ) );
             }
-          }
-        }
-        while( ( iBufferIndex < iBufferLength ) && ( bStatus != false ) );
-
-        /* Lock the Flash to disable the flash control register access */
-        HAL_FLASH_Lock();
-
-        /* In case or error, retry at least ( PERSISTENCE_NB_PAGES - 2 ) times */
-        if ( bStatus == false )
-        {
-          iNbRetry++;
-
-          /* Go to the next page */
-          lPersistenceCurrentAddress = ( lPersistenceCurrentAddress & ~( FLASH_PAGE_SIZE - 1u ) ) + FLASH_PAGE_SIZE;
-          if ( lPersistenceCurrentAddress >= PERSISTENCE_END_ADDRESS )
-          {
-            lPersistenceCurrentAddress = PERSISTENCE_START_ADDRESS;
-          }
-
-          iPage = ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE );
-          LOG_DEBUG_APP( "  Erase Page %d.\n", iPage );
-
-          if ( AppZbPersistence_ErasePage( lPersistenceCurrentAddress ) == false )
-          {
-            LOG_ERROR_APP( "  Error, Cannot erase Page %d.", iPage );
           }
         }
       }
-      while ( ( bStatus == false ) && ( iNbRetry <= ( PERSISTENCE_NB_PAGES - 2u ) ) );
+      while( ( iBufferIndex < iBufferLength ) && ( bStatus != false ) );
 
-      HAL_ICACHE_Enable();
+      /* Lock the Flash to disable the flash control register access */
+      HAL_FLASH_Lock();
+
+      /* In case or error, retry at least ( PERSISTENCE_NB_PAGES - 2 ) times */
+      if ( bStatus == false )
+      {
+        iNbRetry++;
+
+        /* Go to the next page */
+        lPersistenceCurrentAddress = ( lPersistenceCurrentAddress & ~( FLASH_PAGE_SIZE - 1u ) ) + FLASH_PAGE_SIZE;
+        if ( lPersistenceCurrentAddress >= PERSISTENCE_END_ADDRESS )
+        {
+          lPersistenceCurrentAddress = PERSISTENCE_START_ADDRESS;
+        }
+
+        iPage = ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE );
+        LOG_DEBUG_APP( "  Erase Page %d.\n", iPage );
+
+        if ( AppZbPersistence_ErasePage( lPersistenceCurrentAddress ) == false )
+        {
+          LOG_ERROR_APP( "  Error, Cannot erase Page %d.", iPage );
+        }
+      }
     }
-    else
-    {
-      bStatus = false;
-      LOG_ERROR_APP( "  Error, ICache cannot be disabled." );
-    }
+    while ( ( bStatus == false ) && ( iNbRetry <= ( PERSISTENCE_NB_PAGES - 2u ) ) );
+
+    /* Re-Enable ICache */
+    LL_ICACHE_Enable();
   }
 
   if ( bStatus != false )
@@ -529,7 +525,7 @@ static HAL_StatusTypeDef AppZbPersistence_Startup( struct ZigBeeT * pstZigbee, s
 {
   HAL_StatusTypeDef   eStatus = HAL_ERROR;
   enum ZbStatusCodeT  eZbStatus;
-  
+
   LOG_INFO_APP( "Persistence : startup with Persistence data (%d data @ 0x%08X).", pstPersistInfo->iBufferLength, pstPersistInfo->lBufferAddress );
   UTIL_SEQ_ClrEvt( TASK_ZIGBEE_PERSISTENCE );
 

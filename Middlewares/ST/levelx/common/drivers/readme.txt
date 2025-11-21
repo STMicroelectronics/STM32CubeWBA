@@ -6,6 +6,24 @@
   *          LevelX low level drivers for STM32 devices.
   ******************************************************************************
   */
+
+## V3.2.2 / 22-08-2025 ###
+=================================
+Main changes
+-------------
+-  Make "NAND Simulator" and "NAND Custom" interfaces cohabitate.
+ + template/lx_stm32_nand_driver.c
+ + template/lx_stm32_nand_driver.h
+
+## V3.2.1 / 02-06-2025 ###
+=================================
+Main changes
+-------------
+-  Set the size of the 'lx_nor_flash_sector_buffer' to LX_NOR_SECTOR_SIZE instead of NOR flash physical block size.
+ + lx_stm32_xspi_driver.c
+ + lx_stm32_ospi_driver.c
+ + lx_stm32_qspi_driver.c
+
 ## V3.2.0 / 09-09-2024 ###
 =================================
 Main changes

@@ -39,6 +39,8 @@ extern "C" {
 #include "stm32wbaxx_nucleo.h"
 #endif /* CFG_BSP_ON_CEB */
 
+#include "coap.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
@@ -46,6 +48,9 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /* Exported variables --------------------------------------------------------*/
+extern uint32_t APP_Thread_TransmitPeriod_ms;
+extern uint32_t APP_Thread_CoapPayloadLength_byte;
+extern otCoapType APP_Thread_CoapType;
 
 /* Exported macros ------------------------------------------------------------*/
 
@@ -76,6 +81,9 @@ void      BSP_JOY_Callback                ( JOY_TypeDef joyNb, JOYPin_TypeDef jo
 #endif /* CFG_BSP_ON_DISCOVERY */
 
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
+
+void      APP_BSP_CliInit                 ( void );
+void      APP_BSP_CoapMsgRateAction       ( void );
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -225,10 +225,17 @@ elif [ "$is_wba_board_dk" == "0" ] && [ "$select_wba_target" == "0x65" ]; then
   if [ $? -ne 0 ]; then error; return 1; fi
 
 elif [ "$is_wba_board_dk" == "1" ] && [ "$select_wba_target" == "0x65" ]; then
-  if [ "$overwrite" == "1" ]; then
-    first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_OVERWRITE.bin
+  if [ "$external_flash" == "1" ]; then
+    if [ "$overwrite" == "1" ]; then
+      first_boot_stage_binary=OEMiROT_Boot_ExtFlsh_STM32WBA65I_DK1_OVERWRITE.bin
+    else
+      first_boot_stage_binary=OEMiROT_Boot_ExtFlsh_STM32WBA65I_DK1_SWAP.bin
+    fi
   else
-    first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_SWAP.bin
+    if [ "$overwrite" == "1" ]; then
+      first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_OVERWRITE.bin
+    else
+      first_boot_stage_binary=OEMiROT_Boot_STM32WBA65I_DK1_SWAP.bin
   fi
   if [ $? -ne 0 ]; then error; return 1; fi
 

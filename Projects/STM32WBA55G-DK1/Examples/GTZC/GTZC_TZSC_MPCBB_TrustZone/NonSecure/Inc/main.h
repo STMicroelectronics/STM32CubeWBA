@@ -62,8 +62,8 @@ void Error_Handler(void);
 #define JOY1_Pin GPIO_PIN_1
 #define JOY1_GPIO_Port GPIOA
 #define JOY1_EXTI_IRQn EXTI1_IRQn
-#define LD3_Pin GPIO_PIN_0
-#define LD3_GPIO_Port GPIOA
+#define LD3_Pin GPIO_PIN_15
+#define LD3_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

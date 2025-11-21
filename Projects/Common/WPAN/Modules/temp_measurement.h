@@ -20,6 +20,10 @@
 #ifndef TEMP_MEASUREMENT_H
 #define TEMP_MEASUREMENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "utilities_common.h"
 
@@ -62,5 +66,9 @@ TEMPMEAS_Cmd_Status_t TEMPMEAS_Init (void);
   * @retval None
   */
 void TEMPMEAS_RequestTemperatureMeasurement (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TEMP_MEASUREMENT_H */

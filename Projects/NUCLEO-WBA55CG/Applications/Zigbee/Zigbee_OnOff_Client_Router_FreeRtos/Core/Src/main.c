@@ -112,7 +112,6 @@ int main(void)
 
   /* Init scheduler */
   osKernelInitialize();
-
   /* Call init function for freertos objects (in app_freertos.c) */
   MX_FREERTOS_Init();
 
@@ -123,6 +122,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -269,16 +269,14 @@ void MX_ICACHE_Init(void)
 
   /* USER CODE END ICACHE_Init 1 */
 
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
+
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_ICACHE_SetMode(LL_ICACHE_1WAY);
+  LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
@@ -305,6 +303,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -458,28 +460,6 @@ void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM2 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM2)
-  {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
-}
-
-/**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
@@ -493,7 +473,6 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

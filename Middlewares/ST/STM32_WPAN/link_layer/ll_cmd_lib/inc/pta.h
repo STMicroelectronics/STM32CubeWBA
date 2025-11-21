@@ -1,10 +1,9 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/pta.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/pta.h#1 $*/
 /**
  ******************************************************************************
  * @file    pta.h
  * @brief   This file contains all prototypes for the public PTA APIs
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
@@ -205,6 +204,22 @@ pta_error pta_set_iso_coex_priority(
 		uint32_t priority_mask,
 		uint8_t link_loss_limit_timeout);
 #endif /* (SUPPORT_BRD_ISOCHRONOUS || SUPPORT_SYNC_ISOCHRONOUS || SUPPORT_CONNECTED_ISOCHRONOUS) */
+#if (SUPPORT_CHANNEL_SOUNDING &&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))
+/**
+ * @brief Channel Sounding Priority Configuration Function
+ * @param [in] is_test_mode : Single Bit, Set if this for CS Test Mode
+ * @param [in] conn_id : ACL Connection ID Asscoiated with this CS
+ * @param [in] priority  : Determines the state of each priority mode.
+ * @param [in] priority_mask : Determines which priorities are in effect in the priority variable.
+ * @param [in] number_protected_steps : Number of protected steps :
+ * @retval SUCCESS: Otherwise
+ */
+pta_error pta_set_cs_coex_priority(uint8_t is_test_mode,
+				   uint16_t conn_id,
+				   uint32_t priority,
+				   uint32_t priority_mask,
+				   uint8_t number_protected_steps);
+#endif /*(SUPPORT_CHANNEL_SOUNDING &&( SUPPORT_MASTER_CONNECTION || SUPPORT_SLAVE_CONNECTION))*/
 #endif /* SUPPORT_BLE */
 
 /**

@@ -50,6 +50,7 @@ extern "C" {
 
 #define TASK_PRIO_RNG                           (11u)
 #define TASK_PREEMP_RNG                         (0u)
+
 #define TASK_PRIO_ALARM                         (6u)
 #define TASK_PREEMP_ALARM                       (6u)
 
@@ -62,8 +63,8 @@ extern "C" {
 #define TASK_PRIO_PKA                           (10u)
 #define TASK_PREEMP_PRIO_PKA                    (10u)
 
-#define TASK_PRIO_RCP_SPINEL_RX					(11u)
-#define TASK_PREEMP_RCP_SPINEL_RX				(11u)
+#define TASK_PRIO_RCP_SPINEL_RX                 (11u)
+#define TASK_PREEMP_RCP_SPINEL_RX               (11u)
 
 #define TASK_PRIO_CLI_UART                      (12u)
 #define TASK_PREEMP_CLI_UART                    (12u)

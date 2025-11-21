@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    tmap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __TMAP_APP_H
@@ -31,10 +29,10 @@ extern "C" {
 #include "tmap.h"
 #include "tmap_app_conf.h"
 #include "app_conf.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 #define NUM_LC3_CODEC_CAP       16
 #define NUM_LC3_CODEC_CONFIG    16
 #define LC3_8_1                 0
@@ -273,6 +271,7 @@ extern "C" {
                                          *      - Sink Audio Locations (at least 1 bits set to 0b1 different to the Sink Audio Locations of the 2nd USR )
                                          *      - Source Audio Locations (at least 1 bits set to 0b1 different to the Source Audio Locations of the 2nd USR )
                                          */
+
 /* Exported types ------------------------------------------------------------*/
 /* Audio Profile Link State type */
 typedef uint8_t audio_profile_t;
@@ -342,7 +341,7 @@ typedef struct
 {
   uint8_t               ID;
   ASE_State_t           state;
-  ASE_Type_t            type;           /*Source of Sink*/
+  ASE_Type_t            type;           /*Source or Sink*/
   uint8_t               allocated;
   uint8_t               num_channels;
   uint32_t              presentation_delay;
@@ -365,27 +364,27 @@ typedef struct
 /*Structure used for connection information strorage*/
 typedef struct
 {
-  uint16_t               Acl_Conn_Handle;
-  uint8_t                Peer_Address_Type;
-  uint8_t                Peer_Address[6];
-  uint8_t                Role;
-  audio_profile_t        AudioProfile;
-  uint8_t                ConfirmIndicationRequired;
-  uint8_t                ForceCompleteLinkup;
-  uint8_t                LinkupRetry;
-  APP_CAP_Linkup_State_t CAPLinkupState;
-  uint8_t                GenericMediaPlayerCCID;
-  MCP_MediaState_t       MediaState;
-  uint8_t                PlayPauseOperation;
-  APP_MCP_Linkup_State_t MCPLinkupState;
-  uint8_t                GenericTelephoneBearerCCID;
-  uint8_t                CurrentCallID;
-  CCP_CallState_t        CurrentCallState;
-  uint16_t               CurrentContentCtrlOp;
-  uint16_t               PendingContentCtrlOp;
-  APP_ASEs_t             *pASEs;
-  Audio_Context_t        AvailableSnkAudioContext;
-  Audio_Context_t        AvailableSrcAudioContext;
+  uint16_t                  Acl_Conn_Handle;
+  uint8_t                   Peer_Address_Type;
+  uint8_t                   Peer_Address[6];
+  uint8_t                   Role;
+  audio_profile_t           AudioProfile;
+  uint8_t                   ConfirmIndicationRequired;
+  uint8_t                   ForceCompleteLinkup;
+  APP_ASEs_t                *pASEs;
+  uint8_t                   LinkupRetry;
+  APP_CAP_Linkup_State_t    CAPLinkupState;
+  uint8_t                   GenericMediaPlayerCCID;
+  MCP_MediaState_t          MediaState;
+  uint8_t                   PlayPauseOperation;
+  APP_MCP_Linkup_State_t    MCPLinkupState;
+  uint8_t                   GenericTelephoneBearerCCID;
+  uint8_t                   CurrentCallID;
+  CCP_CallState_t           CurrentCallState;
+  uint16_t                  CurrentContentCtrlOp;
+  uint16_t                  PendingContentCtrlOp;
+  Audio_Context_t           AvailableSnkAudioContext;
+  Audio_Context_t           AvailableSrcAudioContext;
 }APP_ACL_Conn_t;
 
 #if ((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)
@@ -441,6 +440,8 @@ typedef struct
 
   uint8_t                       num_cis_established;
 
+  Sampling_Freq_t               ConfiguredSampleFrequency;
+
   BAP_AudioCodecController_t    AudioCodecInController;
 
   BAP_SupportedStandardCodec_t  aStandardCodec[1];
@@ -450,6 +451,8 @@ typedef struct
   uint8_t                       NumSrcASEs;
 
   APP_ASEs_t                    aASEs[CFG_BLE_NUM_LINK];
+
+  uint8_t                       NumOutputChannels;
 
   Audio_Location_t              SnkAudioLocations;
 
@@ -496,19 +499,15 @@ typedef struct
 
 #endif /*(APP_NUM_SRC_PAC_RECORDS > 0)*/
 
-  uint8_t                       NumOutputChannels;
-
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT)
   uint8_t                       CSIPRank;
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT) */
 
-  uint32_t                      Audio_Frequency;
 #if ((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)
   APP_BNSK_Context_t            BSNK;
 #endif /*((APP_TMAP_ROLE & TMAP_ROLE_BROADCAST_MEDIA_RECEIVER) == TMAP_ROLE_BROADCAST_MEDIA_RECEIVER)*/
 
   APP_BroadcastMode_t           BroadcastMode;
-
 } TMAPAPP_Context_t;
 
 typedef struct
@@ -522,36 +521,30 @@ typedef struct
 
 typedef struct
 {
-  Sampling_Freq_t       freq;
-  uint32_t              sdu_interval;
-  BAP_Framing_t         framing;
-  uint16_t              max_sdu;
-  uint8_t               rtx_num;
-  uint16_t              max_tp_latency;
-  uint32_t              presentation_delay;
-
+  Sampling_Freq_t               freq;
+  uint32_t                      sdu_interval;
+  BAP_Framing_t                 framing;
+  uint16_t                      max_sdu;
+  uint8_t                       rtx_num;
+  uint16_t                      max_tp_latency;
+  uint32_t                      presentation_delay;
 } APP_QoSConf_t;
 
 typedef struct
 {
-  uint8_t       NumSnkASEs;
-  uint8_t       NumSrcASEs;
-  uint8_t       NumAudioChnlsPerSnkASE;
-  uint8_t       MinSnkAudioLocations;
-  uint8_t       NumAudioChnlsPerSrcASE;
-  uint8_t       MinSrcAudioLocations;
-  uint8_t       NumCISes;
-  uint16_t      NumAudioStreams;
-
+  uint8_t                       NumSnkASEs;
+  uint8_t                       NumSrcASEs;
+  uint8_t                       NumAudioChnlsPerSnkASE;
+  uint8_t                       MinSnkAudioLocations;
+  uint8_t                       NumAudioChnlsPerSrcASE;
+  uint8_t                       MinSrcAudioLocations;
+  uint8_t                       NumCISes;
+  uint16_t                      NumAudioStreams;
 } APP_UnicastAudioConf_t;
-
 
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);

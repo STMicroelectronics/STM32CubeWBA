@@ -1,11 +1,10 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/_40nm_reg_files/DWC_ble154combo.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/_40nm_reg_files/DWC_ble154combo.h#1 $*/
 /**
  ********************************************************************************
  * @brief
  *
  *
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in

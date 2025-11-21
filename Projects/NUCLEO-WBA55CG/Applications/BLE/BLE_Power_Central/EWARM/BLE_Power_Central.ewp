@@ -233,9 +233,11 @@
           <name>CCDefines</name>
           <state>USE_FULL_ASSERT</state>
           <state>USE_FULL_LL_DRIVER</state>
-          <state>BLE</state>
+          <state>BLE_LL</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA55xx</state>
+          <state>PHY_40nm_3_00_a</state>
+          <state>BLE_STACK_BASIC_FEATURES</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1438,6 +1440,12 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</name>
       </file>
       <file>
@@ -1527,7 +1535,7 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA5_LinkLayer_BLE_Basic_lib.a</name>
         </file>
       </group>
       <group>

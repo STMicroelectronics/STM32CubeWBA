@@ -139,9 +139,9 @@ typedef struct
   uint16_t P2PNotificationDescHdl;
 
   /* handles of the Tx characteristic - Write To Server with response */
-  uint16_t P2PWriteWithResToServerCharHdl;
-  uint16_t P2PWriteWithResToServerValueHdl;
-  uint16_t P2PWriteWithResToServerDescHdl;
+  uint16_t P2PLongWritewoRespToServerCharHdl;
+  uint16_t P2PLongWritewoRespToServerValueHdl;
+  uint16_t P2PLongWritewoRespToServerDescHdl;
 
   /* USER CODE END BleClientAppContext_t */
 
@@ -193,6 +193,8 @@ static void gatt_cmd_resp_wait(void);
 /* USER CODE BEGIN PFP */
 
 static void P2Pclient_write_char(void);
+static void P2Pclient_longwrite_woresp_char(void);
+static void Gatt_Config_Exchange(void);
 
 /* USER CODE END PFP */
 
@@ -242,6 +244,7 @@ void GATT_CLIENT_APP_Init(void)
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_P2PC_WRITE_CHAR_ID, UTIL_SEQ_RFU, P2Pclient_write_char);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_P2PC_LONG_WRITE_CHAR_ID, UTIL_SEQ_RFU,P2Pclient_longwrite_woresp_char);
 
   P2PLedSelection = 0x00;
   P2PLedLevel = 0x00;
@@ -477,10 +480,10 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           {
             charPropVal = 0x0002;
           }
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].ServiceChangedCharDescHdl,
-                                            2,
-                                            (uint8_t *) &charPropVal);
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].ServiceChangedCharDescHdl,
+                                                2,
+                                                (uint8_t *) &charPropVal);
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
@@ -497,7 +500,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         if(a_ClientContext[index].P2PNotificationDescHdl != 0x0000)
         {
           charPropVal = 0x0001;
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].P2PNotificationDescHdl,
                                                 2,
                                                 (uint8_t *) &charPropVal);
@@ -505,7 +508,8 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
-            LOG_INFO_APP(" aci_gatt_write_char_desc sucess P2PNotificationDescHdl =0x%04X\n",a_ClientContext[index].P2PNotificationDescHdl);
+            LOG_INFO_APP(" aci_gatt_write_char_value sucess P2PNotificationDescHdl =0x%04X\n",
+                          a_ClientContext[index].P2PNotificationDescHdl);
           }
           else
           {
@@ -513,7 +517,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
             status++;
           }
         }
-
+        Gatt_Config_Exchange();
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (status == 0)
@@ -602,16 +606,14 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         case ACI_GATT_PROC_COMPLETE_VSEVT_CODE:
         {
           aci_gatt_proc_complete_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-
-          uint8_t index;
-          for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+          if(p_evt_rsp->Error_Code != BLE_STATUS_SUCCESS)
           {
-            if (a_ClientContext[index].connHdl == p_evt_rsp->Connection_Handle)
-            {
-              gatt_cmd_resp_release();
-              break;
-            }
+            LOG_INFO_APP("\n GATT procedure ended unsuccessfully, error code: 0x%02X\n",
+                         p_evt_rsp->Error_Code);
           }
+
+          /* Release GATT command response regardless of procedure success or failure */
+          gatt_cmd_resp_release();
         }
         break;/* ACI_GATT_PROC_COMPLETE_VSEVT_CODE */
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
@@ -676,16 +678,12 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
 
       if (P2PLedLevel == 0x00)
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_Off(LED_BLUE);
-        #endif
+        APP_BSP_LED_Off(LED_BLUE);
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED OFF \n");
       }
       else
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_On(LED_BLUE);
-        #endif
+        APP_BSP_LED_On(LED_BLUE);
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED ON\n");
       }
       break;
@@ -915,11 +913,11 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
           a_ClientContext[index].P2PWriteToServerValueHdl = CharValueHdl;
           LOG_INFO_APP(", ST_P2P_WRITE_CHAR_UUID charac found\n");
         }
-        else if (uuid == ST_P2P_WRITE_WITH_RES_CHAR_UUID)
+        else if (uuid == ST_P2P_LONGWRITE_WO_RES_CHAR_UUID)
         {
-          a_ClientContext[0].P2PWriteWithResToServerCharHdl = CharStartHdl;
-          a_ClientContext[0].P2PWriteWithResToServerValueHdl = CharValueHdl;
-          LOG_INFO_APP(", ST_P2P_WRITE_WITH_RES_CHAR_UUID charac found\n");
+          a_ClientContext[0].P2PLongWritewoRespToServerCharHdl = CharStartHdl;
+          a_ClientContext[0].P2PLongWritewoRespToServerValueHdl = CharValueHdl;
+          LOG_INFO_APP(", ST_P2P_LONGWRITE_WO_RES_CHAR_UUID charac found\n");
         }
 
 /* USER CODE END gatt_parse_chars_1 */
@@ -1027,10 +1025,10 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
           a_ClientContext[index].P2PNotificationDescHdl = handle;
           LOG_INFO_APP("P2PNotification found: handle=0x%04X\n",handle);
         }
-        else if (a_ClientContext[index].P2PWriteWithResToServerValueHdl == gattCharValueHdl)
+        else if (a_ClientContext[index].P2PLongWritewoRespToServerValueHdl == gattCharValueHdl)
         {
-          a_ClientContext[index].P2PWriteWithResToServerDescHdl = handle;
-          LOG_INFO_APP("P2PWrite with response found: handle=0x%04X\n",handle);
+          a_ClientContext[index].P2PLongWritewoRespToServerDescHdl = handle;
+          LOG_INFO_APP("P2PLongWrite without response found: handle=0x%04X\n",handle);
         }
 
 /* USER CODE END gatt_parse_descs_1 */
@@ -1067,9 +1065,9 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
         {
           LOG_INFO_APP(", found ST_P2P_NOTIFY_CHAR_UUID\n");
         }
-        else if (uuid == ST_P2P_WRITE_WITH_RES_CHAR_UUID)
+        else if (uuid == ST_P2P_LONGWRITE_WO_RES_CHAR_UUID)
         {
-          LOG_INFO_APP(", found ST_P2P_WRITE_WITH_RES_CHAR_UUID\n");
+          LOG_INFO_APP(", found ST_P2P_LONGWRITE_WO_RES_CHAR_UUID\n");
         }
 
 /* USER CODE END gatt_parse_descs_2 */
@@ -1197,6 +1195,54 @@ static void P2Pclient_write_char(void)
   }
 
   return;
+}
+
+static void P2Pclient_longwrite_woresp_char(void)
+{
+  uint8_t index = 0;
+  tBleStatus ret;
+
+  for(index = 0; index < BLE_CFG_CLT_MAX_NBR_CB; index++)
+  {
+    if (a_ClientContext[index].state != GATT_CLIENT_APP_IDLE)
+    {
+      ret = aci_gatt_write_without_resp_ext(a_ClientContext[index].connHdl,
+                                        a_ClientContext[index].P2PLongWritewoRespToServerValueHdl,
+                                        0x00, /* write without response opCode*/
+                                        509, /* data length */
+                                        0);  /* offset in bytes from the start of extra_data_buffer */
+
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("aci_gatt_write_without_resp_ext failed, connHdl=0x%04X, ValueHdl=0x%04X, ret=%x\n",
+                a_ClientContext[index].connHdl,
+                a_ClientContext[index].P2PLongWritewoRespToServerValueHdl, ret);
+      }
+      else
+      {
+        LOG_INFO_APP("aci_gatt_write_without_resp_ext success, connHdl=0x%04X, ValueHdl=0x%04X\n",
+          a_ClientContext[index].connHdl,
+          a_ClientContext[index].P2PLongWritewoRespToServerValueHdl);
+      }
+    }
+  }
+
+  return;
+}
+
+static void Gatt_Config_Exchange(void)
+{
+  tBleStatus bleStatus = BLE_STATUS_SUCCESS;
+  bleStatus = aci_gatt_exchange_config(a_ClientContext[0].connHdl);
+  if (bleStatus == BLE_STATUS_SUCCESS)
+  {
+    gatt_cmd_resp_wait();
+    LOG_INFO_APP(" aci_gatt_exchange_config\n");
+  }
+  else
+  {
+    LOG_ERROR_APP(" aci_gatt_exchange_config, status =0x%02X\n", bleStatus);
+  }
 }
 
 /* USER CODE END LF */

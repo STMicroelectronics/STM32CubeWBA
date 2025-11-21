@@ -8,7 +8,7 @@
  * @brief ZCL OnOff cluster header
  * ZCL 7 section 3.8
  * ZCL 8 section 3.8
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_ONOFF_H
@@ -171,6 +171,20 @@ enum ZclStatusCodeT ZbZclOnOffClientOnReq(struct ZbZclClusterT *cluster, const s
  */
 enum ZclStatusCodeT ZbZclOnOffClientToggleReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/**
+ * Helper function to send an OnOff command to the local device (via loopback).
+ * For example, this can be used by implementations of the ZCL Level Server cluster
+ * when it needs to control the OnOff state. Writing to the ZCL OnOff Server's
+ * ZCL_ONOFF_ATTR_ONOFF attribute does not generate the command callback, which would
+ * inevitably turn the OnOff state on or off.
+ * @param cluster Cluster instance from which to send this command
+ * @param cmd OnOff command to send (enum ZbZclOnOffCmdT)
+ * @param dst_ep The local endpoint of the ZCL OnOff Server cluster
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclOnOffClientSendLocal(struct ZbZclClusterT *cluster,
+    enum ZbZclOnOffCmdT cmd, uint8_t dst_ep);
 
 #ifdef __cplusplus
 }

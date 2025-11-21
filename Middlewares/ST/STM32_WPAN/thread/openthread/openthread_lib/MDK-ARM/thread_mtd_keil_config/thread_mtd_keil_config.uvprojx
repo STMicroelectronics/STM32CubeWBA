@@ -1369,6 +1369,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\net\srp_advertising_proxy.cpp</FilePath>
             </File>
+            <File>
+              <FileName>dhcp6_types.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\net\dhcp6_types.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1510,11 +1515,6 @@
               <FilePath>..\..\..\stack\src\core\thread\mle.cpp</FilePath>
             </File>
             <File>
-              <FileName>mle_router.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\thread\mle_router.cpp</FilePath>
-            </File>
-            <File>
               <FileName>mle_tlvs.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\mle_tlvs.cpp</FilePath>
@@ -1648,6 +1648,11 @@
               <FileName>network_diagnostic_tlvs.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\network_diagnostic_tlvs.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>thread_link_info.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\thread_link_info.cpp</FilePath>
             </File>
           </Files>
         </Group>

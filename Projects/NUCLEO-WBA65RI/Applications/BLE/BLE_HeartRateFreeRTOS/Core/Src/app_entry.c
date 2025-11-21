@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -57,10 +57,12 @@
 #include "timer_if.h"
 extern void xPortSysTickHandler (void);
 extern void vPortSetupTimerInterrupt(void);
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +72,9 @@ extern void vPortSetupTimerInterrupt(void);
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
+#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
+                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
+#define HAL_TICK_RTC (1)
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -107,34 +111,33 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static uint32_t AMM_Pool[AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
   /* Virtual Memory #1 */
   {
-    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_TIMERS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE
   },
   /* Virtual Memory #2 */
   {
-    .Id = CFG_AMM_VIRTUAL_APP_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_EVENTS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE
   },
 };
 
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
+  .PoolSize = AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
 
-/* Timer for HAL tick declaration */
-static UTIL_TIMER_Object_t  TimerHALtick_Id;
-
 /* Timer for OS tick declaration */
-static UTIL_TIMER_Object_t  TimerOStick_Id;
+static UTIL_TIMER_Object_t TimerOsTick_Id;
+/* Timer for HAL tick declaration */
+static UTIL_TIMER_Object_t TimerHalTick_Id;
 
 #if ( CFG_LPM_LEVEL != 0)
 /* Holds maximum number of FreeRTOS tick periods that can be suppressed */
@@ -149,7 +152,6 @@ static uint32_t lowPowerTimeDiffRemaining = 0;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 /* FreeRTOS objects declaration */
-
 static osThreadId_t     AmmTaskHandle;
 static osSemaphoreId_t  AmmSemaphore;
 
@@ -189,7 +191,6 @@ static const osSemaphoreAttr_t RngSemaphore_attributes = {
   .cb_mem       = TASK_DEFAULT_CB_MEM,
   .cb_size      = TASK_DEFAULT_CB_SIZE
 };
-
 static osThreadId_t     FlashManagerTaskHandle;
 static osSemaphoreId_t  FlashManagerSemaphore;
 
@@ -255,6 +256,7 @@ static const osMutexAttr_t adcCtrlMutex_attributes = {
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+/* FreeRTOS objects declaration */
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -279,8 +281,11 @@ static void FLASH_Manager_Task_Entry(void* argument);
 static void APPE_BPKA_Init( void );
 static void BPKA_Task_Entry(void* argument);
 
-static void TimerOStickCB(void *arg);
-static void TimerHALtickCB(void *arg);
+static void TimerOsTickCb(void *arg);
+#if (HAL_TICK_RTC == 1)
+static void TimerHalTickCb(void *arg);
+static void HAL_StartTick(void);
+#endif /* HAL_TICK_RTC */
 #if ( CFG_LPM_LEVEL != 0)
 static void TimerOSwakeupCB(void *arg);
 static uint32_t getCurrentTime(void);
@@ -336,7 +341,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_FLASH_MANAGER_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)  
+#if (CFG_LED_SUPPORTED == 1)
   APP_BSP_LedInit();
 #endif /* (CFG_LED_SUPPORTED == 1) */
 #if (CFG_BUTTON_SUPPORTED == 1)
@@ -348,7 +353,7 @@ uint32_t MX_APPE_Init(void *p_param)
   crcCtrlMutex = osMutexNew(&crcCtrlMutex_attributes);
   if (crcCtrlMutex == NULL)
   {
-    LOG_ERROR_APP( "CRC CTRL FreeRTOS objects creation FAILED");
+    LOG_ERROR_APP( "CRC CTRL FreeRTOS mutex creation FAILED");
     Error_Handler();
   }
 
@@ -356,7 +361,7 @@ uint32_t MX_APPE_Init(void *p_param)
   adcCtrlMutex = osMutexNew(&adcCtrlMutex_attributes);
   if (adcCtrlMutex == NULL)
   {
-    LOG_ERROR_APP( "ADC CTRL FreeRTOS objects creation FAILED");
+    LOG_ERROR_APP( "ADC CTRL FreeRTOS mutex creation FAILED");
     Error_Handler();
   }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
@@ -384,16 +389,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   maximumPossibleSuppressedTicks = UINT32_MAX;
 #endif /* ( CFG_LPM_LEVEL != 0) */
-
-  /* Create an RTC based timer to trigger HAL tick increment */
-  UTIL_TIMER_Create(&TimerHALtick_Id,
-                    HAL_TICK_FREQ_100HZ,
-                    UTIL_TIMER_PERIODIC,
-                    &TimerHALtickCB, 0);
-  uwTickFreq = HAL_TICK_FREQ_100HZ;
-
-  /* Start HAL tick timer */
-  UTIL_TIMER_StartWithPeriod(&TimerHALtick_Id, HAL_TICK_FREQ_100HZ);
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -444,6 +439,13 @@ static void System_Init( void )
 
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+#if (HAL_TICK_RTC == 1)
+  HAL_StartTick();
+#endif /* HAL_TICK_RTC */
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
@@ -529,15 +531,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -584,6 +586,9 @@ static void APPE_RNG_Init(void)
  */
 static void APPE_FLASH_MANAGER_Init(void)
 {
+  /* Init the Flash Manager module */
+  FM_Init();
+
   /* Create Flash Manager FreeRTOS objects */
 
   FlashManagerSemaphore = osSemaphoreNew(1U, 0U, &FlashManagerSemaphore_attributes);
@@ -611,7 +616,7 @@ static void APPE_FLASH_MANAGER_Init(void)
  */
 static void APPE_BPKA_Init(void)
 {
-  /* Create Ble Public Key Accelerator FreeRTOS objects */
+  /* Create Public Key Accelerator FreeRTOS objects */
 
   BpkaSemaphore = osSemaphoreNew(1U, 0U, &BpkaSemaphore_attributes);
 
@@ -644,6 +649,7 @@ static void APPE_AMM_Init(void)
     LOG_ERROR_APP( "AMM FreeRTOS objects creation FAILED");
     Error_Handler();
   }
+
 }
 
 static void AMM_Task_Entry(void* argument)
@@ -680,24 +686,26 @@ static void BPKA_Task_Entry(void *argument)
 }
 
 /* Timer OS tick callback */
-static void TimerOStickCB(void *arg)
+static void TimerOsTickCb(void *arg)
 {
   xPortSysTickHandler();
-  /* USER CODE BEGIN TimerOStickCB */
+  /* USER CODE BEGIN TimerOsTickCb */
 
-  /* USER CODE END TimerOStickCB */
+  /* USER CODE END TimerOsTickCb */
   return;
 }
 
+#if (HAL_TICK_RTC == 1)
 /* Timer HAL tick callback */
-static void TimerHALtickCB(void *arg)
+static void TimerHalTickCb(void *arg)
 {
   HAL_IncTick();
-  /* USER CODE BEGIN TimerHALtickCB */
+  /* USER CODE BEGIN TimerHalTickCb */
 
-  /* USER CODE END TimerHALtickCB */
+  /* USER CODE END TimerHalTickCb */
   return;
 }
+#endif /* HAL_TICK_RTC */
 
 #if ( CFG_LPM_LEVEL != 0)
 /* OS wakeup callback */
@@ -807,7 +815,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -818,7 +826,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
@@ -835,7 +843,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
-  
+
   /* Simulate button press from UART commands. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
@@ -847,12 +855,12 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 /* Implement weak function to setup a timer that will trig OS ticks */
 void vPortSetupTimerInterrupt( void )
 {
-  UTIL_TIMER_Create(&TimerOStick_Id,
+  UTIL_TIMER_Create(&TimerOsTick_Id,
                     portTICK_PERIOD_MS,
                     UTIL_TIMER_PERIODIC,
-                    &TimerOStickCB, 0);
+                    &TimerOsTickCb, 0);
 
-  UTIL_TIMER_StartWithPeriod(&TimerOStick_Id, portTICK_PERIOD_MS);
+  UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
   /* USER CODE BEGIN vPortSetupTimerInterrupt */
 
   /* USER CODE END vPortSetupTimerInterrupt */
@@ -865,7 +873,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   eSleepModeStatus eSleepStatus;
 
   /* Stop the timer that is generating the OS tick interrupt. */
-  UTIL_TIMER_Stop(&TimerOStick_Id);
+  UTIL_TIMER_Stop(&TimerOsTick_Id);
 
   /* Make sure the SysTick reload value does not overflow the counter. */
   if( xExpectedIdleTime > maximumPossibleSuppressedTicks )
@@ -886,7 +894,7 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   if( eSleepStatus == eAbortSleep )
   {
     /* Restart the timer that is generating the OS tick interrupt. */
-    UTIL_TIMER_StartWithPeriod(&TimerOStick_Id, portTICK_PERIOD_MS);
+    UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
 
     /* Re-enable interrupts - see comments above the cpsid instruction above. */
     __asm volatile ( "cpsie i" ::: "memory" );
@@ -908,15 +916,22 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
     /* Enter the low power state. */
 
     LL_PWR_ClearFlag_STOP();
-    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
     {
       APP_SYS_BLE_EnterDeepSleep();
     }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
     LL_RCC_ClearResetFlags();
 
     HAL_SuspendTick();
-    UTIL_LPM_EnterLowPower(); /* WFI instruction call is inside this API */
+    UTIL_LPM_Enter(0); /* WFI instruction call is inside this API */
     HAL_ResumeTick();
 
     /* Stop the timer that may wakeup us as wakeup source can be another one */
@@ -958,10 +973,10 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
       LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
       (void)ll_sys_dp_slp_exit();
     }
-    UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+    UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 
     /* Restart the timer that is generating the OS tick interrupt. */
-    UTIL_TIMER_StartWithPeriod(&TimerOStick_Id, portTICK_PERIOD_MS);
+    UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
   }
   return;
 }
@@ -979,7 +994,15 @@ CRCCTRL_Cmd_Status_t CRCCTRL_MutexTake(void)
   /* USER CODE BEGIN CRCCTRL_MutexTake_0 */
 
   /* USER CODE END CRCCTRL_MutexTake_0 */
-  os_status = osMutexAcquire(crcCtrlMutex, osWaitForever);
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
+  {
+    os_status = osMutexAcquire(crcCtrlMutex, osWaitForever);
+  }
+  else
+  {
+    /* If the scheduler is not running, we can assume that the mutex is available */
+    os_status = osOK;
+  }
 
   if(os_status != osOK)
   {
@@ -1002,7 +1025,15 @@ CRCCTRL_Cmd_Status_t CRCCTRL_MutexRelease(void)
   /* USER CODE BEGIN CRCCTRL_MutexRelease_0 */
 
   /* USER CODE END CRCCTRL_MutexRelease_0 */
-  os_status = osMutexRelease(crcCtrlMutex);
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
+  {
+    os_status = osMutexRelease(crcCtrlMutex);
+  }
+  else
+  {
+    /* If the scheduler is not running, we can assume that the mutex is available */
+    os_status = osOK;
+  }
 
   if(os_status != osOK)
   {
@@ -1026,7 +1057,15 @@ ADCCTRL_Cmd_Status_t ADCCTRL_MutexTake(void)
   /* USER CODE BEGIN ADCCTRL_MutexTake_0 */
 
   /* USER CODE END ADCCTRL_MutexTake_0 */
-  os_status = osMutexAcquire(adcCtrlMutex, osWaitForever);
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
+  {
+    os_status = osMutexAcquire(adcCtrlMutex, osWaitForever);
+  }
+  else
+  {
+    /* If the scheduler is not running, we can assume that the mutex is available */
+    os_status = osOK;
+  }
 
   if(os_status != osOK)
   {
@@ -1049,7 +1088,15 @@ ADCCTRL_Cmd_Status_t ADCCTRL_MutexRelease(void)
   /* USER CODE BEGIN ADCCTRL_MutexRelease_0 */
 
   /* USER CODE END ADCCTRL_MutexRelease_0 */
-  os_status = osMutexRelease(adcCtrlMutex);
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING)
+  {
+    os_status = osMutexRelease(adcCtrlMutex);
+  }
+  else
+  {
+    /* If the scheduler is not running, we can assume that the mutex is available */
+    os_status = osOK;
+  }
 
   if(os_status != osOK)
   {
@@ -1066,23 +1113,42 @@ ADCCTRL_Cmd_Status_t ADCCTRL_MutexRelease(void)
 }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
-/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
-/* Overwrite HAL_InitTick to not use sysTick in this project */
+#if (HAL_TICK_RTC == 1)
+/* Overwrite HAL Tick functions to not use sysTick but RTC */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
+  if(TimerHalTick_Id.Callback == NULL)
+  {
+    /* Create an RTC based timer to trigger HAL tick increment */
+    UTIL_TIMER_Create(&TimerHalTick_Id,
+                      HAL_TICK_FREQ_100HZ,
+                      UTIL_TIMER_PERIODIC,
+                      &TimerHalTickCb, 0);
+    uwTickFreq = HAL_TICK_FREQ_100HZ;
+  }
   return HAL_OK;
 }
 
 void HAL_SuspendTick(void)
 {
-  UTIL_TIMER_Stop(&TimerHALtick_Id);
+  UTIL_TIMER_Stop(&TimerHalTick_Id);
   return;
 }
 
 void HAL_ResumeTick(void)
 {
-  UTIL_TIMER_Start(&TimerHALtick_Id);
+  UTIL_TIMER_Start(&TimerHalTick_Id);
   return;
 }
+
+static void HAL_StartTick(void)
+{
+  UTIL_TIMER_StartWithPeriod(&TimerHalTick_Id, HAL_TICK_FREQ_100HZ);
+  return;
+}
+#endif /* HAL_TICK_RTC */
+
+/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
+
+
 /* USER CODE END FD_WRAP_FUNCTIONS */

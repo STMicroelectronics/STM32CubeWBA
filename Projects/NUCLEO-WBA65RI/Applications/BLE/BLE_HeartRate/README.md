@@ -1,4 +1,4 @@
-## __BLE_Heart Rate Application Description__
+## __BLE_HeartRate Application Description__
 
 The Heart Rate Profile, widely used in fitness applications, defines the communication process between a GATT-server of a Heart Rate Sensor device, such as a wrist band, and a GATT-client Collector device, such as a smartphone or tablet.  
 

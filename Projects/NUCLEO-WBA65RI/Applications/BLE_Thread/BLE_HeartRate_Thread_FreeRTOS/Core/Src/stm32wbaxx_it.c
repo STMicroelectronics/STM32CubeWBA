@@ -66,11 +66,13 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern RNG_HandleTypeDef hrng;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -168,7 +170,6 @@ void DebugMon_Handler(void)
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
-
 /******************************************************************************/
 /* STM32WBAxx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
@@ -250,6 +251,34 @@ void GPDMA1_Channel1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles GPDMA1 Channel 2 global interrupt.
+  */
+void GPDMA1_Channel2_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel2_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel2);
+  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles GPDMA1 Channel 3 global interrupt.
+  */
+void GPDMA1_Channel3_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel3_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel3);
+  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel3_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -261,6 +290,20 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**
@@ -312,13 +355,27 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles HASH global interrupt.
+  * @brief This function handles PWR global WKUP pin interrupt.
   */
-void HASH_IRQHandler(void)
+void WKUP_IRQHandler(void)
 {
-  /* USER CODE BEGIN HASH_IRQn 0 */
+  /* USER CODE BEGIN WKUP_IRQn 0 */
 
-  /* USER CODE END HASH_IRQn 0 */
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles COMP1 and COMP2 through EXTI Lines interrupts.
+  */
+void COMP_IRQHandler(void)
+{
+  /* USER CODE BEGIN COMP_IRQn 0 */
+
+  /* USER CODE END COMP_IRQn 0 */
 
   /* Disable SW radio low interrupt to prevent nested calls */
   NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
@@ -336,9 +393,9 @@ void HASH_IRQHandler(void)
   /* Re-enable SW radio low interrupt */
   NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
 
-  /* USER CODE BEGIN HASH_IRQn 1 */
+  /* USER CODE BEGIN COMP_IRQn 1 */
 
-  /* USER CODE END HASH_IRQn 1 */
+  /* USER CODE END COMP_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
@@ -359,17 +416,12 @@ void EXTI5_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles PWR global WKUP pin interrupt.
+  * @brief This function handles EXTI Line13 interrupt.
   */
-void WKUP_IRQHandler(void)
+void EXTI13_IRQHandler(void)
 {
-  /* USER CODE BEGIN WKUP_IRQn 0 */
-
-  /* USER CODE END WKUP_IRQn 0 */
-  HAL_PWR_WKUP_IRQHandler();
-  /* USER CODE BEGIN WKUP_IRQn 1 */
-
-  /* USER CODE END WKUP_IRQn 1 */
+  BSP_PB_IRQHandler(B1);
 }
+
 
 /* USER CODE END 1 */

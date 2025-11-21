@@ -15,24 +15,28 @@
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
-                    <name>BrowseInfoPath</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS\BrowseInfo</state>
+                    <name>FPU64</name>
+                    <state>1</state>
                 </option>
                 <option>
-                    <name>BuildFilesPath</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS\</state>
+                    <name>BrowseInfoPath</name>
+                    <state>Debug\BrowseInfo</state>
+                </option>
+                <option>
+                    <name>OGProductVersion</name>
+                    <state>9.30.1.0</state>
                 </option>
                 <option>
                     <name>ExePath</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS\Exe</state>
+                    <state>BLE_HeartRate_Thread_FreeRTOS/Exe</state>
                 </option>
                 <option>
                     <name>ObjPath</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS\Obj</state>
+                    <state>BLE_HeartRate_Thread_FreeRTOS/Obj</state>
                 </option>
                 <option>
                     <name>ListPath</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS\List</state>
+                    <state>BLE_HeartRate_Thread_FreeRTOS/List</state>
                 </option>
                 <option>
                     <name>GEndianMode</name>
@@ -57,20 +61,16 @@
                 <option>
                     <name>GRuntimeLibSelect</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>GRuntimeLibSelectSlave</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>RTDescription</name>
-                    <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
-                </option>
-                <option>
-                    <name>OGProductVersion</name>
-                    <state>6.50.1.4445</state>
+                    <state>A compact configuration of the C/C++14 runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
@@ -98,7 +98,7 @@
                 </option>
                 <option>
                     <name>RTConfigPath2</name>
-                    <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Full.h</state>
+                    <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</state>
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
@@ -193,7 +193,7 @@
                 <option>
                     <name>TrustZoneModes</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>OGAarch64Abi</name>
@@ -204,12 +204,12 @@
                     <state>0</state>
                 </option>
                 <option>
-                    <name>PointerAuthentication</name>
-                    <state>0</state>
+                    <name>BuildFilesPath</name>
+                    <state>Debug</state>
                 </option>
                 <option>
-                    <name>FPU64</name>
-                    <state>1</state>
+                    <name>PointerAuthentication</name>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>OG_32_64DeviceCoreSlave</name>
@@ -230,18 +230,23 @@
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
+                    <name>CCOptimizationNoSizeConstraints</name>
+                    <state>0</state>
+                </option>
+                <option>
                     <name>CCDefines</name>
+                    <state>PHY_40nm_3_00_a</state>
                     <state>USE_FULL_LL_DRIVER</state>
-                    <state>BLE</state>
-                    <state>MAC</state>
-                    <state>MAC_LAYER</state>
+                    <state>BLE_LL</state>
+                    <state>BLE_STACK_BASIC_FEATURES</state>
+                    <state>PHY_40nm_3_40_a</state>
                     <state>OPENTHREAD_FTD</state>
                     <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
                     <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
+                    <state>MAC</state>
+                    <state>MAC_LAYER</state>
                     <state>USE_HAL_DRIVER</state>
                     <state>STM32WBA65xx</state>
-                    <state>OTG_HS</state>
-                    <state>USE_FULL_ASSERT</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -334,7 +339,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>
@@ -364,57 +369,58 @@
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$/../Core/Inc</state>
                     <state>$PROJ_DIR$/../System/Interfaces</state>
+                    <state>$PROJ_DIR$/../System/Modules</state>
                     <state>$PROJ_DIR$/../System/Config/Log</state>
-                    <state>$PROJ_DIR$/../System/Config/Flash</state>
                     <state>$PROJ_DIR$/../System/Config/LowPower</state>
                     <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
-                    <state>$PROJ_DIR$/../System/Modules</state>
-                    <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
+                    <state>$PROJ_DIR$/../System/Config/Flash</state>
                     <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
+                    <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/App</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
-                    <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
-                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RFControl</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
                     <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
-                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
-                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
-                    <state>$PROJ_DIR$/../../../../../../Utilities/sequencer</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\concurrent\ble_thread</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
-                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
-                    <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\common</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\include\openthread</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\config</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\RTOS2\Include</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\include</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\IAR\ARM_CM33_NTZ\non_secure</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\stack\src\core</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbed-crypto/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/RTOS2/Include/</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -479,10 +485,6 @@
                 </option>
                 <option>
                     <name>IccFloatSemantics</name>
-                    <state>0</state>
-                </option>
-                <option>
-                    <name>CCOptimizationNoSizeConstraints</name>
                     <state>0</state>
                 </option>
                 <option>
@@ -678,7 +680,7 @@
                 </option>
                 <option>
                     <name>AOutputFile</name>
-                    <state>$FILE_BNAME$.o</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>ALimitErrorsCheck</name>
@@ -694,7 +696,60 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state></state>
+                    <state>$PROJ_DIR$/../Core/Inc</state>
+                    <state>$PROJ_DIR$/../System/Interfaces</state>
+                    <state>$PROJ_DIR$/../System/Modules</state>
+                    <state>$PROJ_DIR$/../System/Config/Log</state>
+                    <state>$PROJ_DIR$/../System/Config/LowPower</state>
+                    <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
+                    <state>$PROJ_DIR$/../System/Config/Flash</state>
+                    <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
+                    <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
+                    <state>$PROJ_DIR$/../STM32_WPAN/App</state>
+                    <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
+                    <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
+                    <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
+                    <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/RTOS2/Include/</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -732,7 +787,7 @@
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
@@ -765,16 +820,16 @@
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
+                    <name>IlinkOutputFile</name>
+                    <state>BLE_HeartRate_Thread_FreeRTOS.out</state>
+                </option>
+                <option>
                     <name>IlinkLibIOConfig</name>
                     <state>1</state>
                 </option>
                 <option>
                     <name>IlinkInputFileSlave</name>
                     <state>0</state>
-                </option>
-                <option>
-                    <name>IlinkOutputFile</name>
-                    <state>BLE_HeartRate_Thread_FreeRTOS.out</state>
                 </option>
                 <option>
                     <name>IlinkDebugInfoEnable</name>
@@ -838,7 +893,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\stm32wba65xx_flash.icf</state>
+                    <state>$PROJ_DIR$/stm32wba65xx_flash.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -898,7 +953,7 @@
                 </option>
                 <option>
                     <name>IlinkProgramEntryLabel</name>
-                    <state>__iar_program_start</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>DoFill</name>
@@ -1071,7 +1126,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state>BLE_HeartRate_import_lib.o</state>
+                    <state>###Unitialized###</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1161,11 +1216,6 @@
             <archiveVersion>2</archiveVersion>
             <data />
         </settings>
-        <settings>
-            <name>Coder</name>
-            <archiveVersion>0</archiveVersion>
-            <data />
-        </settings>
     </configuration>
     <group>
         <name>Application</name>
@@ -1201,9 +1251,6 @@
                     <name>App</name>
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_ble.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\STM32_WPAN\App\app_bsp.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_thread.c</name>
@@ -1306,6 +1353,9 @@
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                 </file>
                 <file>
@@ -1369,12 +1419,6 @@
                     </file>
                 </group>
                 <group>
-                    <name>RFControl</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
-                    </file>
-                </group>
-                <group>
                     <name>RTDebug</name>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
@@ -1406,6 +1450,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_list.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\stm_queue.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\temp_measurement.c</name>
@@ -1466,6 +1513,9 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp_ex.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</name>
             </file>
             <file>
@@ -1484,22 +1534,7 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gtzc.c</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hash.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_hsem.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_i2c_ex.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pka.c</name>
@@ -1532,12 +1567,6 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_rtc_ex.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim_ex.c</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart.c</name>
             </file>
             <file>
@@ -1547,6 +1576,18 @@
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_adc.c</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_dma.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_gpio.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_icache.c</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_tim.c</name>
             </file>
         </group>
@@ -1554,306 +1595,118 @@
     <group>
         <name>Middlewares</name>
         <group>
-            <name>FreeRTOS</name>
+            <name>RTOS2</name>
             <group>
-                <name>CMSIS_RTOS_V2</name>
+                <name>CMSIS/RTOS2/Core/TZ_Non_Supported</name>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.c</name>
                 </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\croutine.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\list.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\IAR\ARM_CM33_NTZ\non_secure\port.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\IAR\ARM_CM33_NTZ\non_secure\portasm.s</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\queue.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\timers.c</name>
+                </file>
             </group>
             <group>
-                <name>portable</name>
-                <group>
-                    <name>IAR</name>
-                    <group>
-                        <name>ARM_CM33_NTZ</name>
-                        <group>
-                            <name>non_secure</name>
-                            <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\IAR\ARM_CM33_NTZ\non_secure\port.c</name>
-                            </file>
-                            <file>
-                                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\IAR\ARM_CM33_NTZ\non_secure\portasm.s</name>
-                            </file>
-                        </group>
-                    </group>
-                </group>
-                <group>
-                    <name>MemMang</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c</name>
-                    </file>
-                </group>
+                <name>CMSIS/RTOS2/Heap/Heap_4</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c</name>
+                </file>
             </group>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\croutine.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\list.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\queue.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\timers.c</name>
-            </file>
-            <configuration>
-                <name>BLE_HeartRate_Thread_FreeRTOS</name>
-                <settings>
-                    <name>AARM</name>
-                    <data>
-                        <version>12</version>
-                        <wantNonLocal>0</wantNonLocal>
-                        <debug>1</debug>
-                        <option>
-                            <name>AObjPrefix</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>AEndian</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>ACaseSensitivity</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>MacroChars</name>
-                            <version>0</version>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AWarnEnable</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AWarnWhat</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AWarnOne</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>AWarnRange1</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>AWarnRange2</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>ADebug</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>AltRegisterNames</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>ADefines</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>AList</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AListHeader</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>AListing</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>Includes</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>MacDefs</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>MacExps</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>MacExec</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>OnlyAssed</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>MultiLine</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>PageLengthCheck</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>PageLength</name>
-                            <state>80</state>
-                        </option>
-                        <option>
-                            <name>TabSpacing</name>
-                            <state>8</state>
-                        </option>
-                        <option>
-                            <name>AXRef</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AXRefDefines</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AXRefInternal</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AXRefDual</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AProcessor</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>AFpuProcessor</name>
-                            <state>1</state>
-                        </option>
-                        <option>
-                            <name>AOutputFile</name>
-                            <state>$FILE_BNAME$.o</state>
-                        </option>
-                        <option>
-                            <name>ALimitErrorsCheck</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>ALimitErrorsEdit</name>
-                            <state>100</state>
-                        </option>
-                        <option>
-                            <name>AIgnoreStdInclude</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AUserIncludes</name>
-                            <state>$PROJ_DIR$/../Core/Inc</state>
-                            <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\include</state>
-                        </option>
-                        <option>
-                            <name>AExtraOptionsCheckV2</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>AExtraOptionsV2</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>AsmNoLiteralPool</name>
-                            <state>0</state>
-                        </option>
-                        <option>
-                            <name>PreInclude</name>
-                            <state></state>
-                        </option>
-                        <option>
-                            <name>A_32_64Device</name>
-                            <state>1</state>
-                        </option>
-                    </data>
-                </settings>
-            </configuration>
         </group>
         <group>
             <name>STM32_WPAN</name>
             <group>
-                <name>thread</name>
-                <group>
-                    <name>openthread</name>
-                    <group>
-                        <name>platform</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\alarm.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\diag.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\entropy_renamed.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\flash.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\logging_stm32wba.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\misc.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\spi-stubs.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\system.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart.c</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>stack_lib</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_mbedtls_ftd_lib.a</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_ot_ftd_lib.a</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_ot_mtd_lib.a</name>
-                            <excluded>
-                                <configuration>BLE_HeartRate_Thread_FreeRTOS</configuration>
-                            </excluded>
-                        </file>
-                    </group>
-                </group>
+                <name>BLE</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\lib\stm32wba_ble_stack_basic.a</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Src\svc_ctl.c</name>
+                </file>
             </group>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\lib\stm32wba_ble_stack_basic.a</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Src\svc_ctl.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer_BLE_Thread_lib.a</name>
-            </file>
+            <group>
+                <name>LinkLayer</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_dp_slp.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_intf.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer_BLE_Thread_lib.a</name>
+                </file>
+            </group>
+            <group>
+                <name>Thread</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\alarm.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\crypto_platform.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\diag.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\entropy_renamed.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\flash.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\logging_stm32wba.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\misc.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\spi-stubs.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_mbedtls_ftd_lib.a</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\openthread_lib\stm32wba_ot_ftd_lib.a</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\system.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\thread\openthread\platform\uart_rcp.c</name>
+                </file>
+            </group>
         </group>
     </group>
     <group>

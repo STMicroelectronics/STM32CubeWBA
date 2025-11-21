@@ -44,7 +44,7 @@
  * Definition of public BD Address,
  * when CFG_BD_ADDRESS = 0x000000000000 the BD address is generated based on Unique Device Number.
  */
-#define CFG_BD_ADDRESS                    (0x0008E12A1234)
+#define CFG_BD_ADDRESS                    (0)
 
 /**
  * Define BD_ADDR type: define proper address. Can only be GAP_PUBLIC_ADDR (0x00) or GAP_STATIC_RANDOM_ADDR (0x01)
@@ -207,6 +207,11 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the buffer used to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
@@ -323,7 +328,7 @@ extern UART_HandleTypeDef           huart1;
 #define ZB_LOG_MASK_LEVEL_ALL       0xFFFFFFFFU
 
 /* Indicate Trace Level for Zigbee Stack (Fatal/Error) */
-#define ZIGBEE_CONFIG_LOG_LEVEL     ZB_LOG_MASK_LEVEL_2
+#define ZIGBEE_CONFIG_LOG_LEVEL     ZB_LOG_MASK_LEVEL_4      
 
 /* USER CODE BEGIN Logs */
 
@@ -549,7 +554,7 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
 
 /* Threshold of random numbers available before triggering pool refill */

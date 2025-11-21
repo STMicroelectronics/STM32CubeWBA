@@ -43,6 +43,11 @@ Pressing the buttons will perform the following actions:
 
   - B1: Start/stop the scan and list the BLE_p2pServer_Ext recorded for connection.  
   - B2: Toggles a filter on extended results only.  
-  - B3: Initiates a connection request extended.  
+  - B3: Initiates a connection request extended. 
+
+When link is established:
+  - B1: writes a message to the connected BLE p2pServer_Ext device. The blue LED on the Server device should switch on/off.
+  - B3: writes a message of 509 bytes thanks to aci_gatt_write_without_esp_ext command 
+
 
  For more information, please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer"> STM32WBA Bluetooth LE Peer 2 Peer Applications ST wiki.</a>  

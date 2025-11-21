@@ -41,8 +41,8 @@ extern "C" {
 /*#define HAL_GTZC_MODULE_ENABLED   */
 /*#define HAL_HASH_MODULE_ENABLED   */
 /*#define HAL_HSEM_MODULE_ENABLED   */
-#define HAL_I2C_MODULE_ENABLED   
-#define HAL_ICACHE_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
+/*#define HAL_ICACHE_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
 /*#define HAL_IWDG_MODULE_ENABLED   */
 /*#define HAL_LPTIM_MODULE_ENABLED   */
@@ -53,8 +53,8 @@ extern "C" {
 /*#define HAL_SAI_MODULE_ENABLED   */
 /*#define HAL_SMBUS_MODULE_ENABLED   */
 /*#define HAL_SMARTCARD_MODULE_ENABLED   */
-#define HAL_SPI_MODULE_ENABLED   
-#define HAL_TIM_MODULE_ENABLED
+#define HAL_SPI_MODULE_ENABLED
+/*#define HAL_TIM_MODULE_ENABLED   */
 /*#define HAL_TSC_MODULE_ENABLED   */
 #define HAL_UART_MODULE_ENABLED
 /*#define HAL_USART_MODULE_ENABLED   */
@@ -135,7 +135,7 @@ extern "C" {
   */
 
 #define  VDD_VALUE                    3300UL /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            (14UL)  /*!< tick interrupt priority (lowest by default) */
+#define  TICK_INT_PRIORITY            (15UL)  /*!< tick interrupt priority (lowest by default) */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              1U               /*!< Enable prefetch */
 

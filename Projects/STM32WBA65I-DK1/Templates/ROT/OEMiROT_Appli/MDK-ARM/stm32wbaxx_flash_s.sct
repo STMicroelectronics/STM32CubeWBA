@@ -6,8 +6,7 @@
 #define ROM_S_SIZE             (S_CODE_SIZE)
 
 #define RAM_S_START             S_RAM_START  /* SRAM2 start @ */
-#define RAM_S_SIZE              S_RAM_SIZE     /* SRAM2 64K */
-
+#define RAM_S_SIZE              S_RAM_SIZE
 /*************************************************************************************************/
 LR_IROM2 ROM_S_START  ROM_S_SIZE {    ; load region size_region
   ER_IROM2 ROM_S_START ROM_S_SIZE {  ; load address = execution address
@@ -29,4 +28,15 @@ LR_IROM2 ROM_S_START  ROM_S_SIZE {    ; load region size_region
 
   ARM_LIB_HEAP +0 ALIGN 8 EMPTY S_HEAP_SIZE {
   }
+
+  /* BOOT RAM DATA */
+  BOOT_RAM_MEM (BOOT_RAM_BASE) UNINIT (BOOT_RAM_SIZE) {
+    *(.Boot_Ram_Data)
+  }
+
+  /* BOOT SHARED DATA */
+  BOOT_SHARED_MEM (BOOT_SHARED_DATA_BASE) UNINIT (BOOT_SHARED_DATA_SIZE) {
+    *(.Boot_Shared_Data)
+  }
 }
+

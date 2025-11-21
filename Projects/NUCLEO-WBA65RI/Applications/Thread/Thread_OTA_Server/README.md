@@ -49,6 +49,8 @@ It can be FW application example (compatible with Ota settings, see Thread_Coap_
 - press the SW1 Push-Button on Thread_OTA_Server to send a **COAP command (Confirmable) "FUOTA_PROVISIONING" ** from Thread_OTA_Server to Thread_OTA_CLient .  
 if Thread_OTA_CLient confirm the message the Thread_OTA_Server will start the FUOTA procedure.
 
+- press the SW3 Push-Button on boad Thread_OTA_Server to send a **COAP command (Confirmable) "FUOTA_REBOOT"** from Thread_OTA_Server to Thread_Coap_Generic_Ota .  
+The board Thread_Coap_Generic_Ota  will receive COAP commands and send to board A a **Coap Data response** then reset and give the control to Thread_OTA_Client.
 
 
 

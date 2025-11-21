@@ -56,15 +56,12 @@ Reference, Template
 ### <b>Directory contents</b>
 
   - Templates/OEMiROT_Appli/Src/main.c                      Secure Main program
-  - Templates/OEMiROT_Appli/Src/secure_nsc.c                Secure Non-Secure Callable (NSC) module
   - Templates/OEMiROT_Appli/Src/stm32wbaxx_hal_msp.c        Secure HAL MSP module
   - Templates/OEMiROT_Appli/Src/stm32wbaxx_it.c             Secure Interrupt handlers
   - Templates/OEMiROT_Appli/Src/system_stm32wbaxx_s.c       Secure STM32WBAxx system clock configuration file
   - Templates/OEMiROT_Appli/Inc/main.h                      Secure Main program header file
-  - Templates/OEMiROT_Appli/Inc/partition_stm32wba65xx.h    STM32WBA Device System Configuration file
   - Templates/OEMiROT_Appli/Inc/stm32wbaxx_hal_conf.h       Secure HAL Configuration file
   - Templates/OEMiROT_Appli/Inc/stm32wbaxx_it.h             Secure Interrupt handlers header file
-  - Templates/OEMiROT_Appli/Secure_nsclib/secure_nsc.h      Secure Non-Secure Callable (NSC) module header file
 
 
 

@@ -7,12 +7,14 @@
       <TargetName>BLE_TransparentMode</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6140001::V6.14.1::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-A01</PackID>
+          <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2007FFFF) IROM(0x8000000-0x81FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec />
           <StartupFile />
@@ -28,7 +30,7 @@
           <SLE66CMisc />
           <SLE66AMisc />
           <SLE66LinkerMisc />
-          <SFDFile />
+          <SFDFile>$$Device:STM32WBA65RIVx$CMSIS\SVD\STM32WBA65.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath />
@@ -50,7 +52,7 @@
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>./BLE_TransparentMode/</ListingPath>
+          <ListingPath />
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -75,9 +77,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
-            <UserProg1Name />
+            <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
             <UserProg2Name />
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -181,8 +183,9 @@
             <RvdsVP>2</RvdsVP>
             <RvdsMve>0</RvdsMve>
             <RvdsCdeCp>0</RvdsCdeCp>
+            <nBranchProt>0</nBranchProt>
             <hadIRAM2>0</hadIRAM2>
-            <hadIROM2>1</hadIROM2>
+            <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
             <useUlib>0</useUlib>
             <EndSel>0</EndSel>
@@ -201,7 +204,7 @@
             <Ro2Chk>0</Ro2Chk>
             <Ro3Chk>0</Ro3Chk>
             <Ir1Chk>1</Ir1Chk>
-            <Ir2Chk>1</Ir2Chk>
+            <Ir2Chk>0</Ir2Chk>
             <Ra1Chk>0</Ra1Chk>
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
@@ -240,13 +243,13 @@
               </Ocm6>
               <IRAM>
                 <Type>0</Type>
-                <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <StartAddress>0x20000000</StartAddress>
+                <Size>0x80000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
-                <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <StartAddress>0x8000000</StartAddress>
+                <Size>0x200000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -270,8 +273,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress />
-                <Size />
+                <StartAddress>0x8000000</StartAddress>
+                <Size>0x200000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -295,8 +298,8 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <StartAddress>0x20000000</StartAddress>
+                <Size>0x80000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -332,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE,USE_HAL_DRIVER,STM32WBA65xx</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE_LL,USE_HAL_DRIVER,STM32WBA65xx,PHY_40nm_3_40_a</Define>
               <Undefine />
               <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/ADC_Ctrl;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RFControl;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
             </VariousControls>
@@ -835,6 +838,16 @@
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
             </File>
             <File>
+              <FileName>stm32wbaxx_hal_cryp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_hal_crc.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</FilePath>
@@ -960,6 +973,9 @@
               <FilePath>../../../../../../Utilities/lpm/tiny_lpm/stm32_lpm.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>Middlewares/STM32_WPAN/LinkLayer</GroupName>

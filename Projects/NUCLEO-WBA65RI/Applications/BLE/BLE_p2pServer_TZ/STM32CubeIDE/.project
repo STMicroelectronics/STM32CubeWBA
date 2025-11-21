@@ -66,6 +66,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_gtzc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_pwr.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</locationURI>
@@ -101,9 +106,9 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
+			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

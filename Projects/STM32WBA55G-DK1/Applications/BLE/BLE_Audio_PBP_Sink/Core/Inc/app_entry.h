@@ -32,6 +32,7 @@ extern "C" {
 #include "app_common.h"
 /* USER CODE BEGIN Includes */
 #include "pbp_app.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -76,18 +77,15 @@ void MX_AudioInit(Audio_Role_t role,
                   uint8_t *pSrcBuff,
                   AudioDriverConfig driver_config);
 void MX_AudioDeInit(void);
-int32_t Start_TxAudio(void);
-void Stop_TxAudio(void);
-int32_t Start_RxAudio(void);
-void Stop_RxAudio(void);
 void AudioClock_Init(uint32_t frequency);
 void PLL_Exit(void);
-void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize);
-void APP_NotifyRxAudioHalfCplt(void);
+int32_t Start_TxAudio(void);
+void Stop_TxAudio(void);
 void APP_NotifyTxAudioCplt(uint16_t AudioFrameSize);
 void APP_NotifyTxAudioHalfCplt(void);
 void App_Menu_Up_Right(void);
 void App_Menu_Down_Left(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

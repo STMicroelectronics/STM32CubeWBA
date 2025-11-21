@@ -29,6 +29,7 @@ extern "C" {
 #include "ble_types.h"
 #include "svc_ctl.h"
 #include "app_conf.h"
+#include "ble_core.h"
 
 /* Defines -----------------------------------------------------------*/
 #define USECASE_DEV_MGMT_MAX_CONNECTION        (CFG_BLE_NUM_LINK)

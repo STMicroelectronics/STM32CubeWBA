@@ -71,7 +71,7 @@ fi
 
 if [ "$select_wba_target" == "0x65" ]; then
   echo "Remove bank2 protection"
-  "$stm32programmercli" $connect $remove_bank2_protect
+  "$stm32programmercli" $connect_no_reset $remove_bank2_protect
   ret=$?
   if [ $ret != 0 ]; then
     if [ "$1" != "AUTO" ]; then read -p "regression script failed, press a key" -n1 -s; fi

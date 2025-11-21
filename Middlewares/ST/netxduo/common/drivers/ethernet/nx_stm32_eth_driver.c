@@ -2616,6 +2616,7 @@ UINT  nx_driver_ptp_clock_callback(NX_PTP_CLIENT *client_ptr, UINT operation,
         time_offset.NanoSeconds = time_ptr->nanosecond;
         HAL_ETH_PTP_AddTimeOffset(&heth, HAL_ETH_PTP_POSITIVE_UPDATE, &time_offset);
       }
+
       TX_RESTORE
 
       break;

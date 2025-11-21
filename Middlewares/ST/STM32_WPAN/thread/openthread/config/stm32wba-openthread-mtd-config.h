@@ -53,7 +53,7 @@
 #define PACKAGE_URL "http://github.com/openthread/openthread"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "SHA-1: c583554263c8c88922ca45ef4c7486b9292a4f93"
+#define PACKAGE_VERSION "SHA-1: cbb04be4a64910a8ad160ae1aae2e34fc31031b9"
 
 /* Version number of package */
 #define VERSION "MTD"

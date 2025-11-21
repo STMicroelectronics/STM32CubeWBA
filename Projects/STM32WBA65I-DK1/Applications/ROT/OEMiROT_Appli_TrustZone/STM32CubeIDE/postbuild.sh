@@ -131,20 +131,19 @@ image_s_size=0x8000
 image_ns_size=0x32000
 app_image_number=2
 
-applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/dist/AppliCfg.exe"
-uname | grep -i -e windows -e mingw
-if [ $? == 0 ] && [ -e "$applicfg" ]; then
-  #line for window executable
-  echo "AppliCfg with windows executable"
-  python=""
+# Check if Python is installed
+if ! python3 --version > /dev/null 2>&1; then
+  if ! python --version > /dev/null 2>&1; then
+    echo "Python installation missing. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md"
+    step_error;
+  fi
+  python="python "
 else
-  #line for python
-  echo "AppliCfg with python script"
-  applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
-  #determine/check python version command
-    python="python "
-  python3 --version >& /dev/null && python="python3 "
+  python="python3 "
 fi
+
+# Environment variable for AppliCfg
+applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
 
 #postbuild
 echo "Postbuild $signing image" >> $current_log_file 2>&1

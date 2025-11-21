@@ -86,8 +86,8 @@
 /* USER CODE BEGIN PV */
 
 /* The magic keyword shall be mapped at TAG_OTA_END (see linker script) */
-PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = FUOTA_MAGIC_KEYWORD_M33_APP;
-PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = ( uint32_t )&MagicKeywordValue;
+PLACE_IN_SECTION("TAG_OTA_END")  __attribute__((used)) const uint32_t MagicKeywordValue = FUOTA_MAGIC_KEYWORD_M33_APP;
+PLACE_IN_SECTION("TAG_OTA_START")  __attribute__((used)) const uint32_t MagicKeywordAddress = ( uint32_t )&MagicKeywordValue;
 
 static UTIL_TIMER_Object_t      stTimerToggle;
 

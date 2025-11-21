@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -69,7 +69,6 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel6;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
@@ -283,20 +282,6 @@ void GPDMA1_Channel0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles GPDMA1 Channel 6 global interrupt.
-  */
-void GPDMA1_Channel6_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel6_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel6_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel6);
-  /* USER CODE BEGIN GPDMA1_Channel6_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel6_IRQn 1 */
-}
-
-/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -394,7 +379,8 @@ void HASH_IRQHandler(void)
   */
 void GPDMA1_Channel1_IRQHandler(void)
 {
-  BSP_AUDIO_IN_IRQHandler(0,0x10U);
+  BSP_AUDIO_IN_IRQHandler(0, AUDIO_IN_DEVICE_ANALOG_MIC);
+  /* Also suitable with AUDIO_IN_DEVICE_LINE_IN */
 }
 
 /**
@@ -402,7 +388,7 @@ void GPDMA1_Channel1_IRQHandler(void)
   */
 void GPDMA1_Channel2_IRQHandler(void)
 {
-  BSP_AUDIO_OUT_IRQHandler(0,1);
+  BSP_AUDIO_OUT_IRQHandler(0, AUDIO_OUT_DEVICE_HEADPHONE);
 }
 
 /**

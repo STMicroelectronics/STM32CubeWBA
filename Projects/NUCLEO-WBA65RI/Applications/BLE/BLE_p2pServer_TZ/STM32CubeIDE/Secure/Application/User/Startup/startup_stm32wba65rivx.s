@@ -219,7 +219,7 @@ g_pfnVectors:
         .word   I2C2_EV_IRQHandler
         .word   I2C2_ER_IRQHandler
         .word   SPI2_IRQHandler
-        .word   OTG_HS_IRQHandler
+        .word   USB_OTG_HS_IRQHandler
         .word   I2C4_EV_IRQHandler
         .word   I2C4_ER_IRQHandler
         .word   USART3_IRQHandler
@@ -495,8 +495,8 @@ g_pfnVectors:
 	.weak	SPI2_IRQHandler
 	.thumb_set SPI2_IRQHandler,Default_Handler
 
-	.weak	OTG_HS_IRQHandler
-	.thumb_set OTG_HS_IRQHandler,Default_Handler
+	.weak	USB_OTG_HS_IRQHandler
+	.thumb_set USB_OTG_HS_IRQHandler,Default_Handler
 
 	.weak	I2C4_EV_IRQHandler
 	.thumb_set I2C4_EV_IRQHandler,Default_Handler

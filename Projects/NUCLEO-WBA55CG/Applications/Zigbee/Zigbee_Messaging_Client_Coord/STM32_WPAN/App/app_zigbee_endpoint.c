@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -54,7 +55,7 @@
 
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
-#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_METER_INTERFACE
+#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_METER
 #define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
 
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_MESSAGING
@@ -220,7 +221,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
   stRequest.endpt = APP_ZIGBEE_ENDPOINT;
   stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
   ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
-  
+
   return true;
 }
 

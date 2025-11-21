@@ -32,7 +32,7 @@ set oemirot_boot_path_binary=/ROT_Provisioning/OEMiRoT_OEMuRoT/Binary/OEMiROT_Bo
 
 :: ==============================================================================
 
-set cube_fw_path="%~dp0..\..\..\"
+set cube_fw_path=%~dp0..\..\..\
 set rot_provisioning_path="%~dp0"
 set oemirot_appli_secure=oemirot_tz_s_app_init_sign.bin
 set oemirot_appli_non_secure=oemirot_tz_ns_app_init_sign.bin

@@ -15,49 +15,14 @@ Connectivity, ZigbeeDirect, Zigbee protocol, BLE, 802.15.4 protocol
 
 For this application it is requested to have at least:
 
-* One STM32WBA55xx or STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff**
+* One STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff**
 * One IOS device loaded with Ubisys Smart Home application
-* One STM32WBA55xx or STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff_Server_Router_Identify** 
+* One STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff_Server_Router_Identify** 
 
-By default the ZDD is the coordinator, if you want the ZVD to be the coordinator remove the ZDD_IS_ZC flag on your IDE preprocessor options and take a look at the part __Demo use case 2__ .
-
-### __Demo use case 1__
 
 </br>
 
-<pre>
-
-In this Demo, ZDD is the Coordinator.
-
-                       ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
-                   +-------------------------------+           +-----------------+              +-----------------+
-                   |                               |           |                 |              |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
-                   |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
-                   |                               |           |                 |              |                 |
-     Use the    => |                               | --------> |                 |=> LED toggle |                 |
-    dedicated      |                               |           |                 |              |                 |
- smartphone apps   |                               |           |                 |              |                 |
-  to control the   |                               |           |                 |              |                 |
-  LED on the ZDD   |                               |           |                 |              |                 |
-   switch item  => |                               | --------> |                 | -----------> |                 |=> LED toggle
-................   |                               |           |                 |              |                 |
-                   |-------------------------------|           |-----------------|              |-----------------|
-
-
-</pre> 
-
-### __Application Setup__
-
-* First, open the project, build it and load your generated application on your STM32WBAxx device 
-* To run the application :
-
-	1. Start the board. This board is configured and is acting as a Zigbee Direct Device. 
-	2. Launch the Ubisys Application and follow the instructions described in the chapter " Demo 1 procedure" of following wiki page :
-	   https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup
-
-
-### __Demo use case 2__
+### __Demo use case__
 
 </br>
 
@@ -67,7 +32,7 @@ In this Demo, ZVD is the Coordinator.
                        ZVD (Zigbee Virtual Device)          ZDD (Zigbee Direct Device)           ZD (Zigbee Device)                                                       
                    +-------------------------------+           +-----------------+              +-----------------+
                    |                               |           |                 |              |                 |
-                   | Ubisys Smart Home Application |           | WBA5 or WBA6    |              | WBA5 or WBA6    |
+                   | Ubisys Smart Home Application |           | WBA6            |              | WBA6            |
                    |      (running on IOS)         |           | Nucleo board    |              | Nucleo board    |
                    |                               |           |                 |              |                 |
      Use the    => |                               | --------> |                 |=> LED toggle |                 |
@@ -104,11 +69,11 @@ In this Demo, ZVD is the Coordinator.
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA55xx and STM32WBA65xx devices.  
+* This example runs on STM32WBA65xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo and STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.
+* This example has been tested with an STMicroelectronics STM32WBA65xx_Nucleo board and can be easily tailored to any other supported device and development board.
 
-* On STM32WBA55CGA_Nucleo or on STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+* On STM32WBA65RI_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
 <br>    
 **JP1:**</br>
 1-2:  [ON]</br>

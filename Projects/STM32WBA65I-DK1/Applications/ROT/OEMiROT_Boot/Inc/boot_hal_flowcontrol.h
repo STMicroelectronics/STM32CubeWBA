@@ -48,18 +48,16 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_EN_R0     0x00006787U        /*!< Step MPU Secure Region 0 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R1     0x00007999U        /*!< Step MPU Secure Region 1 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R2     0x0000aab5U        /*!< Step MPU Secure Region 2 Init enable value */
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 #define FLOW_STEP_MPU_S_I_EN_R3     0x0000b4abU        /*!< Step MPU Secure Region 3 Init enable value */
+#else
+#define FLOW_STEP_MPU_S_I_EN_R3     0x00000000U        /*!< Step MPU Secure Region 3 Init enable value */
+#endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #define FLOW_STEP_MPU_S_I_EN_R4     0x0000cccdU        /*!< Step MPU Secure Region 4 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R5     0x0000d2d3U        /*!< Step MPU Secure Region 5 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R6     0x00043d7aU        /*!< Step MPU Secure Region 6 Init enable value */
 #define FLOW_STEP_MPU_S_I_EN_R7     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_EN        0x0000e3dcU        /*!< Step MPU Secure Init enable value */
-#define FLOW_STEP_MPU_NS_I_EN_R0    0x0000fdc2U        /*!< Step MPU NonSecure Region 0 Init enable value */
-#define FLOW_STEP_MPU_NS_I_EN_R1    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R2    0x000132cdU        /*!< Step MPU NonSecure Region 2 Init enable value */
-#define FLOW_STEP_MPU_NS_I_EN_R3    0x00014aabU        /*!< Step MPU NonSecure Region 3 Init enable value */
-#define FLOW_STEP_MPU_NS_I_EN_R4    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN       0x000154b5U        /*!< Step MPU NonSecure Init enable value */
 #else /* OEMIROT_BOOT_MPU_PROTECTION */
 #define FLOW_STEP_MPU_S_I_EN_R0     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_EN_R1     0x00000000U        /*!< No effect on control flow */
@@ -71,12 +69,6 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_EN_R6     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_EN_R7     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_EN        0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R0    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R1    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R2    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R3    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN_R4    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_EN       0x00000000U        /*!< No effect on control flow */
 #endif /* OEMIROT_BOOT_MPU_PROTECTION */
 
 #define FLOW_STEP_SAU_I_EN_R0       0x00000000U        /*!< No effect on control flow */
@@ -113,19 +105,17 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_CH_R0     0x0001d0eeU        /*!< Step MPU Secure Region 0 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R1     0x0001e1e1U        /*!< Step MPU Secure Region 1 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R2     0x0001ffffU        /*!< Step MPU Secure Region 2 Init check value */
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)
 #define FLOW_STEP_MPU_S_I_CH_R3     0x00023bd7U        /*!< Step MPU Secure Region 3 Init check value */
+#else
+#define FLOW_STEP_MPU_S_I_CH_R3     0x00000000U        /*!< Step MPU Secure Region 3 Init check value */
+#endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
 #define FLOW_STEP_MPU_S_I_CH_R4     0x00025dafU        /*!< Step MPU Secure Region 4 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R5     0x00029cf6U        /*!< Step MPU Secure Region 5 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R6     0x0003da37U        /*!< Step MPU Secure Region 6 Init check value */
 #define FLOW_STEP_MPU_S_I_CH_R7      0x00000000U        /*!< No effect on control flow */
 
 #define FLOW_STEP_MPU_S_I_CH        0x0002e8fbU        /*!< Step MPU Secure Init check value */
-#define FLOW_STEP_MPU_NS_I_CH_R0    0x0002f71bU        /*!< Step MPU NonSecure Region 0 Init check value */
-#define FLOW_STEP_MPU_NS_I_CH_R1    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R2    0x00031b6eU        /*!< Step MPU NonSecure Region 2 Init check value */
-#define FLOW_STEP_MPU_NS_I_CH_R3    0x00036e9dU        /*!< Step MPU NonSecure Region 3 Init check value */
-#define FLOW_STEP_MPU_NS_I_CH_R4    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH       0x0003717dU        /*!< Step MPU NonSecure Init check value */
 #else /* OEMIROT_BOOT_MPU_PROTECTION */
 #define FLOW_STEP_MPU_S_I_CH_R0     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_CH_R1     0x00000000U        /*!< No effect on control flow */
@@ -136,12 +126,6 @@ extern "C" {
 #define FLOW_STEP_MPU_S_I_CH_R6     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_CH_R7     0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_I_CH        0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R0    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R1    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R2    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R3    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH_R4    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_I_CH       0x00000000U        /*!< No effect on control flow */
 #endif /* OEMIROT_BOOT_MPU_PROTECTION */
 
 #define FLOW_STEP_SAU_I_CH_R0       0x00000000U        /*!< No effect on control flow */
@@ -175,18 +159,10 @@ extern "C" {
 
 #ifdef OEMIROT_BOOT_MPU_PROTECTION
 #define FLOW_STEP_MPU_S_A_EN_R0     0x0003dbc9U        /*!< Step MPU Secure Region 0 Appli enable value */
-#define FLOW_STEP_MPU_NS_A_EN_R0    0x00045afcU        /*!< Step MPU NonSecure Region 0 Appli enable value */
-#define FLOW_STEP_MPU_NS_A_EN_R5    0x00036f63U        /*!< Step MPU NonSecure Region 5 Appli enable value */
 #define FLOW_STEP_MPU_S_A_CH_R0     0x000474dfU        /*!< Step MPU Secure Region 0 Appli check value */
-#define FLOW_STEP_MPU_NS_A_CH_R0    0x0004a7f3U        /*!< Step MPU NonSecure Region 0 Appli check value */
-#define FLOW_STEP_MPU_NS_A_CH_R5    0x00037ce8U        /*!< Step MPU NonSecure Region 5 Appli check value */
 #else
 #define FLOW_STEP_MPU_S_A_EN_R0     0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_A_EN_R0    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_A_EN_R5    0x00000000U        /*!< No effect on control flow */
 #define FLOW_STEP_MPU_S_A_CH_R0     0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_A_CH_R0    0x00000000U        /*!< No effect on control flow */
-#define FLOW_STEP_MPU_NS_A_CH_R5    0x00000000U        /*!< No effect on control flow */
 #endif /* OEMIROT_BOOT_MPU_PROTECTION */
 
 #if defined(MCUBOOT_PRIMARY_ONLY)
@@ -240,12 +216,8 @@ extern "C" {
 #define FLOW_CTRL_MPU_S_I_EN_R6     (FLOW_CTRL_MPU_S_I_EN_R5 ^   FLOW_STEP_MPU_S_I_EN_R6)
 #define FLOW_CTRL_MPU_S_I_EN_R7     (FLOW_CTRL_MPU_S_I_EN_R6 ^   FLOW_STEP_MPU_S_I_EN_R7)
 #define FLOW_CTRL_MPU_S_I_EN        (FLOW_CTRL_MPU_S_I_EN_R7 ^   FLOW_STEP_MPU_S_I_EN)
-#define FLOW_CTRL_MPU_NS_I_EN_R0    (FLOW_CTRL_MPU_S_I_EN ^      FLOW_STEP_MPU_NS_I_EN_R0)
-#define FLOW_CTRL_MPU_NS_I_EN_R1    (FLOW_CTRL_MPU_NS_I_EN_R0 ^  FLOW_STEP_MPU_NS_I_EN_R1)
-#define FLOW_CTRL_MPU_NS_I_EN_R2    (FLOW_CTRL_MPU_NS_I_EN_R1 ^  FLOW_STEP_MPU_NS_I_EN_R2)
-#define FLOW_CTRL_MPU_NS_I_EN       (FLOW_CTRL_MPU_NS_I_EN_R2 ^  FLOW_STEP_MPU_NS_I_EN)
 
-#define FLOW_CTRL_SAU_I_EN_R0       (FLOW_CTRL_MPU_NS_I_EN ^     FLOW_STEP_SAU_I_EN_R0)
+#define FLOW_CTRL_SAU_I_EN_R0       (FLOW_CTRL_MPU_S_I_EN ^      FLOW_STEP_SAU_I_EN_R0)
 #define FLOW_CTRL_SAU_I_EN_R1       (FLOW_CTRL_SAU_I_EN_R0 ^     FLOW_STEP_SAU_I_EN_R1)
 #define FLOW_CTRL_SAU_I_EN_R2       (FLOW_CTRL_SAU_I_EN_R1 ^     FLOW_STEP_SAU_I_EN_R2)
 #define FLOW_CTRL_SAU_I_EN_R3       (FLOW_CTRL_SAU_I_EN_R2 ^     FLOW_STEP_SAU_I_EN_R3)
@@ -271,12 +243,8 @@ extern "C" {
 #define FLOW_CTRL_MPU_S_I_CH_R6     (FLOW_CTRL_MPU_S_I_CH_R5 ^   FLOW_STEP_MPU_S_I_CH_R6)
 #define FLOW_CTRL_MPU_S_I_CH_R7     (FLOW_CTRL_MPU_S_I_CH_R6 ^   FLOW_STEP_MPU_S_I_CH_R7)
 #define FLOW_CTRL_MPU_S_I_CH        (FLOW_CTRL_MPU_S_I_CH_R7 ^   FLOW_STEP_MPU_S_I_CH)
-#define FLOW_CTRL_MPU_NS_I_CH_R0    (FLOW_CTRL_MPU_S_I_CH ^      FLOW_STEP_MPU_NS_I_CH_R0)
-#define FLOW_CTRL_MPU_NS_I_CH_R1    (FLOW_CTRL_MPU_NS_I_CH_R0 ^  FLOW_STEP_MPU_NS_I_CH_R1)
-#define FLOW_CTRL_MPU_NS_I_CH_R2    (FLOW_CTRL_MPU_NS_I_CH_R1 ^  FLOW_STEP_MPU_NS_I_CH_R2)
-#define FLOW_CTRL_MPU_NS_I_CH       (FLOW_CTRL_MPU_NS_I_CH_R2 ^  FLOW_STEP_MPU_NS_I_CH)
 
-#define FLOW_CTRL_SAU_I_CH_R0       (FLOW_CTRL_MPU_NS_I_CH ^     FLOW_STEP_SAU_I_CH_R0)
+#define FLOW_CTRL_SAU_I_CH_R0       (FLOW_CTRL_MPU_S_I_CH ^      FLOW_STEP_SAU_I_CH_R0)
 #define FLOW_CTRL_SAU_I_CH_R1       (FLOW_CTRL_SAU_I_CH_R0 ^     FLOW_STEP_SAU_I_CH_R1)
 #define FLOW_CTRL_SAU_I_CH_R2       (FLOW_CTRL_SAU_I_CH_R1 ^     FLOW_STEP_SAU_I_CH_R2)
 #define FLOW_CTRL_SAU_I_CH_R3       (FLOW_CTRL_SAU_I_CH_R2 ^     FLOW_STEP_SAU_I_CH_R3)
@@ -294,17 +262,13 @@ extern "C" {
 
 /* Flow control Stage 3 Appli */
 #define FLOW_CTRL_MPU_S_A_EN_R0     (FLOW_CTRL_STAGE_2 ^         FLOW_STEP_MPU_S_A_EN_R0)
-#define FLOW_CTRL_MPU_NS_A_EN_R0    (FLOW_CTRL_MPU_S_A_EN_R0 ^   FLOW_STEP_MPU_NS_A_EN_R0)
-#define FLOW_CTRL_MPU_NS_A_EN_R5    (FLOW_CTRL_MPU_NS_A_EN_R0 ^  FLOW_STEP_MPU_NS_A_EN_R5)
 
-#define FLOW_CTRL_STAGE_3_A         FLOW_CTRL_MPU_NS_A_EN_R5
+#define FLOW_CTRL_STAGE_3_A         FLOW_CTRL_MPU_S_A_EN_R0
 
 /* Flow control Stage 4 Appli */
 #define FLOW_CTRL_MPU_S_A_CH_R0     (FLOW_CTRL_STAGE_3_A ^       FLOW_STEP_MPU_S_A_CH_R0)
-#define FLOW_CTRL_MPU_NS_A_CH_R0    (FLOW_CTRL_MPU_S_A_CH_R0 ^   FLOW_STEP_MPU_NS_A_CH_R0)
-#define FLOW_CTRL_MPU_NS_A_CH_R5    (FLOW_CTRL_MPU_NS_A_CH_R0 ^  FLOW_STEP_MPU_NS_A_CH_R5)
 
-#define FLOW_CTRL_STAGE_4_A         FLOW_CTRL_MPU_NS_A_CH_R5
+#define FLOW_CTRL_STAGE_4_A         FLOW_CTRL_MPU_S_A_CH_R0
 
 /* Flow control Stage 3 Loader */
 #define FLOW_CTRL_FLASH_S_L_EN      (FLOW_CTRL_STAGE_2 ^         FLOW_STEP_FLASH_S_L_EN)

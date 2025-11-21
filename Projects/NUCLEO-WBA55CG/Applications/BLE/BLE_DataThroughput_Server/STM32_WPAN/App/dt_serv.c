@@ -432,11 +432,11 @@ void DT_SERV_Init(void)
                              &(DT_SERV_Context.Dt_servSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: DT_SERV, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: DT_SERV, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: Dt_servSvcHdle = 0x%04X\n",DT_SERV_Context.Dt_servSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: Dt_servSvcHdle = 0x%04X\n",DT_SERV_Context.Dt_servSvcHdle);
   }
 
   /**
@@ -455,11 +455,11 @@ void DT_SERV_Init(void)
                           &(DT_SERV_Context.Tx_CharCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : TX_CHAR, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : TX_CHAR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Tx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Tx_CharCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Tx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Tx_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -482,11 +482,11 @@ void DT_SERV_Init(void)
                           &(DT_SERV_Context.Rx_CharCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : RX_CHAR, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : RX_CHAR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Rx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Rx_CharCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Rx_CharCharHdle = 0x%04X\n",DT_SERV_Context.Rx_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -509,11 +509,11 @@ void DT_SERV_Init(void)
                           &(DT_SERV_Context.Through_CharCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : THROUGH_CHAR, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : THROUGH_CHAR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Through_CharCharHdle = 0x%04X\n",DT_SERV_Context.Through_CharCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Through_CharCharHdle = 0x%04X\n",DT_SERV_Context.Through_CharCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -550,11 +550,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value TX_CHAR command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value TX_CHAR command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value TX_CHAR command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value TX_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -569,11 +569,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value RX_CHAR command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value RX_CHAR command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value RX_CHAR command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value RX_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -588,11 +588,11 @@ tBleStatus DT_SERV_UpdateValue(DT_SERV_CharOpcode_t CharOpcode, DT_SERV_Data_t *
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value THROUGH_CHAR command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value THROUGH_CHAR command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value THROUGH_CHAR command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value THROUGH_CHAR command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

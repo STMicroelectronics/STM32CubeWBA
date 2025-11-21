@@ -30,18 +30,18 @@
 <h1 id="purpose">Purpose</h1>
 <p>Wireless Personal Area Network Middleware supporting:</p>
 <ul>
-<li><p>Bluetooth Low Energy 5.4</p></li>
+<li><p>Bluetooth Low Energy 6.0</p></li>
 <li><p>Zigbee stack Revision 23 (R23) and Revision 22 (R22), Zigbee Clusters ZCL 8.0</p></li>
 <li><p>OpenThread: compliant Thread 1.1, 1.2 and 1.3  </p></li>
 <li><p>Mac 802.15.4: compliant Zigbee IEEE 802.15.4 MAC Test Plan V 2.0</p></li>
 <li><p>BLE-Thread and BLE-Zigbee dynamic concurrent modes</p></li>
 <li><p>All libraries are compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
 </ul>
-<p>The following features are supported for <strong>BLE</strong> 5.4:</p>
+<p>The following features are supported for <strong>BLE</strong> 6.0:</p>
 <ul>
 <li>Advertising</li>
 <li>Scanning</li>
-<li>Master / Slave Connection</li>
+<li>Central / Peripheral Connection</li>
 <li>Data length extension</li>
 <li>Privacy</li>
 <li>LE Encryption</li>
@@ -72,9 +72,8 @@
 <li><em>stm32wba_ble_stack_full.a</em>: <strong>full host stack</strong> + <strong>ST LL controller</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
 <li><em>stm32wba_ble_stack_basic.a</em>: <strong>basic host stack</strong> + <strong>ST LL controller (basic features)</strong>, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
 <li><em>stm32wba_ble_stack_basic_plus.a</em>: <strong>basic host stack</strong> + ST LL controller (basic features + additional features as Advertising Extension feature), requires LinkLayer_BLE_Basic_Plus_lib.a to work.</li>
-<li><em>stm32wba_ble_stack_llo.a</em>: <strong>ST LL controller only</strong>, requires <em>LinkLayer_BLE_Full_lib.a</em> to work.</li>
-<li><em>stm32wba_ble_stack_llobasic.a</em>: <strong>ST LL controller (basic features)</strong> only, requires <em>LinkLayer_BLE_Basic_lib.a</em> or <em>LinkLayer_BLE_Basic_20_links_lib.a</em> to work.</li>
-<li><em>stm32wba_ble_stack_po.a</em>: <strong>basic host stack</strong> + ST LL controller (basic features but supports only peripheral role), requires LinkLayer_BLE_Peripheral_Only_lib.a to work.</li>
+<li><em>stm32wba_ble_stack_llo.a</em>: <strong>ST LL controller only</strong> is compatible with every Link Layer variants.</li>
+<li><em>stm32wba_ble_stack_po.a</em>: <strong>Peripheral Only host stack</strong> + <strong>ST LL controller</strong> (basic features but supports only peripheral role), requires LinkLayer_BLE_Peripheral_Only_lib.a to work.</li>
 </ul>
 <p>The <strong>BLE audio</strong> feature introduces the following libraries:</p>
 <ul>
@@ -177,9 +176,121 @@
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section10" checked aria-hidden="true"> <label for="collapse-section10" aria-hidden="false">V2.7.0 / 02-June-2025</label>
+<input type="checkbox" id="collapse-section11" checked aria-hidden="true"> <label for="collapse-section11" aria-hidden="false">V2.8.0 / 24-October-2025</label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
+<ul>
+<li>BLE:
+<ul>
+<li>Changes :
+<ul>
+<li>ID 216261 : BLE Stack LL_Only library is now compatible with all Link Layer variants.</li>
+<li>ID 206997 : New commands ACI_GATT_WRITE_WITHOUT_RESP_EXT and ACI_GATT_WRITE_WITH_RESP_EXT have been added in the BLE stack.</li>
+<li>ID 212828 : The subevent codes of the ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT and ACI_HAL_SYNC_EVENT have changed.</li>
+<li>ID 211412 : The MITM mode from the ACI_GAP_SET_AUTHENTICATION_REQUIREMENT command can take a new value: 0x02 = “MITM protection required as optional”</li>
+<li>ID 212391 : The BLE stack commands ACI_GATT_ALLOW_READ and ACI_GATT_DENY_READ are replaced by ACI_GATT_PERMIT_READ. ACI_GATT_WRITE_RESP is renamed to ACI_GATT_PERMIT_WRITE.</li>
+<li>ID 214976 : Increase the max nuber of supported BIS from 2 to 6</li>
+<li>ID 218497 : Rename the preprocessor symbols of BLE Stack variants</li>
+<li>ID 196671 : Add BLE timing profiling framework</li>
+<li>ID 134358 : Add BLE Host Stack events FIFO buffer mechanism</li>
+<li>ID203713 : Modify the LMP_Subversion to track the LL FW version</li>
+</ul></li>
+<li>Issues fixed:
+<ul>
+<li>ID 211430 : The security permission flags of GATT characteristics are now taking into account the Secure Connections</li>
+<li>ID 211134 : Fix deadlock in PHY calibration on WBA6x devices</li>
+<li>ID 209157 : Fix crash while resolving private address during advertising.</li>
+<li>ID 210864 : Correctly clear ISO SDU data list when a BIS or a CIS are lost or terminated.</li>
+<li>ID 203456 : Non-linearity RSSI reporting</li>
+</ul></li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Changes :
+<ul>
+<li>Support of 6 BIS and 6 audio paths</li>
+<li>Add path ID DATA_PATH_FRAME_CIRC_BUF for raw data in Codec Manager and rename legacy path ID with DATA_PATH_SAMPLE_CIRC_BUF</li>
+<li>Change CODEC_NotifyDataReady() prototype</li>
+<li>Add write long for BASS control point</li>
+</ul></li>
+<li>Issues fixed:
+<ul>
+<li>ID 215859 : Trigger Callback unprecision increasing with controller delay</li>
+<li>ID 210972 : CIG parameters SDU Interval and MaxTransport Latency for an inactive direction</li>
+<li>ID 212351 : fix behavior with Multi permit request</li>
+<li>Stop parsing subgroup if exceeding capabilities</li>
+</ul></li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>Issues fixed:
+<ul>
+<li>ID 209091: Assert on running orphan scan followed by ED scan; assert resolved</li>
+<li>ID 188189: Link Layer Libraries : list of warnings ; libs now build with no warnings</li>
+<li>ID 212940: Implicit Broadcast; removed wrong acking of Implicit Broadcast messages</li>
+<li>ID 214137: [MAC] Problem of compilation whit ThreadX; enum definition for status code changed that caused failure of compilations of threadx apps</li>
+<li>ID 216592: 802.15.4 RAM increase after dynamic lib feature; fixed RAM memory increase in case of disabling dynamic LL libs feature</li>
+<li>ID 195653: Deadlock in the sleep timer handler; resolved issue of not receiving data transmission confirms for data transmission requests</li>
+<li>ID 195939: [WBA5] [New MAC Test APP] Receiving Corrupted Data in Data Indication call back at the Sender Device D2 ; resolved receiving wrongly filtered reception indications from HW.</li>
+<li>ID 212220: [WBA6 DK] [MATTER]ble thread poll issue; fix start time of some transmissions<br />
+</li>
+<li>ID 205831: Sleep clock drift compensation; removed wrong assert</li>
+</ul></li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>ID 196959 : Frame timestamping mRxInfo.mTimestamp overflows after 37.2 hours</li>
+</ul></li>
+<li>BLE Zigbee:
+<ul>
+<li>Issues fixed:
+<ul>
+<li>ID 200144 : Missing MAC data confirm dropping connection over a 37h period</li>
+</ul></li>
+</ul></li>
+<li>BLE Thread:
+<ul>
+<li>Issues fixed:
+<ul>
+<li>ID 209635 : BLE_HeartRate_Thread_SED exiting LPM after OT_RADIO_CAPS_RX_ON_WHEN_IDLE feature added to LL</li>
+<li>ID 205805 : Link Layer BLE define renamed to BLE_LL</li>
+</ul></li>
+</ul></li>
+<li><strong>Known limitations</strong>:
+<ul>
+<li>BLE:
+<ul>
+<li>ID 143245 : ACI_HAL_GET_ANCHOR_PERIOD, ACI_HAL_SET_SLAVE_LATENCY not yet supported.</li>
+<li>ID 212635 : RCO calibration blocked when called twice in a row</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Framed mode not supported (44.1 KHz).<br />
+</li>
+<li>Audio High Reliability in Unicast Client role.</li>
+</ul></li>
+<li>MAC 802.15.4:
+<ul>
+<li>ID 170274 : Temperature calibration - compatibility with 802.15.4</li>
+<li>ID 188347 : [WBA6] Too high PER (&gt; 1%) observed for Packet size modulo 16</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>ZigbeeDirect stack (ZigBeeProR23_ZDD.a) certification has not been executed (but precertification is done inhouse successfully).</li>
+<li>ID 218229 : Coordinator Server stops responding during Long-Term concurrent test Impacts : Concurrent BLE Zigbee Longterm</li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>Border router test DH_1_6 added in GRL v62 is not consistently passing. Jira TSBED-451 has been fixed by Thread group in GRL v63.</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section10" aria-hidden="true"> <label for="collapse-section10" aria-hidden="false">V2.7.0 / 02-June-2025</label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -315,7 +426,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section9" aria-hidden="true"> <label for="collapse-section9" aria-hidden="false">V2.6.1 / 14-April-2025</label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -392,7 +503,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section8" aria-hidden="true"> <label for="collapse-section8" aria-hidden="false">V2.6.0 / 04-February-2025</label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
+<h2 id="main-changes-3">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -555,7 +666,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section7" aria-hidden="true"> <label for="collapse-section7" aria-hidden="false">V2.5.0 / 29-October-2024</label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -700,7 +811,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="false">V2.4.0 / 03-June-2024</label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -809,7 +920,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="false">V2.3.1 / 22-March-2024</label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <ul>
 <li><p>Productive RF-PHY settings.</p></li>
 <li>Zigbee:
@@ -879,7 +990,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="false">V2.3.0 / 05-Feb-2024</label>
 <div>
-<h2 id="main-changes-6">Main Changes</h2>
+<h2 id="main-changes-7">Main Changes</h2>
 <ul>
 <li><p>Adding support of BLE-Thread and BLE-Zigbee Dynamic Concurrent Modes.</p></li>
 <li><p>All libraries are now compiled with MDK-ARM (KEIL) ARMCLANG V6.19 AEABI format.</p></li>
@@ -993,7 +1104,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section3" aria-hidden="true"> <label for="collapse-section3" aria-hidden="false">V2.2.0 / 22-Sept-2023</label>
 <div>
-<h2 id="main-changes-7">Main Changes</h2>
+<h2 id="main-changes-8">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -1063,7 +1174,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section2" aria-hidden="true"> <label for="collapse-section2" aria-hidden="false">V2.1.0 / 30-May-2023</label>
 <div>
-<h2 id="main-changes-8">Main Changes</h2>
+<h2 id="main-changes-9">Main Changes</h2>
 <ul>
 <li>BLE:
 <ul>
@@ -1091,7 +1202,7 @@
 <div class="collapse">
 <input type="checkbox" id="collapse-section1" aria-hidden="true"> <label for="collapse-section1" aria-hidden="false">V2.0.0 / 08-February-2023</label>
 <div>
-<h2 id="main-changes-9">Main Changes</h2>
+<h2 id="main-changes-10">Main Changes</h2>
 <p>First official release for WBA</p>
 <ul>
 <li>Known limitations:

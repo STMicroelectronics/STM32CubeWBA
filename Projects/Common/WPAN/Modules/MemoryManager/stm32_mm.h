@@ -20,6 +20,10 @@
 #ifndef STM32_MM_H
 #define STM32_MM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 /* Exported defines -----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -52,5 +56,9 @@ void * UTIL_MM_GetBuffer(size_t xWantedSize);
 void UTIL_MM_ReleaseBuffer( void * pv );
 
 /* Exported functions to be implemented by the user if required ------------- */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* STM32_MM_H */

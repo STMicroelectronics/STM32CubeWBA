@@ -45,18 +45,34 @@ RegisterLogModule("BorderAgent");
 //----------------------------------------------------------------------------------------------------------------------
 // `BorderAgent`
 
+const char BorderAgent::kTxtDataRecordVersion[] = "1";
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+const char BorderAgent::kServiceType[]            = "_meshcop._udp";
+const char BorderAgent::kDefaultBaseServiceName[] = OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_BASE_NAME;
+#endif
+
 BorderAgent::BorderAgent(Instance &aInstance)
     : InstanceLocator(aInstance)
+    , mEnabled(true)
     , mIsRunning(false)
     , mDtlsTransport(aInstance, kNoLinkSecurity)
 #if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
     , mIdInitialized(false)
 #endif
+    , mServiceTask(aInstance)
 #if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE
     , mEphemeralKeyManager(aInstance)
 #endif
 {
     ClearAllBytes(mCounters);
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    ClearAllBytes(mServiceName);
+    PostServiceTask();
+
+    static_assert(sizeof(kDefaultBaseServiceName) - 1 <= kBaseServiceNameMaxLen,
+                  "OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_BASE_NAME is too long");
+#endif
 }
 
 #if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
@@ -72,7 +88,7 @@ Error BorderAgent::GetId(Id &aId)
 
     if (Get<Settings>().Read<Settings::BorderAgentId>(mId) != kErrorNone)
     {
-        Random::NonCrypto::Fill(mId);
+        mId.GenerateRandom();
         SuccessOrExit(error = Get<Settings>().Save<Settings::BorderAgentId>(mId));
     }
 
@@ -87,14 +103,50 @@ Error BorderAgent::SetId(const Id &aId)
 {
     Error error = kErrorNone;
 
+    if (mIdInitialized)
+    {
+        VerifyOrExit(aId != mId);
+    }
+
     SuccessOrExit(error = Get<Settings>().Save<Settings::BorderAgentId>(aId));
     mId            = aId;
     mIdInitialized = true;
+    PostServiceTask();
 
 exit:
     return error;
 }
 #endif // OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
+
+void BorderAgent::SetEnabled(bool aEnabled)
+{
+    VerifyOrExit(mEnabled != aEnabled);
+    mEnabled = aEnabled;
+    LogInfo("%sabling Border Agent", mEnabled ? "En" : "Dis");
+    UpdateState();
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    if (!mEnabled)
+    {
+        UnregisterService();
+    }
+#endif
+
+exit:
+    return;
+}
+
+void BorderAgent::UpdateState(void)
+{
+    if (mEnabled && Get<Mle::Mle>().IsAttached())
+    {
+        Start();
+    }
+    else
+    {
+        Stop();
+    }
+}
 
 void BorderAgent::Start(void)
 {
@@ -114,6 +166,7 @@ void BorderAgent::Start(void)
     pskc.Clear();
 
     mIsRunning = true;
+    PostServiceTask();
 
     LogInfo("Border Agent start listening on port %u", GetUdpPort());
 
@@ -132,6 +185,7 @@ void BorderAgent::Stop(void)
 
     mDtlsTransport.Close();
     mIsRunning = false;
+    PostServiceTask();
 
     LogInfo("Border Agent stopped");
 
@@ -141,18 +195,26 @@ exit:
 
 uint16_t BorderAgent::GetUdpPort(void) const { return mDtlsTransport.GetUdpPort(); }
 
+void BorderAgent::SetServiceChangedCallback(ServiceChangedCallback aCallback, void *aContext)
+{
+    mServiceChangedCallback.Set(aCallback, aContext);
+
+    PostServiceTask();
+}
+
 void BorderAgent::HandleNotifierEvents(Events aEvents)
 {
     if (aEvents.Contains(kEventThreadRoleChanged))
     {
-        if (Get<Mle::MleRouter>().IsAttached())
-        {
-            Start();
-        }
-        else
-        {
-            Stop();
-        }
+        UpdateState();
+    }
+
+    VerifyOrExit(mEnabled);
+
+    if (aEvents.ContainsAny(kEventThreadRoleChanged | kEventThreadExtPanIdChanged | kEventThreadNetworkNameChanged |
+                            kEventThreadBackboneRouterStateChanged | kEventActiveDatasetChanged))
+    {
+        PostServiceTask();
     }
 
     if (aEvents.ContainsAny(kEventPskcChanged))
@@ -264,6 +326,14 @@ BorderAgent::CoapDtlsSession *BorderAgent::FindActiveCommissionerSession(void)
         }
     }
 
+#if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE
+    if ((mEphemeralKeyManager.mCoapDtlsSession != nullptr) &&
+        mEphemeralKeyManager.mCoapDtlsSession->IsActiveCommissioner())
+    {
+        commissionerSession = mEphemeralKeyManager.mCoapDtlsSession;
+    }
+#endif
+
     return commissionerSession;
 }
 
@@ -316,6 +386,262 @@ exit:
     FreeMessageOnError(message, error);
 }
 
+void BorderAgent::PostServiceTask(void)
+{
+    VerifyOrExit(mEnabled);
+
+#if !OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    VerifyOrExit(mServiceChangedCallback.IsSet());
+#endif
+
+    mServiceTask.Post();
+
+exit:
+    return;
+}
+
+void BorderAgent::HandleServiceTask(void)
+{
+    VerifyOrExit(mEnabled);
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    RegisterService();
+#endif
+    mServiceChangedCallback.InvokeIfSet();
+
+exit:
+    return;
+}
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+
+Error BorderAgent::SetServiceBaseName(const char *aBaseName)
+{
+    Error                  error = kErrorNone;
+    Dns::Name::LabelBuffer newName;
+
+    VerifyOrExit(StringLength(aBaseName, kBaseServiceNameMaxLen + 1) <= kBaseServiceNameMaxLen,
+                 error = kErrorInvalidArgs);
+
+    ConstrcutServiceName(aBaseName, newName);
+
+    VerifyOrExit(!StringMatch(newName, mServiceName));
+
+    UnregisterService();
+    IgnoreError(StringCopy(mServiceName, newName));
+    RegisterService();
+
+exit:
+    return error;
+}
+
+void BorderAgent::SetVendorTxtData(const uint8_t *aVendorData, uint16_t aVendorDataLength)
+{
+    VerifyOrExit(!mVendorTxtData.Matches(aVendorData, aVendorDataLength));
+
+    SuccessOrAssert(mVendorTxtData.SetFrom(aVendorData, aVendorDataLength));
+    PostServiceTask();
+
+exit:
+    return;
+}
+
+const char *BorderAgent::GetServiceName(void)
+{
+    if (IsServiceNameEmpty())
+    {
+        ConstrcutServiceName(kDefaultBaseServiceName, mServiceName);
+    }
+
+    return mServiceName;
+}
+
+void BorderAgent::ConstrcutServiceName(const char *aBaseName, Dns::Name::LabelBuffer &aNameBuffer)
+{
+    StringWriter writer(aNameBuffer, sizeof(Dns::Name::LabelBuffer));
+
+    writer.Append("%.*s%s", kBaseServiceNameMaxLen, aBaseName, Get<Mac::Mac>().GetExtAddress().ToString().AsCString());
+}
+
+void BorderAgent::RegisterService(void)
+{
+    Dnssd::Service service;
+    uint8_t       *txtDataBuffer;
+    uint16_t       txtDataBufferSize;
+    uint16_t       txtDataLength;
+
+    VerifyOrExit(Get<Dnssd>().IsReady());
+
+    // Allocate a large enough buffer to fit both the TXT data
+    // generated by Border Agent itself and the vendor extra
+    // TXT data. The vendor TXT Data is appended at the
+    // end.
+
+    txtDataBufferSize = kTxtDataMaxSize + mVendorTxtData.GetLength();
+    txtDataBuffer     = reinterpret_cast<uint8_t *>(Heap::CAlloc(txtDataBufferSize, sizeof(uint8_t)));
+    OT_ASSERT(txtDataBuffer != nullptr);
+
+    SuccessOrAssert(PrepareServiceTxtData(txtDataBuffer, txtDataBufferSize, txtDataLength));
+
+    if (mVendorTxtData.GetLength() != 0)
+    {
+        mVendorTxtData.CopyBytesTo(txtDataBuffer + txtDataLength);
+        txtDataLength += mVendorTxtData.GetLength();
+    }
+
+    service.Clear();
+    service.mServiceInstance = GetServiceName();
+    service.mServiceType     = kServiceType;
+    service.mPort            = IsRunning() ? GetUdpPort() : kDummyUdpPort;
+    service.mTxtData         = txtDataBuffer;
+    service.mTxtDataLength   = txtDataLength;
+
+    Get<Dnssd>().RegisterService(service, /* aRequestId */ 0, /* aCallback */ nullptr);
+
+    Heap::Free(txtDataBuffer);
+
+exit:
+    return;
+}
+
+void BorderAgent::UnregisterService(void)
+{
+    Dnssd::Service service;
+
+    VerifyOrExit(Get<Dnssd>().IsReady());
+    VerifyOrExit(!IsServiceNameEmpty());
+
+    service.Clear();
+    service.mServiceInstance = GetServiceName();
+    service.mServiceType     = kServiceType;
+
+    Get<Dnssd>().UnregisterService(service, /* aRequestId */ 0, /* aCallback */ nullptr);
+
+exit:
+    return;
+}
+
+#endif // OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+
+Error BorderAgent::PrepareServiceTxtData(ServiceTxtData &aTxtData)
+{
+    return PrepareServiceTxtData(aTxtData.mData, sizeof(aTxtData.mData), aTxtData.mLength);
+}
+
+Error BorderAgent::PrepareServiceTxtData(uint8_t *aBuffer, uint16_t aBufferSize, uint16_t &aLength)
+{
+    Error               error = kErrorNone;
+    Dns::TxtDataEncoder encoder(aBuffer, aBufferSize);
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_ID_ENABLE
+    {
+        Id id;
+
+        if (GetId(id) == kErrorNone)
+        {
+            SuccessOrExit(error = encoder.AppendEntry("id", id));
+        }
+    }
+#endif
+    SuccessOrExit(error = encoder.AppendStringEntry("rv", kTxtDataRecordVersion));
+    SuccessOrExit(error = encoder.AppendNameEntry("nn", Get<NetworkNameManager>().GetNetworkName().GetAsData()));
+    SuccessOrExit(error = encoder.AppendEntry("xp", Get<ExtendedPanIdManager>().GetExtPanId()));
+    SuccessOrExit(error = encoder.AppendStringEntry("tv", kThreadVersionString));
+    SuccessOrExit(error = encoder.AppendEntry("xa", Get<Mac::Mac>().GetExtAddress()));
+    SuccessOrExit(error = encoder.AppendBigEndianUintEntry("sb", DetermineStateBitmap()));
+
+    if (Get<Mle::Mle>().IsAttached())
+    {
+        SuccessOrExit(error = encoder.AppendBigEndianUintEntry("pt", Get<Mle::Mle>().GetLeaderData().GetPartitionId()));
+
+        if (Get<MeshCoP::ActiveDatasetManager>().GetTimestamp().IsValid())
+        {
+            SuccessOrExit(error = encoder.AppendEntry("at", Get<MeshCoP::ActiveDatasetManager>().GetTimestamp()));
+        }
+    }
+
+#if OPENTHREAD_FTD && OPENTHREAD_CONFIG_BACKBONE_ROUTER_ENABLE
+    if (Get<Mle::Mle>().IsAttached() && Get<BackboneRouter::Local>().IsEnabled())
+    {
+        BackboneRouter::Config bbrConfig;
+
+        Get<BackboneRouter::Local>().GetConfig(bbrConfig);
+        SuccessOrExit(error = encoder.AppendEntry("sq", bbrConfig.mSequenceNumber));
+        SuccessOrExit(error = encoder.AppendBigEndianUintEntry("bb", BackboneRouter::kBackboneUdpPort));
+    }
+
+    SuccessOrExit(error =
+                      encoder.AppendNameEntry("dn", Get<MeshCoP::NetworkNameManager>().GetDomainName().GetAsData()));
+#endif
+
+#if OPENTHREAD_CONFIG_BORDER_ROUTING_ENABLE
+    {
+        Ip6::Prefix                                   prefix;
+        BorderRouter::RoutingManager::RoutePreference preference;
+
+        if (Get<BorderRouter::RoutingManager>().GetFavoredOmrPrefix(prefix, preference) == kErrorNone &&
+            prefix.GetLength() > 0)
+        {
+            uint8_t omrData[Ip6::NetworkPrefix::kSize + 1];
+
+            omrData[0] = prefix.GetLength();
+            memcpy(omrData + 1, prefix.GetBytes(), prefix.GetBytesSize());
+
+            SuccessOrExit(error = encoder.AppendEntry("omr", omrData));
+        }
+    }
+#endif
+
+    aLength = encoder.GetLength();
+
+exit:
+    return error;
+}
+
+uint32_t BorderAgent::DetermineStateBitmap(void) const
+{
+    uint32_t bitmap = 0;
+
+    bitmap |= (IsRunning() ? StateBitmap::kConnectionModePskc : StateBitmap::kConnectionModeDisabled);
+    bitmap |= StateBitmap::kAvailabilityHigh;
+
+    switch (Get<Mle::Mle>().GetRole())
+    {
+    case Mle::DeviceRole::kRoleDisabled:
+        bitmap |= (StateBitmap::kThreadIfStatusNotInitialized | StateBitmap::kThreadRoleDisabledOrDetached);
+        break;
+    case Mle::DeviceRole::kRoleDetached:
+        bitmap |= (StateBitmap::kThreadIfStatusInitialized | StateBitmap::kThreadRoleDisabledOrDetached);
+        break;
+    case Mle::DeviceRole::kRoleChild:
+        bitmap |= (StateBitmap::kThreadIfStatusActive | StateBitmap::kThreadRoleChild);
+        break;
+    case Mle::DeviceRole::kRoleRouter:
+        bitmap |= (StateBitmap::kThreadIfStatusActive | StateBitmap::kThreadRoleRouter);
+        break;
+    case Mle::DeviceRole::kRoleLeader:
+        bitmap |= (StateBitmap::kThreadIfStatusActive | StateBitmap::kThreadRoleLeader);
+        break;
+    }
+
+#if OPENTHREAD_FTD && OPENTHREAD_CONFIG_BACKBONE_ROUTER_ENABLE
+    if (Get<Mle::Mle>().IsAttached())
+    {
+        bitmap |= (Get<BackboneRouter::Local>().IsEnabled() ? StateBitmap::kFlagBbrIsActive : 0);
+        bitmap |= (Get<BackboneRouter::Local>().IsPrimary() ? StateBitmap::kFlagBbrIsPrimary : 0);
+    }
+#endif
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE
+    if (mEphemeralKeyManager.GetState() != EphemeralKeyManager::kStateDisabled)
+    {
+        bitmap |= StateBitmap::kFlagEpskcSupported;
+    }
+#endif
+
+    return bitmap;
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 // BorderAgent::SessionIterator
 
@@ -349,6 +675,10 @@ exit:
 
 #if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE
 
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+const char BorderAgent::EphemeralKeyManager::kServiceType[] = "_meshcop-e._udp";
+#endif
+
 BorderAgent::EphemeralKeyManager::EphemeralKeyManager(Instance &aInstance)
     : InstanceLocator(aInstance)
 #if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_FEATURE_ENABLED_BY_DEFAULT
@@ -369,12 +699,14 @@ void BorderAgent::EphemeralKeyManager::SetEnabled(bool aEnabled)
     {
         VerifyOrExit(mState == kStateDisabled);
         SetState(kStateStopped);
+        Get<BorderAgent>().PostServiceTask();
     }
     else
     {
         VerifyOrExit(mState != kStateDisabled);
         Stop();
         SetState(kStateDisabled);
+        Get<BorderAgent>().PostServiceTask();
     }
 
 exit:
@@ -414,6 +746,9 @@ exit:
     {
     case kErrorNone:
         Get<BorderAgent>().mCounters.mEpskcActivations++;
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+        Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcActivated);
+#endif
         break;
     case kErrorInvalidState:
         Get<BorderAgent>().mCounters.mEpskcInvalidBaStateErrors++;
@@ -431,7 +766,7 @@ exit:
 
 void BorderAgent::EphemeralKeyManager::Stop(void) { Stop(kReasonLocalDisconnect); }
 
-void BorderAgent::EphemeralKeyManager::Stop(StopReason aReason)
+void BorderAgent::EphemeralKeyManager::Stop(DeactivationReason aReason)
 {
     switch (mState)
     {
@@ -444,43 +779,86 @@ void BorderAgent::EphemeralKeyManager::Stop(StopReason aReason)
         ExitNow();
     }
 
-    LogInfo("Stopping ephemeral key use - reason: %s", StopReasonToString(aReason));
+    LogInfo("Stopping ephemeral key use - reason: %s", DeactivationReasonToString(aReason));
     SetState(kStateStopped);
 
     mTimer.Stop();
     mDtlsTransport.Close();
 
-    switch (aReason)
-    {
-    case kReasonLocalDisconnect:
-        Get<BorderAgent>().mCounters.mEpskcDeactivationClears++;
-        break;
-    case kReasonPeerDisconnect:
-        Get<BorderAgent>().mCounters.mEpskcDeactivationDisconnects++;
-        break;
-    case kReasonSessionError:
-        Get<BorderAgent>().mCounters.mEpskcStartSecureSessionErrors++;
-        break;
-    case kReasonMaxFailedAttempts:
-        Get<BorderAgent>().mCounters.mEpskcDeactivationMaxAttempts++;
-        break;
-    case kReasonTimeout:
-        Get<BorderAgent>().mCounters.mEpskcDeactivationTimeouts++;
-        break;
-    case kReasonUnknown:
-        break;
-    }
+    UpdateCountersAndRecordEvent(aReason);
 
 exit:
     return;
 }
 
+void BorderAgent::EphemeralKeyManager::UpdateCountersAndRecordEvent(DeactivationReason aReason)
+{
+    struct ReasonToCounterEventEntry
+    {
+        DeactivationReason mReason;
+        uint8_t            mEvent; // Raw values of `Utils::HistoryTracker::Epskc` enum.
+        uint32_t Counters::*mCounterPtr;
+    };
+
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+#define ReasonEntry(kReason, kCounter, kEvent)                       \
+    {                                                                \
+        kReason, Utils::HistoryTracker::kEvent, &Counters::kCounter, \
+    }
+#else
+#define ReasonEntry(kReason, kCounter, kEvent) \
+    {                                          \
+        kReason, 0, &Counters::kCounter        \
+    }
+#endif
+
+    static const ReasonToCounterEventEntry kReasonToCounterEventEntries[] = {
+        ReasonEntry(kReasonLocalDisconnect, mEpskcDeactivationClears, kEpskcDeactivatedLocalClose),
+        ReasonEntry(kReasonSessionTimeout, mEpskcDeactivationClears, kEpskcDeactivatedSessionTimeout),
+        ReasonEntry(kReasonPeerDisconnect, mEpskcDeactivationDisconnects, kEpskcDeactivatedRemoteClose),
+        ReasonEntry(kReasonSessionError, mEpskcStartSecureSessionErrors, kEpskcDeactivatedSessionError),
+        ReasonEntry(kReasonMaxFailedAttempts, mEpskcDeactivationMaxAttempts, kEpskcDeactivatedMaxAttempts),
+        ReasonEntry(kReasonEpskcTimeout, mEpskcDeactivationTimeouts, kEpskcDeactivatedEpskcTimeout),
+    };
+
+#undef ReasonEntry
+
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    Utils::HistoryTracker::EpskcEvent event = Utils::HistoryTracker::kEpskcDeactivatedUnknown;
+#endif
+
+    for (const ReasonToCounterEventEntry &entry : kReasonToCounterEventEntries)
+    {
+        if (aReason == entry.mReason)
+        {
+            (Get<BorderAgent>().mCounters.*(entry.mCounterPtr))++;
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+            event = static_cast<Utils::HistoryTracker::EpskcEvent>(entry.mEvent);
+#endif
+            break;
+        }
+    }
+
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    Get<Utils::HistoryTracker>().RecordEpskcEvent(event);
+#endif
+}
+
 void BorderAgent::EphemeralKeyManager::SetState(State aState)
 {
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    bool isServiceRegistered = ShouldRegisterService();
+#endif
+
     VerifyOrExit(mState != aState);
     LogInfo("Ephemeral key - state: %s -> %s", StateToString(mState), StateToString(aState));
     mState = aState;
     mCallbackTask.Post();
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+    VerifyOrExit(isServiceRegistered != ShouldRegisterService());
+    RegisterOrUnregisterService();
+#endif
 
 exit:
     return;
@@ -527,14 +905,16 @@ void BorderAgent::EphemeralKeyManager::HandleSessionConnected(void)
 {
     SetState(kStateConnected);
     Get<BorderAgent>().mCounters.mEpskcSecureSessionSuccesses++;
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcConnected);
+#endif
 }
 
 void BorderAgent::EphemeralKeyManager::HandleSessionDisconnected(SecureSession::ConnectEvent aEvent)
 {
-    StopReason reason = kReasonUnknown;
+    DeactivationReason reason = kReasonUnknown;
 
     // The ephemeral key can be used once
-
     VerifyOrExit((mState == kStateConnected) || (mState == kStateAccepted));
 
     switch (aEvent)
@@ -547,6 +927,9 @@ void BorderAgent::EphemeralKeyManager::HandleSessionDisconnected(SecureSession::
         break;
     case SecureSession::kDisconnectedMaxAttempts:
         reason = kReasonMaxFailedAttempts;
+        break;
+    case SecureSession::kDisconnectedTimeout:
+        reason = kReasonSessionTimeout;
         break;
     default:
         break;
@@ -562,9 +945,12 @@ void BorderAgent::EphemeralKeyManager::HandleCommissionerPetitionAccepted(void)
 {
     SetState(kStateAccepted);
     Get<BorderAgent>().mCounters.mEpskcCommissionerPetitions++;
+#if OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcPetitioned);
+#endif
 }
 
-void BorderAgent::EphemeralKeyManager::HandleTimer(void) { Stop(kReasonTimeout); }
+void BorderAgent::EphemeralKeyManager::HandleTimer(void) { Stop(kReasonEpskcTimeout); }
 
 void BorderAgent::EphemeralKeyManager::HandleTask(void) { mCallback.InvokeIfSet(); }
 
@@ -578,6 +964,53 @@ void BorderAgent::EphemeralKeyManager::HandleTransportClosed(void)
     Stop(kReasonMaxFailedAttempts);
     ;
 }
+
+#if OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
+
+bool BorderAgent::EphemeralKeyManager::ShouldRegisterService(void) const
+{
+    bool shouldRegister = false;
+
+    switch (mState)
+    {
+    case kStateDisabled:
+    case kStateStopped:
+        break;
+    case kStateStarted:
+    case kStateConnected:
+    case kStateAccepted:
+        shouldRegister = true;
+        break;
+    }
+
+    return shouldRegister;
+}
+
+void BorderAgent::EphemeralKeyManager::RegisterOrUnregisterService(void)
+{
+    Dnssd::Service service;
+
+    VerifyOrExit(Get<Dnssd>().IsReady());
+
+    service.Clear();
+    service.mServiceInstance = Get<BorderAgent>().GetServiceName();
+    service.mServiceType     = kServiceType;
+    service.mPort            = GetUdpPort();
+
+    if (ShouldRegisterService())
+    {
+        Get<Dnssd>().RegisterService(service, /* aRequestId */ 0, /* aCallback */ nullptr);
+    }
+    else
+    {
+        Get<Dnssd>().UnregisterService(service, /* aRequestId */ 0, /* aCallback */ nullptr);
+    }
+
+exit:
+    return;
+}
+
+#endif // OPENTHREAD_CONFIG_BORDER_AGENT_MESHCOP_SERVICE_ENABLE
 
 const char *BorderAgent::EphemeralKeyManager::StateToString(State aState)
 {
@@ -604,15 +1037,16 @@ const char *BorderAgent::EphemeralKeyManager::StateToString(State aState)
 
 #if OT_SHOULD_LOG_AT(OT_LOG_LEVEL_INFO)
 
-const char *BorderAgent::EphemeralKeyManager::StopReasonToString(StopReason aReason)
+const char *BorderAgent::EphemeralKeyManager::DeactivationReasonToString(DeactivationReason aReason)
 {
     static const char *const kReasonStrings[] = {
         "LocalDisconnect",   // (0) kReasonLocalDisconnect
         "PeerDisconnect",    // (1) kReasonPeerDisconnect
         "SessionError",      // (2) kReasonSessionError
-        "MaxFailedAttempts", // (3) kReasonMaxFailedAttempts
-        "Timeout",           // (4) kReasonTimeout
-        "Unknown",           // (5) kReasonUnknown
+        "SessionTimeout",    // (3) kReasonSessionTimeout
+        "MaxFailedAttempts", // (4) kReasonMaxFailedAttempts
+        "EpskcTimeout",      // (5) kReasonTimeout
+        "Unknown",           // (6) kReasonUnknown
     };
 
     struct EnumCheck
@@ -621,8 +1055,9 @@ const char *BorderAgent::EphemeralKeyManager::StopReasonToString(StopReason aRea
         ValidateNextEnum(kReasonLocalDisconnect);
         ValidateNextEnum(kReasonPeerDisconnect);
         ValidateNextEnum(kReasonSessionError);
+        ValidateNextEnum(kReasonSessionTimeout);
         ValidateNextEnum(kReasonMaxFailedAttempts);
-        ValidateNextEnum(kReasonTimeout);
+        ValidateNextEnum(kReasonEpskcTimeout);
         ValidateNextEnum(kReasonUnknown);
     };
 
@@ -736,6 +1171,12 @@ void BorderAgent::CoapDtlsSession::HandleTmfCommissionerKeepAlive(Coap::Message 
     VerifyOrExit(mIsActiveCommissioner);
     SuccessOrExit(ForwardToLeader(aMessage, aMessageInfo, kUriLeaderKeepAlive));
     mTimer.Start(kKeepAliveTimeout);
+#if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE && OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+    if (Get<EphemeralKeyManager>().OwnsSession(*this))
+    {
+        Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcKeepAlive);
+    }
+#endif
 
 exit:
     return;
@@ -1066,11 +1507,23 @@ void BorderAgent::CoapDtlsSession::HandleTmfDatasetGet(Coap::Message &aMessage, 
     case kUriActiveGet:
         response = Get<ActiveDatasetManager>().ProcessGetRequest(aMessage, DatasetManager::kIgnoreSecurityPolicyFlags);
         Get<BorderAgent>().mCounters.mMgmtActiveGets++;
+#if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE && OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+        if (Get<EphemeralKeyManager>().OwnsSession(*this))
+        {
+            Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcRetrievedActiveDataset);
+        }
+#endif
         break;
 
     case kUriPendingGet:
         response = Get<PendingDatasetManager>().ProcessGetRequest(aMessage, DatasetManager::kIgnoreSecurityPolicyFlags);
         Get<BorderAgent>().mCounters.mMgmtPendingGets++;
+#if OPENTHREAD_CONFIG_BORDER_AGENT_EPHEMERAL_KEY_ENABLE && OPENTHREAD_CONFIG_HISTORY_TRACKER_ENABLE
+        if (Get<EphemeralKeyManager>().OwnsSession(*this))
+        {
+            Get<Utils::HistoryTracker>().RecordEpskcEvent(Utils::HistoryTracker::kEpskcRetrievedPendingDataset);
+        }
+#endif
         break;
 
     case kUriCommissionerGet:
@@ -1102,7 +1555,7 @@ void BorderAgent::CoapDtlsSession::HandleTimer(void)
     if (IsConnected())
     {
         LogInfo("Session timed out - disconnecting");
-        Disconnect();
+        DisconnectTimeout();
     }
 }
 

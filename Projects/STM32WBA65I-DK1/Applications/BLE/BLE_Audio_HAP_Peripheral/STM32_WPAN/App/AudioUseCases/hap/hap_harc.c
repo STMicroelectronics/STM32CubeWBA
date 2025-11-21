@@ -45,6 +45,19 @@ static HAP_HARC_Inst_t *HAP_HARC_GetInstance(uint16_t ConnHandle,BleEATTBearer_t
 static void HAP_HARC_InitInstance(HAP_HARC_Inst_t *pHARC_Inst);
 HAP_HARC_Inst_t *HAP_HARC_GetOtherMember(HAP_HARC_Inst_t *pInst);
 static tBleStatus HAP_HARC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
+static SVCCTL_EvtAckStatus_t HAP_HARC_ReadAttRespHandle(uint16_t ConnHandle,
+                                                        uint8_t *pAttribute_Value,
+                                                        uint16_t Offset);
+static SVCCTL_EvtAckStatus_t HAP_HARC_AttNotificationHandle(uint16_t ConnHandle,
+                                                            uint16_t Attribute_Handle,
+                                                            uint8_t *pAttribute_Value,
+                                                            uint16_t Offset,
+                                                            uint16_t Attribute_Value_Length);
+static SVCCTL_EvtAckStatus_t HAP_HARC_AttIndicationHandle(uint16_t ConnHandle,
+                                                          uint16_t Attribute_Handle,
+                                                          uint8_t *pAttribute_Value,
+                                                          uint16_t Offset,
+                                                          uint16_t Attribute_Value_Length);
 #endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */
 /* External functions prototype------------------------------------------------*/
 
@@ -1361,6 +1374,7 @@ void HAP_HARC_LinkEncrypted(uint16_t ConnHandle)
     tBleStatus ret;
     /* Restore the HAP Profiles saved in NVM*/
     ret = HAP_Linkup(p_conn_info->Connection_Handle, HAP_LINKUP_MODE_RESTORE);
+    UNUSED(ret);
     BLE_DBG_HAP_HARC_MSG("HAP_Linkup() for Restoration for ConnHandle 0x%04X returns status 0x%02X\n",
                 p_conn_info->Connection_Handle,
                 ret);
@@ -1611,56 +1625,29 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
         case ACI_ATT_READ_RESP_VSEVT_CODE:
         {
           aci_att_read_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
-
-          /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
-          if (p_hap_inst != 0)
+          
+          return_value = HAP_HARC_ReadAttRespHandle(pr->Connection_Handle,
+                                                    pr->Attribute_Value,
+                                                    0u);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
           {
-            /* Check if an ATT Procedure was started*/
-            if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
-            {
-              BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
+            BLE_DBG_HAP_HARC_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",
+                                 pr->Connection_Handle);
+          }
+        }
+        break;
 
-              return_value = SVCCTL_EvtAckFlowEnable;
-              /* Handle the ATT read response */
-              if ((HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
-                  || (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
-                  || ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR))
-              {
-                HAP_HARC_NotificationEvt_t evt;
-                evt.pInfo = &pr->Attribute_Value[0];
-                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
-                evt.Status = BLE_STATUS_SUCCESS;
-
-                if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR)
-                {
-                  switch (p_hap_inst->CurrentLinkupChar)
-                  {
-                    case HAS_CHAR_HA_FEATURES:
-                      evt.EvtOpcode = HARC_HA_FEATURES_EVT;
-                      p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
-                      HAP_HARC_Notification(&evt);
-                      break;
-
-                    case HAS_CHAR_ACTIVE_PRESET_INDEX:
-                      evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
-                      HAP_HARC_Notification(&evt);
-                      break;
-                  }
-                }
-                else if (HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
-                {
-                  evt.EvtOpcode = HARC_HA_FEATURES_EVT;
-                  p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
-                  HAP_HARC_Notification(&evt);
-                }
-                else if  (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
-                {
-                  evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
-                  HAP_HARC_Notification(&evt);
-                }
-              }
-            }
+        case ACI_GATT_READ_EXT_VSEVT_CODE:
+        {
+          aci_gatt_read_ext_event_rp0 *pr = (void*)p_blecore_evt->data;
+          
+          return_value = HAP_HARC_ReadAttRespHandle(pr->Connection_Handle,
+                                                    pr->Attribute_Value,
+                                                    pr->Offset);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
+          {
+            BLE_DBG_HAP_HARC_MSG("ACI_GATT_READ_EXT_EVENT is received on conn handle %04X\n",
+                                 pr->Connection_Handle);
           }
         }
         break;
@@ -1668,49 +1655,35 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
         case ACI_GATT_NOTIFICATION_VSEVT_CODE:
         {
           aci_gatt_notification_event_rp0 *pr = (void*)p_blecore_evt->data;
-
-          BLE_DBG_HAP_HARC_MSG("ACI_GATT_NOTIFICATION_EVENT for attribute handle %04X is received on conn handle %04X\n",
-                               pr->Attribute_Handle,
-                               pr->Connection_Handle);
-
-          /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
-          if (p_hap_inst != 0)
+          
+          return_value = HAP_HARC_AttNotificationHandle(pr->Connection_Handle,
+                                                        pr->Attribute_Handle,
+                                                        pr->Attribute_Value,
+                                                        0u,
+                                                        pr->Attribute_Value_Length);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
           {
-            /* Chec if attribute belongs to HAP Service */
-            if (pr->Attribute_Handle >= p_hap_inst->HASServiceStartHandle
-                && pr->Attribute_Handle <= p_hap_inst->HASServiceEndHandle)
-            {
-              return_value = SVCCTL_EvtAckFlowEnable;
+            BLE_DBG_HAP_HARC_MSG("ACI_GATT_NOTIFICATION_EVENT for attribute handle %04X is received on conn handle %04X\n",
+                                 pr->Attribute_Handle,
+                                 pr->Connection_Handle);
+          }
+        }
+        break;
 
-              if (pr->Attribute_Handle == p_hap_inst->HAFeaturesChar.ValueHandle
-                  && pr->Attribute_Value_Length == 1)
-              {
-                p_hap_inst->HAPFeatures = pr->Attribute_Value[0];
-                HAP_HARC_NotificationEvt_t evt;
-                evt.pInfo = &pr->Attribute_Value[0];
-                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
-                evt.Status = BLE_STATUS_SUCCESS;
-                evt.EvtOpcode = HARC_HA_FEATURES_EVT;
-
-                HAP_HARC_Notification(&evt);
-              }
-              else if (pr->Attribute_Handle == p_hap_inst->HAPresetControlPointChar.ValueHandle)
-              {
-                HAP_HARC_Receive_HAPresetControlPoint(p_hap_inst, &pr->Attribute_Value[0], pr->Attribute_Value_Length);
-              }
-              else if (pr->Attribute_Handle == p_hap_inst->ActivePresetIndexChar.ValueHandle
-                  && pr->Attribute_Value_Length == 1)
-              {
-                HAP_HARC_NotificationEvt_t evt;
-                evt.pInfo = &pr->Attribute_Value[0];
-                evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
-                evt.Status = BLE_STATUS_SUCCESS;
-                evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
-
-                HAP_HARC_Notification(&evt);
-              }
-            }
+        case ACI_GATT_NOTIFICATION_EXT_VSEVT_CODE:
+        {
+          aci_gatt_notification_ext_event_rp0 *pr = (void*)p_blecore_evt->data;
+          
+          return_value = HAP_HARC_AttNotificationHandle(pr->Connection_Handle,
+                                                        pr->Attribute_Handle,
+                                                        pr->Attribute_Value,
+                                                        pr->Offset,
+                                                        pr->Attribute_Value_Length);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
+          {
+            BLE_DBG_HAP_HARC_MSG("ACI_GATT_NOTIFICATION_EXT_EVENT for attribute handle %04X is received on conn handle %04X\n",
+                                 pr->Attribute_Handle,
+                                 pr->Connection_Handle);
           }
         }
         break;
@@ -1718,37 +1691,35 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
         case ACI_GATT_INDICATION_VSEVT_CODE:
         {
           aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-
-          BLE_DBG_HAP_HARC_MSG("ACI_GATT_INDICATION_VSEVT_CODE for attribute handle %04X is received on conn handle %04X\n",
-                               pr->Attribute_Handle,
-                               pr->Connection_Handle);
-
-          /* Check if a HAP Client Instance with specified Connection Handle exists*/
-          p_hap_inst = HAP_HARC_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
-          if (p_hap_inst != 0)
+          
+          return_value = HAP_HARC_AttIndicationHandle(pr->Connection_Handle,
+                                                      pr->Attribute_Handle,
+                                                      pr->Attribute_Value,
+                                                      0u,
+                                                      pr->Attribute_Value_Length);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
           {
-            /* Chec if attribute belongs to HAP Service */
-            if (pr->Attribute_Handle >= p_hap_inst->HASServiceStartHandle
-                && pr->Attribute_Handle <= p_hap_inst->HASServiceEndHandle)
-            {
-              tBleStatus ret;
-              return_value = SVCCTL_EvtAckFlowEnable;
-              if (pr->Attribute_Handle == p_hap_inst->HAPresetControlPointChar.ValueHandle)
-              {
-                HAP_HARC_Receive_HAPresetControlPoint(p_hap_inst, &pr->Attribute_Value[0], pr->Attribute_Value_Length);
-              }
+            BLE_DBG_HAP_HARC_MSG("ACI_GATT_NOTIFICATION_EVENT for attribute handle %04X is received on conn handle %04X\n",
+                                 pr->Attribute_Handle,
+                                 pr->Connection_Handle);
+          }
+        }
+        break;
 
-              /* Confirm Indication */
-              ret = aci_gatt_confirm_indication(pr->Connection_Handle);
-              if (ret != BLE_STATUS_SUCCESS)
-              {
-                BLE_DBG_HAP_HARC_MSG("  Fail   : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
-              }
-              else
-              {
-                BLE_DBG_HAP_HARC_MSG("  Success: aci_gatt_confirm_indication command\n");
-              }
-            }
+        case ACI_GATT_INDICATION_EXT_VSEVT_CODE:
+        {
+          aci_gatt_indication_ext_event_rp0 *pr = (void*)p_blecore_evt->data;
+          
+          return_value = HAP_HARC_AttIndicationHandle(pr->Connection_Handle,
+                                                      pr->Attribute_Handle,
+                                                      pr->Attribute_Value,
+                                                      pr->Offset,
+                                                      pr->Attribute_Value_Length);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
+          {
+            BLE_DBG_HAP_HARC_MSG("ACI_GATT_NOTIFICATION_EXT_EVENT for attribute handle %04X is received on conn handle %04X\n",
+                                 pr->Attribute_Handle,
+                                 pr->Connection_Handle);
           }
         }
         break;
@@ -2413,11 +2384,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBea
             a_client_cfg[1] = 0x00u;
 
             /* write the characteristic descriptor value */
-            hciCmdResult = aci_gatt_write_char_desc(conn_handle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                     pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                     2,
                                                     a_client_cfg);
-            BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
+            BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
                                 conn_handle,
                                 pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                 hciCmdResult);
@@ -2448,11 +2419,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBea
             a_client_cfg[1] = 0x00u;
 
             /* write the characteristic descriptor value */
-            hciCmdResult = aci_gatt_write_char_desc(conn_handle,
+            hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                     pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                     2,
                                                     a_client_cfg);
-            BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
+            BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
                                 conn_handle,
                                 pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                 hciCmdResult);
@@ -2489,11 +2460,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBea
           a_client_cfg[1] = 0x00u;
 
           /* write the characteristic descriptor value */
-          hciCmdResult = aci_gatt_write_char_desc(conn_handle,
+          hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                   pHARC_Inst->HAPresetControlPointChar.DescHandle,
                                                   2,
                                                   a_client_cfg);
-          BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
+          BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
                               conn_handle,
                               pHARC_Inst->HAPresetControlPointChar.DescHandle,
                               hciCmdResult);
@@ -2526,11 +2497,11 @@ static tBleStatus HAP_HARC_Linkup_Process(HAP_HARC_Inst_t *pHARC_Inst,BleEATTBea
           a_client_cfg[1] = 0x00u;
 
           /* write the characteristic descriptor value */
-          hciCmdResult = aci_gatt_write_char_desc(conn_handle,
+          hciCmdResult = aci_gatt_write_char_value(conn_handle,
                                                   pHARC_Inst->ActivePresetIndexChar.DescHandle,
                                                   2,
                                                   a_client_cfg);
-          BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_desc() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
+          BLE_DBG_HAP_HARC_MSG("aci_gatt_write_char_value() (connHandle: %04X, desc_handle: %04X) returns status 0x%x\n",
                               conn_handle,
                               pHARC_Inst->ActivePresetIndexChar.DescHandle,
                               hciCmdResult);
@@ -2908,4 +2879,170 @@ static tBleStatus HAP_HARC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTB
   }
   return status;
 }
+
+static SVCCTL_EvtAckStatus_t HAP_HARC_ReadAttRespHandle(uint16_t ConnHandle,
+                                                        uint8_t *pAttribute_Value,
+                                                        uint16_t Offset)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  HAP_HARC_Inst_t       *p_hap_inst;
+
+  /* Check if a HAP Client Instance with specified Connection Handle exists*/
+  p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
+  if (p_hap_inst != 0)
+  {
+    /* Check if an ATT Procedure was started*/
+    if (HAP_HARC_IsATTProcedureInProgress(p_hap_inst->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
+    {
+      return_value = SVCCTL_EvtAckFlowEnable;
+      /* Handle the ATT read response */
+      if ((HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
+          || (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
+          || ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR))
+      {
+        HAP_HARC_NotificationEvt_t evt;
+        evt.pInfo = &pAttribute_Value[0];
+        evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+        evt.Status = BLE_STATUS_SUCCESS;
+        if (Offset == 0u)
+        {
+          if ((p_hap_inst->LinkupState & HAP_HARC_LINKUP_READ_CHAR) == HAP_HARC_LINKUP_READ_CHAR)
+          {
+            switch (p_hap_inst->CurrentLinkupChar)
+            {
+              case HAS_CHAR_HA_FEATURES:
+                evt.EvtOpcode = HARC_HA_FEATURES_EVT;
+                p_hap_inst->HAPFeatures = pAttribute_Value[0];
+                HAP_HARC_Notification(&evt);
+                break;
+
+              case HAS_CHAR_ACTIVE_PRESET_INDEX:
+                evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+                HAP_HARC_Notification(&evt);
+                break;
+            }
+          }
+          else if (HAP_Context.HARC.Op == HAP_HARC_OP_READ_HA_FEATURES)
+          {
+            evt.EvtOpcode = HARC_HA_FEATURES_EVT;
+            p_hap_inst->HAPFeatures = pAttribute_Value[0];
+            HAP_HARC_Notification(&evt);
+          }
+          else if  (HAP_Context.HARC.Op == HAP_HARC_OP_READ_ACTIVE_PRESET_INDEX)
+          {
+            evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+            HAP_HARC_Notification(&evt);
+          }
+        }
+      }
+    }
+  }
+  return return_value;
+}
+
+static SVCCTL_EvtAckStatus_t HAP_HARC_AttNotificationHandle(uint16_t ConnHandle,
+                                                            uint16_t Attribute_Handle,
+                                                            uint8_t *pAttribute_Value,
+                                                            uint16_t Offset,
+                                                            uint16_t Attribute_Value_Length)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  HAP_HARC_Inst_t       *p_hap_inst;
+
+  /* Check if a HAP Client Instance with specified Connection Handle exists*/
+  p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
+  if (p_hap_inst != 0)
+  {
+    /* Chec if attribute belongs to HAP Service */
+    if ((Attribute_Handle >= p_hap_inst->HASServiceStartHandle) \
+        && (Attribute_Handle <= p_hap_inst->HASServiceEndHandle))
+    {
+      return_value = SVCCTL_EvtAckFlowEnable;
+      if (Offset == 0u)
+      {
+        if ((Attribute_Handle == p_hap_inst->HAFeaturesChar.ValueHandle) \
+            && (Attribute_Value_Length == 1))
+        {
+          p_hap_inst->HAPFeatures = pAttribute_Value[0];
+          HAP_HARC_NotificationEvt_t evt;
+          evt.pInfo = &pAttribute_Value[0];
+          evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+          evt.Status = BLE_STATUS_SUCCESS;
+          evt.EvtOpcode = HARC_HA_FEATURES_EVT;
+
+          HAP_HARC_Notification(&evt);
+        }
+        else if (Attribute_Handle == p_hap_inst->HAPresetControlPointChar.ValueHandle)
+        {
+          HAP_HARC_Receive_HAPresetControlPoint(p_hap_inst,
+                                                &pAttribute_Value[0],
+                                                Attribute_Value_Length);
+        }
+        else if ((Attribute_Handle == p_hap_inst->ActivePresetIndexChar.ValueHandle) \
+                && (Attribute_Value_Length == 1))
+        {
+          HAP_HARC_NotificationEvt_t evt;
+          evt.pInfo = &pAttribute_Value[0];
+          evt.ConnHandle = p_hap_inst->pConnInfo->Connection_Handle;
+          evt.Status = BLE_STATUS_SUCCESS;
+          evt.EvtOpcode = HARC_ACTIVE_PRESET_INDEX_EVT;
+
+          HAP_HARC_Notification(&evt);
+        }
+      }
+    }
+  }
+  return return_value;
+}
+
+
+static SVCCTL_EvtAckStatus_t HAP_HARC_AttIndicationHandle(uint16_t ConnHandle,
+                                                          uint16_t Attribute_Handle,
+                                                          uint8_t *pAttribute_Value,
+                                                          uint16_t Offset,
+                                                          uint16_t Attribute_Value_Length)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  HAP_HARC_Inst_t       *p_hap_inst;
+  
+  /* Check if a HAP Client Instance with specified Connection Handle exists*/
+  p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
+  if (p_hap_inst != 0)
+  {
+    /* Chec if attribute belongs to HAP Service */
+    if ((Attribute_Handle >= p_hap_inst->HASServiceStartHandle) \
+        && (Attribute_Handle <= p_hap_inst->HASServiceEndHandle))
+    {
+      tBleStatus ret;
+      
+      return_value = SVCCTL_EvtAckFlowEnable;
+      
+      if (Offset == 0u)
+      {
+        if (Attribute_Handle == p_hap_inst->HAPresetControlPointChar.ValueHandle)
+        {
+          HAP_HARC_Receive_HAPresetControlPoint(p_hap_inst,
+                                                &pAttribute_Value[0],
+                                                Attribute_Value_Length);
+        }
+      }
+
+      /* Confirm Indication */
+      ret = aci_gatt_confirm_indication(ConnHandle);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        BLE_DBG_HAP_HARC_MSG("  Fail : aci_gatt_confirm_indication command, result: 0x%02X\n", ret);
+      }
+      else
+      {
+        BLE_DBG_HAP_HARC_MSG("  Success : aci_gatt_confirm_indication command\n");
+      }
+    }
+  }
+  return return_value;
+}
+
 #endif /* (BLE_CFG_HAP_HARC_ROLE == 1u) */

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -75,7 +75,6 @@ void MX_ADC4_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_ICACHE_Init(void);
 void MX_USART1_UART_Init(void);
-void MX_CRC_Init(void);
 
 /* USER CODE BEGIN EFP */
 

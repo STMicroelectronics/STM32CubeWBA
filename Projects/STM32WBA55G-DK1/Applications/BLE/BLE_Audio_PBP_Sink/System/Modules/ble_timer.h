@@ -28,6 +28,8 @@ uint8_t BLE_TIMER_Start( uint16_t id,
 
 void BLE_TIMER_Stop( uint16_t id );
 
+void BLE_TIMER_Background(void);
+
 /* Callback
  */
 void BLE_TIMERCB_Expiry( uint16_t id );

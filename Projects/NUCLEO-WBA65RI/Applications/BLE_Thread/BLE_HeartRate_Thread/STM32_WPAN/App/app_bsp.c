@@ -170,6 +170,15 @@ void APP_BSP_Init( void )
 }
 
 /**
+ * @brief   Initialisation of CLI commands tasks.
+ */
+void APP_BSP_CliInit( void )
+{
+  /* Task associated with COAP message rate change */
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_COAP_MSG_RATE, UTIL_SEQ_RFU, APP_BSP_CoapMsgRateAction );
+}
+
+/**
  * @brief   Re-Initialisation of all used BSP after a StandBy.
  */
 void APP_BSP_StandbyExit( void )
@@ -768,6 +777,50 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
   {
     APP_BSP_SetButtonIsLongPressed(B3);
     iButton = B3;
+  }
+  else
+  {
+    /* Coap message configuration */
+    char* pDelimiter = NULL;
+    char delimiter[] = "=";
+    char configType[20] = {0};
+    char value[30] = {0};
+
+    /* Extract the configuration type */
+    pDelimiter = strstr((char const*)pRxBuffer, delimiter);
+    LOG_INFO_APP( "\"%s\" is received by serial command.", pRxBuffer );
+    if(  pDelimiter )
+    {
+      strncpy(configType, (char const*)pRxBuffer, (pDelimiter - (char const*)pRxBuffer));
+      configType[(pDelimiter - (char const*)pRxBuffer)] = '\0';
+
+      if ( (strcmp( configType, "coap msg rate " ) == 0) )
+      {
+        APP_Thread_TransmitPeriod_ms = atoi (strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer))));
+        LOG_INFO_APP("Transmission rate has been changed to 1msg/%dms", APP_Thread_TransmitPeriod_ms);
+    	UTIL_SEQ_SetTask( 1U << CFG_TASK_COAP_MSG_RATE, CFG_SEQ_PRIO_0 );
+      }
+      else if ( (strcmp( configType, "coap msg size " ) == 0) )
+      {
+        APP_Thread_CoapPayloadLength_byte = atoi (strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer))));
+        LOG_INFO_APP("Coap payload length has been changed to %d", APP_Thread_CoapPayloadLength_byte);
+      }
+      else if ( (strcmp( configType, "coap msg type " ) == 0) )
+      {
+        strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)));
+        value[(iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)) + 1] = '\0';
+        if (strcmp(value, "OT_COAP_TYPE_CONFIRMABLE") == 0)
+        {
+          APP_Thread_CoapType = OT_COAP_TYPE_CONFIRMABLE;
+          LOG_INFO_APP("Coap type has been changed to OT_COAP_TYPE_CONFIRMABLE");
+        }
+        else if (strcmp(value, "OT_COAP_TYPE_NON_CONFIRMABLE") == 0)
+        {
+          APP_Thread_CoapType =  OT_COAP_TYPE_NON_CONFIRMABLE;
+          LOG_INFO_APP("Coap type has been changed to OT_COAP_TYPE_NON_CONFIRMABLE");
+        }
+      }
+    }
   }
 #endif /* CFG_BSP_ON_CEB */
 

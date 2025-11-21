@@ -141,6 +141,8 @@
 #endif /* VECT_TAB_SRAM */
 #endif /* USER_VECT_TAB_ADDRESS */
 
+static void flash_init_cfg(void);
+
 /******************************************************************************/
 
 /**
@@ -195,12 +197,11 @@
 
 void SystemInit(void)
 {
-  /* SAU/IDAU, FPU and Interrupts secure/non-secure allocation settings */
-
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
 #endif
+  flash_init_cfg();                         /* init the flash to full secure */
 }
 
 /**
@@ -322,6 +323,42 @@ void SystemCoreClockUpdate(void)
   SystemCoreClock >>= tmp1;
 }
 
+/*----------------------------------------------------------------------------
+  * @brief  Initialize the flash to full secure.
+  * @param  None
+  * @retval None
+ *----------------------------------------------------------------------------*/
+static void flash_init_cfg(void)
+{
+  uint32_t i = 0U;
+  __IO uint32_t *reg;
+  const uint32_t flash_bb_all_sec = 0xFFFFFFFF;
+#if defined(STM32WBA65xx)
+  /* Configure Bank1 flash on Secure */
+  reg = &(FLASH->SECBB1R1);
+
+  for (i = 0U; i < FLASH_BLOCKBASED_NB_REG; i++)
+  {
+    *(reg + i) = flash_bb_all_sec;
+  }
+
+  /* Configure Bank2 flash on Secure */
+  reg = &(FLASH->SECBB2R1);
+
+  for (i = 0U; i < FLASH_BLOCKBASED_NB_REG; i++)
+  {
+    *(reg + i) = flash_bb_all_sec;
+  }
+#else
+  /* Configure wba55xx Bank flash on Secure */
+  reg = &(FLASH->SECBBR1);
+
+  for (i = 0U; i < FLASH_BLOCKBASED_NB_REG; i++)
+  {
+    *(reg + i) = flash_bb_all_sec;
+  }
+#endif
+}
 
 /**
   * @}

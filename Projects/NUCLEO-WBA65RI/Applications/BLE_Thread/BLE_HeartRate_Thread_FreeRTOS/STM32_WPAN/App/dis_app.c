@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,7 @@
 #include "dbg_trace.h"
 #include "dis_app.h"
 #include "dis.h"
+#include "stm32_rtos.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,13 +58,7 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define DISAPP_MANUFACTURER_NAME              "STM"
-#define DISAPP_MODEL_NUMBER                   "4502-1.0"
-#define DISAPP_SERIAL_NUMBER                  "1.0"
-#define DISAPP_HARDWARE_REVISION_NUMBER       "1.0"
-#define DISAPP_FIRMWARE_REVISION_NUMBER       "1.0"
-/*#define DISAPP_SOFTWARE_REVISION_NUMBER       "1.0"
-#define DISAPP_OUI                            0x123456
-#define DISAPP_MANUFACTURER_ID                0x9ABCDE*/
+
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -107,30 +102,6 @@ void DIS_Notification(DIS_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service2Char1_READ_EVT */
 
       /* USER CODE END Service2Char1_READ_EVT */
-      break;
-
-    case DIS_MNBS_READ_EVT:
-      /* USER CODE BEGIN Service2Char2_READ_EVT */
-
-      /* USER CODE END Service2Char2_READ_EVT */
-      break;
-
-    case DIS_SNS_READ_EVT:
-      /* USER CODE BEGIN Service2Char3_READ_EVT */
-
-      /* USER CODE END Service2Char3_READ_EVT */
-      break;
-
-    case DIS_HRS_READ_EVT:
-      /* USER CODE BEGIN Service2Char4_READ_EVT */
-
-      /* USER CODE END Service2Char4_READ_EVT */
-      break;
-
-    case DIS_FRS_READ_EVT:
-      /* USER CODE BEGIN Service2Char5_READ_EVT */
-
-      /* USER CODE END Service2Char5_READ_EVT */
       break;
 
     default:
@@ -194,21 +165,6 @@ void DIS_APP_Init(void)
   dis_information_data.Length = sizeof(DISAPP_MANUFACTURER_NAME);
   DIS_UpdateValue(DIS_MANS, &dis_information_data);
   
-  dis_information_data.p_Payload = (uint8_t*)DISAPP_MODEL_NUMBER;
-  dis_information_data.Length = sizeof(DISAPP_MODEL_NUMBER);
-  DIS_UpdateValue(DIS_MNBS, &dis_information_data);
-  
-  dis_information_data.p_Payload = (uint8_t*)DISAPP_SERIAL_NUMBER;
-  dis_information_data.Length = sizeof(DISAPP_SERIAL_NUMBER);
-  DIS_UpdateValue(DIS_SNS, &dis_information_data);
-  
-  dis_information_data.p_Payload = (uint8_t*)DISAPP_HARDWARE_REVISION_NUMBER;
-  dis_information_data.Length = sizeof(DISAPP_HARDWARE_REVISION_NUMBER);
-  DIS_UpdateValue(DIS_HRS, &dis_information_data);
-  
-  dis_information_data.p_Payload = (uint8_t*)DISAPP_FIRMWARE_REVISION_NUMBER;
-  dis_information_data.Length = sizeof(DISAPP_FIRMWARE_REVISION_NUMBER);
-  DIS_UpdateValue(DIS_FRS, &dis_information_data);
   /* USER CODE END Service2_APP_Init */
   return;
 }
@@ -223,6 +179,6 @@ void DIS_APP_Init(void)
  *
  *************************************************************/
 
-/* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
+/* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 
-/* USER CODE END FD_LOCAL_FUNCTIONS*/
+/* USER CODE END FD_LOCAL_FUNCTIONS */

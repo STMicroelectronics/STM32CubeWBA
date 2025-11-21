@@ -47,7 +47,9 @@ static TMAP_CltInst_t *TMAP_CLT_GetAvailableInstance(void);
 static TMAP_CltInst_t *TMAP_CLT_GetInstance(uint16_t ConnHandle,BleEATTBearer_t **pEATTBearer);
 static tBleStatus TMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBearer_t *pEATTBearer);
 static void TMAP_CLT_InitInstance(TMAP_CltInst_t *pTMAP_Clt);
-
+static SVCCTL_EvtAckStatus_t TMAP_ReadAttRespHandle(uint16_t ConnHandle,
+                                                    uint8_t *pAttribute_Value,
+                                                    uint16_t Offset);
 /* External functions prototype------------------------------------------------*/
 
 /* Functions Definition ------------------------------------------------------*/
@@ -574,32 +576,29 @@ SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent)
         case ACI_ATT_READ_RESP_VSEVT_CODE:
         {
           aci_att_read_resp_event_rp0 *pr = (void*)p_blecore_evt->data;
-
-          /* Check if a TMAP Client Instance with specified Connection Handle exists*/
-          p_tmap_clt = TMAP_CLT_GetInstance(pr->Connection_Handle,&p_eatt_bearer);
-          if (p_tmap_clt != 0)
+          
+          return_value = TMAP_ReadAttRespHandle(pr->Connection_Handle,
+                                                pr->Attribute_Value,
+                                                0u);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
           {
-            BLE_DBG_TMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",pr->Connection_Handle);
+            BLE_DBG_TMAP_MSG("ACI_ATT_READ_RESP_EVENT is received on conn handle %04X\n",
+                             pr->Connection_Handle);
+          }
+        }
+        break;
 
-            if (TMAP_IsATTProcedureInProgress(p_tmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
-            {
-              return_value = SVCCTL_EvtAckFlowEnable;
-              /* Handle the ATT read response */
-              if ((p_tmap_clt->Op == TMAP_OP_READ) \
-                  || ((p_tmap_clt->LinkupState & TMAP_LINKUP_READ_CHAR) == TMAP_LINKUP_READ_CHAR))
-              {
-                TMAP_Notification_Evt_t evt;
-                uint16_t tmap_role;
-
-                tmap_role = pr->Attribute_Value[0] + (pr->Attribute_Value[1] << 8);
-                evt.ConnHandle = p_tmap_clt->pConnInfo->Connection_Handle;
-                evt.EvtOpcode = TMAP_REM_ROLE_VALUE_EVT;
-                evt.Status = BLE_STATUS_SUCCESS;
-                evt.pInfo = (uint8_t *) &tmap_role;
-
-                TMAP_Notification(&evt);
-              }
-            }
+        case ACI_GATT_READ_EXT_VSEVT_CODE:
+        {
+          aci_gatt_read_ext_event_rp0 *pr = (void*)p_blecore_evt->data;
+          
+          return_value = TMAP_ReadAttRespHandle(pr->Connection_Handle,
+                                                pr->Attribute_Value,
+                                                pr->Offset);
+          if (return_value == SVCCTL_EvtAckFlowEnable)
+          {
+            BLE_DBG_TMAP_MSG("ACI_GATT_READ_EXT_EVENT is received on conn handle %04X\n",
+                             pr->Connection_Handle);
           }
         }
         break;
@@ -1040,4 +1039,47 @@ static tBleStatus TMAP_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBeare
     }
   }
   return status;
+}
+
+static SVCCTL_EvtAckStatus_t TMAP_ReadAttRespHandle(uint16_t ConnHandle,
+                                                    uint8_t *pAttribute_Value,
+                                                    uint16_t Offset)
+{
+  SVCCTL_EvtAckStatus_t return_value = SVCCTL_EvtNotAck;
+  BleEATTBearer_t       *p_eatt_bearer = 0;
+  TMAP_CltInst_t        *p_tmap_clt;
+
+  /* Check if a TMAP Client Instance with specified Connection Handle exists*/
+  p_tmap_clt = TMAP_CLT_GetInstance(ConnHandle,&p_eatt_bearer);
+  if (p_tmap_clt != 0)
+  {
+    if (TMAP_IsATTProcedureInProgress(p_tmap_clt->pConnInfo->Connection_Handle,p_eatt_bearer) == BLE_STATUS_SUCCESS)
+    {
+      return_value = SVCCTL_EvtAckFlowEnable;
+      
+      if ( Offset == 0u)
+      {
+        /* Handle the ATT read response */
+        if ((p_tmap_clt->Op == TMAP_OP_READ) \
+            || ((p_tmap_clt->LinkupState & TMAP_LINKUP_READ_CHAR) == TMAP_LINKUP_READ_CHAR))
+        {
+          TMAP_Notification_Evt_t evt;
+          uint16_t tmap_role;
+
+          return_value = SVCCTL_EvtAckFlowEnable;
+
+          tmap_role = pAttribute_Value[0] + (pAttribute_Value[1] << 8);
+
+          evt.ConnHandle = p_tmap_clt->pConnInfo->Connection_Handle;
+          evt.EvtOpcode = TMAP_REM_ROLE_VALUE_EVT;
+          evt.Status = BLE_STATUS_SUCCESS;
+          evt.pInfo = (uint8_t *) &tmap_role;
+
+          TMAP_Notification(&evt);
+        }
+      }
+    }
+  }
+
+  return return_value;
 }

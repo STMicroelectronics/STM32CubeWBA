@@ -19,6 +19,10 @@
 #ifndef CRC_CTRL_H
 #define CRC_CTRL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 /* Utilities */
 #include "utilities_common.h"
@@ -202,5 +206,9 @@ extern CRCCTRL_Cmd_Status_t CRCCTRL_MutexTake (void);
  * @retval CRCCTRL_Cmd_Status_t::CRCCTRL_NOK
  */
 extern CRCCTRL_Cmd_Status_t CRCCTRL_MutexRelease (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CRC_CTRL_H */

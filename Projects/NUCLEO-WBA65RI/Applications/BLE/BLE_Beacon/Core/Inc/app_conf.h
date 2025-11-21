@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -65,10 +65,10 @@
  */
 #define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (0x0080)
-#define ADV_INTERVAL_MAX                  (0x00A0)
-#define ADV_LP_INTERVAL_MIN               (0x0640)
-#define ADV_LP_INTERVAL_MAX               (0x0FA0)
+#define ADV_INTERVAL_MIN                  (80)
+#define ADV_INTERVAL_MAX                  (100)
+#define ADV_LP_INTERVAL_MIN               (1600)
+#define ADV_LP_INTERVAL_MAX               (4000)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
 
@@ -76,8 +76,6 @@
  * Define IO Authentication
  */
 #define CFG_BONDING_MODE                  (0)
-#define CFG_USED_FIXED_PIN                (0) /* 0->fixed pin is used ; 1->No fixed pin used*/
-#define CFG_FIXED_PIN                     (111111)
 #define CFG_ENCRYPTION_KEY_SIZE_MAX       (16)
 #define CFG_ENCRYPTION_KEY_SIZE_MIN       (8)
 
@@ -119,7 +117,6 @@
 /*****************************************************/
 
 /* USER CODE BEGIN Specific_Parameters */
-
 /**
  * Beacon selection
  * Beacons are all exclusive
@@ -127,9 +124,9 @@
 #define CFG_EDDYSTONE_UID_BEACON_TYPE   (1<<0)
 #define CFG_EDDYSTONE_URL_BEACON_TYPE   (1<<1)
 #define CFG_EDDYSTONE_TLM_BEACON_TYPE   (1<<2)
-#define CFG_IBEACON                     (1<<3)
+#define CFG_IBEACON_TYPE                (1<<3)
 
-#define CFG_BEACON_TYPE                 (CFG_EDDYSTONE_URL_BEACON_TYPE)
+#define CFG_BEACON_TYPE                 (CFG_EDDYSTONE_UID_BEACON_TYPE | CFG_EDDYSTONE_TLM_BEACON_TYPE)
 
 /* USER CODE END Specific_Parameters */
 
@@ -210,6 +207,21 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the RAM buffer allocated to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
+ * Size of the RAM buffer allocated for the extension of BLE host commands
+ */
+#define CFG_BLE_EXTRA_DATA_BUF_SIZE (0)
+
+/**
+ * Size of the RAM buffer allocated for long write commands, can be 0 or 256.
+ */
+#define CFG_BLE_LONG_WRITE_DATA_BUF_SIZE (0)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
@@ -237,29 +249,26 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, mode selected with CFG_LPM_STDBY_SUPPORTED
+ *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
  *   - 2 : In addition log and debug are disabled to reach lowest power figures.
- *
- * When CFG_LPM_STDBY_SUPPORTED is set to:
- *   - 2 : Stop mode 2 is used as low power mode (if supported by target)
- *   - 1 : Standby is used as low power mode.
- *   - 0 : Stop mode 1 is used as low power mode.
- *
  ******************************************************************************/
-#define CFG_LPM_LEVEL            (0)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_LEVEL               (0U)
+
+#define CFG_LPM_STOP1_SUPPORTED     (0U)
+#define CFG_LPM_STOP2_SUPPORTED     (0U)
+#define CFG_LPM_STANDBY_SUPPORTED   (0U)
 
 /**
  * Defines to use dynamic low power wakeup time profilling.
  * With this option at boot wake up time is profiled and then is used.
  */
-#define CFG_LPM_WAKEUP_TIME_PROFILING (1)
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
 /**
  * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated  when using CFG_LPM_WAKEUP_TIME_PROFILING
+ * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
  */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -305,7 +314,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
+ * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -365,6 +374,8 @@ typedef enum
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
+  CFG_TASK_EDDYSTONE_TLML_REQ_ID,
+
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -470,6 +481,9 @@ typedef enum
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
 #define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
+/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
+#define USE_CTE_DEGRADATION                 (0)
+
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -480,8 +494,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
@@ -534,13 +548,33 @@ typedef enum
 #if (CFG_LPM_LEVEL > 1)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
+    #define CFG_LOG_SUPPORTED       (0U)
   #endif /* CFG_LOG_SUPPORTED */
   #if CFG_DEBUGGER_LEVEL
     #undef  CFG_DEBUGGER_LEVEL
-    #define CFG_DEBUGGER_LEVEL      (0)
+    #define CFG_DEBUGGER_LEVEL      (0U)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
+
+#if (CFG_LPM_LEVEL == 0)
+  #undef CFG_LPM_STOP1_SUPPORTED
+  #define CFG_LPM_STOP1_SUPPORTED   (0U)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
+  #undef CFG_LPM_STANDBY_SUPPORTED
+  #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+/*********************************************************************
+ * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
+ * Please use a combination of previous defines instead
+ * Temporary define for backward compatibility
+ *********************************************************************/
+ #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
+ #define CFG_LPM_STDBY_SUPPORTED (1U)
+ #else
+ #define CFG_LPM_STDBY_SUPPORTED (0U)
+ #endif
 
 /* USER CODE BEGIN Defines_2 */
 

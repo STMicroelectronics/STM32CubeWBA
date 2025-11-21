@@ -42,9 +42,13 @@
 #include "common/appender.hpp"
 #include "common/as_core_type.hpp"
 #include "common/clearable.hpp"
+#include "common/data.hpp"
 #include "common/encoding.hpp"
 #include "common/equatable.hpp"
 #include "common/message.hpp"
+#include "common/owned_ptr.hpp"
+#include "common/string.hpp"
+#include "common/type_traits.hpp"
 #include "crypto/ecdsa.hpp"
 #include "net/ip4_types.hpp"
 #include "net/ip6_address.hpp"
@@ -115,30 +119,26 @@ public:
      *
      * @returns The type of the message.
      */
-    Type GetType(void) const { return static_cast<Type>((mFlags[0] & kQrFlagMask) >> kQrFlagOffset); }
+    Type GetType(void) const { return static_cast<Type>(ReadBits<uint8_t, kQrFlagMask>(mFlags[0])); }
 
     /**
      * Sets the type of the message.
      *
      * @param[in]  aType The type of the message.
      */
-    void SetType(Type aType)
-    {
-        mFlags[0] &= ~kQrFlagMask;
-        mFlags[0] |= static_cast<uint8_t>(aType) << kQrFlagOffset;
-    }
+    void SetType(Type aType) { WriteBits<uint8_t, kQrFlagMask>(mFlags[0], static_cast<uint8_t>(aType)); }
 
     /**
-     * Defines types of query.
+     * Defines types of query (OpCode).
      */
     enum QueryType : uint8_t
     {
-        kQueryTypeStandard = 0,
-        kQueryTypeInverse  = 1,
-        kQueryTypeStatus   = 2,
-        kQueryTypeNotify   = 4,
-        kQueryTypeUpdate   = 5,
-        kQueryTypeDso      = 6,
+        kQueryTypeStandard = 0, ///< Query
+        kQueryTypeInverse  = 1, ///< IQuery
+        kQueryTypeStatus   = 2, ///< Status
+        kQueryTypeNotify   = 4, ///< Notify
+        kQueryTypeUpdate   = 5, ///< Update
+        kQueryTypeDso      = 6, ///< DNS Stateful Operations
     };
 
     /**
@@ -146,18 +146,14 @@ public:
      *
      * @returns The type of the query.
      */
-    QueryType GetQueryType(void) const { return static_cast<QueryType>((mFlags[0] & kOpCodeMask) >> kOpCodeOffset); }
+    QueryType GetQueryType(void) const { return static_cast<QueryType>(ReadBits<uint8_t, kOpCodeMask>(mFlags[0])); }
 
     /**
      * Sets the type of the query.
      *
      * @param[in]  aType The type of the query.
      */
-    void SetQueryType(QueryType aType)
-    {
-        mFlags[0] &= ~kOpCodeMask;
-        mFlags[0] |= static_cast<uint8_t>(aType) << kOpCodeOffset;
-    }
+    void SetQueryType(QueryType aType) { WriteBits<uint8_t, kOpCodeMask>(mFlags[0], static_cast<uint8_t>(aType)); }
 
     /**
      * Specifies in response message if the responding name server is an
@@ -165,34 +161,34 @@ public:
      *
      * @returns True if Authoritative Answer flag (AA) is set in the header, false otherwise.
      */
-    bool IsAuthoritativeAnswerFlagSet(void) const { return (mFlags[0] & kAaFlagMask) == kAaFlagMask; }
+    bool IsAuthoritativeAnswerFlagSet(void) const { return GetBit<uint8_t>(mFlags[0], kAaFlagOffset); }
 
     /**
      * Clears the Authoritative Answer flag (AA) in the header.
      */
-    void ClearAuthoritativeAnswerFlag(void) { mFlags[0] &= ~kAaFlagMask; }
+    void ClearAuthoritativeAnswerFlag(void) { ClearBit<uint8_t>(mFlags[0], kAaFlagOffset); }
 
     /**
      * Sets the Authoritative Answer flag (AA) in the header.
      */
-    void SetAuthoritativeAnswerFlag(void) { mFlags[0] |= kAaFlagMask; }
+    void SetAuthoritativeAnswerFlag(void) { SetBit<uint8_t>(mFlags[0], kAaFlagOffset); }
 
     /**
      * Specifies if message is truncated.
      *
      * @returns True if Truncation flag (TC) is set in the header, false otherwise.
      */
-    bool IsTruncationFlagSet(void) const { return (mFlags[0] & kTcFlagMask) == kTcFlagMask; }
+    bool IsTruncationFlagSet(void) const { return GetBit<uint8_t>(mFlags[0], kTcFlagOffset); }
 
     /**
      * Clears the Truncation flag (TC) in the header.
      */
-    void ClearTruncationFlag(void) { mFlags[0] &= ~kTcFlagMask; }
+    void ClearTruncationFlag(void) { ClearBit<uint8_t>(mFlags[0], kTcFlagOffset); }
 
     /**
      * Sets the Truncation flag (TC) in the header.
      */
-    void SetTruncationFlag(void) { mFlags[0] |= kTcFlagMask; }
+    void SetTruncationFlag(void) { SetBit<uint8_t>(mFlags[0], kTcFlagOffset); }
 
     /**
      * Specifies if resolver wants to direct the name server to pursue
@@ -200,55 +196,55 @@ public:
      *
      * @returns True if Recursion Desired flag (RD) is set in the header, false otherwise.
      */
-    bool IsRecursionDesiredFlagSet(void) const { return (mFlags[0] & kRdFlagMask) == kRdFlagMask; }
+    bool IsRecursionDesiredFlagSet(void) const { return GetBit<uint8_t>(mFlags[0], kRdFlagOffset); }
 
     /**
      * Clears the Recursion Desired flag (RD) in the header.
      */
-    void ClearRecursionDesiredFlag(void) { mFlags[0] &= ~kRdFlagMask; }
+    void ClearRecursionDesiredFlag(void) { ClearBit<uint8_t>(mFlags[0], kRdFlagOffset); }
 
     /**
      * Sets the Recursion Desired flag (RD) in the header.
      */
-    void SetRecursionDesiredFlag(void) { mFlags[0] |= kRdFlagMask; }
+    void SetRecursionDesiredFlag(void) { SetBit<uint8_t>(mFlags[0], kRdFlagOffset); }
 
     /**
      * Denotes whether recursive query support is available in the name server.
      *
      * @returns True if Recursion Available flag (RA) is set in the header, false otherwise.
      */
-    bool IsRecursionAvailableFlagSet(void) const { return (mFlags[1] & kRaFlagMask) == kRaFlagMask; }
+    bool IsRecursionAvailableFlagSet(void) const { return GetBit<uint8_t>(mFlags[1], kRaFlagOffset); }
 
     /**
      * Clears the Recursion Available flag (RA) in the header.
      */
-    void ClearRecursionAvailableFlag(void) { mFlags[1] &= ~kRaFlagMask; }
+    void ClearRecursionAvailableFlag(void) { ClearBit<uint8_t>(mFlags[1], kRaFlagOffset); }
 
     /**
      * Sets the Recursion Available flag (RA) in the header.
      */
-    void SetRecursionAvailableFlag(void) { mFlags[1] |= kRaFlagMask; }
+    void SetRecursionAvailableFlag(void) { SetBit<uint8_t>(mFlags[1], kRaFlagOffset); }
 
     /**
-     * Defines response codes.
+     * Defines response codes (RCODEs).
      */
     enum Response : uint8_t
     {
-        kResponseSuccess         = 0,  ///< Success (no error condition).
-        kResponseFormatError     = 1,  ///< Server unable to interpret request due to format error.
-        kResponseServerFailure   = 2,  ///< Server encountered an internal failure.
-        kResponseNameError       = 3,  ///< Name that ought to exist, does not exists.
-        kResponseNotImplemented  = 4,  ///< Server does not support the query type (OpCode).
-        kResponseRefused         = 5,  ///< Server refused to perform operation for policy or security reasons.
-        kResponseNameExists      = 6,  ///< Some name that ought not to exist, does exist.
-        kResponseRecordExists    = 7,  ///< Some RRset that ought not to exist, does exist.
-        kResponseRecordNotExists = 8,  ///< Some RRset that ought to exist, does not exist.
-        kResponseNotAuth         = 9,  ///< Service is not authoritative for zone.
-        kResponseNotZone         = 10, ///< A name is not in the zone.
-        kDsoTypeNotImplemented   = 11, ///< DSO TLV TYPE is not implemented.
-        kResponseBadName         = 20, ///< Bad name.
-        kResponseBadAlg          = 21, ///< Bad algorithm.
-        kResponseBadTruncation   = 22, ///< Bad truncation.
+        kResponseSuccess         = 0,  ///< Success (no error condition, NoError).
+        kResponseFormatError     = 1,  ///< Server unable to interpret request due to format error (FormErr).
+        kResponseServerFailure   = 2,  ///< Server encountered an internal failure (ServFail).
+        kResponseNameError       = 3,  ///< Name that ought to exist, does not exist (NXDomain).
+        kResponseNotImplemented  = 4,  ///< Server does not support the query type or OpCode (NotImp).
+        kResponseRefused         = 5,  ///< Server refused to perform operation for policy/security reasons (Refused).
+        kResponseNameExists      = 6,  ///< Some name that ought not to exist, does exist (YXDomain).
+        kResponseRecordExists    = 7,  ///< Some RRset that ought not to exist, does exist (YXRRSet).
+        kResponseRecordNotExists = 8,  ///< Some RRset that ought to exist, does not exist (NXRRSet).
+        kResponseNotAuth         = 9,  ///< Service is not authoritative for zone (NotAuth).
+        kResponseNotZone         = 10, ///< A name is not in the zone (NotZone).
+        kDsoTypeNotImplemented   = 11, ///< DSO TLV TYPE is not implemented (DSOTYPENI).
+        kResponseBadName         = 20, ///< Bad name (BADNAME).
+        kResponseBadAlg          = 21, ///< Bad algorithm (BADALG).
+        kResponseBadTruncation   = 22, ///< Bad truncation (BADTRUNC).
     };
 
     /**
@@ -256,7 +252,7 @@ public:
      *
      * @returns The response code from the header.
      */
-    Response GetResponseCode(void) const { return static_cast<Response>((mFlags[1] & kRCodeMask) >> kRCodeOffset); }
+    Response GetResponseCode(void) const { return static_cast<Response>(ReadBits<uint8_t, kRCodeMask>(mFlags[1])); }
 
     /**
      * Sets the response code.
@@ -265,8 +261,7 @@ public:
      */
     void SetResponseCode(Response aResponse)
     {
-        mFlags[1] &= ~kRCodeMask;
-        mFlags[1] |= static_cast<uint8_t>(aResponse) << kRCodeOffset;
+        WriteBits<uint8_t, kRCodeMask>(mFlags[1], static_cast<uint8_t>(aResponse));
     }
 
     /**
@@ -356,13 +351,9 @@ private:
     static constexpr uint8_t kOpCodeOffset = 3;                     // OpCode field offset.
     static constexpr uint8_t kOpCodeMask   = 0x0f << kOpCodeOffset; // OpCode field mask.
     static constexpr uint8_t kAaFlagOffset = 2;                     // AA Flag offset.
-    static constexpr uint8_t kAaFlagMask   = 0x01 << kAaFlagOffset; // AA Flag mask.
     static constexpr uint8_t kTcFlagOffset = 1;                     // TC Flag offset.
-    static constexpr uint8_t kTcFlagMask   = 0x01 << kTcFlagOffset; // TC Flag mask.
     static constexpr uint8_t kRdFlagOffset = 0;                     // RD Flag offset.
-    static constexpr uint8_t kRdFlagMask   = 0x01 << kRdFlagOffset; // RD Flag mask.
     static constexpr uint8_t kRaFlagOffset = 7;                     // RA Flag offset.
-    static constexpr uint8_t kRaFlagMask   = 0x01 << kRaFlagOffset; // RA Flag mask.
     static constexpr uint8_t kRCodeOffset  = 0;                     // RCODE field offset.
     static constexpr uint8_t kRCodeMask    = 0x0f << kRCodeOffset;  // RCODE field mask.
 
@@ -606,15 +597,15 @@ public:
      * @p aFirstLabel can be `nullptr` if not needed. But if non-null, it is treated as a single label and can itself
      * include dot `.` character.
      *
-     * The @p aLabels MUST NOT be `nullptr` and MUST follow  "<label1>.<label2>.<label3>", i.e., a sequence of one or
-     * more labels separated by dot '.' char, and it MUST NOT end with dot `.`.
+     * The @p aLabels can be `nullptr`. If it is provided it MUST follow  "<label1>.<label2>.<label3>", i.e., a
+     * sequence of one or more labels separated by dot '.' char, and it MUST NOT end with dot `.`.
      *
      * @p aDomain MUST NOT be `nullptr` and MUST have at least one label and MUST always end with a dot `.` character.
      *
      * If the above conditions are not satisfied, the behavior of this method is undefined.
      *
      * @param[in] aFirstLabel     A first label to check. Can be `nullptr`.
-     * @param[in] aLabels         A string of dot separated labels, MUST NOT end with dot.
+     * @param[in] aLabels         A string of dot separated labels, MUST NOT end with dot. Can be `nullptr`
      * @param[in] aDomain         Domain name. MUST end with dot.
      *
      * @retval TRUE   The name matches the given components.
@@ -1212,6 +1203,17 @@ public:
     Error AppendTo(Message &aMessage) const;
 
     /**
+     * Encodes and appends the `TxtEntry` to an Appender object.
+     *
+     * @param[in] aAppender  The appender to append to.
+     *
+     * @retval kErrorNone          Entry was appended successfully to @p aAppender.
+     * @retval kErrorInvalidArgs   The `TxTEntry` info is not valid.
+     * @retval kErrorNoBufs        Insufficient available space in @p aAppender.
+     */
+    Error AppendTo(Appender &aAppender) const;
+
+    /**
      * Appends an array of `TxtEntry` items to a message.
      *
      * @param[in] aEntries     A pointer to array of `TxtEntry` items.
@@ -1238,11 +1240,140 @@ public:
     static Error AppendEntries(const TxtEntry *aEntries, uint16_t aNumEntries, MutableData<kWithUint16Length> &aData);
 
 private:
-    Error        AppendTo(Appender &aAppender) const;
     static Error AppendEntries(const TxtEntry *aEntries, uint16_t aNumEntries, Appender &aAppender);
 
     static constexpr uint8_t kMaxKeyValueEncodedSize = 255;
     static constexpr char    kKeyValueSeparator      = '=';
+};
+
+/**
+ * Represents a TXT data encoder.
+ */
+class TxtDataEncoder
+{
+public:
+    /**
+     * Maximum string length supported by `AppendStringEntry()`.
+     */
+    static constexpr uint16_t kMaxStringEntryLength = 256;
+
+    /**
+     * Initializes the `TxtDataEncoder` to append to a `Message`.
+     *
+     * New TXT data entries are appended to the end of @p aMessage, growing its length.
+     *
+     * @param[in] aMessage   The message to append to.
+     */
+    explicit TxtDataEncoder(Message &aMessage)
+        : mAppender(aMessage)
+    {
+    }
+
+    /**
+     * Initializes the `TxtDataEncoder` to append in a given a buffer
+     *
+     * New TXT data entries are appended in the buffer starting from @p aBuffer up to is size @p aSize. The encoder
+     * does not allow content to be appended beyond the size of the buffer.
+     *
+     * @param[in] aBuffer  A pointer to start of buffer.
+     * @param[in] aSize    The maximum size of @p aBuffer (number of available bytes in buffer).
+     */
+    TxtDataEncoder(uint8_t *aBuffer, uint16_t aSize)
+        : mAppender(aBuffer, aSize)
+    {
+    }
+
+    /**
+     * Returns the number of bytes in the TXT data container.
+     *
+     * When `TxtDataEncoder` uses a byte buffer container, this will return the number of encoded bytes in the buffer.
+     * When `TxtDataEncoder` uses a `Message`, this will return the message's current length, which includes any
+     * previously appended bytes in the message.
+     *
+     * @returns The number of bytes in the provided TXT data container.
+     */
+    uint16_t GetLength(void) const { return mAppender.GetAppendedLength(); }
+
+    /**
+     * Appends a TXT entry for a given key and given value as a byte array.
+     *
+     * @param[in] aKey     The TXT entry key string
+     * @param[in] aBuffer  A pointer to buffer containing the TXT entry value.
+     * @param[in] aLength  Number of bytes in @p aBuffer.
+     *
+     * @retval kErrorNone    Successfully appended the TXT entry.
+     * @retval kErrorNoBufs  Insufficient available buffers to append the entry.
+     */
+    Error AppendBytesEntry(const char *aKey, const void *aBuffer, uint16_t aLength);
+
+    /**
+     * Appends a TXT entry for a given key and a given object as the entry's value.
+     *
+     * @tparam    ObjectType   The value object type.
+
+     * @param[in] aKey      The TXT entry key string
+     * @param[in] aObject   A reference to the value object.
+     *
+     * @retval kErrorNone    Successfully appended the TXT entry.
+     * @retval kErrorNoBufs  Insufficient available buffers to append the entry.
+     */
+    template <typename ObjectType> Error AppendEntry(const char *aKey, const ObjectType &aObject)
+    {
+        static_assert(!TypeTraits::IsPointer<ObjectType>::kValue, "ObjectType must not be a pointer");
+
+        return AppendBytesEntry(aKey, &aObject, sizeof(ObjectType));
+    }
+
+    /**
+     * Appends a TXT entry for a given key and a given string for entry's value.
+     *
+     * The string length of @p aStringValues should not exceed `kMaxStringEntryLength`, otherwise `kErrorInvalidAgrs`
+     * is returned.
+     *
+     * @param[in] aKey           The TXT entry key string
+     * @param[in] aStringValue   The value string.
+     *
+     * @retval kErrorNone         Successfully appended the TXT entry.
+     * @retval kErrorNoBufs       Insufficient available buffers to append the entry.
+     * @retval kErrorInvalidArgs  The @p aStringValue is too long.
+     */
+    Error AppendStringEntry(const char *aKey, const char *aStringValue);
+
+    /**
+     * Appends a TXT entry for a given key and a given unsigned integral value using big-endian encoding.
+     *
+     * @tparam    UintType   The unsigned int type (`uint16_t` or `uint32_t`).
+     *
+     * @param[in] aKey           The TXT entry key string
+     * @param[in] aUintValue     The unsigned integer value.
+     *
+     * @retval kErrorNone         Successfully appended the TXT entry.
+     * @retval kErrorNoBufs       Insufficient available buffers to append the entry.
+     */
+    template <typename UintType> Error AppendBigEndianUintEntry(const char *aKey, UintType aUintValue)
+    {
+        static_assert(TypeTraits::IsUint<UintType>::kValue,
+                      "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+        return AppendEntry<UintType>(aKey, BigEndian::HostSwap<UintType>(aUintValue));
+    }
+
+    /**
+     * Appends a TXT entry for a given key and a given `NameData` as value.
+     *
+     * @param[in] aKey           The TXT entry key string
+     * @param[in] aNameData      The value as `NameData`
+     *
+     * @retval kErrorNone         Successfully appended the TXT entry.
+     * @retval kErrorNoBufs       Insufficient available buffers to append the entry.
+     */
+    Error AppendNameEntry(const char *aKey, const MeshCoP::NameData &aNameData)
+    {
+        return AppendBytesEntry(aKey, aNameData.GetBuffer(), aNameData.GetLength());
+    }
+
+private:
+    Appender mAppender;
 };
 
 /**
@@ -1254,25 +1385,37 @@ class ResourceRecord
     friend class OptRecord;
 
 public:
-    // Resource Record Types.
+    // Resource Record Types (RRTypes).
     static constexpr uint16_t kTypeZero  = 0;   ///< Zero as special indicator for the SIG RR (SIG(0) from RFC 2931).
-    static constexpr uint16_t kTypeA     = 1;   ///< Address record (IPv4).
-    static constexpr uint16_t kTypeSoa   = 6;   ///< Start of (zone of) authority.
+    static constexpr uint16_t kTypeA     = 1;   ///< IPv4 address record (A).
+    static constexpr uint16_t kTypeNs    = 2;   ///< NS record (an authoritative name server).
     static constexpr uint16_t kTypeCname = 5;   ///< CNAME record.
+    static constexpr uint16_t kTypeSoa   = 6;   ///< SOA record (start of (zone of) authority).
     static constexpr uint16_t kTypePtr   = 12;  ///< PTR record.
+    static constexpr uint16_t kTypeMx    = 15;  ///< MX record (mail exchange).
     static constexpr uint16_t kTypeTxt   = 16;  ///< TXT record.
+    static constexpr uint16_t kTypeRp    = 17;  ///< RP record (Responsible Person).
+    static constexpr uint16_t kTypeAfsdb = 18;  ///< AFSDB record (AFS Data Base location).
+    static constexpr uint16_t kTypeRt    = 21;  ///< RT record (Route Through).
     static constexpr uint16_t kTypeSig   = 24;  ///< SIG record.
     static constexpr uint16_t kTypeKey   = 25;  ///< KEY record.
-    static constexpr uint16_t kTypeAaaa  = 28;  ///< IPv6 address record.
+    static constexpr uint16_t kTypePx    = 26;  ///< PX record (X.400 mail mapping information).
+    static constexpr uint16_t kTypeAaaa  = 28;  ///< IPv6 address (AAAA) record.
     static constexpr uint16_t kTypeSrv   = 33;  ///< SRV locator record.
-    static constexpr uint16_t kTypeOpt   = 41;  ///< Option record.
+    static constexpr uint16_t kTypeKx    = 36;  ///< KX record (Key Exchanger).
+    static constexpr uint16_t kTypeDname = 39;  ///< DNAME record.
+    static constexpr uint16_t kTypeOpt   = 41;  ///< Option (OPT) record.
     static constexpr uint16_t kTypeNsec  = 47;  ///< NSEC record.
-    static constexpr uint16_t kTypeAny   = 255; ///< ANY record.
+    static constexpr uint16_t kTypeAny   = 255; ///< ANY (*) record.
 
-    // Resource Record Class Codes.
+    // Resource Record Class Codes (CLASS).
     static constexpr uint16_t kClassInternet = 1;   ///< Class code Internet (IN).
     static constexpr uint16_t kClassNone     = 254; ///< Class code None (NONE) - RFC 2136.
     static constexpr uint16_t kClassAny      = 255; ///< Class code Any (ANY).
+
+    static constexpr uint16_t kTypeStringSize = 17; ///< Size of `TypeInfoString`.
+
+    typedef String<kTypeStringSize> TypeInfoString; /// A string to represent a resource record type (human-readable).
 
     /**
      * Initializes the resource record by setting its type and class.
@@ -1364,6 +1507,18 @@ public:
      * @returns Size (number of bytes) of resource record and its data section (excluding the name field)
      */
     uint32_t GetSize(void) const { return sizeof(ResourceRecord) + GetLength(); }
+
+    /**
+     * Updates the record length in a message.
+     *
+     * This method should be called after all the record data fields are appended to the message. It uses the current
+     * message length along with @p aOffset to determine the record length and then updates it within the @p aMessage.
+     * The @p aOffset should point to to the start of the `ResourceRecord` in @p aMessage.
+     *
+     * @param[in] aMessage   The message to update.
+     * @param[in] aOffset    The offset to the start of `ResourceRecord` in @p aMessage.
+     */
+    static void UpdateRecordLengthInMessage(Message &aMessage, uint16_t aOffset);
 
     /**
      * Parses and skips over a given number of resource records in a message from a given offset.
@@ -1482,6 +1637,76 @@ public:
         return ReadRecord(aMessage, aOffset, RecordType::kType, aRecord, sizeof(RecordType));
     }
 
+    /**
+     * Parses and decompresses record data for specific record types where the record data format can contain one or
+     * more compressed DNS names.
+     *
+     * The following record types are handled: NS, CNAME, SOA, PTR, MX, RP, AFSDB, RT, PX, SRV, KX, DNAME, and NSEC.
+     *
+     * If the record type is not in the list above, this method returns `kErrorNone`, with @p aDataMsg remaining
+     * as `nullptr`.
+     *
+     * If the record type is in the above list (requires decompression) and is processed successfully, a new message
+     * is allocated where the decompressed record data is placed. The allocated message is returned via @p aDataMsg
+     * (its ownership is passed to the caller as indicated by the use of `OwnedPtr`). The allocated message contains
+     * the decompressed record data. Importantly it does not include the `ResourceRecord` header.
+     *
+     * When decompressing the record data, this method ensures any embedded DNS names are well-formed and parsable.
+     * It also verifies the record data meets the expected data format (e.g., minimum length based on the record type).
+     * Any additional bytes beyond the expected record data format are also copied to `aDataMsg`. No deep semantic
+     * validation of the record data content is performed.
+     *
+     * @param[in]  aMessage    The message to read from. `aMessage.GetOffset()` MUST point to the start of DNS header
+     *                         (this is used to handle compressed names).
+     * @param[in]  aOffset     The offset in @p aMessage pointing to the byte after the record name and the start of
+     *                         `ResourceRecord` fields.
+     * @param[out] aDataMsg    A reference to an `OwnedPtr<Message>` to output the allocated message containing the
+     *                         decompressed record data. On input, it should be set to `nullptr`.
+     *
+     * @retval kErrorNone       The record type did not require decompression, or decompression was successful.
+     * @retval kErrorNoBufs     Failed to allocate a buffer to return the decompressed data.
+     * @retval kErrorParse      The record data format is invalid.
+     */
+    static Error DecompressRecordData(const Message &aMessage, uint16_t aOffset, OwnedPtr<Message> &aDataMsg);
+
+    /**
+     * Translates embedded DNS names in record data (if needed) and appends the translated data to a given message.
+     *
+     * For records with type NS, CNAME, SOA, PTR, MX, RP, AFSDB, RT, PX, SRV, KX, DNAME, or NSEC, the record data
+     * includes one or more embedded DNS names. For these record types, if the embedded DNS name uses the given
+     * @p aOriginalDomain, it is replaced with the translated domain name before appending it to @p aMessage.
+     * Otherwise, the name is appended as it appears in the record data. This is intended for use by the Discovery
+     * Proxy where the RDATA from mDNS will use the `.local.` domain name, which then needs to be translated to the
+     * Thread network domain name (`default.service.arpa.`).
+     *
+     * For other record types, the record data @p aData is appended as is.
+     *
+     * @param[in] aMessage                  The message to append the (translated) record data to.
+     * @param[in] aRecordType               The record type.
+     * @param[in] aData                     The record data (to translate and append).
+     * @param[in] aOriginalDomain           The original domain name.
+     * @param[in] aTranslatedDomainOffset   The offset of the translated domain name in @p aMessage.
+     *
+     * @retval kErrorNone     The (translated) record data was successfully appended to @p aMessage.
+     * @retval kErrorNoBufs   Failed to allocate new buffers.
+     * @retval kErrorParse    The given @p aData format is not valid.
+     *
+     */
+    static Error AppendTranslatedRecordDataTo(Message                       &aMessage,
+                                              uint16_t                       aRecordType,
+                                              const Data<kWithUint16Length> &aData,
+                                              const char                    *aOriginalDomain,
+                                              uint16_t                       aTranslatedDomainOffset);
+
+    /**
+     * Returns a human-readable string representation of a given resource record type.
+     *
+     * @param[in] aRecordType  The resource record type to convert.
+     *
+     * @returns human-readable string representation of a given resource record type.
+     */
+    static TypeInfoString TypeToString(uint16_t aRecordType);
+
 protected:
     Error ReadName(const Message &aMessage,
                    uint16_t      &aOffset,
@@ -1493,6 +1718,21 @@ protected:
 
 private:
     static constexpr uint16_t kType = kTypeAny; // This is intended for used by `ReadRecord<RecordType>()` only.
+
+    struct DataRecipe // RDATA recipe for record types that contain one or more embedded DNS names
+    {
+        int Compare(uint16_t aRecordType) const { return (aRecordType - mRecordType); }
+
+        constexpr static bool AreInOrder(const DataRecipe &aFirst, const DataRecipe &aSecond)
+        {
+            return (aFirst.mRecordType < aSecond.mRecordType);
+        }
+
+        uint16_t mRecordType;        // The record type.
+        uint8_t  mNumPrefixBytes;    // Number of bytes in RDATA before the first name.
+        uint8_t  mNumNames;          // Number of DNS names embedded in the RDATA.
+        uint16_t mMinNumSuffixBytes; // Minimum number of expected bytes in RDATA after the last name.
+    };
 
     static Error FindRecord(const Message  &aMessage,
                             uint16_t       &aOffset,
@@ -1508,6 +1748,8 @@ private:
                             uint16_t        aType,
                             ResourceRecord &aRecord,
                             uint16_t        aMinRecordSize);
+
+    static const DataRecipe *FindDataRecipeFor(uint16_t aRecordType);
 
     Error CheckRecord(const Message &aMessage, uint16_t aOffset) const;
     Error ReadFrom(const Message &aMessage, uint16_t aOffset);

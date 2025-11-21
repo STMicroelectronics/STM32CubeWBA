@@ -988,9 +988,9 @@
           <GroupName>Middlewares/STM32_WPAN</GroupName>
           <Files>
             <File>
-              <FileName>LinkLayer15_4.a</FileName>
+              <FileName>WBA5_LinkLayer15_4.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA5_LinkLayer15_4.a</FilePath>
             </File>
             <File>
               <FileName>ll_sys_cs.c</FileName>

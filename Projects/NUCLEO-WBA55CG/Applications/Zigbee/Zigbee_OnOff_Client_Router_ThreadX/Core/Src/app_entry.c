@@ -40,6 +40,10 @@
 #include "otp.h"
 #include "scm.h"
 #include "stm32wbaxx_ll_rcc.h"
+#include "timer_if.h"
+#if (CFG_LPM_LEVEL != 0)
+#include "tx_low_power.h"
+#endif /* (CFG_LPM_LEVEL != 0) */
 #include "assert.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -56,7 +60,8 @@ extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
+#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
+                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -74,6 +79,10 @@ extern void ll_sys_mac_cntrl_init( void );
 /* Private variables ---------------------------------------------------------*/
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
+
+/* Time remaining variables to correct next OS tick */
+static uint32_t timeDiffRemaining = 0;
+static uint32_t lowPowerTimeDiffRemaining = 0;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -93,7 +102,7 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static uint32_t AMM_Pool[AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
   /* Virtual Memory #1 */
@@ -111,12 +120,12 @@ static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
+  .PoolSize = AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
-/* ThreadX objects declaration */
 
+/* ThreadX objects declaration */
 static TX_THREAD      AmmTaskHandle;
 static TX_SEMAPHORE   AmmSemaphore;
 
@@ -125,7 +134,7 @@ static TX_SEMAPHORE   RngSemaphore;
 
 static TX_THREAD      AppliTaskHandle;
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if (CFG_LPM_LEVEL != 0)
 static TX_THREAD      IdleTaskHandle;
 #endif
 
@@ -134,6 +143,8 @@ static TX_THREAD      IdleTaskHandle;
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+/* ThreadX objects declaration */
+
 /* ThreadX byte pool pointer for whole WPAN middleware */
 TX_BYTE_POOL  * pBytePool;
 CHAR          * pStack;
@@ -157,16 +168,18 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 void MX_APPE_InitTask(ULONG lArgument);
 static void RNG_Task_Entry(ULONG lArgument);
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if (CFG_LPM_LEVEL != 0)
 static void IDLE_Task_Entry(ULONG lArgument);
 #endif
-
 #ifndef TX_LOW_POWER_USER_ENTER
 void ThreadXLowPowerUserEnter( void );
 #endif
 #ifndef TX_LOW_POWER_USER_EXIT
 void ThreadXLowPowerUserExit( void );
 #endif
+#if ( CFG_LPM_LEVEL != 0)
+static uint32_t getCurrentTime(void);
+#endif /* CFG_LPM_LEVEL */
 
 /* USER CODE BEGIN PFP */
 
@@ -317,6 +330,10 @@ static void System_Init( void )
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
+
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
@@ -404,19 +421,18 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
   UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
@@ -432,7 +448,7 @@ static void SystemPower_Config(void)
     LOG_ERROR_APP( "IDLE ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -487,14 +503,14 @@ static void APPE_RNG_Init(void)
 
 static void APPE_AMM_Init(void)
 {
-  UINT TXstatus;
-  CHAR *pStack;
-
   /* Initialize the Advance Memory Manager */
   if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
   {
     Error_Handler();
   }
+
+  UINT TXstatus;
+  CHAR *pStack;
 
   /* Create Advance Memory Manager ThreadX objects */
 
@@ -529,7 +545,7 @@ static void AMM_Task_Entry(ULONG lArgument)
   }
 }
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if (CFG_LPM_LEVEL != 0)
 static void IDLE_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
@@ -545,6 +561,12 @@ static void IDLE_Task_Entry(ULONG lArgument)
     UTILS_EXIT_CRITICAL_SECTION();
     tx_thread_relinquish();
   }
+}
+
+/* return current time since boot, continue to count in standby low power mode */
+static uint32_t getCurrentTime(void)
+{
+  return TIMER_IF_GetTimerValue();
 }
 #endif
 
@@ -678,14 +700,16 @@ void ThreadXLowPowerUserEnter( void )
   /* USER CODE END ThreadXLowPowerUserEnter_1 */
 
 #if ( CFG_LPM_LEVEL != 0 )
+  uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep, lowPowerTimeDiff, timeDiff;
+
   LL_PWR_ClearFlag_STOP();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
-#endif
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
   LL_RCC_ClearResetFlags();
 
@@ -707,9 +731,25 @@ void ThreadXLowPowerUserEnter( void )
 
   HAL_SuspendTick();
 
+  /* Read the current time from RTC, maintainned in standby */
+  lowPowerTimeBeforeSleep = getCurrentTime();
+
   /* Disable SysTick Interrupt */
   SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
   UTIL_LPM_EnterLowPower();
+
+  lowPowerTimeAfterSleep = getCurrentTime();
+  /* Compute time spent in low power state and report precision loss */
+  lowPowerTimeDiff = (lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) + lowPowerTimeDiffRemaining;
+  /* Store precision loss during RTC time conversion to report it for next OS tick. */
+  timeDiff = TIMER_IF_Convert_Tick2ms(lowPowerTimeDiff);
+  lowPowerTimeDiffRemaining = lowPowerTimeDiff - TIMER_IF_Convert_ms2Tick(timeDiff);
+  /* Report precision loss */
+  timeDiff += timeDiffRemaining;
+  /* Store precision loss during OS tick time conversion to report it for next OS tick. */
+  timeDiffRemaining = timeDiff % (1000/TX_TIMER_TICKS_PER_SECOND);
+
+  tx_time_increment(timeDiff / (1000/TX_TIMER_TICKS_PER_SECOND));
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserEnter_2 */
@@ -741,7 +781,6 @@ void ThreadXLowPowerUserExit( void )
   /* USER CODE END ThreadXLowPowerUserExit_2 */
   return;
 }
-
 
 /**
  * @brief Function Assert AEABI in case of not described on 'libc' libraries.

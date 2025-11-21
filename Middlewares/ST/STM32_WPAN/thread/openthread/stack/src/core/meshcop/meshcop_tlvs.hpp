@@ -641,12 +641,30 @@ public:
     static Error FindIn(const Message &aMessage, uint32_t &aChannelMask);
 
     /**
+     * Parses and validates the TLV value and returns the combined channel mask for all supported channel pages
+     * included in the TLV.
+     *
+     * The Channel Mask TLV value entries for each channel page are parsed one by one and `aChannelMask` is updated
+     * to return the combined mask for all channel pages that are supported by radio. Note that @p aOffsetRange
+     * corresponds to offset range where the TLV value resides within @p aMessage (not the full TLV).
+     *
+     * @param[in]  aMessage       The message to read the TLV value from.
+     * @param[in]  aOffsetRange   The offset range for the TLV value.
+     * @param[out] aChannelMask   A reference to return the channel mask.
+     *
+     * @retval kErrorNone       Successfully parsed the TLV value, @p aChannelMask is updated.
+     * @retval kErrorParse      Failed to parse the TLV value.
+     */
+    static Error ParseValue(const Message &aMessage, const OffsetRange &aOffsetRange, uint32_t &aChannelMask);
+
+    /**
      * Prepares Channel Mask TLV value for appending/writing.
      *
-     * @param[out] aValue        A reference to `Value` structure to populate.
-     * @param[in]  aChannelMask  The combined channel mask for all supported channel pages.
+     * @param[out] aValue                A reference to `Value` structure to populate.
+     * @param[in]  aChannelMask          The combined channel mask for all supported channel pages.
+     * @param[in]  aIncludeZeroPageMasks Determine whether to include or skip a zero mask for a supported channel page.
      */
-    static void PrepareValue(Value &aValue, uint32_t aChannelMask);
+    static void PrepareValue(Value &aValue, uint32_t aChannelMask, bool aIncludeZeroPageMasks = false);
 
     /**
      * Prepares a Channel Mask TLV value and appends the TLV to a given message.
@@ -816,7 +834,7 @@ public:
      *
      * @returns The Build value.
      */
-    uint16_t GetBuild(void) const { return (BigEndian::HostSwap16(mBuildRevision) & kBuildMask) >> kBuildOffset; }
+    uint16_t GetBuild(void) const { return ReadBitsBigEndian<uint16_t, kBuildMask>(mBuildRevision); }
 
     /**
      * Sets the Build value.
@@ -825,8 +843,7 @@ public:
      */
     void SetBuild(uint16_t aBuild)
     {
-        mBuildRevision = BigEndian::HostSwap16((BigEndian::HostSwap16(mBuildRevision) & ~kBuildMask) |
-                                               ((aBuild << kBuildOffset) & kBuildMask));
+        mBuildRevision = UpdateBitsBigEndian<uint16_t, kBuildMask>(mBuildRevision, aBuild);
     }
 
     /**
@@ -834,7 +851,7 @@ public:
      *
      * @returns The Revision value.
      */
-    uint8_t GetRevision(void) const { return (BigEndian::HostSwap16(mBuildRevision) & kRevMask) >> kRevOffset; }
+    uint8_t GetRevision(void) const { return ReadBitsBigEndian<uint16_t, kRevMask>(mBuildRevision); }
 
     /**
      * Sets the Revision value.
@@ -843,8 +860,7 @@ public:
      */
     void SetRevision(uint8_t aRevision)
     {
-        mBuildRevision = BigEndian::HostSwap16((BigEndian::HostSwap16(mBuildRevision) & ~kRevMask) |
-                                               ((aRevision << kRevOffset) & kRevMask));
+        mBuildRevision = UpdateBitsBigEndian<uint16_t, kRevMask>(mBuildRevision, static_cast<uint16_t>(aRevision));
     }
 
     /**
@@ -852,34 +868,28 @@ public:
      *
      * @returns The Minor value.
      */
-    uint8_t GetMinor(void) const { return (mMinorMajor & kMinorMask) >> kMinorOffset; }
+    uint8_t GetMinor(void) const { return ReadBits<uint8_t, kMinorMask>(mMinorMajor); }
 
     /**
      * Sets the Minor value.
      *
      * @param[in]  aMinor  The Minor value.
      */
-    void SetMinor(uint8_t aMinor)
-    {
-        mMinorMajor = (mMinorMajor & ~kMinorMask) | ((aMinor << kMinorOffset) & kMinorMask);
-    }
+    void SetMinor(uint8_t aMinor) { WriteBits<uint8_t, kMinorMask>(mMinorMajor, aMinor); }
 
     /**
      * Returns the Major value.
      *
      * @returns The Major value.
      */
-    uint8_t GetMajor(void) const { return (mMinorMajor & kMajorMask) >> kMajorOffset; }
+    uint8_t GetMajor(void) const { return ReadBits<uint8_t, kMajorMask>(mMinorMajor); }
 
     /**
      * Sets the Major value.
      *
      * @param[in] aMajor  The Major value.
      */
-    void SetMajor(uint8_t aMajor)
-    {
-        mMinorMajor = (mMinorMajor & ~kMajorMask) | ((aMajor << kMajorOffset) & kMajorMask);
-    }
+    void SetMajor(uint8_t aMajor) { WriteBits<uint8_t, kMajorMask>(mMinorMajor, aMajor); }
 
 private:
     // For `mBuildRevision`
@@ -988,10 +998,7 @@ public:
      *
      * @param[in]  aVersion  The Version value.
      */
-    void SetVersion(uint8_t aVersion)
-    {
-        mFlags = (mFlags & ~kVersionMask) | ((aVersion << kVersionOffset) & kVersionMask);
-    }
+    void SetVersion(uint8_t aVersion) { WriteBits<uint8_t, kVersionMask>(mFlags, aVersion); }
 
     /**
      * Indicates whether or not the Joiner flag is set.
@@ -1006,17 +1013,7 @@ public:
      *
      * @param[in]  aJoiner  TRUE if set, FALSE otherwise.
      */
-    void SetJoiner(bool aJoiner)
-    {
-        if (aJoiner)
-        {
-            mFlags |= kJoinerMask;
-        }
-        else
-        {
-            mFlags &= ~kJoinerMask;
-        }
-    }
+    void SetJoiner(bool aJoiner) { WriteBit<uint8_t>(mFlags, kJoinerOffset, aJoiner); }
 
 private:
     static constexpr uint8_t kVersionOffset = 4;
@@ -1059,17 +1056,14 @@ public:
      *
      * @returns The Version value.
      */
-    uint8_t GetVersion(void) const { return mFlags >> kVersionOffset; }
+    uint8_t GetVersion(void) const { return ReadBits<uint8_t, kVersionMask>(mFlags); }
 
     /**
      * Sets the Version value.
      *
      * @param[in]  aVersion  The Version value.
      */
-    void SetVersion(uint8_t aVersion)
-    {
-        mFlags = (mFlags & ~kVersionMask) | ((aVersion << kVersionOffset) & kVersionMask);
-    }
+    void SetVersion(uint8_t aVersion) { WriteBits<uint8_t, kVersionMask>(mFlags, aVersion); }
 
     /**
      * Indicates whether or not the Native Commissioner flag is set.
@@ -1077,7 +1071,7 @@ public:
      * @retval TRUE   If the Native Commissioner flag is set.
      * @retval FALSE  If the Native Commissioner flag is not set.
      */
-    bool IsNativeCommissioner(void) const { return (mFlags & kNativeMask) != 0; }
+    bool IsNativeCommissioner(void) const { return GetBit<uint8_t>(mFlags, kNativeOffset); }
 
     /**
      * Sets the Native Commissioner flag.
@@ -1086,14 +1080,7 @@ public:
      */
     void SetNativeCommissioner(bool aNativeCommissioner)
     {
-        if (aNativeCommissioner)
-        {
-            mFlags |= kNativeMask;
-        }
-        else
-        {
-            mFlags &= ~kNativeMask;
-        }
+        WriteBit<uint8_t>(mFlags, kNativeOffset, aNativeCommissioner);
     }
 
     /**
@@ -1102,32 +1089,20 @@ public:
      * @retval TRUE   If the Commercial Commissioning Mode flag is set.
      * @retval FALSE  If the Commercial Commissioning Mode flag is not set.
      */
-    bool IsCommercialCommissioningMode(void) const { return (mFlags & kCcmMask) != 0; }
+    bool IsCommercialCommissioningMode(void) const { return GetBit<uint8_t>(mFlags, kCcmOffset); }
 
     /**
      * Sets the Commercial Commissioning Mode flag.
      *
      * @param[in]  aCcm  TRUE if set, FALSE otherwise.
      */
-    void SetCommercialCommissioningMode(bool aCcm)
-    {
-        if (aCcm)
-        {
-            mFlags |= kCcmMask;
-        }
-        else
-        {
-            mFlags &= ~kCcmMask;
-        }
-    }
+    void SetCommercialCommissioningMode(bool aCcm) { WriteBit<uint8_t>(mFlags, kCcmOffset, aCcm); }
 
 private:
     static constexpr uint8_t kVersionOffset = 4;
     static constexpr uint8_t kVersionMask   = 0xf << kVersionOffset;
     static constexpr uint8_t kNativeOffset  = 3;
-    static constexpr uint8_t kNativeMask    = 1 << kNativeOffset;
     static constexpr uint8_t kCcmOffset     = 2;
-    static constexpr uint8_t kCcmMask       = 1 << kCcmOffset;
 
     uint8_t mFlags;
     uint8_t mReserved;

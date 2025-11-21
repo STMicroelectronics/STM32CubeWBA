@@ -244,7 +244,6 @@
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
                     <state>APPLICATION_USE_AMM</state>
-                    <state>APPLICATION_USE_SMPS</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -1550,9 +1549,6 @@
             <group>
                 <name>LinkLayer</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</name>
-                </file>
-                <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
                 </file>
                 <file>
@@ -1563,6 +1559,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</name>
                 </file>
             </group>
             <group>

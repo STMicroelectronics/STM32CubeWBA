@@ -65,8 +65,8 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
 #define APP_ZIGBEE_APP_DATE_CODE                    "20250512"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.7"
-#define APP_ZIGBEE_APP_VERSION                      0x17        // Application Version v1.7
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.8"
+#define APP_ZIGBEE_APP_VERSION                      0x18
 #define APP_ZIGBEE_STACK_VERSION                    0x10        // Stack Version v1.0
 
 /* USER CODE BEGIN PD */
@@ -175,7 +175,7 @@ void APP_ZIGBEE_StackLayersInit( void )
   memset( &stTableSizes, 0, sizeof( stTableSizes ) );
   stTableSizes.heapPtr = NULL;
   stTableSizes.heapSz = 0U;
-
+  
   /* Initialise Zigbee */
   stZigbeeAppInfo.pstZigbee = ZbInit( 0U, &stTableSizes, NULL );
   assert(stZigbeeAppInfo.pstZigbee != NULL);
@@ -742,4 +742,5 @@ static void APP_ZIGBEE_TraceError( const char * pMess, uint32_t ErrCode )
     /* USER CODE END APP_ZIGBEE_TraceError */
   }
 }
+
 

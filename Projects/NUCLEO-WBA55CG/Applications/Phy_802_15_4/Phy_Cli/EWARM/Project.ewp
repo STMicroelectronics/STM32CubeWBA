@@ -700,7 +700,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -708,7 +708,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>Project.hex</state>
+                    <state>Project.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -1343,7 +1343,7 @@
     <group>
         <name>lib</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
+            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA5_LinkLayer15_4.a</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>

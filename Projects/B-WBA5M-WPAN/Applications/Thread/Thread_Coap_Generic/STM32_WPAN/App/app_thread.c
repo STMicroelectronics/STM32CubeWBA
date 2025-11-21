@@ -87,6 +87,8 @@ static void APP_THREAD_CliInit(otInstance *aInstance);
 static void APP_THREAD_ProcessUart(void);
 #endif // OT_CLI_USE
 
+static void APP_THREAD_PersistenceStartup(void);
+
 /* USER CODE BEGIN PFP */
 static void APP_THREAD_AppInit(void);
 static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
@@ -157,15 +159,8 @@ void ProcessTasklets(void)
  */
 void ProcessOpenThreadTasklets(void)
 {
-  /* wakeUp the system */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-  //ll_sys_dp_slp_exit();
-
   /* process the tasklet */
   otTaskletsProcess(PtOpenThreadInstance);
-
-  /* put the IP802_15_4 back to sleep mode */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
 
   /* reschedule the tasklets if any */
   ProcessTasklets();
@@ -214,6 +209,8 @@ void Thread_Init(void)
   size_t otInstanceBufferLength = 0;
   uint8_t *otInstanceBuffer = NULL;
 #endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  APP_THREAD_PersistenceStartup();
 
   otSysInit(0, NULL);
 
@@ -407,7 +404,7 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
         APP_THREAD_TraceError("ERROR : ERR_THREAD_CHECK_WIRELESS ",ErrCode);
         break;
 
-	case ERR_THREAD_SET_THRESHOLD:
+    case ERR_THREAD_SET_THRESHOLD:
         APP_THREAD_TraceError("ERROR : ERR_THREAD_SET_THRESHOLD", ErrCode);
         break;
 
@@ -528,6 +525,18 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
+
+/**
+ * @brief  Thread persistence startup
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_PersistenceStartup(void)
+{
+  /* USER CODE BEGIN APP_THREAD_PersistenceStartup */
+
+  /* USER CODE END APP_THREAD_PersistenceStartup */
+}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 /**

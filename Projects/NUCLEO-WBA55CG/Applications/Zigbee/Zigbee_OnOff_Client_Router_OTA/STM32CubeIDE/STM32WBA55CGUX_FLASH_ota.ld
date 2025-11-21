@@ -46,9 +46,9 @@ MEMORY
 {
   RAM         (xrw) : ORIGIN = 0x20000000,  LENGTH = 128K
   
-  FLASH_START (rx)  : ORIGIN = 0x8080000,             LENGTH = 0x160
-  OTA_START   (rx)  : ORIGIN = ( 0x8080000 + 0x160 ), LENGTH = 0xA0
-  FLASH       (rx)  : ORIGIN = ( 0x8080000 + 0x200 ), LENGTH = 1024K - (0x2000 * 4) - ( 0x80000 + 0x200 )
+  FLASH_START (rx)  : ORIGIN = 0x8080000,             LENGTH = 0x400
+  OTA_START   (rx)  : ORIGIN = ( 0x8080000 + 0x400 ), LENGTH = 0x10
+  FLASH       (rx)  : ORIGIN = ( 0x8080000 + 0x410 ), LENGTH = 1024K - (0x2000 * 4) - ( 0x80000 + 0x410 )
 }
 
 /* Sections */

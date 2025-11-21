@@ -34,7 +34,6 @@
 #include "stm_list.h"
 #include "advanced_memory_manager.h"
 #include "blestack.h"
-#include "simple_nvm_arbiter.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "eddystone_beacon.h"
@@ -55,24 +54,15 @@ typedef struct
 {
   /* USER CODE BEGIN PTD_1 */
   uint32_t dummy;
+
   /* USER CODE END PTD_1 */
 }BleApplicationContext_t;
 
 /* Private defines -----------------------------------------------------------*/
-/* GATT buffer size (in bytes)*/
-#define BLE_GATT_BUF_SIZE \
-          BLE_TOTAL_BUFFER_SIZE_GATT(CFG_BLE_NUM_GATT_ATTRIBUTES, \
-                                     CFG_BLE_NUM_GATT_SERVICES, \
-                                     CFG_BLE_ATT_VALUE_ARRAY_SIZE)
+#define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
-#define MBLOCK_COUNT              (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
-                                                    CFG_BLE_ATT_MTU_MAX, \
-                                                    CFG_BLE_NUM_LINK) \
-                                   + CFG_BLE_MBLOCK_COUNT_MARGIN)
-
-#define BLE_DYN_ALLOC_SIZE \
-        (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
-
+/* Dummy value for NVM buffer in RAM for BLE Host stack */
+#define CFG_BLE_NVM_SIZE_MAX            4
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -93,15 +83,10 @@ static uint8_t a_BLE_CfgIrValue[16];
 static uint8_t a_BLE_CfgErValue[16];
 static BleApplicationContext_t bleAppContext;
 
-static AMM_VirtualMemoryCallbackFunction_t APP_BLE_ResumeFlowProcessCb;
+static AMM_VirtualMemoryCallbackFunction_t BLE_EVENTS_ResumeFlowProcessCb;
 
 /* Host stack init variables */
 static BleStack_init_t pInitParams;
-
-/* Host stack buffers */
-static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
-static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 /* USER CODE BEGIN PV */
 
@@ -115,10 +100,7 @@ static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 
 /* Private function prototypes -----------------------------------------------*/
 static uint8_t HOST_BLE_Init(void);
-static void BleStack_Process_BG(void);
-static void Ble_UserEvtRx(void);
 static void BLE_ResumeFlowProcessCallback(void);
-static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus);
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGenerateBdAddress(void);
 static const uint8_t* BleGenerateIRValue(void);
@@ -137,6 +119,7 @@ static const uint8_t* BleGenerateERValue(void);
 void APP_BLE_Init(void)
 {
   /* USER CODE BEGIN APP_BLE_Init_1 */
+  tBleStatus ret;
 
   /* USER CODE END APP_BLE_Init_1 */
 
@@ -146,18 +129,9 @@ void APP_BLE_Init(void)
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
 
-  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
-  host_nvm_buffer[0] = 0;
-
-  /* Register A NVM buffer for BLE Host stack */
-  SNVMA_Register(APP_BLE_NvmBuffer,
-                  (uint32_t *)host_nvm_buffer,
-                  (CFG_BLE_NVM_SIZE_MAX * 2));
-
-  /* Realize a restore */
-  SNVMA_Restore(APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
   UNUSED(bleAppContext.dummy);
+
   /* USER CODE END APP_BLE_Init_Buffers */
 
   /* Initialize the BLE Host */
@@ -176,24 +150,67 @@ void APP_BLE_Init(void)
    */
   if (CFG_BEACON_TYPE & CFG_EDDYSTONE_TLM_BEACON_TYPE)
   {
-    LOG_INFO_APP("  Eddystone TLM beacon advertise\n\r");
-    EddystoneTLM_Process();
+    ret = EddystoneTLM_Process();
+    if(ret != BLE_STATUS_SUCCESS)
+    {
+      if (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE)
+      {
+        LOG_INFO_APP("Eddystone UID + TLM beacon advertising failed with error %d\n", ret);
+      }
+      else
+      {
+        LOG_INFO_APP("Eddystone URL + TLM beacon advertising failed with error %d\n", ret);
+      }
+    }
+    else
+    {
+      if (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE)
+      {
+        LOG_INFO_APP("Eddystone UID + TLM beacon advertise\n");
+      }
+      else
+      {
+        LOG_INFO_APP("Eddystone URL + TLM beacon advertise\n");
+      }
+    }
   }
   else if (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE)
   {
-    LOG_INFO_APP("  Eddystone UID beacon advertise\n\r");
-    EddystoneUID_Process();
+    ret = EddystoneUID_Process();
+    if(ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("Eddystone UID beacon advertising failed with error %d\n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("Eddystone UID beacon advertise\n");
+    }
   }
   else if (CFG_BEACON_TYPE & CFG_EDDYSTONE_URL_BEACON_TYPE)
   {
-    LOG_INFO_APP("  Eddystone URL beacon advertise\n\r");
-    EddystoneURL_Process();
+    ret = EddystoneURL_Process();
+    if(ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("Eddystone URL beacon advertising failed with error %d\n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("Eddystone URL beacon advertise\n");
+    }
   }
-  else if (CFG_BEACON_TYPE & CFG_IBEACON)
+  else if (CFG_BEACON_TYPE & CFG_IBEACON_TYPE)
   {
-    LOG_INFO_APP("  Ibeacon advertise\n\r");
-    IBeacon_Process();
+    ret = IBeacon_Process();
+    if(ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("Ibeacon advertising failed with error %d\n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("Ibeacon advertise\n");
+    }
   }
+
   /* USER CODE END APP_BLE_Init_2 */
 
   return;
@@ -293,6 +310,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         /* USER CODE END SUBEVENT */
         default:
         {
+          LOG_DEBUG_BLE("SVCCTL_App_Notification: unhandled SUBEVENT with opcode: 0x%02X\n", p_meta_evt->subevent);
           /* USER CODE BEGIN SUBEVENT_DEFAULT */
 
           /* USER CODE END SUBEVENT_DEFAULT */
@@ -336,14 +354,14 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           /* USER CODE END RADIO_ACTIVITY_EVENT */
           break; /* ACI_HAL_END_OF_RADIO_ACTIVITY_VSEVT_CODE */
         }
-        case ACI_HAL_FW_ERROR_VSEVT_CODE:
+        case ACI_WARNING_VSEVT_CODE:
         {
-          aci_hal_fw_error_event_rp0 *p_fw_error_event;
+          aci_warning_event_rp0 *p_fw_warning_event;
 
-          p_fw_error_event = (aci_hal_fw_error_event_rp0 *)p_blecore_evt->data;
-          UNUSED(p_fw_error_event);
-          LOG_INFO_APP(">>== ACI_HAL_FW_ERROR_VSEVT_CODE\n");
-          LOG_INFO_APP("FW Error Type = 0x%02X\n", p_fw_error_event->FW_Error_Type);
+          p_fw_warning_event = (aci_warning_event_rp0 *)p_blecore_evt->data;
+          UNUSED(p_fw_warning_event);
+          LOG_INFO_APP(">>== ACI_WARNING_VSEVT_CODE\n");
+          LOG_INFO_APP("FW warning Type = 0x%02X\n", p_fw_warning_event->Warning_Type);
           /* USER CODE BEGIN ACI_HAL_FW_ERROR_VSEVT_CODE */
 
           /* USER CODE END ACI_HAL_FW_ERROR_VSEVT_CODE */
@@ -354,6 +372,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         /* USER CODE END ECODE_1 */
         default:
         {
+          LOG_DEBUG_BLE("SVCCTL_App_Notification: unhandled EVT_VENDOR with opcode: 0x%02X\n", p_blecore_evt->ecode);
           /* USER CODE BEGIN ECODE_DEFAULT */
 
           /* USER CODE END ECODE_DEFAULT */
@@ -370,6 +389,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
     /* USER CODE END EVENT_PCKT */
     default:
     {
+      LOG_DEBUG_BLE("SVCCTL_App_Notification: unhandled EVENT_PCKT with opcode: 0x%02X\n", p_event_pckt->evt);
       /* USER CODE BEGIN EVENT_PCKT_DEFAULT */
 
       /* USER CODE END EVENT_PCKT_DEFAULT */
@@ -383,6 +403,34 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
   return (SVCCTL_UserEvtFlowEnable);
 }
 
+void Ble_UserEvtRx( void)
+{
+  SVCCTL_UserEvtFlowStatus_t svctl_return_status;
+  BleEvtPacket_t *phcievt = NULL;
+
+  LST_remove_head ( &BleAsynchEventQueue, (tListNode **)&phcievt );
+
+  svctl_return_status = SVCCTL_UserEvtRx((void *)&(phcievt->evtserial));
+
+  if (svctl_return_status != SVCCTL_UserEvtFlowDisable)
+  {
+    AMM_Free((uint32_t *)phcievt);
+  }
+  else
+  {
+    LST_insert_head ( &BleAsynchEventQueue, (tListNode *)phcievt );
+  }
+
+  if ((LST_is_empty(&BleAsynchEventQueue) == FALSE) && (svctl_return_status != SVCCTL_UserEvtFlowDisable) )
+  {
+    UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
+  }
+
+  /* Trigger BLE Host stack to process */
+  BleStackCB_Process();
+
+}
+
 const uint8_t* BleGetBdAddress(void)
 {
   const uint8_t *p_bd_addr;
@@ -392,10 +440,12 @@ const uint8_t* BleGetBdAddress(void)
   return p_bd_addr;
 }
 
-void APP_BLE_HostNvmStore(void)
+void BleStack_Process_BG(void)
 {
-  /* Start SNVMA write procedure */
-  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+  if (BleStack_Process() == 0x0)
+  {
+    BleStackCB_Process();
+  }
 }
 
 /* USER CODE BEGIN FD */
@@ -411,24 +461,6 @@ static uint8_t HOST_BLE_Init(void)
 {
   tBleStatus return_status;
 
-  pInitParams.numAttrRecord           = CFG_BLE_NUM_GATT_ATTRIBUTES;
-  pInitParams.numAttrServ             = CFG_BLE_NUM_GATT_SERVICES;
-  pInitParams.attrValueArrSize        = CFG_BLE_ATT_VALUE_ARRAY_SIZE;
-  pInitParams.prWriteListSize         = CFG_BLE_ATTR_PREPARE_WRITE_VALUE_SIZE;
-  pInitParams.attMtu                  = CFG_BLE_ATT_MTU_MAX;
-  pInitParams.max_coc_nbr             = CFG_BLE_COC_NBR_MAX;
-  pInitParams.max_coc_mps             = CFG_BLE_COC_MPS_MAX;
-  pInitParams.max_coc_initiator_nbr   = CFG_BLE_COC_INITIATOR_NBR_MAX;
-  pInitParams.max_add_eatt_bearers    = CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK;
-  pInitParams.numOfLinks              = CFG_BLE_NUM_LINK;
-  pInitParams.mblockCount             = CFG_BLE_MBLOCK_COUNT;
-  pInitParams.bleStartRamAddress      = (uint8_t*)host_buffer;
-  pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
-  pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
-  pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
-  pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
-  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -527,34 +559,6 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   LOG_INFO_APP("==>> End Ble_Hci_Gap_Gatt_Init function\n");
 
   return;
-}
-
-static void Ble_UserEvtRx( void)
-{
-  SVCCTL_UserEvtFlowStatus_t svctl_return_status;
-  BleEvtPacket_t *phcievt = NULL;
-
-  LST_remove_head ( &BleAsynchEventQueue, (tListNode **)&phcievt );
-
-  svctl_return_status = SVCCTL_UserEvtRx((void *)&(phcievt->evtserial));
-
-  if (svctl_return_status != SVCCTL_UserEvtFlowDisable)
-  {
-    AMM_Free((uint32_t *)phcievt);
-  }
-  else
-  {
-    LST_insert_head ( &BleAsynchEventQueue, (tListNode *)phcievt );
-  }
-
-  if ((LST_is_empty(&BleAsynchEventQueue) == FALSE) && (svctl_return_status != SVCCTL_UserEvtFlowDisable) )
-  {
-    UTIL_SEQ_SetTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, CFG_SEQ_PRIO_0);
-  }
-
-  /* Trigger BLE Host stack to process */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
-
 }
 
 static const uint8_t* BleGenerateBdAddress(void)
@@ -754,14 +758,6 @@ static const uint8_t* BleGenerateERValue(void)
   return p_er_value;
 }
 
-static void BleStack_Process_BG(void)
-{
-  if (BleStack_Process( ) == 0x0)
-  {
-    BleStackCB_Process( );
-  }
-}
-
 /**
   * @brief  Notify the LL to resume the flow process
   * @param  None
@@ -777,15 +773,6 @@ static void BLE_ResumeFlowProcessCallback(void)
   ll_intf_chng_evnt_hndlr_state( notify_options );
 }
 
-static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus)
-{
-  if (CbkStatus != SNVMA_OPERATION_COMPLETE)
-  {
-    /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
-  }
-}
-
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
 
 /* USER CODE END FD_LOCAL_FUNCTION */
@@ -795,6 +782,17 @@ static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus)
  * WRAP FUNCTIONS
  *
  *************************************************************/
+
+/**
+  * @brief Callback called by the BLE stack (from BleStack_Process() context)
+  * to send an indication to the application. The indication is a BLE standard
+  * packet that can be either an ACI/HCI event or an ACL data.
+  * @param data: pointer to the data of the packet
+  * @param length: length of the data of the packet
+  * @param ext_data: pointer to the extended data
+  * @param ext_length: extended data length
+  * @retval Status of the operation
+  */
 
 tBleStatus BLECB_Indication( const uint8_t* data,
                           uint16_t length,
@@ -809,11 +807,11 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 
   if (data[0] == HCI_EVENT_PKT_TYPE)
   {
-    APP_BLE_ResumeFlowProcessCb.Callback = BLE_ResumeFlowProcessCallback;
-    if (AMM_Alloc (CFG_AMM_VIRTUAL_APP_BLE,
+    BLE_EVENTS_ResumeFlowProcessCb.Callback = BLE_ResumeFlowProcessCallback;
+    if (AMM_Alloc (CFG_AMM_VIRTUAL_BLE_EVENTS,
                    DIVC((sizeof(BleEvtPacketHeader_t) + total_length), sizeof (uint32_t)),
                    (uint32_t **)&phcievt,
-                   &APP_BLE_ResumeFlowProcessCb) != AMM_ERROR_OK)
+                   &BLE_EVENTS_ResumeFlowProcessCb) != AMM_ERROR_OK)
     {
       LOG_INFO_APP("Alloc failed\n");
       status = BLE_STATUS_FAILED;

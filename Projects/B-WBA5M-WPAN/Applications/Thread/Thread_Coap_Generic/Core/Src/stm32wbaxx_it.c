@@ -249,7 +249,7 @@ void RCC_IRQHandler(void)
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
 #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
+    scm_pllrdy_isr();
 #endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
@@ -323,19 +323,6 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
 }
 
 /**

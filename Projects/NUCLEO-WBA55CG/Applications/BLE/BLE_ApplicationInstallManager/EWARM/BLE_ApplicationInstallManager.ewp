@@ -232,6 +232,7 @@
         <option>
           <name>CCDefines</name>
           <state>STM32WBA55xx</state>
+          <state>PHY_40nm_3_00_a</state>
           <state>USE_FULL_ASSERT</state>
           <state>USE_FULL_LL_DRIVER</state>
           <state>USE_HAL_DRIVER</state>
@@ -1168,7 +1169,16 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_gpio.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</name>
@@ -1192,12 +1202,6 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_gpio.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_dma_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_exti.c</name>
       </file>
       <file>
@@ -1205,6 +1209,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_gpio.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_icache.c</name>

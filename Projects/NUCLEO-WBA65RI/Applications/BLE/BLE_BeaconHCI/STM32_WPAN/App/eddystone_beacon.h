@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_beacon.h
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -62,12 +62,12 @@ enum
 #define NORMAL_TIME_ADV             10000000
 #define TLM_TIME_ADV                1000000
 
-#if ((0 != (CFG_BEACON_TYPE & CFG_IBEACON)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_TLM_BEACON_TYPE)))
+#if ((0 != (CFG_BEACON_TYPE & CFG_IBEACON_TYPE)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_TLM_BEACON_TYPE)))
   #error "With ibeacon type no TLM!"
 #endif
 
-#if (((0 != (CFG_BEACON_TYPE & CFG_IBEACON)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE))) || \
-     ((0 != (CFG_BEACON_TYPE & CFG_IBEACON)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_URL_BEACON_TYPE))) || \
+#if (((0 != (CFG_BEACON_TYPE & CFG_IBEACON_TYPE)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE))) || \
+     ((0 != (CFG_BEACON_TYPE & CFG_IBEACON_TYPE)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_URL_BEACON_TYPE))) || \
      ((0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_UID_BEACON_TYPE)) && (0 != (CFG_BEACON_TYPE & CFG_EDDYSTONE_URL_BEACON_TYPE))))
   #error "Please select only a single beacon type for ibeacon, eddystone beacon can be mix only with eddystone tlm beacon!"
 #endif

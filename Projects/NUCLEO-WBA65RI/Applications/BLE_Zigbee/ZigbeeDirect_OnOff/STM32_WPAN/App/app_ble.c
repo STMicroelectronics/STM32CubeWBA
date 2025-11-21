@@ -155,6 +155,8 @@ typedef struct
                                      CFG_BLE_NUM_GATT_SERVICES, \
                                      CFG_BLE_ATT_VALUE_ARRAY_SIZE)
 
+#define BLE_HOST_EVENT_BUF_SIZE   CFG_BLE_HOST_EVENT_BUF_SIZE
+
 #define MBLOCK_COUNT              (BLE_MBLOCKS_CALC(PREP_WRITE_LIST_SIZE, \
                                                     CFG_BLE_ATT_MTU_MAX, \
                                                     CFG_BLE_NUM_LINK) \
@@ -213,6 +215,7 @@ static AMM_VirtualMemoryCallbackFunction_t APP_BLE_ResumeFlowProcessCb;
 /* Host stack init variables */
 static uint32_t buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
+static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 4)];
 static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 static BleStack_init_t pInitParams;
 
@@ -425,11 +428,12 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       switch (p_meta_evt->subevent)
       {
         case HCI_LE_CONNECTION_UPDATE_COMPLETE_SUBEVT_CODE:
-        {
+        { 
           uint32_t conn_interval_us = 0;
           hci_le_connection_update_complete_event_rp0 *p_conn_update_complete;
           p_conn_update_complete = (hci_le_connection_update_complete_event_rp0 *) p_meta_evt->data;
           conn_interval_us = p_conn_update_complete->Conn_Interval * 1250;
+    
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_UPDATE_COMPLETE_SUBEVT_CODE\n");
           LOG_INFO_APP("     - Connection Interval:   %d.%02d ms\n     - Connection latency:    %d\n     - Supervision Timeout:   %d ms\n",
                        conn_interval_us / 1000,
@@ -513,10 +517,19 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         }
         case HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE:
         {
+          uint8_t status;
           uint32_t conn_interval_us = 0;
           hci_le_connection_complete_event_rp0 *p_conn_complete;
           p_conn_complete = (hci_le_connection_complete_event_rp0 *) p_meta_evt->data;
           conn_interval_us = p_conn_complete->Conn_Interval * 1250;
+          status = aci_gatt_exchange_config(p_conn_complete->Connection_Handle);
+          if (status == 0 ){
+            LOG_INFO_APP(">>== aci_gatt_exchange_config success\n");
+          }
+          else {
+            LOG_INFO_APP(">>== aci_gatt_exchange_config failed \n");
+          }
+
           LOG_INFO_APP(">>== HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE - Connection handle: 0x%04X\n", p_conn_complete->Connection_Handle);
           LOG_INFO_APP("     - Connection established with @:%02x:%02x:%02x:%02x:%02x:%02x\n",
                       p_conn_complete->Peer_Address[5],
@@ -572,7 +585,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         default:
         {
           /* USER CODE BEGIN SUBEVENT_DEFAULT */
-
+           LOG_INFO_APP(">>== VALUE of p_event_pckt->evt not known !!!!\n");
           /* USER CODE END SUBEVENT_DEFAULT */
           break;
         }
@@ -601,7 +614,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           p_l2cap_conn_update_resp = (aci_l2cap_connection_update_resp_event_rp0 *) p_blecore_evt->data;
           UNUSED(p_l2cap_conn_update_resp);
           /* USER CODE BEGIN EVT_L2CAP_CONNECTION_UPDATE_RESP */
-
+          LOG_INFO_APP(">>== ACI_L2CAP_CONNECTION_UPDATE_RESP_VSEVT_CODE");
           /* USER CODE END EVT_L2CAP_CONNECTION_UPDATE_RESP */
           break;
         }
@@ -786,18 +799,21 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
         }
         /* USER CODE BEGIN ECODE_1 */
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE: /* 0x0c01 */
+          LOG_INFO_APP(">>== ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE");
           break;
 
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE: /* 0x0c03 */
+           LOG_INFO_APP(">>== ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE");
           break;
 
         case ACI_GAP_LIMITED_DISCOVERABLE_VSEVT_CODE: /* 0x0400 */
+          LOG_INFO_APP(">>== ACI_GAP_LIMITED_DISCOVERABLE_VSEVT_CODE");
           break;
         /* USER CODE END ECODE_1 */
         default:
         {
           /* USER CODE BEGIN ECODE_DEFAULT */
-
+           LOG_INFO_APP(">>== ACI_GAP_XXXX which is not known....");
           /* USER CODE END ECODE_DEFAULT */
           break;
         }
@@ -813,7 +829,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
     default:
     {
       /* USER CODE BEGIN EVENT_PCKT_DEFAULT */
-
+      LOG_INFO_APP(">>== SVCCTL_UserEvtFlowEnable which is not known....");
       /* USER CODE END EVENT_PCKT_DEFAULT */
       break;
     }
@@ -1301,6 +1317,8 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.total_buffer_size       = BLE_DYN_ALLOC_SIZE;
   pInitParams.bleStartRamAddress_GATT = (uint8_t*)gatt_buffer;
   pInitParams.total_buffer_size_GATT  = BLE_GATT_BUF_SIZE;
+  pInitParams.host_event_fifo_buffer  = host_event_buffer;
+  pInitParams.host_event_fifo_buffer_size = BLE_HOST_EVENT_BUF_SIZE;
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
   pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
   pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
@@ -1753,6 +1771,11 @@ static const uint8_t* BleGenerateBdAddress(void)
     }
   }
 
+  
+  LOG_INFO_APP("BD Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+           p_bd_addr[5], p_bd_addr[4], p_bd_addr[3],
+           p_bd_addr[2], p_bd_addr[1], p_bd_addr[0]);
+  
   return p_bd_addr;
 }
 

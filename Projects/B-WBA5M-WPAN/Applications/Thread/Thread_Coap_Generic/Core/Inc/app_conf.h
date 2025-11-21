@@ -50,19 +50,25 @@
  *
  *  When CFG_LPM_LEVEL is set to:
  *   - 0 : Low Power Mode is not activated, RUN mode will be used.
- *   - 1 : Low power active, the one selected with CFG_LPM_STDBY_SUPPORTED
- *   - 2 : In addition, force to disable modules to reach lowest power figures.
- *
- * When CFG_LPM_STDBY_SUPPORTED is set to:
- *   - 1 : Standby is used as low power mode.
- *   - 0 : Standby is not used, so stop mode 1 is used as low power mode.
- *
+ *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
+ *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  ******************************************************************************/
-#define CFG_LPM_LEVEL            (0)
-#define CFG_LPM_STDBY_SUPPORTED  (0)
+#define CFG_LPM_LEVEL               (0U)
 
-/* Defines time to wake up from standby before radio event to meet timings */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500)
+#define CFG_LPM_STOP1_SUPPORTED     (0U)
+#define CFG_LPM_STANDBY_SUPPORTED   (0U)
+
+/**
+ * Defines to use dynamic low power wakeup time profilling.
+ * With this option at boot wake up time is profiled and then is used.
+ */
+#define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
+
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
 
 /* USER CODE BEGIN Low_Power 0 */
 
@@ -110,7 +116,7 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) will disable LOG.
+ * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -119,16 +125,12 @@ extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
-#define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
+#define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
-#define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (1U)
+#define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
 
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
-
-/* macro ensuring retrocompatibility with old applications */
-#define APP_DBG                     LOG_INFO_APP
-#define APP_DBG_MSG                 LOG_INFO_APP
 
 /* USER CODE BEGIN Logs */
 
@@ -136,8 +138,20 @@ extern UART_HandleTypeDef           huart1;
 
 /******************************************************************************
  * Configure Log level for Application
+ *
+ * APPLI_CONFIG_LOG_LEVEL can be any value of the Log_Verbose_Level_t enum.
+ *
+ * APPLI_CONFIG_LOG_REGION can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
@@ -163,9 +177,7 @@ typedef enum
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BUTTON_B1,		        /* Task linked to push-button. */
-  CFG_TASK_BUTTON_B2,
-  CFG_TASK_BUTTON_B3,
+  CFG_TASK_BSP_BUTTON_B2,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -195,9 +207,9 @@ typedef enum
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 /* USER CODE BEGIN TASK_ID_Define */
-#define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
-#define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
-#define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
+
+#define TASK_BSP_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
+
 
 /* USER CODE END TASK_ID_Define */
 
@@ -228,38 +240,40 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL           (2)
+#define CFG_DEBUGGER_LEVEL                  (2)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
  ******************************************************************************/
 
-#define CFG_RT_DEBUG_GPIO_MODULE         (0)
-#define CFG_RT_DEBUG_DTB                 (0)
+#define CFG_RT_DEBUG_GPIO_MODULE            (0)
+#define CFG_RT_DEBUG_DTB                    (0)
 
 /******************************************************************************
  * System Clock Manager module configuration
+ *
+ *  When CFG_SCM_SUPPORTED is set to:
+ *   - 0 : System Clock Manager is disabled and user must handle himself
+ *         all clock management, taking care of radio requirements.
+ *         (radio operation requires HSE 32MHz with Voltage Scaling Range 1)
+ *   - 1 : System Clock Manager ensures proper clock settings and switchings
+ *         according to radio requirements and user preferences
+ *
  ******************************************************************************/
-
-#define CFG_SCM_SUPPORTED            (1)
+#define CFG_SCM_SUPPORTED                   (1)
 
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Do not modify - must be 1 */
-#define USE_RADIO_LOW_ISR                   (1)
-
-/* Do not modify - must be 1 */
-#define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
+/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
+#define USE_CTE_DEGRADATION                 (0)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#if (USE_RADIO_LOW_ISR == 1)
 #define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
-#endif /* USE_RADIO_LOW_ISR */
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
@@ -269,11 +283,8 @@ typedef enum
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
-/* Custom LSE sleep clock accuracy to use if both conditions are met:
- * - LSE is selected as Link Layer sleep clock source
- * - the LSE used is different from the default one.
- */
-#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0)
+/* Radio sleep clock LSE accuracy configuration */
+#define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
 
 /* USER CODE BEGIN Radio_Configuration */
 
@@ -283,7 +294,7 @@ typedef enum
  * HW_RNG configuration
  ******************************************************************************/
 
-/* Number of 32-bit random values stored in internal pool */
+/* Number of 32-bit random numbers stored in internal pool */
 #define CFG_HW_RNG_POOL_SIZE                (32)
 
 /* Threshold of random numbers available before triggering pool refill */
@@ -303,7 +314,7 @@ typedef enum
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
 
-#define CFG_LED_SUPPORTED           (1)
+#define CFG_LED_SUPPORTED           (0)
 #define CFG_BUTTON_SUPPORTED        (1)
 
 /**
@@ -332,20 +343,31 @@ typedef enum
 #if (CFG_LPM_LEVEL > 1)
   #if CFG_LOG_SUPPORTED
     #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
+    #define CFG_LOG_SUPPORTED       (0U)
   #endif /* CFG_LOG_SUPPORTED */
   #if CFG_DEBUGGER_LEVEL
     #undef  CFG_DEBUGGER_LEVEL
-    #define CFG_DEBUGGER_LEVEL      (0)
+    #define CFG_DEBUGGER_LEVEL      (0U)
   #endif /* CFG_DEBUGGER_LEVEL */
 #endif /* CFG_LPM_LEVEL */
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-  #if CFG_LOG_SUPPORTED
-    #undef  CFG_LOG_SUPPORTED
-    #define CFG_LOG_SUPPORTED       (0)
-  #endif /* CFG_LOG_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#if (CFG_LPM_LEVEL == 0)
+  #undef CFG_LPM_STOP1_SUPPORTED
+  #define CFG_LPM_STOP1_SUPPORTED   (0U)
+  #undef CFG_LPM_STANDBY_SUPPORTED
+  #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+/*********************************************************************
+ * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
+ * Please use a combination of previous defines instead
+ * Temporary define for backward compatibility
+ *********************************************************************/
+ #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
+ #define CFG_LPM_STDBY_SUPPORTED (1U)
+ #else
+ #define CFG_LPM_STDBY_SUPPORTED (0U)
+ #endif
 
 /* USER CODE BEGIN Defines_2 */
 

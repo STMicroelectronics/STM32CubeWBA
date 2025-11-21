@@ -46,7 +46,7 @@
 /* Audio in and out buffers used by the BSP
  * (max LC3 frame len (Freq, 10ms)) x (Max Channels Number (mono vs stereo)) x 2 (double buffer configuration)
  */
-#define SAI_SNK_MAX_BUFF_SIZE                   (CODEC_MAX_BAND <= CODEC_SSWB ? 240 : 480)*CODEC_LC3_NUM_DECODER_CHANNEL*2
+#define SAI_SNK_MAX_BUFF_SIZE                   ((CODEC_MAX_BAND <= CODEC_SSWB ? 240 : 480) * CODEC_LC3_NUM_DECODER_CHANNEL * 2)
 
 /* Buffers used by the LC3 codec */
 #define CODEC_LC3_SESSION_DYN_ALLOC_SIZE \
@@ -60,31 +60,29 @@
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-
-#define SOURCE_LIST_SIZE                     (3u)
+#define SOURCE_LIST_SIZE                        (3u)
 
 #define SCAN_INTERVAL                           (0x40) /* Scan Interval (*0.625ms): 40ms */
 #define SCAN_WINDOW                             (0x20) /* Scan Window (*0.625ms): 20ms */
 #define PA_EVENT_SKIP                           (0u)
 #define PA_SYNC_TIMEOUT                         (0x03E8)
-#define BROADCAST_CONTROLLER_DELAY              (22000u)
 #define BAP_BROADCAST_ENCRYPTION                (0u)
 #define BIG_HANDLE                              (0u)
 #define BIG_MSE                                 (0u)
 #define BIG_SYNC_TIMEOUT                        (0x0190)
 
-#define BLE_AUDIO_DYN_ALLOC_SIZE        (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
+#define BLE_AUDIO_DYN_ALLOC_SIZE (BLE_AUDIO_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, CFG_BLE_EATT_BEARER_PER_LINK))
 
 /*Memory required for CAP*/
-#define CAP_DYN_ALLOC_SIZE      CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_ACCEPTOR,CFG_BLE_NUM_LINK, \
-                                    0u,0u, \
-                                    0u, \
-                                    0u, \
-                                    0u,0u,\
-                                    0u,0u, \
-                                    MAX_NUM_USR_SNK_ASE,MAX_NUM_USR_SRC_ASE, \
-                                    0u,0u,0u, \
-                                    0u,0u)
+#define CAP_DYN_ALLOC_SIZE CAP_MEM_TOTAL_BUFFER_SIZE(CAP_ROLE_ACCEPTOR,CFG_BLE_NUM_LINK, \
+                                                     0u,0u, \
+                                                     0u, \
+                                                     0u, \
+                                                     0u,0u,\
+                                                     0u,0u, \
+                                                     MAX_NUM_USR_SNK_ASE,MAX_NUM_USR_SRC_ASE, \
+                                                     0u,0u,0u, \
+                                                     0u,0u)
 
 #define BAP_PACS_SRV_DYN_ALLOC_SIZE \
         BAP_PACS_SRV_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK,MAX_NUM_PAC_SNK_RECORDS,MAX_NUM_PAC_SRC_RECORDS)
@@ -92,10 +90,10 @@
 /* Memory required to allocate resource for Broadcast Audio Scan for Scan Delegator*/
 #define BAP_BASS_SRV_DYN_ALLOC_SIZE  \
                 BAP_BASS_SRV_TOTAL_BUFFER_SIZE(MAX_NUM_SDE_BSRC_INFO,\
-                                              MAX_NUM_BIS_PER_BIG,\
-                                              MAX_BASS_CODEC_CONFIG_SIZE,\
-                                              MAX_BASS_METADATA_SIZE,\
-                                              MAX_NUM_BASS_BASE_SUBGROUPS)
+                                               MAX_NUM_BIS_PER_BIG,\
+                                               MAX_BASS_CODEC_CONFIG_SIZE,\
+                                               MAX_BASS_METADATA_SIZE,\
+                                               MAX_NUM_BASS_BASE_SUBGROUPS)
 /* Memory required to allocate resource for Non-Volatile Memory Management for BAP Services restoration*/
 #define BAP_NVM_MGMT_DYN_ALLOC_SIZE  \
               BAP_NVM_MGMT_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK)
@@ -129,7 +127,6 @@ static uint8_t aCodecPacketsMemory[MAX_CHANNEL][CODEC_POOL_SUB_SIZE];
 /* In and Out audio buffers sized for an LC3 frame (double buffer, 16 bits per sample) */
 static uint16_t aSnkBuff[SAI_SNK_MAX_BUFF_SIZE] __attribute__((aligned));
 
-
 #if (BAP_BROADCAST_ENCRYPTION == 1)
 uint32_t aPBPAPP_BroadcastCode[4u] = {0x00000001, 0x00000002, 0x00000003, 0x00000004};
 #else /*(BAP_BROADCAST_ENCRYPTION == 1)*/
@@ -142,9 +139,8 @@ uint8_t CurrentID = 0u;
 /* Private functions prototypes-----------------------------------------------*/
 static tBleStatus PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role);
 static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification);
-static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
-static uint8_t PBPAPP_StartBroadcastAudio(Audio_Role_t role);
-static int32_t start_audio_source(void);
+static void PBPAPP_StartBroadcastAudio(Audio_Role_t role);
+static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role);
 static int32_t start_audio_sink(void);
 /* Exported functions --------------------------------------------------------*/
 extern void APP_NotifyToRun(void);
@@ -182,7 +178,6 @@ void CAP_Notification(CAP_Notification_Evt_t *pNotification)
   CAP_App_Notification(pNotification);
 }
 
-
 /**
   * @brief  Notify PBP Events
   * @param  pNotification: pointer on notification information
@@ -192,78 +187,18 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
   switch (pNotification->EvtOpcode)
   {
     case PBP_BROADCAST_AUDIO_UP_EVT:
-    {
       LOG_INFO_APP(">>== PBP_BROADCAST_AUDIO_UP_EVT\n");
-    }
-    break;
+      break;
+
     case PBP_BROADCAST_AUDIO_DOWN_EVT:
     {
-      uint8_t status;
       LOG_INFO_APP(">>== PBP_BROADCAST_AUDIO_DOWN_EVT\n");
-
       Stop_TxAudio();
       MX_AudioDeInit();
-
-      if (PBPAPP_Context.PASyncState != PBPAPP_PA_SYNC_STATE_IDLE)
-      {
-        /* Stop Periodic Advertising Sync */
-        status = PBP_PBK_StopPASync(PBPAPP_Context.PASyncHandle);
-        if (status != BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("  Fail   : PBP_PBK_StopPASync() function, result: 0x%02X\n", status);
-        }
-        else
-        {
-          LOG_INFO_APP("  Success: PBP_PBK_StopPASync() function\n");
-          PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_IDLE;
-        }
-      }
-
-      if (PBPAPP_Context.ScanState == PBPAPP_SCAN_STATE_IDLE)
-      {
-        /* Start Scan */
-        status = PBP_PBK_StartAdvReportParsing();
-        if (status != BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("  Fail   : PBP_PBK_StartAdvReportParsing() function, result: 0x%02X\n", status);
-        }
-        else
-        {
-          LOG_INFO_APP("  Success: PBP_PBK_StartAdvReportParsing() function\n");
-        }
-
-        if (status == BLE_STATUS_SUCCESS)
-        {
-          Scan_Param_Phy_t scan_param_phy;
-          scan_param_phy.Scan_Type     = 0x00; /*Passive scanning*/
-          scan_param_phy.Scan_Interval = SCAN_INTERVAL;
-          scan_param_phy.Scan_Window   = SCAN_WINDOW;
-          /* Starts an Observation procedure */
-          status = aci_gap_ext_start_scan( 0x00,
-                                          GAP_OBSERVATION_PROC,
-                                          0x00,                         /* Address type: Public */
-                                          0x00,                         /* Filter duplicates: No */
-                                          0x00,                         /* Scan continuously until explicitly disable */
-                                          0x00,                         /* Scan continuously */
-                                          0x00,                         /* Filter policy: Accept all */
-                                          HCI_SCANNING_PHYS_LE_1M,
-                                          &scan_param_phy);
-          if (status != BLE_STATUS_SUCCESS)
-          {
-            LOG_INFO_APP("  Fail   : aci_gap_ext_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
-                         GAP_OBSERVATION_PROC,
-                         status);
-          }
-          else
-          {
-            LOG_INFO_APP("  Success: aci_gap_ext_start_scan() function with Scan procedure 0x%02X\n",
-                         GAP_OBSERVATION_PROC);
-            PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_SCANNING;
-          }
-        }
-      }
+      PBPAPP_StopSink();
+      PBPAPP_StartSink();
+      break;
     }
-    break;
 
     case PBP_PBK_BROADCAST_SOURCE_ADV_REPORT_EVT:
     {
@@ -276,7 +211,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
                   data->pBAPReport->pAdvAddress[2],
                   data->pBAPReport->pAdvAddress[1],
                   data->pBAPReport->pAdvAddress[0]);
-      if(PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_IDLE
+      if (PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_IDLE
          && PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
       {
         uint8_t parse_index = 0;
@@ -351,8 +286,8 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           break;
         }
       }
+      break;
     }
-    break;
 
     case PBP_PBK_PA_SYNC_ESTABLISHED_EVT:
     {
@@ -384,184 +319,184 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
         PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_IDLE;
         LOG_INFO_APP("  Success: aci_gap_terminate_gap_proc() function\n");
       }
+      break;
     }
-    break;
 
     case PBP_PBK_PA_SYNC_LOST_EVT:
       LOG_INFO_APP(">>== PBP_PBK_PA_SYNC_LOST_EVT\n");
       PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_IDLE;
-    break;
+      break;
 
     case PBP_PBK_BASE_REPORT_EVT:
-      {
-        BAP_BASE_Report_Data_t *base_data;
-        uint8_t status;
-        uint8_t index = 0;
-        uint8_t i;
-        uint8_t j;
-        uint8_t k;
-        uint8_t l;
-        uint8_t is_different;
-        uint8_t payload_len = 0;
-        LOG_INFO_APP(">>== PBP_PBK_BASE_REPORT_EVT\n");
+    {
+      BAP_BASE_Report_Data_t *base_data;
+      uint8_t status;
+      uint8_t index = 0;
+      uint8_t i;
+      uint8_t j;
+      uint8_t k;
+      uint8_t l;
+      uint8_t is_different;
+      uint8_t payload_len = 0;
+      LOG_INFO_APP(">>== PBP_PBK_BASE_REPORT_EVT\n");
 
-        base_data = (BAP_BASE_Report_Data_t*) pNotification->pInfo;
-        if(PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_SYNCHRONIZED)
-        {
-          PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_BASE_RECEIVED;
-          /* First BASE report after PA sync, force the parsing */
-          is_different = 0x01u;
-        }
-        else
-        {
-          is_different = CAP_Broadcast_IsBASEGroupDifferent(base_data->pBasePayload,
-                                                base_data->BasePayloadLength,
-                                                &(PBPAPP_Context.base_group),
-                                                &(index));
-        }
-        if(is_different == 0x00u)
-        {
-          payload_len += index;
-          for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && is_different == 0x00u; i++)
-          {
-            is_different = CAP_Broadcast_IsBASESubgroupDifferent(base_data->pBasePayload + payload_len,
-                                                     base_data->BasePayloadLength - payload_len,
-                                                     &(PBPAPP_Context.base_subgroups[i]),
-                                                     &(index));
-            payload_len += index;
-            for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes && is_different == 0x00u); j++)
-            {
-              is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
-                                                           base_data->BasePayloadLength - payload_len,
-                                                           &(PBPAPP_Context.base_bis[j]),
-                                                           &(index));
-              payload_len += index;
-            }
-          }
-        }
-        if (is_different == 0x00u)
-        {
-          /* BASE report is not different from the one in PBPAPP_Context */
-          /* No need to parse, copy, or log it again*/
-          break;
-        }
-        status = CAP_Broadcast_ParseBASEGroup(base_data->pBasePayload,
+      base_data = (BAP_BASE_Report_Data_t*) pNotification->pInfo;
+      if (PBPAPP_Context.PASyncState == PBPAPP_PA_SYNC_STATE_SYNCHRONIZED)
+      {
+        PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_BASE_RECEIVED;
+        /* First BASE report after PA sync, force the parsing */
+        is_different = 0x01u;
+      }
+      else
+      {
+        is_different = CAP_Broadcast_IsBASEGroupDifferent(base_data->pBasePayload,
                                               base_data->BasePayloadLength,
                                               &(PBPAPP_Context.base_group),
                                               &(index));
-
-        if(status == BLE_STATUS_SUCCESS)
+      }
+      if (is_different == 0x00u)
+      {
+        payload_len += index;
+        for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && is_different == 0x00u; i++)
         {
-          LOG_INFO_APP("==>> Start BAP BSNK Parse BASE Group INFO\n");
-          LOG_INFO_APP("   Payload Len role : 0x%02x\n",base_data->BasePayloadLength);
-          LOG_INFO_APP("   Presentation_delay: 0x%08x\n",PBPAPP_Context.base_group.PresentationDelay);
-          LOG_INFO_APP("   Num_subgroups : 0x%02x\n",PBPAPP_Context.base_group.NumSubgroups);
+          is_different = CAP_Broadcast_IsBASESubgroupDifferent(base_data->pBasePayload + payload_len,
+                                                    base_data->BasePayloadLength - payload_len,
+                                                    &(PBPAPP_Context.base_subgroups[i]),
+                                                    &(index));
+          payload_len += index;
+          for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes && is_different == 0x00u); j++)
+          {
+            is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
+                                                          base_data->BasePayloadLength - payload_len,
+                                                          &(PBPAPP_Context.base_bis[j]),
+                                                          &(index));
+            payload_len += index;
+          }
+        }
+      }
+      if (is_different == 0x00u)
+      {
+        /* BASE report is not different from the one in PBPAPP_Context */
+        /* No need to parse, copy, or log it again*/
+        break;
+      }
+      status = CAP_Broadcast_ParseBASEGroup(base_data->pBasePayload,
+                                            base_data->BasePayloadLength,
+                                            &(PBPAPP_Context.base_group),
+                                            &(index));
+
+      if (status == BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("==>> Start BAP BSNK Parse BASE Group INFO\n");
+        LOG_INFO_APP("   Payload Len role : 0x%02x\n",base_data->BasePayloadLength);
+        LOG_INFO_APP("   Presentation_delay: 0x%08x\n",PBPAPP_Context.base_group.PresentationDelay);
+        LOG_INFO_APP("   Num_subgroups : 0x%02x\n",PBPAPP_Context.base_group.NumSubgroups);
+        base_data->pBasePayload += index;
+        base_data->BasePayloadLength -= index;
+
+        /* Parse Subgroups */
+        for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && status == BLE_STATUS_SUCCESS; i++)
+        {
+          status = CAP_Broadcast_ParseBASESubgroup(base_data->pBasePayload,
+                                                    base_data->BasePayloadLength,
+                                                    &(PBPAPP_Context.base_subgroups[i]),
+                                                    &(index));
           base_data->pBasePayload += index;
           base_data->BasePayloadLength -= index;
 
-          /* Parse Subgroups */
-          for (i = 0; i < PBPAPP_Context.base_group.NumSubgroups && status == BLE_STATUS_SUCCESS; i++)
+          PBPAPP_Context.base_subgroups[i].pBIS = &(PBPAPP_Context.base_bis[i]);
+          LOG_INFO_APP("    BAP_BSNK_ParseBASESubgroup INFO Number :%d\n", i);
+          LOG_INFO_APP("    Codec ID : 0x%08x\n",PBPAPP_Context.base_subgroups[i].CodecID);
+          LOG_INFO_APP("    Codec specific config length : %d bytes\n",
+                      PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength);
+          if (PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength > 0u)
           {
-            status = CAP_Broadcast_ParseBASESubgroup(base_data->pBasePayload,
-                                                     base_data->BasePayloadLength,
-                                                     &(PBPAPP_Context.base_subgroups[i]),
-                                                     &(index));
+            for (k = 0;k<PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength;k++)
+            {
+              if (PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k] > 0u)
+              {
+                LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]);
+                LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+1u]);
+                LOG_INFO_APP("        Value: 0x");
+                for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]-1);l++)
+                {
+                  LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+2u+l]);
+                }
+                LOG_INFO_APP("\n");
+              }
+              k+=PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k];
+            }
+          }
+          LOG_INFO_APP("    Metadata length : %d bytes\n",PBPAPP_Context.base_subgroups[i].MetadataLength);
+          if (PBPAPP_Context.base_subgroups[i].MetadataLength > 0)
+          {
+            for (k = 0;k<PBPAPP_Context.base_subgroups[i].MetadataLength;k++)
+            {
+              if (PBPAPP_Context.base_subgroups[i].pMetadata[k] > 0u)
+              {
+                LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k]);
+                LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k+1u]);
+                LOG_INFO_APP("        Value: 0x");
+                for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pMetadata[k]-1);l++)
+                {
+                  LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pMetadata[k+2u+l]);
+                }
+                LOG_INFO_APP("\n");
+              }
+              k+=PBPAPP_Context.base_subgroups[i].pMetadata[k];
+            }
+          }
+          LOG_INFO_APP("    Num_BIS : %d\n",PBPAPP_Context.base_subgroups[i].NumBISes);
+
+          /* Parse BIS */
+          for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
+          {
+            status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
+                                                base_data->BasePayloadLength,
+                                                &(PBPAPP_Context.base_bis[j]),
+                                                &(index));
             base_data->pBasePayload += index;
             base_data->BasePayloadLength -= index;
 
-            PBPAPP_Context.base_subgroups[i].pBIS = &(PBPAPP_Context.base_bis[i]);
-            LOG_INFO_APP("    BAP_BSNK_ParseBASESubgroup INFO Number :%d\n", i);
-            LOG_INFO_APP("    Codec ID : 0x%08x\n",PBPAPP_Context.base_subgroups[i].CodecID);
-            LOG_INFO_APP("    Codec specific config length : %d bytes\n",
-                        PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength);
-            if (PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength > 0u)
+            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j].BIS_Index);
+            LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j].CodecSpecificConfLength);
+            if (PBPAPP_Context.base_bis[j].CodecSpecificConfLength > 0u)
             {
-              for (k = 0;k<PBPAPP_Context.base_subgroups[i].CodecSpecificConfLength;k++)
+              for (int k = 0;k<PBPAPP_Context.base_bis[j].CodecSpecificConfLength;k++)
               {
-                if (PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k] > 0u)
+                if (PBPAPP_Context.base_bis[j].pCodecSpecificConf[k] > 0u)
                 {
-                  LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]);
-                  LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+1u]);
-                  LOG_INFO_APP("        Value: 0x");
-                  for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k]-1);l++)
+                  LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]);
+                  LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+1u]);
+                  LOG_INFO_APP("          Value: 0x");
+                  for (int l = 0 ;l<(PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]-1);l++)
                   {
-                    LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k+2u+l]);
+                    LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+2u+l]);
                   }
                   LOG_INFO_APP("\n");
                 }
-                k+=PBPAPP_Context.base_subgroups[i].pCodecSpecificConf[k];
+                k+=PBPAPP_Context.base_bis[j].pCodecSpecificConf[k];
               }
             }
-            LOG_INFO_APP("    Metadata length : %d bytes\n",PBPAPP_Context.base_subgroups[i].MetadataLength);
-            if (PBPAPP_Context.base_subgroups[i].MetadataLength > 0)
-            {
-              for (k = 0;k<PBPAPP_Context.base_subgroups[i].MetadataLength;k++)
-              {
-                if (PBPAPP_Context.base_subgroups[i].pMetadata[k] > 0u)
-                {
-                  LOG_INFO_APP("      Length: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k]);
-                  LOG_INFO_APP("        Type: 0x%02x\n",PBPAPP_Context.base_subgroups[i].pMetadata[k+1u]);
-                  LOG_INFO_APP("        Value: 0x");
-                  for (l = 0 ;l<(PBPAPP_Context.base_subgroups[i].pMetadata[k]-1);l++)
-                  {
-                    LOG_INFO_APP("%02x",PBPAPP_Context.base_subgroups[i].pMetadata[k+2u+l]);
-                  }
-                  LOG_INFO_APP("\n");
-                }
-                k+=PBPAPP_Context.base_subgroups[i].pMetadata[k];
-              }
-            }
-            LOG_INFO_APP("    Num_BIS : %d\n",PBPAPP_Context.base_subgroups[i].NumBISes);
-
-            /* Parse BIS */
-            for (j = 0; (j < PBPAPP_Context.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
-            {
-              status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
-                                                  base_data->BasePayloadLength,
-                                                  &(PBPAPP_Context.base_bis[j]),
-                                                  &(index));
-              base_data->pBasePayload += index;
-              base_data->BasePayloadLength -= index;
-
-              LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j].BIS_Index);
-              LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j].CodecSpecificConfLength);
-              if (PBPAPP_Context.base_bis[j].CodecSpecificConfLength > 0u)
-              {
-                for (int k = 0;k<PBPAPP_Context.base_bis[j].CodecSpecificConfLength;k++)
-                {
-                  if (PBPAPP_Context.base_bis[j].pCodecSpecificConf[k] > 0u)
-                  {
-                    LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]);
-                    LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+1u]);
-                    LOG_INFO_APP("          Value: 0x");
-                    for (int l = 0 ;l<(PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]-1);l++)
-                    {
-                      LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+2u+l]);
-                    }
-                    LOG_INFO_APP("\n");
-                  }
-                  k+=PBPAPP_Context.base_bis[j].pCodecSpecificConf[k];
-                }
-              }
-            }
-          }
-          LOG_INFO_APP("==>> End Start BAP BSNK Parse BASE Group INFO\n");
-
-          if(PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
-          {
-            memcpy(&PBPAPP_Context.codec_specific_config_subgroup[0],
-                   PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
-                   PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
-
-            uint32_t freq = LTV_GetConfiguredSamplingFrequency(PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
-                                                               PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
-
-            LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",freq);
-            AudioClock_Init(freq);
           }
         }
-      break;
+        LOG_INFO_APP("==>> End Start BAP BSNK Parse BASE Group INFO\n");
+
+        if (PBPAPP_Context.BIGSyncState == PBPAPP_BIG_SYNC_STATE_IDLE)
+        {
+          memcpy(&PBPAPP_Context.codec_specific_config_subgroup[0],
+                  PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
+                  PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
+
+          uint32_t freq = LTV_GetConfiguredSamplingFrequency(PBPAPP_Context.base_subgroups[0].pCodecSpecificConf,
+                                                              PBPAPP_Context.base_subgroups[0].CodecSpecificConfLength);
+
+          LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",freq);
+          AudioClock_Init(freq);
+        }
       }
+      break;
+    }
 
     case PBP_PBK_BIGINFO_REPORT_EVT:
     {
@@ -595,16 +530,18 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
     }
 
     case PBP_PBK_BIG_SYNC_ESTABLISHED_EVT:
-      {
-        tBleStatus ret;
-        BAP_BIG_Sync_Established_Data_t *data = (BAP_BIG_Sync_Established_Data_t*) pNotification->pInfo;
-        LOG_INFO_APP(">>== PBP_PBK_BIG_SYNC_ESTABLISHED_EVT\n");
-        LOG_INFO_APP("     - BIG_Handle = 0x%02x\n",data->BIGHandle);
-        LOG_INFO_APP("     - Num BISes = %d\n",data->NumBISes);
+    {
+      tBleStatus ret;
+      BAP_BIG_Sync_Established_Data_t *data = (BAP_BIG_Sync_Established_Data_t*) pNotification->pInfo;
+      LOG_INFO_APP(">>== PBP_PBK_BIG_SYNC_ESTABLISHED_EVT\n");
+      LOG_INFO_APP("     - BIG_Handle = 0x%02x\n",data->BIGHandle);
+      LOG_INFO_APP("     - Num BISes = %d\n",data->NumBISes);
 
+      if (pNotification->Status == BLE_STATUS_SUCCESS)
+      {
         UTIL_MEM_cpy_8(&(PBPAPP_Context.current_BIS_conn_handles[0]),
-                       data->pConnHandle,
-                       (data->NumBISes * sizeof(uint16_t)));
+                        data->pConnHandle,
+                        (data->NumBISes * sizeof(uint16_t)));
         PBPAPP_Context.current_num_bis = data->NumBISes;
         PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_SYNCHRONIZED;
 
@@ -621,16 +558,21 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 
         PBPAPP_BroadcastSetupAudio(AUDIO_ROLE_SINK);
       }
-      break;
-
-    case PBP_PBK_BIG_SYNC_LOST_EVT:
+      else
       {
-        LOG_INFO_APP(">>== PBP_PBK_BIG_SYNC_LOST_EVT\n");
         PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
+        PBPAPP_StopSink();
+        PBPAPP_StartSink();
       }
       break;
+    }
 
-   default:
+    case PBP_PBK_BIG_SYNC_LOST_EVT:
+      LOG_INFO_APP(">>== PBP_PBK_BIG_SYNC_LOST_EVT\n");
+      PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
+      break;
+
+    default:
       break;
   }
   return;
@@ -653,15 +595,11 @@ uint8_t PBPAPP_InitSink(void)
   uint8_t ret = 0;
 
   PBPAPP_Context.phy = 0x02;
-#if (SETUP_SPEAKER == 1u)
-  PBPAPP_Context.audio_driver_config = AUDIO_DRIVER_CONFIG_SPEAKER;
-#else
   PBPAPP_Context.audio_driver_config = AUDIO_DRIVER_CONFIG_LINEIN;
-#endif /*SETUP_SPEAKER == 1u*/
 
   LOG_INFO_APP(">>==  Start CAP Acceptor initialization\n");
   ret = PBPAPP_Init(CAP_ROLE_ACCEPTOR, (BAP_ROLE_BROADCAST_SINK | BAP_ROLE_SCAN_DELEGATOR));
-    if (ret != BLE_STATUS_SUCCESS)
+  if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : PBPAPP_Init() function, result: 0x%02X\n", ret);
   }
@@ -767,6 +705,16 @@ uint8_t PBPAPP_StopSink(void)
 
   if (PBPAPP_Context.ScanState == PBPAPP_SCAN_STATE_SCANNING)
   {
+    ret = PBP_PBK_StopAdvReportParsing();
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      LOG_INFO_APP("  Fail   : PBP_PBK_StopAdvReportParsing() function, result: 0x%02X\n", ret);
+    }
+    else
+    {
+      LOG_INFO_APP("  Success: PBP_PBK_StopAdvReportParsing() function\n");
+    }
+
     ret = aci_gap_terminate_gap_proc(GAP_OBSERVATION_PROC);
     if (ret != BLE_STATUS_SUCCESS)
     {
@@ -798,11 +746,11 @@ uint8_t PBPAPP_StopSink(void)
     ret = PBP_PBK_StopBIGSync(BIG_HANDLE);
     if (ret != BLE_STATUS_SUCCESS)
     {
-      LOG_INFO_APP("  Fail   : BP_PBK_StopBIGSync() function, result: 0x%02X\n", ret);
+      LOG_INFO_APP("  Fail   : PBP_PBK_StopBIGSync() function, result: 0x%02X\n", ret);
     }
     else
     {
-      LOG_INFO_APP("  Success: BP_PBK_StopBIGSync() function\n");
+      LOG_INFO_APP("  Success: PBP_PBK_StopBIGSync() function\n");
       PBPAPP_Context.BIGSyncState = PBPAPP_BIG_SYNC_STATE_IDLE;
     }
   }
@@ -863,45 +811,7 @@ char* PBPAPP_SwitchBrdSource(uint8_t next)
 
   if (PBPAPP_Context.ScanState == PBPAPP_SCAN_STATE_IDLE)
   {
-    ret = PBP_PBK_StartAdvReportParsing();
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : PBP_PBK_StartAdvReportParsing() function, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: PBP_PBK_StartAdvReportParsing() function\n");
-    }
-
-    if (ret == BLE_STATUS_SUCCESS)
-    {
-      Scan_Param_Phy_t scan_param_phy;
-      scan_param_phy.Scan_Type     = 0x00; /*Passive scanning*/
-      scan_param_phy.Scan_Interval = SCAN_INTERVAL;
-      scan_param_phy.Scan_Window   = SCAN_WINDOW;
-      /* Starts an Observation procedure */
-      ret = aci_gap_ext_start_scan( 0x00,
-                                    GAP_OBSERVATION_PROC,
-                                    0x00,                         /* Address type: Public */
-                                    0x00,                         /* Filter duplicates: No */
-                                    0x00,                         /* Scan continuously until explicitly disable */
-                                    0x00,                         /* Scan continuously */
-                                    0x00,                         /* Filter policy: Accept all */
-                                    HCI_SCANNING_PHYS_LE_1M,
-                                    &scan_param_phy);
-      if (ret != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("  Fail   : aci_gap_ext_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
-                     GAP_OBSERVATION_PROC,
-                     ret);
-      }
-      else
-      {
-        LOG_INFO_APP("  Success: aci_gap_ext_start_scan() function with Scan procedure 0x%02X\n",
-                     GAP_OBSERVATION_PROC);
-        PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_SCANNING;
-      }
-    }
+    PBPAPP_StartSink();
   }
 
   LOG_INFO_APP(">>==  End Switch Broadcast Source\n");
@@ -967,14 +877,14 @@ static void CAP_App_Notification(CAP_Notification_Evt_t *pNotification)
   switch (pNotification->EvtOpcode)
   {
     case CAP_AUDIO_CLOCK_REQ_EVT:
-      {
-        LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
-        Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
-        LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
-        LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
-        AudioClock_Init(*freq);
-      }
+    {
+      LOG_INFO_APP(">>== CAP_AUDIO_CLOCK_REQ_EVT\n");
+      Sampling_Freq_t *freq = (Sampling_Freq_t *)pNotification->pInfo;
+      LOG_INFO_APP("     - Sample Frequency Type:   0x%02X\n",*freq);
+      LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",*freq);
+      AudioClock_Init(*freq);
       break;
+    }
 
     default:
       break;
@@ -1051,6 +961,7 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
     PBPAPP_BAP_Config.NvmMgmtConfig.pStartRamAddr = (uint8_t *)&aNvmMgmtMemBuffer;
     PBPAPP_BAP_Config.NvmMgmtConfig.RamSize = BAP_NVM_MGMT_DYN_ALLOC_SIZE;
   }
+
   /* Initialize the Basic Audio Profile*/
   ret = CAP_Init(&PBPAPP_CAP_Config,
                  &PBPAPP_BAP_Config,
@@ -1091,7 +1002,6 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
                       CODEC_PROC_MARGIN_US,
                       CODEC_RF_SETUP_US,
                       CODEC_MODE_DEFAULT);
-
     PBPAPP_Context.base_group.pSubgroups = &(PBPAPP_Context.base_subgroups[0]);
     PBPAPP_Context.base_subgroups[0].pCodecSpecificConf = &(PBPAPP_Context.codec_specific_config_subgroup[0][0]);
     PBPAPP_Context.base_subgroups[0].pMetadata = &(PBPAPP_Context.subgroup_metadata[0][0]);
@@ -1105,20 +1015,15 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
   return ret;
 }
 
-static uint8_t PBPAPP_StartBroadcastAudio(Audio_Role_t role)
+static void PBPAPP_StartBroadcastAudio(Audio_Role_t role)
 {
-  if(role == AUDIO_ROLE_SOURCE)
+  if (role == AUDIO_ROLE_SINK)
   {
-    CODEC_RegisterTriggerClbk(1,0,&start_audio_source);
+    CODEC_RegisterTriggerClbk(DATA_PATH_SAMPLE_CIRC_BUF, DATA_PATH_OUTPUT, &start_audio_sink);
   }
-  else if (role == AUDIO_ROLE_SINK)
-  {
-    CODEC_RegisterTriggerClbk(1,1,&start_audio_sink);
-  }
-  return 0;
 }
 
-static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
+static tBleStatus PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
 {
   Sampling_Freq_t sampling_freq;
   Frame_Duration_t frame_duration;
@@ -1154,7 +1059,7 @@ static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
     /* AUDIO_ROLE_SINK */
     direction = DATA_PATH_OUTPUT;
     CAP_Broadcast_ReadSupportedControllerDelay(PBPAPP_Context.current_num_bis,
-                                               DATA_PATH_OUTPUT,
+                                               direction,
                                                a_codec_id,
                                                &controller_delay_min,
                                                &controller_delay_max);
@@ -1187,8 +1092,7 @@ static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
       LOG_INFO_APP("Warning, could not respect the presentation delay (too high)\n");
     }
 
-
-    CODEC_DataPathParam_t param;
+    CODEC_DataPathSampleParam_t param;
     /* sample coded on 16bits */
     param.SampleDepth = 16;
 
@@ -1200,9 +1104,10 @@ static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
                                             direction,
                                             a_codec_id,
                                             controller_delay,
-                                            DATA_PATH_CIRCULAR_BUF,
-                                            CONFIGURE_DATA_PATH_CONFIG_LEN,
+                                            DATA_PATH_SAMPLE_CIRC_BUF,
+                                            CONFIGURE_DATA_PATH_SAMPLE_LEN,
                                             (const uint8_t*) &param);
+
     if (ret != BLE_STATUS_SUCCESS)
     {
       LOG_INFO_APP("  Fail   : CAP_Broadcast_SetupAudioDataPath() function, result: 0x%02X\n", ret);
@@ -1221,15 +1126,9 @@ static uint8_t PBPAPP_BroadcastSetupAudio(Audio_Role_t role)
   return ret;
 }
 
-
-/* Audio Source */
-static int32_t start_audio_source(void)
-{
-  return Start_RxAudio();
-}
-
 /* Audio Sink */
 static int32_t start_audio_sink(void)
 {
   return Start_TxAudio();
 }
+

@@ -418,11 +418,17 @@ struct ZbZclClusterT {
         struct ZbMsgFilterT *reset_filter; /**< Filter to receive message for resetting reports back to defaults */
         struct LinkListT list; /* List of "struct ZbZclReportT" reports */
         struct ZbTimerT *timer; /* Report timer */
-        bool kicked;
 
-        /* ZbZclClusterReportsSend */
-        bool send_all;
-        ZbUptimeT last_send_all;
+        bool kicked; /* Set to true if timer has been kicked. Reset to false when timer runs. */
+        bool active; /* Is timer and/or sending of reports active? */
+        bool send_all; /* Send all reportable attributes, no matter their delta or timing? */
+        uint8_t curr_attrs;
+        uint8_t total_attrs;
+        /* Do we need to find the last reported attribute, if we split up the timer to
+         * send multiple reports. */
+        uint16_t start_attr_id;
+        bool find_start;
+        unsigned int next_timeout;
 
         /**< Set to true if application called ZbZclClusterReportsSend. Otherwise, only send reports based
          * on the attribute's reporting interval and change threshold.  */
@@ -511,14 +517,17 @@ struct ZbZclClusterT {
  * returns ZCL_STATUS_UNSUPP_CLUSTER. Sets up filter bindings for the Basic Server
  * cluster (global stack clusters) and register's their cluster IDs with the endpoint
  * (e.g. for ZDO Match_Desc_req)  */
-void ZbZclAddEndpoint(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req, struct ZbApsmeAddEndpointConfT *conf);
+void ZbZclAddEndpoint(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req,
+    struct ZbApsmeAddEndpointConfT *conf);
 /* ZbZclAddEndpointNoBasic is the same as ZbZclAddEndpoint, except it does not allocate
  * a Basic Server cluster for the endpoint. */
-void ZbZclAddEndpointNoBasic(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req, struct ZbApsmeAddEndpointConfT *conf);
+void ZbZclAddEndpointNoBasic(struct ZigBeeT *zb, struct ZbApsmeAddEndpointReqT *req,
+    struct ZbApsmeAddEndpointConfT *conf);
 
 /* Helper to remove a ZCL endpoint created by ZbZclAddEndpoint.
  * Calls ZbApsmeRemoveEndpoint and removes the ZCL filters created by ZbZclAddEndpoint. */
-void ZbZclRemoveEndpoint(struct ZigBeeT *zb, struct ZbApsmeRemoveEndpointReqT *req, struct ZbApsmeRemoveEndpointConfT *conf);
+void ZbZclRemoveEndpoint(struct ZigBeeT *zb, struct ZbApsmeRemoveEndpointReqT *req,
+    struct ZbApsmeRemoveEndpointConfT *conf);
 
 /* Allocate and initialize a new cluster */
 void * ZbZclClusterAlloc(struct ZigBeeT *zb, unsigned int alloc_sz, enum ZbZclClusterIdT cluster_id,
@@ -531,6 +540,13 @@ void ZbZclClusterFree(struct ZbZclClusterT *cluster);
 /* Register this cluster's ID on the endpoint if not already listed. */
 bool ZbZclClusterEndpointRegister(struct ZbZclClusterT *cluster);
 bool ZbZclClusterEndpointRemove(struct ZbZclClusterT *cluster);
+
+/* ZCL Memory Allocation API. The implementation is provided by one of these porting files:
+ *   - zcl/port/zcl_mem_stdlib.c  ; Use stdlib.h malloc / free
+ *   - zcl/port/zcl_mem_zbheap.c  ; Use ZbHeapAlloc / ZbHeapFree (not available outside of stack)
+ */
+void * ZbZclMemAlloc(struct ZigBeeT *zb, unsigned int sz);
+void ZbZclMemFree(struct ZigBeeT *zb, void *ptr);
 
 /*---------------------------------------------------------------
  * Building and Parsing Frames
@@ -1018,6 +1034,10 @@ bool ZbZclDeviceLogAdd(struct ZigBeeT *zb, uint64_t ext_addr);
 bool ZbZclDeviceLogRemove(struct ZigBeeT *zb, uint64_t ext_addr);
 void ZbZclDeviceLogClear(struct ZigBeeT *zb);
 
+bool ZbZclDeviceLogExtAddrCheckAllow(struct ZigBeeT *zb, uint64_t ext_addr);
+bool ZbZclDeviceLogDataIndCheckAllow(struct ZigBeeT *zb, struct ZbApsdeDataIndT *dataIndPtr,
+    struct ZbZclHeaderT *zclHdrPtr);
+
 /*---------------------------------------------------------------
  * Helper Functions
  *---------------------------------------------------------------
@@ -1037,13 +1057,19 @@ void ZbZclClusterSetProfileId(struct ZbZclClusterT *cluster, uint16_t profileId)
  * minSecurity can be one of: ZB_APS_STATUS_UNSECURED, ZB_APS_STATUS_SECURED_NWK_KEY or ZB_APS_STATUS_SECURED_LINK_KEY  */
 bool ZbZclClusterSetMinSecurity(struct ZbZclClusterT *cluster, enum ZbStatusCodeT minSecurity);
 
+/* Helper used by the ZCL and Stack to determine if an incoming packet is allowed
+ * to be processed by the cluster based on security level. */
+bool ZbZclClusterCheckMinSecurity(struct ZbZclClusterT *cluster,
+    struct ZbApsdeDataIndT *dataIndPtr, struct ZbZclHeaderT *zclHdrPtr);
+
 /* Set the maximum ASDU length for the cluster. The ASDU length includes
  * fragmentation, if enabled in the cluster's tx options. */
 bool ZbZclClusterSetMaxAsduLength(struct ZbZclClusterT *cluster, uint16_t maxAsduLength);
 
 /* Helper functions to initialize requests based on cluster parameters */
 void ZbZclClusterInitCommandReq(struct ZbZclClusterT *cluster, struct ZbZclCommandReqT *cmdReq);
-void ZbZclClusterInitApsdeReq(struct ZbZclClusterT *cluster, struct ZbApsdeDataReqT *apsReq, struct ZbApsdeDataIndT *dataInd);
+void ZbZclClusterInitApsdeReq(struct ZbZclClusterT *cluster, struct ZbApsdeDataReqT *apsReq,
+    struct ZbApsdeDataIndT *dataInd);
 
 /* Helper to generate proper APS TX Options (e.g. ZB_APSDE_DATAREQ_TXOPTIONS_SECURITY)
  * for a response, based on the given (incoming message) security status code. */

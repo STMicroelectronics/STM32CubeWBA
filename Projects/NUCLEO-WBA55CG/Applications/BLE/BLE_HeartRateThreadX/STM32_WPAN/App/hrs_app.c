@@ -55,7 +55,6 @@ typedef struct
 {
   HRS_APP_SendInformation_t     Hrme_Notification_Status;
   /* USER CODE BEGIN Service1_APP_Context_t */
-  UTIL_TIMER_Object_t           TimerMeasurement_Id;
   HRS_MeasVal_t                 MeasurementVal;
   uint8_t                       ResetEnergyExpended;
   HRS_BodySensorLocation_t      BodySensorLocationVal;
@@ -67,12 +66,6 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-/* MEAS_REQ_TASK related defines */
-#define MEAS_REQ_TASK_STACK_SIZE    (1024)
-#define MEAS_REQ_TASK_PRIO          (15)
-#define MEAS_REQ_TASK_PREEM_TRES    (0)
-
-#define HRS_APP_MEASUREMENT_INTERVAL (1000)
 #define HRS_APP_RR_INTERVAL_NBR      (1)     /* Number of RR interval, shall be lower than HRS_MAX_NBR_RR_INTERVAL_VALUES*/
 /* USER CODE END PD */
 
@@ -93,18 +86,13 @@ uint8_t a_HRS_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
 
-/* MEAS_REQ_TASK related resources */
-TX_THREAD MEAS_REQ_Thread;
-TX_SEMAPHORE MEAS_REQ_Thread_Sem;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 static void HRS_Hrme_SendNotification(void);
 
 /* USER CODE BEGIN PFP */
-static void HRS_APP_Measurements_timCB(void *arg);
 static void HRS_APP_Measurements(void);
-static void HRS_APP_Measurements_Entry(unsigned long thread_input);
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -124,14 +112,13 @@ void HRS_Notification(HRS_NotificationEvt_t *p_Notification)
 
     case HRS_HRME_NOTIFY_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_ENABLED_EVT */
-      UTIL_TIMER_Stop(&(HRS_APP_Context.TimerMeasurement_Id));
-      UTIL_TIMER_StartWithPeriod( &(HRS_APP_Context.TimerMeasurement_Id), HRS_APP_MEASUREMENT_INTERVAL);
+      tx_timer_activate(&MEAS_REQ_Timer);
       /* USER CODE END Service1Char1_NOTIFY_ENABLED_EVT */
       break;
 
     case HRS_HRME_NOTIFY_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char1_NOTIFY_DISABLED_EVT */
-      UTIL_TIMER_Stop(&(HRS_APP_Context.TimerMeasurement_Id));
+      tx_timer_deactivate(&MEAS_REQ_Timer);
       /* USER CODE END Service1Char1_NOTIFY_DISABLED_EVT */
       break;
 
@@ -178,7 +165,7 @@ void HRS_APP_EvtRx(HRS_APP_ConnHandleNotEvt_t *p_Notification)
 
     case HRS_DISCON_HANDLE_EVT :
       /* USER CODE BEGIN Service1_APP_DISCON_HANDLE_EVT */
-      UTIL_TIMER_Stop(&(HRS_APP_Context.TimerMeasurement_Id));
+      tx_timer_deactivate(&MEAS_REQ_Timer);
       /* USER CODE END Service1_APP_DISCON_HANDLE_EVT */
       break;
 
@@ -203,28 +190,7 @@ void HRS_APP_Init(void)
 
   /* USER CODE BEGIN Service1_APP_Init */
   HRS_Data_t msg_conf;
-  CHAR * pStack;
 
-  /* Create timer for Heart Rate Measurement */
-  UTIL_TIMER_Create(&(HRS_APP_Context.TimerMeasurement_Id),
-                    HRS_APP_MEASUREMENT_INTERVAL,
-                    UTIL_TIMER_PERIODIC,
-                    &HRS_APP_Measurements_timCB, 0);
-  if (tx_byte_allocate(pBytePool, (void **) &pStack, MEAS_REQ_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
-  if (tx_semaphore_create(&MEAS_REQ_Thread_Sem, "MEAS_REQ_Thread_Sem", 0)!= TX_SUCCESS )
-  {
-    Error_Handler();
-  }
-  if (tx_thread_create(&MEAS_REQ_Thread, "MEAS_REQ_Thread", HRS_APP_Measurements_Entry, 0,
-                         pStack, MEAS_REQ_TASK_STACK_SIZE,
-                         MEAS_REQ_TASK_PRIO, MEAS_REQ_TASK_PREEM_TRES,
-                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-  {
-    Error_Handler();
-  }
   /**
    * Set Flags for measurement value
    */
@@ -262,6 +228,17 @@ void HRS_APP_Init(void)
 
 /* USER CODE BEGIN FD */
 
+void HRS_APP_Measurements_Entry(unsigned long thread_input)
+{
+  UNUSED(thread_input);
+
+  while(1)
+  {
+    tx_semaphore_get(&MEAS_REQ_Thread_Sem, TX_WAIT_FOREVER);
+    HRS_APP_Measurements();
+  }
+}
+
 /* USER CODE END FD */
 
 /*************************************************************
@@ -294,18 +271,6 @@ __USED void HRS_Hrme_SendNotification(void) /* Property Notification */
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
-static void HRS_APP_Measurements_timCB(void *arg)
-{
-  /**
-   * The code shall be executed in the background as aci command may be sent
-   * The background is the only place where the application can make sure a new aci command
-   * is not sent if there is a pending one
-   */
-  tx_semaphore_put(&MEAS_REQ_Thread_Sem);
-
-  return;
-}
 
 static void HRS_APP_Measurements(void)
 {
@@ -453,20 +418,6 @@ static void HRS_APP_Measurements(void)
   }
 
   return;
-}
-
-static void HRS_APP_Measurements_Entry(unsigned long thread_input)
-{
-  (void)(thread_input);
-
-  while(1)
-  {
-    tx_semaphore_get(&MEAS_REQ_Thread_Sem, TX_WAIT_FOREVER);
-
-    HRS_APP_Measurements();
-
-    tx_thread_relinquish();
-  }
 }
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

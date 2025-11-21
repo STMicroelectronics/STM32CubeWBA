@@ -199,6 +199,11 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the buffer used to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)

@@ -232,7 +232,7 @@
                 <option>
                     <name>CCDefines</name>
                     <state>USE_FULL_LL_DRIVER</state>
-                    <state>BLE</state>
+                    <state>BLE_LL</state>
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
                     <state>OPENTHREAD_FTD</state>
@@ -240,6 +240,7 @@
                     <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
                     <state>USE_HAL_DRIVER</state>
                     <state>STM32WBA65xx</state>
+                    <state>PHY_40nm_3_40_a</state>
                     <state>OTG_HS</state>
                     <state>USE_FULL_ASSERT</state>
                 </option>
@@ -302,7 +303,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>11111110</state>
+                    <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>

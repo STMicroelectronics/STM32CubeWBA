@@ -98,6 +98,18 @@ void Notifier::EmitEvents(void)
     // Emit events to core internal modules
 
     Get<Mle::Mle>().HandleNotifierEvents(events);
+#if (OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_2)
+    Get<BackboneRouter::Leader>().HandleNotifierEvents(events);
+#endif
+#if OPENTHREAD_CONFIG_DHCP6_SERVER_ENABLE
+    Get<Dhcp6::Server>().HandleNotifierEvents(events);
+#endif
+#if OPENTHREAD_CONFIG_NEIGHBOR_DISCOVERY_AGENT_ENABLE
+    Get<NeighborDiscovery::Agent>().HandleNotifierEvents(events);
+#endif
+#if OPENTHREAD_CONFIG_DHCP6_CLIENT_ENABLE
+    Get<Dhcp6::Client>().HandleNotifierEvents(events);
+#endif
     Get<EnergyScanServer>().HandleNotifierEvents(events);
 #if OPENTHREAD_FTD
     Get<MeshCoP::JoinerRouter>().HandleNotifierEvents(events);
@@ -151,6 +163,10 @@ void Notifier::EmitEvents(void)
 #if OPENTHREAD_CONFIG_SRP_CLIENT_ENABLE
     Get<Srp::Client>().HandleNotifierEvents(events);
 #endif
+#if OPENTHREAD_CONFIG_SRP_SERVER_ENABLE && OPENTHREAD_CONFIG_SRP_SERVER_FAST_START_MODE_ENABLE
+    Get<Srp::Server>().HandleNotifierEvents(events);
+#endif
+
 #if OPENTHREAD_CONFIG_NETDATA_PUBLISHER_ENABLE
     // The `NetworkData::Publisher` is notified last (e.g., after SRP
     // client) to allow other modules to request changes to what is

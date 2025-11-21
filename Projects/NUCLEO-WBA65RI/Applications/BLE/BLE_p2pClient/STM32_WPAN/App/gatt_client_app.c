@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -472,10 +472,10 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           {
             charPropVal = 0x0002;
           }
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].ServiceChangedCharDescHdl,
-                                            2,
-                                            (uint8_t *) &charPropVal);
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].ServiceChangedCharDescHdl,
+                                                2,
+                                                (uint8_t *) &charPropVal);
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
@@ -492,7 +492,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         if(a_ClientContext[index].P2PNotificationDescHdl != 0x0000)
         {
           charPropVal = 0x0001;
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].P2PNotificationDescHdl,
                                                 2,
                                                 (uint8_t *) &charPropVal);
@@ -500,7 +500,8 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
-            LOG_INFO_APP(" aci_gatt_write_char_desc sucess P2PNotificationDescHdl =0x%04X\n",a_ClientContext[index].P2PNotificationDescHdl);
+            LOG_INFO_APP(" aci_gatt_write_char_value sucess P2PNotificationDescHdl =0x%04X\n",
+                          a_ClientContext[index].P2PNotificationDescHdl);
           }
           else
           {
@@ -508,7 +509,6 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
             status++;
           }
         }
-
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (status == 0)
@@ -597,16 +597,14 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         case ACI_GATT_PROC_COMPLETE_VSEVT_CODE:
         {
           aci_gatt_proc_complete_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-
-          uint8_t index;
-          for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+          if(p_evt_rsp->Error_Code != BLE_STATUS_SUCCESS)
           {
-            if (a_ClientContext[index].connHdl == p_evt_rsp->Connection_Handle)
-            {
-              gatt_cmd_resp_release();
-              break;
-            }
+            LOG_INFO_APP("\n GATT procedure ended unsuccessfully, error code: 0x%02X\n",
+                         p_evt_rsp->Error_Code);
           }
+
+          /* Release GATT command response regardless of procedure success or failure */
+          gatt_cmd_resp_release();
         }
         break;/* ACI_GATT_PROC_COMPLETE_VSEVT_CODE */
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
@@ -671,16 +669,12 @@ __USED static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif
 
       if (P2PLedLevel == 0x00)
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_Off(LED_BLUE);
-        #endif
+        APP_BSP_LED_Off(LED_BLUE);
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED OFF \n");
       }
       else
       {
-        #if (CFG_LED_SUPPORTED == 1)
-        BSP_LED_On(LED_BLUE);
-        #endif
+        APP_BSP_LED_On(LED_BLUE);
         LOG_INFO_APP("  P2P APPLICATION CLIENT : NOTIFICATION RECEIVED - LED ON\n");
       }
       break;

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -104,7 +104,18 @@ extern "C" {
 /* USER CODE END TASK_Size_Define */
 
 /* USER CODE BEGIN EC */
+  
+/* ADV_TASK related defines */
+#define ADV_TASK_STACK_SIZE                     (RTOS_STACK_SIZE_NORMAL)
+#define ADV_TASK_PRIO                           (15u)
+#define ADV_TASK_PREEM_TRES                     (0u)
 
+#define ADV_QUEUE_SIZE                          (8u * sizeof(ULONG))
+
+/* MEAS_REQ_TASK related defines */
+#define MEAS_REQ_TASK_STACK_SIZE                (RTOS_STACK_SIZE_NORMAL)
+#define MEAS_REQ_TASK_PRIO                      (15u)
+#define MEAS_REQ_TASK_PREEM_TRES                (0u)
 /* USER CODE END EC */
 
 /* Exported macros -----------------------------------------------------------*/

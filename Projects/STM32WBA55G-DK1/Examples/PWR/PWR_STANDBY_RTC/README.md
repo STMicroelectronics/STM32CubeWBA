@@ -1,4 +1,12 @@
-﻿## <b>PWR_STANDBY_RTC Example Description</b>
+
+---
+pagetitle: Readme
+lang: en
+---
+::: {.row}
+::: {.col-sm-12 .col-lg-8}
+
+## <b>PWR_STANDBY_RTC Example Description</b>
 
 How to enter the Standby mode and wake-up from this mode by using an external 
 reset or the RTC wakeup timer.
@@ -69,7 +77,7 @@ Power, PWR, Standby mode, Interrupt, EXTI, Wakeup, Low Power, RTC, External rese
     and development board.
 
   - STM32WBA55G-DK1 Set-up
-    - LD3 connected to PA.00 pin
+    - LD3 connected to PA.00 or PB.15 pin (IO used is dependant of board revision)
 
 ### <b>How to use it ?</b>
 
@@ -80,4 +88,8 @@ In order to make the program work, you must do the following :
  - Once the image is loaded, power off the NUCLEO board in unplugging
    the power cable then power on the board again 
  - Run the example
+
+
+:::
+:::
 

@@ -62,7 +62,7 @@ IF %errorlevel% NEQ 0 goto :error
 
 IF "%select_wba_target%" == "0x55" (goto ob_stm32wba55xx)
 echo Remove bank2 protection
-%stm32programmercli% %connect% %remove_bank2_protect%
+%stm32programmercli% %connect_no_reset% %remove_bank2_protect%
 IF %errorlevel% NEQ 0 goto :error
 
 :ob_stm32wba55xx

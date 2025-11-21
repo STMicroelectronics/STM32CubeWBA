@@ -55,7 +55,16 @@ __asm("  .global __ARM_use_no_argv\n");
 
 
 /* Private define ------------------------------------------------------------*/
+#if defined(__ICCARM__)
+#pragma location=".Boot_Shared_Data"
+__no_init __root volatile uint8_t shared_data_area[BOOT_SHARED_DATA_SIZE];
 
+#pragma location=".Boot_Ram_Data"
+__no_init __root volatile uint8_t boot_ram_area[BOOT_RAM_SIZE];
+#elif defined(__GNUC__)
+uint8_t shared_data_area[BOOT_SHARED_DATA_SIZE] __attribute__((section(".Boot_Shared_Data"))) __attribute__((used));
+uint8_t boot_ram_area[BOOT_RAM_SIZE]            __attribute__((section(".Boot_Ram_Data")))    __attribute__((used));
+#endif
 
 /* Private macro -------------------------------------------------------------*/
 

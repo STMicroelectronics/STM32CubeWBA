@@ -21,6 +21,7 @@
 #include "main.h"
 #include "stm32wbaxx_it.h"
 #include "app_conf.h"
+#include "ll_sys.h"
 #include "stm32wbaxx_hal.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -63,6 +64,7 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
+extern RTC_HandleTypeDef hrtc;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -209,6 +211,50 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32wbaxx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles RTC non-secure interrupt.
+  */
+void RTC_IRQHandler(void)
+{
+  /* USER CODE BEGIN RTC_IRQn 0 */
+
+  /* USER CODE END RTC_IRQn 0 */
+  HAL_RTCEx_SSRUIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_IRQn 1 */
+
+  /* USER CODE END RTC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles RCC non-secure global interrupt.
+  */
+void RCC_IRQHandler(void)
+{
+  /* USER CODE BEGIN RCC_IRQn 0 */
+
+  /* USER CODE END RCC_IRQn 0 */
+  /* Check the RCC interrupt source */
+  if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
+  {
+    __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
+#if (CFG_SCM_SUPPORTED == 1)
+    /* SCM HSE BEGIN */
+    SCM_HSE_StartStabilizationTimer();
+    /* SCM HSE END */
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
+  {
+    __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
+#if (CFG_SCM_SUPPORTED == 1)
+    scm_pllrdy_isr();
+#endif /* CFG_SCM_SUPPORTED */
+  }
+  /* USER CODE BEGIN RCC_IRQn 1 */
+
+  /* USER CODE END RCC_IRQn 1 */
+}
 
 /**
   * @brief This function handles EXTI Line13 interrupt.

@@ -64,7 +64,6 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -244,6 +243,10 @@ static void System_Init( void )
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
+
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
@@ -328,15 +331,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
   UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -362,6 +365,9 @@ static void APPE_RNG_Init(void)
  */
 static void APPE_FLASH_MANAGER_Init(void)
 {
+  /* Init the Flash Manager module */
+  FM_Init();
+
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
 
@@ -417,11 +423,12 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)

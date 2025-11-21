@@ -54,6 +54,34 @@ otBorderRoutingState otBorderRoutingGetState(otInstance *aInstance)
     return MapEnum(AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetState());
 }
 
+otError otBorderRoutingSetOmrConfig(otInstance              *aInstance,
+                                    otBorderRoutingOmrConfig aConfig,
+                                    const otIp6Prefix       *aOmrPrefix,
+                                    otRoutePreference        aPreference)
+{
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetOmrConfig(
+        MapEnum(aConfig), AsCoreTypePtr(aOmrPrefix),
+        static_cast<BorderRouter::RoutingManager::RoutePreference>(aPreference));
+}
+
+otBorderRoutingOmrConfig otBorderRoutingGetOmrConfig(otInstance        *aInstance,
+                                                     otIp6Prefix       *aOmrPrefix,
+                                                     otRoutePreference *aPreference)
+{
+    BorderRouter::RoutingManager::RoutePreference preference;
+    BorderRouter::RoutingManager::OmrConfig       omrConfig;
+
+    omrConfig =
+        AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetOmrConfig(AsCoreTypePtr(aOmrPrefix), &preference);
+
+    if (aPreference != nullptr)
+    {
+        *aPreference = static_cast<otRoutePreference>(preference);
+    }
+
+    return MapEnum(omrConfig);
+}
+
 otRoutePreference otBorderRoutingGetRouteInfoOptionPreference(otInstance *aInstance)
 {
     return static_cast<otRoutePreference>(
@@ -103,14 +131,14 @@ otError otBorderRoutingGetPdOmrPrefix(otInstance *aInstance, otBorderRoutingPref
 {
     AssertPointerIsNotNull(aPrefixInfo);
 
-    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetPdOmrPrefix(*aPrefixInfo);
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetDhcp6PdOmrPrefix(*aPrefixInfo);
 }
 
 otError otBorderRoutingGetPdProcessedRaInfo(otInstance *aInstance, otPdProcessedRaInfo *aPdProcessedRaInfo)
 {
     AssertPointerIsNotNull(aPdProcessedRaInfo);
 
-    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetPdProcessedRaInfo(*aPdProcessedRaInfo);
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetDhcp6PdCounters(*aPdProcessedRaInfo);
 }
 #endif
 
@@ -190,6 +218,23 @@ otError otBorderRoutingGetNextRouterEntry(otInstance                         *aI
     return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetNextRouterEntry(*aIterator, *aEntry);
 }
 
+otError otBorderRoutingGetNextRdnssAddrEntry(otInstance                         *aInstance,
+                                             otBorderRoutingPrefixTableIterator *aIterator,
+                                             otBorderRoutingRdnssAddrEntry      *aEntry)
+{
+    AssertPointerIsNotNull(aIterator);
+    AssertPointerIsNotNull(aEntry);
+
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().GetNextRdnssAddrEntry(*aIterator, *aEntry);
+}
+
+void otBorderRoutingSetRdnssAddrCallback(otInstance                      *aInstance,
+                                         otBorderRoutingRdnssAddrCallback aCallback,
+                                         void                            *aContext)
+{
+    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetRdnssAddrCallback(aCallback, aContext);
+}
+
 #if OPENTHREAD_CONFIG_BORDER_ROUTING_TRACK_PEER_BR_INFO_ENABLE
 
 otError otBorderRoutingGetNextPeerBrEntry(otInstance                           *aInstance,
@@ -212,6 +257,22 @@ uint16_t otBorderRoutingCountPeerBrs(otInstance *aInstance, uint32_t *aMinAge)
 
 #endif
 
+#if OPENTHREAD_CONFIG_BORDER_ROUTING_MULTI_AIL_DETECTION_ENABLE
+
+bool otBorderRoutingIsMultiAilDetected(otInstance *aInstance)
+{
+    return AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().IsMultiAilDetected();
+}
+
+void otBorderRoutingSetMultiAilCallback(otInstance                     *aInstance,
+                                        otBorderRoutingMultiAilCallback aCallback,
+                                        void                           *aContext)
+{
+    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetMultiAilCallback(aCallback, aContext);
+}
+
+#endif
+
 #if OPENTHREAD_CONFIG_BORDER_ROUTING_DHCP6_PD_ENABLE
 
 void otBorderRoutingDhcp6PdSetEnabled(otInstance *aInstance, bool aEnabled)
@@ -228,7 +289,7 @@ void otBorderRoutingDhcp6PdSetRequestCallback(otInstance                        
                                               otBorderRoutingRequestDhcp6PdCallback aCallback,
                                               void                                 *aContext)
 {
-    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetRequestDhcp6PdCallback(aCallback, aContext);
+    AsCoreType(aInstance).Get<BorderRouter::RoutingManager>().SetDhcp6PdCallback(aCallback, aContext);
 }
 
 #endif

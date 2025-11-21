@@ -53,7 +53,6 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -297,13 +296,13 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
@@ -368,11 +367,12 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_LPM_EnterLowPowerMode();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)

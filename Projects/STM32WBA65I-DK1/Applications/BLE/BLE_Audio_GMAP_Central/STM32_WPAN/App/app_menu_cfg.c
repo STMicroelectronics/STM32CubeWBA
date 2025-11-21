@@ -23,6 +23,7 @@
 #include "app_conf.h"
 #include "ble_gap_aci.h"
 #include "log_module.h"
+#include "stm32_timer.h"
 
 /* External variables ------------------------------------------------------- */
 extern uint8_t volume_mute_byteicon[];
@@ -114,7 +115,7 @@ uint8_t a_broadcast_conf_id[8] = {
   LC3_QOS_8_2_1,
   LC3_QOS_16_2_1,
   LC3_QOS_24_2_1,
-  LC3_QOS_32_1_1,
+  LC3_QOS_32_2_1,
   LC3_QOS_48_1_g,
   LC3_QOS_48_2_g,
   LC3_QOS_48_3_g,
@@ -455,7 +456,7 @@ void Menu_SetRemoteMicMute(uint8_t Mute)
  * @brief Set Profiles Linked Up
  */
 void Menu_SetProfilesLinked(audio_profile_t Profiles)
-{  
+{
 	char bap_string[5] = "";
 	char vcp_string[5] = "";
 	char micp_string[6] = "";
@@ -646,7 +647,7 @@ static void Menu_StartStreamGame(void)
 static void Menu_StartStreamVoice(void)
 {
   LOG_INFO_APP("[APP_MENU_CONF] Start Voice Stream\n");
-  
+
   if (APP_GetNumActiveACLConnections() == 1)
   {
     GMAPAPP_StartStream(LC3_QOS_32_2_gs,

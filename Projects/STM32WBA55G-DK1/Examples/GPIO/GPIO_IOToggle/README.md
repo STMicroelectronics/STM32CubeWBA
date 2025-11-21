@@ -1,9 +1,17 @@
+
+---
+pagetitle: Readme
+lang: en
+---
+::: {.row}
+::: {.col-sm-12 .col-lg-8}
+
 ## <b>GPIO_IOToggle Example Description</b>
 
 How to configure and use GPIOs through the HAL API.
 
-PA.00 IO (configured in output pushpull mode) toggles in a forever loop.
-On STM32WBA55G-DK1 board this IO is connected to LD3.
+PA.00 or PB.15 IO (configured in output pushpull mode) toggles in a forever loop.
+On STM32WBA55G-DK1 board this IO is connected to LD3 (IO used is linked to board revision).
 
 In this example, HCLK is configured at 100 MHz.
 
@@ -47,4 +55,8 @@ In order to make the program work, you must do the following :
  - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Run the example
+
+
+:::
+:::
 

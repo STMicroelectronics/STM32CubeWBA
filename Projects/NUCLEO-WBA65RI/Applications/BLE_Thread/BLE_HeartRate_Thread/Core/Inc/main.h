@@ -73,6 +73,7 @@ void MX_GPDMA1_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
+void MX_LPUART1_UART_Init(void);
 void MX_ADC4_Init(void);
 void MX_CRC_Init(void);
 void MX_ICACHE_Init(void);

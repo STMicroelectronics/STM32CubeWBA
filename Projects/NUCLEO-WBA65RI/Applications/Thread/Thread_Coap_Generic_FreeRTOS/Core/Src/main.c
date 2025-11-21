@@ -41,13 +41,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CRYP_HandleTypeDef hcryp;
-__ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
-                            0x00000000,0x00000000,0x00000000,0x00000000};
-
-HASH_HandleTypeDef hhash;
-
-PKA_HandleTypeDef hpka;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
@@ -66,9 +59,6 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 void MX_FREERTOS_Init(void);
 static void MX_GPDMA1_Init(void);
-static void MX_AES_Init(void);
-static void MX_PKA_Init(void);
-static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -116,11 +106,8 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_AES_Init();
-  MX_PKA_Init();
-  MX_HASH_Init();
   /* USER CODE BEGIN 2 */
-
+  
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -235,40 +222,6 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
-  * @brief AES Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_AES_Init(void)
-{
-
-  /* USER CODE BEGIN AES_Init 0 */
-
-  /* USER CODE END AES_Init 0 */
-
-  /* USER CODE BEGIN AES_Init 1 */
-
-  /* USER CODE END AES_Init 1 */
-  hcryp.Instance = AES;
-  hcryp.Init.DataType = CRYP_NO_SWAP;
-  hcryp.Init.KeySize = CRYP_KEYSIZE_128B;
-  hcryp.Init.pKey = (uint32_t *)pKeyAES;
-  hcryp.Init.Algorithm = CRYP_AES_ECB;
-  hcryp.Init.DataWidthUnit = CRYP_DATAWIDTHUNIT_WORD;
-  hcryp.Init.HeaderWidthUnit = CRYP_HEADERWIDTHUNIT_WORD;
-  hcryp.Init.KeyIVConfigSkip = CRYP_KEYIVCONFIG_ALWAYS;
-  hcryp.Init.KeyMode = CRYP_KEYMODE_NORMAL;
-  if (HAL_CRYP_Init(&hcryp) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN AES_Init 2 */
-
-  /* USER CODE END AES_Init 2 */
-
-}
-
-/**
   * @brief GPDMA1 Initialization Function
   * @param None
   * @retval None
@@ -299,34 +252,6 @@ static void MX_GPDMA1_Init(void)
 }
 
 /**
-  * @brief HASH Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_HASH_Init(void)
-{
-
-  /* USER CODE BEGIN HASH_Init 0 */
-
-  /* USER CODE END HASH_Init 0 */
-
-  /* USER CODE BEGIN HASH_Init 1 */
-
-  /* USER CODE END HASH_Init 1 */
-  hhash.Instance = HASH;
-  hhash.Init.DataType = HASH_NO_SWAP;
-  hhash.Init.Algorithm = HASH_ALGOSELECTION_SHA1;
-  if (HAL_HASH_Init(&hhash) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN HASH_Init 2 */
-
-  /* USER CODE END HASH_Init 2 */
-
-}
-
-/**
   * @brief ICACHE Initialization Function
   * @param None
   * @retval None
@@ -344,45 +269,17 @@ void MX_ICACHE_Init(void)
 
   /* USER CODE END ICACHE_Init 1 */
 
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
+
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_ICACHE_SetMode(LL_ICACHE_1WAY);
+  LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
-
-}
-
-/**
-  * @brief PKA Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_PKA_Init(void)
-{
-
-  /* USER CODE BEGIN PKA_Init 0 */
-
-  /* USER CODE END PKA_Init 0 */
-
-  /* USER CODE BEGIN PKA_Init 1 */
-
-  /* USER CODE END PKA_Init 1 */
-  hpka.Instance = PKA;
-  if (HAL_PKA_Init(&hpka) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN PKA_Init 2 */
-
-  /* USER CODE END PKA_Init 2 */
 
 }
 
@@ -406,6 +303,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -555,28 +456,6 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM2 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM2)
-  {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
-}
 
 /**
   * @brief  This function is executed in case of error occurrence.

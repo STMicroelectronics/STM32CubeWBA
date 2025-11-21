@@ -12,8 +12,8 @@ Connectivity, Zigbee, Zigbee protocol, 802.15.4 protocol, OnOff cluster
 
 For this application it is requested to have at least:
 
-* One STM32WBA65xx Nucleo board loaded with application **Zigbee_OnOff_Server_Coord**
-* One or more STM32WBA65xx board loaded with application **Zigbee_OnOff_Client_Router**
+* One STM32WBA55xx Nucleo board loaded with application **Zigbee_OnOff_Server_Coord**
+* One or more STM32WBA55xx board loaded with application **Zigbee_OnOff_Client_Router**
 </br>
 
 <pre>
@@ -34,7 +34,7 @@ For this application it is requested to have at least:
 
 ### __Application Setup__
 
-* First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
+* First, open the projects, build them and load your generated applications on your STM32WBA55xx devices.
 * To run the application :
 	1. Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_OnOff_Server_Coord application.  
 
@@ -51,7 +51,7 @@ You must see the Red LED toggling on the Server side.
 
 ### __Hardware and Software environment__
 
-* This example runs on STM32WBA65xx devices.  
+* This example runs on STM32WBA55xx devices.  
 
 * This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
 

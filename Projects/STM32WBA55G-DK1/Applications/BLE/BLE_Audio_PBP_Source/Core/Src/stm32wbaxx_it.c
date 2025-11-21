@@ -379,15 +379,8 @@ void HASH_IRQHandler(void)
   */
 void GPDMA1_Channel1_IRQHandler(void)
 {
-  BSP_AUDIO_IN_IRQHandler(0,0);
-}
-
-/**
-  * @brief This function handles GPDMA1 Channel 2 global interrupt.
-  */
-void GPDMA1_Channel2_IRQHandler(void)
-{
-  BSP_AUDIO_OUT_IRQHandler(0,0);
+  BSP_AUDIO_IN_IRQHandler(0, AUDIO_IN_DEVICE_ANALOG_MIC);
+  /* Also suitable with AUDIO_IN_DEVICE_LINE_IN */
 }
 
 /**

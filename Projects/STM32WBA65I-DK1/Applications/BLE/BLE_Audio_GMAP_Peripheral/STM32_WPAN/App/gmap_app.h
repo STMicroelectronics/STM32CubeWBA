@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    gmap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __GMAP_APP_H
@@ -31,6 +29,7 @@ extern "C" {
 #include "gmap.h"
 #include "gmap_app_conf.h"
 #include "app_conf.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -87,6 +86,26 @@ extern "C" {
 #define LC3_QOS_48_4_2          29
 #define LC3_QOS_48_5_2          30
 #define LC3_QOS_48_6_2          31
+
+#define NUM_GMAP_LC3_QoSConf    12
+#define LC3_QOS_16_1_gs         32
+#define LC3_QOS_16_2_gs         33
+#define LC3_QOS_32_1_gs         34
+#define LC3_QOS_32_2_gs         35
+#define LC3_QOS_48_1_gs         36
+#define LC3_QOS_48_2_gs         37
+#define LC3_QOS_32_1_gr         38
+#define LC3_QOS_32_2_gr         39
+#define LC3_QOS_48_1_gr         40
+#define LC3_QOS_48_2_gr         41
+#define LC3_QOS_48_3_gr         42
+#define LC3_QOS_48_4_gr         43
+
+#define NUM_GMAP_Brd_LC3_QoSConf 4
+#define LC3_QOS_48_1_g          32
+#define LC3_QOS_48_2_g          33
+#define LC3_QOS_48_3_g          34
+#define LC3_QOS_48_4_g          35
 
 /*Audio Configuration specified in Basic Audio Profile Specification*/
 #define NUM_USR_AUDIO_CONF      (16u)
@@ -273,6 +292,7 @@ extern "C" {
                                          *      - Sink Audio Locations (at least 1 bits set to 0b1 different to the Sink Audio Locations of the 2nd USR )
                                          *      - Source Audio Locations (at least 1 bits set to 0b1 different to the Source Audio Locations of the 2nd USR )
                                          */
+
 /* Exported types ------------------------------------------------------------*/
 /* Audio Profile Link State type */
 typedef uint8_t audio_profile_t;
@@ -316,38 +336,39 @@ typedef uint8_t APP_BroadcastMode_t;
 /*Structure used for ASE information storage*/
 typedef struct
 {
-  uint8_t               ID;
-  ASE_State_t           state;
-  ASE_Type_t            type;           /*Source of Sink*/
-  uint8_t               allocated;
-  uint8_t               num_channels;
-  uint32_t              presentation_delay;
-  uint32_t              controller_delay;
-  Audio_Context_t       streaming_audio_context;
-  uint8_t               enable_req;
+  uint8_t                       ID;
+  ASE_State_t                   state;
+  ASE_Type_t                    type;           /*Source or Sink*/
+  uint8_t                       allocated;
+  uint8_t                       num_channels;
+  uint32_t                      presentation_delay;
+  uint32_t                      controller_delay;
+  Audio_Context_t               streaming_audio_context;
+  uint8_t                       enable_req;
 }APP_ASE_Info_t;
 
 typedef struct
 {
-  uint16_t              acl_conn_handle;
+  uint16_t                      acl_conn_handle;
 #if (APP_NUM_SNK_ASE > 0)
-  APP_ASE_Info_t        aSnkASE[APP_NUM_SNK_ASE];
+  APP_ASE_Info_t                aSnkASE[APP_NUM_SNK_ASE];
 #endif /* (APP_NUM_SNK_ASE > 0) */
 #if (APP_NUM_SRC_ASE > 0)
-  APP_ASE_Info_t        aSrcASE[APP_NUM_SRC_ASE];
+  APP_ASE_Info_t                aSrcASE[APP_NUM_SRC_ASE];
 #endif /* (APP_NUM_SRC_ASE > 0) */
 }APP_ASEs_t;
 
 /*Structure used for connection information strorage*/
 typedef struct
 {
-  uint16_t               Acl_Conn_Handle;
-  uint8_t                Peer_Address_Type;
-  uint8_t                Peer_Address[6];
-  uint8_t                Role;
-  audio_profile_t        AudioProfile;
-  uint8_t                ConfirmIndicationRequired;
-  APP_ASEs_t             *pASEs;
+  uint16_t                      Acl_Conn_Handle;
+  uint8_t                       Peer_Address_Type;
+  uint8_t                       Peer_Address[6];
+  uint8_t                       Role;
+  audio_profile_t               AudioProfile;
+  uint8_t                       ConfirmIndicationRequired;
+  uint8_t                       ForceCompleteLinkup;
+  APP_ASEs_t                    *pASEs;
   Audio_Context_t        AvailableSnkAudioContext;
   Audio_Context_t        AvailableSrcAudioContext;
 }APP_ACL_Conn_t;
@@ -415,6 +436,10 @@ typedef struct
 
   APP_ASEs_t                    aASEs[CFG_BLE_NUM_LINK];
 
+  Sampling_Freq_t               ConfiguredSinkSampleFrequency;
+
+  Sampling_Freq_t               ConfiguredSourceSampleFrequency;
+
   Audio_Location_t              SnkAudioLocations;
 
   Audio_Location_t              SrcAudioLocations;
@@ -466,8 +491,6 @@ typedef struct
   uint8_t                       CSIPRank;
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT) */
 
-  Sampling_Freq_t               ConfiguredSinkSampleFrequency;
-  Sampling_Freq_t               ConfiguredSourceSampleFrequency;
 #if ((APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)
   APP_BNSK_Context_t            BSNK;
 #endif /*((APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)*/
@@ -484,7 +507,6 @@ typedef struct
   Supported_Frame_Duration_t    FrameDuration;
   uint16_t                      MinOctetsPerCodecFrame;
   uint16_t                      MaxOctetsPerCodecFrame;
-
 } APP_CodecCap_t;
 
 typedef struct
@@ -496,7 +518,6 @@ typedef struct
   uint8_t               rtx_num;
   uint16_t              max_tp_latency;
   uint32_t              presentation_delay;
-
 } APP_QoSConf_t;
 
 typedef struct
@@ -509,16 +530,11 @@ typedef struct
   uint8_t       MinSrcAudioLocations;
   uint8_t       NumCISes;
   uint16_t      NumAudioStreams;
-
 } APP_UnicastAudioConf_t;
-
 
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);

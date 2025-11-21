@@ -4,7 +4,7 @@
  * @brief ZCL Demand Response and Load Control cluster header
  * ZCL 7 Section 10.3
  * ZCL 8 Section 10.3
- * @copyright Copyright [2009 - 2023] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 /* EXEGIN - removed '@'PICS escape sequence, since these are not the
@@ -242,9 +242,10 @@ struct ZbZclDrlcServerCallbacksT {
 
     enum ZclStatusCodeT (*get_events)(struct ZbZclClusterT *cluster, struct ZbZclAddrInfoT *srcInfo,
         struct ZbZclDrlcGetEventsReqT *req, void *arg);
-    /**< Callback to application, invoked on receipt of Get Scheduled Events command. The get_events callback handler in the application
-     * should return ZCL_STATUS_SUCCESS, or ZCL_STATUS_NOT_FOUND if no events are found. Events are re-issued by calling
-     * ZbZclDrlcServerCommandEventReq() */
+    /**< Callback to application, invoked on receipt of Get Scheduled Events command.
+     * The get_events callback handler in the application
+     * should return ZCL_STATUS_SUCCESS, or ZCL_STATUS_NOT_FOUND if no events are found.
+     * Events are re-issued by calling ZbZclDrlcServerCommandEventRsp() */
 };
 
 /**
@@ -263,14 +264,25 @@ struct ZbZclClusterT * ZbZclDrlcServerAlloc(struct ZigBeeT *zb, uint8_t endpoint
 /**
  * Send a Load Control Event command
  * @param cluster Cluster instance from which to send this command
- * @param eventPtr Load Control Event command request structure
+ * @param eventPtr Load Control Event information
  * @param dst Destination address for request
  * @param callback Callback function that will be invoked when the response is received.
  * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
-enum ZclStatusCodeT ZbZclDrlcServerCommandEventReq(struct ZbZclClusterT *cluster, struct ZbZclDrlcEventT *eventPtr,
-    const struct ZbApsAddrT *dst, void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+enum ZclStatusCodeT ZbZclDrlcServerCommandEventReq(struct ZbZclClusterT *cluster,
+    struct ZbZclDrlcEventT *eventPtr, const struct ZbApsAddrT *dst,
+    void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+
+/**
+ * Send a Load Control Event command in response to a GetEvents request.
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination to send event (including sequence number that matches request)
+ * @param eventPtr Load Control Event information
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclDrlcServerCommandEventRsp(struct ZbZclClusterT *cluster,
+    struct ZbZclAddrInfoT *dst, struct ZbZclDrlcEventT *eventPtr);
 
 /**
  * Send a Cancel Load Control Event command
@@ -322,15 +334,16 @@ struct ZbZclDrlcClientCallbacksT {
  * @param cb_arg Pointer to application data that will included in the callback when invoked.
  * @return Cluster pointer, or NULL if there is an error
  */
-struct ZbZclClusterT * ZbZclDrlcClientAlloc(struct ZigBeeT *zb, uint8_t endpoint, struct ZbZclClusterT *time_server,
+struct ZbZclClusterT * ZbZclDrlcClientAlloc(struct ZigBeeT *zb, uint8_t endpoint,
+    struct ZbZclClusterT *time_server,
     struct ZbZclDrlcClientCallbacksT *callbacks, void *cb_arg);
 
 /**
- * Send a Get Event List command
- * @param cluster Cluster instance from which to send this command
- * @param eventList Holds a pointer to the event list if successful
- * @param maxEntries Max event list entries
- * @return Event list size if successful, or 0 on error
+ * Get a copy of the current events stored on the Client
+ * @param cluster Cluster instance
+ * @param eventList Where to copy the events
+ * @param maxEntries Maximum number of events that can be copied to eventList
+ * @return Number of events copied
  */
 unsigned int ZbZclDrlcClientGetEventList(struct ZbZclClusterT *cluster,
     struct ZbZclDrlcEventT *eventList, unsigned int maxEntries);
@@ -374,10 +387,12 @@ enum ZclStatusCodeT ZbZclDrlcClientCommandReportStatusReq(struct ZbZclClusterT *
     const struct ZbApsAddrT *dst, struct ZbZclDrlcStatusT *statusPtr,
     void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
 
-unsigned int ZbZclDrlcBuildReportStatus(struct ZbZclDrlcStatusT *statusPtr, uint8_t *payload, unsigned int maxlen);
+unsigned int ZbZclDrlcBuildReportStatus(struct ZbZclDrlcStatusT *statusPtr,
+    uint8_t *payload, unsigned int maxlen);
 
 /**
- * Send a Get Scheduled Events
+ * Send a Get Scheduled Events.
+ * Any response events are handled by the Client Cluster's command handler.
  * @param cluster Cluster instance from which to send this command
  * @param dst Destination address for request
  * @param cmd_req Get Scheduled Events command request structure
@@ -386,7 +401,6 @@ unsigned int ZbZclDrlcBuildReportStatus(struct ZbZclDrlcStatusT *statusPtr, uint
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
 enum ZclStatusCodeT ZbZclDrlcClientCommandGetEventsReq(struct ZbZclClusterT *cluster,
-    const struct ZbApsAddrT *dst, struct ZbZclDrlcGetEventsReqT *cmd_req,
-    void (*callback)(struct ZbZclCommandRspT *zcl_rsp, void *arg), void *arg);
+    const struct ZbApsAddrT *dst, struct ZbZclDrlcGetEventsReqT *cmd_req);
 
-#endif /* __ZCL_DRLC_H */
+#endif

@@ -175,16 +175,8 @@ static void APP_THREAD_ProcessOpenThreadTasklets(ULONG lArgument)
   {
     tx_semaphore_get(&TaskletSemaphore, TX_WAIT_FOREVER);
 
-    /* wakeUp the system */
-    //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-    //ll_sys_dp_slp_exit();
-
     /* process the tasklet */
     otTaskletsProcess(PtOpenThreadInstance);
-
-    /* put the IP802_15_4 back to sleep mode */
-    //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
-
   }
 }
 

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,9 +42,6 @@
 #include "otp.h"
 #include "scm.h"
 #include "bpka.h"
-#include "flash_driver.h"
-#include "flash_manager.h"
-#include "simple_nvm_arbiter.h"
 #include "app_debug.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
@@ -53,6 +50,7 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -66,7 +64,8 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
+#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
+                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -103,25 +102,25 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static uint32_t AMM_Pool[AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
   /* Virtual Memory #1 */
   {
-    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_TIMERS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE
   },
   /* Virtual Memory #2 */
   {
-    .Id = CFG_AMM_VIRTUAL_APP_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_EVENTS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE
   },
 };
 
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
+  .PoolSize = AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
@@ -145,8 +144,6 @@ static void APPE_AMM_Init(void);
 static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
 static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
 static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
-
-static void APPE_FLASH_MANAGER_Init( void );
 
 static void APPE_BPKA_Init( void );
 
@@ -196,9 +193,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
 
-  /* Initialize the Flash Manager module */
-  APPE_FLASH_MANAGER_Init();
-
   /* USER CODE BEGIN APPE_Init_1 */
 
   /* USER CODE END APPE_Init_1 */
@@ -206,16 +200,7 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Ble Public Key Accelerator module */
   APPE_BPKA_Init();
 
-  /* Initialize the Simple Non Volatile Memory Arbiter */
-  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
-  {
-    Error_Handler();
-  }
-
   APP_BLE_Init();
-
-  /* Disable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -277,6 +262,10 @@ static void System_Init( void )
 
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
@@ -362,15 +351,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -389,24 +378,6 @@ static void APPE_RNG_Init(void)
 
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
-}
-
-/**
- * @brief Initialize Flash Manager module
- */
-static void APPE_FLASH_MANAGER_Init(void)
-{
-  /* Register Flash Manager task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
-
-  /* Disable flash before any use - RFTS */
-  FD_SetStatus (FD_FLASHACCESS_RFTS, LL_FLASH_DISABLE);
-  /* Enable RFTS Bypass for flash operation - Since LL has not started yet */
-  FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_ENABLE);
-  /* Enable flash system flag */
-  FD_SetStatus (FD_FLASHACCESS_SYSTEM, LL_FLASH_ENABLE);
-
-  return;
 }
 
 /**
@@ -449,7 +420,7 @@ void UTIL_SEQ_Idle( void )
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
   return;
@@ -463,11 +434,18 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)
@@ -499,7 +477,7 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   (void)ll_sys_dp_slp_exit();
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -549,12 +527,6 @@ static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
   UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
 }
 
-void FM_ProcessRequest(void)
-{
-  /* Trigger to call Flash Manager process function */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_FLASH_MANAGER, CFG_SEQ_PRIO_0);
-}
-
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
 /* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
@@ -588,7 +560,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -599,7 +571,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 

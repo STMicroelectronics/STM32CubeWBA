@@ -129,6 +129,7 @@ static otMessage* pOT_MessageResponse = NULL;
 
 static uint8_t PayloadWrite[COAP_PAYLOAD_LENGTH]= {0};
 static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
+static uint8_t CounterRole= {0};
 /* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -159,15 +160,8 @@ void ProcessTasklets(void)
  */
 void ProcessOpenThreadTasklets(void)
 {
-  /* wakeUp the system */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-  //ll_sys_dp_slp_exit();
-
   /* process the tasklet */
   otTaskletsProcess(PtOpenThreadInstance);
-
-  /* put the IP802_15_4 back to sleep mode */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
 
   /* reschedule the tasklets if any */
   ProcessTasklets();
@@ -317,7 +311,6 @@ static void APP_THREAD_DeviceConfig(void)
   otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
 
   APP_THREAD_InitPayloadWrite();
-
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -356,7 +349,7 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
     __enable_irq();
   }
   
-  while (1)
+  while(1U == 1U)
   {
     APP_LED_TOGGLE(LD1);
     HAL_Delay(500U);
@@ -479,6 +472,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
       	  APP_LED_OFF(LD2);
           APP_LED_OFF(LD3);
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DISABLED. CounterRole value = %d",CounterRole);
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
@@ -486,6 +481,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
           APP_LED_OFF(LD2);
           APP_LED_OFF(LD3);
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DETACHED. CounterRole value = %d",CounterRole);
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
@@ -493,6 +490,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
           APP_LED_OFF(LD2);
           APP_LED_ON(LD3);
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is CHILD. CounterRole value = %d",CounterRole);
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
@@ -500,6 +499,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
           APP_LED_OFF(LD2);
           APP_LED_ON(LD3);
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is ROUTER. CounterRole value = %d",CounterRole);
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
@@ -507,6 +508,8 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
           APP_LED_ON(LD2);
           APP_LED_OFF(LD3);
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is LEADER. CounterRole value = %d",CounterRole);
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 

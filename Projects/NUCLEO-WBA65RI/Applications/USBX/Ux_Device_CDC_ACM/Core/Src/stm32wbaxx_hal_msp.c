@@ -232,15 +232,21 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* hpcd)
     /* Enable VDDUSB */
     if(__HAL_RCC_PWR_IS_CLK_ENABLED())
     {
-      __HAL_RCC_PWR_CLK_ENABLE();
       HAL_PWREx_EnableVddUSB();
+      HAL_PWREx_EnableVdd11USB();
       HAL_PWREx_EnableUSBPWR();
-      __HAL_RCC_PWR_CLK_DISABLE();
+      HAL_PWREx_EnableUSBBooster();
     }
     else
     {
+      __HAL_RCC_PWR_CLK_ENABLE();
       HAL_PWREx_EnableVddUSB();
+      HAL_PWREx_EnableVdd11USB();
+      HAL_PWREx_EnableUSBPWR();
+      HAL_PWREx_EnableUSBBooster();
+      __HAL_RCC_PWR_CLK_DISABLE();
     }
+
     HAL_SYSCFG_EnableOTGPHY(SYSCFG_OTG_HS_PHY_ENABLE);
     /* Peripheral clock enable */
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
@@ -277,13 +283,17 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* hpcd)
     /* Disable VDDUSB */
     if(__HAL_RCC_PWR_IS_CLK_ENABLED())
     {
-      __HAL_RCC_PWR_CLK_ENABLE();
-      HAL_PWREx_DisableVddUSB();
-      __HAL_RCC_PWR_CLK_DISABLE();
+      HAL_PWREx_DisableUSBBooster();
+      HAL_PWREx_DisableUSBPWR();
+      HAL_PWREx_DisableVdd11USB();
     }
     else
     {
-      HAL_PWREx_DisableVddUSB();
+      __HAL_RCC_PWR_CLK_ENABLE();
+      HAL_PWREx_DisableUSBBooster();
+      HAL_PWREx_DisableUSBPWR();
+      HAL_PWREx_DisableVdd11USB();
+      __HAL_RCC_PWR_CLK_DISABLE();
     }
 
     /* USB_OTG_HS interrupt DeInit */

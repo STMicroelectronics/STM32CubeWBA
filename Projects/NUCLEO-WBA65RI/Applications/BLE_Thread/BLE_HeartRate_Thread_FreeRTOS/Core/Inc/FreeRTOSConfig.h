@@ -28,8 +28,8 @@
  */
 /* USER CODE END Header */
 
-#ifndef FREERTOS_CONFIG_H
-#define FREERTOS_CONFIG_H
+#ifndef __FREERTOS_CONFIG_H
+#define __FREERTOS_CONFIG_H
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -65,7 +65,6 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configRUN_FREERTOS_SECURE_ONLY           0
 #define configENABLE_FPU                         0
 #define configENABLE_MPU                         0
-
 #define configUSE_PREEMPTION                     1
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
@@ -74,11 +73,11 @@ extern unsigned long getRunTimeCounterValue(void);
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
 #define configTICK_RATE_HZ                       ((TickType_t)100)
 #define configMAX_PRIORITIES                     ( 56 )
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)256)
-#define configTOTAL_HEAP_SIZE                    ((size_t)35000)
+#define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
+#define configTOTAL_HEAP_SIZE                    ((size_t)32768)
 #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP 0
 #define configMAX_TASK_NAME_LEN                  ( 32 )
-#define configGENERATE_RUN_TIME_STATS            0
+#define configGENERATE_RUN_TIME_STATS            1
 #define configUSE_TRACE_FACILITY                 1
 #define configUSE_STATS_FORMATTING_FUNCTIONS     1
 #define configUSE_16_BIT_TICKS                   0
@@ -139,7 +138,7 @@ to exclude the API function. */
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
- /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+ /* __NVIC_PRIO_BITS will be specified when CMSIS is being used. */
  #define configPRIO_BITS         __NVIC_PRIO_BITS
 #else
  #define configPRIO_BITS         4
@@ -157,7 +156,7 @@ PRIORITY THAN THIS! (higher priorities are lower numeric values. */
 
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
 to all Cortex-M ports, and do not rely on any particular library functions. */
-#define configKERNEL_INTERRUPT_PRIORITY 	( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+#define configKERNEL_INTERRUPT_PRIORITY 		( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
@@ -168,11 +167,6 @@ header file. */
 #define configASSERT( x ) if ((x) == 0) {taskDISABLE_INTERRUPTS(); for( ;; );}
 /* USER CODE END 1 */
 
-/* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
-standard names. */
-#define vPortSVCHandler    SVC_Handler
-#define xPortPendSVHandler PendSV_Handler
-
 #define SysTick_Handler xPortSysTickHandler
 
 /* USER CODE BEGIN 2 */
@@ -181,8 +175,6 @@ standard names. */
 #define portGET_RUN_TIME_COUNTER_VALUE getRunTimeCounterValue
 /* USER CODE END 2 */
 
-/* IMPORTANT: After 10.3.1 update, Systick_Handler comes from NVIC (if SYS timebase = systick), otherwise from cmsis_os2.c */
-
 /* USER CODE BEGIN Defines */
 #define USE_CUSTOM_SYSTICK_HANDLER_IMPLEMENTATION 0
 #define configSYSTICK_CLOCK_HZ                    (32768)
@@ -190,4 +182,4 @@ standard names. */
 #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP     3
 /* USER CODE END Defines */
 
-#endif /* FREERTOS_CONFIG_H */
+#endif /* __FREERTOS_CONFIG_H */

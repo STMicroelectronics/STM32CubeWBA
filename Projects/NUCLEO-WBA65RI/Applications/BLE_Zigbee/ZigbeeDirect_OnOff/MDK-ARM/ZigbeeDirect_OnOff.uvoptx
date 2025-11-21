@@ -176,7 +176,7 @@
 
   <Group>
     <GroupName>Application/MDK-ARM</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1675,7 +1675,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/zigbee/clusters_zd/ZigBeeClusters.a</PathWithFileName>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/zigbee/clusters/ZigBeeClusters.a</PathWithFileName>
       <FilenameWithoutPath>ZigBeeClusters.a</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -1687,7 +1687,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack_zd/ZigBeeProR23_ZDD.a</PathWithFileName>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/ZigBeeProR23_ZDD.a</PathWithFileName>
       <FilenameWithoutPath>ZigBeeProR23_ZDD.a</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

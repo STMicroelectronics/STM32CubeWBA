@@ -26,9 +26,6 @@ The folder `common/drivers` contains a set of generic ready to use low level dri
 
     Two main versions of this driver are provided to support **LAN8742** and **RTL8211** phys.
 
-* **cypress/nx_stm32_cypress_whd_driver.c**
-
-    A WiFi driver to support the cypress wifi module.
 * **es_wifi/nx_driver_ism43362.c**
 
     A WiFi driver for the es_wifi module.

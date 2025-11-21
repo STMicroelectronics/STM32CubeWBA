@@ -118,11 +118,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -228,7 +230,7 @@ void MX_ADC4_Init(void)
   ADC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN ADC4_Init 1 */
-  
+
   /* USER CODE END ADC4_Init 1 */
 
   /** Common config
@@ -388,6 +390,10 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
@@ -520,6 +526,7 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */

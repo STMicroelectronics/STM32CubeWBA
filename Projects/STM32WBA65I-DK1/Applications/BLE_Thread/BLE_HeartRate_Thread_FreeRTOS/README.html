@@ -151,6 +151,8 @@ An End Device (or child) communicates primarily with a <strong>single Router</st
 </ul>
 <p>After the reset of the Thread_Coap_Generic device, it will be in Leader mode (<strong>Green LED2 ON</strong>).<br />
 Then power on the BLE_HeartRate_Thread_FreeRTOS device, it will be in Child mode (<strong>Red LED3 ON</strong>).</p>
+<p>After a while, the roles being not fixed with thread, the roles can be switching. The Thread_Coap_Generic device might switch to Router mode (<strong>Red LED3 ON</strong>).
+And at the same time, the BLE_HeartRate_Thread_FreeRTOS device, might switch to the Leader mode (<strong>Green LED2 ON</strong>). In case of switching role, the periodic toggling every one second will be stopped until the joystick right is resuming it.</p>
 <p>Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread_FreeRTOS device) starts sending <strong>COAP command (Non-Confirmable)</strong> to the Thread Leader every one second. The Thread Leader will receive COAP commands to toggle its <strong>blue LED1</strong>.</p>
 <ul>
 <li>Board A sends a <strong>COAP command (Non-Confirmable)</strong> from BLE_HeartRate_Thread_FreeRTOS device to Thread_Coap_Generic device every 1 sec.<br />
@@ -163,18 +165,64 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its <strong>
   |_____________________________|                       |_________________________|  
   |                             |                       |                         |
   |                             |                       |                         |
-  |                  every 1sec |                       |                         |
-  |                             |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)|
+  |  every 1sec (after PowerUp) |                       |                         |
+  |     or Joystick Right --&gt;   |======&gt;  COAP ======&gt;  | BLUE LED TOGGLE (ON/OFF)|
   |                             | Resource :light       |                         |
   |                             | Mode: Multicast       |                         |
   |                             | Type: Non-Confirmable |                         |
   |                             | Code: Put             |                         |
   |                             |                       |                         |
+  |                             |                       |                         |
+  |       Joystick Left --&gt;     |=====&gt;  COAP =========&gt;|----------               |
+  |                             | Resource light        |         |               |
+  |                             | Mode: Multicast       |  CoapRequestHandler()   |
+  |                             | Type: Confirmable     |         |               |
+  |                             | Code: Put             |         |               |
+  |                             |                       |         v               |
+  |                             |                       |  CoapSendDataResponse() |
+  |                             |                       |         |               |
+  |                             |                       |         v               |
+  | CoapDataRespHandler() &lt;--   |&lt;===== COAP ========== | -------                 |
+  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
+  |                             |                       |                         |  
   |-----------------------------|                       |-------------------------|
   | Role : Child                |                       | Role : Leader           |
   |                             |                       |                         |
   | LED : Red                   |                       | LED : Green             |
+  |-----------------------------|                       |-------------------------|
+  | ROLE re-negociation phase   | Details not described | ROLE negociation phase  |
+  |            every 1sec --&gt;   |==&gt;  NOTHING!          |                         |  
+  |-----------------------------|                       |-------------------------|
+  | Role : Leader               |                       | Role : Router           |
   |                             |                       |                         |
+  | LED : Green                 |                       | LED : Red               |
+  |-----------------------------|                       |-------------------------|
+  |            every 1sec --&gt;   |==&gt;  NOTHING!          |                         | 
+  |                             |                       |                         |
+  |-----------------------------|                       |-------------------------|
+  |        Joystick Right --&gt;   |======&gt;  COAP ======&gt;  | BLUE LED TOGGLE (ON/OFF)|
+  |--&gt; every 1sec (restarting   | Resource :light       |                         |
+  |       with Joystick Right)  | Mode: Multicast       |                         |
+  |                             | Type: Non-Confirmable |                         |
+  |                             | Code: Put             |                         |
+  |                             |                       |                         |
+  |                             |                       |                         |
+  |       Joystick Left --&gt;     |=====&gt;  COAP =========&gt;|----------               |
+  |                             | Resource light        |         |               |
+  |                             | Mode: Multicast       |  CoapRequestHandler()   |
+  |                             | Type: Confirmable     |         |               |
+  |                             | Code: Put             |         |               |
+  |                             |                       |         v               |
+  |                             |                       |  CoapSendDataResponse() |
+  |                             |                       |         |               |
+  |                             |                       |         v               |
+  | CoapDataRespHandler() &lt;--   |&lt;===== COAP ========== | -------                 |
+  |                             |                       | BLUE LED TOGGLE (ON/OFF)| 
+  |                             |                       |                         |  
+  |-----------------------------|                       |-------------------------|
+  | Role : Leader               |                       | Role : Router           |
+  |                             |                       |                         |
+  | LED : Green                 |                       | LED : Red               |
   |_____________________________|                       |_________________________|
 
   
@@ -182,18 +230,13 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its <strong>
 <p>During Thread activity, the BLE_HeartRate_Thread_FreeRTOS device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.</p>
 <p>On the android/ios device, enable the Bluetooth communications, and if not done before:</p>
 <ul>
-<li>Install the ST BLE Toolbox application on the android device:
+<li><p>Install the ST BLE Toolbox application on the android device:</p>
 <ul>
 <li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
 <li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
 </ul></li>
-<li>You can also install the ST BLE Sensor application on the android/ios device:
-<ul>
-<li><a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a></li>
-<li><a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a></li>
-</ul></li>
-<li><p>Then, click on the App icon, ST BLE Toolbox (android/ios device), You can either open ST BLE Sensor application (android/ios device).</p></li>
-<li>In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs, you can reset the energy measurement.</li>
+<li><p>Then, click on the App icon, ST BLE Toolbox (android/ios device).</p></li>
+<li><p>In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs, you can reset the energy measurement.</p></li>
 <li><p>After 60s of advertising, the application switch from fast advertising to low power advertising.</p></li>
 </ul>
 <h3 id="traces"><strong>Traces</strong></h3>

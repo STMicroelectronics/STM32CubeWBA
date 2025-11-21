@@ -46,6 +46,7 @@
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
 #include "app_debug.h"
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -64,6 +65,7 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,13 +75,18 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
+#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
+                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define BSP_I2C_CLK_ENABLE()             __HAL_RCC_I2C3_CLK_ENABLE()
+#define BSP_I2C_CLK_DISABLE()            __HAL_RCC_I2C3_CLK_DISABLE()
+#define BSP_I2C_Init()                   BSP_I2C3_Init()
+#define BSP_I2C_DeInit()                 BSP_I2C3_DeInit()
 
 /* USER CODE END PM */
 
@@ -110,25 +117,25 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static uint32_t AMM_Pool[AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
   /* Virtual Memory #1 */
   {
-    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_TIMERS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE
   },
   /* Virtual Memory #2 */
   {
-    .Id = CFG_AMM_VIRTUAL_APP_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_EVENTS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE
   },
 };
 
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
+  .PoolSize = AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
@@ -142,7 +149,7 @@ static uint8_t MxAudioInit_Flag = 0;
 static uint32_t Sink_frame_size = 0;
 static uint32_t Source_frame_size = 0;
 static uint8_t Record_Req_Pause = 0;
-static uint8_t Play_Req_Pause = 0;
+
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
@@ -176,6 +183,7 @@ static void DrawSpeakerState(void);
 static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen);
 static void AudioClock_Deinit(void);
 static void PLL_Ready_Task(void);
+
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -227,6 +235,7 @@ uint32_t MX_APPE_Init(void *p_param)
 #endif /* CFG_LCD_SUPPORTED */
 
   UTIL_SEQ_RegTask(1U << CFG_TASK_PLL_READY_ID, UTIL_SEQ_RFU, PLL_Ready_Task);
+
   /* USER CODE END APPE_Init_1 */
 
   /* Initialize the Ble Public Key Accelerator module */
@@ -244,8 +253,6 @@ uint32_t MX_APPE_Init(void *p_param)
   FD_SetStatus (FD_FLASHACCESS_RFTS_BYPASS, LL_FLASH_DISABLE);
 
   /* USER CODE BEGIN APPE_Init_2 */
-  /* Indicate to the low power manager that the Standby mode isn't allow : Stop mode will be used in low power mode*/
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
 
   /* USER CODE END APPE_Init_2 */
 
@@ -305,6 +312,10 @@ static void System_Init( void )
 
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
+
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
@@ -386,15 +397,15 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
@@ -420,6 +431,9 @@ static void APPE_RNG_Init(void)
  */
 static void APPE_FLASH_MANAGER_Init(void)
 {
+  /* Init the Flash Manager module */
+  FM_Init();
+
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
 
@@ -455,13 +469,11 @@ static void APPE_AMM_Init(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
-
 #if (CFG_LCD_SUPPORTED == 1)
-
 static void LCD_Init( void )
 {
   extern uint8_t wav_2[];
-  
+
   BSP_SPI3_Init();
 
   /* Set LCD Foreground Layer  */
@@ -604,7 +616,7 @@ void AudioClock_Init(uint32_t audio_frequency_type)
       /* PLLSYS = 98.30396 MHz */
     }
 
-    UTIL_LPM_SetStopMode(1 << CFG_LPM_AUDIO, UTIL_LPM_DISABLE);
+    UTIL_LPM_SetMaxMode(1 << CFG_LPM_AUDIO, UTIL_LPM_SLEEP_MODE);
 
     scm_pll_setconfig(&pll_config);
 
@@ -650,8 +662,9 @@ void PLL_Ready_Task(void)
   corrector_pll_config.PLLOutputDiv = 4; /* PLL_P */
   AUDIO_InitializeClockCorrector(&corrector_pll_config, 500, 4000);
 
-  /* I2C init takes a long time, it is better to do it before BIS establishement */
-  BSP_I2C3_Init();
+  /* I2C init takes a long time, it is better to do it before CIS establishement */
+  BSP_I2C_Init();
+  BSP_I2C_CLK_DISABLE();
 }
 
 void PLL_Exit(void)
@@ -662,10 +675,9 @@ void PLL_Exit(void)
 
     PLL_Target_Clock_Freq = 0;
 
-    UTIL_LPM_SetStopMode(1 << CFG_LPM_AUDIO, UTIL_LPM_ENABLE);
+    UTIL_LPM_SetMaxMode(1 << CFG_LPM_AUDIO, UTIL_LPM_MAX_MODE);
   }
 }
-
 
 static void AudioClock_Deinit( void )
 {
@@ -714,7 +726,6 @@ void MX_AudioInit(Audio_Role_t role,
 {
   uint32_t sample_per_frame;
   uint32_t audioFrequency;
-
   BSP_AUDIO_Init_t audio_conf;
 
   switch (sampling_frequency)
@@ -757,23 +768,23 @@ void MX_AudioInit(Audio_Role_t role,
     /* LC3 need setup like 48Khz for this frequency */
     switch(frame_duration)
     {
-		case FRAME_DURATION_7_5_MS:
-		  sample_per_frame = 360;
-		  break;
+      case FRAME_DURATION_7_5_MS:
+        sample_per_frame = 360;
+        break;
 
-		case FRAME_DURATION_10_MS:
-		  sample_per_frame = 480;
-		  break;
+      case FRAME_DURATION_10_MS:
+        sample_per_frame = 480;
+        break;
 
-		default:
-		  Error_Handler();
-		  return;
+      default:
+        Error_Handler();
+        return;
     }
   }
   else
   {
-	switch(frame_duration)
-	{
+    switch(frame_duration)
+    {
       case FRAME_DURATION_7_5_MS:
         sample_per_frame = audioFrequency * 75 / 10000;
         break;
@@ -785,9 +796,10 @@ void MX_AudioInit(Audio_Role_t role,
       default:
         Error_Handler();
         return;
-	}
+    }
   }
 
+  BSP_I2C_CLK_ENABLE();
 
   audio_conf.Device = AUDIO_IN_DEVICE_LINE_IN;
   audio_conf.ChannelsNbr = 2;
@@ -799,7 +811,7 @@ void MX_AudioInit(Audio_Role_t role,
   {
     Error_Handler();
     /* Release Bus for power consumption optimisation */
-    __HAL_RCC_I2C3_CLK_DISABLE();
+    BSP_I2C_CLK_DISABLE();
     return;
   }
 
@@ -818,7 +830,7 @@ void MX_AudioInit(Audio_Role_t role,
                    Source_frame_size * bytes_per_sample);
 
   /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
+  BSP_I2C_CLK_DISABLE();
   MxAudioInit_Flag = 1;
 
 }
@@ -829,20 +841,16 @@ void MX_AudioDeInit(void)
   {
     MxAudioInit_Flag = 0;
 
-    __HAL_RCC_I2C3_CLK_ENABLE();
+    BSP_I2C_CLK_ENABLE();
 
     if (BSP_AUDIO_IN_DeInit(0x00) != BSP_ERROR_NONE)
     {
       Error_Handler();
     }
 
-    if (BSP_AUDIO_OUT_DeInit(0x00) != BSP_ERROR_NONE)
-    {
-      Error_Handler();
-    }
-
-    BSP_I2C3_DeInit();
     SET_BIT(haudio_in_sai.Instance->CR2, SAI_xCR2_FFLUSH);
+
+    BSP_I2C_DeInit();
   }
 
   AudioClock_Deinit();
@@ -855,16 +863,10 @@ void MX_AudioDeInit(void)
 
 static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen)
 {
+  UNUSED(SnkBuffLen);
+  UNUSED(pSnkBuff);
   /* We start the SAI here but will pause the DMA on the first interrupt.
      The DMA will be relauched synchronized to the BLE transport for mastering audio latency */
-  if ((SnkBuffLen  > 0) && (pSnkBuff != NULL))
-  {
-    if (BSP_AUDIO_OUT_Play(0, (uint8_t *)pSnkBuff, SnkBuffLen) != BSP_ERROR_NONE)
-    {
-      Error_Handler();
-    }
-    Play_Req_Pause = 1;
-  }
   if ((SrcBuffLen  > 0) && (pSrcBuff != NULL))
   {
     if (BSP_AUDIO_IN_Record(0, (uint8_t *)pSrcBuff, SrcBuffLen) != BSP_ERROR_NONE)
@@ -872,64 +874,6 @@ static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pS
       Error_Handler();
     }
     Record_Req_Pause = 1;
-  }
-}
-
-int32_t Start_TxAudio(void)
-{
-  int32_t status = 1;
-
-  /* restart DMA request only if it was on pause */
-  if ((haudio_out_sai.Instance->CR1 & SAI_xCR1_DMAEN) == 0)
-  {
-    SET_BIT(haudio_out_sai.Instance->CR2, SAI_xCR2_FFLUSH);
-    haudio_out_sai.Instance->CR1 |= SAI_xCR1_DMAEN;
-    status = 0;
-
-    APP_NotifyTxAudioCplt(Sink_frame_size);
-  }
-
-  if (status == 0)
-  {
-    LOG_INFO_APP("START AUDIO SINK (output)\n");
-  }
-  return status;
-}
-
-void Stop_TxAudio(void)
-{
-  /* Initialize Bus which bas been released for Power consumption optimisation */
- __HAL_RCC_I2C3_CLK_ENABLE();
-
-  if (BSP_AUDIO_OUT_Stop(0) != BSP_ERROR_NONE)
-  {
-    Error_Handler();
-  }
-
-  /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
-}
-
-void BSP_AUDIO_OUT_TransferComplete_CallBack(uint32_t instance)
-{
-  APP_NotifyTxAudioCplt(Sink_frame_size);
-}
-
-void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t instance)
-{
-  if (MxAudioInit_Flag == 1)
-  {
-    if (Play_Req_Pause == 1)
-    {
-      /* Pause the DMA aligned on a interrupt and wait the codec trigger to restart it synchronized to BLE */
-      haudio_out_sai.Instance->CR1 &= ~SAI_xCR1_DMAEN;
-
-      Play_Req_Pause = 0;
-    }
-    else
-    {
-      APP_NotifyTxAudioHalfCplt();
-    }
   }
 }
 
@@ -960,7 +904,7 @@ int32_t Start_RxAudio(void)
 void Stop_RxAudio(void)
 {
   /* Initialize Bus which bas been released for Power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_ENABLE();
+  BSP_I2C_CLK_ENABLE();
 
   if (BSP_AUDIO_IN_Stop(0) != BSP_ERROR_NONE)
   {
@@ -968,7 +912,7 @@ void Stop_RxAudio(void)
   }
 
   /* Release Bus for power consumption optimisation */
-  __HAL_RCC_I2C3_CLK_DISABLE();
+  BSP_I2C_CLK_DISABLE();
 }
 
 void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t instance)
@@ -993,6 +937,7 @@ void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t instance)
     }
   }
 }
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 
 /*************************************************************
@@ -1010,7 +955,7 @@ void UTIL_SEQ_Idle( void )
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
   return;
@@ -1024,11 +969,18 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)
@@ -1060,12 +1012,13 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   (void)ll_sys_dp_slp_exit();
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 #if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STDBY_SUPPORTED != 0 ) )
   APP_BSP_PostIdle();
 #endif /* ( CFG_LPM_LEVEL && CFG_LPM_STDBY_SUPPORTED ) */
+
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }
@@ -1151,14 +1104,10 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
-#if (CFG_TEST_VALIDATION == 1)
-#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
-    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
-#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
-#endif /* (CFG_TEST_VALIDATION == 1) */
+
   /* USER CODE END UTIL_ADV_TRACE_PreSendHook */
 }
 
@@ -1166,14 +1115,10 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
-#if (CFG_TEST_VALIDATION == 1)
-#if ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1))
-    UTIL_LPM_SetOffMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
-#endif /* ((CFG_LPM_LEVEL != 0) && (CFG_LPM_STDBY_SUPPORTED == 1)) */
-#endif /* (CFG_TEST_VALIDATION == 1) */
+
   /* USER CODE END UTIL_ADV_TRACE_PostSendHook */
 }
 

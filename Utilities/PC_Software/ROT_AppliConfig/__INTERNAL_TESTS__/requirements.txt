@@ -1,0 +1,2 @@
+pytest -> version 8. and newer
+shutils

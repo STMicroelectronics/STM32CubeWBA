@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    pbp_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __PBP_APP_H
@@ -54,13 +52,13 @@ typedef struct
 {
   BAP_Role_t                    bap_role;
   BAP_BASE_Group_t              base_group;
-  BAP_BASE_Subgroup_t           base_subgroups[2];
-  BAP_BASE_BIS_t                base_bis[2];
-  uint8_t                       codec_specific_config_bis[2][0x06];
-  uint8_t                       codec_specific_config_subgroup[2][0x13];
+  BAP_BASE_Subgroup_t           base_subgroups[PBP_MAX_SUBGROUPS];
+  BAP_BASE_BIS_t                base_bis[PBP_MAX_BIS];
+  uint8_t                       codec_specific_config_bis[PBP_MAX_BIS][MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN];
+  uint8_t                       codec_specific_config_subgroup[PBP_MAX_SUBGROUPS][MAX_SUBGROUP_CODEC_SPECIFIC_CONFIG_LEN];
   uint8_t                       RTN;
   uint16_t                      max_transport_latency;
-  uint8_t                       subgroup_metadata[2][MAX_METADATA_LEN];
+  uint8_t                       subgroup_metadata[PBP_MAX_SUBGROUPS][MAX_METADATA_LEN];
   Target_Phy_t                  phy;
   uint8_t                       encryption;
   uint32_t                      broadcast_code[4u];

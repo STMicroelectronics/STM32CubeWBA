@@ -16,11 +16,11 @@
                 <debug>1</debug>
                 <option>
                     <name>BrowseInfoPath</name>
-                    <state>Thread_Coap_Generic_FreeRTOS\BrowseInfo</state>
+          <state>Debug\BrowseInfo</state>
                 </option>
                 <option>
-                    <name>BuildFilesPath</name>
-                    <state>Thread_Coap_Generic_FreeRTOS\</state>
+          <name>OGProductVersion</name>
+          <state>9.30.1.0</state>
                 </option>
                 <option>
                     <name>ExePath</name>
@@ -40,11 +40,11 @@
                 </option>
                 <option>
                     <name>Input description</name>
-                    <state>Full formatting, without multibyte support.</state>
+          <state></state>
                 </option>
                 <option>
                     <name>Output description</name>
-                    <state>Full formatting, without multibyte support.</state>
+          <state></state>
                 </option>
                 <option>
                     <name>GOutputBinary</name>
@@ -66,15 +66,11 @@
                 </option>
                 <option>
                     <name>RTDescription</name>
-                    <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
-                </option>
-                <option>
-                    <name>OGProductVersion</name>
-                    <state>6.50.1.4445</state>
+          <state></state>
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.60.3.7274</state>
+          <state>9.50.1.69312</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
@@ -103,7 +99,7 @@
                 <option>
                     <name>GBECoreSlave</name>
                     <version>34</version>
-                    <state>61</state>
+          <state></state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -204,12 +200,12 @@
                     <state>0</state>
                 </option>
                 <option>
+          <name>BuildFilesPath</name>
+          <state>Debug</state>
+        </option>
+        <option>
                     <name>PointerAuthentication</name>
                     <state>0</state>
-                </option>
-                <option>
-                    <name>FPU64</name>
-                    <state>1</state>
                 </option>
                 <option>
                     <name>OG_32_64DeviceCoreSlave</name>
@@ -230,6 +226,10 @@
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
                     <name>CCDefines</name>
                     <state>USE_FULL_LL_DRIVER</state>
                     <state>OPENTHREAD_FTD</state>
@@ -237,9 +237,10 @@
                     <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
                     <state>MAC</state>
                     <state>MAC_LAYER</state>
+          <state>DISABLE_RFTS_EXT_EVNT_HNDLR=1</state>
                     <state>USE_HAL_DRIVER</state>
-                    <state>USE_FULL_ASSERT</state>
                     <state>STM32WBA65xx</state>
+          <state></state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -300,7 +301,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>11111110</state>
+          <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -332,7 +333,7 @@
                 </option>
                 <option>
                     <name>CCRequirePrototypes</name>
-                    <state>1</state>
+          <state>0</state>
                 </option>
                 <option>
                     <name>CCDiagWarnAreErr</name>
@@ -368,7 +369,6 @@
                     <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/App</state>
                     <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
                     <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
@@ -398,8 +398,6 @@
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/mbedtls</state>
-                    <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls/repo/include/psa</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
                     <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
                     <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
@@ -475,17 +473,13 @@
                     <state>0</state>
                 </option>
                 <option>
-                    <name>CCOptimizationNoSizeConstraints</name>
-                    <state>0</state>
-                </option>
-                <option>
                     <name>CCNoLiteralPool</name>
                     <state>0</state>
                 </option>
                 <option>
                     <name>CCOptStrategySlave</name>
                     <version>0</version>
-                    <state>1</state>
+          <state>0</state>
                 </option>
                 <option>
                     <name>CCGuardCalls</name>
@@ -688,7 +682,49 @@
                 <option>
                     <name>AUserIncludes</name>
                     <state>$PROJ_DIR$/../Core/Inc</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\FreeRTOS\Source\include</state>
+          <state>$PROJ_DIR$/../System/Interfaces</state>
+          <state>$PROJ_DIR$/../System/Config/Log</state>
+          <state>$PROJ_DIR$/../System/Config/LowPower</state>
+          <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
+          <state>$PROJ_DIR$/../STM32_WPAN/App</state>
+          <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
+          <state>$PROJ_DIR$/../../../../../../Utilities/trace/adv_trace</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
+          <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
+          <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
+          <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/RTOS2/Include/</state>
+          <state>$PROJ_DIR$/../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -722,7 +758,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -730,7 +766,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>Thread_Coap_Generic_FreeRTOS.hex</state>
+                    <state>Thread_Coap_Generic_FreeRTOS.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -759,16 +795,16 @@
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
+          <name>IlinkOutputFile</name>
+          <state>Thread_Coap_Generic_FreeRTOS.out</state>
+        </option>
+        <option>
                     <name>IlinkLibIOConfig</name>
                     <state>1</state>
                 </option>
                 <option>
                     <name>IlinkInputFileSlave</name>
                     <state>0</state>
-                </option>
-                <option>
-                    <name>IlinkOutputFile</name>
-                    <state>Thread_Coap_Generic_FreeRTOS.out</state>
                 </option>
                 <option>
                     <name>IlinkDebugInfoEnable</name>
@@ -892,7 +928,7 @@
                 </option>
                 <option>
                     <name>IlinkProgramEntryLabel</name>
-                    <state>__iar_program_start</state>
+          <state></state>
                 </option>
                 <option>
                     <name>DoFill</name>
@@ -1065,7 +1101,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state></state>
+          <state>###Unitialized###</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1153,20 +1189,15 @@
         <settings>
             <name>BUILDACTION</name>
             <archiveVersion>2</archiveVersion>
-            <data />
-        </settings>
-        <settings>
-            <name>Coder</name>
-            <archiveVersion>0</archiveVersion>
-            <data />
-        </settings>
-    </configuration>
+      <data></data>
+    </settings>
+  </configuration>
+  <group>
+    <name>Application</name>
     <group>
-        <name>Application</name>
-        <group>
-            <name>EWARM</name>
-            <file>
-                <name>$PROJ_DIR$\startup_stm32wba65xx.s</name>
+      <name>EWARM</name>
+      <file>
+        <name>$PROJ_DIR$/startup_stm32wba65xx.s</name>
             </file>
         </group>
         <group>
@@ -1184,9 +1215,6 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_hal_msp.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_hal_timebase_tim.c</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_it.c</name>

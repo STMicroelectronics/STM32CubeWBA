@@ -15,12 +15,16 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
-          <name>BrowseInfoPath</name>
-          <state>BLE_p2pServer_TZ_NS\BrowseInfo</state>
+          <name>FPU64</name>
+          <state>1</state>
         </option>
         <option>
-          <name>BuildFilesPath</name>
-          <state>BLE_p2pServer_TZ_NS\</state>
+          <name>BrowseInfoPath</name>
+          <state>Debug\BrowseInfo</state>
+        </option>
+        <option>
+          <name>OGProductVersion</name>
+          <state>9.30.1.0</state>
         </option>
         <option>
           <name>ExePath</name>
@@ -40,11 +44,11 @@
         </option>
         <option>
           <name>Input description</name>
-          <state>Full formatting, without multibyte support.</state>
+          <state></state>
         </option>
         <option>
           <name>Output description</name>
-          <state>Full formatting, without multibyte support.</state>
+          <state></state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -57,20 +61,16 @@
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>2</state>
+          <state>1</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
-        </option>
-        <option>
-          <name>OGProductVersion</name>
-          <state>6.50.1.4445</state>
+          <state></state>
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
@@ -98,12 +98,12 @@
         </option>
         <option>
           <name>RTConfigPath2</name>
-          <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Full.h</state>
+          <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
           <version>34</version>
-          <state>61</state>
+          <state>0</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -204,12 +204,12 @@
           <state>0</state>
         </option>
         <option>
-          <name>PointerAuthentication</name>
-          <state>0</state>
+          <name>BuildFilesPath</name>
+          <state>Debug</state>
         </option>
         <option>
-          <name>FPU64</name>
-          <state>1</state>
+          <name>PointerAuthentication</name>
+          <state>0</state>
         </option>
         <option>
           <name>OG_32_64DeviceCoreSlave</name>
@@ -230,12 +230,17 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCDefines</name>
           <state>USE_HAL_DRIVER</state>
-          <state>USE_FULL_ASSERT</state>
           <state>STM32WBA55xx</state>
-          <state>BLE</state>
           <state>USE_FULL_LL_DRIVER</state>
+          <state>BLE_LL</state>
+          <state>PHY_40nm_3_00_a</state>
+          <state>BLE_STACK_BASIC_FEATURES</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -328,7 +333,7 @@
         </option>
         <option>
           <name>CCRequirePrototypes</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCDiagWarnAreErr</name>
@@ -363,15 +368,24 @@
           <state>$PROJ_DIR$/../../NonSecure/System/Config/Log</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/LowPower</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/Debug_GPIO</state>
+          <state>$PROJ_DIR$/../../NonSecure/System/Config/Flash</state>
+          <state>$PROJ_DIR$/../../NonSecure/System/Config/ADC_Ctrl</state>
           <state>$PROJ_DIR$/../../NonSecure/System/Config/CRC_Ctrl</state>
           <state>$PROJ_DIR$/../../NonSecure/STM32_WPAN/App</state>
           <state>$PROJ_DIR$/../../NonSecure/STM32_WPAN/Target</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy</state>
           <state>$PROJ_DIR$/../../../../../../../Utilities/trace/adv_trace</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Interfaces</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Flash</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
+          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../../Utilities/misc</state>
           <state>$PROJ_DIR$/../../../../../../../Utilities/sequencer</state>
           <state>$PROJ_DIR$/../../../../../../../Utilities/tim_serv</state>
@@ -382,26 +396,13 @@
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
+          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
+          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
           <state>$PROJ_DIR$/../../../../../../../Drivers/CMSIS/Include</state>
-          <state>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</state>
-          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
-          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
-          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
-          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Interfaces</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Flash</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
-          <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Log</state>
-          <state>$PROJ_DIR$/../../NonSecure/System/Config/Flash</state>
-          <state>$PROJ_DIR$/../../NonSecure/System/Config/ADC_Ctrl</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -466,10 +467,6 @@
         </option>
         <option>
           <name>IccFloatSemantics</name>
-          <state>0</state>
-        </option>
-        <option>
-          <name>CCOptimizationNoSizeConstraints</name>
           <state>0</state>
         </option>
         <option>
@@ -715,15 +712,15 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_NS.hex</state>
+          <state>BLE_p2pServer_TZ_NS.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -752,16 +749,16 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
+          <name>IlinkOutputFile</name>
+          <state>BLE_p2pServer_TZ_NS.out</state>
+        </option>
+        <option>
           <name>IlinkLibIOConfig</name>
           <state>1</state>
         </option>
         <option>
           <name>IlinkInputFileSlave</name>
           <state>0</state>
-        </option>
-        <option>
-          <name>IlinkOutputFile</name>
-          <state>BLE_p2pServer_TZ_NS.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>
@@ -1148,11 +1145,6 @@
       <archiveVersion>2</archiveVersion>
       <data></data>
     </settings>
-    <settings>
-      <name>Coder</name>
-      <archiveVersion>0</archiveVersion>
-      <data></data>
-    </settings>
   </configuration>
   <group>
     <name>Application</name>
@@ -1166,6 +1158,18 @@
       <name>User</name>
       <group>
         <name>NonSecure</name>
+        <group>
+          <name>Common</name>
+          <group>
+            <name>WPAN</name>
+            <group>
+              <name>Interface</name>
+              <file>
+                <name>$PROJ_DIR$/../../../../../../Common/WPAN/Interfaces/app_bsp.c</name>
+              </file>
+            </group>
+          </group>
+        </group>
         <group>
           <name>Core</name>
           <file>
@@ -1185,9 +1189,6 @@
           <name>STM32_WPAN</name>
           <group>
             <name>App</name>
-            <file>
-              <name>$PROJ_DIR$\..\..\NonSecure\STM32_WPAN\App\app_bsp.c</name>
-            </file>
             <file>
               <name>$PROJ_DIR$\..\..\NonSecure\STM32_WPAN\App\app_ble.c</name>
             </file>
@@ -1398,12 +1399,6 @@
           </file>
         </group>
         <group>
-          <name>RFControl</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Common\WPAN\Modules\RFControl\rf_antenna_switch.c</name>
-          </file>
-        </group>
-        <group>
           <name>RTDebug</name>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug.c</name>
@@ -1522,12 +1517,6 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
       </file>
       <file>
@@ -1546,6 +1535,12 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</name>
       </file>
       <file>
@@ -1553,6 +1548,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</name>
@@ -1565,6 +1563,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</name>
@@ -1635,7 +1639,7 @@
           </excluded>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA5_LinkLayer_BLE_Basic_lib.a</name>
           <excluded>
             <configuration>BLE_p2pServer_TZ_CM33S</configuration>
           </excluded>

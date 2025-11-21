@@ -1,8 +1,8 @@
 ; *************************************************************
 ; *** Scatter-Loading Description File                      ***
 ; *************************************************************
-LR_IROM_FLASH1 0x08006000 0x500 {
-  ER_IROM_FLASH1_LOW 0x08006000 0x500 {
+LR_IROM_FLASH1 0x08006000 0x600 {
+  ER_IROM_FLASH1_LOW 0x08006000 0x600 {
     *.o(RESET, +First)
     *.o (TAG_OTA_START)
   }
@@ -14,12 +14,12 @@ LR_IROM_FLASH1 0x08006000 0x500 {
 
 }
 
-LR_IROM_FLASH2 0x08006500 0x79C10{
-  ER_IROM_FLASH1_HIGH 0x08006500  0x79C10 {
+LR_IROM_FLASH2 0x08006600 0xF9A00{
+  ER_IROM_FLASH1_HIGH 0x08006600  0xF9A00 {
   *(InRoot$$Sections)
   .ANY (+RO)
   .ANY (+XO)
-  *.o (TAG_OTA_END, +Last)	
+  *.o (TAG_OTA_END, +Last)
   }
  }
 ;LR_IROM_DWN 0x08080000 0x7A000 {

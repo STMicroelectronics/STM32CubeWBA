@@ -52,7 +52,9 @@ extern "C" {
                            }while(0)
 
 /* Trigger BLE Host stack process after calling any aci/hci functions */
-#define BLE_WRAP_POSTPROC() BleStackCB_Process()
+#define BLE_WRAP_POSTPROC() do{ \
+                            BleStackCB_Process(); \
+                          }while(0)
 
 /* USER CODE BEGIN EM */
 

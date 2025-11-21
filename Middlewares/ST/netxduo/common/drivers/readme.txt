@@ -1,11 +1,18 @@
 /**
   ******************************************************************************
   * @file    readme.txt
-  * @author  MCD Application Team
+  * @author  GPM Application Team
   * @brief   This file lists the main changes done by STMicroelectronics on
   *          NetXDuo low level drivers for STM32 devices.
   ******************************************************************************
   */
+
+### V4.1.0 / 18-June-2025 ###
+==================================
+Main changes
+-------------
+- Remove Cypress WiFi driver.
+ + wifi/cypress
 
 ### V4.0.1 / 18-October-2024 ###
 ==================================

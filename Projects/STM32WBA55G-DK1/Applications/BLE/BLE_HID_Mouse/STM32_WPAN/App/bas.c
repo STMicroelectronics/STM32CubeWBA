@@ -311,11 +311,11 @@ void BAS_Init(void)
                              &(BAS_Context.BasSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: BAS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: BAS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: BasSvcHdle = 0x%04X\n",BAS_Context.BasSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: BasSvcHdle = 0x%04X\n",BAS_Context.BasSvcHdle);
   }
 
   /**
@@ -334,11 +334,11 @@ void BAS_Init(void)
                           &(BAS_Context.BalCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : BAL, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : BAL, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BalCharHdle = 0x%04X\n",BAS_Context.BalCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : BalCharHdle = 0x%04X\n",BAS_Context.BalCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -376,11 +376,11 @@ tBleStatus BAS_UpdateValue(BAS_CharOpcode_t CharOpcode, BAS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value BAL command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value BAL command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value BAL command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value BAL command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 

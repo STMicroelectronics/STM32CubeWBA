@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os2.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -46,13 +47,14 @@ CRC_HandleTypeDef hcrc;
 
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
-RNG_HandleTypeDef hrng;
-
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 DMA_HandleTypeDef handle_GPDMA1_Channel1;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
+DMA_HandleTypeDef handle_GPDMA1_Channel3;
+DMA_HandleTypeDef handle_GPDMA1_Channel2;
 
 /* USER CODE BEGIN PV */
 
@@ -61,7 +63,9 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
 void MX_FREERTOS_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -99,6 +103,9 @@ int main(void)
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
+  /* Configure the System Power */
+  SystemPower_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -106,16 +113,18 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_GPDMA1_Init();
+  MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_ICACHE_Init();
+  MX_CRC_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  ConfigureStandbyWakeupPins();
 
   /* USER CODE END 2 */
 
   /* Init scheduler */
   osKernelInitialize();
-
   /* Call init function for freertos objects (in app_freertos.c) */
   MX_FREERTOS_Init();
 
@@ -226,6 +235,19 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
+  * @brief Power Configuration
+  * @retval None
+  */
+static void SystemPower_Config(void)
+{
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
+}
+
+/**
   * @brief ADC4 Initialization Function
   * @param None
   * @retval None
@@ -333,10 +355,14 @@ void MX_GPDMA1_Init(void)
   __HAL_RCC_GPDMA1_CLK_ENABLE();
 
   /* GPDMA1 interrupt Init */
-    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 7, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 7, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
+    HAL_NVIC_SetPriority(GPDMA1_Channel2_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel2_IRQn);
+    HAL_NVIC_SetPriority(GPDMA1_Channel3_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(GPDMA1_Channel3_IRQn);
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -397,6 +423,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -525,6 +555,54 @@ void MX_USART1_UART_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart2, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart2, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -545,6 +623,17 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void ConfigureStandbyWakeupPins(void)
+{
+ /* HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);   B1 --> PC13  --> not used to avoid LSE disturbance */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);   /* B2 --> PB6 */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);   /* B3 --> PB7 */
+  
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_6);
+  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_B, GPIO_PIN_7);
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+}
 
 /* USER CODE END 4 */
 
@@ -562,8 +651,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

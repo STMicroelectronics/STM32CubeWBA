@@ -387,11 +387,11 @@ void P2PR_Init(void)
                              &(P2PR_Context.P2prSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: p2pR, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: p2pR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: P2prSvcHdle = 0x%04X\n",P2PR_Context.P2prSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: P2prSvcHdle = 0x%04X\n",P2PR_Context.P2prSvcHdle);
   }
 
   /**
@@ -410,11 +410,11 @@ void P2PR_Init(void)
                           &(P2PR_Context.WritefwdCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : WRITEFWD, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : WRITEFWD, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : WritefwdCharHdle = 0x%04X\n",P2PR_Context.WritefwdCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : WritefwdCharHdle = 0x%04X\n",P2PR_Context.WritefwdCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -437,11 +437,11 @@ void P2PR_Init(void)
                           &(P2PR_Context.NotiffwdCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : NOTIFFWD, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : NOTIFFWD, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : NotiffwdCharHdle = 0x%04X\n",P2PR_Context.NotiffwdCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : NotiffwdCharHdle = 0x%04X\n",P2PR_Context.NotiffwdCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -464,11 +464,11 @@ void P2PR_Init(void)
                           &(P2PR_Context.DevinfoCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : DEVINFO, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : DEVINFO, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : DevinfoCharHdle = 0x%04X\n",P2PR_Context.DevinfoCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : DevinfoCharHdle = 0x%04X\n",P2PR_Context.DevinfoCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -505,11 +505,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value WRITEFWD command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value WRITEFWD command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value WRITEFWD command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value WRITEFWD command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -524,11 +524,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value NOTIFFWD command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value NOTIFFWD command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value NOTIFFWD command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value NOTIFFWD command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -543,11 +543,11 @@ tBleStatus P2PR_UpdateValue(P2PR_CharOpcode_t CharOpcode, P2PR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value DEVINFO command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value DEVINFO command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value DEVINFO command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value DEVINFO command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

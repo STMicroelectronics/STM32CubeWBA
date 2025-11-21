@@ -353,6 +353,20 @@ void RADIO_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)

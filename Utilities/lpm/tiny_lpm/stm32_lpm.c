@@ -99,16 +99,16 @@ static UTIL_LPM_bm_t UTIL_LPM_ControlTable[UTIL_LPM_DRIVER_MAX_NUM];
     
 #if (UTIL_LPM_LEGACY_ENABLED == 1)
 /**
- * @brief State variable for the off mode.
- * @note  Only used on backward compatibility purpose, for deprecated APIs
- */
-static UTIL_LPM_State_t off_state = UTIL_LPM_ENABLE;
-
-/**
  * @brief State variable for the stop mode.
  * @note  Only used on backward compatibility purpose, for deprecated APIs
  */
-static UTIL_LPM_State_t stop_state = UTIL_LPM_ENABLE;
+static UTIL_LPM_bm_t stop_state;
+
+/**
+ * @brief State variable for the off mode.
+ * @note  Only used on backward compatibility purpose, for deprecated APIs
+ */
+static UTIL_LPM_bm_t off_state;
 
 /**
  * @brief Array of LPM driver configurations.
@@ -252,11 +252,11 @@ void UTIL_LPM_Init(void)
   UTIL_LPM_ControlTable[UTIL_LPM_Driver_num - 1] = UTIL_LPM_ALL_BIT_SET;
 
 #if (UTIL_LPM_LEGACY_ENABLED == 1)
-  /* reset internal states */
-  off_state = UTIL_LPM_ENABLE;
-  stop_state = UTIL_LPM_ENABLE;
-#endif /* UTIL_LPM_LEGACY_ENABLED */
-  
+  /* stop and off modes are enabled by default */
+  stop_state = UTIL_LPM_ALL_BIT_SET;
+  off_state  = UTIL_LPM_ALL_BIT_SET;
+#endif /* UTIL_LPM_LEGACY_ENABLED */ 
+
   UTIL_LPM_INIT_CRITICAL_SECTION();
 }
 
@@ -377,20 +377,40 @@ void UTIL_LPM_Enter(uint32_t option)
  */   
 void UTIL_LPM_SetOffMode(UTIL_LPM_bm_t lpm_id_bm, UTIL_LPM_State_t state)
 {
-  
   UTIL_LPM_ENTER_CRITICAL_SECTION();
   
-  off_state = state;
-  
-  if (stop_state == UTIL_LPM_ENABLE)
+  if (state == UTIL_LPM_DISABLE)
   {
-    /* if off_state is UTIL_LPM_ENABLE (== 0), sets UTIL_LPM_OFFMODE 
-       otherwise sets UTIL_LPM_STOPMODE (UTIL_LPM_OFFMODE - 1) */
-    UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_OFFMODE - (uint8_t)state);
+    /* reset client bit in off state variable */
+    off_state &= (~lpm_id_bm);
+    if ((stop_state & lpm_id_bm) != 0UL)
+    {
+      /* stop mode previously enabled, 
+         so set stop mode (as the most efficient one) */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_STOPMODE);
+    }
+    else
+    {
+      /* stop mode not enabled, fall back to sleep */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_SLEEPMODE);
+    }
   }
   else
   {
-    UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_SLEEPMODE);
+    /* set client bit in off state variable */
+    off_state |= lpm_id_bm;
+    if ((stop_state & lpm_id_bm) != 0UL)
+    {
+      /* stop mode previously enabled, 
+         so set off mode (as the most efficient one) */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_OFFMODE);
+    }
+    else
+    {
+      /* stop mode not enabled, prevents from going to off 
+         so set sleep mode */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_SLEEPMODE);
+    }
   }
   
   UTIL_LPM_EXIT_CRITICAL_SECTION();
@@ -409,22 +429,32 @@ void UTIL_LPM_SetOffMode(UTIL_LPM_bm_t lpm_id_bm, UTIL_LPM_State_t state)
  */
 void UTIL_LPM_SetStopMode(UTIL_LPM_bm_t lpm_id_bm, UTIL_LPM_State_t state)   
 {
-  
   UTIL_LPM_ENTER_CRITICAL_SECTION();
-  
-  stop_state = state;
-  
+ 
   if (state == UTIL_LPM_DISABLE)
   {
+    /* reset client bit in stop state variable */
+    stop_state &= (~lpm_id_bm);
+    /* disabling stop prevents from going in off mode */
     UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_SLEEPMODE);
   }
   else
   {
-    /* if off_state is UTIL_LPM_ENABLE (== 0), sets UTIL_LPM_OFFMODE 
-       otherwise sets UTIL_LPM_STOPMODE (UTIL_LPM_OFFMODE - 1) */
-    UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_OFFMODE - (uint8_t)off_state);
+    /* set client bit in stop state variable */
+    stop_state |= lpm_id_bm;
+    if ((off_state & lpm_id_bm) != 0UL)
+    {
+      /* off mode previously enabled, 
+         so restore off mode (as the most efficient one) */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_OFFMODE);
+    }
+    else
+    {
+      /* stop is the best mode allowed for this client */
+      UTIL_LPM_SetMaxMode(lpm_id_bm, UTIL_LPM_STOPMODE);
+    }
   }
-  
+
   UTIL_LPM_EXIT_CRITICAL_SECTION();
 }
 

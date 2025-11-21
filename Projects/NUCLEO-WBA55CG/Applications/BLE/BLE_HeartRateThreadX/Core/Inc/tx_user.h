@@ -246,7 +246,7 @@
 
 /* Define the common timer tick reference for use by other middleware components. */
 
-#define TX_TIMER_TICKS_PER_SECOND                128
+#define TX_TIMER_TICKS_PER_SECOND                1000
 
 /* Determine if there is a FileX pointer in the thread control block.
    By default, the pointer is there for legacy/backwards compatibility.
@@ -266,6 +266,7 @@
 /*#define TX_SAFETY_CRITICAL*/
 
 /* Define the LowPower macros and flags */
+#if defined ( __ICCARM__ ) || (defined (__GNUC__) && !defined(__ASSEMBLER__))
 
 /* Define a macro that sets up a low power clock and keep track of time */
 /*#define TX_LOW_POWER_TIMER_SETUP */
@@ -282,8 +283,9 @@ void ThreadXLowPowerUserExit(void);
 #define TX_LOW_POWER_USER_EXIT ThreadXLowPowerUserExit()
 
 /* User's low-power macro to obtain the amount of time (in ticks) the system has been in low power mode */
-unsigned long App_ThreadX_LowPower_Timer_Adjust(void);
-#define TX_LOW_POWER_USER_TIMER_ADJUST App_ThreadX_LowPower_Timer_Adjust()
+/*#define TX_LOW_POWER_USER_TIMER_ADJUST */
+
+#endif
 
 /* USER CODE BEGIN 2 */
 

@@ -20,6 +20,10 @@
 #ifndef ADVANCED_MEMORY_MANAGER_H
 #define ADVANCED_MEMORY_MANAGER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm_list.h"
 
@@ -269,5 +273,9 @@ void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p
  * @return None
  */
 void AMM_ProcessRequest (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ADVANCED_MEMORY_MANAGER_H */

@@ -54,7 +54,8 @@ extern "C" {
                              osMutexAcquire(LinkLayerMutex, osWaitForever); \
                            }while(0)
 
-/* Release Link Layer Mutex and Trigger BLE Host stack process after calling any aci/hci functions */
+/* Release Link Layer Mutex */
+/* Trigger BLE Host stack process after calling any aci/hci functions */
 #define BLE_WRAP_POSTPROC() do{ \
                               osMutexRelease(LinkLayerMutex); \
                               BleStackCB_Process(); \

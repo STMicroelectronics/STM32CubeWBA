@@ -92,6 +92,7 @@ struct arm_flash_dev_t
   * @{
   */
 static __IO uint32_t DoubleECC_Error_Counter = 0U;
+
 /**
   * \brief      Check if the Flash memory boundaries are not violated.
   * \param[in]  flash_dev  Flash device structure \ref arm_flash_dev_t
@@ -110,35 +111,7 @@ static bool is_range_valid(struct arm_flash_dev_t *flash_dev,
 
   return (offset > flash_limit) ? (false) : (true) ;
 }
-#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-/**
-  * \brief        Check if the range is secure .
-  * \param[in]    flash_dev  Flash device structure \ref arm_flash_dev_t
-  * \param[in]    param      Any number that can be checked against the
-  *                          program_unit, e.g. Flash memory address or
-  *                          data length in bytes.
-  * \return       Returns true if param is aligned to program_unit, false
-  *               otherwise.
-  */
-static bool is_range_secure(struct arm_flash_dev_t *flash_dev,
-                            uint32_t start, uint32_t len)
-{
-  /*  allow write access in area provided by device info */
-  struct flash_vect *vect = &flash_dev->dev->secure;
-  uint32_t nb;
-  /* NULL descriptor , means range is only secure */
-  if (!vect->range)
-  {
-    return true;
-  }
-  for (nb = 0; nb < vect->nb; nb++)
-    if ((start >= vect->range[nb].base) && ((start + len - 1) <= vect->range[nb].limit))
-    {
-      return true;
-    }
-  return false;
-}
-#endif
+
 /**
   * \brief        Check if the parameter is an erasebale page.
   * \param[in]    flash_dev  Flash device structure \ref arm_flash_dev_t
@@ -364,16 +337,7 @@ static int32_t Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
   /* area secure and non secure are done with a non secure access */
-  if (is_range_secure(&ARM_FLASH0_DEV, addr, cnt))
-  {
     memcpy_flash(data, (void *)((uint32_t)addr + FLASH_BASE), cnt);
-  }
-  else
-  {
-    memcpy_flash(data, (void *)((uint32_t)addr + FLASH_BASE_NS), cnt);
-  }
-#else
-  memcpy_flash(data, (void *)((uint32_t)addr + FLASH_BASE_NS), cnt);
 #endif
   if (DoubleECC_Error_Counter == 0U)
   {
@@ -397,8 +361,8 @@ static int32_t Flash_ProgramData(uint32_t addr,
 #endif
   ARM_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-    flash_base = (uint32_t)FLASH_BASE_NS;
-    write_type = FLASH_TYPEPROGRAM_QUADWORD_NS;
+    flash_base = (uint32_t)FLASH_BASE_S;
+    write_type = FLASH_TYPEPROGRAM_QUADWORD;
 #endif
 #if defined(CHECK_WRITE) || defined(DEBUG_FLASH_ACCESS)
   dest = (void *)(flash_base + addr);
@@ -485,9 +449,7 @@ static int32_t Flash_EraseSector(uint32_t addr)
     return ARM_DRIVER_ERROR_PARAMETER;
   }
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-    EraseInit.TypeErase = FLASH_TYPEERASE_PAGES_NS;
-#else
-  EraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
+    EraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
 #endif
 #if defined(STM32WBA65xx)
   /*  fix me assume dual bank, reading DBANK in OPTR in Flash init is better */
@@ -514,18 +476,11 @@ static int32_t Flash_EraseSector(uint32_t addr)
 
 #ifdef CHECK_ERASE
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
-  if (is_range_secure(&ARM_FLASH0_DEV, addr, 4))
-  {
     pt = (uint32_t *)((uint32_t)FLASH_BASE_S + addr);
-  }
-  else
-  {
-    pt = (uint32_t *)((uint32_t)FLASH_BASE_NS + addr);
-  }
 #else
   pt = (uint32_t *)((uint32_t)FLASH_BASE + addr);
 #endif
-  for (i = 0; i > 0x400; i++)
+  for (i = 0; i < (FLASH0_SECTOR_SIZE / 4); i++)
   {
     if (pt[i] != 0xffffffff)
     {

@@ -45,10 +45,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#define LL_DEEPSLEEP_EXIT_TIME_US     230 /* Time in us needed for Link Layer deepsleep exit */
-#define DEVICE_WAKEUP_STANDBY_TIME_US 60  /* Time in us needed by the device to exit from standby */
-#define LSI2_FREQ_WORST_VALUE         24000 /* Worst value of LSI2 frequency */
-#define RTOS_EXTRA_WAKEUP_TIME_US     150 /* Additional time in us to wakeup in context of an RTOS */
+#define LL_DEEPSLEEP_EXIT_TIME_US     230     /* Time in us needed for Link Layer deepsleep exit */
+#define DEVICE_WAKEUP_STANDBY_TIME_US 60      /* Time in us needed by the device to exit from standby */
+#if defined(RCC_LSI2_SUPPORT)
+#define LSI2_FREQ_WORST_VALUE         24000   /* Worst value of LSI2 frequency */
+#endif /* RCC_LSI2_SUPPORT */
+#define RTOS_EXTRA_WAKEUP_TIME_US     150     /* Additional time in us to wakeup in context of an RTOS */
 
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 /* USER CODE BEGIN PTD */
@@ -70,12 +72,24 @@ const struct UTIL_LPM_Driver_s UTIL_PowerDriver =
 {
   PWR_EnterSleepMode,
   PWR_ExitSleepMode,
-
-  PWR_EnterStopMode,
-  PWR_ExitStopMode,
-
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  PWR_EnterStop2Mode,
+  PWR_ExitStop2Mode,
   PWR_EnterOffMode,
   PWR_ExitOffMode,
+#else  /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+  PWR_EnterStopMode,
+  PWR_ExitStopMode,
+  PWR_EnterStop2Mode,
+  PWR_ExitStop2Mode,
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#else  /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+  PWR_EnterStopMode,
+  PWR_ExitStopMode,
+  PWR_EnterOffMode,
+  PWR_ExitOffMode,
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
 };
 
 /* USER CODE BEGIN EC */
@@ -118,10 +132,12 @@ static RAMCFG_HandleTypeDef sram2_ns =
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 static uint32_t lpm_wakeup_time_standby = 0;
+#if defined(RCC_LSI2_SUPPORT)
 static uint8_t lpm_profiling_started_lsi2 = 0;
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* RCC_LSI2_SUPPORT */
+#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 /* USER CODE BEGIN PV */
 
@@ -133,9 +149,13 @@ static uint8_t lpm_profiling_started_lsi2 = 0;
 /* USER CODE END EM */
 
 /* Private function prototypes -----------------------------------------------*/
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 void Standby_Restore_GPIO(void);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 static void Enter_Stop_Standby_Mode(void);
 static void Exit_Stop_Standby_Mode(void);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -147,6 +167,7 @@ extern void LINKLAYER_PLAT_NotifyWFIEnter(void);
 
 /* USER CODE END 0 */
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
 {
   uint32_t temp;
@@ -156,10 +177,29 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
 
   // ---------------------------------------------------------------------------
 
-  *(uint32_t *)0x42020000 = 0xA8000000;  /* Configure GPIOA_MODER 15:13 AF (JTAG), 12:0 Input */
+  /* Configure GPIOA_MODER 15:13 AF (JTAG), 12:0 Input */
+  LL_GPIO_WriteReg (GPIOA,
+                    MODER,
+                    ((LL_GPIO_MODE_ALTERNATE << (POSITION_VAL(LL_GPIO_PIN_15) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_ALTERNATE << (POSITION_VAL(LL_GPIO_PIN_14) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_ALTERNATE << (POSITION_VAL(LL_GPIO_PIN_13) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_12) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_11) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_10) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_9)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_8)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_7)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_6)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_5)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_4)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_3)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_2)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_1)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_0)  * GPIO_MODER_MODE1_Pos))));
 
   __ASM("mov r0, r0"); /* Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input */
   __ASM("mov r0, r0"); /* Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input */
@@ -168,11 +208,31 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
   LL_GPIO_WriteOutputPort(GPIOA, temp); /* Restore Port A output drive levels */
 
   /* GPIOA_MODER set to reset value */
-  *(uint32_t *)0x42020000 = 0xABFFFFFF;
+  LL_GPIO_WriteReg (GPIOA,
+                    MODER,
+                    0xABFFFFFF);
 
   // ---------------------------------------------------------------------------
 
-  *(uint32_t *)0x42020400 = 0x00000280;  // Configure GPIOB_MODER 4:3 AF (JTAG), 15:5, 2:0 In
+  /* Configure GPIOB_MODER 4:3 AF (JTAG), 15:5, 2:0 In */
+  LL_GPIO_WriteReg (GPIOB,
+                    MODER,
+                    ((LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_15) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_14) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_13) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_12) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_11) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_10) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_9)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_8)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_7)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_6)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_5)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_ALTERNATE << (POSITION_VAL(LL_GPIO_PIN_4)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_ALTERNATE << (POSITION_VAL(LL_GPIO_PIN_3)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_2)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_1)  * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_0)  * GPIO_MODER_MODE1_Pos))));
 
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
@@ -181,11 +241,18 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
   LL_GPIO_WriteOutputPort(GPIOB, temp); // Restore Port B output drive levels
 
   /* GPIOB_MODER set to reset value */
-  *(uint32_t *)0x42020400 = 0xFFFFFEBF;
+  LL_GPIO_WriteReg (GPIOB,
+                    MODER,
+                    0xFFFFFEBF);
 
   // ---------------------------------------------------------------------------
 
-  *(uint32_t *)0x42020800 = 0x00000000;  // Configure GPIOC_MODER 15:13 In
+  /* Configure GPIOC_MODER 15:13 In */
+  LL_GPIO_WriteReg (GPIOC,
+                    MODER,
+                    ((LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_15) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_14) * GPIO_MODER_MODE1_Pos)) |
+                     (LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_13) * GPIO_MODER_MODE1_Pos))));
 
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
@@ -194,11 +261,16 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
   LL_GPIO_WriteOutputPort(GPIOC, temp); // Restore Port C output drive levels
 
   /* GPIOC_MODER set to reset value */
-  *(uint32_t *)0x42020800 = 0xFC000000;
+  LL_GPIO_WriteReg (GPIOC,
+                    MODER,
+                    0xFC000000);
 
   // ---------------------------------------------------------------------------
 
-  *(uint32_t *)0x42021C00 = 0x00000000;  // Configure GPIOH_MODER 3 In
+  /* Configure GPIOH_MODER 3 In */
+  LL_GPIO_WriteReg (GPIOH,
+                    MODER,
+                    ((LL_GPIO_MODE_INPUT     << (POSITION_VAL(LL_GPIO_PIN_3) * GPIO_MODER_MODE1_Pos))));
 
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
   __ASM("mov r0, r0"); // Delay to allow GPIOx_IDR.IDy to be updated after GPIOx_MODER is set to Input
@@ -207,10 +279,13 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
   LL_GPIO_WriteOutputPort(GPIOH, temp); // Restore Port H output drive levels
 
   /* GPIOH_MODER set to reset value */
-  *(uint32_t *)0x42021C00 = 0x0000C000;
+  LL_GPIO_WriteReg (GPIOH,
+                    MODER,
+                    0x0000C000);
 
   // ---------------------------------------------------------------------------
 }
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
 #if (CFG_SCM_SUPPORTED != 1)
 OPTIMIZED static void Clock_Switching(void)
@@ -221,6 +296,7 @@ OPTIMIZED static void Clock_Switching(void)
 
   /* Apply PWR VOS1 power level */
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1); /* Double write for flag readiness to cope with hw latency */
   while (LL_PWR_IsActiveFlag_VOS() == 0);
 
   /* Switch HSE frequency from HSE16 to HSE32 */
@@ -244,6 +320,7 @@ OPTIMIZED static void Clock_Switching(void)
 }
 #endif /* (CFG_SCM_SUPPORTED != 1) */
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 OPTIMIZED static void Enter_Stop_Standby_Mode(void)
 {
   /* Disabling ICACHE */
@@ -307,7 +384,9 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
   }
 #endif /* CFG_SCM_SUPPORTED */
 }
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 OPTIMIZED void PWR_EnterOffMode( void )
 {
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_ENTER);
@@ -375,13 +454,10 @@ OPTIMIZED void PWR_EnterOffMode( void )
 
   if ( 1UL == boot_after_standby )
   {
-#if(CFG_RT_DEBUG_DTB == 1)
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
+#if (CFG_RT_DEBUG_DTB == 1) || (CFG_RT_DEBUG_GPIO_MODULE == 1)
     Standby_Restore_GPIO();
-
+#endif /* ((CFG_RT_DEBUG_DTB == 1) || (CFG_RT_DEBUG_GPIO_MODULE == 1) */
+#if (CFG_RT_DEBUG_DTB == 1)
     RT_DEBUG_DTBInit();
     RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
@@ -395,9 +471,14 @@ OPTIMIZED void PWR_EnterOffMode( void )
   /* USER CODE BEGIN PWR_EnterOffMode_2 */
 
   /* USER CODE END PWR_EnterOffMode_2 */
-
 }
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+OPTIMIZED void PWR_EnterOffMode( void )
+{
+}
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 OPTIMIZED void PWR_ExitOffMode( void )
 {
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STANDBY_MODE_EXIT);
@@ -477,7 +558,6 @@ OPTIMIZED void PWR_ExitOffMode( void )
     HAL_PWREx_DisableStandbyRetainedIOState(PWR_GPIO_H, PWR_GPIO_PIN_MASK);
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
     if(LPM_is_wakeup_time_profiling_done() == 0)
     {
       /* Compute amount of time spent to start from standby wakeup */
@@ -488,10 +568,12 @@ OPTIMIZED void PWR_ExitOffMode( void )
       {
         lpm_wakeup_time_standby /= LSE_VALUE;
       }
+#if defined(RCC_LSI2_SUPPORT)
       else if (LL_RCC_GetSystickClockSource() == LL_RCC_SYSTICK_CLKSOURCE_LSI)
       {
         lpm_wakeup_time_standby /= LSI2_FREQ_WORST_VALUE;
       }
+#endif /* RCC_LSI2_SUPPORT */
       else
       {
         /* Such situation shall not happen, Systick clock source has changed during wakeup time profiling */
@@ -500,6 +582,7 @@ OPTIMIZED void PWR_ExitOffMode( void )
       lpm_wakeup_time_standby += LL_DEEPSLEEP_EXIT_TIME_US + DEVICE_WAKEUP_STANDBY_TIME_US;
       lpm_wakeup_time_standby += RTOS_EXTRA_WAKEUP_TIME_US; /* Additional time to wakeup in context of an RTOS */
 
+#if defined(RCC_LSI2_SUPPORT)
       /** If LSI2 is used for profiling, since the profile value is based on the worst
         * case for LSI2 frequency, the minimum value between the value profiled
         * and the defaut value is considered for lpm_wakeup_time_standby
@@ -508,12 +591,13 @@ OPTIMIZED void PWR_ExitOffMode( void )
       {
         lpm_wakeup_time_standby = MIN(lpm_wakeup_time_standby, CFG_LPM_STDBY_WAKEUP_TIME);
       }
+#endif /* RCC_LSI2_SUPPORT */
       /* USER CODE BEGIN CFG_LPM_WAKEUP_TIME_PROFILING_1 */
 
       /* USER CODE END CFG_LPM_WAKEUP_TIME_PROFILING_1 */
 
       APP_SYS_SetWakeupOffset(lpm_wakeup_time_standby);
-
+#if defined(RCC_LSI2_SUPPORT)
       /* Disable LSI2 if used for wakeup time profiling */
       if(lpm_profiling_started_lsi2 != 0)
       {
@@ -535,7 +619,7 @@ OPTIMIZED void PWR_ExitOffMode( void )
           __HAL_RCC_PWR_CLK_DISABLE();
         }
       }
-
+#endif /* RCC_LSI2_SUPPORT */
       /* Disable SysTick Timer */
       CLEAR_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
 
@@ -551,7 +635,6 @@ OPTIMIZED void PWR_ExitOffMode( void )
         assert_param(0);
       }
     }
-#endif /* CFG_LPM_STDBY_SUPPORTED */
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
   }
   else
@@ -565,7 +648,13 @@ OPTIMIZED void PWR_ExitOffMode( void )
 
   SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STANDBY_MODE_EXIT);
 }
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+OPTIMIZED void PWR_ExitOffMode( void )
+{
+}
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
 OPTIMIZED void PWR_EnterStopMode( void )
 {
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP_MODE_ENTER);
@@ -596,9 +685,14 @@ OPTIMIZED void PWR_EnterStopMode( void )
   /* USER CODE BEGIN PWR_EnterStopMode_2 */
 
   /* USER CODE END PWR_EnterStopMode_2 */
-
 }
+#else /* (CFG_LPM_STOP1_SUPPORTED == 1) */
+OPTIMIZED void PWR_EnterStopMode( void )
+{
+}
+#endif /* (CFG_LPM_STOP1_SUPPORTED == 1) */
 
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
 OPTIMIZED void PWR_ExitStopMode( void )
 {
   SYSTEM_DEBUG_SIGNAL_SET(LOW_POWER_STOP_MODE_EXIT);
@@ -621,8 +715,13 @@ OPTIMIZED void PWR_ExitStopMode( void )
 
   SYSTEM_DEBUG_SIGNAL_RESET(LOW_POWER_STOP_MODE_EXIT);
 }
+#else /* (CFG_LPM_STOP1_SUPPORTED == 1) */
+OPTIMIZED void PWR_ExitStopMode( void )
+{
+}
+#endif /* (CFG_LPM_STOP1_SUPPORTED == 1) */
 
-void PWR_EnterSleepMode( void )
+OPTIMIZED void PWR_EnterSleepMode( void )
 {
   /* USER CODE BEGIN PWR_EnterSleepMode_1 */
 
@@ -644,7 +743,7 @@ void PWR_EnterSleepMode( void )
   /* USER CODE END PWR_EnterSleepMode_2 */
 }
 
-void PWR_ExitSleepMode( void )
+OPTIMIZED void PWR_ExitSleepMode( void )
 {
   /* USER CODE BEGIN PWR_ExitSleepMode */
 
@@ -699,7 +798,7 @@ uint32_t is_boot_from_standby(void)
 
     boot_after_standby = 1;
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
     /* Perform standby wakeup time profiling if not already done */
     if(LPM_is_wakeup_time_profiling_done() == 0)
     {
@@ -712,6 +811,7 @@ uint32_t is_boot_from_standby(void)
       }
       else
       {
+#if defined(RCC_LSI2_SUPPORT)
         /* Enable LSI2 clock if not already done */
         if(LL_RCC_LSI2_IsReady() == 0UL)
         {
@@ -740,6 +840,9 @@ uint32_t is_boot_from_standby(void)
 
         /* Configure sysTick clock source to LSI2 */
         LL_RCC_SetSystickClockSource(LL_RCC_SYSTICK_CLKSOURCE_LSI);
+#else
+        Error_Handler();
+#endif /* RCC_LSI2_SUPPORT */
       }
 
       /* Configure SysTick to full scale */
@@ -749,7 +852,7 @@ uint32_t is_boot_from_standby(void)
       WRITE_REG(SysTick->VAL, 0UL);
       SET_BIT(SysTick->CTRL, SysTick_CTRL_ENABLE_Msk);
     }
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
   }
   else
@@ -761,13 +864,13 @@ uint32_t is_boot_from_standby(void)
 }
 
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /* returns 0 if wakeup time profiling is not done */
 uint32_t LPM_is_wakeup_time_profiling_done(void)
 {
   return (lpm_wakeup_time_standby != 0);
 }
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+#endif /* CFG_LPM_STANDBY_SUPPORTED */
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 /* Private user code ---------------------------------------------------------*/

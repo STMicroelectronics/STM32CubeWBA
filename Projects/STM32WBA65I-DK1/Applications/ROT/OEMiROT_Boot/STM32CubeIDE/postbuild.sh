@@ -3,7 +3,7 @@
 # Managing HOST OS diversity : begin
 #=================================================================================================
 OS=$(uname)
-
+#
 echo ${OS} | grep -i -e windows -e mingw >/dev/null
 if [ $? == 0 ]; then
   echo "=================================="
@@ -18,7 +18,7 @@ if [ $? == 0 ]; then
   # Return OK if no error detected during .bat script
   exit 0
 fi
-
+#
 if [ "$OS" == "Linux" ]; then
   echo "HOST OS : Linux detected"
 elif [ "$OS" == "Darwin" ]; then
@@ -27,17 +27,17 @@ else
   echo "!!!HOST OS not supported : >$OS<!!!"
   exit 1
 fi
-
+#
 #=================================================================================================
 # Managing HOST OS diversity : end
 #=================================================================================================
 echo "=================================="
 echo ">>> Running $0 $@"
 echo ""
-
+#
 # arg1 is the config type (Debug, Release)
 config=$1
-
+#
 # Getting the Trusted Package Creator CLI path
 SCRIPT=$(readlink -f $0)
 project_dir=`dirname $SCRIPT`
@@ -97,21 +97,20 @@ auth_s_xml_field="Authentication secure key"
 auth_ns_xml_field="Authentication non secure key"
 scratch_sector_number_xml_field="Number of scratch sectors"
 
-# Environment variable for AppliCfg
-applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/dist/AppliCfg.exe"
-uname | grep -i -e windows -e mingw
-if [ $? == 0 ] && [ -e "$applicfg" ]; then
-  #line for window executable
-  echo "AppliCfg with windows executable"
-  python=""
-else
-  #line for python
-  echo "AppliCfg with python script"
-  applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
-  #determine/check python version command
+# Check if Python is installed
+if ! python3 --version > /dev/null 2>&1; then
+  if ! python --version > /dev/null 2>&1; then
+    echo "Python installation missing. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md"
+    step_error;
+  fi
   python="python "
-  python3 --version >& /dev/null && python="python3 "
+else
+  python="python3 "
 fi
+
+# Environment variable for AppliCfg
+applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
+#
 # Function to run commands and check for errors
 error()
 {
@@ -155,6 +154,10 @@ ret=$?
 if [ $ret != 0 ]; then error; fi
 
 $python$applicfg flash --layout $preprocess_bl2_file -b app_full_secure -m  RE_OEMIROT_APPLI_FULL_SECURE --decimal --vb $img_config >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg flash --layout $preprocess_bl2_file -b external_flash -m RE_EXTERNAL_FLASH_ENABLE --decimal --vb $img_config >> $current_log_file 2>&1
 ret=$?
 if [ $ret != 0 ]; then error; fi
 
@@ -486,12 +489,27 @@ if [ $ret != 0 ]; then error; fi
 if [ "$oemurot_enabled" == "1" ]; then
   $python$applicfg setdefine -a uncomment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
   ret=$?
-  if [ $ret != 0 ]; then error; fi
 else
   $python$applicfg setdefine -a comment -n OEMUROT_ENABLE -v 1 $appli_flash_layout
   ret=$?
-  if [ $ret != 0 ]; then error; fi
 fi
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_SHARED_DATA_BASE -n BOOT_SHARED_DATA_BASE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_SHARED_DATA_SIZE -n BOOT_SHARED_DATA_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_RAM_BASE -n BOOT_RAM_BASE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
+
+$python$applicfg definevalue --layout $preprocess_bl2_file -m RE_BOOT_RAM_SIZE -n BOOT_RAM_SIZE $appli_flash_layout --vb >> $current_log_file 2>&1
+ret=$?
+if [ $ret != 0 ]; then error; fi
 
 # ======================================================================== end =======================================================================
 exit 0

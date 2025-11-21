@@ -66,8 +66,11 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern UART_HandleTypeDef hlpuart1;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
@@ -290,6 +293,34 @@ void GPDMA1_Channel1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles GPDMA1 Channel 2 global interrupt.
+  */
+void GPDMA1_Channel2_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel2_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel2);
+  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles GPDMA1 Channel 3 global interrupt.
+  */
+void GPDMA1_Channel3_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel3_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel3);
+  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel3_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -301,6 +332,20 @@ void USART1_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LPUART1 global interrupt.
+  */
+void LPUART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN LPUART1_IRQn 0 */
+
+  /* USER CODE END LPUART1_IRQn 0 */
+  HAL_UART_IRQHandler(&hlpuart1);
+  /* USER CODE BEGIN LPUART1_IRQn 1 */
+
+  /* USER CODE END LPUART1_IRQn 1 */
 }
 
 /**

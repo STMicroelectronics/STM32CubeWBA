@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,6 +24,7 @@
 #include "stm32wba65i_discovery.h"
 #include "stm32wba65i_discovery_lcd.h"
 #include "stm32wba65i_discovery_bus.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,7 +52,6 @@ RAMCFG_HandleTypeDef hramcfg_SRAM2;
 RTC_HandleTypeDef hrtc;
 
 UART_HandleTypeDef huart1;
-DMA_HandleTypeDef handle_GPDMA1_Channel6;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* USER CODE BEGIN PV */
@@ -107,7 +107,6 @@ int main(void)
   MX_GPDMA1_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_CRC_Init();
   MX_ICACHE_Init();
   /* USER CODE BEGIN 2 */
 
@@ -120,11 +119,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -176,7 +177,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
@@ -266,8 +267,6 @@ void MX_GPDMA1_Init(void)
   /* GPDMA1 interrupt Init */
     HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
-    HAL_NVIC_SetPriority(GPDMA1_Channel6_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(GPDMA1_Channel6_IRQn);
 
   /* USER CODE BEGIN GPDMA1_Init 1 */
 
@@ -331,11 +330,19 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /** Initialize RAMCFG SRAM2
   */
   hramcfg_SRAM2.Instance = RAMCFG_SRAM2;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM2, RAMCFG_WAITSTATE_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -441,7 +448,7 @@ void MX_USART1_UART_Init(void)
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  if (HAL_HalfDuplex_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -471,6 +478,7 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -484,24 +492,6 @@ void MX_GPIO_Init(void)
   LL_DBGMCU_DisableDBGStopMode();
   LL_DBGMCU_DisableDBGStandbyMode();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
-#if (CFG_LCD_SUPPORTED == 1)
-  /* GPIO are reinitialized after wakeup from stdby */
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin     = LCD_RST_PIN;
-  GPIO_InitStruct.Mode    = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull    = GPIO_NOPULL;
-  GPIO_InitStruct.Speed   = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_RST_GPIO_PORT, &GPIO_InitStruct);
-  HAL_PWREx_EnableStandbyIORetention(PWR_GPIO_A, LCD_RST_PIN);
-
-  GPIO_InitStruct.Pin     = LCD_DC_PIN;
-  HAL_GPIO_Init(LCD_DC_GPIO_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin     = LCD_CS_PIN;
-  HAL_GPIO_Init(LCD_CS_GPIO_PORT, &GPIO_InitStruct);
-#endif /* CFG_LCD_SUPPORTED */
-#endif /* CFG_LPM_STDBY_SUPPORTED */
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -594,6 +584,7 @@ HAL_StatusTypeDef MX_ADC4_Init(ADC_HandleTypeDef* hadc, MX_ADC_Config_t *MXInit)
   return status;
 }
 #endif /* CFG_JOYSTICK_SUPPORTED == 1 */
+
 /* USER CODE END 4 */
 
 /**

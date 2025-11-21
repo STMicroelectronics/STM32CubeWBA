@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -121,11 +121,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -177,7 +179,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB7CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.AHB5_PLL1_CLKDivider = RCC_SYSCLK_PLL1_DIV1;
   RCC_ClkInitStruct.AHB5_HSEHSI_CLKDivider = RCC_SYSCLK_HSEHSI_DIV1;
@@ -226,6 +228,7 @@ static void SystemPower_Config(void)
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 /* USER CODE BEGIN PWR */
+
 /* USER CODE END PWR */
 }
 
@@ -404,6 +407,10 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */
@@ -536,6 +543,7 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -549,7 +557,6 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 
 /* USER CODE END 4 */
 

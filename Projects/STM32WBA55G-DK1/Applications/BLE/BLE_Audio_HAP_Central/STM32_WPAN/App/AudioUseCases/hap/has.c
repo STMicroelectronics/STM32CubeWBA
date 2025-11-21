@@ -483,12 +483,12 @@ SVCCTL_EvtAckStatus_t HAS_ATT_Event_Handler(void *pEvent)
                   write_status = 0x01;
                 }
                 /* Send Write response */
-                aci_gatt_write_resp(attribute_write_req->Connection_Handle,
-                                    attribute_write_req->Attribute_Handle,
-                                    write_status,
-                                    error_code,
-                                    attribute_write_req->Data_Length,
-                                    attribute_write_req->Data );
+                aci_gatt_permit_write(attribute_write_req->Connection_Handle,
+                                      attribute_write_req->Attribute_Handle,
+                                      write_status,
+                                      error_code,
+                                      attribute_write_req->Data_Length,
+                                      attribute_write_req->Data );
               }
             }
           }

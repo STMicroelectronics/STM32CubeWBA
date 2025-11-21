@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -97,9 +98,9 @@ static struct ZbZclMsgMessageT          stDelayedMessage;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Messaging Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerGetMessageCancellationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgGetMsgCancellationT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgServerCallbacksT stMessagingServerCallbacks =
 {
@@ -217,7 +218,7 @@ bool APP_ZIGBEE_ConfigGroupAddr( void )
   stRequest.endpt = APP_ZIGBEE_ENDPOINT;
   stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
   ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
-  
+
   return true;
 }
 

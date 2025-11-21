@@ -88,7 +88,6 @@
   */
 
 #include "stm32wbaxx.h"
-#include "partition_stm32wbaxx.h"  /* Trustzone-M core secure attributes */
 #include <math.h>
 
 /**
@@ -196,9 +195,6 @@
 
 void SystemInit(void)
 {
-  /* SAU/IDAU, FPU and Interrupts secure/non-secure allocation settings */
-  TZ_SAU_Setup();
-
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
@@ -322,21 +318,6 @@ void SystemCoreClockUpdate(void)
 
   /* HCLK clock frequency */
   SystemCoreClock >>= tmp1;
-}
-
-/**
-  * @brief  Secure Non-Secure-Callable function to return the current
-  *         SystemCoreClock value after SystemCoreClock update.
-  *         The SystemCoreClock variable contains the core clock (HCLK), it can
-  *         be used by the user application to setup the SysTick timer or configure
-  *         other parameters.
-  * @retval SystemCoreClock value (HCLK)
-  */
-CMSE_NS_ENTRY uint32_t SECURE_SystemCoreClockUpdate(void)
-{
-  SystemCoreClockUpdate();
-
-  return SystemCoreClock;
 }
 
 

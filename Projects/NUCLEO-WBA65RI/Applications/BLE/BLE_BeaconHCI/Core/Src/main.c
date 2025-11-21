@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -42,8 +42,6 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc4;
 
-CRC_HandleTypeDef hcrc;
-
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
@@ -59,6 +57,7 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
+static void SystemPower_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -96,6 +95,9 @@ int main(void)
   /* Configure the peripherals common clocks */
   PeriphCommonClock_Config();
 
+  /* Configure the System Power */
+  SystemPower_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -117,11 +119,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -213,6 +217,19 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
+  * @brief Power Configuration
+  * @retval None
+  */
+static void SystemPower_Config(void)
+{
+  /* WKUP_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(WKUP_IRQn);
+/* USER CODE BEGIN PWR */
+/* USER CODE END PWR */
+}
+
+/**
   * @brief ADC4 Initialization Function
   * @param None
   * @retval None
@@ -268,39 +285,6 @@ void MX_ADC4_Init(void)
   /* USER CODE BEGIN ADC4_Init 2 */
 
   /* USER CODE END ADC4_Init 2 */
-
-}
-
-/**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_CRC_Init(void)
-{
-
-  /* USER CODE BEGIN CRC_Init 0 */
-
-  /* USER CODE END CRC_Init 0 */
-
-  /* USER CODE BEGIN CRC_Init 1 */
-
-  /* USER CODE END CRC_Init 1 */
-  hcrc.Instance = CRC;
-  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_DISABLE;
-  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
-  hcrc.Init.GeneratingPolynomial = 7607;
-  hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
-  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
-  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
-  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_WORDS;
-  if (HAL_CRC_Init(&hcrc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CRC_Init 2 */
-
-  /* USER CODE END CRC_Init 2 */
 
 }
 
@@ -384,6 +368,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -519,6 +507,7 @@ void MX_USART1_UART_Init(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */

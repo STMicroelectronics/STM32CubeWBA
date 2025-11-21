@@ -72,9 +72,6 @@ void MX_ICACHE_Init(void);
 void MX_RAMCFG_Init(void);
 void MX_RTC_Init(void);
 void MX_USART1_UART_Init(void);
-void MX_CRC_Init(void);
-void MX_AES_Init(void);
-void MX_PKA_Init(void);
 
 /* USER CODE BEGIN EFP */
 

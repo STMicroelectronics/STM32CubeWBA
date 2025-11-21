@@ -75,7 +75,7 @@ extern "C" {
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     (13u)
 #define TASK_PREEMP_BUTTON_Bx                   (13u)
-  
+
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
@@ -104,7 +104,18 @@ extern "C" {
 /* USER CODE END TASK_Size_Define */
 
 /* USER CODE BEGIN EC */
+  
+/* ADV_TASK related defines */
+#define ADV_TASK_STACK_SIZE                     (RTOS_STACK_SIZE_NORMAL)
+#define ADV_TASK_PRIO                           (15u)
+#define ADV_TASK_PREEM_TRES                     (0u)
 
+#define ADV_QUEUE_SIZE                          (8u * sizeof(ULONG))
+
+/* MEAS_REQ_TASK related defines */
+#define MEAS_REQ_TASK_STACK_SIZE                (RTOS_STACK_SIZE_NORMAL)
+#define MEAS_REQ_TASK_PRIO                      (15u)
+#define MEAS_REQ_TASK_PREEM_TRES                (0u)
 /* USER CODE END EC */
 
 /* Exported macros -----------------------------------------------------------*/

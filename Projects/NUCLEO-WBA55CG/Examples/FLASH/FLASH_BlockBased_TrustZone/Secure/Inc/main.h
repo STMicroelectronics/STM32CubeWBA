@@ -69,7 +69,6 @@ typedef funcptr funcptr_NS;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
-void SystemPower_Config(void);
 
 /* USER CODE BEGIN EFP */
 

@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "app_usbx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
 #if defined(__ICCARM__)
 #include <LowLevelIOInterface.h>
 #endif /* __ICCARM__ */
@@ -106,8 +106,9 @@ int main(void)
   MX_ICACHE_Init();
   MX_USART1_UART_Init();
   MX_USB_OTG_HS_HCD_Init();
-  /* USER CODE BEGIN 2 */
   MX_USBX_Init();
+  /* USER CODE BEGIN 2 */
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

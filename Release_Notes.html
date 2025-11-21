@@ -64,18 +64,555 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="col-sm-12 col-lg-8">
 <h1 id="update-history">Update History</h1>
 <div class="collapse">
-<input type="checkbox" id="collapse-section16" checked aria-hidden="true"> <label for="collapse-section16" aria-hidden="true"><strong>V1.7.0 / 04-June-2025</strong></label>
+<input type="checkbox" id="collapse-section17" checked aria-hidden="true"> <label for="collapse-section17" aria-hidden="true"><strong>V1.8.0 / 29-October-2025</strong></label>
 <div>
 <h2 id="main-changes">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-stm32wba55xx-stm32wba62xx-stm32wba63xx-stm32wba64xx-and-stm32wba65xx-devices">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong>, <strong>STM32WBA55xx</strong>, <strong>STM32WBA62xx</strong>, <strong>STM32WBA63xx</strong>, <strong>STM32WBA64xx</strong> and <strong>STM32WBA65xx</strong> devices</h3>
+<ul>
+<li>SLA0044 Legal terms updated to latest revision (Rev 6 / October 2025)</li>
+<li>SLA0048 Legal terms updated to latest revision (Rev 5 / October 2025)</li>
+</ul>
+<p><br />
+</p>
+<h2 id="security">Security</h2>
+<h3 id="introduction-of-the-following-new-features">Introduction of the following new features:</h3>
+<ul>
+<li>Migrated middleware to MbedTLS version 3.6.4 LTS and to mcuboot version 1.7.2.38</li>
+<li>Enabled STM32CubeIDE users on Windows OS to run RoT .bat scripts</li>
+<li>Enforced Python 3 usage in all .bat scripts for ROT Apps and Provisioning (Removed all usage of .dll or .exe files in ROT projects)</li>
+<li>Update Full Secure project setup (OEMiROT_Appli)</li>
+<li>Python and some python packages are required to execute ROT_AppliConfig utilities on Windows. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md for more details.</li>
+</ul>
+<p><br />
+</p>
+<h2 id="connectivity">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-1">Introduction of the following new features:</h3>
+<ul>
+<li>802.15.4 and Concurrent mode applications: reducing number of applications to simplify the offer</li>
+<li>BLE:
+<ul>
+<li>Support of BLE 6.0</li>
+<li>Man-In-The-Middle (MITM) management is enhanced in the BLE stack to provide more flexibility and better interoperability.</li>
+<li>Add BLE Host Stack events FIFO buffer mechanism</li>
+</ul></li>
+<li>BLE Audio:
+<ul>
+<li>Increase the max number of supported BIS from 2 to 6</li>
+<li>Add new data path ID to Codec Manager for raw data</li>
+</ul></li>
+<li>Zigbee:
+<ul>
+<li>The Zigbee Direct stack precertification has been completed (based on ZUTH)</li>
+</ul></li>
+<li>Thread:
+<ul>
+<li>Upgrade of OT stack to SHA-1: cbb04be4a64910a8ad160ae1aae2e34fc31031b9</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><strong>SBOM</strong>
+<ul>
+<li>Deliver SBOM in <a href="sbom_cdx.json">CycloneDX v1.5 format</a></li>
+</ul></li>
+<li><strong>CMSIS Devices Drivers</strong> updates
+<ul>
+<li>Support of STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA55xx, STM32WBA5Mxx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</li>
+<li>Update CMSIS devices to include latest corrections</li>
+</ul></li>
+<li><strong>HAL/LL Drivers</strong> updates
+<ul>
+<li>HAL and LL drivers are available for all peripherals:
+<ul>
+<li>HAL: ADC, COMP, CORTEX, CRC, CRYP, DMA, EXTI, FLASH, GPIO, GTZC, HASH, HSEM, <strong>HCD</strong>, I2C, ICACHE, IRDA, IWDG, LPTIM, PKA, PWR, <strong>PCD</strong>, RAMCFG, RCC, RNG, RTC, SAI, SMARTCARD, SMBUS, SPI, TIM, TSC, UART, <strong>USB</strong>, USART, WWDG</li>
+<li>LL: ADC, COMP, CRC, DMA, EXTI, GPIO, I2C, ICACHE, LPTIM, LPUART, PKA, PWR, RCC, RNG, RTC, SPI, TIM, USART, UTILS</li>
+</ul></li>
+<li>Update HAL/LL drivers to include latest corrections and to support of <strong>STM32WBA6xx</strong> devices</li>
+</ul></li>
+<li><strong>BSP Drivers</strong>
+<ul>
+<li>Update STM32WBAxx_Nucleo, STM32WBA65I-DK1 and STM32WBA55G-DK1 BSP drivers to include latest corrections</li>
+<li>Add B-WBA6M-WPAN BSP drivers</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<ul>
+<li><strong>Projects</strong> updates
+<ul>
+<li>B-WBA5M-WPAN
+<ul>
+<li>Update Applications demonstrating BLE, Thread and Zigbee capabilities</li>
+</ul></li>
+<li>NUCLEO-WBA55CG
+<ul>
+<li>Update Applications demonstrating BLE, Thread and Zigbee capabilities</li>
+</ul></li>
+<li>STM32WBA55G-DK1
+<ul>
+<li>Update Applications demonstrating BLE, Thread and Zigbee capabilities</li>
+</ul></li>
+<li>NUCLEO-WBA65RI
+<ul>
+<li>Update Applications demonstrating BLE, Thread and Zigbee capabilities</li>
+<li>Following new applications are now supported:
+<ul>
+<li>BLE :
+<ul>
+<li>BLE_TransparentMode_Ux_CDC</li>
+</ul></li>
+<li>BLE_Thread :
+<ul>
+<li>BLE_HeartRate_Thread_SED</li>
+<li>BLE_HeartRate_Thread_SED_FreeRTOS</li>
+</ul></li>
+<li>Thread :
+<ul>
+<li>Thread_Cli_Cmd_FTD</li>
+<li>Thread_Cli_Cmd_MTD</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>STM32WBA65I-DK1
+<ul>
+<li>Update Applications demonstrating BLE and Zigbee capabilities</li>
+<li>Following new applications are now supported:
+<ul>
+<li>BLE_Thread :
+<ul>
+<li>BLE_HeartRate_Thread_SED_FreeRTOS</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>B-WBA6M-WPAN
+<ul>
+<li>Following new applications are now supported:
+<ul>
+<li>BLE :
+<ul>
+<li>BLE_Sensor</li>
+</ul></li>
+<li>Zigbee :
+<ul>
+<li>Zigbee_OnOff_Client_Router</li>
+<li>Zigbee_OnOff_Server_Coord</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="projects">Projects</h2>
+<ul>
+<li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
+<li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
+<li>The STM32CubeWBA Firmware offers full scope of Examples &amp; Applications targeted, developed using STM32CubeMx and ported on 3 toolchains.</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Version</th>
+<th style="text-align: left;">Release notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Projects</td>
+<td>V1.8.0 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Projects/Release_Notes.html">release notes</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<h2 id="components">Components</h2>
+<p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
+<p><br />
+</p>
+<p><strong>Drivers</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Release notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CMSIS</td>
+<td style="text-align: left;">V5.9.0</td>
+<td style="text-align: left;"><a href="Drivers/CMSIS/Documentation/index.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32WBAxx CMSIS</td>
+<td style="text-align: left;">V1.8.0 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/cmsis-device-wba/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32WBAxx_HAL_Driver</td>
+<td style="text-align: left;">V1.8.0 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32wbaxx-hal-driver/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<p><strong>BSP Drivers</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Release notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">B-WBA5M-WPAN</td>
+<td style="text-align: left;">V1.0.1 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B-WBA6M-WPAN</td>
+<td style="text-align: left;">V1.0.0 <span class="icon-st-add"></span></td>
+<td style="text-align: left;"><a href="Drivers/BSP/B-WBA6M-WPAN/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32WBAxx_Nucleo</td>
+<td style="text-align: left;">V1.1.1 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32wbaxx-nucleo-bsp/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32WBA55G-DK1</td>
+<td style="text-align: left;">V1.0.3 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32wba55g-dk1-bsp/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32WBA65I-DK1</td>
+<td style="text-align: left;">V1.0.1 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?ssh://gitolite@codex.cro.st.com/stm32cube/bsp/stm32wba65i-dk1/blob/main/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Common</td>
+<td style="text-align: left;">V7.2.1</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-bsp-common/blob/v7.2.1/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">cs42l51</td>
+<td style="text-align: left;">V2.0.7</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-cs42l51/blob/v2.0.7/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ssd1315</td>
+<td style="text-align: left;">V2.1.0</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ssd1315/blob/v2.1.0/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sht40ad1b</td>
+<td style="text-align: left;">V1.3.0</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-sht40ad1b/blob/v1.3.0/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ism330dhcx</td>
+<td style="text-align: left;">V1.6.0</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ism330dhcx/blob/v1.6.0/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">m24256</td>
+<td style="text-align: left;">V1.0.2</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m24256/blob/v1.0.2/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">m95p32</td>
+<td style="text-align: left;">V3.0.0</td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m95p32/blob/v3.0.0/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wm8904</td>
+<td style="text-align: left;">V1.1.1 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-wm8904/blob/v1.1.0/Release_Notes.html">release notes</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<p><strong>Middlewares</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">Release notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">STM32_WPAN</td>
+<td style="text-align: left;">V2.8.0 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/ST/STM32_WPAN/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mbedtls</td>
+<td style="text-align: left;">V3.6.4 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/Third_Party/mbedtls/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="Middlewares/Third_Party/mbedtls/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mbedtls_alt</td>
+<td style="text-align: left;">V1.1.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/mbedtls_alt/Release_Notes.html">ST release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">mcuboot</td>
+<td style="text-align: left;">V1.7.2.38 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/Third_Party/mcuboot/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32 TouchSensing Library</td>
+<td style="text-align: left;">V2.2.13 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/ST/STM32_TouchSensing_Library/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32 OpenBootloader</td>
+<td style="text-align: left;">V6.1.2 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/ST/OpenBootloader/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ThreadX</td>
+<td style="text-align: left;">V6.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/threadx/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ST modified 220825</td>
+<td style="text-align: left;"><a href="Middlewares/ST/threadx/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NetXduo</td>
+<td style="text-align: left;">V6.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/netxduo/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ST modified 190625</td>
+<td style="text-align: left;"><a href="Middlewares/ST/netxduo/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LevelX</td>
+<td style="text-align: left;">V6.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/levelx/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ST modified 220825</td>
+<td style="text-align: left;"><a href="Middlewares/ST/levelx/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FileX</td>
+<td style="text-align: left;">V6.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/filex/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ST modified 110825</td>
+<td style="text-align: left;"><a href="Middlewares/ST/filex/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">USBX</td>
+<td style="text-align: left;">V6.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/usbx/README.md">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">ST modified 221025</td>
+<td style="text-align: left;"><a href="Middlewares/ST/usbx/st_readme.txt">ST release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CMSIS RTOS ThreadX</td>
+<td style="text-align: left;">V1.3.2 <span class="icon-st-update"></span></td>
+<td style="text-align: left;"><a href="Middlewares/ST/cmsis_rtos_threadx/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">STM32_Audio PDM</td>
+<td style="text-align: left;">V3.4.0</td>
+<td style="text-align: left;"><a href="Middlewares/ST/STM32_Audio/Addons/PDM/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FreeRTOS</td>
+<td style="text-align: left;">V10.6.2</td>
+<td style="text-align: left;"><a href="Middlewares/Third_Party/FreeRTOS/Source/readme.txt">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"><a href="Middlewares/Third_Party/FreeRTOS/Source/st_readme.txt">ST release notes</a></td>
+</tr>
+</tbody>
+</table>
+<p><br />
+</p>
+<p><strong>Utilities</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Version</th>
+<th>Release note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CPU</td>
+<td style="text-align: left;">V1.1.3</td>
+<td><a href="Utilities/CPU/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fonts</td>
+<td style="text-align: left;">V2.0.4</td>
+<td><a href="Utilities/Fonts/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">conf</td>
+<td style="text-align: left;">V1.6.1</td>
+<td><a href="Utilities/conf/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">tiny_lpm</td>
+<td style="text-align: left;">V1.5.1 <span class="icon-st-update"></span></td>
+<td><a href="Utilities/lpm/tiny_lpm/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sequencer</td>
+<td style="text-align: left;">V1.11.0</td>
+<td><a href="Utilities/sequencer/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">LCD</td>
+<td style="text-align: left;">V2.0.3</td>
+<td><a href="Utilities/LCD/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lcd_Trace</td>
+<td style="text-align: left;">V2.0.2</td>
+<td><a href="Utilities/Lcd_Trace/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">adv_trace</td>
+<td style="text-align: left;">V1.3.0</td>
+<td><a href="Utilities/trace/adv_trace/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">misc</td>
+<td style="text-align: left;">V1.1.1</td>
+<td><a href="Utilities/misc/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">tim_serv</td>
+<td style="text-align: left;">V1.3.1</td>
+<td><a href="Utilities/tim_serv/Release_Notes.html">release notes</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ROT_AppliConfig</td>
+<td style="text-align: left;">V1.1.4 <span class="icon-st-update"></span></td>
+<td><a href="Utilities/PC_Software/ROT_AppliConfig/Release_Notes.html">release notes</a></td>
+</tr>
+</tbody>
+</table>
+<p>Python and some python packages are required to execute ROT_AppliConfig utilities on Windows. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md for more details.</p>
+<p><br />
+</p>
+<h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Toolchain + ST-Link</th>
+<th>Version</th>
+<th style="text-align: left;">Patch (if available)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">IAR Embedded Workbench for ARM (EWARM)</td>
+<td>V9.60.3</td>
+<td style="text-align: left;"><a href="Utilities/PC_Software/EWARMv9_STM32WBA5xx_V1.4.2.zip">Patch EWARM WBA5x</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td></td>
+<td style="text-align: left;"><a href="Utilities/PC_Software/EWARMv9_STM32WBA6xx_V1.0.1.zip">Patch EWARM WBA6x</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">RealView Microcontroller Development Kit (MDK-ARM)</td>
+<td>V5.38</td>
+<td style="text-align: left;"><a href="Utilities/PC_Software/Keil.STM32WBAxx_DFP.2.1.0.zip">Patch MDK-ARM</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">STM32CubeIDE V2.0.0</td>
+<td>V2.0.0</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Support of ARM Compiler 6 (AC-5 like warnings) for HAL/LL/BSP drivers and STMicroelectronics Middleware components</li>
+</ul>
+<p><br />
+</p>
+<h2 id="supported-devices-and-boards">Supported Devices and boards</h2>
+<ul>
+<li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</li>
+<li>B-WBA5M-WPAN, B-WBA6M-WPAN, NUCLEO-WBA55CG, STM32WBA55G-DK1, NUCLEO-WBA65RI and STM32WBA65I-DK1 boards</li>
+</ul>
+<p><br />
+</p>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>The Zigbee Direct stack (ZigBeeProR23_ZDD.a) certification has not been executed. (But precertification is done inhouse successfully)</li>
+<li>ICache IP is not informed of the powering down of the SRAM when going to stop1 low power mode, as a consequence ICache configuration for stop mode has to be set to full retention.<br />
+</li>
+<li>LSI2 not supported for 802.15.4 protocols; this is going to be fixed in the 1.9.0 release.</li>
+</ul>
+<p><br />
+</p>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>STM32CubeMX V6.16.0
+<ul>
+<li>Projects (Applications and Examples) are generated using STM32CubeMX version V6.16.0.</li>
+</ul></li>
+</ul>
+<p><br />
+</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>This release contains many other fixes only the most important ones are detailed in the release notes.</li>
+</ul>
+<p><br />
+</p>
+</div>
+</div>
+<div class="collapse">
+<input type="checkbox" id="collapse-section16" aria-hidden="true"> <label for="collapse-section16" aria-hidden="true"><strong>V1.7.0 / 04-June-2025</strong></label>
+<div>
+<h2 id="main-changes-1">Main Changes</h2>
+<h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-stm32wba55xx-stm32wba62xx-stm32wba63xx-stm32wba64xx-and-stm32wba65xx-devices-1">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong>, <strong>STM32WBA55xx</strong>, <strong>STM32WBA62xx</strong>, <strong>STM32WBA63xx</strong>, <strong>STM32WBA64xx</strong> and <strong>STM32WBA65xx</strong> devices</h3>
 <ul>
 <li>FreeRTOS upgrade to 10.6.2 and ThreadX upgrade to 6.4.0</li>
 <li>EWARM IDE update to version 9.60.3</li>
 </ul>
 <p><br />
 </p>
-<h2 id="security">Security</h2>
-<h3 id="introduction-of-the-following-new-features">Introduction of the following new features:</h3>
+<h2 id="security-1">Security</h2>
+<h3 id="introduction-of-the-following-new-features-2">Introduction of the following new features:</h3>
 <ul>
 <li>Upgraded Mbedtls v3.6.2 LTS to Mbedtls v3.6.3 LTS</li>
 <li>Upgraded mcuboot v1.7.2.31 to mcuboot v1.7.2.34</li>
@@ -84,8 +621,8 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="connectivity">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-1">Introduction of the following new features:</h3>
+<h2 id="connectivity-1">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-3">Introduction of the following new features:</h3>
 <ul>
 <li>ZigBee Direct enhancements</li>
 <li>Thread 1.4 support (OT commit “c583554263c8c88922ca45ef4c7486b9292a4f93” - Feb 14 2025)</li>
@@ -94,7 +631,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents">Contents</h2>
+<h2 id="contents-1">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -144,7 +681,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects">Projects</h2>
+<h2 id="projects-1">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -168,7 +705,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components">Components</h2>
+<h2 id="components-1">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -214,7 +751,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="odd">
 <td style="text-align: left;">B-WBA5M-WPAN</td>
 <td style="text-align: left;">V1.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/B-WBA5M-WPAN/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">STM32WBAxx_Nucleo</td>
@@ -229,7 +766,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">STM32WBA65I-DK1</td>
 <td style="text-align: left;">V1.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/STM32WBA65I-DK1/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?ssh://gitolite@codex.cro.st.com/stm32cube/bsp/stm32wba65i-dk1/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Common</td>
@@ -249,27 +786,27 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">sht40ad1b</td>
 <td style="text-align: left;">V1.3.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/sht40ad1b/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-sht40ad1b/blob/v1.3.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ism330dhcx</td>
 <td style="text-align: left;">V1.6.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/ism330dhcx/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ism330dhcx/blob/v1.6.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">m24256</td>
 <td style="text-align: left;">V1.0.2</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m24256/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m24256/blob/v1.0.2/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">m95p32</td>
 <td style="text-align: left;">V3.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m95p32/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m95p32/blob/v3.0.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">wm8904</td>
 <td style="text-align: left;">V1.1.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/wm8904/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-wm8904/blob/v1.1.0/Release_Notes.html">release notes</a></td>
 </tr>
 </tbody>
 </table>
@@ -463,7 +1000,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-1">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -500,14 +1037,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-1">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</li>
 <li>B-WBA5M-WPAN, NUCLEO-WBA55CG, STM32WBA55G-DK1, NUCLEO-WBA65RI and STM32WBA65I-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations">Known Limitations</h2>
+<h2 id="known-limitations-1">Known Limitations</h2>
 <ul>
 <li>The Zigbee Direct stack (ZigBeeProR23_ZDD.a) certification has not been executed.</li>
 <li>BLE Audio applications: Codec Capability Settings 48_6, specified as Mandatory in TMAP, is only supported with one Channel per CIS.<br />
@@ -518,7 +1055,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies">Dependencies</h2>
+<h2 id="dependencies-1">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.15.0
 <ul>
@@ -527,7 +1064,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes">Notes</h2>
+<h2 id="notes-1">Notes</h2>
 <ul>
 <li>This release contains many other fixes only the most important ones are detailed in the release notes.</li>
 </ul>
@@ -538,11 +1075,11 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section15" aria-hidden="true"> <label for="collapse-section15" aria-hidden="true"><strong>V1.6.1 / 11-April-2025</strong></label>
 <div>
-<h2 id="main-changes-1">Main Changes</h2>
+<h2 id="main-changes-2">Main Changes</h2>
 <h3 id="patch-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-stm32wba55xx-stm32wba62xx-stm32wba63xx-stm32wba64xx-and-stm32wba65xx-devices">Patch Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong>, <strong>STM32WBA55xx</strong>, <strong>STM32WBA62xx</strong>, <strong>STM32WBA63xx</strong>, <strong>STM32WBA64xx</strong> and <strong>STM32WBA65xx</strong> devices</h3>
 <p><br />
 </p>
-<h2 id="security-1">Security</h2>
+<h2 id="security-2">Security</h2>
 <h3 id="removal-of-few-restrictions">Removal of few restrictions :</h3>
 <ul>
 <li>OEMuRoT update is supported</li>
@@ -550,8 +1087,8 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="connectivity-1">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-2">Introduction of the following new features:</h3>
+<h2 id="connectivity-2">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-4">Introduction of the following new features:</h3>
 <ul>
 <li>BLE :
 <ul>
@@ -576,7 +1113,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-1">Contents</h2>
+<h2 id="contents-2">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -635,7 +1172,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects-1">Projects</h2>
+<h2 id="projects-2">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -659,7 +1196,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-1">Components</h2>
+<h2 id="components-2">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -705,7 +1242,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="odd">
 <td style="text-align: left;">B-WBA5M-WPAN</td>
 <td style="text-align: left;">V1.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/B-WBA5M-WPAN/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">STM32WBAxx_Nucleo</td>
@@ -720,7 +1257,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">STM32WBA65I-DK1</td>
 <td style="text-align: left;">V1.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/STM32WBA65I-DK1/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?ssh://gitolite@codex.cro.st.com/stm32cube/bsp/stm32wba65i-dk1/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Common</td>
@@ -740,27 +1277,27 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">sht40ad1b</td>
 <td style="text-align: left;">V1.3.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/sht40ad1b/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-sht40ad1b/blob/v1.3.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ism330dhcx</td>
 <td style="text-align: left;">V1.6.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/ism330dhcx/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ism330dhcx/blob/v1.6.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">m24256</td>
 <td style="text-align: left;">V1.0.2</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m24256/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m24256/blob/v1.0.2/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">m95p32</td>
 <td style="text-align: left;">V3.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m95p32/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m95p32/blob/v3.0.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">wm8904</td>
 <td style="text-align: left;">V1.1.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/wm8904/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-wm8904/blob/v1.1.0/Release_Notes.html">release notes</a></td>
 </tr>
 </tbody>
 </table>
@@ -964,7 +1501,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-1">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-2">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -1001,14 +1538,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-1">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-2">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</li>
 <li>B-WBA5M-WPAN, NUCLEO-WBA55CG, STM32WBA55G-DK1, NUCLEO-WBA65RI and STM32WBA65I-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-1">Known Limitations</h2>
+<h2 id="known-limitations-2">Known Limitations</h2>
 <ul>
 <li>The Zigbee Direct stack (ZigBeeProR23_ZDD.a) certification has not been executed.</li>
 <li>BLE Audio applications: Codec Capability Settings 48_6, specified as Mandatory in TMAP, is only supported with one Channel per CIS.<br />
@@ -1017,7 +1554,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-1">Dependencies</h2>
+<h2 id="dependencies-2">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.14.1
 <ul>
@@ -1026,7 +1563,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-1">Notes</h2>
+<h2 id="notes-2">Notes</h2>
 <ul>
 <li>This release contains many other fixes only the most important ones are detailed in the release notes.</li>
 </ul>
@@ -1037,15 +1574,15 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section14" aria-hidden="true"> <label for="collapse-section14" aria-hidden="true"><strong>V1.6.0 / 05-February-2025</strong></label>
 <div>
-<h2 id="main-changes-2">Main Changes</h2>
-<h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-stm32wba55xx-stm32wba62xx-stm32wba63xx-stm32wba64xx-and-stm32wba65xx-devices-1">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong>, <strong>STM32WBA55xx</strong>, <strong>STM32WBA62xx</strong>, <strong>STM32WBA63xx</strong>, <strong>STM32WBA64xx</strong> and <strong>STM32WBA65xx</strong> devices</h3>
+<h2 id="main-changes-3">Main Changes</h2>
+<h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-stm32wba55xx-stm32wba62xx-stm32wba63xx-stm32wba64xx-and-stm32wba65xx-devices-2">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong>, <strong>STM32WBA55xx</strong>, <strong>STM32WBA62xx</strong>, <strong>STM32WBA63xx</strong>, <strong>STM32WBA64xx</strong> and <strong>STM32WBA65xx</strong> devices</h3>
 <p><br />
 </p>
 <h3 id="introducing-following-new-boards-support-nucleo-wba65ri-and-stm32wba65i-dk1.">Introducing following new boards support : <strong>NUCLEO-WBA65RI</strong> and <strong>STM32WBA65I-DK1</strong>.</h3>
 <p><br />
 </p>
-<h2 id="security-2">Security</h2>
-<h3 id="introduction-of-the-following-new-features-3">Introduction of the following new features:</h3>
+<h2 id="security-3">Security</h2>
+<h3 id="introduction-of-the-following-new-features-5">Introduction of the following new features:</h3>
 <ul>
 <li>For security Applications, main board is STM32WBA65I-DK1</li>
 <li>Introducing OEMiRoT &amp; OEMiRoT_OEMuRoT</li>
@@ -1055,11 +1592,11 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="connectivity-2">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-4">Introduction of the following new features:</h3>
+<h2 id="connectivity-3">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-6">Introduction of the following new features:</h3>
 <ul>
 <li>LSI2 support for Connectivity applications</li>
-<li>BLE compliancy to TCRL 2024-2</li>
+<li>BLE compliance to TCRL 2024-2</li>
 <li>BLE Audio:
 <ul>
 <li>LE Audio Projects available on STM32WBA65I-DK</li>
@@ -1083,7 +1620,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-2">Contents</h2>
+<h2 id="contents-3">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -1171,7 +1708,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects-2">Projects</h2>
+<h2 id="projects-3">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -1195,7 +1732,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-2">Components</h2>
+<h2 id="components-3">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -1241,7 +1778,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="odd">
 <td style="text-align: left;">B-WBA5M-WPAN</td>
 <td style="text-align: left;">V1.0.0</td>
-<td style="text-align: left;"><a href="Drivers/BSP/B-WBA5M-WPAN/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">STM32WBAxx_Nucleo</td>
@@ -1256,7 +1793,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">STM32WBA65I-DK1</td>
 <td style="text-align: left;">V1.0.0 <span class="icon-st-update"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/STM32WBA65I-DK1/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?ssh://gitolite@codex.cro.st.com/stm32cube/bsp/stm32wba65i-dk1/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Common</td>
@@ -1276,27 +1813,27 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="even">
 <td style="text-align: left;">sht40ad1b</td>
 <td style="text-align: left;">V1.3.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/sht40ad1b/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-sht40ad1b/blob/v1.3.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">ism330dhcx</td>
 <td style="text-align: left;">V1.6.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/ism330dhcx/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ism330dhcx/blob/v1.6.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">m24256</td>
 <td style="text-align: left;">V1.0.2 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m24256/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m24256/blob/v1.0.2/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">m95p32</td>
 <td style="text-align: left;">V3.0.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m95p32/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m95p32/blob/v3.0.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">wm8904</td>
 <td style="text-align: left;">V1.1.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/wm8904/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-wm8904/blob/v1.1.0/Release_Notes.html">release notes</a></td>
 </tr>
 </tbody>
 </table>
@@ -1500,7 +2037,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-2">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-3">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -1537,14 +2074,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-2">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-3">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</li>
 <li>B-WBA5M-WPAN, NUCLEO-WBA55CG, STM32WBA55G-DK1, NUCLEO-WBA65RI and STM32WBA65I-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-2">Known Limitations</h2>
+<h2 id="known-limitations-3">Known Limitations</h2>
 <ul>
 <li>The Zigbee Direct stack (ZigBeeProR23_ZDD.a) certification has not been executed.</li>
 <li>BLE Audio applications: Codec Capability Settings 48_6, specified as Mandatory in TMAP, is only supported with one Channel per CIS.<br />
@@ -1553,7 +2090,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-2">Dependencies</h2>
+<h2 id="dependencies-3">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.14.0
 <ul>
@@ -1562,7 +2099,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-2">Notes</h2>
+<h2 id="notes-3">Notes</h2>
 <ul>
 <li>This release contains many other fixes only the most important ones are detailed in the release notes.</li>
 </ul>
@@ -1573,22 +2110,22 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section13" aria-hidden="true"> <label for="collapse-section13" aria-hidden="true"><strong>V1.5.0 / 30-October-2024</strong></label>
 <div>
-<h2 id="main-changes-3">Main Changes</h2>
+<h2 id="main-changes-4">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-stm32wba5mxx-and-stm32wba55xx-devices">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong>, <strong>STM32WBA5Mxx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
 <h3 id="official-release-for-security-ble-802.15.4-thread-and-zigbee.">Official Release for <strong>Security</strong>, <strong>BLE</strong>, <strong>802.15.4</strong>, <strong>Thread</strong> and <strong>Zigbee</strong>.</h3>
 <p><br />
 </p>
-<h2 id="security-3">Security</h2>
-<h3 id="introduction-of-the-following-new-features-5">Introduction of the following new features:</h3>
+<h2 id="security-4">Security</h2>
+<h3 id="introduction-of-the-following-new-features-7">Introduction of the following new features:</h3>
 <ul>
 <li>Minor updates in security applications (SBSFU and TFM) and related scripts.</li>
 </ul>
 <p><br />
 </p>
-<h2 id="connectivity-3">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-6">Introduction of the following new features:</h3>
+<h2 id="connectivity-4">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-8">Introduction of the following new features:</h3>
 <ul>
 <li>External PA(+20dbm) is now supported on BLE using BLE_TransparentMode application.</li>
 <li>New third-party MW support: FreeRTOS, mbedtls (with hardware acceleration support using mbedtls_alt)</li>
@@ -1602,7 +2139,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-3">Contents</h2>
+<h2 id="contents-4">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -1650,7 +2187,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects-3">Projects</h2>
+<h2 id="projects-4">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -1674,7 +2211,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-3">Components</h2>
+<h2 id="components-4">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -1720,7 +2257,7 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="odd">
 <td style="text-align: left;">B-WBA5M-WPAN</td>
 <td style="text-align: left;">V1.0.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/B-WBA5M-WPAN/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/b-wba5m-wpan-bsp/blob/main/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">STM32WBAxx_Nucleo</td>
@@ -1750,17 +2287,17 @@ Copyright © 2022 STMicroelectronics<br />
 <tr class="odd">
 <td style="text-align: left;">sht40ad1b</td>
 <td style="text-align: left;">V1.3.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/sht40ad1b/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-sht40ad1b/blob/v1.3.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">ism330dhcx</td>
 <td style="text-align: left;">V1.6.0 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/ism330dhcx/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-ism330dhcx/blob/v1.6.0/Release_Notes.html">release notes</a></td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">m24256</td>
 <td style="text-align: left;">V1.0.2 <span class="icon-st-add"></span></td>
-<td style="text-align: left;"><a href="Drivers/BSP/Components/m24256/Release_Notes.html">release notes</a></td>
+<td style="text-align: left;"><a href="https://htmlpreview.github.io/?https://github.com/STMicroelectronics/stm32-m24256/blob/v1.0.2/Release_Notes.html">release notes</a></td>
 </tr>
 </tbody>
 </table>
@@ -1974,7 +2511,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-3">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -2006,14 +2543,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-3">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-4">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx and STM32WBA55xx devices</li>
 <li>B-WBA5M-WPAN, NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-3">Known Limitations</h2>
+<h2 id="known-limitations-4">Known Limitations</h2>
 <ul>
 <li>LSI2 is not supported.<br />
 </li>
@@ -2025,7 +2562,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-3">Dependencies</h2>
+<h2 id="dependencies-4">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.12.0
 <ul>
@@ -2041,7 +2578,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-3">Notes</h2>
+<h2 id="notes-4">Notes</h2>
 <ul>
 <li>This release contains many other fixes only the most important ones are detailed in the release notes.</li>
 </ul>
@@ -2052,7 +2589,7 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section12" aria-hidden="true"> <label for="collapse-section12" aria-hidden="true"><strong>V1.4.1 / 19-July-2024</strong></label>
 <div>
-<h2 id="main-changes-4">Main Changes</h2>
+<h2 id="main-changes-5">Main Changes</h2>
 <h3 id="patch-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-and-stm32wba55xx-devices">Patch Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
@@ -2060,15 +2597,15 @@ Copyright © 2022 STMicroelectronics<br />
 <p>This patch release has to be applied on top of v1.4.0 release</p>
 <p><br />
 </p>
-<h2 id="connectivity-4">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-7">Introduction of the following new features:</h3>
+<h2 id="connectivity-5">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-9">Introduction of the following new features:</h3>
 <ul>
 <li><p>Productive PHY settings including AoA/AoD support.</p></li>
 <li><p>WIFI Packet Traffic Arbiter (via PTACONV) support on 802.15.4 applications.</p></li>
 </ul>
 <p><br />
 </p>
-<h2 id="contents-4">Contents</h2>
+<h2 id="contents-5">Contents</h2>
 <ul>
 <li><strong>Projects</strong> updates
 <ul>
@@ -2096,7 +2633,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects-4">Projects</h2>
+<h2 id="projects-5">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -2120,7 +2657,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-4">Components</h2>
+<h2 id="components-5">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -2370,7 +2907,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-4">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -2402,14 +2939,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-4">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-5">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx and STM32WBA55xx devices</li>
 <li>NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-4">Known Limitations</h2>
+<h2 id="known-limitations-5">Known Limitations</h2>
 <ul>
 <li>External PA (+20dbm) is not supported.</li>
 <li>LSI2 is not supported.</li>
@@ -2429,7 +2966,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-4">Dependencies</h2>
+<h2 id="dependencies-5">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.12.0
 <ul>
@@ -2445,7 +2982,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-4">Notes</h2>
+<h2 id="notes-5">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -2456,15 +2993,15 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section11" aria-hidden="true"> <label for="collapse-section11" aria-hidden="true"><strong>V1.4.0 / 05-June-2024</strong></label>
 <div>
-<h2 id="main-changes-5">Main Changes</h2>
+<h2 id="main-changes-6">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba50xx-stm32wba52xx-stm32wba54xx-and-stm32wba55xx-devices">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA50xx</strong>, <strong>STM32WBA52xx</strong>, <strong>STM32WBA54xx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
 <h3 id="official-release-for-security-ble-802.15.4-thread-and-zigbee.-1">Official Release for <strong>Security</strong>, <strong>BLE</strong>, <strong>802.15.4</strong>, <strong>Thread</strong> and <strong>Zigbee</strong>.</h3>
 <p><br />
 </p>
-<h2 id="security-4">Security</h2>
-<h3 id="introduction-of-the-following-new-features-8">Introduction of the following new features:</h3>
+<h2 id="security-5">Security</h2>
+<h3 id="introduction-of-the-following-new-features-10">Introduction of the following new features:</h3>
 <ul>
 <li><p>Imgtool in STM32CubeProgrammer</p></li>
 <li><p>AppliCfg script</p></li>
@@ -2477,8 +3014,8 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="connectivity-5">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-9">Introduction of the following new features:</h3>
+<h2 id="connectivity-6">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-11">Introduction of the following new features:</h3>
 <ul>
 <li><p>STM32WBA50xx is now supported.</p></li>
 <li><p>802.15.4 Antenna Diversity.</p></li>
@@ -2493,7 +3030,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-5">Contents</h2>
+<h2 id="contents-6">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -2536,7 +3073,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul></li>
 </ul></li>
 </ul>
-<h2 id="projects-5">Projects</h2>
+<h2 id="projects-6">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -2560,7 +3097,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-5">Components</h2>
+<h2 id="components-6">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -2810,7 +3347,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-5">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-6">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -2842,14 +3379,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-5">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-6">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA50xx, STM32WBA52xx, STM32WBA54xx and STM32WBA55xx devices</li>
 <li>NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-5">Known Limitations</h2>
+<h2 id="known-limitations-6">Known Limitations</h2>
 <ul>
 <li>External PA (+20dbm) is not supported.</li>
 <li>LSI2 is not supported.</li>
@@ -2870,7 +3407,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-5">Dependencies</h2>
+<h2 id="dependencies-6">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.12.0
 <ul>
@@ -2886,7 +3423,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-5">Notes</h2>
+<h2 id="notes-6">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -2897,15 +3434,15 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section10" aria-hidden="true"> <label for="collapse-section10" aria-hidden="true"><strong>V1.3.1 / 22-March-2024</strong></label>
 <div>
-<h2 id="main-changes-6">Main Changes</h2>
+<h2 id="main-changes-7">Main Changes</h2>
 <h3 id="official-patch-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-and-stm32wba55xx-devices">Official Patch Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
 <h3 id="patch-release-for-security-ble-802.15.4-thread-and-zigbee.-1">Patch Release for <strong>Security</strong>, <strong>BLE</strong>, <strong>802.15.4</strong>, <strong>Thread</strong> and <strong>Zigbee</strong>.</h3>
 <p><br />
 </p>
-<h2 id="connectivity-6">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-10">Introduction of the following new features:</h3>
+<h2 id="connectivity-7">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-12">Introduction of the following new features:</h3>
 <ul>
 <li>Productive RF-PHY settings.</li>
 <li>Zigbee:
@@ -2914,7 +3451,7 @@ Copyright © 2022 STMicroelectronics<br />
 </li>
 </ul></li>
 </ul>
-<h2 id="contents-6">Contents</h2>
+<h2 id="contents-7">Contents</h2>
 <ul>
 <li><strong>Middlewares</strong> Third Party updates
 <ul>
@@ -2937,7 +3474,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-6">Projects</h2>
+<h2 id="projects-7">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -2961,7 +3498,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-6">Components</h2>
+<h2 id="components-7">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -3216,7 +3753,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-6">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-7">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -3248,14 +3785,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-6">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-7">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx and STM32WBA55xx devices</li>
 <li>NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-6">Known Limitations</h2>
+<h2 id="known-limitations-7">Known Limitations</h2>
 <ul>
 <li>External PA (+20dbm) is not supported.</li>
 <li>LSI2 is not supported.</li>
@@ -3282,7 +3819,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-6">Dependencies</h2>
+<h2 id="dependencies-7">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.11.0
 <ul>
@@ -3298,7 +3835,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-6">Notes</h2>
+<h2 id="notes-7">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -3309,12 +3846,12 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section9" aria-hidden="true"> <label for="collapse-section9" aria-hidden="true"><strong>V1.3.0 / 07-February-2024</strong></label>
 <div>
-<h2 id="main-changes-7">Main Changes</h2>
+<h2 id="main-changes-8">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-and-stm32wba55xx-devices">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
-<h2 id="connectivity-7">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-11">Introduction of the following new features:</h3>
+<h2 id="connectivity-8">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-13">Introduction of the following new features:</h3>
 <ul>
 <li>Adding support of BLE/Thread and BLE/Zigbee Concurrent Modes.</li>
 <li>Bluetooth Low Energy new features :
@@ -3343,7 +3880,7 @@ Copyright © 2022 STMicroelectronics<br />
 <li>Applications: BLE and Zigbee project are now supporting SMPS power supply by default.<br />
 </li>
 </ul>
-<h2 id="contents-7">Contents</h2>
+<h2 id="contents-8">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -3394,7 +3931,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-7">Projects</h2>
+<h2 id="projects-8">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -3418,7 +3955,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-7">Components</h2>
+<h2 id="components-8">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -3673,7 +4210,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-7">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-8">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -3705,14 +4242,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-7">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-8">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx and STM32WBA55xx devices</li>
 <li>NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-7">Known Limitations</h2>
+<h2 id="known-limitations-8">Known Limitations</h2>
 <ul>
 <li>External PA is not supported.</li>
 <li>Ext PA and AoA/AoD are not supported.</li>
@@ -3745,7 +4282,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-7">Dependencies</h2>
+<h2 id="dependencies-8">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.11.0
 <ul>
@@ -3761,7 +4298,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-7">Notes</h2>
+<h2 id="notes-8">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -3772,12 +4309,12 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section8" aria-hidden="true"> <label for="collapse-section8" aria-hidden="true"><strong>V1.2.0 / 02-November-2023</strong></label>
 <div>
-<h2 id="main-changes-8">Main Changes</h2>
+<h2 id="main-changes-9">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-and-stm32wba55xx-devices-1">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> and <strong>STM32WBA55xx</strong> devices</h3>
 <p><br />
 </p>
-<h2 id="connectivity-8">Connectivity</h2>
-<h3 id="introduction-of-the-following-new-features-12">Introduction of the following new features:</h3>
+<h2 id="connectivity-9">Connectivity</h2>
+<h3 id="introduction-of-the-following-new-features-14">Introduction of the following new features:</h3>
 <ul>
 <li>Bluetooth Low Energy 5.4 with :
 <ul>
@@ -3799,7 +4336,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-8">Contents</h2>
+<h2 id="contents-9">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong> updates
 <ul>
@@ -3846,7 +4383,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-8">Projects</h2>
+<h2 id="projects-9">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -3870,7 +4407,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-8">Components</h2>
+<h2 id="components-9">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -4125,7 +4662,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-8">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-9">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -4158,14 +4695,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-8">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-9">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx and STM32WBA55xx devices</li>
 <li>NUCLEO-WBA52CG, NUCLEO-WBA55CG and STM32WBA55G-DK1 boards</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-8">Known Limitations</h2>
+<h2 id="known-limitations-9">Known Limitations</h2>
 <ul>
 <li>External PA is not supported</li>
 <li>BLE Applications:
@@ -4180,7 +4717,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-8">Dependencies</h2>
+<h2 id="dependencies-9">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.10.0
 <ul>
@@ -4196,7 +4733,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="notes-8">Notes</h2>
+<h2 id="notes-9">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -4207,12 +4744,12 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section6" aria-hidden="true"> <label for="collapse-section6" aria-hidden="true"><strong>V1.1.1 / 04-September-2023</strong></label>
 <div>
-<h2 id="main-changes-9">Main Changes</h2>
+<h2 id="main-changes-10">Main Changes</h2>
 <h3 id="official-patch-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-devices">Official Patch Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> devices</h3>
 <p>In the STM32CubeWBA MCU Package, examples and applications projects are generated with the STM32CubeMX tool to initialize the system, peripherals and middleware stacks. User can open the provided ioc file in STM32CubeMX to modify the settings, add additional peripherals and/or middleware, to build his final application.</p>
 <p><br />
 </p>
-<h2 id="connectivity-9">Connectivity</h2>
+<h2 id="connectivity-10">Connectivity</h2>
 <ul>
 <li>This patch targets 2 issues related to the sleep timer overflow:
 <ul>
@@ -4222,7 +4759,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-9">Contents</h2>
+<h2 id="contents-10">Contents</h2>
 <ul>
 <li><strong>Projects</strong> updates
 <ul>
@@ -4235,7 +4772,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-9">Projects</h2>
+<h2 id="projects-10">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -4259,7 +4796,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-9">Components</h2>
+<h2 id="components-10">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -4475,7 +5012,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-9">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-10">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -4508,14 +5045,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-9">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-10">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx devices</li>
 <li>NUCLEO-WBA52CG board</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-9">Known Limitations</h2>
+<h2 id="known-limitations-10">Known Limitations</h2>
 <ul>
 <li>BLE Applications:
 <ul>
@@ -4525,7 +5062,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-9">Dependencies</h2>
+<h2 id="dependencies-10">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.9.0
 <ul>
@@ -4542,7 +5079,7 @@ Copyright © 2022 STMicroelectronics<br />
 <ul>
 <li>Not applicable</li>
 </ul>
-<h2 id="notes-9">Notes</h2>
+<h2 id="notes-10">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -4553,12 +5090,12 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section5" aria-hidden="true"> <label for="collapse-section5" aria-hidden="true"><strong>V1.1.0 / 06-June-2023</strong></label>
 <div>
-<h2 id="main-changes-10">Main Changes</h2>
+<h2 id="main-changes-11">Main Changes</h2>
 <h3 id="official-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-devices">Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> devices</h3>
 <p>In the STM32CubeWBA MCU Package, examples and applications projects are generated with the STM32CubeMX tool to initialize the system, peripherals and middleware stacks. User can open the provided ioc file in STM32CubeMX to modify the settings, add additional peripherals and/or middleware, to build his final application.</p>
 <p><br />
 </p>
-<h2 id="connectivity-10">Connectivity</h2>
+<h2 id="connectivity-11">Connectivity</h2>
 <ul>
 <li>Maximum number of simultaneous connections supported by the device is now 20.</li>
 <li>PHY Calibration improvements:
@@ -4570,7 +5107,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-10">Contents</h2>
+<h2 id="contents-11">Contents</h2>
 <ul>
 <li><strong>CMSIS</strong> updates
 <ul>
@@ -4625,7 +5162,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-10">Projects</h2>
+<h2 id="projects-11">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -4649,7 +5186,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-10">Components</h2>
+<h2 id="components-11">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -4865,7 +5402,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-10">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-11">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -4898,14 +5435,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-10">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-11">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx devices</li>
 <li>NUCLEO-WBA52CG board</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-10">Known Limitations</h2>
+<h2 id="known-limitations-11">Known Limitations</h2>
 <ul>
 <li>BLE Applications:
 <ul>
@@ -4915,7 +5452,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-10">Dependencies</h2>
+<h2 id="dependencies-11">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.9.0
 <ul>
@@ -4928,7 +5465,7 @@ Copyright © 2022 STMicroelectronics<br />
 <ul>
 <li>Not applicable</li>
 </ul>
-<h2 id="notes-10">Notes</h2>
+<h2 id="notes-11">Notes</h2>
 <ul>
 <li>None</li>
 </ul>
@@ -4939,12 +5476,12 @@ Copyright © 2022 STMicroelectronics<br />
 <div class="collapse">
 <input type="checkbox" id="collapse-section4" aria-hidden="true"> <label for="collapse-section4" aria-hidden="true"><strong>V1.0.0 / 08-February-2023</strong></label>
 <div>
-<h2 id="main-changes-11">Main Changes</h2>
+<h2 id="main-changes-12">Main Changes</h2>
 <h3 id="first-official-release-of-stm32cubewba-firmware-package-supporting-stm32wba52xx-devices">First Official Release of <strong>STM32CubeWBA</strong> Firmware package supporting <strong>STM32WBA52xx</strong> devices</h3>
 <p>In the STM32CubeWBA MCU Package, examples and applications projects are generated with the STM32CubeMX tool to initialize the system, peripherals and middleware stacks. User can open the provided ioc file in STM32CubeMX to modify the settings, add additional peripherals and/or middleware, to build his final application.</p>
 <p><br />
 </p>
-<h2 id="connectivity-11">Connectivity</h2>
+<h2 id="connectivity-12">Connectivity</h2>
 <ul>
 <li>The Bluetooth Low Energy is 5.3 compliant and supports the following features:
 <ul>
@@ -4972,7 +5509,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="contents-11">Contents</h2>
+<h2 id="contents-12">Contents</h2>
 <ul>
 <li><strong>CMSIS Devices Drivers</strong>
 <ul>
@@ -5032,7 +5569,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="projects-11">Projects</h2>
+<h2 id="projects-12">Projects</h2>
 <ul>
 <li>The STM32CubeWBA Firmware package comes with a rich set of examples running on STMicroelectronics boards, organized by board and provided with preconfigured projects for the main supported toolchains.</li>
 <li>The exhaustive list of projects and their short description is provided in this table (<a href="Projects/STM32CubeProjectsList.html">STM32CubeProjectsList.html</a>).</li>
@@ -5056,7 +5593,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="components-11">Components</h2>
+<h2 id="components-12">Components</h2>
 <p><small>The components flagged by “<span class="icon-st-update"></span>” have changed since the previous release. “<span class="icon-st-add"></span>” are new.</small></p>
 <p><br />
 </p>
@@ -5272,7 +5809,7 @@ Copyright © 2022 STMicroelectronics<br />
 </table>
 <p><br />
 </p>
-<h2 id="development-toolchains-and-compilers-11">Development Toolchains and Compilers</h2>
+<h2 id="development-toolchains-and-compilers-12">Development Toolchains and Compilers</h2>
 <table>
 <thead>
 <tr class="header">
@@ -5305,14 +5842,14 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="supported-devices-and-boards-11">Supported Devices and boards</h2>
+<h2 id="supported-devices-and-boards-12">Supported Devices and boards</h2>
 <ul>
 <li>STM32WBA52xx devices</li>
 <li>NUCLEO-WBA52CG board</li>
 </ul>
 <p><br />
 </p>
-<h2 id="known-limitations-11">Known Limitations</h2>
+<h2 id="known-limitations-12">Known Limitations</h2>
 <ul>
 <li>BLE Applications:
 <ul>
@@ -5324,7 +5861,7 @@ Copyright © 2022 STMicroelectronics<br />
 </ul>
 <p><br />
 </p>
-<h2 id="dependencies-11">Dependencies</h2>
+<h2 id="dependencies-12">Dependencies</h2>
 <ul>
 <li>STM32CubeMX V6.8.0
 <ul>
@@ -5337,7 +5874,7 @@ Copyright © 2022 STMicroelectronics<br />
 <ul>
 <li>Not applicable</li>
 </ul>
-<h2 id="notes-11">Notes</h2>
+<h2 id="notes-12">Notes</h2>
 <ul>
 <li>None</li>
 </ul>

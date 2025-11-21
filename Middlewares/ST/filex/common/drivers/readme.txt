@@ -6,6 +6,12 @@
   *          FileX low level drivers for STM32 devices.
   ******************************************************************************
   */
+### V3.3.2 / 23-July-2025 ###
+=================================
+Main changes
+-------------
+- SA0038 issue is fixed (Buffer overflow issue in the Azure RTOS FileX STM32 RAM driver)
+
 ### V3.3.1 / 14-February-2025 ###
 =================================
 Main changes

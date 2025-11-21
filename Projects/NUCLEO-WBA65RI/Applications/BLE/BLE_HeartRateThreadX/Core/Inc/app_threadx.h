@@ -36,6 +36,15 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+/* ADV_TASK related resources */
+extern TX_THREAD                 ADV_Thread;
+extern TX_QUEUE                  ADV_Queue;
+extern TX_TIMER                  ADV_LP_Timer;
+
+/* MEAS_REQ_TASK related resources */
+extern TX_THREAD                 MEAS_REQ_Thread;
+extern TX_SEMAPHORE              MEAS_REQ_Thread_Sem;
+extern TX_TIMER                  MEAS_REQ_Timer;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

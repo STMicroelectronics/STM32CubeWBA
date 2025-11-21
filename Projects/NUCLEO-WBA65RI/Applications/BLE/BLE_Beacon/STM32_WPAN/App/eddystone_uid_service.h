@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_uid_service.h
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -41,10 +41,11 @@ typedef struct
 /* Exported Macros -----------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
 tBleStatus EddystoneUID_Init(EddystoneUID_InitTypeDef *EddystoneUID_Init);
-void EddystoneUID_Process(void);
+tBleStatus EddystoneUID_Process(void);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* EDDYSTONE_UID_SERVICE_H */
+

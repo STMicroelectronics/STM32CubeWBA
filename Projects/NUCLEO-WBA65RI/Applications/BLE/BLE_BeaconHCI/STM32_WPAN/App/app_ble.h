@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -74,7 +74,6 @@ typedef __PACKED_STRUCT __ALIGNED(4)
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
-
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -86,8 +85,9 @@ typedef __PACKED_STRUCT __ALIGNED(4)
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void BleStack_Process_BG(void);
 const uint8_t* BleGetBdAddress(void);
-void APP_BLE_HostNvmStore(void);
+void Ble_UserEvtRx(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

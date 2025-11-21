@@ -19,6 +19,10 @@
 #ifndef ADC_CTRL_H
 #define ADC_CTRL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 /* Utilities */
 #include "utilities_common.h"
@@ -264,5 +268,9 @@ extern ADCCTRL_Cmd_Status_t ADCCTRL_MutexTake (void);
  * @retval ADCCTRL_Cmd_Status_t::ADCCTRL_NOK
  */
 extern ADCCTRL_Cmd_Status_t ADCCTRL_MutexRelease (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ADC_CTRL_H */

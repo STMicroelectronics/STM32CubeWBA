@@ -34,6 +34,7 @@
 #ifndef NUM_UTILS_HPP_
 #define NUM_UTILS_HPP_
 
+#include "common/encoding.hpp"
 #include "common/numeric_limits.hpp"
 #include "common/type_traits.hpp"
 
@@ -100,9 +101,7 @@ template <typename Type> Type Clamp(Type aValue, Type aMin, Type aMax)
  */
 template <typename UintType> uint8_t ClampToUint8(UintType aValue)
 {
-    static_assert(TypeTraits::IsSame<UintType, uint16_t>::kValue || TypeTraits::IsSame<UintType, uint32_t>::kValue ||
-                      TypeTraits::IsSame<UintType, uint64_t>::kValue,
-                  "UintType must be `uint16_t, `uint32_t`, or `uint64_t`");
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
 
     return static_cast<uint8_t>(Min(aValue, static_cast<UintType>(NumericLimits<uint8_t>::kMax)));
 }
@@ -140,12 +139,29 @@ template <typename UintType> uint16_t ClampToUint16(UintType aValue)
  */
 template <typename IntType> int8_t ClampToInt8(IntType aValue)
 {
-    static_assert(TypeTraits::IsSame<IntType, int16_t>::kValue || TypeTraits::IsSame<IntType, int32_t>::kValue ||
-                      TypeTraits::IsSame<IntType, int64_t>::kValue,
-                  "IntType must be `int16_t, `int32_t`, or `int64_t`");
+    static_assert(TypeTraits::IsInt<IntType>::kValue, "IntType must be a signed int (8, 16, 32, 64 bit len)");
 
     return static_cast<int8_t>(Clamp(aValue, static_cast<IntType>(NumericLimits<int8_t>::kMin),
                                      static_cast<IntType>(NumericLimits<int8_t>::kMax)));
+}
+
+/**
+ * This template function checks whether a given value is in a given closed range [min, max].
+ *
+ * Uses `operator<=` to compare the values. The behavior is undefined if the value of @p aMin is greater than @p aMax.
+ *
+ * @tparam Type   The value type.
+ *
+ * @param[in] aValue   The value to check
+ * @param[in] aMin     The minimum value.
+ * @param[in] aMax     The maximum value.
+ *
+ * @retval TRUE  If @p aValue is within `[aMin, aMax]` (inclusive).
+ * @retval FALSE If @p aValue is not within `[aMin, aMax]` (inclusive).
+ */
+template <typename Type> Type IsValueInRange(Type aValue, Type aMin, Type aMax)
+{
+    return (aMin <= aValue) && (aValue <= aMax);
 }
 
 /**
@@ -222,7 +238,7 @@ inline unsigned long ToUlong(uint32_t aUint32) { return static_cast<unsigned lon
 /**
  * Counts the number of `1` bits in the binary representation of a given unsigned int bit-mask value.
  *
- * @tparam UintType   The unsigned int type (MUST be `uint8_t`, uint16_t`, uint32_t`, or `uint64_t`).
+ * @tparam UintType   The unsigned int type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
  *
  * @param[in] aMask   A bit mask.
  *
@@ -230,9 +246,7 @@ inline unsigned long ToUlong(uint32_t aUint32) { return static_cast<unsigned lon
  */
 template <typename UintType> uint8_t CountBitsInMask(UintType aMask)
 {
-    static_assert(TypeTraits::IsSame<UintType, uint8_t>::kValue || TypeTraits::IsSame<UintType, uint16_t>::kValue ||
-                      TypeTraits::IsSame<UintType, uint32_t>::kValue || TypeTraits::IsSame<UintType, uint64_t>::kValue,
-                  "UintType must be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`");
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
 
     uint8_t count = 0;
 
@@ -243,6 +257,235 @@ template <typename UintType> uint8_t CountBitsInMask(UintType aMask)
     }
 
     return count;
+}
+
+/**
+ * Sets the specified bit of the given integer to 1.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ *
+ * @param[in,out]  aBits       The integer to set the bit.
+ * @param[in]      aBitOffset  The bit offset to set. The bit offset starts with zero corresponding to the
+ *                             least-significant bit.
+ */
+template <typename UintType> void SetBit(UintType &aBits, uint8_t aBitOffset)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    aBits = aBits | (static_cast<UintType>(1) << aBitOffset);
+}
+
+/**
+ * Clears the specified bit of the given integer.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ *
+ * @param[in,out]  aBits       The integer to clear the bit.
+ * @param[in]      aBitOffset  The bit offset to clear. The bit offset starts with zero corresponding to the
+ *                             least-significant bit.
+ */
+template <typename UintType> void ClearBit(UintType &aBits, uint8_t aBitOffset)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    aBits = aBits & (~(static_cast<UintType>(1) << aBitOffset));
+}
+
+/**
+ * Gets the value of the specified bit of the given integer.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ *
+ * @param[in] aBits       The integer to get the bit.
+ * @param[in] aBitOffset  The bit offset to get. The bit offset starts with zero corresponding to the
+ *                        least-significant bit.
+ *
+ * @returns The value of the specified bit.
+ */
+template <typename UintType> bool GetBit(UintType aBits, uint8_t aBitOffset)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return (aBits & (static_cast<UintType>(1) << aBitOffset)) != 0;
+}
+
+/**
+ * Writes the specified bit of the given integer to the given value (0 or 1).
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ *
+ * @param[in,out]  aBits      The integer to write the bit.
+ * @param[in]      aBitOffset The bit offset to get. The bit offset starts with zero corresponding to the
+ *                            least-significant bit.
+ * @param[in]      aValue     The value to write.
+ */
+template <typename UintType> void WriteBit(UintType &aBits, uint8_t aBitOffset, bool aValue)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    if (aValue)
+    {
+        SetBit<UintType>(aBits, aBitOffset);
+    }
+    else
+    {
+        ClearBit<UintType>(aBits, aBitOffset);
+    }
+}
+
+/**
+ * Gets the offset of the lowest non-zero bit in the given mask.
+ *
+ * @tparam UintType  The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ *
+ * @param[in] aMask  The mask (MUST not be 0) to calculate the offset of the lowest non-zero bit.
+ *
+ * @returns The offset of the lowest non-zero bit in the mask.
+ */
+template <typename UintType> inline constexpr uint8_t BitOffsetOfMask(UintType aMask)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return (aMask & 0x1) ? 0 : (1 + BitOffsetOfMask<UintType>(aMask >> 1));
+}
+
+/**
+ * Writes the specified bits of the given integer to the given value.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in,out]  aBits   The integer to write the bits.
+ * @param[in]      aValue  The value to write.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+void WriteBits(UintType &aBits, UintType aValue)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    aBits = ((aBits & ~kMask) | ((aValue << kOffset) & kMask));
+}
+
+/**
+ * Writes the specified bits of the given integer to the given value and returns the updated integer.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in] aBits   The integer to write the bits.
+ * @param[in] aValue  The value to write.
+ *
+ * @returns The updated integer.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType UpdateBits(UintType aBits, UintType aValue)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return ((aBits & ~kMask) | ((aValue << kOffset) & kMask));
+}
+
+/**
+ * Read the value of the specified bits of the given integer.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in] aBits   The integer to read the bits.
+ *
+ * @returns The value of the specified bits.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType ReadBits(UintType aBits)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return (aBits & kMask) >> kOffset;
+}
+
+/**
+ * Writes the specified bits of the given integer stored in little-endian format to the given value and returns the
+ * updated integer stored in little-endian format.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in]  aBits   The integer to write the bits.
+ * @param[in]  aValue  The value to write.
+ *
+ * @returns The updated integer.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType UpdateBitsLittleEndian(UintType aBits, UintType aValue)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return LittleEndian::HostSwap<UintType>((LittleEndian::HostSwap<UintType>(aBits) & ~kMask) |
+                                            ((aValue << kOffset) & kMask));
+}
+
+/**
+ * Writes the specified bits of the given integer stored in big-endian format to the given value and returns the updated
+ * integer stored in big-endian format.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in]  aBits   A pointer to the integer to write the bits.
+ * @param[in]  aValue  The value to write.
+ *
+ * @returns The updated integer.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType UpdateBitsBigEndian(UintType aBits, UintType aValue)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return BigEndian::HostSwap<UintType>((BigEndian::HostSwap<UintType>(aBits) & ~kMask) |
+                                         ((aValue << kOffset) & kMask));
+}
+
+/**
+ * Read the value of the specified bits of the given integer stored in little-endian format.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in] aBits   The integer stored in little-endian format to read the bits.
+ *
+ * @returns The value of the specified bits.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType ReadBitsLittleEndian(UintType aBits)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return (LittleEndian::HostSwap<UintType>(aBits) & kMask) >> kOffset;
+}
+
+/**
+ * Read the value of the specified bits of the given integer stored in big-endian format.
+ *
+ * @tparam UintType   The value type (MUST be `uint8_t`, `uint16_t`, `uint32_t`, or `uint64_t`).
+ * @tparam kMask      The bit mask (MUST not be 0) to write. The @p kMask must be provided in a shifted form.
+ * @tparam kOffset    The bit offset to write. The default @p kOffset is computed from the given @p kMask.
+ *
+ * @param[in] aBits   The integer stored in big-endian format to read the bits.
+ *
+ * @returns The value of the specified bits.
+ */
+template <typename UintType, UintType kMask, UintType kOffset = BitOffsetOfMask(kMask)>
+UintType ReadBitsBigEndian(UintType aBits)
+{
+    static_assert(TypeTraits::IsUint<UintType>::kValue, "UintType must be an unsigned int (8, 16, 32, or 64 bit len)");
+
+    return (BigEndian::HostSwap<UintType>(aBits) & kMask) >> kOffset;
 }
 
 } // namespace ot

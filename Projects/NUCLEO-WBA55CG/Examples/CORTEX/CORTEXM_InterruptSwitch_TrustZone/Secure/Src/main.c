@@ -193,6 +193,19 @@ static void MX_GTZC_S_Init(void)
   /* USER CODE END GTZC_S_Init 1 */
   MPCBB_Area_Desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
   MPCBB_Area_Desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[3] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[3] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_LockConfig_array[0] =   0x00000000;
+  if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_Area_Desc) != HAL_OK)
+  {
+    Error_Handler();
+  }
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0x00000000;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0x00000000;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0x00000000;
@@ -340,8 +353,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

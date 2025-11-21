@@ -1,6 +1,6 @@
 /**
  * @file zigbee.h
- * @heading Zigbee Utilities
+ * @heading Initialization
  * @brief Zigbee header file.
  * @author Exegin Technologies
  * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
@@ -286,15 +286,6 @@ struct ZbMsgFilterT;
 /* Zigbee uptime structure **/
 typedef unsigned long ZbUptimeT;
 
-/**
- * Zigbee timeout remaining function.
- * @param now Current time
- * @param expire_time time of timeout expiry
- * @return Returns 0 if now >= expire_time,
- * difference in milliseconds between now and timeout if now < expire_time.
- */
-unsigned int ZbTimeoutRemaining(ZbUptimeT now, ZbUptimeT expire_time);
-
 /** A pointer to this struct type is passed to ZbInit to define the various
  * ZigBee tables used in the stack. If the pointer to ZbInit is NULL, the
  * default sizes are used. */
@@ -378,8 +369,14 @@ void ZbTimerWork(struct ZigBeeT *zb);
  */
 unsigned int ZbCheckTime(struct ZigBeeT *zb);
 
-/* Configure a callback to wakeup the application if there's a new stack event to
- *      process. Not all stack ports require this. */
+/**
+ * Zigbee timeout remaining function.
+ * @param now Current time
+ * @param expire_time time of timeout expiry
+ * @return Returns 0 if now >= expire_time,
+ * difference in milliseconds between now and timeout if now < expire_time.
+ */
+unsigned int ZbTimeoutRemaining(ZbUptimeT now, ZbUptimeT expire_time);
 
 /**
  * Configure a callback to activate the application if there is a stack event to process.
@@ -483,7 +480,7 @@ void ZbZclBasicServerConfigDefaults(struct ZigBeeT *zb, const struct ZbZclBasicS
  * @param zb Zigbee instance
  * @param attrId The attribute Id to write
  * @param buf Pointer to the attribute data, in the ZCL defined format.
- * @param len Maximum length of the attribute data. May exceed the length of the particular attribute.
+ * @param max_len Maximum length of the attribute data. May exceed the length of the particular attribute.
  * @return ZCL Status Code
  */
 enum ZclStatusCodeT ZbZclBasicWriteDirect(struct ZigBeeT *zb, uint16_t attrId, const void *buf, unsigned int max_len);
@@ -493,7 +490,7 @@ enum ZclStatusCodeT ZbZclBasicWriteDirect(struct ZigBeeT *zb, uint16_t attrId, c
  * @param zb Zigbee instance
  * @param attrId The attribute Id to read
  * @param buf Pointer to the attribute data, in the ZCL defined format.
- * @param len Maximum length of the attribute data. May exceed the length of the particular attribute.
+ * @param max_len Maximum length of the attribute data. May exceed the length of the particular attribute.
  * @return ZCL Status Code
  */
 enum ZclStatusCodeT ZbZclBasicReadDirect(struct ZigBeeT *zb, uint16_t attrId, void *buf, unsigned int max_len);
@@ -663,23 +660,6 @@ uint16_t ZbShortAddress(struct ZigBeeT *zb);
  * Zigbee Heap
  *---------------------------------------------------------------
  */
-
-/* NOTE: ZbHeapAlloc and ZbHeapFree are for internal use only, and allocate memory
- * from the Zigbee stack memory pool. Some of the ZCL clusters need to make use of
- * these functions, so their prototypes have to be included here.
- */
-void * zb_heap_alloc(struct ZigBeeT *zb, unsigned int sz, const char *funcname, unsigned int linenum);
-void zb_heap_free(struct ZigBeeT *zb, void *ptr, const char *funcname, unsigned int linenum);
-
-#if defined(CONFIG_ZB_MEMORY_DEBUG) || defined(CONFIG_ZB_MEMPOOL_HISTORY)
-# define ZbHeapAlloc(_zb_, _sz_)             zb_heap_alloc(_zb_, _sz_, __func__, __LINE__)
-# define ZbHeapFree(_zb_, _ptr_)             zb_heap_free(_zb_, _ptr_, __func__, __LINE__)
-#else
-/* To reduce binary size */
-# define ZbHeapAlloc(_zb_, _sz_)             zb_heap_alloc(_zb_, _sz_, "", 0)
-# define ZbHeapFree(_zb_, _ptr_)             zb_heap_free(_zb_, _ptr_, "", 0)
-#endif
-
 /**
  * Current size of memory allocated from the zigbee stack heap
  * @param zb Pointer to Zigbee stack instance

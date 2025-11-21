@@ -234,7 +234,8 @@
           <state>USE_FULL_ASSERT</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA65xx</state>
-          <state>BLE</state>
+          <state>PHY_40nm_3_40_a</state>
+          <state>BLE_LL</state>
           <state>USE_FULL_LL_DRIVER</state>
         </option>
         <option>
@@ -385,7 +386,6 @@
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc</state>
-          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto</state>
           <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc</state>
@@ -398,6 +398,7 @@
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
           <state>$PROJ_DIR$/../../../../../../../Projects/Common/WPAN/Modules/Log</state>
+          <state>$PROJ_DIR$/../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -711,7 +712,7 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -719,7 +720,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_NS.hex</state>
+          <state>BLE_p2pServer_TZ_NS.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1163,6 +1164,18 @@
       <group>
         <name>NonSecure</name>
         <group>
+          <name>Common</name>
+          <group>
+            <name>WPAN</name>
+            <group>
+              <name>Interface</name>
+              <file>
+                <name>$PROJ_DIR$\..\..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</name>
+              </file>
+            </group>
+          </group>
+        </group>
+        <group>
           <name>Core</name>
           <file>
             <name>$PROJ_DIR$\..\..\NonSecure\Core\Src\main.c</name>
@@ -1181,9 +1194,6 @@
           <name>STM32_WPAN</name>
           <group>
             <name>App</name>
-            <file>
-              <name>$PROJ_DIR$\..\..\NonSecure\STM32_WPAN\App\app_bsp.c</name>
-            </file>
             <file>
               <name>$PROJ_DIR$\..\..\NonSecure\STM32_WPAN\App\app_ble.c</name>
             </file>
@@ -1506,12 +1516,6 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</name>
       </file>
       <file>
@@ -1530,6 +1534,12 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</name>
       </file>
       <file>
@@ -1540,6 +1550,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</name>
@@ -1557,13 +1570,22 @@
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</name>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.c</name>
@@ -1576,9 +1598,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</name>

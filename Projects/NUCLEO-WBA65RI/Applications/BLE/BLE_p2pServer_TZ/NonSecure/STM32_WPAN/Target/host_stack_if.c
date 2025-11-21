@@ -22,6 +22,7 @@
 #include "host_stack_if.h"
 #include "app_conf.h"
 #include "ll_sys.h"
+#include "app_entry.h"
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "stm32_seq.h"

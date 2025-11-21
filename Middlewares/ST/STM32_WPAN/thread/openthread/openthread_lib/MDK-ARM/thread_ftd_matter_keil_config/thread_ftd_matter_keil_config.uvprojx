@@ -499,6 +499,26 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\cli\cli_mac_filter.cpp</FilePath>
             </File>
+            <File>
+              <FileName>cli_utils.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_utils.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_ping.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_ping.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_mesh_diag.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_mesh_diag.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cli_link_metrics.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\cli\cli_link_metrics.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -769,6 +789,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\api\mesh_diag_api.cpp</FilePath>
             </File>
+            <File>
+              <FileName>verhoeff_checksum_api.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\api\verhoeff_checksum_api.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -959,6 +984,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\common\crc.cpp</FilePath>
             </File>
+            <File>
+              <FileName>offset_range.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\common\offset_range.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -973,62 +1003,6 @@
               <FileName>aes_ecb.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\crypto\aes_ecb.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>crypto_platform.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\crypto\crypto_platform.cpp</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>0</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
             </File>
             <File>
               <FileName>hkdf_sha256.cpp</FileName>
@@ -1054,6 +1028,11 @@
               <FileName>storage.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\crypto\storage.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>crypto_platform.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\crypto\crypto_platform.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1124,6 +1103,16 @@
               <FileName>sub_mac_callbacks.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\mac\sub_mac_callbacks.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>sub_mac_csl_receiver.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\mac\sub_mac_csl_receiver.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mac_header_ie.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\mac\mac_header_ie.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1214,6 +1203,11 @@
               <FileName>timestamp.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\meshcop\timestamp.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>secure_transport.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\meshcop\secure_transport.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1344,6 +1338,11 @@
               <FileName>udp6.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\net\udp6.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>dhcp6_types.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\net\dhcp6_types.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1481,11 +1480,6 @@
               <FilePath>..\..\..\stack\src\core\thread\mle.cpp</FilePath>
             </File>
             <File>
-              <FileName>mle_router.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\..\stack\src\core\thread\mle_router.cpp</FilePath>
-            </File>
-            <File>
               <FileName>mle_tlvs.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\mle_tlvs.cpp</FilePath>
@@ -1600,6 +1594,36 @@
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\thread\child_supervision.cpp</FilePath>
             </File>
+            <File>
+              <FileName>thread_link_info.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\thread_link_info.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>mle_ftd.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\mle_ftd.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>network_diagnostic_tlvs.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\network_diagnostic_tlvs.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>neighbor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\neighbor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>router.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\router.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>child.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\thread\child.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1664,6 +1688,11 @@
               <FileName>mesh_diag.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\..\stack\src\core\utils\mesh_diag.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>verhoeff_checksum.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\utils\verhoeff_checksum.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -2319,6 +2348,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\stack\third_party\tcplp\bsdtcp\tcp_usrreq.c</FilePath>
             </File>
+            <File>
+              <FileName>tcp_fastopen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\stack\third_party\tcplp\bsdtcp\tcp_fastopen.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2338,6 +2372,16 @@
               <FileName>lbuf.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\stack\third_party\tcplp\lib\lbuf.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>src_core_instance</GroupName>
+          <Files>
+            <File>
+              <FileName>instance.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\stack\src\core\instance\instance.cpp</FilePath>
             </File>
           </Files>
         </Group>

@@ -114,6 +114,16 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cryp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_cryp_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_dma.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</locationURI>
@@ -289,11 +299,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/stm32wbaxx_hal_timebase_tim.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_timebase_tim.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/Core/stm32wbaxx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
@@ -307,6 +312,11 @@
 			<name>Common/WPAN/Interface/adv_trace_usart_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/adv_trace_usart_if.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Interface/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Interface/hw_aes.c</name>
@@ -1252,11 +1262,6 @@
 			<name>Application/User/STM32_WPAN/App/app_ble.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/App/dis.c</name>

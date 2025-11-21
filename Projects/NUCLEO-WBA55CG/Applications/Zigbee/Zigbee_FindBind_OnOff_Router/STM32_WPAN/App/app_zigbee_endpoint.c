@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -97,6 +98,7 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */

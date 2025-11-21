@@ -75,7 +75,7 @@ extern "C" {
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     (13u)
 #define TASK_PREEMP_BUTTON_Bx                   (13u)
-  
+
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)

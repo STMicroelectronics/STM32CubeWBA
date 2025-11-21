@@ -28,7 +28,7 @@
  * Refer to Annex for details on the different parameters that can be
  * configured.
  * Note: this command is an alias of ACI_WRITE_CONFIG_DATA.
- * 
+ *
  * @param Offset Offset of the element in the configuration data structure
  *        which has to be written.
  *        Values:
@@ -63,7 +63,7 @@ tBleStatus aci_hal_write_config_data( uint8_t Offset,
  * This command requests the value in the configure data structure. The number
  * of read bytes changes for different Offset.
  * Note: this command is an alias of ACI_READ_CONFIG_DATA.
- * 
+ *
  * @param Offset Offset of the element in the configuration data structure
  *        which has to be read.
  *        Values:
@@ -103,7 +103,7 @@ tBleStatus aci_hal_read_config_data( uint8_t Offset,
  * advertising set, to override the value of TX power determined by
  * ACI_HAL_SET_TX_POWER_LEVEL command (e.g. see ACI_GAP_ADV_SET_CONFIGURATION).
  * Refer to Annex for the dBm corresponding values of PA_Level parameter.
- * 
+ *
  * @param En_High_Power Enable High Power mode - Deprecated and ignored
  *        Values:
  *        - 0x00: Standard Power
@@ -126,7 +126,7 @@ tBleStatus aci_hal_set_tx_power_level( uint8_t En_High_Power,
  * The counter starts from 0 and counts upwards. The counter can wrap and start
  * from 0 again. The counter is not cleared until the next Direct TX test
  * starts.
- * 
+ *
  * @param[out] Number_Of_Packets Number of packets sent during the last Direct
  *        TX test.
  * @return Value indicating success or error code.
@@ -141,7 +141,7 @@ tBleStatus aci_hal_le_tx_test_packet_number( uint32_t* Number_Of_Packets );
  * channels, e.g. 0x00 for 2.402 GHz, 0x01 for 2.404 GHz etc.
  * This command should not be used when normal BLE activities are ongoing.
  * The tone should be stopped by ACI_HAL_TONE_STOP command.
- * 
+ *
  * @param RF_Channel BLE Channel ID, from 0x00 to 0x27 meaning (2.402 +
  *        0.002*0xXX) GHz
  *        Device will continuously emit 0s, that means that the tone will be at
@@ -161,7 +161,7 @@ tBleStatus aci_hal_tone_start( uint8_t RF_Channel,
  * @brief ACI_HAL_TONE_STOP
  * This command is used to stop the previously started ACI_HAL_TONE_START
  * command.
- * 
+ *
  * @return Value indicating success or error code.
  */
 tBleStatus aci_hal_tone_stop( void );
@@ -172,7 +172,7 @@ tBleStatus aci_hal_tone_stop( void );
  * ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT.
  * Only the radio activities enabled in the mask will be reported to
  * application by ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT
- * 
+ *
  * @param Radio_Activity_Mask Bitmask of radio events
  *        Flags:
  *        - 0x0001: Idle
@@ -197,7 +197,7 @@ tBleStatus aci_hal_set_radio_activity_mask( uint16_t Radio_Activity_Mask );
  * This command is used to enable/disable the generation of HAL events. If the
  * bit in the Event_Mask is set to a one, then the event associated with that
  * bit will be enabled.
- * 
+ *
  * @param Event_Mask ACI HAL event mask. Default: 0x00000000.
  *        Flags:
  *        - 0x00000000: No events specified (Default)
@@ -209,7 +209,7 @@ tBleStatus aci_hal_set_event_mask( uint32_t Event_Mask );
 /**
  * @brief ACI_HAL_GET_LINK_STATUS_V2
  * This command returns the status of the BLE links managed by the device.
- * 
+ *
  * @param[out] Link_Status Array of link status (up to 20 links plus 2 ISO
  *        streams). Each link status is 1 byte.
  *        Values:
@@ -238,7 +238,7 @@ tBleStatus aci_hal_get_link_status_v2( uint8_t* Link_Status,
  * This command is used to disable/enable the Peripheral latency feature during
  * a connection. Note that, by default, the Peripheral latency is enabled at
  * connection time.
- * 
+ *
  * @param Enable Enable/disable Peripheral latency.
  *        Values:
  *        - 0x00: Peripheral latency is disabled
@@ -250,10 +250,20 @@ tBleStatus aci_hal_set_peripheral_latency( uint8_t Enable );
 /**
  * @brief ACI_HAL_SET_SYNC_EVENT_CONFIG
  * This command is used to configure ACI_HAL_SYNC_EVENT.
- * 
+ *
  * @param Group_Id Identifier of the CIG or BIG.
  *        Values:
  *        - 0x00 ... 0xEF
+ * @param Enable_Sync Enable or disable generation of sync event.
+ *        Values:
+ *        - 0x00 ... 0x01
+ * @param Enable_Cb_Trigger Enable or disable generation of calibration signal.
+ *        Values:
+ *        - 0x00 ... 0x01
+ * @param Trigger_Source Identify trigger source (CIG or BIG).
+ *        Values:
+ *        - 0x00: CIG
+ *        - 0x01: BIG
  * @return Value indicating success or error code.
  */
 tBleStatus aci_hal_set_sync_event_config( uint8_t Group_Id,
@@ -266,7 +276,7 @@ tBleStatus aci_hal_set_sync_event_config( uint8_t Group_Id,
  * This command returns the value of the RSSI.
  * Note: in Direct Test Mode, the RSSI can only be read when the test has ended
  * (after LE Test End command).
- * 
+ *
  * @param[out] RSSI RSSI (signed integer).
  *        Units: dBm.
  *        Values:
@@ -279,7 +289,7 @@ tBleStatus aci_hal_read_rssi( uint8_t* RSSI );
 /**
  * @brief ACI_HAL_CONTINUOUS_TX_START
  * This command starts the continuous transmit test mode.
- * 
+ *
  * @param RF_Channel Index of the BLE RF channel used for test mode.
  *        Values:
  *        - 0x00 ... 0x27
@@ -316,7 +326,7 @@ tBleStatus aci_hal_continuous_tx_start( uint8_t RF_Channel,
  * is equal to the input length minus 9.
  * If the decryption fails, the returned status is BLE_STATUS_FAILED, otherwise
  * it is BLE_STATUS_SUCCESS.
- * 
+ *
  * @param Mode EAD operation mode: encryption or decryption.
  *        Values:
  *        - 0x00: Encryption
@@ -337,120 +347,6 @@ tBleStatus aci_hal_ead_encrypt_decrypt( uint8_t Mode,
                                         const uint8_t* In_Data,
                                         uint16_t* Out_Data_Length,
                                         uint8_t* Out_Data );
-
-/**
- * @brief ACI_RESET
- * This command resets the BLE stack (Host and LE Controller).
- * 
- * @param Mode ACI reset mode.
- *        Values:
- *        - 0x00: Reset without BLE stack options change
- *        - 0x01: Reset with BLE stack option changes
- * @param Options New BLE stack options to set at ACI reset (a bit set to 1
- *        means that the corresponding optional feature is activated).
- *        Flags:
- *        - 0x00000001: LL only mode
- *        - 0x00000002: No service change description
- *        - 0x00000004: Device Name is read-only
- *        - 0x00000008: Support of Extended Advertising
- *        - 0x00000020: Reduced GATT database in NVM
- *        - 0x00000040: Support of GATT caching
- *        - 0x00000080: Support of LE Power Class 1 (flag not available in RCP
- *          mode)
- *        - 0x00000100: Appearance is writable
- *        - 0x00000200: Support of Enhanced ATT
- * @return Value indicating success or error code.
- */
-tBleStatus aci_reset( uint8_t Mode,
-                      uint32_t Options );
-
-/**
- * @brief ACI_GET_INFORMATION
- * This command reads the local ACI information.
- * 
- * @param[out] Version BLE stack version.
- * @param[out] Options Current BLE stack options (a bit set to 1 means that the
- *        corresponding optional feature is activated).
- *        Flags:
- *        - 0x00000001: LL only mode
- *        - 0x00000002: No service change description
- *        - 0x00000004: Device Name is read-only
- *        - 0x00000008: Support of Extended Advertising
- *        - 0x00000020: Reduced GATT database in NVM
- *        - 0x00000040: Support of GATT caching
- *        - 0x00000080: Support of LE Power Class 1 (flag not available in RCP
- *          mode)
- *        - 0x00000100: Appearance is writable
- *        - 0x00000200: Support of Enhanced ATT
- * @param[out] Debug_Info BLE stack debug information.
- * @return Value indicating success or error code.
- */
-tBleStatus aci_get_information( uint32_t* Version,
-                                uint32_t* Options,
-                                uint32_t* Debug_Info );
-
-/**
- * @brief ACI_WRITE_CONFIG_DATA
- * This command writes a value to a configure data structure. It is useful to
- * setup directly some parameters for the BLE stack.
- * Refer to Annex for details on the different parameters that can be
- * configured.
- * 
- * @param Offset Offset of the element in the configuration data structure
- *        which has to be written.
- *        Values:
- *        - 0x00: CONFIG_DATA_PUBLIC_ADDRESS_OFFSET;
- *          Bluetooth public address; 6 bytes
- *        - 0x08: CONFIG_DATA_ER_OFFSET;
- *          Encryption root key; 16 bytes
- *        - 0x18: CONFIG_DATA_IR_OFFSET;
- *          Identity root key; 16 bytes
- *        - 0x2E: CONFIG_DATA_RANDOM_ADDRESS_OFFSET;
- *          Static Random Address; 6 bytes
- *        - 0x34: CONFIG_DATA_GAP_ADD_REC_NBR_OFFSET;
- *          GAP service additional record number; 1 byte
- *        - 0x35: CONFIG_DATA_SC_KEY_TYPE_OFFSET;
- *          Secure Connections key type; 1 byte
- *        - 0xB0: CONFIG_DATA_SMP_MODE_OFFSET;
- *          SMP mode; 1 byte
- *        - 0xC2: CONFIG_DATA_LL_RSSI_GOLDEN_RANGE_OFFSET;
- *          LL RSSI golden range; 2 bytes
- *        - 0xC4: CONFIG_DATA_LL_RX_ACL_CTRL_OFFSET;
- *          LL RX ACL control; 2 bytes
- * @param Length Length of data to be written
- * @param Value Data to be written
- * @return Value indicating success or error code.
- */
-tBleStatus aci_write_config_data( uint8_t Offset,
-                                  uint8_t Length,
-                                  const uint8_t* Value );
-
-/**
- * @brief ACI_READ_CONFIG_DATA
- * This command requests the value in the configure data structure. The number
- * of read bytes changes for different Offset.
- * 
- * @param Offset Offset of the element in the configuration data structure
- *        which has to be read.
- *        Values:
- *        - 0x00: CONFIG_DATA_PUBLIC_ADDRESS_OFFSET;
- *          Bluetooth public address; 6 bytes
- *        - 0x08: CONFIG_DATA_ER_OFFSET;
- *          Encryption root key used to derive LTK (legacy) and CSRK; 16 bytes
- *        - 0x18: CONFIG_DATA_IR_OFFSET
- *          Identity root key used to derive DHK (legacy) and IRK; 16 bytes
- *        - 0x2E: CONFIG_DATA_RANDOM_ADDRESS_OFFSET;
- *          Static Random Address; 6 bytes
- *        - 0xC2: CONFIG_DATA_LL_RSSI_GOLDEN_RANGE_OFFSET;
- *          LL RSSI golden range (two 8-bit signed values in dBm - byte #0 is
- *          the lower value, byte #1 is the upper value); 2 bytes
- * @param[out] Data_Length Length of Data in octets
- * @param[out] Data Data field associated with Offset parameter
- * @return Value indicating success or error code.
- */
-tBleStatus aci_read_config_data( uint8_t Offset,
-                                 uint8_t* Data_Length,
-                                 uint8_t* Data );
 
 
 #endif /* BLE_HAL_ACI_H__ */

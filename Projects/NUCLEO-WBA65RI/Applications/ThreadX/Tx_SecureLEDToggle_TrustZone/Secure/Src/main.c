@@ -153,35 +153,13 @@ static void MX_GTZC_S_Init(void)
 {
 
   /* USER CODE BEGIN GTZC_S_Init 0 */
-  uint32_t index;
+
   /* USER CODE END GTZC_S_Init 0 */
 
   MPCBB_ConfigTypeDef MPCBB_Area_Desc = {0};
 
   /* USER CODE BEGIN GTZC_S_Init 1 */
-  if (HAL_GTZC_TZSC_ConfigPeriphAttributes(GTZC_PERIPH_ICACHE_REG, GTZC_TZSC_PERIPH_SEC|GTZC_TZSC_PERIPH_NPRIV) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  MPCBB_Area_Desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
-  MPCBB_Area_Desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
-  for(index=0; index<16; index++)
-  {
-    /* Secure blocks */
-    MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0xFFFFFFFFU;
-    MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[index] = 0xFFFFFFFF;
-  }
-  for(; index<28; index++)
-  {
-    /* Non-secure blocks */
-    MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[index] = 0x00000000U;
-    MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[index] = 0xFFFFFFFF;
-  }
-  MPCBB_Area_Desc.AttributeConfig.MPCBB_LockConfig_array[0] =   0x00000000;
-  if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_Area_Desc) != HAL_OK)
-  {
-    Error_Handler();
-  }
+
   /* USER CODE END GTZC_S_Init 1 */
   if (HAL_GTZC_TZSC_ConfigPeriphAttributes(GTZC_PERIPH_ICACHE_REG, GTZC_TZSC_PERIPH_SEC|GTZC_TZSC_PERIPH_NPRIV) != HAL_OK)
   {
@@ -189,6 +167,67 @@ static void MX_GTZC_S_Init(void)
   }
   MPCBB_Area_Desc.SecureRWIllegalMode = GTZC_MPCBB_SRWILADIS_ENABLE;
   MPCBB_Area_Desc.InvertSecureState = GTZC_MPCBB_INVSECSTATE_NOT_INVERTED;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[3] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[4] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[5] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[6] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[7] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[8] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[9] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[10] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[11] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[12] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[13] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[14] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[15] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[16] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[17] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[18] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[19] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[20] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[21] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[22] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[23] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[24] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[25] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[26] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[27] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[3] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[4] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[5] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[6] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[7] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[8] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[9] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[10] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[11] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[12] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[13] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[14] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[15] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[16] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[17] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[18] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[19] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[20] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[21] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[22] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[23] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[24] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[25] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[26] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[27] =   0xFFFFFFFF;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_LockConfig_array[0] =   0x00000000;
+  if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_Area_Desc) != HAL_OK)
+  {
+    Error_Handler();
+  }
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[0] =   0x00000000;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[1] =   0x00000000;
   MPCBB_Area_Desc.AttributeConfig.MPCBB_SecConfig_array[2] =   0x00000000;
@@ -318,7 +357,6 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

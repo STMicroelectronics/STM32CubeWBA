@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -61,6 +61,8 @@ typedef struct
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+#define HRS_APP_ADV_LP_UPDATE_TIME    (60 * TX_TIMER_TICKS_PER_SECOND)
+#define HRS_APP_MEASUREMENT_INTERVAL  (1 * TX_TIMER_TICKS_PER_SECOND)
 
 /* USER CODE END EC */
 
@@ -78,6 +80,7 @@ typedef struct
 void HRS_APP_Init(void);
 void HRS_APP_EvtRx(HRS_APP_ConnHandleNotEvt_t *p_Notification);
 /* USER CODE BEGIN EFP */
+void HRS_APP_Measurements_Entry(unsigned long thread_input);
 
 /* USER CODE END EFP */
 

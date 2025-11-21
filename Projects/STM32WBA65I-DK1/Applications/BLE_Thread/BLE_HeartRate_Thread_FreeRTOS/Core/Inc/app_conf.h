@@ -198,6 +198,11 @@
                                        + CFG_BLE_MBLOCK_COUNT_MARGIN)
 
 /**
+ * Size of the buffer used to store BLE host events
+ */
+#define CFG_BLE_HOST_EVENT_BUF_SIZE   (512)
+
+/**
  * Appearance of device set into BLE GAP
  */
 #define CFG_GAP_APPEARANCE            (GAP_APPEARANCE_UNKNOWN)
@@ -297,7 +302,11 @@ typedef enum
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
  * Standby low power mode(CFG_LPM_STDBY_SUPPORTED) above 0 will disable LOG.
  */
+#ifdef GRL_TEST
+#define CFG_LOG_SUPPORTED           (0U)
+#else
 #define CFG_LOG_SUPPORTED           (1U)
+#endif
 
 /* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
@@ -344,7 +353,11 @@ extern UART_HandleTypeDef           huart1;
  * Configure Serial Link used for Thread Command Line
  ******************************************************************************/
 /* if OT_CLI_USE is defined to be 1, the LPM will be disabled */
+#ifdef GRL_TEST
+#define OT_CLI_USE                  (1U)
+#else
 #define OT_CLI_USE                  (0U)
+#endif
 extern UART_HandleTypeDef           huart1;
 #define OT_CLI_UART_HANDLER         huart1
 

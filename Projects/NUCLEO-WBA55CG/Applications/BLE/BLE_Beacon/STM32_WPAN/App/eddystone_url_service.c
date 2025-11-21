@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_url_service.c
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -21,9 +21,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_compiler.h"
 #include "ble_core.h"
+#include "app_conf.h"
 #include "eddystone_beacon.h"
 #include "eddystone_url_service.h"
-#include "app_conf.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Private types -------------------------------------------------------------*/
@@ -41,15 +41,21 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
 {
   tBleStatus ret;
   uint16_t AdvertisingInterval = (EddystoneURL_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
-  uint8_t service_data[24] =
+  uint8_t URL_data[] =
   {
-    6 + EddystoneURL_Init->UrlLength,                                       /*< Length. */
-    AD_TYPE_SERVICE_DATA,                                                   /*< Service Data data type value. */
-    0xAA, 0xFE,                                                             /*< 16-bit Eddystone UUID. */
-    0x10,                                                                   /*< URL frame type. */
-    EddystoneURL_Init->CalibratedTxPower,                                   /*< Ranging data. */
-    EddystoneURL_Init->UrlScheme,                                           /*< URL Scheme Prefix is http://www. */
-    0x00,                                                                   /*< URL */
+    2,                                                                       /*< Length. */
+    AD_TYPE_FLAGS,                                                           /*< Flags data type value. */
+    (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED), /*< BLE general discoverable, without BR/EDR support. */
+    3,                                                                       /*< Length. */
+    AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST,                                     /*< Complete list of 16-bit Service UUIDs data type value. */
+    0xAA, 0xFE,                                                              /*< 16-bit Eddystone UUID. */
+    6 + EddystoneURL_Init->UrlLength,                                        /*< Length. */
+    AD_TYPE_SERVICE_DATA,                                                    /*< Service Data data type value. */
+    0xAA, 0xFE,                                                              /*< 16-bit Eddystone UUID. */
+    0x10,                                                                    /*< URL frame type. */
+    EddystoneURL_Init->CalibratedTxPower,                                    /*< Ranging data. */
+    EddystoneURL_Init->UrlScheme,                                            /*< URL Scheme Prefix is http://www. */
+    0x00,                                                                    /*< URL */
     0x00,
     0x00,
     0x00,
@@ -67,29 +73,17 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
     0x00,
     0x00
   };
-  uint8_t service_uuid_list[] =
-  {
-    3,                                                                      /*< Length. */
-    AD_TYPE_16_BIT_SERV_UUID_CMPLT_LIST,                                    /*< Complete list of 16-bit Service UUIDs data type value. */
-    0xAA, 0xFE                                                              /*< 16-bit Eddystone UUID. */
-  };
-  uint8_t flags[] =
-  {
-    2,                                                                      /*< Length. */
-    AD_TYPE_FLAGS,                                                          /*< Flags data type value. */
-    (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED) /*< BLE general discoverable, without BR/EDR support. */
-  };
 
   /* Disable scan response. */
   hci_le_set_scan_response_data(0, NULL);
 
   /* Put the device in a non-connectable mode. */
-  ret = aci_gap_set_discoverable(ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
-                                 AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
-                                 CFG_BD_ADDRESS_TYPE, NO_WHITE_LIST_USE,   /*< Use the public address, with no white list. */
-                                 0, NULL,                                  /*< Do not use a local name. */
-                                 0, NULL,                                  /*< Do not include the service UUID list. */
-                                 0, 0);                                    /*< Do not set a slave connection interval. */
+  ret = aci_gap_set_discoverable( ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
+                                  AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
+                                  CFG_BD_ADDRESS_TYPE, NO_WHITE_LIST_USE,   /*< Use the public address, with no white list. */
+                                  0, NULL,                                  /*< Do not use a local name. */
+                                  0, NULL,                                  /*< Do not include the service UUID list. */
+                                  0, 0);                                    /*< Do not set a slave connection interval. */
 
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -106,27 +100,11 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
 
   for (uint8_t i = 0; i < EddystoneURL_Init->UrlLength; ++i)
   {
-    service_data[7 + i] = EddystoneURL_Init->Url[i];
+    URL_data[14 + i] = EddystoneURL_Init->Url[i];
   }
 
   /* Update the service data. */
-  ret = aci_gap_update_adv_data(sizeof(service_data), service_data);
-
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    return ret;
-  }
-
-  /* Update the service UUID list. */
-  ret = aci_gap_update_adv_data(sizeof(service_uuid_list), service_uuid_list);
-
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    return ret;
-  }
-
-  /* Update the adverstising flags. */
-  ret = aci_gap_update_adv_data(sizeof(flags), flags);
+  ret = aci_gap_update_adv_data(sizeof(URL_data), URL_data);
 
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -136,7 +114,7 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
   return ret;
 }
 
-void EddystoneURL_Process(void)
+tBleStatus EddystoneURL_Process(void)
 {
   uint8_t UrlScheme = URL_PREFIX;
   uint8_t Url[]     = PHYSICAL_WEB_URL;
@@ -149,5 +127,5 @@ void EddystoneURL_Process(void)
     .UrlLength = sizeof(Url) - 1
   };
 
-  EddystoneURL_Init(&EddystoneURL_InitStruct);
+  return(EddystoneURL_Init(&EddystoneURL_InitStruct));
 }

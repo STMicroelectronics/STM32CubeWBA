@@ -57,8 +57,10 @@ DMA_HandleTypeDef handle_GPDMA1_Channel0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+static void MPU_Config(void);
 static void MX_GPDMA1_Init(void);
 static void MX_GPIO_Init(void);
+static void MX_GTZC_NS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -81,6 +83,9 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
+  /* MPU Configuration--------------------------------------------------------*/
+  MPU_Config();
+
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
@@ -90,6 +95,9 @@ int main(void)
 
   /* USER CODE END Init */
 
+  /* GTZC initialisation */
+  MX_GTZC_NS_Init();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -97,8 +105,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPDMA1_Init();
   MX_GPIO_Init();
-  MX_ADC4_Init();
-  MX_CRC_Init();
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
@@ -113,11 +119,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -263,6 +271,74 @@ static void MX_GPDMA1_Init(void)
 }
 
 /**
+  * @brief GTZC_NS Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GTZC_NS_Init(void)
+{
+
+  /* USER CODE BEGIN GTZC_NS_Init 0 */
+
+  /* USER CODE END GTZC_NS_Init 0 */
+
+  MPCBB_ConfigTypeDef MPCBB_Area_Desc = {0};
+
+  /* USER CODE BEGIN GTZC_NS_Init 1 */
+
+  /* USER CODE END GTZC_NS_Init 1 */
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[3] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[4] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[5] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[6] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[7] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[8] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[9] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[10] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[11] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[12] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[13] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[14] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[15] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[16] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[17] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[18] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[19] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[20] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[21] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[22] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[23] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[24] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[25] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[26] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[27] =   0x00000000;
+  if (HAL_GTZC_MPCBB_ConfigMem(SRAM1_BASE, &MPCBB_Area_Desc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[1] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[2] =   0x00000000;
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[3] =   0x00000000;
+  if (HAL_GTZC_MPCBB_ConfigMem(SRAM2_BASE, &MPCBB_Area_Desc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  MPCBB_Area_Desc.AttributeConfig.MPCBB_PrivConfig_array[0] =   0x00000000;
+  if (HAL_GTZC_MPCBB_ConfigMem(SRAM6_BASE, &MPCBB_Area_Desc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN GTZC_NS_Init 2 */
+
+  /* USER CODE END GTZC_NS_Init 2 */
+
+}
+
+/**
   * @brief ICACHE Initialization Function
   * @param None
   * @retval None
@@ -278,16 +354,14 @@ void MX_ICACHE_Init(void)
 
   /* USER CODE END ICACHE_Init 1 */
 
+  /** Full retention for ICACHE in stop mode
+  */
+  LL_PWR_SetICacheRAMStopRetention(LL_PWR_ICACHERAM_STOP_FULL_RETENTION);
+
   /** Enable instruction cache in 1-way (direct mapped cache)
   */
-  if (HAL_ICACHE_ConfigAssociativityMode(ICACHE_1WAY) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_ICACHE_Enable() != HAL_OK)
-  {
-    Error_Handler();
-  }
+  LL_ICACHE_SetMode(LL_ICACHE_1WAY);
+  LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
@@ -314,6 +388,10 @@ void MX_RAMCFG_Init(void)
   */
   hramcfg_SRAM1.Instance = RAMCFG_SRAM1;
   if (HAL_RAMCFG_Init(&hramcfg_SRAM1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -441,6 +519,7 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -448,17 +527,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*Configure GPIO pins : PC13 PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pin : PB4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
@@ -467,16 +546,59 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI5_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI13_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI13_IRQn);
-
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+ /* MPU Configuration */
+
+void MPU_Config(void)
+{
+  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+  MPU_Attributes_InitTypeDef MPU_AttributesInit = {0};
+
+  /* Disables the MPU */
+  HAL_MPU_Disable();
+
+  /** Initializes and configures the Region 0 and the memory to be protected
+  */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.BaseAddress = 0x08100000;
+  MPU_InitStruct.LimitAddress = 0x081FBFFF;
+  MPU_InitStruct.AttributesIndex = MPU_ATTRIBUTES_NUMBER0;
+  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RO;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /** Initializes and configures the Region 1 and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+  MPU_InitStruct.BaseAddress = 0x081FC000;
+  MPU_InitStruct.LimitAddress = 0x081FFFFF;
+  MPU_InitStruct.AccessPermission = MPU_REGION_ALL_RW;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /** Initializes and configures the Attribute 0 and the memory to be protected
+  */
+  MPU_AttributesInit.Number = MPU_ATTRIBUTES_NUMBER0;
+  MPU_AttributesInit.Attributes = INNER_OUTER(MPU_WRITE_THROUGH|MPU_TRANSIENT
+                              |MPU_R_ALLOCATE);
+
+  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
+  /* Enables the MPU */
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

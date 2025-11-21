@@ -120,12 +120,12 @@ typedef struct
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
-
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_WIN_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define CONN_INT_MS(x) ((uint16_t)((x)/1.25f))
@@ -143,12 +143,14 @@ typedef struct
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void BleStack_Process_BG(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_Handle );
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Central(ProcGapCentralId_t ProcGapCentralId);
 const uint8_t* BleGetBdAddress(void);
 tBleStatus SetGapAppearance(uint16_t appearance);
 tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
+void Ble_UserEvtRx(void);
 void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 uint8_t APP_BLE_ComputeCRC8( uint8_t *DataPtr , uint8_t Datalen );

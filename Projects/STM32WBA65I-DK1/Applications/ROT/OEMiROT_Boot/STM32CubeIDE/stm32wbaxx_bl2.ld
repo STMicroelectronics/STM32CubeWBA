@@ -43,9 +43,10 @@ _Min_Stack_Size = BL2_MSP_STACK_SIZE;
 /* Memories definition */
 MEMORY
 {
-  FLASH (rx)  : ORIGIN = BL2_CODE_START, LENGTH = BL2_CODE_SIZE
-  FLASH_NOHDP (rx)  : ORIGIN = BL2_NOHDP_CODE_START, LENGTH = BL2_NOHDP_CODE_SIZE
-  RAM   (rwx) : ORIGIN = BL2_DATA_START, LENGTH = BL2_DATA_SIZE
+  FLASH (rx)          : ORIGIN = BL2_CODE_START, LENGTH = BL2_CODE_SIZE
+  FLASH_NOHDP (rx)    : ORIGIN = BL2_NOHDP_CODE_START, LENGTH = BL2_NOHDP_CODE_SIZE
+  RAM   (rwx)         : ORIGIN = BL2_DATA_START, LENGTH = BL2_DATA_SIZE
+  BL2_SHARED_MEM (rw) : ORIGIN = BOOT_SHARED_DATA_BASE, LENGTH = BOOT_SHARED_DATA_SIZE
 }
 
 /* Library configurations */
@@ -202,6 +203,13 @@ SECTIONS
     __HeapLimit = .;
     __heap_limit = .; /* Add for _sbrk */
   } > RAM
+
+  .Boot_Shared_Data (NOLOAD):
+  {
+    . = ALIGN(4);
+    *(.Boot_Shared_Data)
+    . = ALIGN(4);
+  } > BL2_SHARED_MEM
 
   PROVIDE(__stack = Image$$ARM_LIB_STACK$$ZI$$Limit);
   PROVIDE(__StackTop = Image$$ARM_LIB_STACK$$ZI$$Limit);

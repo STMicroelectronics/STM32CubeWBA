@@ -79,8 +79,8 @@ For this application it is requested to have at least:
 </br>
 
 <pre>
-	
-			BLE_HeartRate_Zigbee							Zigbee_OnOff_Server_Coord                                                     
+
+            BLE_HeartRate_Zigbee                            Zigbee_OnOff_Server_Coord                                                     
                +--------+                                      +--------+
                |        |                                      |        |
                | OnOff  |                                      | OnOff  |        
@@ -89,10 +89,10 @@ For this application it is requested to have at least:
  Every 1 sec   |        |                                      |        |
  or PushB SW1=>|        |    ZbZclOnOffClientToggleReq         |        |
                |        | -----------------------------------> |        | => RED LED Toggle
-               |        |                                      |        |			   
+               |        |                                      |        |   
                +--------+                                      +--------+
-				Router											Coord.
-				
+                  Router                                          Coord.
+             
 </pre> 
 
 ### __How to use it?__
@@ -101,14 +101,14 @@ In order to make the program work, you must do the following:
 
 * First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.
 * To run the application :
-	1. Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_OnOff_Server_Coord application.  
+   1. Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_OnOff_Server_Coord application.  
 
-	2. Wait for the Blue LED ON.  
+   2. Wait for the Blue LED ON.  
 
-	3. Start the second board, flashed with BLE_HeartRate_Zigbee application. This board is configured as Zigbee router and will be attached to the network created by the coordinator.
+   3. Start the second board, flashed with BLE_HeartRate_Zigbee application. This board is configured as Zigbee router and will be attached to the network created by the coordinator.
 At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.    
 
-	4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. It is done automatically every one second or by pressing on the SW1 push button. 
+   4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. It is done automatically every one second or by pressing on the SW1 push button. 
 You must see the Red LED toggling on the Server side.
 
 During Zigbee activity, the BLE_HeartRate_Zigbee device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.    
@@ -116,15 +116,11 @@ During Zigbee activity, the BLE_HeartRate_Zigbee device is also configured in BL
 On the android/ios device, enable the Bluetooth communications, and if not done before:
 
 - Install the ST BLE Toolbox application on the android device:
-	- <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
+    - <a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a>
     - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a>
 
-- You can also install the ST BLE Sensor application on the android/ios device:
-	- <a href="https://play.google.com/store/apps/details?id=com.st.bluems"> ST BLE Sensor Android</a>
-	- <a href="https://itunes.apple.com/us/App/st-bluems/id993670214?mt=8"> ST BLE Sensor iOS</a>
+- Then, click on the App icon, ST BLE Toolbox (android/ios device).
 
-- Then, click on the App icon, ST BLE Toolbox (android/ios device),
-   You can either open ST BLE Sensor application (android/ios device).
 
 - In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs,
   you can reset the energy measurement.

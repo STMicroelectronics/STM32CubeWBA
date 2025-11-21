@@ -81,6 +81,13 @@ volatile uint32_t uFlowProtectValue = FLOW_CTRL_INIT_VALUE;
 #endif /* FLOW_CONTROL */
 volatile uint32_t uFlowStage = FLOW_STAGE_CFG;
 
+#if defined(__ICCARM__)
+#pragma location=".Boot_Shared_Data"
+__no_init __root volatile uint8_t shared_data_area[BOOT_SHARED_DATA_SIZE];
+#elif defined(__GNUC__)
+uint8_t shared_data_area[BOOT_SHARED_DATA_SIZE] __attribute__((section(".Boot_Shared_Data"))) __attribute__((used));
+#endif
+
 /*
 #define ICACHE_MONITOR
 */

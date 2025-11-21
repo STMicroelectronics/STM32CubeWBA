@@ -23,7 +23,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "main.h"
 #include "app_entry.h"
+#include "app_ble.h"
+#include "stm32_rtos.h"
+#include "hrs_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,11 +48,22 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+/* ADV_TASK related resources */
+TX_THREAD                 ADV_Thread;
+TX_QUEUE                  ADV_Queue;
+TX_TIMER                  ADV_LP_Timer;
+
+/* MEAS_REQ_TASK related resources */
+TX_THREAD                 MEAS_REQ_Thread;
+TX_SEMAPHORE              MEAS_REQ_Thread_Sem;
+TX_TIMER                  MEAS_REQ_Timer;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+static void ADV_LP_Timer_cb(unsigned long thread_input);
+static void MEAS_REQ_Timer_cb(unsigned long thread_input);
 /* USER CODE END PFP */
 
 /**
@@ -63,7 +78,58 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   /* USER CODE END App_ThreadX_MEM_POOL */
   /* USER CODE BEGIN App_ThreadX_Init */
+  CHAR *pStack;
 
+  if (tx_byte_allocate(memory_ptr, (void **) &pStack, ADV_QUEUE_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  if (tx_queue_create(&ADV_Queue, "ADV_Queue", TX_1_ULONG, pStack, ADV_QUEUE_SIZE)!= TX_SUCCESS )
+  {
+    Error_Handler();
+  }
+
+  if (tx_byte_allocate(memory_ptr, (void **) &pStack, ADV_TASK_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  if (tx_thread_create(&ADV_Thread, "ADV_Thread", APP_BLE_Adv_Entry, 0,
+                         pStack, ADV_TASK_STACK_SIZE,
+                         ADV_TASK_PRIO, ADV_TASK_PREEM_TRES,
+                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  
+  /* Create timer for Advertising period update */
+  if (tx_timer_create(&ADV_LP_Timer, "ADV_LP_Timer", ADV_LP_Timer_cb, 0, 
+                      HRS_APP_ADV_LP_UPDATE_TIME, 0, TX_NO_ACTIVATE ) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+    
+  if (tx_byte_allocate(memory_ptr, (void **) &pStack, MEAS_REQ_TASK_STACK_SIZE,TX_NO_WAIT) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  if (tx_semaphore_create(&MEAS_REQ_Thread_Sem, "MEAS_REQ_Thread_Sem", 0)!= TX_SUCCESS )
+  {
+    Error_Handler();
+  }
+  if (tx_thread_create(&MEAS_REQ_Thread, "MEAS_REQ_Thread", HRS_APP_Measurements_Entry, 0,
+                         pStack, MEAS_REQ_TASK_STACK_SIZE,
+                         MEAS_REQ_TASK_PRIO, MEAS_REQ_TASK_PREEM_TRES,
+                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+  
+  /* Create timer for Heart Rate Measurement request */
+  if (tx_timer_create(&MEAS_REQ_Timer, "MEAS_REQ_Timer", MEAS_REQ_Timer_cb, 0, 
+                      HRS_APP_MEASUREMENT_INTERVAL, HRS_APP_MEASUREMENT_INTERVAL, TX_NO_ACTIVATE ) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
@@ -111,18 +177,19 @@ __weak void ThreadXLowPowerUserExit(void)
   /* USER CODE END  ThreadXLowPowerUserExit */
 }
 
-/**
-  * @brief  App_ThreadX_LowPower_Timer_Adjust
-  * @param  None
-  * @retval Amount of time (in ticks)
-  */
-__weak ULONG App_ThreadX_LowPower_Timer_Adjust(void)
+/* USER CODE BEGIN 1 */
+static void ADV_LP_Timer_cb(unsigned long thread_input)
 {
-  /* USER CODE BEGIN  App_ThreadX_LowPower_Timer_Adjust */
-  return 0;
-  /* USER CODE END  App_ThreadX_LowPower_Timer_Adjust */
+  UNUSED(thread_input);
+
+  ULONG adv_cmd = 1;
+  tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
 }
 
-/* USER CODE BEGIN 1 */
+static void MEAS_REQ_Timer_cb(unsigned long thread_input)
+{
+  UNUSED(thread_input);
 
+  tx_semaphore_put(&MEAS_REQ_Thread_Sem);
+}
 /* USER CODE END 1 */

@@ -44,6 +44,7 @@
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
 
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +54,6 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -74,7 +74,18 @@ static bool system_startup_done = FALSE;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
-/* Log configuration */
+/* Log configuration
+ * .verbose_level can be any value of the Log_Verbose_Level_t enum.
+ * .region_mask can either be :
+ * - LOG_REGION_ALL_REGIONS to enable all regions
+ * or
+ * - One or several specific regions (any value except LOG_REGION_ALL_REGIONS)
+ *   from the Log_Region_t enum and matching the mask value.
+ *
+ *   For example, to enable both LOG_REGION_BLE and LOG_REGION_APP,
+ *   the value assigned to the define is :
+ *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
+ */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
@@ -142,7 +153,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Thread Initialisation */
   APP_THREAD_Init();
-  ll_sys_config_params();
 
   /* USER CODE BEGIN APPE_Init_2 */
 
@@ -202,6 +212,7 @@ static void System_Init( void )
   /* Clear RCC RESET flag */
   LL_RCC_ClearResetFlags();
 
+  /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -224,9 +235,14 @@ static void System_Init( void )
   RT_DEBUG_DTBInit();
   RT_DEBUG_DTBConfig();
 #endif /* CFG_RT_DEBUG_DTB */
+#if(CFG_RT_DEBUG_GPIO_MODULE == 1)
+  /* RT DEBUG GPIO_Init */
+  RT_DEBUG_GPIO_Init();
+#endif /* (CFG_RT_DEBUG_GPIO_MODULE == 1) */
 
 #if ( CFG_LPM_LEVEL != 0)
   system_startup_done = TRUE;
+  UNUSED(system_startup_done);
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
   return;
@@ -248,32 +264,46 @@ static void SystemPower_Config(void)
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-  /* Pins used by SerialWire Debug are now analog input */
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED == 1)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#endif /* (CFG_LPM_STDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   /* Disable LowPower during Init */
   UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
@@ -338,11 +368,12 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
   {
     APP_SYS_LPM_EnterLowPowerMode();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)
@@ -373,7 +404,7 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE END UTIL_SEQ_PostIdle_1 */
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-  ll_sys_dp_slp_exit();
+  (void)ll_sys_dp_slp_exit();
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 

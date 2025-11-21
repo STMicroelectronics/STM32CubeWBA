@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -58,7 +59,8 @@
 
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_ONOFF
 #define APP_ZIGBEE_CLUSTER_NAME           "OnOff Client"
-#define APP_ZIGBEE_ZED_SLEEP_TIME         1u                  /* For a ZED, Sleep Time Unit is 30 seconds. */
+
+#define APP_ZIGBEE_ZED_SLEEP_TIME         1u            /* For a ZED, Sleep Time Unit is 30 seconds. */
 
 /* USER CODE BEGIN PD */
 #define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME

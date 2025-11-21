@@ -33,9 +33,9 @@
 #define LED_CLK_ENABLE()    LED3_CLK_ENABLE()
 #elif defined(USE_STM32WBA55G_DK1)
 /* Definitions specific to the STM32WBA55G-DK1 board */
-#define LED3_Pin GPIO_PIN_0
-#define LED3_GPIO_Port GPIOA
-#define LED3_CLK_ENABLE() __HAL_RCC_GPIOA_CLK_ENABLE()
+#define LED3_Pin            GPIO_PIN_15
+#define LED3_GPIO_Port      GPIOB
+#define LED3_CLK_ENABLE()   __HAL_RCC_GPIOB_CLK_ENABLE()
 /* Alias génériques */
 #define LED_Pin             LED3_Pin
 #define LED_GPIO_Port       LED3_GPIO_Port
@@ -65,5 +65,6 @@
 #else
 #error "LED's pin not configured yet also needed."
 #endif
+
 
 #endif /* __STM32_BOARD_H__ */

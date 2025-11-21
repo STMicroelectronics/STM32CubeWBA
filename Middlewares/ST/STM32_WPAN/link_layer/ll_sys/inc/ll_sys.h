@@ -106,7 +106,7 @@ void ll_sys_dp_slp_wakeup_evt_clbk(void const *ptr_arg);
   */
 uint8_t ll_sys_get_concurrent_state_machines_num(void);
 
-#if BLE
+#if SUPPORT_BLE
 /**
   * @brief  Updating Link Layer BLE timings
   * @param  drift_time[in]: number of Link Layer sleep timer cycles (1 cycle = 31us) for the DRIFT TIME timing.
@@ -116,7 +116,7 @@ uint8_t ll_sys_get_concurrent_state_machines_num(void);
   * @retval uint32_t : Effective EXEC_Time value computed from the exec_time value profiled and given in parameter.
   */
 uint32_t ll_sys_config_BLE_schldr_timings(uint8_t drift_time, uint8_t exec_time);
-#endif /* BLE */
+#endif /* SUPPORT_BLE */
 
 uint32_t ll_intf_cmn_get_slptmr_value(void);
 

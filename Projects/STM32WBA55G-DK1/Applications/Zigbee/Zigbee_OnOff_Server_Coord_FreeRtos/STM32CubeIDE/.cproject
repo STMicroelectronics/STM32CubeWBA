@@ -108,7 +108,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.1134093999" name="MCU GCC Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.1002805284" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" useByScannerDiscovery="false" value="${workspace_loc:/${ProjName}/STM32WBA55CGUX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value=":LinkLayer15_4.a"/>
+									<listOptionValue builtIn="false" value=":WBA5_LinkLayer15_4.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClusters.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR23_FFD.a"/>
@@ -251,7 +251,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.1291090824" name="MCU GCC Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.6645661" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" value="${workspace_loc:/${ProjName}/STM32WBA55CGUX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value=":LinkLayer15_4.a"/>
+									<listOptionValue builtIn="false" value=":WBA5_LinkLayer15_4.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClusters.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR23_FFD.a"/>

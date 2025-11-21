@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -103,7 +103,7 @@ typedef enum
   /* USER CODE BEGIN Log_Verbose_Level_t_3 */
 
   /* USER CODE END Log_Verbose_Level_t_3 */
-  LOG_VERBOSE_ALL_LOGS = LOG_MODULE_MAX_VERBOSE_LEVEL,
+  LOG_VERBOSE_ALL = LOG_MODULE_MAX_VERBOSE_LEVEL,
 } Log_Verbose_Level_t;
 
 /**

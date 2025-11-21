@@ -326,19 +326,6 @@ void TIM16_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)

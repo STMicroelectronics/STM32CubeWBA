@@ -325,11 +325,11 @@ void PWR_Init(void)
                              &(PWR_Context.PwrSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: PWR, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: PWR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: PwrSvcHdle = 0x%04X\n",PWR_Context.PwrSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: PwrSvcHdle = 0x%04X\n",PWR_Context.PwrSvcHdle);
   }
 
   /**
@@ -348,11 +348,11 @@ void PWR_Init(void)
                           &(PWR_Context.Pwr_TxCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : PWR_TX, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : PWR_TX, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Pwr_TxCharHdle = 0x%04X\n",PWR_Context.Pwr_TxCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Pwr_TxCharHdle = 0x%04X\n",PWR_Context.Pwr_TxCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -376,11 +376,11 @@ void PWR_Init(void)
                           &(PWR_Context.Pwr_RxCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : PWR_RX, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : PWR_RX, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Pwr_RxCharHdle = 0x%04X\n",PWR_Context.Pwr_RxCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Pwr_RxCharHdle = 0x%04X\n",PWR_Context.Pwr_RxCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -418,11 +418,11 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value PWR_TX command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value PWR_TX command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value PWR_TX command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value PWR_TX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -437,11 +437,11 @@ tBleStatus PWR_UpdateValue(PWR_CharOpcode_t CharOpcode, PWR_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value PWR_RX command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value PWR_RX command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value PWR_RX command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value PWR_RX command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 

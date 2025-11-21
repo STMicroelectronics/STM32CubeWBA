@@ -27,6 +27,10 @@ extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
+extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
+
+extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
+
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -78,7 +82,7 @@ void HAL_MspInit(void)
 
   /* Peripheral interrupt init */
   /* RCC_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(RCC_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(RCC_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
@@ -125,8 +129,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
     /* USER CODE END ADC4_MspInit 0 */
 
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
     PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_HCLK;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -264,8 +268,8 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
 
     /* USER CODE END RTC_MspInit 0 */
 
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
     PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -276,7 +280,7 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
     /* Peripheral clock enable */
     __HAL_RCC_RTCAPB_CLK_ENABLE();
     /* RTC interrupt Init */
-    HAL_NVIC_SetPriority(RTC_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(RTC_IRQn, 15, 0);
     HAL_NVIC_EnableIRQ(RTC_IRQn);
     /* USER CODE BEGIN RTC_MspInit 1 */
 
@@ -327,8 +331,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
     /* USER CODE END USART1_MspInit 0 */
 
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
     PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_HSI;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -420,7 +424,98 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     /* USER CODE BEGIN USART1_MspInit 1 */
 
     /* USER CODE END USART1_MspInit 1 */
+  }
+  else if(huart->Instance==USART2)
+  {
+    /* USER CODE BEGIN USART2_MspInit 0 */
 
+    /* USER CODE END USART2_MspInit 0 */
+
+    /** Initializes the peripherals clock
+    */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+    PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_HSI;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* Peripheral clock enable */
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /**USART2 GPIO Configuration
+    PA12     ------> USART2_TX
+    PA11     ------> USART2_RX
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF3_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* USART2 DMA Init */
+    /* GPDMA1_REQUEST_USART2_RX Init */
+    handle_GPDMA1_Channel3.Instance = GPDMA1_Channel3;
+    handle_GPDMA1_Channel3.Init.Request = GPDMA1_REQUEST_USART2_RX;
+    handle_GPDMA1_Channel3.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
+    handle_GPDMA1_Channel3.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    handle_GPDMA1_Channel3.Init.SrcInc = DMA_SINC_INCREMENTED;
+    handle_GPDMA1_Channel3.Init.DestInc = DMA_DINC_FIXED;
+    handle_GPDMA1_Channel3.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel3.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel3.Init.Priority = DMA_LOW_PRIORITY_LOW_WEIGHT;
+    handle_GPDMA1_Channel3.Init.SrcBurstLength = 1;
+    handle_GPDMA1_Channel3.Init.DestBurstLength = 1;
+    handle_GPDMA1_Channel3.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0|DMA_DEST_ALLOCATED_PORT0;
+    handle_GPDMA1_Channel3.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
+    handle_GPDMA1_Channel3.Init.Mode = DMA_NORMAL;
+    if (HAL_DMA_Init(&handle_GPDMA1_Channel3) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(huart, hdmarx, handle_GPDMA1_Channel3);
+
+    if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel3, DMA_CHANNEL_NPRIV) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* GPDMA1_REQUEST_USART2_TX Init */
+    handle_GPDMA1_Channel2.Instance = GPDMA1_Channel2;
+    handle_GPDMA1_Channel2.Init.Request = GPDMA1_REQUEST_USART2_TX;
+    handle_GPDMA1_Channel2.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
+    handle_GPDMA1_Channel2.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    handle_GPDMA1_Channel2.Init.SrcInc = DMA_SINC_INCREMENTED;
+    handle_GPDMA1_Channel2.Init.DestInc = DMA_DINC_FIXED;
+    handle_GPDMA1_Channel2.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel2.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
+    handle_GPDMA1_Channel2.Init.Priority = DMA_LOW_PRIORITY_LOW_WEIGHT;
+    handle_GPDMA1_Channel2.Init.SrcBurstLength = 1;
+    handle_GPDMA1_Channel2.Init.DestBurstLength = 1;
+    handle_GPDMA1_Channel2.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0|DMA_DEST_ALLOCATED_PORT0;
+    handle_GPDMA1_Channel2.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
+    handle_GPDMA1_Channel2.Init.Mode = DMA_NORMAL;
+    if (HAL_DMA_Init(&handle_GPDMA1_Channel2) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(huart, hdmatx, handle_GPDMA1_Channel2);
+
+    if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel2, DMA_CHANNEL_NPRIV) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    /* USART2 interrupt Init */
+    HAL_NVIC_SetPriority(USART2_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+    /* USER CODE BEGIN USART2_MspInit 1 */
+
+    /* USER CODE END USART2_MspInit 1 */
   }
 
 }
@@ -455,59 +550,33 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
     /* USART1 interrupt DeInit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspDeInit 1 */
+    /* USER CODE BEGIN USART1_MspDeInit 1 */
 
-  /* USER CODE END USART1_MspDeInit 1 */
+    /* USER CODE END USART1_MspDeInit 1 */
   }
-
-}
-
-
-/**
-* @brief PKA MSP Initialization
-* This function configures the hardware resources used in this example
-* @param hpka: PKA handle pointer
-* @retval None
-*/
-void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
-{
-  if(hpka->Instance==PKA)
+  else if(huart->Instance==USART2)
   {
-    /* USER CODE BEGIN PKA_MspInit 0 */
+    /* USER CODE BEGIN USART2_MspDeInit 0 */
 
-    /* USER CODE END PKA_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_PKA_CLK_ENABLE();
-    
-    /* USER CODE BEGIN PKA_MspInit 1 */
-    HW_RNG_EnableClock(0x04);
-    /* USER CODE END PKA_MspInit 1 */
-  }
-
-}
-
-/**
-* @brief PKA MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param hpka: PKA handle pointer
-* @retval None
-*/
-void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
-{
-  if(hpka->Instance==PKA)
-  {
-    /* USER CODE BEGIN PKA_MspDeInit 0 */
-    /* Enable PKA reset state */
-    __HAL_RCC_PKA_FORCE_RESET();
-    /* Release PKA from reset state */
-    __HAL_RCC_PKA_RELEASE_RESET();
-    /* USER CODE END PKA_MspDeInit 0 */
+    /* USER CODE END USART2_MspDeInit 0 */
     /* Peripheral clock disable */
-    __HAL_RCC_PKA_CLK_DISABLE();
+    __HAL_RCC_USART2_CLK_DISABLE();
 
-    /* USER CODE BEGIN PKA_MspDeInit 1 */
-    HW_RNG_DisableClock(0x04);
-    /* USER CODE END PKA_MspDeInit 1 */
+    /**USART2 GPIO Configuration
+    PA12     ------> USART2_TX
+    PA11     ------> USART2_RX
+    */
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_12|GPIO_PIN_11);
+
+    /* USART2 DMA DeInit */
+    HAL_DMA_DeInit(huart->hdmarx);
+    HAL_DMA_DeInit(huart->hdmatx);
+
+    /* USART2 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
+    /* USER CODE BEGIN USART2_MspDeInit 1 */
+
+    /* USER CODE END USART2_MspDeInit 1 */
   }
 
 }

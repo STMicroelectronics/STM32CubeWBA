@@ -140,7 +140,7 @@ uint32_t GetCurrentOccupation (const uint8_t VirtualMemoryId)
     }
   }
 
-  return error;
+  return currentOccupation;
 }
 
 uint32_t GetPeakOccupation (const uint8_t VirtualMemoryId)
@@ -170,7 +170,7 @@ uint32_t GetPeakOccupation (const uint8_t VirtualMemoryId)
     }
   }
 
-  return error;
+  return peakOccupation;
 }
 #endif /* AMM_USE_MEMORY_STATISTICS */
 

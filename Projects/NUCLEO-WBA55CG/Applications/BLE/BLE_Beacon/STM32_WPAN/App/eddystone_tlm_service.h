@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_tlm_service.h
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -32,7 +32,7 @@ extern "C"
 /* Exported constants --------------------------------------------------------*/
 /* Exported Macros -----------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-void EddystoneTLM_Process(void);
+tBleStatus EddystoneTLM_Process(void);
 
 #ifdef __cplusplus
 }

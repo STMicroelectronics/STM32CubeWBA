@@ -55,6 +55,14 @@
 /* OEMiROT_Boot Vector Address  */
 #define OEMIROT_BOOT_VTOR_ADDR ((uint32_t)(BL2_CODE_START))
 
+/**
+  * @brief  check register value different from the expected value
+  *
+  * @param  REG 32-bit register to read
+  * @param  VAL 32-bit mask and expected register value
+  * @retval None
+  */
+#define CHECK_REG(REG, VAL)  (READ_BIT((REG), (VAL)) != (VAL))
 
 const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
            /* background region is disabled, secure execution on unsecure flash is not possible*/
@@ -62,6 +70,7 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
            /* since SAU is enabled later to gain access to non secure flash */
            /* Forbid execution outside of flash write protected area  */
            /* descriptor 0 is set execute readonly before jumping in Secure application */
+           /* region 0: RW/PRIV_ONLY/EXEC_NEVER for secure PRIMARY SLOT area */
            {
                0,
                FLASH_BASE_S + S_IMAGE_PRIMARY_PARTITION_OFFSET,
@@ -77,7 +86,7 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
                FLOW_CTRL_MPU_S_I_CH_R0,
 #endif /* FLOW_CONTROL */
            },
-           /* region 0: RW/PRIV_ONLY/EXEC_OK for OEMiROT Boot */
+           /* region 1: RW/PRIV_ONLY/EXEC_OK for OEMiROT Boot */
            {
                1,
                FLASH_BASE_S + FLASH_AREA_BL2_OFFSET,
@@ -109,11 +118,12 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
                FLOW_CTRL_MPU_S_I_CH_R2,
 #endif /* FLOW_CONTROL */
            },
-           /* Region 2: RW/PRIV_ONLY/EXEC_NEVER Flash for NV Counter SST ITS */
+           /* Region 3: RW/PRIV_ONLY/EXEC_NEVER for Data secure PRIMARY SLOT area */
+#if (MCUBOOT_S_DATA_IMAGE_NUMBER == 1)          
            {
                3,
-               FLASH_BASE_S + FLASH_AREA_BL2_NOHDP_OFFSET + FLASH_AREA_BL2_NOHDP_SIZE,
-               FLASH_BASE_S + FLASH_AREAS_TFM_SIZE + FLASH_AREA_0_OFFSET - 1,
+               FLASH_BASE_S + FLASH_AREA_4_OFFSET,
+               FLASH_BASE_S + FLASH_AREA_0_OFFSET - 1,
                MPU_ARMV8M_MAIR_ATTR_DATANOCACHE_IDX,
                MPU_ARMV8M_XN_EXEC_NEVER,
                MPU_ARMV8M_AP_RW_PRIV_ONLY,
@@ -125,7 +135,8 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
                FLOW_CTRL_MPU_S_I_CH_R3,
 #endif /* FLOW_CONTROL */
            },
-           /* Region 3: RW/PRIV_ONLY/EXEC_NEVER Forbid execution on full SRAM2 area */
+#endif /* (MCUBOOT_S_DATA_IMAGE_NUMBER == 1) */
+           /* Region 4: RW/PRIV_ONLY/EXEC_NEVER Forbid execution on full SRAM2 area */
            {
                4,
                BL2_SRAM_AREA_BASE,
@@ -141,7 +152,7 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
                FLOW_CTRL_MPU_S_I_CH_R4,
 #endif /* FLOW_CONTROL */
            },
-           /* Region 4: RW/PRIV_ONLY/EXEC_NEVER forbid secure peripheral execution */
+           /* Region 5: RW/PRIV_ONLY/EXEC_NEVER forbid secure peripheral execution */
            {
                5,
                PERIPH_BASE_NS,
@@ -175,59 +186,6 @@ const struct mpu_armv8m_region_cfg_t region_cfg_init_s[] = {
            }
 };
 
-const struct mpu_armv8m_region_cfg_t region_cfg_init_ns[] = {
-           /* forbid execution on non secure FLASH /RAM in case of jump in non secure */
-           /* Non Secure MPU  background all access in priviligied */
-           /* reduced execution to all flash during control */
-           {
-               0,
-               FLASH_BASE_NS + S_IMAGE_PRIMARY_PARTITION_OFFSET,
-               FLASH_BASE_NS + FLASH_TOTAL_SIZE - 1,
-               MPU_ARMV8M_MAIR_ATTR_DATANOCACHE_IDX,
-               MPU_ARMV8M_XN_EXEC_NEVER,
-               MPU_ARMV8M_AP_RW_PRIV_ONLY,
-               MPU_ARMV8M_SH_NONE,
-#ifdef FLOW_CONTROL
-               FLOW_STEP_MPU_NS_I_EN_R0,
-               FLOW_CTRL_MPU_NS_I_EN_R0,
-               FLOW_STEP_MPU_NS_I_CH_R0,
-               FLOW_CTRL_MPU_NS_I_CH_R0,
-#endif /* FLOW_CONTROL */
-           },
-           /* Forbid execution on full SRAM area */
-           {
-               1,
-               SRAM1_BASE_NS,
-               SRAM2_BASE_NS + SRAM2_SIZE - 1,
-               MPU_ARMV8M_MAIR_ATTR_DATA_IDX,
-               MPU_ARMV8M_XN_EXEC_NEVER,
-               MPU_ARMV8M_AP_RW_PRIV_ONLY,
-               MPU_ARMV8M_SH_NONE,
-#ifdef FLOW_CONTROL
-               FLOW_STEP_MPU_NS_I_EN_R1,
-               FLOW_CTRL_MPU_NS_I_EN_R1,
-               FLOW_STEP_MPU_NS_I_CH_R1,
-               FLOW_CTRL_MPU_NS_I_CH_R1,
-#endif /* FLOW_CONTROL */
-           },
-           /* forbid secure peripheral execution */
-           {
-               2,
-               PERIPH_BASE_NS,
-               PERIPH_BASE_NS + 0xFFFFFFF,
-               MPU_ARMV8M_MAIR_ATTR_DEVICE_IDX,
-               MPU_ARMV8M_XN_EXEC_NEVER,
-               MPU_ARMV8M_AP_RW_PRIV_ONLY,
-               MPU_ARMV8M_SH_NONE,
-#ifdef FLOW_CONTROL
-               FLOW_STEP_MPU_NS_I_EN_R2,
-               FLOW_CTRL_MPU_NS_I_EN_R2,
-               FLOW_STEP_MPU_NS_I_CH_R2,
-               FLOW_CTRL_MPU_NS_I_CH_R2,
-#endif /* FLOW_CONTROL */
-           }
-};
-
 #if defined(__ICCARM__)
 #pragma location=".BL2_NoHdp_Data"
 #endif
@@ -247,43 +205,6 @@ const struct mpu_armv8m_region_cfg_t region_cfg_appli_s[] __attribute__((section
                FLOW_STEP_MPU_S_A_CH_R0,
                FLOW_CTRL_MPU_S_A_CH_R0,
 #endif /* FLOW_CONTROL */
-           }
-};
-
-#if defined(__ICCARM__)
-#pragma location=".BL2_NoHdp_Data"
-#endif
-const struct mpu_armv8m_region_cfg_t region_cfg_appli_ns[] __attribute__((section(".BL2_NoHdp_Data"))) = {
-           /* region 0 is now enable for execution */
-           {
-               0,
-               FLASH_BASE_NS + S_IMAGE_PRIMARY_PARTITION_OFFSET,
-               FLASH_BASE_NS + S_IMAGE_PRIMARY_PARTITION_OFFSET + FLASH_PARTITION_SIZE - (~MPU_RLAR_LIMIT_Msk +1) - 1,
-               MPU_ARMV8M_MAIR_ATTR_DATA_IDX,
-               MPU_ARMV8M_XN_EXEC_OK,
-               MPU_ARMV8M_AP_RO_PRIV_ONLY,
-               MPU_ARMV8M_SH_NONE,
-#ifdef FLOW_CONTROL
-               FLOW_STEP_MPU_NS_A_EN_R0,
-               FLOW_CTRL_MPU_NS_A_EN_R0,
-               FLOW_STEP_MPU_NS_A_CH_R0,
-               FLOW_CTRL_MPU_NS_A_CH_R0,
-#endif /* FLOW_CONTROL */
-           },
-           {
-               5,
-               FLASH_BASE_NS + S_IMAGE_PRIMARY_PARTITION_OFFSET + FLASH_PARTITION_SIZE - (~MPU_RLAR_LIMIT_Msk +1),
-               FLASH_BASE_NS + FLASH_TOTAL_SIZE - 1,
-               MPU_ARMV8M_MAIR_ATTR_DATA_IDX,
-               MPU_ARMV8M_XN_EXEC_NEVER,
-               MPU_ARMV8M_AP_RW_PRIV_ONLY,
-               MPU_ARMV8M_SH_NONE,
-#ifdef FLOW_CONTROL
-               FLOW_STEP_MPU_NS_A_EN_R5,
-               FLOW_CTRL_MPU_NS_A_EN_R5,
-               FLOW_STEP_MPU_NS_A_CH_R5,
-               FLOW_CTRL_MPU_NS_A_CH_R5,
-#endif  /* FLOW_CONTROL */
            }
 };
 
@@ -772,7 +693,6 @@ static void mpu_init_cfg(void)
 {
 #ifdef OEMIROT_BOOT_MPU_PROTECTION
   struct mpu_armv8m_dev_t dev_mpu_s = { MPU_BASE };
-  struct mpu_armv8m_dev_t dev_mpu_ns = { MPU_BASE_NS };
   int32_t i;
 
   /* configuration stage */
@@ -797,26 +717,6 @@ static void mpu_init_cfg(void)
     /* enable secure MPU */
     mpu_armv8m_enable(&dev_mpu_s, PRIVILEGED_DEFAULT_DISABLE, HARDFAULT_NMI_ENABLE);
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_MPU_S_I_EN, FLOW_CTRL_MPU_S_I_EN);
-
-    /* configure non secure MPU regions */
-    for (i = 0; i < ARRAY_SIZE(region_cfg_init_ns); i++)
-    {
-      if (mpu_armv8m_region_enable(&dev_mpu_ns,
-        (struct mpu_armv8m_region_cfg_t *)&region_cfg_init_ns[i]) != MPU_ARMV8M_OK)
-      {
-        Error_Handler();
-      }
-      else
-      {
-        /* Execution stopped if flow control failed */
-        FLOW_CONTROL_STEP(uFlowProtectValue, region_cfg_init_ns[i].flow_step_enable,
-                                             region_cfg_init_ns[i].flow_ctrl_enable);
-      }
-    }
-
-    /* enable non secure MPU */
-    mpu_armv8m_enable(&dev_mpu_ns, PRIVILEGED_DEFAULT_DISABLE, HARDFAULT_NMI_ENABLE);
-    FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_MPU_NS_I_EN, FLOW_CTRL_MPU_NS_I_EN);
   }
   /* verification stage */
   else
@@ -848,34 +748,6 @@ static void mpu_init_cfg(void)
       /* Execution stopped if flow control failed */
       FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_MPU_S_I_CH, FLOW_CTRL_MPU_S_I_CH);
     }
-
-    /* check non secure MPU regions */
-    for (i = 0; i < ARRAY_SIZE(region_cfg_init_ns); i++)
-    {
-      if (mpu_armv8m_region_enable_check(&dev_mpu_ns,
-        (struct mpu_armv8m_region_cfg_t *)&region_cfg_init_ns[i]) != MPU_ARMV8M_OK)
-      {
-        Error_Handler();
-      }
-      else
-      {
-        /* Execution stopped if flow control failed */
-        FLOW_CONTROL_STEP(uFlowProtectValue, region_cfg_init_ns[i].flow_step_check,
-                                             region_cfg_init_ns[i].flow_ctrl_check);
-      }
-    }
-
-    /* check non secure MPU */
-    if (mpu_armv8m_check(&dev_mpu_ns, PRIVILEGED_DEFAULT_DISABLE,
-                      HARDFAULT_NMI_ENABLE) != MPU_ARMV8M_OK)
-    {
-      Error_Handler();
-    }
-    else
-    {
-      /* Execution stopped if flow control failed */
-      FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_MPU_NS_I_CH, FLOW_CTRL_MPU_NS_I_CH);
-    }
   }
 #endif /* OEMIROT_BOOT_MPU_PROTECTION */
 }
@@ -891,7 +763,6 @@ static void mpu_appli_cfg(void)
 {
 #ifdef OEMIROT_BOOT_MPU_PROTECTION
   static struct mpu_armv8m_dev_t dev_mpu_s = { MPU_BASE };
-  static struct mpu_armv8m_dev_t dev_mpu_ns = { MPU_BASE_NS };
   int32_t i;
 
   /* configuration stage */
@@ -912,22 +783,6 @@ static void mpu_appli_cfg(void)
                                              region_cfg_appli_s[i].flow_ctrl_enable);
       }
     }
-
-    /* configure non secure MPU regions */
-    for (i = 0; i < ARRAY_SIZE(region_cfg_appli_ns); i++)
-    {
-      if (mpu_armv8m_region_enable(&dev_mpu_ns,
-        (struct mpu_armv8m_region_cfg_t *)&region_cfg_appli_ns[i]) != MPU_ARMV8M_OK)
-      {
-        Error_Handler();
-      }
-      else
-      {
-        /* Execution stopped if flow control failed */
-        FLOW_CONTROL_STEP(uFlowProtectValue, region_cfg_appli_ns[i].flow_step_enable,
-                                             region_cfg_appli_ns[i].flow_ctrl_enable);
-      }
-    }
   }
   else
   {
@@ -944,22 +799,6 @@ static void mpu_appli_cfg(void)
         /* Execution stopped if flow control failed */
         FLOW_CONTROL_STEP(uFlowProtectValue, region_cfg_appli_s[i].flow_step_check,
                                              region_cfg_appli_s[i].flow_ctrl_check);
-      }
-    }
-
-    /* check non secure MPU regions */
-    for (i = 0; i < ARRAY_SIZE(region_cfg_appli_ns); i++)
-    {
-      if (mpu_armv8m_region_enable_check(&dev_mpu_ns,
-        (struct mpu_armv8m_region_cfg_t *)&region_cfg_appli_ns[i]) != MPU_ARMV8M_OK)
-      {
-        Error_Handler();
-      }
-      else
-      {
-        /* Execution stopped if flow control failed */
-        FLOW_CONTROL_STEP(uFlowProtectValue, region_cfg_appli_ns[i].flow_step_check,
-                                             region_cfg_appli_ns[i].flow_ctrl_check);
       }
     }
   }
@@ -1056,27 +895,9 @@ static void enable_hdp_protection(void)
 
 
 #if (OEMIROT_TAMPER_ENABLE != NO_TAMPER)
-const RTC_SecureStateTypeDef TamperSecureConf =
-{
-  .rtcSecureFull = RTC_SECURE_FULL_NO,
-  .rtcNonSecureFeatures = RTC_NONSECURE_FEATURE_ALL,
-  .tampSecureFull = TAMP_SECURE_FULL_YES,
-  .MonotonicCounterSecure = TAMP_MONOTONIC_CNT_SECURE_NO,
-  .backupRegisterStartZone2 = 0,
-  .backupRegisterStartZone3 = 0
-};
-const RTC_PrivilegeStateTypeDef TamperPrivConf =
-{
-  .rtcPrivilegeFull = RTC_PRIVILEGE_FULL_NO,
-  .rtcPrivilegeFeatures = RTC_PRIVILEGE_FEATURE_NONE,
-  .tampPrivilegeFull = TAMP_PRIVILEGE_FULL_YES,
-  .MonotonicCounterPrivilege = TAMP_MONOTONIC_CNT_PRIVILEGE_NO,
-  .backupRegisterStartZone2 = 0,
-  .backupRegisterStartZone3 = 0
-};
 const RTC_InternalTamperTypeDef InternalTamperConf =
 {
-  .IntTamper = RTC_INT_TAMPER_9,   /* Cryptographic peripherals fault */
+  .IntTamper                  = TAMP_CR1_ITAMP9E,   /* Cryptographic peripherals fault */
   .TimeStampOnTamperDetection = RTC_TIMESTAMPONTAMPERDETECTION_DISABLE,
   .NoErase                    = RTC_TAMPER_ERASE_BACKUP_ENABLE
 };
@@ -1106,8 +927,6 @@ static void active_tamper(void)
   RTC_TamperTypeDef sTamper = {0};
 #endif /* (OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
 #if (OEMIROT_TAMPER_ENABLE != NO_TAMPER)
-  RTC_SecureStateTypeDef TamperSecureConfGet;
-  RTC_PrivilegeStateTypeDef TamperPrivConfGet;
   uint32_t DeviceSecretConf;
 #endif /* OEMIROT_TAMPER_ENABLE != NO_TAMPER) */
   /* configuration stage */
@@ -1121,12 +940,16 @@ static void active_tamper(void)
       /* avoid several re-boot in DEV_MODE with Tamper active */
       BOOT_LOG_INF("Unplug the tamper cable, and reboot");
       BOOT_LOG_INF("Or");
-#endif
+#endif /* (OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
       BOOT_LOG_INF("Build and Flash with flag #define OEMIROT_TAMPER_ENABLE NO_TAMPER\n");
       Error_Handler();
     }
 #endif /*  OEMIROT_DEV_MODE && (OEMIROT_TAMPER_ENABLE != NO_TAMPER) */
+   /* enable write access to backup domain */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    HAL_PWR_EnableBkUpAccess();
 
+#if (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
     /* RTC Init */
     RTCHandle.Instance = RTC;
     RTCHandle.Init.HourFormat     = RTC_HOURFORMAT_12;
@@ -1142,7 +965,6 @@ static void active_tamper(void)
     {
       Error_Handler();
     }
-#if (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
     /** Enable the RTC Tamper 4 */
     sTamper.Tamper = RTC_TAMPER_4;
     sTamper.Trigger = RTC_TAMPERTRIGGER_LOWLEVEL;
@@ -1153,35 +975,32 @@ static void active_tamper(void)
     sTamper.PrechargeDuration = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
     sTamper.TamperPullUp = RTC_TAMPER_PULLUP_ENABLE;
 
-    if (HAL_RTCEx_SetTamper(&RTCHandle, &sTamper) != HAL_OK)
+    if (HAL_RTCEx_SetTamper_IT(&RTCHandle, &sTamper) != HAL_OK)
     {
       Error_Handler();
     }
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_ACT_EN, FLOW_CTRL_TAMP_ACT_EN);
-#else
+#elif defined(OEMIROT_DEV_MODE)
+    /* Deactivation is required when OEMIROT_TAMPER_ENABLE moved from != NO_TAMPER to == NO_TAMPER with no power off */
     HAL_RTCEx_DeactivateTamper(&RTCHandle, RTC_TAMPER_ALL);
+#else
+    /* Keep the user tamper configuration */
 #endif  /* (OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
 #if (OEMIROT_TAMPER_ENABLE != NO_TAMPER)
     /*  Internal Tamper activation  */
     /*  Enable Cryptographic IPs fault (tamp_itamp9), Backup domain voltage threshold monitoring (tamp_itamp1)*/
-    if (HAL_RTCEx_SetInternalTamper(&RTCHandle, (RTC_InternalTamperTypeDef *)&InternalTamperConf) != HAL_OK)
+    if (HAL_RTCEx_SetInternalTamper_IT(&RTCHandle, (RTC_InternalTamperTypeDef *)&InternalTamperConf) != HAL_OK)
     {
       Error_Handler();
     }
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_INT_EN, FLOW_CTRL_TAMP_INT_EN);
 
     /*  Set tamper configuration secure only  */
-    if (HAL_RTCEx_SecureModeSet(&RTCHandle, (RTC_SecureStateTypeDef *)&TamperSecureConf) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    SET_BIT(TAMP->SECCFGR, TAMP_SECURE_FULL_YES);
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_SEC_EN, FLOW_CTRL_TAMP_SEC_EN);
 
     /*  Set tamper configuration privileged only   */
-    if (HAL_RTCEx_PrivilegeModeSet(&RTCHandle, (RTC_PrivilegeStateTypeDef *)&TamperPrivConf) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    SET_BIT(TAMP->PRIVCFGR, TAMP_PRIVILEGE_FULL_YES);
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_PRIV_EN, FLOW_CTRL_TAMP_PRIV_EN);
 
     /*  Activate Secret Erase */
@@ -1190,55 +1009,49 @@ static void active_tamper(void)
 
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_CFG_EN, FLOW_CTRL_TAMP_CFG_EN);
     BOOT_LOG_INF("TAMPER Activated");
-#else
-    HAL_RTCEx_DeactivateInternalTamper(&RTCHandle, RTC_INT_TAMPER_ALL);
+#elif defined(OEMIROT_DEV_MODE)
+    /* Deactivation is required when OEMIROT_TAMPER_ENABLE moved from != NO_TAMPER to == NO_TAMPER with no power off */
+    HAL_RTCEx_DeactivateTamper(&RTCHandle, RTC_TAMPER_ALL);
 #endif /* (OEMIROT_TAMPER_ENABLE != NO_TAMPER) */
+    /* disable write access to backup domain */
+   (void)READ_REG(TAMP->CR1); /* Dummy read to wait for write effectiveness in tamper */
+    HAL_PWR_DisableBkUpAccess();
   }
 #if (OEMIROT_TAMPER_ENABLE != NO_TAMPER)
   /* verification stage */
   else
   {
-    fih_int fih_rc = FIH_FAILURE;
 #if (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
     /*  Check External Tamper activation */
-    if ((READ_REG(TAMP->CR1) & TAMP_CR1_TAMP4E_Msk)   != TAMP_CR1_TAMP4E)
+    const uint32_t expected_fltcr = sTamper.Filter | sTamper.SamplingFrequency | sTamper.PrechargeDuration | sTamper.TamperPullUp;
+    if (((READ_REG(TAMP->CR1) & TAMP_CR1_TAMP4E) != TAMP_CR1_TAMP4E) ||
+       ((READ_REG(TAMP->FLTCR) & expected_fltcr) != expected_fltcr) ||
+        (READ_BIT(TAMP->CR2, (TAMP_CR2_TAMP4POM | TAMP_CR2_TAMP4TRG)) != 0x00000000U))
     {
       Error_Handler();
     }
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_ACT_CH, FLOW_CTRL_TAMP_ACT_CH);
 #endif  /* (OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
-    /*  Check Internal Tamper activation */
-    if ((READ_BIT(RTC->CR, RTC_CR_TAMPTS) != InternalTamperConf.TimeStampOnTamperDetection) ||
-#if (OEMIROT_TAMPER_ENABLE == ALL_TAMPER)
-        (READ_REG(TAMP->CR1) != (TAMP_CR1_ITAMP9E | TAMP_CR1_TAMP4E)) ||
-#else
-        (READ_REG(TAMP->CR1) != (TAMP_CR1_ITAMP9E)) ||
-#endif /* (OEMIROT_TAMPER_ENABLE == ALL_TAMPER) */
-        (READ_REG(TAMP->CR3) != 0x00000000U))
+
+     /*  Check Internal Tamper activation */
+     if((READ_BIT(RTC->CR, RTC_CR_TAMPTS) != InternalTamperConf.TimeStampOnTamperDetection) ||
+        (CHECK_REG(TAMP->CR1, (TAMP_CR1_ITAMP9E))) ||
+        (CHECK_REG(TAMP->IER, (TAMP_IER_ITAMP9IE))) ||
+        (READ_BIT(TAMP->CR3, (TAMP_CR3_ITAMP9POM)) != 0x00000000U))
     {
       Error_Handler();
     }
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_INT_CH, FLOW_CTRL_TAMP_INT_CH);
 
     /*  Check tamper configuration secure only  */
-    if (HAL_RTCEx_SecureModeGet(&RTCHandle, (RTC_SecureStateTypeDef *)&TamperSecureConfGet) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    FIH_CALL(boot_fih_memequal, fih_rc, (void *)&TamperSecureConf, (void *)&TamperSecureConfGet, sizeof(TamperSecureConf));
-    if (fih_not_eq(fih_rc, FIH_SUCCESS))
+    if (CHECK_REG(TAMP->SECCFGR, TAMP_SECURE_FULL_YES))
     {
       Error_Handler();
     }
     FLOW_CONTROL_STEP(uFlowProtectValue, FLOW_STEP_TAMP_SEC_CH, FLOW_CTRL_TAMP_SEC_CH);
 
-    /*  Check tamper configuration privileged only   */
-    if (HAL_RTCEx_PrivilegeModeGet(&RTCHandle, (RTC_PrivilegeStateTypeDef *)&TamperPrivConfGet) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    FIH_CALL(boot_fih_memequal, fih_rc, (void *)&TamperPrivConf, (void *)&TamperPrivConfGet, sizeof(TamperPrivConf));
-    if (fih_not_eq(fih_rc, FIH_SUCCESS))
+    /*  Check tamper configuration privileged only */
+    if (CHECK_REG(TAMP->PRIVCFGR, TAMP_PRIVILEGE_FULL_YES))
     {
       Error_Handler();
     }

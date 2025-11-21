@@ -57,8 +57,9 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (7)
+#define WPAN_FW_MINOR_VERSION      (8)
 #define WPAN_FW_MAJOR_VERSION      (1)
+
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
@@ -80,6 +81,7 @@ void MX_APPE_Process(void);
 #if (CFG_JOYSTICK_SUPPORTED == 1)
 void Joystick_ActionHandle(void);
 #endif  /* CFG_JOYSTICK_SUPPORTED */
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

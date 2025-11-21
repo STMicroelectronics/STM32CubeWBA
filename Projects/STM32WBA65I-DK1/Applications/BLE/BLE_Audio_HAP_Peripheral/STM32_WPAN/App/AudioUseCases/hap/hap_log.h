@@ -23,6 +23,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "ble_audio_plat.h"
 #include "hap_config.h"
+#include "app_conf.h"
 
 /* Defines -------------------------------------------------------------------*/
 #ifndef BLE_DBG_HAP_ENABLE
@@ -30,7 +31,7 @@
 #endif /* BLE_DBG_HAP_ENABLE */
 
 
-#if BLE_DBG_HAP_ENABLE == 1
+#if (BLE_DBG_HAP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1)
 #define BLE_DBG_HAP_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[HAP] " fmt, ##__VA_ARGS__ )
 #define BLE_DBG_HAP_HA_MSG(fmt, ...)            BLE_AUDIO_PLAT_DbgLog("[HAP HA] " fmt, ##__VA_ARGS__ )
 #define BLE_DBG_HAP_HARC_MSG(fmt, ...)          BLE_AUDIO_PLAT_DbgLog("[HAP HARC] " fmt, ##__VA_ARGS__ )
@@ -38,7 +39,7 @@
 #define BLE_DBG_HAS_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[HAS] " fmt, ##__VA_ARGS__ )
 #define BLE_DBG_HAP_DB_MSG(fmt, ...)            BLE_AUDIO_PLAT_DbgLog("[HAP DB] " fmt, ##__VA_ARGS__ )
 #define BLE_DBG_IAS_MSG(fmt, ...)               BLE_AUDIO_PLAT_DbgLog("[IAS] " fmt, ##__VA_ARGS__ )
-#else /*BLE_DBG_HAP_ENABLE != 1*/
+#else /* (BLE_DBG_HAP_ENABLE != 1) || (CFG_LOG_SUPPORTED != 1) */
 #define BLE_DBG_HAP_MSG(fmt, ...)               (void)0
 #define BLE_DBG_HAP_HA_MSG(fmt, ...)            (void)0
 #define BLE_DBG_HAP_HARC_MSG(fmt, ...)          (void)0
@@ -46,7 +47,7 @@
 #define BLE_DBG_HAS_MSG(fmt, ...)               (void)0
 #define BLE_DBG_HAP_DB_MSG(fmt, ...)            (void)0
 #define BLE_DBG_IAS_MSG(fmt, ...)               (void)0
-#endif /* BLE_DBG_HAP_ENABLE == 1*/
+#endif /* (BLE_DBG_HAP_ENABLE == 1) && (CFG_LOG_SUPPORTED == 1)*/
 
 #endif /* __HAP_LOG_H */
 

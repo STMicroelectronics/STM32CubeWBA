@@ -2,8 +2,8 @@
   @verbatim
   ******************************************************************************
   *
-  * Portions Copyright (C) 2016-2024 STMicroelectronics, All Rights Reserved
-  * Copyright (C) 2006-2024, ARM Limited, All Rights Reserved
+  * Portions Copyright (C) STMicroelectronics, All Rights Reserved
+  * Copyright The Mbed TLS Contributors
   *
   * @file    st_readme.txt
   * @author  MCD Application Team
@@ -19,6 +19,12 @@
 
   @Note Mbed-TLS release
    For additional information on the Mbed-TLS release, consult the changelog file.
+
+### 1-July-2025 ###
+========================
+    + Move to Mbed-TLS V3.6.4
+    + Keep ST patchs from Mbed TLS V3.6.3
+    + Update st_readme.txt
 
 ### 14-April-2025 ###
 ========================

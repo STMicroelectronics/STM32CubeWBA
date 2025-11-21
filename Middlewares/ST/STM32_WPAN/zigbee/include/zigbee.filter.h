@@ -3,7 +3,7 @@
  * @heading Zigbee Message Filters
  * @brief Zigbee header file.
  * @author Exegin Technologies
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZIGBEE_FILTER_H
@@ -31,8 +31,8 @@
 #define ZB_MSG_FILTER_STACK_EVENT               0x00000008U
 
 /* Data and Command Indications */
-/* MCPS-DATA.indication (struct zb_msg_mac_data_ind) */
-#define ZB_MSG_FILTER_MCPS_DATA_IND             0x00000010U
+/* MCPS-DATA.indication (struct ZbMcpsDataIndT) */
+#define ZB_MSG_FILTER_MCPS_DATA_IND_EXT         0x00000010U
 /* NLDE-DATA.indication (struct ZbNldeDataIndT) */
 #define ZB_MSG_FILTER_NLDE_DATA_IND             0x00000020U
 /* APSDE-DATA.indication (struct ZbApsdeDataIndT) */
@@ -141,22 +141,22 @@ enum ZbMsgStackEventTypeT {
     ZB_MSG_STACK_EVENT_ZDD_STATUS_UPDATE,
     /**< Inform ZDD application when certain status changes within the stack. These include:
      * Joined Status (i.e. Leave), NWK Permit Join (on/off), Short Address, Channel.
-     * Will only get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT enabled. */
+     * Will only get this notification if stack built with CONFIG_ZB_ZDD enabled. */
 
     ZB_MSG_STACK_EVENT_ZVD_START_SEC_SESSION,
     /**< Inform ZVD application to start secure session during Tunnel join. Will only
-     * get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT enabled. */
+     * get this notification if stack built with CONFIG_ZB_ZVD enabled. */
 
     ZB_MSG_STACK_EVENT_ELEVATE_SEC_SESSION,
     /**< Inform ZDD/ZVD application to elevate the current secure session to a more secure
      * authorization state, so that ZVD can continue joining the legacy network. Will
-     * only get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT enabled. */
+     * only get this notification if stack built with CONFIG_ZB_ZIGBEE_DIRECT enabled. */
 
     ZB_MSG_STACK_EVENT_DISCONNECT_ZVD,
     /**< Inform ZDD application to disconnect from ZVD, provided it is connected to one
      * at the moment. This is done on network key rotation as ZVD's security credentials
      * are no more valid, forcing ZVD to setup limited authorization session and perform
-     * trust center. Will only get this notification if stack built with CONFIG_ZB_ZDD_SUPPORT
+     * trust center. Will only get this notification if stack built with CONFIG_ZB_ZDD
      * enabled. */
 
     ZB_MSG_STACK_EVENT_PARENT_LINK_FAIL
@@ -176,6 +176,35 @@ struct ZbMsgStackEventT {
 struct ZbMsgDeviceInterviewIndT {
     uint64_t joiner_eui64;
     /**< EUI64 of the joiner device. */
+};
+
+/*---------------------------------------------------------
+ * ZB_MSG_FILTER_MCPS_DATA_IND_EXT
+ *---------------------------------------------------------
+ */
+enum ZbMcpsAddrModeT {
+    ZB_MCPS_ADDRMODE_NONE = 0,
+    ZB_MCPS_ADDRMODE_SHORT = 2,
+    ZB_MCPS_ADDRMODE_LONG = 3
+};
+
+struct ZbMcpsDataIndT {
+    struct WpanPublicT *publicPtr;
+    /* Source info */
+    uint16_t src_panid;
+    enum ZbMcpsAddrModeT src_mode;
+    uint64_t src_addr;
+    /* Destination info */
+    uint16_t dst_panid;
+    enum ZbMcpsAddrModeT dst_mode;
+    uint64_t dst_addr;
+    /* Info */
+    uint8_t lqi; /* Link Quality Indication */
+    int8_t rssi; /* RSSI */
+    uint8_t dsn; /* DSN (sequence number) */
+    /* MSDU */
+    uint16_t len;
+    uint8_t msdu[WPAN_CONST_MAX_PHY_PACKET_SIZE];
 };
 
 #endif

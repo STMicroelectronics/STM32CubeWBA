@@ -29,6 +29,7 @@
 
   <project>
     <PathAndName>.\thread_mtd_light_no_tcp_matter_keil_config\thread_mtd_light_no_tcp_matter_keil_config.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
   </project>
 
   <project>
@@ -41,7 +42,6 @@
 
   <project>
     <PathAndName>.\thread_mtd_light_no_tcp_matter_mbedtls_config\thread_mtd_light_no_tcp_matter_mbedtls_config.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
   </project>
 
 </ProjectWorkspace>

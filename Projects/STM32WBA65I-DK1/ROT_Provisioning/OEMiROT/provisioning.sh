@@ -38,26 +38,27 @@ flash_layout="$cube_fw_path/Projects/STM32WBA65I-DK1/Applications/ROT/OEMiROT_Bo
 connect_no_reset="-c port=SWD mode=HotPlug"
 connect_reset="-c port=SWD mode=UR"
 
-applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/dist/AppliCfg.exe"
-uname | grep -i -e windows -e mingw
-if [ $? == 0 ] && [ -e "$applicfg" ]; then
-  #line for window executable
-  echo "AppliCfg with windows executable"
-  python=""
-else
-  #line for python
-  echo "AppliCfg with python script"
-  applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
-  #determine/check python version command
+# Check if Python is installed
+if ! python3 --version > /dev/null 2>&1; then
+  if ! python --version > /dev/null 2>&1; then
+    echo "Python installation missing. Refer to Utilities/PC_Software/ROT_AppliConfig/README.md"
+    step_error;
+  fi
   python="python "
-  python3 --version >& /dev/null && python="python3 "
+else
+  python="python3 "
 fi
+
+# Environment variable for AppliCfg
+applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
 
 # Display Boot path
 echo "====="
 echo "===== Provisioning of OEMiRoT boot path"
 echo "===== Application selected through env.sh:"
 echo "=====" $oemirot_appli_path_project
+echo -e "\e[31m===== Python and some python packages are required to execute this script: Refer to\e[0m"
+echo -e "\e[31m===== Utilities/PC_Software/ROT_AppliConfig/README.md for more details\e[0m"
 echo "====="
 echo
 
@@ -179,19 +180,21 @@ images_generation()
         if [ $? != 0 ]; then step_error; fi
     fi
 
-    echo "   * Data non secure generation (if Data non secure image is enabled)"
-    echo "       Select OEMiROT_NS_Data_Image.xml(Default path is /ROT_Provisioning/OEMiROT/Images/OEMiROT_NS_Data_Image.xml)"
-    echo "       Generate the data_enc_sign.bin image"
-    echo "       Press any key to continue..."
-    echo
-    if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
+    if [ "$app_full_secure" != "1" ]; then
+        echo "   * Data non secure generation (if Data non secure image is enabled)"
+        echo "       Select OEMiROT_NS_Data_Image.xml(Default path is /ROT_Provisioning/OEMiROT/Images/OEMiROT_NS_Data_Image.xml)"
+        echo "       Generate the data_enc_sign.bin image"
+        echo "       Press any key to continue..."
+        echo
+        if [ "$mode" != "AUTO" ]; then read -p "" -n1 -s; fi
 
-    if [ $ns_data_image_number != "0" ]; then
-        "$stm32tpccli" -pb $ns_data_xml >> $provisioning_log 2>&1
-        if [ $? != 0 ]; then step_error; fi
+        if [ $ns_data_image_number != "0" ]; then
+            "$stm32tpccli" -pb $ns_data_xml >> $provisioning_log 2>&1
+            if [ $? != 0 ]; then step_error; fi
 
-        "$stm32tpccli" -pb $ns_data_init_xml >> $provisioning_log 2>&1
-        if [ $? != 0 ]; then step_error; fi
+            "$stm32tpccli" -pb $ns_data_init_xml >> $provisioning_log 2>&1
+            if [ $? != 0 ]; then step_error; fi
+        fi
     fi
 }
 

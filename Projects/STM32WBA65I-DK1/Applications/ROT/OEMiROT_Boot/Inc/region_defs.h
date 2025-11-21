@@ -88,6 +88,7 @@
 /*  This area in SRAM 2 is updated BL2 and can be lock to avoid any changes */
 #define BOOT_SHARED_DATA_SIZE        0x400
 #define BOOT_SHARED_DATA_BASE        (_SRAM2_BASE_S + _SRAM2_SIZE_MAX - BOOT_SHARED_DATA_SIZE)
+
 /*
  * Boot partition structure if MCUBoot is used:
  * 0x0_0000 Bootloader header
@@ -147,12 +148,11 @@
 /* Bootloader boot address */
 #define BL2_BOOT_VTOR_ADDR                  (BL2_CODE_START)
 
-/*  keep 256 bytes unused to place while(1) for non secure to enable */
-/*  regression from local tool with non secure attachment
- *  This avoid blocking board in case of hardening error */
-#define BL2_DATA_START                      (_SRAM2_BASE_S)
-#define BL2_DATA_SIZE                       (_SRAM2_SIZE_MAX - BOOT_SHARED_DATA_SIZE)
-#define BL2_DATA_LIMIT                      (BL2_DATA_START + BL2_DATA_SIZE - 1)
+/* Worst case SRAM area size required for OEMiRoT execution (HW crypto only) */
+#define BL2_RAM_MIN_SIZE                     0x7000  /* 28K */
+
+#define BL2_DATA_SIZE                       (BL2_RAM_MIN_SIZE - BOOT_SHARED_DATA_SIZE)
+#define BL2_DATA_START                      (_SRAM2_BASE_S + _SRAM2_SIZE_MAX - BL2_DATA_SIZE - BOOT_SHARED_DATA_SIZE)
 
 /* Define BL2 MPU SRAM protection to remove execution capability */
 /* Area is covering the complete SRAM memory space non secure alias and secure alias */

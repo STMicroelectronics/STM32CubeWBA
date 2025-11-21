@@ -1,4 +1,7 @@
 @ECHO OFF
+:: Get the escape character (for ANSI colors)
+for /f %%a in ('echo prompt $E^| cmd') do set "ESC=%%a"
+
 :: Getting the CubeProgammer_cli path
 call ../env.bat
 set cube_fw_path=%cube_fw_path:"=%
@@ -25,30 +28,33 @@ set oem2_password="./Keys/oem2_password.txt"
 :: Log files
 set ob_flash_log="ob_flash_programming.log"
 set provisioning_log="provisioning.log"
-del -rf *.log
 
-goto exe:
-goto py:
-:exe
-::line for window executable
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\dist\AppliCfg.exe"
-set "python="
-if exist %applicfg% (
-echo run config Appli with windows executable
-goto prov
+:: Remove all log files (*.log)
+if exist *.log del /f /q *.log
+
+:: Check if Python is installed
+python3 --version >nul 2>&1
+if %errorlevel% neq 0 (
+ python --version >nul 2>&1
+ if !errorlevel! neq 0 (
+    echo Python installation missing. Refer to Utilities\PC_Software\ROT_AppliConfig\README.md
+    goto :error
+ )
+  set "python=python "
+) else (
+  set "python=python3 "
 )
-:py
-::line for python
-echo run config Appli with python script
-set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
-set "python=python "
 
-:prov
+:: Environment variable for AppliCfg
+set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
+
 :: Display Boot path
 echo =====
 echo ===== Provisioning of OEMiROT_OEMuRoT boot path
 echo ===== Application selected through env.bat:
 echo ===== %oemirot_appli_path_project%
+echo %ESC%[91m===== Python and some python packages are required to execute this script: Refer to%ESC%[0m
+echo %ESC%[91m===== Utilities\PC_Software\ROT_AppliConfig\README.md for more details%ESC%[0m
 echo =====
 echo.
 
@@ -58,7 +64,7 @@ set tmp_oemirot_file=%projectdir%\..\OEMiROT\img_config.bat
 
 :: ====================================== Step to update oemurot value in img_config.bat =========================================
 :: update oemurot value in img_config.bat
-set "command=%applicfg% definevalue --name=oemurot_enabled  --value=1 %tmp_oemirot_file% --decimal"
+set "command=%python%%applicfg% definevalue --name=oemurot_enabled  --value=1 %tmp_oemirot_file% --decimal"
 %command%
 if !errorlevel! neq 0 goto :step_error
 
@@ -238,6 +244,7 @@ if !errorlevel! neq 0 goto :step_error
 if !errorlevel! neq 0 goto :step_error
 :no_s_data
 
+if "%app_full_secure%" == "1" (goto :no_ns_data)
 echo    * Data non secure generation (if Data non secure image is enabled)
 echo        Select OEMuROT_NS_Data_Image.xml(Default path is \ROT_Provisioning\OEMiRoT_OEMuRoT\Images\OEMuROT_NS_Data_Image.xml)
 echo        Generate the data_enc_sign.bin image

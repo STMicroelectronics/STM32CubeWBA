@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    ibeacon_service.c
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -74,33 +74,11 @@ static tBleStatus IBeacon_Init(IBeacon_InitTypeDef *IBeacon_Init)
 /* USER CODE END IBeacon_Init_1 */
   tBleStatus ret = BLE_STATUS_SUCCESS;
   uint16_t AdvertisingInterval = (IBeacon_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
-
-  /* Disable scan response. */
-  hci_le_set_scan_response_data(0, NULL);
-
-  /* Put the device in a non-connectable mode. */
-  ret = aci_gap_set_discoverable(ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
-                                 AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
-                                 CFG_BD_ADDRESS_TYPE, NO_WHITE_LIST_USE,   /*< Use the public address, with no white list. */
-                                 0, NULL,                                  /*< Do not use a local name. */
-                                 0, NULL,                                  /*< Do not include the service UUID list. */
-                                 0, 0);                                    /*< Do not set a slave connection interval. */
-
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    return ret;
-  }
-
-  /* Remove the TX power level advertisement (this is done to decrease the packet size). */
-  ret = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
-
-  if (ret != BLE_STATUS_SUCCESS)
-  {
-    return ret;
-  }
-
   uint8_t service_data[] =
   {
+    2,                                                                       /*< Length. */
+    AD_TYPE_FLAGS,                                                           /*< Flags data type value. */
+    (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED), /*< BLE general discoverable, without BR/EDR support. */
     26,                                                                      /*< Length. */
     AD_TYPE_MANUFACTURER_SPECIFIC_DATA,                                      /*< Manufacturer Specific Data data type value. */
     0x4C, 0x00, 0x02, 0x15,                                                  /*< 32-bit Manufacturer Data. */
@@ -127,23 +105,32 @@ static tBleStatus IBeacon_Init(IBeacon_InitTypeDef *IBeacon_Init)
     IBeacon_Init->CalibratedTxPower,                                         /*< Ranging data. */
   };
 
-  uint8_t flags[] =
-  {
-    2,                                                                      /*< Length. */
-    AD_TYPE_FLAGS,                                                          /*< Flags data type value. */
-    (FLAG_BIT_LE_GENERAL_DISCOVERABLE_MODE | FLAG_BIT_BR_EDR_NOT_SUPPORTED) /*< BLE general discoverable, without BR/EDR support. */
-  };
+  /* Disable scan response. */
+  hci_le_set_scan_response_data(0, NULL);
 
-  /* Update the service data. */
-  ret = aci_gap_update_adv_data(sizeof(service_data), service_data);
+  /* Put the device in a non-connectable mode. */
+  ret = aci_gap_set_discoverable(ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
+                                 AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
+                                 CFG_BD_ADDRESS_TYPE, NO_WHITE_LIST_USE,   /*< Use the public address, with no white list. */
+                                 0, NULL,                                  /*< Do not use a local name. */
+                                 0, NULL,                                  /*< Do not include the service UUID list. */
+                                 0, 0);                                    /*< Do not set a slave connection interval. */
 
   if (ret != BLE_STATUS_SUCCESS)
   {
     return ret;
   }
 
-  /* Update the adverstising flags. */
-  ret = aci_gap_update_adv_data(sizeof(flags), flags);
+  /* Remove the TX power level advertisement (this is done to decrease the packet size). */
+  ret = aci_gap_delete_ad_type(AD_TYPE_TX_POWER_LEVEL);
+
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    return ret;
+  }
+
+  /* Update the service data. */
+  ret = aci_gap_update_adv_data(sizeof(service_data), service_data);
 
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -155,7 +142,7 @@ static tBleStatus IBeacon_Init(IBeacon_InitTypeDef *IBeacon_Init)
   return ret;
 }
 
-void IBeacon_Process(void)
+tBleStatus IBeacon_Process(void)
 {
 /* USER CODE BEGIN IBeacon_Process_1 */
 
@@ -174,7 +161,7 @@ void IBeacon_Process(void)
     .CalibratedTxPower   = CALIBRATED_TX_POWER_AT_1_M
   };
 
-  IBeacon_Init(&IBeacon_InitStruct);
+  return(IBeacon_Init(&IBeacon_InitStruct));
 /* USER CODE BEGIN IBeacon_Process_2 */
 
 /* USER CODE END IBeacon_Process_2 */

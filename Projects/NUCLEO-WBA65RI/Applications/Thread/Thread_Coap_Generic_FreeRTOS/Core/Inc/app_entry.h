@@ -30,6 +30,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
+#include "cmsis_os2.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -47,6 +48,7 @@ extern "C" {
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
+extern osThreadId_t WpanTaskHandle;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */

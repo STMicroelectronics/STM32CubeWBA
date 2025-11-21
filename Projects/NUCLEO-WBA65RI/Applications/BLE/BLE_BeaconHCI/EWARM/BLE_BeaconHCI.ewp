@@ -233,9 +233,10 @@
           <name>CCDefines</name>
           <state>USE_FULL_ASSERT</state>
           <state>USE_FULL_LL_DRIVER</state>
-          <state>BLE</state>
+          <state>BLE_LL</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA65xx</state>
+          <state>PHY_40nm_3_40_a</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -358,7 +359,6 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../Core/Inc</state>
           <state>$PROJ_DIR$/../System/Interfaces</state>
-          <state>$PROJ_DIR$/../System/Modules</state>
           <state>$PROJ_DIR$/../System/Config</state>
           <state>$PROJ_DIR$/../STM32_WPAN/App</state>
           <state>$PROJ_DIR$/../STM32_WPAN/Target</state>
@@ -371,7 +371,6 @@
           <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_basic</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
@@ -389,17 +388,15 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting</state>
           <state>$PROJ_DIR$/../System/Config/Log</state>
-          <state>$PROJ_DIR$/../System/Config/Flash</state>
-          <state>$PROJ_DIR$/../System/Config/CRC_Ctrl</state>
           <state>$PROJ_DIR$/../System/Config/ADC_Ctrl</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
-          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_peripheral_only</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1230,21 +1227,9 @@
             </file>
           </group>
           <group>
-            <name>CRC_Ctrl</name>
-            <file>
-              <name>$PROJ_DIR$\..\System\Config\CRC_Ctrl\crc_ctrl_conf.c</name>
-            </file>
-          </group>
-          <group>
             <name>Debug_GPIO</name>
             <file>
               <name>$PROJ_DIR$\..\System\Config\Debug_GPIO\app_debug.c</name>
-            </file>
-          </group>
-          <group>
-            <name>Flash</name>
-            <file>
-              <name>$PROJ_DIR$\..\System\Config\Flash\simple_nvm_arbiter_conf.c</name>
             </file>
           </group>
           <group>
@@ -1261,12 +1246,6 @@
           <name>Interfaces</name>
           <file>
             <name>$PROJ_DIR$\..\System\Interfaces\stm32_lpm_if.c</name>
-          </file>
-        </group>
-        <group>
-          <name>Modules</name>
-          <file>
-            <name>$PROJ_DIR$\..\System\Modules\ble_timer.c</name>
           </file>
         </group>
       </group>
@@ -1315,21 +1294,6 @@
           </file>
         </group>
         <group>
-          <name>Flash</name>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</name>
-          </file>
-        </group>
-        <group>
           <name>Log</name>
           <file>
             <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
@@ -1364,9 +1328,6 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/app_sys.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/crc_ctrl.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
@@ -1454,10 +1415,10 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc_ex.c</name>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_icache.c</name>
@@ -1529,6 +1490,15 @@
     <group>
       <name>STM32_WPAN</name>
       <group>
+        <name>BLE</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_llo.a</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</name>
+        </file>
+      </group>
+      <group>
         <name>LinkLayer</name>
         <file>
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_cs.c</name>
@@ -1543,16 +1513,7 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Basic_lib.a</name>
-        </file>
-      </group>
-      <group>
-        <name>BLE</name>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_llobasic.a</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Peripheral_Only_lib.a</name>
         </file>
       </group>
     </group>

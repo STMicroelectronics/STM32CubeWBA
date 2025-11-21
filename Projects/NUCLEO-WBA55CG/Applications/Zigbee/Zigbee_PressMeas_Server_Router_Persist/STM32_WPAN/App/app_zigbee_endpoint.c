@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -108,6 +109,7 @@ static int16_t                  iPressureCurrent;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN PFP */
 static void APP_ZIGBEE_ApplicationTaskInit        ( void );
 static void APP_ZIGBEE_PressSensorRead            ( void );

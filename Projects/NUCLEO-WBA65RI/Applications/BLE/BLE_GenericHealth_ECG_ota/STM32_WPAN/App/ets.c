@@ -330,11 +330,11 @@ void ETS_Init(void)
                              &(ETS_Context.EtsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: ETS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: ETS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: EtsSvcHdle = 0x%04X\n",ETS_Context.EtsSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: EtsSvcHdle = 0x%04X\n",ETS_Context.EtsSvcHdle);
   }
 
   /**
@@ -353,11 +353,11 @@ void ETS_Init(void)
                           &(ETS_Context.CetCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : CET, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : CET, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : CetCharHdle = 0x%04X\n",ETS_Context.CetCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : CetCharHdle = 0x%04X\n",ETS_Context.CetCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -395,11 +395,11 @@ tBleStatus ETS_UpdateValue(ETS_CharOpcode_t CharOpcode, ETS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value CET command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value CET command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value CET command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value CET command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 

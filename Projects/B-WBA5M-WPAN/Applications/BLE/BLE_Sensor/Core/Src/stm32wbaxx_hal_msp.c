@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -207,7 +207,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
     /** Initializes the peripherals clock
     */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C3;
-    PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_HSI;
+    PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK7;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
     {
       Error_Handler();

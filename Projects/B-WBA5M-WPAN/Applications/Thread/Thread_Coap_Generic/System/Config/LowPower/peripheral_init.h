@@ -21,11 +21,13 @@
 #ifndef PERIPHERAL_INIT_H
 #define PERIPHERAL_INIT_H
 
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /**
   * @brief  Configure the SoC peripherals at Standby mode exit.
   * @param  None
   * @retval None
   */
 void MX_StandbyExit_PeripheralInit(void);
+#endif
 
 #endif /* PERIPHERAL_INIT_H */

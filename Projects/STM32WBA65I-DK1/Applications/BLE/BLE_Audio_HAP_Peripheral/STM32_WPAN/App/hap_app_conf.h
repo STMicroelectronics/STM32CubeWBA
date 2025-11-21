@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    hap_app_conf.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HAP_APP_CONF_H
@@ -37,7 +35,6 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 /*Audio Profiles Roles configuration*/
 #define APP_HAP_ROLE                                    (HAP_ROLE_HEARING_AID)
 #define APP_CAP_ROLE                                    (CAP_ROLE_ACCEPTOR)
@@ -197,7 +194,6 @@ extern "C" {
 
 #define MAX_USR_METADATA_SIZE                   (10u)   /* Maximum size of the Metadata for each Audio Stream Endpoint supported by Unicast Server */
 
-
 /**
 * Audio Contexts Settings
 */
@@ -272,7 +268,6 @@ extern "C" {
  */
 #define APP_HAP_NUM_PRESETS                             (4u)
 
-
 /**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
@@ -301,7 +296,6 @@ extern "C" {
 #define BLE_APP_CAP_ACC_NUM_GATT_SERVICES               CAP_ACC_COM_NUM_GATT_SERVICES
 #define BLE_APP_HAP_NUM_GATT_SERVICES                   HAP_HA_NUM_GATT_SERVICES
 
-
 #define BLE_APP_NUM_GATT_SERVICES                       (BLE_HOST_NUM_GATT_SERVICES \
                                                         + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_ASCS_SRV_NUM_GATT_SERVICES \
@@ -310,6 +304,7 @@ extern "C" {
                                                         + BLE_APP_CAP_ACC_NUM_GATT_SERVICES \
                                                         + BLE_APP_CSIP_SET_MEMBER_NUM_GATT_SERVICES \
                                                         + BLE_APP_HAP_NUM_GATT_SERVICES)
+
 /**
  * Maximum number of Attributes
  */
@@ -340,7 +335,6 @@ extern "C" {
 #endif /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)*/
 
 #define BLE_APP_HAP_NUM_GATT_ATTRIBUTES                 HAP_HA_NUM_GATT_ATTRIBUTES
-
 
 #define BLE_APP_NUM_GATT_ATTRIBUTES                     (BLE_HOST_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
@@ -414,7 +408,6 @@ extern "C" {
                                                           + BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE \
                                                           + BLE_APP_HAP_ATT_VALUE_ARRAY_SIZE)
 
-
 /**
  * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
  */
@@ -438,7 +431,6 @@ extern "C" {
 #define BLE_CCP_CLT_NVM_ALLOC_SIZE              (0u)
 #endif /*(APP_CCP_ROLE_CLIENT_SUPPORT == 1u)*/
 
-
 #if (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)
 /*Memory size required to store all devices in NVM for CSIP in Set Member role*/
 #define BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE      BLE_CSIP_SET_MEMBER_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
@@ -451,7 +443,9 @@ extern "C" {
                                                 + BLE_CCP_CLT_NVM_ALLOC_SIZE + BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,HAP_HA_GATT_DATABASE_SIZE) \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,GATTSERVICE_GATT_DATABASE_SIZE))
+
 /* Exported types ------------------------------------------------------------*/
+
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/

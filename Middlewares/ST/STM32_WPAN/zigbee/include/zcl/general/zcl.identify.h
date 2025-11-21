@@ -4,7 +4,7 @@
  * @brief ZCL Identify cluster header
  * ZCL 7 section 3.5
  * ZCL 8 section 3.5
- * @copyright Copyright [2009 - 2024] Exegin Technologies Limited. All rights reserved.
+ * @copyright Copyright [2009 - 2025] Exegin Technologies Limited. All rights reserved.
  */
 
 #ifndef ZCL_CORE_IDENTIFY_H
@@ -138,7 +138,7 @@ struct ZbZclClusterT * ZbZclIdentifyClientAlloc(struct ZigBeeT *zb, uint8_t endp
  * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
-enum ZclStatusCodeT zcl_identify_cli_identify_req(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
+enum ZclStatusCodeT ZbZclIdentifyClientIdentifyReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
     uint16_t identify_time, void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
 
 /**
@@ -149,11 +149,35 @@ enum ZclStatusCodeT zcl_identify_cli_identify_req(struct ZbZclClusterT *cluster,
  * @param arg Pointer to application data that will included in the callback when invoked.
  * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
  */
-enum ZclStatusCodeT zcl_identify_cli_query_req(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
+enum ZclStatusCodeT ZbZclIdentifyClientQueryReq(struct ZbZclClusterT *cluster, const struct ZbApsAddrT *dst,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
 
-enum ZclStatusCodeT zcl_identify_cli_trigger_effect_req(struct ZbZclClusterT *cluster,
+/**
+ * Send a Trigger Effect command
+ * @param cluster Cluster instance from which to send this command
+ * @param dst Destination address for request
+ * @param info Pointer to the Trigger Effect command structure
+ * @param callback Callback function that will be invoked when the response is received.
+ * @param arg Pointer to application data that will included in the callback when invoked.
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclIdentifyClientTriggerEffectReq(struct ZbZclClusterT *cluster,
     const struct ZbApsAddrT *dst, struct ZbZclIdentifyClientTriggerEffectT *info,
     void (*callback)(struct ZbZclCommandRspT *rsp, void *arg), void *arg);
+
+/**
+ * Helper function to send an Identify command to the local device (via loopback).
+ * Similar to ZbZclIdentifyServerSetTime, but used in cases where the Server Cluster
+ * instance is not known.
+ * @param cluster Cluster instance from which to send this command
+ * @param dst_ep The local endpoint of the ZCL Identify Server cluster
+ * @return ZCL_STATUS_SUCCESS if successful, or other ZclStatusCodeT value on error
+ */
+enum ZclStatusCodeT ZbZclIdentifyClientSendLocal(struct ZbZclClusterT *cluster,
+    uint8_t dst_ep, uint16_t identify_time);
+
+#define zcl_identify_cli_identify_req ZbZclIdentifyClientIdentifyReq
+#define zcl_identify_cli_query_req ZbZclIdentifyClientQueryReq
+#define zcl_identify_cli_trigger_effect_req ZbZclIdentifyClientTriggerEffectReq
 
 #endif

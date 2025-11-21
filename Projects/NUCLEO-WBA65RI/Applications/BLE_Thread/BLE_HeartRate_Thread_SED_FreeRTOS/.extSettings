@@ -1,0 +1,11 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;
+
+[Others]
+
+Define=PHY_40nm_3_00_a;
+
+[Groups]
+Doc=../README.md;
+Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;

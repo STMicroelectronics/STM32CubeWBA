@@ -1,10 +1,9 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca01/firmware/public_inc/ll_fw_config.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/ll_fw_config.h#1 $*/
 /**
  ********************************************************************************
  * @file    ll_fw_config.h
  * @brief   This file contains the major configurations to the BLE controller.
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
@@ -200,9 +199,18 @@
 #define FFD_DEVICE_CONFIG                           0 /* Enable\Disable FFD:1 - RFD:0 */
 #endif
 
+#ifdef SUPPORT_AUG_MAC_HCI_UART
 #ifndef RAL_NUMBER_OF_INSTANCE
-#define RAL_NUMBER_OF_INSTANCE                      1 /* The Number of RAL instances supported */
+#define RAL_NUMBER_OF_INSTANCE						2 /* The Number of RAL instances supported */
 #endif /* RAL_NUMBER_OF_INSTANCE */
+ 
+#else
+#ifndef RAL_NUMBER_OF_INSTANCE
+#define RAL_NUMBER_OF_INSTANCE						1 /* The Number of RAL instances supported */
+#endif /* RAL_NUMBER_OF_INSTANCE */
+ 
+#endif
+
 
 #ifndef MAX_NUMBER_OF_INDIRECT_DATA
 #define MAX_NUMBER_OF_INDIRECT_DATA                 10 /* The maximum number of supported indirect data buffers */
@@ -219,7 +227,11 @@
 #ifndef RADIO_CSMA
 #define RADIO_CSMA                                  1 /* Enable\Disable CSMA Algorithm in Radio Layer, Must be Enabled if MAC_LAYER_BUILD */
 #endif /* RADIO_CSMA */
-
+ 
+#ifndef ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY
+#define ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY		1 /* Enable\Disable RX WITH CSMA Feature */
+#endif /* ENHANCED_RX_WHILE_CSMA_BACKOFF_DELAY */
+ 
 #ifndef SUPPORT_ANT_DIV
 #define SUPPORT_ANT_DIV                             1 /* Enable/Disable Antenna Diversity Feature */
 #endif /* SUPPORT_ANT_DIV */

@@ -47,8 +47,10 @@ static void cli_port_print_msg(const char *pMessage);
 static void cli_port_print_prompt(bool bSendCr);
 static void APP_ZIGBEE_App_Task(void);
 static void APP_ZIGBEE_ActivateStatusDebug(void);
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 static const char * ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship);
 static const char * ZbNwkNeighborDeviceTypeToStr(enum ZbNwkNeighborTypeT deviceType);
+#endif
 static void cli_log_zigbee_callback(struct ZigBeeT *zb, uint32_t mask, const char *hdr, const char *fmt, va_list argp);
 /**
  * @brief   Reception of UART data until a CR occurs.
@@ -257,6 +259,7 @@ static void cli_port_print_prompt(bool bSendCr)
 
 
 /* For printing keys, etc */
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 static unsigned int
 app_hex_bin_to_str(const uint8_t *in_data, unsigned int in_len, char *out_str, unsigned int max_len,
     const char delimiter, unsigned int interval)
@@ -286,7 +289,8 @@ app_hex_bin_to_str(const uint8_t *in_data, unsigned int in_len, char *out_str, u
     out_str[j] = (char)0;
     return j;
 }
-
+#endif // TEMP_PATCH_LOG64_ISSUE_CUBEIDE
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 static const char *
 ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship)
 {
@@ -332,7 +336,8 @@ ZbNwkNeighborRelationshipToStr(enum ZbNwkNeighborRelT relationship)
     }
     return (str);
 }
-
+#endif // TEMP_PATCH_LOG64_ISSUE_CUBEIDE
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 static const char *
 ZbNwkNeighborDeviceTypeToStr(enum ZbNwkNeighborTypeT deviceType)
 {
@@ -357,10 +362,11 @@ ZbNwkNeighborDeviceTypeToStr(enum ZbNwkNeighborTypeT deviceType)
     }
     return (str);
 }
-
+#endif //TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 void cli_status_zdo(void)
 {
-    uint8_t capability = 0;
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
+	uint8_t capability = 0;
     uint8_t coordinator = 0;
     uint8_t nwkSecurityLevel = ZB_SEC_LEVEL_NONE;
     uint64_t tcAddr;
@@ -401,7 +407,8 @@ void cli_status_zdo(void)
     else {
         LOG_INFO_APP(CLI_FMTS, "Trust Center Type", "Centralized");
         /* Print the TC address */
-        snprintf(cli_temp, CLI_OUTPUT_LINE_MAX_LEN, LOGFMTx64, LOGVALx64(tcAddr));
+        snprintf(cli_temp, CLI_OUTPUT_LINE_MAX_LEN, LOGFMTx64,
+                 (unsigned int)(tcAddr >> 32U), (unsigned int)tcAddr);
         LOG_INFO_APP(CLI_FMTS, "Trust Center Address", cli_temp);
     }
 
@@ -409,6 +416,7 @@ void cli_status_zdo(void)
     LOG_INFO_APP(CLI_FMTD, "Zigbee Heap Avail", heap_sz);
 
     LOG_INFO_APP("");
+#endif // TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 }
 
 void cli_print_aps_channel_mask(void)
@@ -513,11 +521,12 @@ void cli_status_nwk(void)
 
 void cli_status_nnt(void)
 {
-    struct ZbNwkNeighborT neighbor;
+
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
+	struct ZbNwkNeighborT neighbor;
     uint64_t epid;
     unsigned int tempLen, i;
     unsigned int nnt_index = 0;
-
     epid = 0;
     (void)ZbNwkGet(stZigbeeAppInfo.pstZigbee, ZB_NWK_NIB_ID_ExtendedPanId, &epid, sizeof(uint64_t));
 
@@ -561,7 +570,9 @@ void cli_status_nnt(void)
         /* EXTADDR */
         if (neighbor.extAddr != 0U) {
             tempLen += snprintf(&cli_temp[tempLen], CLI_OUTPUT_LINE_MAX_LEN - tempLen,
-                    LOGFMTx64 "     ", LOGVALx64(neighbor.extAddr));
+                                LOGFMTx64 "     ",
+                                (unsigned int)(neighbor.extAddr >> 32U),
+                                (unsigned int)(neighbor.extAddr));
         }
         else {
             tempLen += snprintf(&cli_temp[tempLen], CLI_OUTPUT_LINE_MAX_LEN - tempLen,
@@ -606,11 +617,14 @@ void cli_status_nnt(void)
     }
 
     LOG_INFO_APP("");
+#endif //TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 }
 
 void cli_security_dump(void)
 {
-    uint8_t keySeqNumber;
+#ifndef TEMP_PATCH_LOG64_ISSUE_CUBEIDE
+
+	uint8_t keySeqNumber;
     char key_str[ZB_SEC_KEYSTR_SIZE];
     struct ZbNwkSecMaterialT secMaterial;
     uint8_t preconf[ZB_SEC_KEYSIZE];
@@ -642,7 +656,9 @@ void cli_security_dump(void)
         if (keypair.deviceAddress == 0) {
             continue;
         }
-        sprintf(addr_str, LOGFMTx64 " Key", LOGVALx64(keypair.deviceAddress));
+        sprintf(addr_str, LOGFMTx64 " Key",
+                (unsigned int)(keypair.deviceAddress >> 32U),
+                (unsigned int)(keypair.deviceAddress));;
 
         /* Print keyAttribute? ZB_APSME_KEY_ATTR_UNVERIFIED,
          * ZB_APSME_KEY_ATTR_VERIFIED, ZB_APSME_KEY_ATTR_CBKE */
@@ -651,4 +667,5 @@ void cli_security_dump(void)
     }
 
     LOG_INFO_APP("");
+#endif //TEMP_PATCH_LOG64_ISSUE_CUBEIDE
 }

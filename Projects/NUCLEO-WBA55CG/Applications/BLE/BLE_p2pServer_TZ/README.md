@@ -18,8 +18,6 @@ With the following Option bytes configuration :
 TZEN = 1  
 SECBOOTADD0 = 0x180000  
 SECWM1_PSTRT = 0x0  
-SECWM1_PEND = 0x7F  
-SECWM2_PSTRT = 0x7F  
-SECWM2_PEND = 0x0  
+SECWM1_PEND = 0x3F
 
 For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Bluetooth LE Peer 2 Peer Applications ST wiki.</a>  

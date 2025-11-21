@@ -33,6 +33,7 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
@@ -175,7 +176,7 @@ static const struct MenuButtonsT stMenuButtonList[] =
 /* Private function prototypes -----------------------------------------------*/
 
 /* Thermostat Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_ThermostatServerGetRelayStatusLogCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_ThermostatServerGetRelayStatusLogCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclThermServerCallbacksT stThermostatServerCallbacks =
 {
@@ -257,10 +258,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 

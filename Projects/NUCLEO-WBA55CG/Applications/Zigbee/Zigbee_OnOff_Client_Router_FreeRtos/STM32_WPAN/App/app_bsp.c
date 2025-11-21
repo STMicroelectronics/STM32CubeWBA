@@ -358,18 +358,18 @@ void APP_BSP_PostIdle( void )
 #if (CFG_JOYSTICK_SUPPORTED == 1)
   /* Treatment of WakeUp Joystick */
 #ifdef STM32WBA65xx
-  if ( ( PWR->WUSR & PWR_WAKEUP_PIN5 ) != 0 ) 
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN5 ) != 0 )
   {
     PWR->WUSCR = PWR_WAKEUP_PIN5;
     APP_BSP_JoystickTimerCallback(NULL);
   }
 #else // STM32WBA65xx
-  if ( ( PWR->WUSR & PWR_WAKEUP_PIN3 ) != 0 ) 
+  if ( ( PWR->WUSR & PWR_WAKEUP_PIN3 ) != 0 )
   {
     PWR->WUSCR = PWR_WAKEUP_PIN3;
     APP_BSP_JoystickTimerCallback(NULL);
   }
-#endif // STM32WBA65xx  
+#endif // STM32WBA65xx
 #endif /* CFG_JOYSTICK_SUPPORTED */
 #endif /* (CFG_LPM_STDBY_SUPPORTED != 0) */
 }
@@ -399,7 +399,7 @@ void APP_BSP_StandbyExit( void )
 
 #endif /* CFG_BSP_ON_DISCOVERY */
 #endif /* (CFG_JOYSTICK_SUPPORTED == 1) */
-  
+
 #if (CFG_BUTTON_SUPPORTED == 1)
 #ifdef CFG_BSP_ON_CEB
   /* Button HW Initialization */
@@ -663,7 +663,7 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
     case JOY_SEL:
         osSemaphoreRelease( JoystickSelectSemaphore );
         break;
-        
+
     case JOY_NONE:
         osSemaphoreRelease( JoystickNoneSemaphore );
         break;
@@ -713,7 +713,7 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
     case JOY_SEL:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_SELECT, CFG_SEQ_PRIO_0 );
         break;
-        
+
     case JOY_NONE:
         UTIL_SEQ_SetTask( 1U << CFG_TASK_BSP_JOY_NONE, CFG_SEQ_PRIO_0 );
         break;
@@ -787,9 +787,9 @@ static void APP_BSP_JoystickSampleManage( void )
 
   /* Init, Start, Sample & DeInit Joystick */
   BSP_JOY_Init( JOY1, JOY_MODE_POLLING, JOY_ALL );
-  
+
   HAL_ADC_Start( &hjoy_adc[JOY1] );
-  
+
   /* Wait first conversion */
   if ( HAL_ADC_PollForConversion( &hjoy_adc[JOY1], ( JOYSTICK_PRESS_SAMPLE_MS / 2u ) ) == HAL_OK )
   {
@@ -866,7 +866,7 @@ static void APP_BSP_JoystickSampleManage( void )
   {
     BSP_JOY_DeInit(JOY1, JOY_ALL);
   }
-  
+
   /* Restart Timer if needed */
 #if (CFG_LPM_STDBY_SUPPORTED != 0)
   if ( eJoystickState != JOY_NONE )
@@ -1017,7 +1017,7 @@ static void Joystick_InitTask( void )
   /* Register Semaphore & Task for the Joystick Sample Management Semaphore */
   JoystickSampleSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickSampleThread = osThreadNew( JoystickSampleTask, NULL, &JoystickSampleThreadAttributes );
-  
+
   /* Register Semaphore & Task for the Joystick Up Semaphore */
   JoystickUpSemaphore = osSemaphoreNew( 1, 0, NULL );
   JoystickUpThread = osThreadNew( JoystickUpTask, NULL, &JoystickUpThreadAttributes );
@@ -1189,7 +1189,7 @@ static void Joystick_InitTask( void )
                                       TASK_STACK_SIZE_JOYSTICK_SAMPLE, TASK_PRIO_JOYSTICK_SAMPLE, TASK_PREEMP_JOYSTICK_SAMPLE,
                                       TX_NO_TIME_SLICE, TX_AUTO_START );
   }
-  
+
   /* Register Semaphore to launch the Joystick Up Task */
   ThreadXStatus = tx_semaphore_create( &JoystickUpSemaphore, "JoystickUp Semaphore", 0 );
   ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_UP, TX_NO_WAIT);
@@ -1264,7 +1264,7 @@ static void Joystick_InitTask( void )
                                         TX_NO_TIME_SLICE, TX_AUTO_START );
     }
   }
-  
+
   /* Verify if it's OK */
   if ( ThreadXStatus != TX_SUCCESS )
   {
@@ -1283,7 +1283,7 @@ static void Joystick_InitTask( void)
 {
   /* Stask to Sample management */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_SAMPLE, UTIL_SEQ_RFU, APP_BSP_JoystickSampleManage );
-  
+
   /* Task associated with Joystick */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_UP, UTIL_SEQ_RFU, APP_BSP_JoystickUpAction );
   UTIL_SEQ_RegTask( 1U << CFG_TASK_BSP_JOY_RIGHT, UTIL_SEQ_RFU, APP_BSP_JoystickRightAction );
@@ -1311,7 +1311,7 @@ void APP_BSP_JoystickInit( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_1);     /* JOY-PA3 */
 #else // STM32WBA65xx
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);     /* JOY-PA1. */
-#endif // STM32WBA65xx  
+#endif // STM32WBA65xx
 #endif /* (CFG_LPM_STDBY_SUPPORTED != 0) */
 
   /* Create periodic timer for joystick position reading */
@@ -1544,10 +1544,10 @@ void APP_BSP_ButtonInit( void )
   /* StandBy WakeUp via buttons */
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);   /* WakeUp on B1 - GPIO PC13. */
 #ifdef STM32WBA65xx
-  SET_BIT(PWR->IORETENRC, ( B1_PIN | B2_PIN ) );    /* Retention for B1 & B2 */       
+  SET_BIT(PWR->IORETENRC, ( B1_PIN | B2_PIN ) );    /* Retention for B1 & B2 */
   SET_BIT(PWR->IORETENRB, B3_PIN);                  /* Retention for B3 */
 #else /* STM32WBA65xx */
-  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */       
+  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */
   SET_BIT(PWR->IORETENRB, ( B2_PIN | B3_PIN ) );    /* Retention for B2 & B3 */
 #endif /* STM32WBA65xx  */
 #endif /* (CFG_LPM_STDBY_SUPPORTED != 0)   */

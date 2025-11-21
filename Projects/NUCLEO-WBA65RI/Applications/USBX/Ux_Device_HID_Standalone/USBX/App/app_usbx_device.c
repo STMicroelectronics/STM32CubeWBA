@@ -76,7 +76,6 @@ UINT MX_USBX_Device_Init(VOID)
   }
 
   /* USER CODE BEGIN MX_USBX_Device_Init 1 */
-  HAL_Delay(20);
   USBX_APP_Device_Init();
   /* USER CODE END MX_USBX_Device_Init 1 */
 

@@ -609,7 +609,7 @@ extern "C" {
 #define GPIO_DEBUG_LLHWC_GET_CH_IDX_ALGO_2                    {GPIOA, LL_PWR_GPIO_PIN_0}
 
 #define USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP                     (0)
-#define GPIO_DEBUG_BACK_FROM_DEEP_SLEEP                       {GPIOA, LL_PWR_GPIO_PIN_0}  
+#define GPIO_DEBUG_BACK_FROM_DEEP_SLEEP                       {GPIOA, LL_PWR_GPIO_PIN_0}
 
 /* Application signal selection and GPIO assignment.
    CAN BE MODIFIED BY USER */

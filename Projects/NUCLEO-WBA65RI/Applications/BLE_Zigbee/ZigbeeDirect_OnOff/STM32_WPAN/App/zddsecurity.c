@@ -73,9 +73,9 @@ typedef struct{
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-static const uint16_t SizeSecurity25519Aes = 60;
-static const uint16_t SizeSecurity25519Sha = 60;
-static const uint16_t SizeP256Sha = 60;
+static const uint16_t SizeSecurity25519Aes = 90;
+static const uint16_t SizeSecurity25519Sha = 90;
+static const uint16_t SizeP256Sha = 90;
 
 static ZDDSECURITY_Context_t ZDDSECURITY_Context;
 

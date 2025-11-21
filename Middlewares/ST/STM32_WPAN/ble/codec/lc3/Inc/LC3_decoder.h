@@ -28,7 +28,7 @@
 #define LC3_DECODER_STRUCT_SIZE_24kHz    (4412u)
 #define LC3_DECODER_STRUCT_SIZE_48kHz    (8340u)
 
-#define LC3_DECODER_STACK_SIZE_24kHz     (1980u)
+#define LC3_DECODER_STACK_SIZE_24kHz     (1988u)
 #define LC3_DECODER_STACK_SIZE_48kHz     (3900u)
 
 /* Exported functions ------------------------------------------------------- */

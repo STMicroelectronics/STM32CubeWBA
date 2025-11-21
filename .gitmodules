@@ -54,3 +54,11 @@
 	path = Drivers/BSP/Components/sht40ad1b
 	url = https://github.com/STMicroelectronics/stm32-sht40ad1b
 	branch = main
+[submodule "Drivers/BSP/STM32WBA65I-DK1"]
+	path = Drivers/BSP/STM32WBA65I-DK1
+	url = https://github.com/STMicroelectronics/stm32wba65ri-dk1-bsp
+	branch = main
+[submodule "Drivers/BSP/B-WBA6M-WPAN"]
+	path = Drivers/BSP/B-WBA6M-WPAN
+	url = https://github.com/STMicroelectronics/b-wba6m-wpan-bsp.git
+	branch = main

@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    pbp_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __PBP_APP_H
@@ -28,8 +26,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_hal.h"
-#include "cap.h"
 #include "pbp_app_conf.h"
+#include "cap.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -90,13 +88,13 @@ typedef struct
 {
   BAP_Role_t                    bap_role;
   BAP_BASE_Group_t              base_group;
-  BAP_BASE_Subgroup_t           base_subgroups[1];
+  BAP_BASE_Subgroup_t           base_subgroups[PBP_MAX_SUBGROUPS];
   BAP_BASE_BIS_t                base_bis[PBP_MAX_BIS];
-  uint8_t                       codec_specific_config_bis[PBP_MAX_BIS][0x06];
-  uint8_t                       codec_specific_config_subgroup[PBP_MAX_BIS][0x13];
+  uint8_t                       codec_specific_config_bis[PBP_MAX_BIS][MAX_BIS_CODEC_SPECIFIC_CONFIG_LEN];
+  uint8_t                       codec_specific_config_subgroup[PBP_MAX_SUBGROUPS][MAX_SUBGROUP_CODEC_SPECIFIC_CONFIG_LEN];
   uint8_t                       RTN;
   uint16_t                      max_transport_latency;
-  uint8_t                       subgroup_metadata[1][MAX_METADATA_LEN];
+  uint8_t                       subgroup_metadata[PBP_MAX_SUBGROUPS][MAX_METADATA_LEN];
   Target_Phy_t                  phy;
   uint8_t                       encryption;
   uint32_t                      broadcast_code[4u];
@@ -120,6 +118,7 @@ typedef struct
   * @retval Status of the operation
   */
 tBleStatus APP_AUDIO_STACK_Init(void);
+
 /**
   * @brief Initialize PBP Source and Start Broadcast Audio Procedure.
   */

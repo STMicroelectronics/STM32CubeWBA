@@ -132,16 +132,16 @@ static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * 
 {
   bool save_payload = FALSE;
 
-  if (p_RX_evt->rx_status == RX_SUCCESS)
+  if (p_RX_evt->rx_status == ST_RX_SUCCESS)
   {
     cli_rx_result.packets_received++;
     save_payload = TRUE;
   }
-  else if (p_RX_evt->rx_status == RX_REJECTED)
+  else if (p_RX_evt->rx_status == ST_RX_REJECTED)
   {
     cli_rx_result.packets_rejected++;
   }
-  else if (p_RX_evt->rx_status == RX_FILTERED)
+  else if (p_RX_evt->rx_status == ST_RX_FILTERED)
   {
     cli_rx_result.packets_filtered++;
   }
@@ -173,15 +173,15 @@ static void app_cli_ex_single_RX_callback( const ST_MAC_raw_single_RX_event_t * 
 
 static void app_cli_ex_single_TX_callback( const ST_MAC_raw_single_TX_event_t * p_TX_evt)
 {
-  if (p_TX_evt->tx_status == TX_SUCCESS)
+  if (p_TX_evt->tx_status == ST_TX_SUCCESS)
   {
     cli_tx_result.frames_success++;
   }
-  else if (p_TX_evt->tx_status == TX_ACK_TIMEOUT)
+  else if (p_TX_evt->tx_status == ST_TX_ACK_TIMEOUT)
   {
     cli_tx_result.frames_noack++;
   }
-  else if (p_TX_evt->tx_status == TX_FAILED)
+  else if (p_TX_evt->tx_status == ST_TX_FAILED)
   {
     cli_tx_result.frames_failed++;
   }
@@ -268,7 +268,7 @@ void app_cli_ex_init(void)
   st_mac_cbks.p_TX_Done = &app_cli_ex_single_TX_callback;
   
   /* Radio & MAC Layer init */
-  MAC_Status_t mac_result = ST_MAC_raw_init(&st_mac_cbks, RAW_CONFIG);
+  MAC_Status_t mac_result = ST_MAC_raw_init(&st_mac_cbks, ST_RAW_CONFIG);
 
   if (mac_result != MAC_SUCCESS)
     /* abort init */

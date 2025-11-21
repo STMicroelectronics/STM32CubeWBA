@@ -23,8 +23,6 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-extern DMA_HandleTypeDef handle_GPDMA1_Channel6;
-
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 /* Private typedef -----------------------------------------------------------*/
@@ -261,10 +259,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     __HAL_RCC_USART1_CLK_ENABLE();
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
     /**USART1 GPIO Configuration
     PB12     ------> USART1_TX
-    PA8     ------> USART1_RX
     */
     GPIO_InitStruct.Pin = GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -273,41 +269,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_8;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
     /* USART1 DMA Init */
-    /* GPDMA1_REQUEST_USART1_RX Init */
-    handle_GPDMA1_Channel6.Instance = GPDMA1_Channel6;
-    handle_GPDMA1_Channel6.Init.Request = GPDMA1_REQUEST_USART1_RX;
-    handle_GPDMA1_Channel6.Init.BlkHWRequest = DMA_BREQ_SINGLE_BURST;
-    handle_GPDMA1_Channel6.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    handle_GPDMA1_Channel6.Init.SrcInc = DMA_SINC_FIXED;
-    handle_GPDMA1_Channel6.Init.DestInc = DMA_DINC_FIXED;
-    handle_GPDMA1_Channel6.Init.SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE;
-    handle_GPDMA1_Channel6.Init.DestDataWidth = DMA_DEST_DATAWIDTH_BYTE;
-    handle_GPDMA1_Channel6.Init.Priority = DMA_LOW_PRIORITY_LOW_WEIGHT;
-    handle_GPDMA1_Channel6.Init.SrcBurstLength = 1;
-    handle_GPDMA1_Channel6.Init.DestBurstLength = 1;
-    handle_GPDMA1_Channel6.Init.TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0|DMA_DEST_ALLOCATED_PORT0;
-    handle_GPDMA1_Channel6.Init.TransferEventMode = DMA_TCEM_BLOCK_TRANSFER;
-    handle_GPDMA1_Channel6.Init.Mode = DMA_NORMAL;
-    if (HAL_DMA_Init(&handle_GPDMA1_Channel6) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(huart, hdmarx, handle_GPDMA1_Channel6);
-
-    if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel6, DMA_CHANNEL_NPRIV) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
     /* GPDMA1_REQUEST_USART1_TX Init */
     handle_GPDMA1_Channel0.Instance = GPDMA1_Channel0;
     handle_GPDMA1_Channel0.Init.Request = GPDMA1_REQUEST_USART1_TX;
@@ -364,14 +326,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
     /**USART1 GPIO Configuration
     PB12     ------> USART1_TX
-    PA8     ------> USART1_RX
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12);
 
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8);
-
     /* USART1 DMA DeInit */
-    HAL_DMA_DeInit(huart->hdmarx);
     HAL_DMA_DeInit(huart->hdmatx);
 
     /* USART1 interrupt DeInit */

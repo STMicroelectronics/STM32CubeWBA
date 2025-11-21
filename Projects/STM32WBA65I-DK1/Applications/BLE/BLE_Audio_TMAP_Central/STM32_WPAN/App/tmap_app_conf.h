@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    tmap_app_conf.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __TMAP_APP_CONF_H
@@ -33,12 +31,11 @@ extern "C" {
 #include "mcp.h"
 #include "csip.h"
 #include "vcp.h"
-#include "tmap.h"
 #include "app_conf.h"
+#include "tmap.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 /*Audio Profiles Roles configuration*/
 #define APP_TMAP_ROLE                                   (TMAP_ROLE_CALL_GATEWAY \
                                                          | TMAP_ROLE_UNICAST_MEDIA_SENDER \
@@ -92,8 +89,8 @@ extern "C" {
 #define APP_DELAY_SNK_MAX                       (APP_DELAY_SNK_MIN + 0u)        /* No extra buffering of audio data*/
 
 /*Preferred Controller Delay in us*/
-#define PREFFERED_CONTROLLER_DELAY              (22000u)
-#define BROADCAST_PREFFERED_CONTROLLER_DELAY    (22000u)
+#define PREFFERED_CONTROLLER_DELAY              (20000u)
+#define BROADCAST_PREFFERED_CONTROLLER_DELAY    (20000u)
 
 /**
  * Maximum number of Links supported in Unicast Server
@@ -103,13 +100,12 @@ extern "C" {
 /**
  * Broadcast and Connects Isochronous Stream
  */
-#define MAX_NUM_CIG                             (1u)                    /* Maximum number of CIGes */
-#define MAX_NUM_CIS_PER_CIG                     (2u)                    /* Maximum number of CISes per CIG */
-#define MAX_NUM_BIG                             (1u)                    /* Maximum number of BIGes */
-#define MAX_NUM_BIS_PER_BIG                     (2u)                    /* Maximum number of BISes per BIG */
+#define MAX_NUM_CIG                             (1u)    /* Maximum number of CIGes */
+#define MAX_NUM_CIS_PER_CIG                     (2u)    /* Maximum number of CISes per CIG */
+#define MAX_NUM_BIG                             (1u)    /* Maximum number of BIGes */
+#define MAX_NUM_BIS_PER_BIG                     (2u)    /* Maximum number of BISes per BIG */
 #define APP_MAX_NUM_CIS                         (MAX_NUM_CIS_PER_CIG * MAX_NUM_CIG)
 #define APP_MAX_NUM_BIS                         (MAX_NUM_BIS_PER_BIG * MAX_NUM_BIG)
-
 
 /**
  * Basic Audio Profile Settings
@@ -209,8 +205,8 @@ extern "C" {
 #else
 #define APP_VCP_CTLR_NUM_AIC_INSTANCES                          (0u)
 #define APP_VCP_CTLR_NUM_VOC_INSTANCES                          (0u)
-
 #endif /* (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u) */
+
 /**
  * Coordinated Set Profile Settings
  */
@@ -243,12 +239,12 @@ extern "C" {
 
 #define BLE_APP_TMAP_NUM_GATT_SERVICES          TMAP_NUM_GATT_SERVICES
 
-
 #define BLE_APP_NUM_GATT_SERVICES              (BLE_HOST_NUM_GATT_SERVICES \
                                                + BLE_APP_CCP_SRV_NUM_GATT_SERVICES \
                                                + BLE_APP_MCP_SRV_NUM_GATT_SERVICES \
                                                + BLE_APP_CAP_COM_NUM_GATT_SERVICES \
                                                + BLE_APP_TMAP_NUM_GATT_SERVICES)
+
 /**
  * Maximum number of Attributes
  */
@@ -313,11 +309,9 @@ extern "C" {
                                                 + BLE_APP_MCP_SRV_ATT_VALUE_ARRAY_SIZE \
                                                 + TMAP_ATT_VALUE_ARRAY_SIZE)
 
-
 /**
  * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
  */
-
 /*Memory size required to store all devices in NVM for ASCS Client role*/
 #define BAP_ASCS_CLT_NVM_ALLOC_SIZE             BAP_ASCS_CLT_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,\
                                                                             MAX_NUM_UCL_SNK_ASE_PER_LINK,\
@@ -347,7 +341,6 @@ extern "C" {
 /*Memory size required to store all devices in NVM for TMAP in Client  role*/
 #define BLE_TMAP_CLT_NVM_ALLOC_SIZE             BLE_TMAP_CLT_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES)
 
-
 #define BLE_APP_AUDIO_NVM_ALLOC_SIZE            (BAP_ASCS_CLT_NVM_ALLOC_SIZE + BAP_PACS_CLT_NVM_ALLOC_SIZE \
                                                 + BLE_VCP_CTLR_NVM_ALLOC_SIZE + BLE_CSIP_SET_COORDINATOR_NVM_ALLOC_SIZE \
                                                 + BLE_TMAP_CLT_NVM_ALLOC_SIZE)
@@ -356,11 +349,12 @@ extern "C" {
 
 /* External variables --------------------------------------------------------*/
 
-/* Exported macros ------------------------------------------------------------*/
+/* Exported macros -----------------------------------------------------------*/
 
-/* Exported functions ---------------------------------------------*/
+/* Exported functions --------------------------------------------------------*/
+
 #ifdef __cplusplus
 }
 #endif
-#endif /* __TMAP_APP_CONF_H */
 
+#endif /*__TMAP_APP_CONF_H */

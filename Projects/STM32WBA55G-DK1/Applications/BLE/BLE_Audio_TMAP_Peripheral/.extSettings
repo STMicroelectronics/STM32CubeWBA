@@ -1,8 +1,6 @@
 [ProjectFiles]
 HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA55G-DK1;..\..\..\..\..\..\Drivers\BSP\Components\Common;..\..\..\..\..\..\Drivers\BSP\Components\cs42l51;..\..\..\..\..\..\Drivers\BSP\Components\ssd1315;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\audio\Inc;../../../../../../Middlewares\ST\STM32_WPAN\ble\codec\lc3\Inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\codec\codec_manager\Inc;../STM32_WPAN/App/AudioUseCases;../Core/Src/lcd;../../../../../../Utilities/LCD;../STM32_WPAN/App/AudioUseCases/tmap;
 
-[Others]
-
 [Groups]
 Doc=../README.md;
 Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_audio.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_bus.c;../../../../../../Drivers/BSP/STM32WBA55G-DK1/stm32wba55g_discovery_lcd.c;
@@ -12,6 +10,7 @@ Application/User/Core=../Core/Src/image.c;
 Application/User/STM32_WPAN/Target=../STM32_WPAN/Target/ble_audio_plat.c;../STM32_WPAN/Target/ble_audio_if.c;../STM32_WPAN/Target/ble_codec.c;../STM32_WPAN/Target/codec_if.c;
 Middlewares/STM32_WPAN=../../../../../../Middlewares\ST\STM32_WPAN\ble\audio\lib\ble_audio.a;
 Middlewares/STM32_WPAN/codec=../../../../../../Middlewares\ST\STM32_WPAN\ble\codec\codec_manager\Lib\codec_mngr.a;../../../../../../Middlewares\ST\STM32_WPAN\ble\codec\lc3\Lib\LC3.a;
-Application/User/STM32_WPAN/App=../STM32_WPAN/App/tmap_app.c;../STM32_WPAN/App/app_menu.c;../STM32_WPAN/App/app_menu_cfg.c;../STM32_WPAN/App/app_bsp.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/tmap_app.c;../STM32_WPAN/App/app_menu.c;../STM32_WPAN/App/app_menu_cfg.c;
 Application/User/STM32_WPAN/App/AudioUseCases=../STM32_WPAN/App/AudioUseCases/usecase_dev_mgmt.c
 Application/User/STM32_WPAN/App/AudioUseCases/tmap=../STM32_WPAN/App/AudioUseCases/tmap/tmap.c;../STM32_WPAN/App/AudioUseCases/tmap/tmap_alloc.c;../STM32_WPAN/App/AudioUseCases/tmap/tmap_db.c;../STM32_WPAN/App/AudioUseCases/tmap/tmas.c;
+Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;

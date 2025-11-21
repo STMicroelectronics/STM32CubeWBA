@@ -269,11 +269,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_msp.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/stm32wbaxx_hal_timebase_tim.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_hal_timebase_tim.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/Core/stm32wbaxx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>

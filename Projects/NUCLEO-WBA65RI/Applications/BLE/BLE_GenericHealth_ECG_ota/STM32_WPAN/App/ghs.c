@@ -388,24 +388,24 @@ static SVCCTL_EvtAckStatus_t GHS_EventHandler(void *p_Event)
             error_code = GHS_CP_CheckRequestValid(p_write_perm_req->Data, p_write_perm_req->Data_Length);
             if (error_code == 0x00)
             {
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00,
-                                  0x00,
-                                  p_write_perm_req->Data_Length,
-                                  p_write_perm_req->Data);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x00,
+                                    0x00,
+                                    p_write_perm_req->Data_Length,
+                                    p_write_perm_req->Data);
           
               LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> PERMITTED\r\n");
               GHS_CP_RequestHandler(p_write_perm_req->Data, p_write_perm_req->Data_Length);
             }
             else 
             {
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x01,
-                                  error_code,
-                                  p_write_perm_req->Data_Length,
-                                  p_write_perm_req->Data);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x01,
+                                    error_code,
+                                    p_write_perm_req->Data_Length,
+                                    p_write_perm_req->Data);
               LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> NOT PERMITTED\r\n");
             }
 
@@ -436,21 +436,21 @@ static SVCCTL_EvtAckStatus_t GHS_EventHandler(void *p_Event)
                (measurement_period == UNSUPPORTED_MEASUREMENT_PERIOD) ||
                (update_interval == UNSUPPORTED_UPDATE_INTERVAL))
             {
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x01,
-                                  GHS_ATT_ERROR_CODE_OUT_OF_RANGE,
-                                  p_write_perm_req->Data_Length,
-                                  p_write_perm_req->Data);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x01,
+                                    GHS_ATT_ERROR_CODE_OUT_OF_RANGE,
+                                    p_write_perm_req->Data_Length,
+                                    p_write_perm_req->Data);
             }
             else
             {
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00,
-                                  0x00,
-                                  p_write_perm_req->Data_Length,
-                                  p_write_perm_req->Data);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x00,
+                                    0x00,
+                                    p_write_perm_req->Data_Length,
+                                    p_write_perm_req->Data);
             }
           }
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
@@ -578,11 +578,11 @@ void GHS_Init(void)
                              &(GHS_Context.GhsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: GHS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: GHS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: GhsSvcHdle = 0x%04X\n",GHS_Context.GhsSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: GhsSvcHdle = 0x%04X\n",GHS_Context.GhsSvcHdle);
   }
 
   /**
@@ -601,11 +601,11 @@ void GHS_Init(void)
                           &(GHS_Context.HsfCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HSF, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : HSF, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HsfCharHdle = 0x%04X\n",GHS_Context.HsfCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : HsfCharHdle = 0x%04X\n",GHS_Context.HsfCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -687,11 +687,11 @@ void GHS_Init(void)
                           &(GHS_Context.LhoCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : LHO, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : LHO, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : LhoCharHdle = 0x%04X\n",GHS_Context.LhoCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : LhoCharHdle = 0x%04X\n",GHS_Context.LhoCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -715,11 +715,11 @@ void GHS_Init(void)
                           &(GHS_Context.GhscpCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : GHSCP, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : GHSCP, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : GhscpCharHdle = 0x%04X\n",GHS_Context.GhscpCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : GhscpCharHdle = 0x%04X\n",GHS_Context.GhscpCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -743,11 +743,11 @@ void GHS_Init(void)
                           &(GHS_Context.OscCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : OSC, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : OSC, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : OscCharHdle = 0x%04X\n",GHS_Context.OscCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : OscCharHdle = 0x%04X\n",GHS_Context.OscCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char4 */
@@ -785,11 +785,11 @@ tBleStatus GHS_UpdateValue(GHS_CharOpcode_t CharOpcode, GHS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HSF command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value HSF command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HSF command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value HSF command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -804,11 +804,11 @@ tBleStatus GHS_UpdateValue(GHS_CharOpcode_t CharOpcode, GHS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value LHO command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value LHO command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value LHO command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value LHO command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -823,11 +823,11 @@ tBleStatus GHS_UpdateValue(GHS_CharOpcode_t CharOpcode, GHS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value GHSCP command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value GHSCP command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value GHSCP command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value GHSCP command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 
@@ -842,11 +842,11 @@ tBleStatus GHS_UpdateValue(GHS_CharOpcode_t CharOpcode, GHS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value OSC command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value OSC command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value OSC command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value OSC command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_4 */
 

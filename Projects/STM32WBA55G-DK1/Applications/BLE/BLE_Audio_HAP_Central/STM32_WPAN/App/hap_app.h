@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    hap_app.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HAP_APP_H
@@ -32,6 +30,7 @@ extern "C" {
 #include "hap_app_conf.h"
 #include "app_conf.h"
 #include "stm32_timer.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -302,53 +301,51 @@ typedef uint8_t HAPAPP_InitState_t;
 /*Structure used for ASE information storage*/
 typedef struct
 {
-  uint8_t               ID;
-  ASE_State_t           state;
-  ASE_Type_t            type;           /*Source or Sink*/
-  uint8_t               allocated;
-  uint8_t               num_channels;
-  uint32_t              presentation_delay;
-  uint32_t              controller_delay;
+  uint8_t                       ID;
+  ASE_State_t                   state;
+  ASE_Type_t                    type;           /*Source or Sink*/
+  uint8_t                       allocated;
+  uint8_t                       num_channels;
+  uint32_t                      presentation_delay;
+  uint32_t                      controller_delay;
 }APP_ASE_Info_t;
 
 typedef struct
 {
-  uint16_t              acl_conn_handle;
+  uint16_t                      acl_conn_handle;
 #if (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0)
-  APP_ASE_Info_t        aSnkASE[MAX_NUM_UCL_SNK_ASE_PER_LINK];
+  APP_ASE_Info_t                aSnkASE[MAX_NUM_UCL_SNK_ASE_PER_LINK];
 #endif /* (MAX_NUM_UCL_SNK_ASE_PER_LINK > 0) */
 #if (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0)
-  APP_ASE_Info_t        aSrcASE[MAX_NUM_UCL_SRC_ASE_PER_LINK];
+  APP_ASE_Info_t                aSrcASE[MAX_NUM_UCL_SRC_ASE_PER_LINK];
 #endif /* (MAX_NUM_UCL_SRC_ASE_PER_LINK > 0) */
 }APP_ASEs_t;
 
 #if (APP_CCP_ROLE_SERVER_SUPPORT == 1u)
 typedef struct
 {
-  uint8_t               CCID;
+  uint8_t                       CCID;
 }HAPAPP_Bearer_t;
 #endif /* (APP_CCP_ROLE_SERVER_SUPPORT == 1u) */
 
 /*Structure used for connection information strorage*/
 typedef struct
 {
-  uint16_t              Acl_Conn_Handle;
-  uint8_t               Peer_Address_Type;
-  uint8_t               Peer_Address[6];
-  uint8_t               Role;
-  audio_profile_t       AudioProfile;
-  uint8_t               CSIPDiscovered; /*Set to 1 if Set Member has been discovered (but not yet CAP linked)*/
-  uint8_t               SIRK_type;
-  uint8_t               SIRK[16];
-  uint8_t               Rank;
-  uint8_t               Size;
-  uint8_t               ForceCompleteLinkup;
-  uint8_t               ConfirmIndicationRequired;
-
-  BAP_Unicast_Server_Info_t UnicastServerInfo;
-  APP_ASEs_t            *pASEs;
-  uint8_t               active_preset;
-
+  uint16_t                      Acl_Conn_Handle;
+  uint8_t                       Peer_Address_Type;
+  uint8_t                       Peer_Address[6];
+  uint8_t                       Role;
+  audio_profile_t               AudioProfile;
+  uint8_t                       ConfirmIndicationRequired;
+  uint8_t                       ForceCompleteLinkup;
+  APP_ASEs_t                    *pASEs;
+  uint8_t                       CSIPDiscovered; /*Set to 1 if Set Member has been discovered (but not yet CAP linked)*/
+  uint8_t                       SIRK_type;
+  uint8_t                       SIRK[16];
+  uint8_t                       Rank;
+  uint8_t                       Size;
+  BAP_Unicast_Server_Info_t     UnicastServerInfo;
+  uint8_t                       active_preset;
 }APP_ACL_Conn_t;
 
 typedef struct
@@ -437,9 +434,6 @@ typedef struct
 /* External variables --------------------------------------------------------*/
 
 /* Exported macros ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
 
 /* Exported functions ---------------------------------------------*/
 tBleStatus APP_AUDIO_STACK_Init(void);
@@ -448,7 +442,6 @@ tBleStatus HAPAPP_Linkup(uint16_t ConnHandle);
 uint8_t HAPAPP_StartScanning(void);
 uint8_t HAPAPP_StopScanning(void);
 uint8_t HAPAPP_CreateConnection(uint8_t *pAddress, uint8_t AddressType);
-uint8_t HAPAPP_Disconnect(void);
 uint8_t HAPAPP_RemoteVolumeUp(void);
 uint8_t HAPAPP_RemoteVolumeDown(void);
 uint8_t HAPAPP_RemoteToggleMute(void);
@@ -456,6 +449,7 @@ void HAPAPP_LocalVolumeUp(void);
 void HAPAPP_LocalVolumeDown(void);
 void HAPAPP_LocalToggleMute(void);
 uint8_t HAPAPP_RemoteToggleMicMute(void);
+uint8_t HAPAPP_Disconnect(void);
 tBleStatus HAPAPP_NextPreset(void);
 tBleStatus HAPAPP_PreviousPreset(void);
 tBleStatus HAPAPP_SetActivePreset(uint16_t ConnHandle, uint8_t Index);
@@ -474,5 +468,5 @@ void HAPAPP_ClearDatabase(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* __HAP_APP_H */
 
+#endif /*__HAP_APP_H */

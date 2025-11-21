@@ -45,6 +45,7 @@
 									<listOptionValue builtIn="false" value="STM32"/>
 									<listOptionValue builtIn="false" value="STM32WBA"/>
 									<listOptionValue builtIn="false" value="STM32WBA65xx"/>
+									<listOptionValue builtIn="false" value="PHY_40nm_3_40_a"/>
 									<listOptionValue builtIn="false" value="STM32WBA65RIx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
@@ -186,6 +187,7 @@
 									<listOptionValue builtIn="false" value="STM32"/>
 									<listOptionValue builtIn="false" value="STM32WBA"/>
 									<listOptionValue builtIn="false" value="STM32WBA65xx"/>
+									<listOptionValue builtIn="false" value="PHY_40nm_3_40_a"/>
 									<listOptionValue builtIn="false" value="STM32WBA65RIx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -72,6 +72,9 @@ void HAL_MspInit(void)
   /* System interrupt init*/
 
   /* Peripheral interrupt init */
+  /* RCC_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(RCC_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(RCC_IRQn);
   /* RADIO_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(RADIO_IRQn, RADIO_INTR_PRIO_LOW, 0);
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
@@ -107,6 +110,9 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
 
     /* Peripheral clock enable */
     __HAL_RCC_RTCAPB_CLK_ENABLE();
+    /* RTC interrupt Init */
+    HAL_NVIC_SetPriority(RTC_IRQn, 4, 0);
+    HAL_NVIC_EnableIRQ(RTC_IRQn);
     /* USER CODE BEGIN RTC_MspInit 1 */
 
     /* USER CODE END RTC_MspInit 1 */
@@ -130,6 +136,9 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
     /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTCAPB_CLK_DISABLE();
+
+    /* RTC interrupt DeInit */
+    HAL_NVIC_DisableIRQ(RTC_IRQn);
     /* USER CODE BEGIN RTC_MspDeInit 1 */
 
     /* USER CODE END RTC_MspDeInit 1 */

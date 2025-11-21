@@ -21,6 +21,24 @@
 #include "stm32wbaxx_ll_rng.h"
 #include "RTDebug.h"
 
+/*****************************************************************************/
+
+extern void Error_Handler(void);
+
+/*****************************************************************************/
+
+__WEAK int RNG_MutexTake(void)
+{
+  return 0; /* This shall be implemented by user */
+}
+
+__WEAK int RNG_MutexRelease(void)
+{
+  return 0; /* This shall be implemented by user */
+}
+
+/*****************************************************************************/
+
 __weak void RNG_KERNEL_CLK_ON(void)
 {
   /* NOTE : This function should not be modified, when the callback is needed,
@@ -223,12 +241,22 @@ void HW_RNG_Start( void )
   pv->error = HW_OK;
   pv->clock_en = 0;
 
+  if (0 != RNG_MutexTake())
+  {
+	  Error_Handler();
+  }
+
   /* Fill the random numbers pool by calling the "run" function */
   do
   {
     pv->error = HW_RNG_Run( pv );
   }
   while ( pv->run && !pv->error );
+
+  if (0 != RNG_MutexRelease())
+  {
+    Error_Handler();
+  }
 }
 
 /*****************************************************************************/
@@ -268,29 +296,40 @@ int HW_RNG_Process( void )
   HW_RNG_VAR_T* pv = &HW_RNG_var;
   int status = HW_OK;
 
-  /* Check if the process is not done or if the pool is not full */
-  if (pv->size < hw_rng_pool_threshold)
+  if (0 != RNG_MutexTake())
   {
-    HW_RNG_Init();
-    
-    UTILS_ENTER_CRITICAL_SECTION( );
-
-    /* Check if an error occurred during a previous call to HW_RNG API */
-    status = pv->error;
-    pv->error = HW_OK;
-
-    UTILS_EXIT_CRITICAL_SECTION( );
-
-    if ( status == HW_OK )
+    status = HW_BUSY;
+  }  
+  else 
+  {
+    /* Check if the process is not done or if the pool is not full */
+    if (pv->size < hw_rng_pool_threshold)
     {
-      /* Call the "run" function that generates random data */
-      status = HW_RNG_Run( pv );
+      HW_RNG_Init();
+      UTILS_ENTER_CRITICAL_SECTION( );
 
-      /* If the process is not done, return "busy" status */
-      if ( (status == HW_OK) && pv->run )
+      /* Check if an error occurred during a previous call to HW_RNG API */
+      status = pv->error;
+      pv->error = HW_OK;
+
+      UTILS_EXIT_CRITICAL_SECTION( );
+
+      if ( status == HW_OK )
       {
-        status = HW_BUSY;
+        /* Call the "run" function that generates random data */
+        status = HW_RNG_Run( pv );
+
+        /* If the process is not done, return "busy" status */
+        if ( (status == HW_OK) && pv->run )
+        {
+          status = HW_BUSY;
+        }
       }
+    }
+    
+    if (0 != RNG_MutexRelease())
+    {
+      Error_Handler();
     }
   }
 

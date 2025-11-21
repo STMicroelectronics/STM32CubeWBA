@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    gmap_app_conf.h
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __GMAP_APP_CONF_H
@@ -33,17 +31,15 @@ extern "C" {
 #include "mcp.h"
 #include "csip.h"
 #include "vcp.h"
-#include "gmap.h"
 #include "app_conf.h"
+#include "gmap.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
 /*Audio Profiles Roles configuration*/
 #define APP_GMAP_ROLE                                   (GMAP_ROLE_UNICAST_GAME_TERMINAL | GMAP_ROLE_BROADCAST_GAME_RECEIVER)
 #define APP_CAP_ROLE                                    (CAP_ROLE_ACCEPTOR)
 #define APP_AUDIO_ROLE                                  (AUDIO_ROLE_SOURCE | AUDIO_ROLE_SINK)
-
 
 #define APP_GMAP_UGT_FEATURE                            (UGT_FEATURES_SOURCE_SUPPORT \
                                                          | UGT_FEATURES_80_KBPS_SOURCE_SUPPORT \
@@ -89,7 +85,6 @@ extern "C" {
 
 #define APP_CSIP_ROLE_SET_COORDINATOR_SUPPORT           (0u)
 #define APP_CSIP_ROLE_SET_MEMBER_SUPPORT                (1u)
-
 
 /**
  * Maximum Number of Bonded Devices to store in Non-Volatile Memory
@@ -159,7 +154,6 @@ extern "C" {
 #define APP_MAX_NUM_CIS                         (MAX_NUM_CIS_PER_CIG * MAX_NUM_CIG)
 #define APP_MAX_NUM_BIS                         (MAX_NUM_BIS_PER_BIG * MAX_NUM_BIG)
 
-
 /**
  * Default Audio Locations Settings
  */
@@ -171,15 +165,15 @@ extern "C" {
  */
 #define MAX_NUM_SDE_BSRC_INFO                   (1u)    /* Maximum Number of Broadcast Source Information supported by Scan Delegator */
 #define MAX_BASS_CODEC_CONFIG_SIZE              (20u)   /* Maximum size of the Codec Specific Configuration for each Broadcast Source Information supported by Scan Delegator */
-#define MAX_BASS_METADATA_SIZE                  (20u)   /* Maximum size of the metadata for each Broadcast Source Information supported by Scan Delegator */
+#define MAX_BASS_METADATA_SIZE                  (50u)   /* Maximum size of the metadata for each Broadcast Source Information supported by Scan Delegator */
 #define MAX_NUM_BASS_BASE_SUBGROUPS             (2u)    /* Maximum number of number of subgroups present in the BASE structure used to describe a BIG */
 
 /**
  * Broadcast Sink Settings
  */
-#define MAX_BSNK_SUBGROUP_CODEC_CONFIG_SIZE     (19u)   /* Maximum size of the Codec Specific Configuration for each subgroup used by TMAP Broadcast Media Receiver role */
-#define MAX_BSNK_BIS_CODEC_CONFIG_SIZE          (6u)    /* Maximum size of the Codec Specific Configuration for each BIS in each subgroup used by TMAP Broadcast Media Receiver role */
-#define MAX_BSNK_METADATA_LEN                   (50u)   /* Size of the metadata associated to the subgroup used by TMAP Broadcast Media Receiver role */
+#define MAX_BSNK_SUBGROUP_CODEC_CONFIG_SIZE     (19u)   /* Maximum size of the Codec Specific Configuration for each subgroup used by GMAP Broadcast Media Receiver role */
+#define MAX_BSNK_BIS_CODEC_CONFIG_SIZE          (6u)    /* Maximum size of the Codec Specific Configuration for each BIS in each subgroup used by GMAP Broadcast Media Receiver role */
+#define MAX_BSNK_METADATA_LEN                   (50u)   /* Size of the metadata associated to the subgroup used by GMAP Broadcast Media Receiver role */
 
 /**
  * Codec Specific Capabilities Settings
@@ -204,7 +198,6 @@ extern "C" {
 #define MIN_NUM_BAP_SRC_PAC_RECORDS             (1u)    /* 1 Audio Source Mandatory codec specific capabilities (cf BAP Specification) -> Into 1 PAC Record*/
 #define MIN_NUM_GMAP_UGT_SNK_PAC_RECORDS        (1u)    /* 6 Audio Sink Mandatory codec specific capabilities for GMAP Unicast Game Terminal role (cf GMAP Specification) -> Into 1 PAC Record*/
 #define MIN_NUM_GMAP_UGT_SRC_PAC_RECORDS        (1u)    /* 6 Audio Source Mandatory codec specific capabilities for GMAP Unicast Game Terminal role (cf GMAP Specification) -> Into 1 PAC Record*/
-
 
 #if ((APP_AUDIO_ROLE & AUDIO_ROLE_SINK) == AUDIO_ROLE_SINK)
 #define APP_NUM_SNK_PAC_RECORDS                 (MIN_NUM_BAP_SNK_PAC_RECORDS \
@@ -267,7 +260,7 @@ extern "C" {
 #define ADV_LEN                                 (ADV_AD_FLAGS_LEN+ADV_LOCAL_NAME_LEN+CAP_ADV_DATA_LEN+ADV_EXT_LEN+GMAP_USR_ADV_DATA_LEN+10)
 
 /**
- * Volume Renderer Profile Settings
+ * Volume Control Profile Settings
  */
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)
 #define APP_VCP_RDR_NUM_AIC_INSTANCES                   (0u)
@@ -303,12 +296,11 @@ extern "C" {
 #define APP_CSIP_SET_MEMBER_NUM_INSTANCES               (0u)
 #endif /* (APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1u) */
 
-
 /**
  * Maximum number of Services that can be stored in the GATT database.
  * Note that the GAP and GATT services are automatically added so this parameter should be 2 plus the number of user services
  */
-#define BLE_HOST_NUM_GATT_SERVICES             (2u)
+#define BLE_HOST_NUM_GATT_SERVICES                      (2u)
 #define BLE_APP_PACS_SRV_NUM_GATT_SERVICES              BAP_PACS_SRV_NUM_GATT_SERVICES
 #define BLE_APP_ASCS_SRV_NUM_GATT_SERVICES              BAP_ASCS_SRV_NUM_GATT_SERVICES
 #if (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1u)
@@ -337,7 +329,6 @@ extern "C" {
 #define BLE_APP_CAP_ACC_NUM_GATT_SERVICES               CAP_ACC_COM_NUM_GATT_SERVICES
 #define BLE_APP_GMAP_NUM_GATT_SERVICES                  GMAP_NUM_GATT_SERVICES
 
-
 #define BLE_APP_NUM_GATT_SERVICES                       (BLE_HOST_NUM_GATT_SERVICES \
                                                         + BLE_APP_PACS_SRV_NUM_GATT_SERVICES \
                                                         + BLE_APP_ASCS_SRV_NUM_GATT_SERVICES \
@@ -347,6 +338,7 @@ extern "C" {
                                                         + BLE_APP_CAP_ACC_NUM_GATT_SERVICES \
                                                         + BLE_APP_CSIP_SET_MEMBER_NUM_GATT_SERVICES \
                                                         + BLE_APP_GMAP_NUM_GATT_SERVICES)
+
 /**
  * Maximum number of Attributes
  */
@@ -382,7 +374,6 @@ extern "C" {
 #endif /*(APP_CSIP_ROLE_SET_MEMBER_SUPPORT == 1)*/
 
 #define BLE_APP_GMAP_NUM_GATT_ATTRIBUTES                GMAP_NUM_GATT_ATTRIBUTES
-
 
 #define BLE_APP_NUM_GATT_ATTRIBUTES                     (BLE_HOST_NUM_GATT_ATTRIBUTES \
                                                          + BLE_APP_PACS_SRV_NUM_GATT_ATTRIBUTES \
@@ -465,7 +456,6 @@ extern "C" {
 														+ BLE_APP_CAP_ATT_VALUE_ARRAY_SIZE \
                                                         + BLE_APP_GMAP_ATT_VALUE_ARRAY_SIZE)
 
-
 /**
  * Size of the storage area for Database of Audio Services/Profile to save in Non Volatile Memory
  */
@@ -500,9 +490,13 @@ extern "C" {
 #define BLE_APP_AUDIO_NVM_ALLOC_SIZE            (BAP_ASCS_SRV_NVM_ALLOC_SIZE + BAP_PACS_SRV_NVM_ALLOC_SIZE \
                                                 + BLE_CCP_CLT_NVM_ALLOC_SIZE + BLE_CSIP_SET_MEMBER_NVM_ALLOC_SIZE \
                                                 + BLE_AUDIO_DB_BUFFER_SIZE(APP_MAX_NUM_BONDED_DEVICES,GATTSERVICE_GATT_DATABASE_SIZE))
+
 /* Exported types ------------------------------------------------------------*/
+
 /* External variables --------------------------------------------------------*/
+
 /* Exported macros -----------------------------------------------------------*/
+
 /* Exported functions --------------------------------------------------------*/
 
 #ifdef __cplusplus

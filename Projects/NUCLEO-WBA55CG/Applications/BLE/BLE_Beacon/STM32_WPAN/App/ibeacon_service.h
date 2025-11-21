@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    ibeacon_service.h
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -50,7 +50,7 @@ extern "C"
 
 /* Exported functions prototypes ---------------------------------------------*/
 /* USER CODE BEGIN EFP */
-void IBeacon_Process(void);
+tBleStatus IBeacon_Process(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

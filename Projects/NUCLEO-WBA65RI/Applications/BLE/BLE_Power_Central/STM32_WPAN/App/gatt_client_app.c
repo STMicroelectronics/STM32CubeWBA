@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -41,8 +41,17 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* USER CODE BEGIN PTD */
-PWR_CO_GPIO_Status_t PWR_CO_GPIO_Status;
-DTC_Context_t DTC_Context;
+typedef struct
+{
+  uint8_t *pPayload;
+  uint32_t Length;
+} PWR_CO_Payload_t;
+
+typedef struct
+{
+  PWR_CO_Payload_t TxData;
+  uint8_t connectionstatus;
+} PWR_CO_Context_t;
 
 /* USER CODE END PTD */
 
@@ -162,11 +171,13 @@ static uint16_t gattCharValueHdl = 0;
 /* USER CODE BEGIN PV */
 
 static uint8_t Notification_Data_Buffer[USER_PAYLOAD_LENGTH];
+static PWR_CO_Context_t PWR_CO_Context;
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
 /* USER CODE BEGIN GV */
+PWR_CO_GPIO_Status_t PWR_CO_GPIO_Status;
 
 /* USER CODE END GV */
 
@@ -471,10 +482,10 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           {
             charPropVal = 0x0002;
           }
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].ServiceChangedCharDescHdl,
-                                            2,
-                                            (uint8_t *) &charPropVal);
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].ServiceChangedCharDescHdl,
+                                                2,
+                                                (uint8_t *) &charPropVal);
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
@@ -490,14 +501,15 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         if(a_ClientContext[index].PWR_CO_NotificationDescHdl != 0x0000)
         {
           charPropVal = 0x0001;
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].PWR_CO_NotificationDescHdl,
                                                 2,
                                                 (uint8_t *) &charPropVal);
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
-            LOG_INFO_APP(" aci_gatt_write_char_desc sucess PWR_CO_NotificationDescHdl =0x%04X\n",a_ClientContext[index].PWR_CO_NotificationDescHdl);
+            LOG_INFO_APP(" aci_gatt_write_char_value sucess PWR_CO_NotificationDescHdl =0x%04X\n",
+                           a_ClientContext[index].PWR_CO_NotificationDescHdl);
           }
           else
           {
@@ -505,7 +517,6 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
             status++;
           }
         }
-
         /* USER CODE END PROC_GATT_PROPERTIES_ENABLE_ALL */
 
         if (status == 0)
@@ -594,16 +605,14 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         case ACI_GATT_PROC_COMPLETE_VSEVT_CODE:
         {
           aci_gatt_proc_complete_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-
-          uint8_t index;
-          for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+          if(p_evt_rsp->Error_Code != BLE_STATUS_SUCCESS)
           {
-            if (a_ClientContext[index].connHdl == p_evt_rsp->Connection_Handle)
-            {
-              gatt_cmd_resp_release();
-              break;
-            }
+            LOG_INFO_APP("\n GATT procedure ended unsuccessfully, error code: 0x%02X\n",
+                         p_evt_rsp->Error_Code);
           }
+
+          /* Release GATT command response regardless of procedure success or failure */
+          gatt_cmd_resp_release();
         }
         break;/* ACI_GATT_PROC_COMPLETE_VSEVT_CODE */
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
@@ -1105,13 +1114,13 @@ static void SendDataWrite( void )
   /*Data Packet to send to remote*/
   Notification_Data_Buffer[0] += 1;
 
-  DTC_Context.TxData.pPayload = Notification_Data_Buffer;
-  DTC_Context.TxData.Length =  USER_PAYLOAD_LENGTH;
+  PWR_CO_Context.TxData.pPayload = Notification_Data_Buffer;
+  PWR_CO_Context.TxData.Length =  USER_PAYLOAD_LENGTH;
 
   status = aci_gatt_write_without_resp(a_ClientContext[0].connHdl,
                                        a_ClientContext[0].PWR_CO_WriteToServerValueHdl,
-                                       DTC_Context.TxData.Length,
-                                       (const uint8_t*)(DTC_Context.TxData.pPayload));
+                                       PWR_CO_Context.TxData.Length,
+                                       (const uint8_t*)(PWR_CO_Context.TxData.pPayload));
 
   if (status != BLE_STATUS_SUCCESS)
   {

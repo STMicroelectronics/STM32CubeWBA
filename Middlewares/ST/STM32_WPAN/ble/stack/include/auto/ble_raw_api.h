@@ -1368,24 +1368,6 @@ tBleStatus ACI_GATT_WRITE_CHAR_RELIABLE( uint16_t Connection_Handle,
                                          uint8_t Attribute_Val_Length,
                                          const uint8_t* Attribute_Val );
 
-tBleStatus ACI_GATT_WRITE_LONG_CHAR_DESC( uint16_t Connection_Handle,
-                                          uint16_t Attr_Handle,
-                                          uint16_t Val_Offset,
-                                          uint8_t Attribute_Val_Length,
-                                          const uint8_t* Attribute_Val );
-
-tBleStatus ACI_GATT_READ_LONG_CHAR_DESC( uint16_t Connection_Handle,
-                                         uint16_t Attr_Handle,
-                                         uint16_t Val_Offset );
-
-tBleStatus ACI_GATT_WRITE_CHAR_DESC( uint16_t Connection_Handle,
-                                     uint16_t Attr_Handle,
-                                     uint8_t Attribute_Val_Length,
-                                     const uint8_t* Attribute_Val );
-
-tBleStatus ACI_GATT_READ_CHAR_DESC( uint16_t Connection_Handle,
-                                    uint16_t Attr_Handle );
-
 tBleStatus ACI_GATT_WRITE_WITHOUT_RESP( uint16_t Connection_Handle,
                                         uint16_t Attr_Handle,
                                         uint8_t Attribute_Val_Length,
@@ -1398,14 +1380,17 @@ tBleStatus ACI_GATT_SIGNED_WRITE_WITHOUT_RESP( uint16_t Connection_Handle,
 
 tBleStatus ACI_GATT_CONFIRM_INDICATION( uint16_t Connection_Handle );
 
-tBleStatus ACI_GATT_WRITE_RESP( uint16_t Connection_Handle,
-                                uint16_t Attr_Handle,
-                                uint8_t Write_status,
-                                uint8_t Error_Code,
-                                uint8_t Attribute_Val_Length,
-                                const uint8_t* Attribute_Val );
+tBleStatus ACI_GATT_PERMIT_WRITE( uint16_t Connection_Handle,
+                                  uint16_t Attr_Handle,
+                                  uint8_t Write_status,
+                                  uint8_t Error_Code,
+                                  uint8_t Attribute_Val_Length,
+                                  const uint8_t* Attribute_Val );
 
-tBleStatus ACI_GATT_ALLOW_READ( uint16_t Connection_Handle );
+tBleStatus ACI_GATT_PERMIT_READ( uint16_t Connection_Handle,
+                                 uint8_t Read_status,
+                                 uint8_t Error_Code,
+                                 uint16_t Attr_Handle );
 
 tBleStatus ACI_GATT_SET_SECURITY_PERMISSION( uint16_t Serv_Handle,
                                              uint16_t Attr_Handle,
@@ -1434,9 +1419,6 @@ tBleStatus ACI_GATT_UPDATE_CHAR_VALUE_EXT( uint16_t Conn_Handle_To_Notify,
                                            uint8_t Value_Length,
                                            const uint8_t* Value );
 
-tBleStatus ACI_GATT_DENY_READ( uint16_t Connection_Handle,
-                               uint8_t Error_Code );
-
 tBleStatus ACI_GATT_SET_ACCESS_PERMISSION( uint16_t Serv_Handle,
                                            uint16_t Attr_Handle,
                                            uint8_t Access_Permissions );
@@ -1450,6 +1432,19 @@ tBleStatus ACI_GATT_SEND_MULT_NOTIFICATION( uint16_t Connection_Handle,
 tBleStatus ACI_GATT_READ_MULTIPLE_VAR_CHAR_VALUE( uint16_t Connection_Handle,
                                                   uint8_t Number_of_Handles,
                                                   const Handle_Entry_t* Handle_Entry );
+
+tBleStatus ACI_GATT_WRITE_WITHOUT_RESP_EXT( uint16_t Connection_Handle,
+                                            uint16_t Attr_Handle,
+                                            uint8_t Signed_Mode,
+                                            uint16_t Data_Length,
+                                            uint32_t Data_Pointer );
+
+tBleStatus ACI_GATT_WRITE_WITH_RESP_EXT( uint16_t Connection_Handle,
+                                         uint16_t Attr_Handle,
+                                         uint8_t Write_Mode,
+                                         uint16_t Val_Offset,
+                                         uint16_t Data_Length,
+                                         uint32_t Data_Pointer );
 
 tBleStatus ACI_L2CAP_CONNECTION_PARAMETER_UPDATE_REQ( uint16_t Connection_Handle,
                                                       uint16_t Conn_Interval_Min,
@@ -1979,20 +1974,9 @@ tBleStatus HCI_LE_FRAME_SPACE_UPDATE_COMPLETE_EVENT( uint8_t Status,
                                                      uint8_t PHYS,
                                                      uint16_t Spacing_Types );
 
-tBleStatus ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT( uint8_t Last_State,
-                                                uint8_t Next_State,
-                                                uint32_t Next_State_SysTime,
-                                                uint8_t Last_State_Slot,
-                                                uint8_t Next_State_Slot );
-
 tBleStatus ACI_WARNING_EVENT( uint8_t Warning_Type,
                               uint8_t Data_Length,
                               const uint8_t* Data );
-
-tBleStatus ACI_HAL_SYNC_EVENT( uint8_t Group_Id,
-                               uint32_t Next_Anchor_Point,
-                               uint32_t Time_Stamp,
-                               uint32_t Next_Sdu_Delivery_Timeout );
 
 tBleStatus ACI_GAP_LIMITED_DISCOVERABLE_EVENT( void );
 
@@ -2214,6 +2198,17 @@ tBleStatus HCI_RX_ISO_DATA_EVENT( uint16_t Connection_Handle,
                                   uint8_t Flags,
                                   uint16_t Data_Length,
                                   const uint8_t* Data );
+
+tBleStatus ACI_HAL_END_OF_RADIO_ACTIVITY_EVENT( uint8_t Last_State,
+                                                uint8_t Next_State,
+                                                uint32_t Next_State_SysTime,
+                                                uint8_t Last_State_Slot,
+                                                uint8_t Next_State_Slot );
+
+tBleStatus ACI_HAL_SYNC_EVENT( uint8_t Group_Id,
+                               uint32_t Next_Anchor_Point,
+                               uint32_t Time_Stamp,
+                               uint32_t Next_Sdu_Delivery_Timeout );
 
 
 #endif /* BLE_RAW_API_H__ */

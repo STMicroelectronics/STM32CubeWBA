@@ -127,8 +127,6 @@ static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
 /* USER CODE BEGIN PV */
 Service_UUID_t service_uuid;
 Char_UUID_t char_uuid;
-
-// Notification status
 uint8_t Notif_Status;
 uint8_t Notif_Value[2];
 
@@ -540,7 +538,7 @@ static SVCCTL_EvtAckStatus_t BLEService_EventHandler(void *Event)
         {
           if (attribute_modified->Attr_Data[0] == 0x01)
           {
-            // user action if notification enabled
+            /* user action if notification enabled */
             Notif_Status=attribute_modified->Attr_Data[0];
           }
         }

@@ -262,12 +262,12 @@ static SVCCTL_EvtAckStatus_t OTA_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service4_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-            ret = aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                      p_write_perm_req->Attribute_Handle,
-                                      0x00, /* write_status = 0 (no error))*/
-                                      0x00, /* err_code */
-                                      p_write_perm_req->Data_Length,
-                                     (uint8_t *)&(p_write_perm_req->Data[0]));
+            ret = aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                        p_write_perm_req->Attribute_Handle,
+                                        0x00, /* write_status = 0 (no error))*/
+                                        0x00, /* err_code */
+                                        p_write_perm_req->Data_Length,
+                                        (uint8_t *)&(p_write_perm_req->Data[0]));
             if(ret != BLE_STATUS_SUCCESS)
             {
               LOG_INFO_APP("==>> ACI GATT Write response Failed , result: %d \n\r", ret);
@@ -421,11 +421,11 @@ void OTA_Init(void)
                              &(OTA_Context.OtaSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: OTA, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: OTA, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: OtaSvcHdle = 0x%04X\n",OTA_Context.OtaSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: OtaSvcHdle = 0x%04X\n",OTA_Context.OtaSvcHdle);
   }
 
   /**
@@ -444,11 +444,11 @@ void OTA_Init(void)
                           &(OTA_Context.Base_AdrCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : BASE_ADR, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : BASE_ADR, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Base_AdrCharHdle = 0x%04X\n",OTA_Context.Base_AdrCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Base_AdrCharHdle = 0x%04X\n",OTA_Context.Base_AdrCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService4Char1 */
@@ -471,11 +471,11 @@ void OTA_Init(void)
                           &(OTA_Context.ConfCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : CONF, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : CONF, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : ConfCharHdle = 0x%04X\n",OTA_Context.ConfCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : ConfCharHdle = 0x%04X\n",OTA_Context.ConfCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService4Char2 */
@@ -498,11 +498,11 @@ void OTA_Init(void)
                           &(OTA_Context.Raw_DataCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : RAW_DATA, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : RAW_DATA, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : Raw_DataCharHdle = 0x%04X\n",OTA_Context.Raw_DataCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Raw_DataCharHdle = 0x%04X\n",OTA_Context.Raw_DataCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService4Char3 */
@@ -539,11 +539,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value BASE_ADR command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value BASE_ADR command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value BASE_ADR command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value BASE_ADR command\n");
       }
       /* USER CODE BEGIN Service4_Char_Value_1 */
 
@@ -558,11 +558,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value CONF command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value CONF command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value CONF command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value CONF command\n");
       }
       /* USER CODE BEGIN Service4_Char_Value_2 */
 
@@ -577,11 +577,11 @@ tBleStatus OTA_UpdateValue(OTA_CharOpcode_t CharOpcode, OTA_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value RAW_DATA command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value RAW_DATA command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value RAW_DATA command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value RAW_DATA command\n");
       }
       /* USER CODE BEGIN Service4_Char_Value_3 */
 

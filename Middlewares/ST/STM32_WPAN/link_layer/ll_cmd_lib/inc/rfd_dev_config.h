@@ -1,4 +1,4 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/rfd_dev_config.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/rfd_dev_config.h#1 $*/
 /**
  ********************************************************************************
  * @file    rfd_dev_config.h
@@ -6,7 +6,6 @@
  *
  *
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in

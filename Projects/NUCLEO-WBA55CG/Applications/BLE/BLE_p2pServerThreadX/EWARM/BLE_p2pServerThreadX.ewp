@@ -234,10 +234,12 @@
           <state>USE_FULL_ASSERT</state>
           <state>USE_HAL_DRIVER</state>
           <state>STM32WBA55xx</state>
+          <state>PHY_40nm_3_00_a</state>
           <state>TX_SINGLE_MODE_NON_SECURE=1</state>
           <state>TX_INCLUDE_USER_DEFINE_FILE</state>
           <state>USE_FULL_LL_DRIVER</state>
-          <state>BLE</state>
+          <state>BLE_LL</state>
+          <state>BLE_STACK_BASIC_FEATURES</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1240,17 +1242,11 @@
         <file>
           <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_hal_msp.c</name>
         </file>
-        <file>
-          <name>$PROJ_DIR$\..\Core\Src\stm32wbaxx_hal_timebase_tim.c</name>
-        </file>
       </group>
       <group>
         <name>STM32_WPAN</name>
         <group>
           <name>App</name>
-          <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\App\app_bsp.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$\..\STM32_WPAN\App\app_ble.c</name>
           </file>
@@ -1342,6 +1338,9 @@
       <name>WPAN</name>
       <group>
         <name>Interface</name>
+        <file>
+          <name>$PROJ_DIR$/../../../../../Common/WPAN/Interfaces/app_bsp.c</name>
+        </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</name>
         </file>
@@ -1488,12 +1487,6 @@
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_tim_ex.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_adc.c</name>
       </file>
       <file>
@@ -1534,6 +1527,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_crc.c</name>
@@ -1622,7 +1621,7 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA5_LinkLayer_BLE_Basic_lib.a</name>
         </file>
       </group>
       <group>

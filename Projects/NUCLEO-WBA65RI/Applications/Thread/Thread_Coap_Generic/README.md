@@ -43,54 +43,69 @@ Same COAP commands can be sent from board B to board A.
  
 <pre>
 	
-  ___________________________                       ___________________________
-  |  Device A               |                       | Device B                |
-  |_________________________|                       |_________________________|  
-  |                         |                       |                         |
-  |                         |                       |                         |
-  |                SW1 -->  |======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
-  |                         | Resource "light"      |                         |
-  |                         | Mode: Multicast       |                         |
-  |                         | Type: Non-Confirmable |                         |
-  |                         | Code: Put             |                         |
-  |                         |                       |                         |
-  |                         |                       |                         |
-  |                SW2 -->  |=====> COAP ==========>|-------->                |
-  |                         | Resource "light"      |         |               |
-  |                         | Mode: Multicast       |  CoapRequestHandler()   |
-  |                         | Type: Confirmable     |         |               |
-  |                         | Code: Put             |         |               |
-  |                         |                       |         v               |
-  |                         |                       |  CoapSendDataResponse() |
-  |                         |                       |         |               |
-  |                         |                       |         v               |
-  | CoapDataRespHandler()<--|<===== COAP <==========| <-------                |
-  |                         |                       | BLUE LED TOGGLE (ON/OFF)| 
-  |                         |                       |                         |  
-  ---------------------------                       ---------------------------
-  | Role : Child            |                       | Role : Leader           |
-  |                         |                       |                         |
-  | LED : Red               |                       | LED : Green             |
-  |                         |                       |                         |
-  |_________________________|                       |_________________________|
+  __________________________________                       __________________________________
+  |  Device A                      |                       | Device B                       |
+  |________________________________|                       |________________________________|
+  |       _________________________|                       |       _________________________|
+  |      |USART1          SW1 -->  |======> COAP =========>|      |USART1                   |
+  |      |                         | Resource "light"      |      |                         |
+  |      |                         | Mode: Multicast       |      |   BLUE LED TOGGLE       |
+  |      |                         | Type: Non-Confirmable |      |       (ON/OFF)          |
+  |      |                         | Code: Put             |      |                         |
+  |      |                         |                       |      |                         |
+  |      |                         |                       |      |                         |
+  |      |                SW2 -->  |======> COAP =========>|------|---------->              |
+  |      |                         | Resource "light"      |      |          |              |
+  |      |                         | Mode: Multicast       |      |   CoapRequestHandler()  |
+  |      |                         | Type: Confirmable     |      |          |              |
+  |      |                         | Code: Put             |      |   CoapSendDataResponse()|
+  |      |                         |                       |      |          |              |
+  |      | CoapDataRespHandler()<--|<====== COAP <=========|<-----|-----------              |
+  |      |                         |                       |      |   BLUE LED TOGGLE       |
+  |      |                         |                       |      |       (ON/OFF)          |
+  |      |                         |                       |      |                         |
+  |      |_________________________|                       |      |_________________________|
+  |                                |                       |                                |
+  |       _________________________|                       |       _________________________|
+  |      |LPUART1                  |                       |      |LPUART1                  |
+  |      |                         |                       |      |                         |
+  |      |     Thread stack control|                       |      |     Thread stack control|
+  |      |       via Cli commands  |                       |      |       via Cli commands  |
+  |      |                         |                       |      |                         |
+  |      |                Tx CN3-32|                       |      |                Tx CN3-32|
+  |      |                Rx CN3-34|                       |      |                Rx CN3-34|
+  |      |_________________________|                       |      |_________________________|
+  |                                |                       |                                |
+  ----------------------------------                       ----------------------------------
+  | Role : Child                   |                       | Role : Leader                  |
+  |                                |                       |                                |
+  | LED : Red                      |                       | LED : Green                    |
+  |                                |                       |                                |
+  |________________________________|                       |________________________________|
 
-  
-</pre> 
+
+</pre>
 
 ### __Traces__
 
-* To get the traces you need to connect your Board to the Hyperterminal (through the STLink Virtual COM Port).  
+* To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port).
 
-* The UART must be configured as follows:  
-<br>
-BaudRate       = 115200 baud</br>
-Word Length    = 8 Bits</br>
-Stop Bit       = 1 bit</br>
-Parity         = none</br>
-Flow control   = none</br>
-Terminal   "Go to the Line" : &lt;LF&gt;  
+* The UART must be configured as follows:<br>
+  - BaudRate       = 115200 baud</br>
+  - Word Length    = 8 Bits</br>
+  - Stop Bit       = 1 bit</br>
+  - Parity         = none</br>
+  - Flow control   = none</br>
+  - Terminal   "Go to the Line" : &lt;LF&gt;
 
+* It is also possible to control and configure the Thread stack through Cli commands. For that, connect the LPUART1 PIN CN3-32 / CN3-34 of your board to an Hyperterminal through FTDI cable.<br>
+The Serial interface must be configured as follows:<br>
+  - BaudRate       = 115200 baud</br>
+  - Word Length    = 8 Bits</br>
+  - Stop Bit       = 1 bit</br>
+  - Parity         = none</br>
+  - Flow control   = none</br>
+  - Terminal   "Go to the Line" : &lt;LF&gt;<br>
 
-
-
+  The command 'help' can be used to display the list of all available cli commands.<br>
 

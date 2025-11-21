@@ -18,11 +18,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_rtos.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "main.h"
-#include "cmsis_os2.h"
+#include "app_freertos.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_ble.h"
@@ -55,15 +52,15 @@
 osThreadId_t advertisingTaskHandle;
 const osThreadAttr_t advertisingTask_attributes = {
   .name = "advertisingTask",
-  .priority = CFG_TASK_PRIO_ADVERTISING,
-  .stack_size = TASK_ADVERTISING_STACK_SIZE
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512 * 4
 };
 /* Definitions for HRSAPPMeasurementsTask */
 osThreadId_t HRSAPPMeasurementsTaskHandle;
 const osThreadAttr_t HRSAPPMeasurementsTask_attributes = {
   .name = "HRSAPPMeasurementsTask",
-  .priority = CFG_TASK_PRIO_HRS_APP_MEAS,
-  .stack_size = TASK_HRS_APP_MEAS_STACK_SIZE
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 256 * 4
 };
 /* Definitions for advLowPowerTimer */
 osTimerId_t advLowPowerTimerHandle;
@@ -91,18 +88,7 @@ const osSemaphoreAttr_t HRSAPPMeasurementsSemaphore_attributes = {
 
 /* USER CODE END FunctionPrototypes */
 
-void advertisingTask_Entry(void *argument);
-void HRSAPPMeasurementsTask_Entry(void *argument);
-void advLowPowerTimer_cb(void *argument);
-void HRSAPPMeasurementsTimer_cb(void *argument);
-
-void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
-
-/* USER CODE BEGIN 1 */
+/* USER CODE BEGIN 4 */
 void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
 {
    /* Run time stack overflow checking is performed if
@@ -110,7 +96,9 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, char *pcTaskName)
    called if a stack overflow is detected. */
   Error_Handler();
 }
+/* USER CODE END 4 */
 
+/* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
 __weak void configureTimerForRunTimeStats(void)
 {
@@ -231,9 +219,9 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
   for(;;)
   {
     osSemaphoreAcquire(HRSAPPMeasurementsSemaphoreHandle, osWaitForever);
-    osMutexAcquire(LinkLayerMutex, osWaitForever);
+
     HRS_APP_Measurements();
-    osMutexRelease(LinkLayerMutex);
+
     osThreadYield();
   }
   /* USER CODE END HRSAPPMeasurementsTask */

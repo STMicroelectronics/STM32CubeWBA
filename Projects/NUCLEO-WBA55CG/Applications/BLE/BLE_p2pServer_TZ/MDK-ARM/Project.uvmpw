@@ -8,14 +8,14 @@
   <WorkspaceName />
 
   <project>
-    <PathAndName>.\Secure\BLE_p2pServer_TZ_S.uvprojx</PathAndName>
+    <PathAndName>.\NonSecure\BLE_p2pServer_TZ_NS.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
     <NodeIsCheckedInBatchBuild>1</NodeIsCheckedInBatchBuild>
   </project>
 
   <project>
-    <PathAndName>.\NonSecure\BLE_p2pServer_TZ_NS.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
+    <PathAndName>.\Secure\BLE_p2pServer_TZ_S.uvprojx</PathAndName>
     <NodeIsExpanded>1</NodeIsExpanded>
     <NodeIsCheckedInBatchBuild>1</NodeIsCheckedInBatchBuild>
   </project>

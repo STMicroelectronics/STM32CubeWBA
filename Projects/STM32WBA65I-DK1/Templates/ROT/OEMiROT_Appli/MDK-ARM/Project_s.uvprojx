@@ -376,12 +376,9 @@
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc>--predefine=-I..\Secure_nsclib
---predefine=-DSTM32WBA65xx
---import_cmse_lib_out=../Secure_nsclib/secure_nsclib.o
---diag_suppress L6314W
---diag_suppress 1296</Misc>
+--predefine=-DSTM32WBA65xx</Misc>
             <LinkerInputFile></LinkerInputFile>
-            <DisabledWarnings></DisabledWarnings>
+            <DisabledWarnings>6848</DisabledWarnings>
           </LDads>
         </TargetArmAds>
       </TargetOption>

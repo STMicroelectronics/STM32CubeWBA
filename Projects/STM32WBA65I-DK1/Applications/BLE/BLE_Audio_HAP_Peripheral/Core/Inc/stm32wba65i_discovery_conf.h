@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32wbaxx_hal.h"
+#include "wm8904.h"
 
 /* Usage of STM32WBA65I_DK1 board */
 #define USE_STM32WBA65I_DK1                  1U
@@ -44,6 +45,14 @@ extern "C" {
 #define BSP_JOY_DEBOUNCE_DELAY              200
 
 #define I2C_VALID_TIMING_NBR                16U
+
+/* Headphone output is systematically initialized by WM8904_Init()
+   Forcing WM8904_OUT_NONE allows to save time at BSP init by calling WM8904_Init() only one time for BSP_AUDIO_IN_Init()
+   WM8904_VoidInit() is used for bypassing WM8904_Init() when called by BSP_AUDIO_OUT_Init() */
+#undef WM8904_OUT_NONE
+#define WM8904_OUT_NONE                     WM8904_OUT_HEADPHONE
+
+int32_t WM8904_VoidInit(WM8904_Object_t *pObj, WM8904_Init_t *pInit);
 
 #ifdef __cplusplus
 }

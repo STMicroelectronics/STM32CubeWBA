@@ -13,7 +13,7 @@
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0-RC2</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20040000-0x2007FFFF) IROM(0x08100000-0x81FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec />
@@ -77,9 +77,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
-            <UserProg1Name />
+            <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
             <UserProg2Name />
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -131,11 +131,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4101</DriverSelection>
+            <DriverSelection>4102</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2V8M.DLL</Flash2>
-          <Flash3 />
+          <Flash3>"" ()</Flash3>
           <Flash4 />
           <pFcarmOut />
           <pFcarmGrp />
@@ -204,7 +204,7 @@
             <Ro2Chk>0</Ro2Chk>
             <Ro3Chk>0</Ro3Chk>
             <Ir1Chk>1</Ir1Chk>
-            <Ir2Chk>1</Ir2Chk>
+            <Ir2Chk>0</Ir2Chk>
             <Ra1Chk>0</Ra1Chk>
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
@@ -335,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_HAL_DRIVER,STM32WBA65xx,USE_FULL_LL_DRIVER,BLE</Define>
+              <Define>USE_HAL_DRIVER,STM32WBA65xx,PHY_40nm_3_40_a,USE_FULL_LL_DRIVER,BLE_LL</Define>
               <Undefine />
               <IncludePath>../../NonSecure/Core/Inc;../../Secure_nsclib;../../NonSecure/System/Interfaces;../../NonSecure/System/Modules;../../NonSecure/System/Config/Log;../../NonSecure/System/Config/LowPower;../../NonSecure/System/Config/Debug_GPIO;../../NonSecure/System/Config/Flash;../../NonSecure/System/Config/ADC_Ctrl;../../NonSecure/System/Config/CRC_Ctrl;../../NonSecure/STM32_WPAN/App;../../NonSecure/STM32_WPAN/Target;../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../../Utilities/trace/adv_trace;../../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../../Projects/Common/WPAN/Modules;../../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../../Projects/Common/WPAN/Modules/Nvm;../../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../../Utilities/misc;../../../../../../../Utilities/sequencer;../../../../../../../Utilities/tim_serv;../../../../../../../Utilities/lpm/tiny_lpm;../../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full;../../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../../Middlewares/ST/STM32_WPAN/ble;../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
@@ -393,11 +393,6 @@
         <Group>
           <GroupName>Application/User/NonSecure/STM32_WPAN/App</GroupName>
           <Files>
-            <File>
-              <FileName>app_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../NonSecure/STM32_WPAN/App/app_bsp.c</FilePath>
-            </File>
             <File>
               <FileName>app_ble.c</FileName>
               <FileType>1</FileType>
@@ -571,7 +566,195 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Drivers/BSP</GroupName>
+          <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32wbaxx_hal_icache.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rcc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_flash_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pwr_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_gtzc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rtc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_adc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_crc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_icache.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_ramcfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rng.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_rng_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_uart_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
+        </Group>
+        <Group>
+          <GroupName>Application/User/NonSecure/Common/WPAN/Interface</GroupName>
+          <Files>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Common/WPAN/Interfaces/app_bsp.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Drivers/BSP/STM32WBAxx_Nucleo</GroupName>
           <Files>
             <File>
               <FileName>stm32wbaxx_nucleo.c</FileName>
@@ -579,9 +762,6 @@
               <FilePath>../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>Common/WPAN/Interface</GroupName>
@@ -788,163 +968,6 @@
               <FileName>stm32wbaxx_ResetHandler_MDK-ARM.s</FileName>
               <FileType>2</FileType>
               <FilePath>../../../../../../../Projects/Common/WPAN/Startup/stm32wbaxx_ResetHandler_MDK-ARM.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
-          <Files>
-            <File>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_cortex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_dma_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_dma_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rcc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rcc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rcc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_flash_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_flash_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_exti.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_pwr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_pwr_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rtc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rtc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_adc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_adc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_crc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_crc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_icache.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_icache.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_ramcfg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_ramcfg.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rng.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_rng_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rng_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_dma.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_uart_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_uart_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_adc.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -28,7 +28,6 @@
 #include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
-
 /* Private defines -----------------------------------------------------------*/
 /* Radio event scheduling method - must be set at 1 */
 #define USE_RADIO_LOW_ISR                   (1)
@@ -130,6 +129,7 @@ void ll_sys_config_params(void)
 
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+
 /* USER CODE BEGIN ll_sys_config_params_2 */
 
 /* USER CODE END ll_sys_config_params_2 */

@@ -103,7 +103,7 @@ typedef enum
   /* USER CODE BEGIN Log_Verbose_Level_t_3 */
 
   /* USER CODE END Log_Verbose_Level_t_3 */
-  LOG_VERBOSE_ALL_LOGS = LOG_MODULE_MAX_VERBOSE_LEVEL,
+  LOG_VERBOSE_ALL = LOG_MODULE_MAX_VERBOSE_LEVEL,
 } Log_Verbose_Level_t;
 
 /**
@@ -176,6 +176,10 @@ typedef enum
 #define LOG_WARNING_BLE(...)      do {} while(0)
 #define LOG_DEBUG_BLE(...)        do {} while(0)
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+/* macro ensuring retrocompatibility with old applications */
+#define APP_DBG                   LOG_INFO_APP
+#define APP_DBG_MSG               LOG_INFO_APP
 
 /* USER CODE BEGIN LOG_REGION_BLE */
 /**

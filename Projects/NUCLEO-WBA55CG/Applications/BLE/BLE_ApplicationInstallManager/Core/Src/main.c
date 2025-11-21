@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -27,6 +27,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef void (*fct_t)(void);
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -55,6 +56,7 @@ typedef void (*fct_t)(void);
 /* Define list of reboot reason */
 #define REBOOT_ON_FW_APP                    (0x00)
 #define REBOOT_ON_APP_INSTALL_MNGR          (0x01)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -77,6 +79,7 @@ void JumpFwApp( void );
 static void DeleteSlot( uint8_t page_idx );
 static void MoveToActiveSlot( uint8_t page_idx );
 static void JumpSelectionOnPowerUp( void );
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -119,16 +122,19 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
   BootModeCheck();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -181,12 +187,14 @@ void SystemClock_Config(void)
 void MX_GPIO_Init(void)
 {
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -212,15 +220,15 @@ static void BootModeCheck( void )
     if((CFG_OTA_REBOOT_VAL_MSG == REBOOT_ON_FW_APP) && (CheckFwAppValidity(CFG_ACTIVE_SLOT_START_SECTOR_INDEX) != 0))
     {
       uint8_t download_slot_start_sector = CFG_OTA_START_SECTOR_IDX_VAL_MSG;
-      
-      if((download_slot_start_sector >= (FLASH_SIZE / FLASH_PAGE_SIZE)) || 
+
+      if((download_slot_start_sector >= (FLASH_SIZE / FLASH_PAGE_SIZE)) ||
          ((download_slot_start_sector < CFG_ACTIVE_SLOT_START_SECTOR_INDEX)))
       {
         /* CFG_OTA_START_SECTOR_IDX_VAL_MSG not correctly initialized */
         download_slot_start_sector = DOWNLOAD_SLOT_START_SECTOR_INDEX;
         CFG_OTA_START_SECTOR_IDX_VAL_MSG = DOWNLOAD_SLOT_START_SECTOR_INDEX;
       }
-      
+
       if(CheckFwAppValidity(download_slot_start_sector) != 0)
       {
         /**
@@ -234,7 +242,7 @@ static void BootModeCheck( void )
           DeleteSlot( DOWNLOAD_SLOT_START_SECTOR_INDEX ); /* Erase download slot */
         }
       }
-      
+
       /**
        * Jump now on the application
        */
@@ -291,10 +299,9 @@ static uint8_t CheckFwAppValidity( uint8_t page_idx )
   uint8_t status;
   uint32_t magic_keyword_address;
   uint32_t last_user_flash_address;
-
   magic_keyword_address = *(uint32_t*)(FLASH_BASE + (page_idx * FLASH_PAGE_SIZE + 0x160));
   if(page_idx != CFG_ACTIVE_SLOT_START_SECTOR_INDEX)
-  { 
+  {
     /* magic_keyword_address is in the download slot = active slot + APP_SLOT_PAGE_SIZE */
     magic_keyword_address += ((page_idx - CFG_ACTIVE_SLOT_START_SECTOR_INDEX) * FLASH_PAGE_SIZE);
   }
@@ -349,7 +356,6 @@ void JumpFwApp( void )
    */
   __WFI();
 
-
   return;
 }
 
@@ -397,17 +403,17 @@ static void DeleteSlot( uint8_t page_idx )
   else
   {
     p_erase_init.Banks = FLASH_BANK_1;
-  } 
+  }
 #endif
 
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
-  
+
   HAL_FLASH_Unlock();
 
   HAL_FLASHEx_Erase(&p_erase_init, &page_error);
 
   HAL_FLASH_Lock();
-  
+
   return;
 }
 
@@ -425,8 +431,8 @@ static void MoveToActiveSlot( uint8_t page_idx )
   act_addr = FLASH_BASE + (CFG_ACTIVE_SLOT_START_SECTOR_INDEX * FLASH_PAGE_SIZE);
   /* Last address of the new binary relative to the start address in the active slot */
   last_addr = *(uint32_t*)(dwn_addr + 0x160);
-  last_addr &= 0xFFFFFFF0;
-  
+  last_addr &= 0xFFFFFFF0;  /* Align on 16-byte boundary */
+
   /**
    * The flash is written by bunch of 16 bytes
    * Data are written in flash as long as there are at least 16 bytes
@@ -434,18 +440,18 @@ static void MoveToActiveSlot( uint8_t page_idx )
   while( act_addr <= last_addr )
   {
     HAL_StatusTypeDef status = HAL_ERROR;
-    
+
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS); /* Clear all Flash flags before write operation*/
 
     HAL_FLASH_Unlock();
-    
+
     while(status != HAL_OK)
-      status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, 
-                                 act_addr, 
+      status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD,
+                                 act_addr,
                                  dwn_addr);
-    
+
     HAL_FLASH_Lock();
-    
+
     if((*(uint64_t*)(act_addr) == *(uint64_t*)(dwn_addr)) &&
        (*(uint64_t*)((act_addr)+8) == *(uint64_t*)((dwn_addr)+8)))
     {

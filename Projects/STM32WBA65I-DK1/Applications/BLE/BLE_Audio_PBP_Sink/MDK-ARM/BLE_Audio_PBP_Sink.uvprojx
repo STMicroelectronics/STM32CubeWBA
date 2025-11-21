@@ -75,9 +75,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
-            <UserProg1Name />
+            <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
             <UserProg2Name />
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -332,7 +332,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>USE_FULL_LL_DRIVER,BLE,USE_HAL_DRIVER,STM32WBA65xx</Define>
+              <Define>USE_FULL_LL_DRIVER,BLE_LL,USE_HAL_DRIVER,STM32WBA65xx,PHY_40nm_3_40_a</Define>
               <Undefine />
               <IncludePath>../Core/Inc;../System/Interfaces;../System/Modules;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/Flash;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Utilities/trace/adv_trace;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ble_full;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/include/auto;../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Inc;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBA65I-DK1;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/Components/wm8904;../../../../../../Drivers/BSP/Components/ssd1315;../../../../../../Middlewares/ST/STM32_WPAN/ble/audio/Inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/codec/lc3/Inc;../../../../../../Middlewares/ST/STM32_WPAN/ble/codec/codec_manager/Inc;../STM32_WPAN/App/AudioUseCases;../Core/Src/lcd;../../../../../../Utilities/LCD;../STM32_WPAN/App/AudioUseCases/pbp</IncludePath>
             </VariousControls>
@@ -480,11 +480,6 @@
               <FilePath>../STM32_WPAN/App/pbp_app.c</FilePath>
             </File>
             <File>
-              <FileName>app_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../STM32_WPAN/App/app_bsp.c</FilePath>
-            </File>
-            <File>
               <FileName>app_ble.c</FileName>
               <FileType>1</FileType>
               <FilePath>../STM32_WPAN/App/app_ble.c</FilePath>
@@ -574,6 +569,11 @@
         <Group>
           <GroupName>Common/WPAN/Interface</GroupName>
           <Files>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../Common/WPAN/Interfaces/app_bsp.c</FilePath>
+            </File>
             <File>
               <FileName>adv_trace_usart_if.c</FileName>
               <FileType>1</FileType>
@@ -890,6 +890,16 @@
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
             </File>
             <File>
+              <FileName>stm32wbaxx_hal_cryp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_cryp_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cryp_ex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32wbaxx_hal_crc.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_crc.c</FilePath>
@@ -963,16 +973,6 @@
               <FileName>stm32wbaxx_hal_spi_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_spi_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_hal_tim_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_ll_tim.c</FileName>

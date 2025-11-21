@@ -1,11 +1,10 @@
-/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca03/firmware/public_inc/ll_error.h#1 $*/
+/*$Id: //dwh/bluetooth/DWC_ble154combo/firmware/rel/2.00a-lca04/firmware/public_inc/ll_error.h#1 $*/
 
 /**
  ********************************************************************************
  * @file    error.h
  * @brief   This file contains error defines across BLE FW LL.
  ******************************************************************************
- * @copy
  * This Synopsys DWC Bluetooth Low Energy Combo Link Layer/MAC software and
  * associated documentation ( hereinafter the "Software") is an unsupported
  * proprietary work of Synopsys, Inc. unless otherwise expressly agreed to in
@@ -227,6 +226,10 @@ typedef enum _HW_ERROR_CODES
 #if (SUPPORT_DYNAMIC_PREEMPH_COEFF && CTE_DEGRADATION_API_PHY_SUPPORT)
 #error "Dynamic Preemphasis coefficients feature cannot be enabled while the CTE degradation API is enabled"
 #endif /* SUPPORT_DYNAMIC_PREEMPH_COEFF && CTE_DEGRADATION_API_PHY_SUPPORT */
+
+#if (defined(RTL_VER_7) ^ defined(PHY_40nm_3_60_a_tc_new_demod)) && defined(snps_ble_demo)
+#error "Configuration error: RTL_VER_7 and PHY_40nm_3_60_a_tc_new_demod must be defined together or not at all"
+#endif /*(defined(RTL_VER_7) && (!defined(PHY_40nm_3_60_a_tc_new_demod)))*/
 
 /* Exported macros ------------------------------------------------------------*/
 

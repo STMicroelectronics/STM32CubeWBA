@@ -1552,9 +1552,6 @@
             <group>
                 <name>LinkLayer</name>
                 <file>
-                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer15_4.a</name>
-                </file>
-                <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_cs.c</name>
                 </file>
                 <file>
@@ -1565,6 +1562,9 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\src\ll_sys_startup.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA5_LinkLayer15_4.a</name>
                 </file>
             </group>
             <group>

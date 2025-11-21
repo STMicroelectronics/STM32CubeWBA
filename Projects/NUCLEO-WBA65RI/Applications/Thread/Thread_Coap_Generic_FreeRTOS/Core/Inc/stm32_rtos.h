@@ -41,17 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* FreeRTOS priorities by default  */
-#define TASK_PRIO_LINK_LAYER                    osPriorityRealtime2
-#define TASK_PRIO_TEMP_MEAS_LL                  osPriorityRealtime2
-#define TASK_PRIO_RNG                           osPriorityHigh
-
-#define TASK_PRIO_ALARM                         osPriorityNormal2
-#define TASK_PRIO_US_ALARM                      TASK_PRIO_ALARM
-#define TASK_PRIO_TASKLETS                      osPriorityRealtime3
-#define TASK_PRIO_PKA                           osPriorityNormal1
-#define TASK_PRIO_CLI_UART                      osPriorityNormal
-#define TASK_PRIO_SEND                          osPriorityNormal
-#define TASK_PRIO_RCP_SPINEL_RX                 osPriorityNormal
+#define TASK_PRIO_WPAN                          osPriorityNormal
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     osPriorityNormal3
@@ -68,16 +58,7 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_ALARM                   RTOS_STACK_SIZE_MODERATE
-#define TASK_STACK_SIZE_ALARM_US                RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_TASKLETS                RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_CLI_UART                RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_SEND                    RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_PKA                     RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_RCP_SPINEL_RX           RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 

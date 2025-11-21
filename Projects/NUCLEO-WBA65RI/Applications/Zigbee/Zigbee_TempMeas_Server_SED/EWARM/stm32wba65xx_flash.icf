@@ -11,8 +11,8 @@ define symbol __region_FLASH_start__       = 0x08000000;
 define symbol __region_FLASH_end__         = __region_NVM_start__ - 0x1;
 
 define symbol __region_SRAM1_start__       = 0x20000000;
-define symbol __region_SRAM1_end__         = 0x2003FFFF;
-define symbol __region_SRAM2_start__       = 0x20040000;
+define symbol __region_SRAM1_end__         = 0x2006FFFF;
+define symbol __region_SRAM2_start__       = 0x20070000;
 define symbol __region_SRAM2_end__         = 0x2007FFFF;
 
 define symbol __size_heap__                = 0x0400;

@@ -197,6 +197,7 @@ uint32_t MX_APPE_Init(void *p_param)
 #if (CFG_BUTTON_SUPPORTED == 1)
   APP_BSP_ButtonInit();
 #endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  APP_BSP_CliInit();
   /* USER CODE END APPE_Init_1 */
 
   /* Initialize the Ble Public Key Accelerator module */
@@ -279,6 +280,12 @@ static void System_Init( void )
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
+
+#if !GRL_TEST && OT_CLI_USE
+  MX_LPUART1_UART_Init();
+#elif GRL_TEST
+  MX_USART1_UART_Init();
+#endif 
 
 #if (CFG_LOG_SUPPORTED != 0)
   MX_USART1_UART_Init();
@@ -377,6 +384,9 @@ static void APPE_RNG_Init(void)
  */
 static void APPE_FLASH_MANAGER_Init(void)
 {
+  /* Init the Flash Manager module */
+  FM_Init();
+
   /* Register Flash Manager task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_FLASH_MANAGER, UTIL_SEQ_RFU, FM_BackgroundProcess);
 

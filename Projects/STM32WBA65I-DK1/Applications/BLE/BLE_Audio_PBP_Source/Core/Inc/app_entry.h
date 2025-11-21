@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -32,6 +32,7 @@ extern "C" {
 #include "app_common.h"
 /* USER CODE BEGIN Includes */
 #include "pbp_app.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -76,16 +77,13 @@ void MX_AudioInit(Audio_Role_t role,
                   uint8_t *pSrcBuff,
                   AudioDriverConfig driver_config);
 void MX_AudioDeInit(void);
-int32_t Start_TxAudio(void);
-void Stop_TxAudio(void);
-int32_t Start_RxAudio(void);
-void Stop_RxAudio(void);
 void AudioClock_Init(uint32_t frequency);
 void PLL_Exit(void);
+int32_t Start_RxAudio(void);
+void Stop_RxAudio(void);
 void APP_NotifyRxAudioCplt(uint16_t AudioFrameSize);
 void APP_NotifyRxAudioHalfCplt(void);
-void APP_NotifyTxAudioCplt(uint16_t AudioFrameSize);
-void APP_NotifyTxAudioHalfCplt(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

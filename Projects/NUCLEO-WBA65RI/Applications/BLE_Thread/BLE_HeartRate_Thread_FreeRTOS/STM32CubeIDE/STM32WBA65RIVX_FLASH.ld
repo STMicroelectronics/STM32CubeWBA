@@ -7,7 +7,7 @@
 **
 ** @brief       : Linker script for STM32WBA65RIVx Device from STM32WBA series
 **                      2048KBytes FLASH
-**                      256KBytes RAM
+**                      512KBytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -22,7 +22,7 @@
 ******************************************************************************
 ** @attention
 **
-** Copyright (c) 2024 STMicroelectronics.
+** Copyright (c) 2025 STMicroelectronics.
 ** All rights reserved.
 **
 ** This software is licensed under terms that can be found in the LICENSE file
@@ -44,13 +44,14 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 256K
+  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 512K
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 2048K
 }
 
 /* Sections */
 SECTIONS
 {
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {

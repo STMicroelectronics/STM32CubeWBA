@@ -37,6 +37,7 @@
 #include "zigbee.h"
 #include "zigbee.nwk.h"
 #include "zigbee.security.h"
+#include "zigbee.bdb.h"
 
 /* Private includes -----------------------------------------------------------*/
 #include "zcl/zcl.h"
@@ -62,7 +63,7 @@
 #define APP_ZIGBEE_CLUSTER_NAME           "OnOff Server"
 
 /* USER CODE BEGIN PD */
-#define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME " ZDD"
+#define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME "(Zigbee Direct)"
 #define APP_ZIGBEE_APPLICATION_OS_NAME    ""
 
 #define APP_ONOFF_LED                       LED_RED
@@ -77,6 +78,8 @@
 // -- Redefine Clusters to better code read --
 #define OnOffServer                       pstZbCluster[0]
 
+
+#define DEFAULT_EP_BDB_COMMISSION_GRP_ID     0xffffU
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -103,6 +106,12 @@ static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
   .toggle = APP_ZIGBEE_OnOffServerToggleCallback,
 };
 
+static enum ZclStatusCodeT my_trigger_effect_callback(
+    struct ZbZclClusterT *cluster,
+    struct ZbZclIdentifyClientTriggerEffectT *info,
+    struct ZbZclAddrInfoT *src_info,
+    void *arg);
+static void my_identify_callback(struct ZbZclClusterT *cluster, enum ZbZclIdentifyServerStateT state, void *arg);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -121,25 +130,12 @@ void APP_ZIGBEE_ApplicationInit(void)
   /* Initialization of the Zigbee stack */
   APP_ZIGBEE_Init();
   
-#ifdef ZDD_IS_ZC
-  
-  /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
-  stZigbeeAppInfo.eStartupControl = ZbStartTypeForm ;
-  stZigbeeAppInfo.bPersistNotification = false;
-  
-  /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
-  stZigbeeAppInfo.bNwkStartup = true;
-  
-#else 
-
   /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */  
   stZigbeeAppInfo.eStartupControl = ZbStartTypeJoin;
   stZigbeeAppInfo.bPersistNotification = false;
  
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
   stZigbeeAppInfo.bNwkStartup = false; /* Override */
-
-#endif /* ZVD_IS_ZC */
   
    /* Register a dedicated task for displaying infos */
   APP_ZIGBEE_InitStatusDebug();
@@ -200,6 +196,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   };
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints1 */
 
+  
+  
   /* USER CODE END APP_ZIGBEE_ConfigEndpoints1 */
 
   /* Add EndPoint */
@@ -266,6 +264,10 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   pstConfig->channelList.count = 1;
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
+
+  /* Display the main configuration */
+  LOG_INFO_APP( "Inside GetStartupConfig pstConfig->capability = %x ",pstConfig->capability);
+  LOG_INFO_APP( "Inside GetStartupConfig pstConfig->endDeviceTimeout = %d ",pstConfig->endDeviceTimeout);
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
@@ -417,10 +419,11 @@ void APP_ZIGBEE_DirectInit(void)
 
   /* Initialization of Zigbee Direct */
   memset(&stZddConfig, 0, sizeof(stZddConfig));
+  APP_ZIGBEE_GetStartupConfig(&stZddConfig.startup); 
   stZddConfig.open_tunnel = true;
   stZddConfig.zdd_server_endpt = APP_ZIGBEE_ENDPOINT;
-  stZddConfig.identify_callbacks.identify = NULL;
-  stZddConfig.identify_callbacks.trigger_effect = NULL;
+  stZddConfig.identify_callbacks.identify = my_identify_callback;
+  stZddConfig.identify_callbacks.trigger_effect = my_trigger_effect_callback;
   if (!zb_zdd_init(stZigbeeAppInfo.pstZigbee, &stZddConfig))
   {
       LOG_ERROR_APP("Error, zb_zdd_init failed");
@@ -440,4 +443,26 @@ void APP_BSP_Button1Action(void)
 }
 
 
+static enum ZclStatusCodeT my_trigger_effect_callback(
+    struct ZbZclClusterT *cluster,
+    struct ZbZclIdentifyClientTriggerEffectT *info,
+    struct ZbZclAddrInfoT *src_info,
+    void *arg)
+{
+	LOG_INFO_APP("Trigger Effect command received\n");
+    return ZCL_STATUS_SUCCESS; 
+}
+static void my_identify_callback(struct ZbZclClusterT *cluster, enum ZbZclIdentifyServerStateT state, void *arg) 
+{
+
+  if (state == ZCL_IDENTIFY_START)
+    APP_LED_ON( LED_BLUE);
+  else
+    APP_LED_OFF( LED_BLUE);
+    
+  
+   LOG_INFO_APP("Identify_callback received with state = %d\n",state);
+
+
+}
 /* USER CODE END FD_LOCAL_FUNCTIONS */

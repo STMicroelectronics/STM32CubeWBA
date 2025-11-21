@@ -1,8 +1,8 @@
 [ProjectFiles]
-HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\B-WBA5M-WPAN
 [Others]
 
 [Groups]
 Doc=../README.md;
-Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Drivers/BSP/B-WBA5M-WPAN=../../../../../../Drivers/BSP/B-WBA5M-WPAN/b_wba5m_wpan.c;
 Application/User/STM32_WPAN/App=../STM32_WPAN/App/app_bsp.c;

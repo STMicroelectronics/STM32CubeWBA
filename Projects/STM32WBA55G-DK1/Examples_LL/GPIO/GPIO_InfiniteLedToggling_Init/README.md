@@ -4,7 +4,7 @@ How to configure and use GPIOs to toggle the on-board user LEDs
 every 250 ms. This example is based on the STM32WBAxx LL API. The peripheral
 is initialized with LL initialization function to demonstrate LL init usage.
 
-PA.00 IO (configured in output pushpull mode) toggles in a forever loop.
+PB.15 IO (configured in output pushpull mode) toggles in a forever loop.
 On STM32WBA55G-DK1 board this IO is connected to LD3.
 
 In this example, HCLK is configured at 100 MHz.

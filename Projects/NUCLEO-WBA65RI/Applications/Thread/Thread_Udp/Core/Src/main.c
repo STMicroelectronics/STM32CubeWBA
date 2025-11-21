@@ -398,6 +398,10 @@ void MX_RAMCFG_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_RAMCFG_ConfigWaitState(&hramcfg_SRAM1, RAMCFG_WAITSTATE_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RAMCFG_Init 2 */
 
   /* USER CODE END RAMCFG_Init 2 */

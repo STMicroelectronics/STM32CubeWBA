@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    eddystone_url_service.c
   * @author  MCD Application Team
-  * @brief   
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -40,10 +40,9 @@
 /* Exported functions --------------------------------------------------------*/
 tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
 {
-  const uint8_t *p_bd_addr;
   tBleStatus ret;
   uint16_t AdvertisingInterval = (EddystoneURL_Init->AdvertisingInterval * ADVERTISING_INTERVAL_INCREMENT / 10);
-  uint8_t service_data[] =
+  uint8_t URL_data[] =
   {
     2,                                                                       /*< Length. */
     AD_TYPE_FLAGS,                                                           /*< Flags data type value. */
@@ -79,17 +78,13 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
   /* Disable scan response. */
   hci_le_set_scan_response_data(0, NULL);
 
-  /* Put the device in a non-connectable mode. */
-  p_bd_addr = BleGetBdAddress();
-
-  ret = hci_le_set_advertising_parameters( AdvertisingInterval,
-                                           AdvertisingInterval,
-                                           ADV_NONCONN_IND,
-                                           CFG_BD_ADDRESS_TYPE,
-                                           CFG_BD_ADDRESS_TYPE,
-                                           (uint8_t *)p_bd_addr,
-                                           0x07, /* On channels: 37, 38 and 39 */ 
-                                           0x00  /* Allow Scan Request and Connect Request from Any */
+  ret = hci_le_set_advertising_parameters( AdvertisingInterval, AdvertisingInterval, /*< Set the advertising interval as 700 ms (0.625 us increment). */
+                                           ADV_NONCONN_IND,                          /*< Advertise as non-connectable, undirected. */
+                                           CFG_BD_ADDRESS_TYPE,                      /*< Use the public address for Own */
+                                           CFG_BD_ADDRESS_TYPE,                      /*< Use the public address for Peer */
+                                           BleGetBdAddress(),                        /*< Peer Address */
+                                           0x07,                                     /* On channels: 37, 38 and 39 */
+                                           0x00                                      /* Allow Scan Request and Connect Request from Any */
                                          );
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -98,11 +93,11 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
 
   for (uint8_t i = 0; i < EddystoneURL_Init->UrlLength; ++i)
   {
-    service_data[14 + i] = EddystoneURL_Init->Url[i];
+    URL_data[14 + i] = EddystoneURL_Init->Url[i];
   }
 
-  ret = hci_le_set_advertising_data(sizeof(service_data),
-                                    service_data);
+  ret = hci_le_set_advertising_data(sizeof(URL_data),
+                                    URL_data);
   if (ret != BLE_STATUS_SUCCESS)
   {
     return ret;
@@ -114,11 +109,11 @@ tBleStatus EddystoneURL_Init(EddystoneURL_InitTypeDef *EddystoneURL_Init)
   {
     return ret;
   }
-  
+
   return ret;
 }
 
-void EddystoneURL_Process(void)
+tBleStatus EddystoneURL_Process(void)
 {
   uint8_t UrlScheme = URL_PREFIX;
   uint8_t Url[]     = PHYSICAL_WEB_URL;
@@ -131,5 +126,5 @@ void EddystoneURL_Process(void)
     .UrlLength = sizeof(Url) - 1
   };
 
-  EddystoneURL_Init(&EddystoneURL_InitStruct);
+  return(EddystoneURL_Init(&EddystoneURL_InitStruct));
 }
