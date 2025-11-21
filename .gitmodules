@@ -46,3 +46,11 @@
 	path = Drivers/BSP/B-WBA5M-WPAN
 	url = https://github.com/STMicroelectronics/b-wba5m-wpan-bsp
 	branch = main
+[submodule "Drivers/BSP/Components/m95p32"]
+	path = Drivers/BSP/Components/m95p32
+	url = https://github.com/STMicroelectronics/stm32-m95p32
+	branch = main
+[submodule "Drivers/BSP/Components/sht40ad1b"]
+	path = Drivers/BSP/Components/sht40ad1b
+	url = https://github.com/STMicroelectronics/stm32-sht40ad1b
+	branch = main
