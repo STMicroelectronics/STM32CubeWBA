@@ -68,7 +68,9 @@
  * @details supply Vdda (unit: mV).
  *
  */
-#define VDDA_APPLI                     (3300UL)
+#ifndef VDDA_APPLI
+#define VDDA_APPLI      VDD_VALUE
+#endif
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
@@ -661,7 +663,7 @@ void AdcDeactivate (void)
 ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
 {
   ADCCTRL_Cmd_Status_t error = ADCCTRL_OK;
-  
+
   __IO uint32_t backup_setting_adc_dma_transfer = 0U;
 
   LL_ADC_InitTypeDef ADC_InitStruct = {0};
@@ -705,14 +707,14 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
     /* Update init and configuration parameters with requested values */
     ADC_InitStruct.Resolution = p_Handle->InitConf.ConvParams.Resolution;
     ADC_InitStruct.DataAlignment = p_Handle->InitConf.ConvParams.DataAlign;
-    
+
     ADC_REG_InitStruct.TriggerSource = p_Handle->InitConf.ConvParams.TriggerStart;
     ADC_REG_InitStruct.SequencerLength = p_Handle->InitConf.SeqParams.Length;
     ADC_REG_InitStruct.SequencerDiscont = p_Handle->InitConf.SeqParams.DiscMode;
     ADC_REG_InitStruct.ContinuousMode = p_Handle->InitConf.ConvParams.ConversionMode;
     ADC_REG_InitStruct.DMATransfer = p_Handle->InitConf.ConvParams.DmaTransfer;
     ADC_REG_InitStruct.Overrun = p_Handle->InitConf.ConvParams.Overrun;
-    
+
     /* Configure Regular Channel - Only for internal channels */
     if (LL_ADC_CHANNEL_VREFINT == p_Handle->ChannelConf.Channel)
     {
@@ -724,60 +726,60 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
       LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
                                      LL_ADC_PATH_INTERNAL_TEMPSENSOR);
     }
-    else 
+    else
     {
       LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
                                      LL_ADC_PATH_INTERNAL_NONE);
     }
-    
+
     /* Set trigger frequency */
-    LL_ADC_SetTriggerFrequencyMode(p_ADCHandle, 
+    LL_ADC_SetTriggerFrequencyMode(p_ADCHandle,
                                    p_Handle->InitConf.ConvParams.TriggerFrequencyMode);
-    
+
     /* Apply the requested ADC configuration - Init part */
-    if (SUCCESS != LL_ADC_Init(p_ADCHandle, 
+    if (SUCCESS != LL_ADC_Init(p_ADCHandle,
                                &ADC_InitStruct))
     {
       error = ADCCTRL_NOK;
     }
     else
-    {      
+    {
       /* Set Sequencer if configurable */
-      LL_ADC_REG_SetSequencerConfigurable(p_ADCHandle, 
+      LL_ADC_REG_SetSequencerConfigurable(p_ADCHandle,
                                           p_Handle->InitConf.SeqParams.Setup);
-      
+
       /* Apply the requested ADC configuration - Register init part */
-      if (SUCCESS != LL_ADC_REG_Init(p_ADCHandle, 
+      if (SUCCESS != LL_ADC_REG_Init(p_ADCHandle,
                                      &ADC_REG_InitStruct))
-      {      
+      {
         error = ADCCTRL_NOK;
       }
-      else 
+      else
       {
         /* Set Low power characteristics */
-        LL_ADC_SetLPModeAutoPowerOff(p_ADCHandle, 
+        LL_ADC_SetLPModeAutoPowerOff(p_ADCHandle,
                                      p_Handle->InitConf.LowPowerParams.AutoPowerOff);
-        LL_ADC_SetLPModeAutonomousDPD(p_ADCHandle, 
+        LL_ADC_SetLPModeAutonomousDPD(p_ADCHandle,
                                       p_Handle->InitConf.LowPowerParams.AutonomousDPD);
 
         /* Set Sampling time for channels */
-        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle, 
-                                             LL_ADC_SAMPLINGTIME_COMMON_1, 
+        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle,
+                                             LL_ADC_SAMPLINGTIME_COMMON_1,
                                              p_Handle->InitConf.ConvParams.SamplingTimeCommon1);
-        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle, 
-                                             LL_ADC_SAMPLINGTIME_COMMON_2, 
+        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle,
+                                             LL_ADC_SAMPLINGTIME_COMMON_2,
                                              p_Handle->InitConf.ConvParams.SamplingTimeCommon2);
-        
+
         /* Configure the channel */
-        LL_ADC_REG_SetSequencerRanks(p_ADCHandle, 
-                                     p_Handle->ChannelConf.Rank, 
+        LL_ADC_REG_SetSequencerRanks(p_ADCHandle,
+                                     p_Handle->ChannelConf.Rank,
                                      p_Handle->ChannelConf.Channel);
-        LL_ADC_SetChannelSamplingTime(p_ADCHandle, 
-                                      p_Handle->ChannelConf.Channel, 
+        LL_ADC_SetChannelSamplingTime(p_ADCHandle,
+                                      p_Handle->ChannelConf.Channel,
                                       p_Handle->ChannelConf.SamplingTime);
-        
+
         /* Update the current configuration */
-        CurrentConfig = p_Handle->Uid; 
+        CurrentConfig = p_Handle->Uid;
       }
     }
   }
