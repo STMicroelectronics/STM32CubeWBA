@@ -110,3 +110,7 @@
 	path = Middlewares/Third_Party/FreeRTOS
 	url = https://github.com/STMicroelectronics/stm32-mw-freertos
 	branch = master
+[submodule "Drivers/BSP/Components/mx25r3235f"]
+	path = Drivers/BSP/Components/mx25r3235f
+	url = https://github.com/STMicroelectronics/stm32-mx25r3235f
+	branch = main
