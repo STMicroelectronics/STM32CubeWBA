@@ -364,6 +364,10 @@ void HRS_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * HRME
    */

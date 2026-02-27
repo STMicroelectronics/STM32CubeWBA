@@ -23,38 +23,38 @@
 <p>How to use the Public Broadcast profile in Source role as specified by the Bluetooth SIG.</p>
 <p>The PBP Source application advertises and broadcasts audio streams to remote PBP Sinks. <br></p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
-<p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio</p>
+<p>Connectivity, BLE, BLE protocol, BLE profile, BLE audio, Auracast</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA55xx devices with SMPS. <br>Connect the Discovery Board to your PC with a USB cable type C <br>Connect an Audio Input on Jack Connector CN4.</p></li>
-<li><p>Another Discovery board may be necessary to run PBP Sink application.</p></li>
+<li>This example runs on STM32WBA55xx devices with SMPS.
+<ul>
+<li>Connect the Discovery Board to your PC with a USB cable type C</li>
+<li>Connect an Audio Input on Jack Connector CN4.</li>
+</ul></li>
+<li>Another Discovery board may be necessary to run PBP Sink application.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following:</p>
+<p>To make the program work, you must do the following:</p>
 <ul>
-<li>Open your preferred toolchain</li>
-<li>Rebuild all files and load your image into target memory</li>
-<li>Run the example <br> <br></li>
-<li>PBP Source ID is configurable thanks to BAP_BROADCAST_SOURCE_ID in pbp_app_conf.h file. <br></li>
-<li><strong>At Startup</strong>, PBP Source starts Audio Stream Broadcast<br>Stream Audio in the Jack Connector CN4.<br>Source ID is displayed on the LCD interface</li>
-<li>Power up a PBP Sink device with Source ID matching with the BAP_BROADCAST_SOURCE_ID value</li>
-<li>Once PBP Source application is started and Audio Stream Broadcast is launched :
+<li>Open your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
+<li>Run the example. <br> <br></li>
+<li>PBP Broadcast Name is configurable via the aPBPAPP_BroadcastName variable in the pbp_app.c file.</li>
+<li><strong>At Startup</strong>,
 <ul>
-<li>On the PBP Sink device, select with the Joystick the Source ID of the remote PBP Source to synchronize to.</li>
+<li>The PBP Source starts broadcasting the audio stream.</li>
+<li>The audio is streamed through the Jack Connector CN4.</li>
+<li>The Broadcast Name is displayed on the LCD interface.</li>
 </ul></li>
-<li>Once PBP Sink device is synchronized to PBP Source and Audio Stream is received, Audio is available on Jack Connector.</li>
+<li>Power up a PBP Sink device searching for the Broadcast Name that matches the aPBPAPP_BroadcastName value.</li>
+<li>Once the PBP Source application starts and the Audio Stream Broadcast is streaming:
+<ul>
+<li>On the PBP Sink device, use the joystick to select the Broadcast Name of the remote PBP Source to synchronize to.</li>
+</ul></li>
+<li>Once the PBP Sink device is synchronized with the PBP Source and the audio stream is received, the audio will be available through the Jack Connector.</li>
 </ul>
 <h3 id="documentation"><strong>Documentation</strong></h3>
-<ul>
-<li>Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
-<ul>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Public_Broadcast_Profile"> Bluetooth® Low Energy audio - STM32WBA Public broadcast profile</a></li>
-</ul></li>
-</ul>
+<p>Wiki pages related to the LE Audio solutions developed by STMicroelectronics are available here: - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a> - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a> - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a> - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a> - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Public_Broadcast_Profile"> Bluetooth® Low Energy audio - STM32WBA Public broadcast profile</a></p>
 </div>
 </div>
 </body>

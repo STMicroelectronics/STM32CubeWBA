@@ -80,24 +80,24 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-    /* Setup GPIOA 13, 14, 15 in Analog no pull */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIOA->PUPDR &= ~0xFC000000;
-    GPIOA->MODER |= 0xFC000000;
-    __HAL_RCC_GPIOA_CLK_DISABLE();
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIOA->PUPDR &= ~0xFC000000;
+  GPIOA->MODER |= 0xFC000000;
+  __HAL_RCC_GPIOA_CLK_DISABLE();
 
-    /* Setup GPIOB 3, 4 in Analog no pull */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    GPIOB->PUPDR &= ~0x3C0;
-    GPIOB->MODER |= 0x3C0;
-    __HAL_RCC_GPIOB_CLK_DISABLE();
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  GPIOB->PUPDR &= ~0x3C0;
+  GPIOB->MODER |= 0x3C0;
+  __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
 
-    memset(&hlpuart1, 0, sizeof(hlpuart1));
+  memset(&hlpuart1, 0, sizeof(hlpuart1));
 #if (CFG_LOG_SUPPORTED == 1)
-    memset(&huart1, 0, sizeof(huart1));
+  memset(&huart1, 0, sizeof(huart1));
 #endif
-    memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
 
   MX_GPIO_Init();
   MX_ICACHE_Init();
@@ -105,6 +105,7 @@ void MX_StandbyExit_PeripheralInit(void)
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
 #endif
+
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
 

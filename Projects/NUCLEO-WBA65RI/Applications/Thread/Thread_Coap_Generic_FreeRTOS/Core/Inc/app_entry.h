@@ -64,7 +64,6 @@ uint32_t MX_APPE_Init(void *p_param);
 void MX_APPE_LinkLayerInit(void);
 
 /* USER CODE BEGIN EFP */
-
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

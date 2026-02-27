@@ -169,7 +169,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    __________________________________                       __________________________________
                    |  BLE_HeartRate_Thread_FreeRTOS |                       | Thread_Coap_Generic            |
                    |________________________________|                       |________________________________|
-                   | USART1                         |                       | USART1                         |
+                   | USART1 for log                 |                       | USART1                         |
                    |  every 1 sec (after reset) --&gt; |======&gt;  COAP ======&gt;  | BLUE LED TOGGLE (ON/OFF)       |
                    |  or restarting (if stopped)    | Resource :light       |  every 1 sec                   |
                    |     with SW1                   | Mode: Multicast       |                                |
@@ -199,14 +199,14 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |                                |                       |                                |
                    | LED : Red                      |                       | LED : Green                    |
                    |--------------------------------|                       |--------------------------------|
-                   | ROLE re-negociation phase      | Details not described | ROLE negociation phase         |
-                   |            every 1sec --&gt;      |==&gt;  NOTHING!          |                                |  
+                   | ROLE re-negotiation phase      | Details not described | ROLE negotiation phase         |
+                   |            every 1sec --&gt;      |   ==&gt;  NOTHING!       |                                |  
                    |--------------------------------|                       |--------------------------------|
                    | Role : Leader                  |                       | Role : Router                  |
                    |                                |                       |                                |
                    | LED : Green                    |                       | LED : Red                      |
                    |--------------------------------|                       |--------------------------------|
-                   |            every 1sec --&gt;      |==&gt;  NOTHING!          |                                | 
+                   |            every 1sec --&gt;      |   ==&gt;  NOTHING!       |                                | 
                    |                                |                       |                                |
                    |--------------------------------|                       |--------------------------------|
        PushB SW1=&gt; |     restarting every 1 sec --&gt; |======&gt;  COAP ======&gt;  | BLUE LED TOGGLE (ON/OFF)       |
@@ -233,7 +233,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |________________________________|                       |________________________________|
                    |                                |                       |                                |
                    |       _________________________|                       |       _________________________|
-                   |      |COM2                     |                       |      |LPUART1                  |
+                   |      |USART2-optional          |                       |      |LPUART1                  |
                    |      |                         |                       |      |                         |
                    |      |     Thread stack control|                       |      |     Thread stack control|
                    |      |       via Cli commands  |                       |      |       via Cli commands  |
@@ -243,7 +243,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |      |_________________________|                       |      |_________________________|
                    |                                |                       |                                |
                    |________________________________|                       |________________________________|
-
+ 
   
 </pre>
 <p>During Thread activity, the BLE_HeartRate_Thread_FreeRTOS device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.</p>
@@ -260,7 +260,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
 </ul>
 <h3 id="traces"><strong>Traces</strong></h3>
 <ul>
-<li><p>To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port).</p></li>
+<li><p>To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port 1).</p></li>
 <li><p>The UART must be configured as follows:<br></p>
 <ul>
 <li>BaudRate = 115200 baud</br></li>
@@ -270,7 +270,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
 <li>Flow control = none</br></li>
 <li>Terminal “Go to the Line” : &lt;LF&gt;</li>
 </ul></li>
-<li><p>It is also possible to control and configure the Thread stack through Cli commands. For that, connect the COM2 of your board to an Hyperterminal through STLink.<br> The Serial interface must be configured as follows:<br></p>
+<li><p>It is also possible to control and configure the Thread stack through Cli commands. For that, connect your board to the Hyperterminal (through the STLink Virtual COM Port 2). To send commands through USART2, RTS hardware flow control is required: this needs solder bridge SB4 to be fitted on MB2130 board.</p>
 <ul>
 <li>BaudRate = 115200 baud</br></li>
 <li>Word Length = 8 Bits</br></li>

@@ -148,7 +148,6 @@ static bool is_erase_allow(struct arm_spi_flash_dev_t *flash_dev,
   * \return       Returns true if param is aligned to program_unit, false
   *               otherwise.
   */
-
 static bool is_write_allow(struct arm_spi_flash_dev_t *flash_dev,
                            uint32_t start, uint32_t len)
 {
@@ -266,13 +265,13 @@ static int32_t Spi_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("read spi 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+  printf("read spi 0x%" PRIx32 " n=%" PRIx32 " \r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS), cnt);
 #endif /*  DEBUG_SPI_FLASH_ACCESS */
 
   /* Check Flash memory boundaries */
   if (!is_range_valid(&ARM_SPI_FLASH0_DEV, addr + cnt - 1))
   {
-    printf("read spi not allowed 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+    printf("read spi not allowed 0x%" PRIx32 " n=%" PRIx32 " \r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS), cnt);
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
@@ -344,7 +343,7 @@ static int32_t Spi_Flash_ReadData(uint32_t addr, void *data, uint32_t cnt)
 
   if (err != BSP_ERROR_NONE)
   {
-    printf("failed read spi 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+    printf("failed read spi 0x%" PRIx32 " n=%" PRIx32 " \r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS), cnt);
     return ARM_DRIVER_ERROR;
   }
 
@@ -359,7 +358,7 @@ static int32_t Spi_Flash_ProgramData(uint32_t addr,
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("write spi 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+  printf("write spi 0x%" PRIx32 " n=%" PRIx32 " \r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS), cnt);
 #endif /* DEBUG_SPI_FLASH_ACCESS */
   /* Check Flash memory boundaries and alignment with minimum write size
    * (program_unit), data size also needs to be a multiple of program_unit.
@@ -370,13 +369,13 @@ static int32_t Spi_Flash_ProgramData(uint32_t addr,
       (!is_write_allow(&ARM_SPI_FLASH0_DEV, addr, cnt))
      )
   {
-    printf("write spi not allowed 0x%lx n=%" PRIx32 " \r\n", (addr + SPI_FLASH_BASE_ADDRESS), cnt);
+    printf("write spi not allowed 0x%" PRIx32 " n=%" PRIx32 " \r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS), cnt);
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
 
   ARM_SPI_FLASH0_STATUS.busy = DRIVER_STATUS_BUSY;
-  
+
   /* spi flash address to write is the offset from begin of external flash */
   if (Spi_WriteEnable(BSP_EEPROM_0) == READY)
   {
@@ -406,13 +405,13 @@ static int32_t Spi_Flash_EraseSector(uint32_t addr)
   ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_NO_ERROR;
 
 #ifdef DEBUG_SPI_FLASH_ACCESS
-  printf("erase spi 0x%lx\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
+  printf("erase spi 0x%" PRIx32 "\r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS));
 #endif /* DEBUG_SPI_FLASH_ACCESS */
   if (!(is_range_valid(&ARM_SPI_FLASH0_DEV, addr)) ||
       !(is_erase_aligned(&ARM_SPI_FLASH0_DEV, addr)) ||
       !(is_erase_allow(&ARM_SPI_FLASH0_DEV, addr)))
   {
-    printf("erase spi not allowed 0x%lx\r\n", (addr + SPI_FLASH_BASE_ADDRESS));
+    printf("erase spi not allowed 0x%" PRIx32 "\r\n", (uint32_t)(addr + SPI_FLASH_BASE_ADDRESS));
     ARM_SPI_FLASH0_STATUS.error = DRIVER_STATUS_ERROR;
     return ARM_DRIVER_ERROR_PARAMETER;
   }
@@ -480,7 +479,7 @@ static ReadyStatus Spi_WriteEnable(uint32_t Instance)
         }
         else
         {
-          printf("Error occured while reading status register\r\n");
+          printf("Error occurred while reading status register\r\n");
         }
       }
     }
@@ -492,7 +491,7 @@ static ReadyStatus Spi_WaitForDeviceReady(uint32_t Instance)
   StatusRegRxBuffer[0] = 0xFFU;
 
   /* Initialize number of trials to read a ready status */
-  /* trials_ nb should depend on clock frequency, the actual one should not be high enough if clock fequency increases */
+  /* trials_ nb should depend on clock frequency, the actual one should not be high enough if clock frequency increases */
   uint32_t count = 1000UL;
 
   while(1)
@@ -507,13 +506,13 @@ static ReadyStatus Spi_WaitForDeviceReady(uint32_t Instance)
     }
     else
     {
-      printf(" wait Error occured while reading status register\r\n");
+      printf(" wait Error occurred while reading status register\r\n");
       return(NOT_READY);
     }
 
     if (count == 0U)
     {
-      printf("Timeout occured while checking status register\r\n");
+      printf("Timeout occurred while checking status register\r\n");
       return(NOT_READY);
     }
     count--;

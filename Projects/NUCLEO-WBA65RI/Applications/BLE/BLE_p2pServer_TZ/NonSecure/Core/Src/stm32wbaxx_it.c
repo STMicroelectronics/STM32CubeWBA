@@ -202,33 +202,6 @@ void RCC_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI Line4 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
-  BSP_PB_IRQHandler(B3);
-  /* USER CODE END EXTI4_IRQn 0 */
-  /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-  /* USER CODE END EXTI4_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI Line5 interrupt.
-  */
-void EXTI5_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI5_IRQn 0 */
-  BSP_PB_IRQHandler(B2);
-
-  /* USER CODE END EXTI5_IRQn 0 */
-  /* USER CODE BEGIN EXTI5_IRQn 1 */
-
-  /* USER CODE END EXTI5_IRQn 1 */
-}
-
-/**
   * @brief This function handles GPDMA1 Channel 0 global interrupt.
   */
 void GPDMA1_Channel0_IRQHandler(void)
@@ -376,5 +349,5 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+/* EXTI for Nucleo buttons are managed by 'app_bsp.c' */
 /* USER CODE END 1 */

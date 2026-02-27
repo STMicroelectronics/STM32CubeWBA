@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-  <fileVersion>3</fileVersion>
+  <fileVersion>4</fileVersion>
   <configuration>
     <name>Thread_OTA_Client</name>
     <toolchain>
@@ -11,7 +11,7 @@
       <name>General</name>
       <archiveVersion>3</archiveVersion>
       <data>
-        <version>34</version>
+        <version>37</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -74,7 +74,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>9.20.1.43525</state>
+          <state>9.60.3.7274</state>
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
@@ -102,8 +102,8 @@
         </option>
         <option>
           <name>GBECoreSlave</name>
-          <version>31</version>
-          <state>59</state>
+          <version>34</version>
+          <state>61</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -119,8 +119,8 @@
         </option>
         <option>
           <name>CoreVariant</name>
-          <version>31</version>
-          <state>59</state>
+          <version>34</version>
+          <state>61</state>
         </option>
         <option>
           <name>GFPUDeviceSlave</name>
@@ -142,8 +142,8 @@
         </option>
         <option>
           <name>GFPUCoreSlave2</name>
-          <version>31</version>
-          <state>59</state>
+          <version>34</version>
+          <state>61</state>
         </option>
         <option>
           <name>OGCMSISPackSelectDevice</name>
@@ -203,13 +203,30 @@
           <name>OG_32_64Device</name>
           <state>0</state>
         </option>
+        <option>
+          <name>PointerAuthentication</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>FPU64</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>OG_32_64DeviceCoreSlave</name>
+          <version>34</version>
+          <state>61</state>
+        </option>
+        <option>
+          <name>GOutputSo</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>ICCARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>37</version>
+        <version>39</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -219,11 +236,12 @@
           <state>OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
           <state>OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;</state>
           <state>MAC</state>
-                    <state>MAC_LAYER</state>
+          <state>MAC_LAYER</state>
           <state>USE_HAL_DRIVER</state>
           <state>USE_FULL_ASSERT</state>
           <state>STM32WBA65xx</state>
           <state>DISABLE_RFTS_EXT_EVNT_HNDLR=1</state>
+          <state>PHY_40nm_3_40_a</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -346,6 +364,7 @@
           <name>CCIncludePath2</name>
           <state>$PROJ_DIR$/../Core/Inc</state>
           <state>$PROJ_DIR$/../System/Interfaces</state>
+          <state>$PROJ_DIR$/../System/Config</state>
           <state>$PROJ_DIR$/../System/Config/Log</state>
           <state>$PROJ_DIR$/../System/Config/LowPower</state>
           <state>$PROJ_DIR$/../System/Config/Debug_GPIO</state>
@@ -506,13 +525,29 @@
           <name>CCStackProtection</name>
           <state>0</state>
         </option>
+        <option>
+          <name>CCPointerAutentiction</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>CCBranchTargetIdentification</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>CCPosRadRwpi</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>CCPosSharedSlave</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
       <name>AARM</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>11</version>
+        <version>12</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -672,6 +707,10 @@
           <name>PreInclude</name>
           <state></state>
         </option>
+        <option>
+          <name>A_32_64Device</name>
+          <state>1</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -706,27 +745,18 @@
     </settings>
     <settings>
       <name>CUSTOM</name>
-      <archiveVersion>3</archiveVersion>
+      <archiveVersion>4</archiveVersion>
       <data>
         <extensions></extensions>
         <cmdline></cmdline>
-        <hasPrio>0</hasPrio>
         <buildSequence>inputOutputBased</buildSequence>
-      </data>
-    </settings>
-    <settings>
-      <name>BUILDACTION</name>
-      <archiveVersion>1</archiveVersion>
-      <data>
-        <prebuild></prebuild>
-        <postbuild></postbuild>
       </data>
     </settings>
     <settings>
       <name>ILINK</name>
       <archiveVersion>0</archiveVersion>
       <data>
-        <version>26</version>
+        <version>28</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1086,6 +1116,18 @@
           <name>IlinkWrapperFile</name>
           <state></state>
         </option>
+        <option>
+          <name>IlinkProcessor</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkFpuProcessor</name>
+          <state>1</state>
+        </option>
+        <option>
+          <name>IlinkSharedSlave</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -1108,6 +1150,11 @@
           <state>###Unitialized###</state>
         </option>
       </data>
+    </settings>
+    <settings>
+      <name>BUILDACTION</name>
+      <archiveVersion>2</archiveVersion>
+      <data></data>
     </settings>
     <settings>
       <name>Coder</name>
@@ -1144,9 +1191,6 @@
         <name>STM32_WPAN</name>
         <group>
           <name>App</name>
-          <file>
-            <name>$PROJ_DIR$\..\STM32_WPAN\App\app_bsp.c</name>
-          </file>
           <file>
             <name>$PROJ_DIR$\..\STM32_WPAN\App\app_thread.c</name>
           </file>
@@ -1209,16 +1253,13 @@
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
         </file>
         <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</name>
+        </file>
+        <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_otp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka_p256.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
@@ -1234,12 +1275,6 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_pka.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_pka_p256.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_rng.c</name>
@@ -1261,15 +1296,6 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
           </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
-          </file>
         </group>
         <group>
           <name>Flash</name>
@@ -1282,23 +1308,11 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\rf_timing_synchro.c</name>
           </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</name>
-          </file>
         </group>
         <group>
           <name>Log</name>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Log\log_module.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
           </file>
         </group>
         <group>
@@ -1309,20 +1323,11 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
           </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
-          </file>
         </group>
         <group>
           <name>SerialCmdInterpreter</name>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
           </file>
         </group>
         <file>
@@ -1347,10 +1352,10 @@
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/app_sys.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/crc_ctrl.c</name>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/scm.c</name>
@@ -1360,6 +1365,27 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
         </file>
       </group>
       <group>
@@ -1399,10 +1425,13 @@
     <group>
       <name>STM32WBAxx_HAL_Driver</name>
       <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_adc.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_utils.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_pka.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal.c</name>
@@ -1439,6 +1468,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pwr_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_cryp.c</name>
@@ -1490,9 +1522,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_uart_ex.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_adc.c</name>
       </file>
     </group>
   </group>

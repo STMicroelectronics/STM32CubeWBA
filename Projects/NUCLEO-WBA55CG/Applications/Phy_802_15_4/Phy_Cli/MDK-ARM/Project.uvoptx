@@ -301,6 +301,18 @@
       <bShared>0</bShared>
     </File>
     <File>
+      <GroupNumber>13</GroupNumber>
+      <FileNumber>38</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</PathWithFileName>
+      <FilenameWithoutPath>pka_ctrl.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
       <GroupNumber>4</GroupNumber>
       <FileNumber>9</FileNumber>
       <FileType>1</FileType>
@@ -361,18 +373,6 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</PathWithFileName>
       <FilenameWithoutPath>hw_aes.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>13</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</PathWithFileName>
-      <FilenameWithoutPath>hw_pka.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

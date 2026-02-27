@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+#include "main.h"
+
 /* Exported constants --------------------------------------------------------*/
 
 /* The RADIO_DEEPSLEEP_WAKEUP_TIME_US macro allows to define when the system

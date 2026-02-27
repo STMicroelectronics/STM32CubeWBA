@@ -31,14 +31,15 @@
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
-#include "advanced_memory_manager.h"
-#include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "otp.h"
 #include "scm.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "stm32wbaxx_ll_rcc.h"
 #include "assert.h"
 #include "stm32_lpm_if.h"
@@ -57,8 +58,6 @@ extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
-                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -94,30 +93,6 @@ static bool system_startup_done = FALSE;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-/* AMM configuration */
-static uint32_t AMM_Pool[AMM_POOL_SIZE];
-static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
-{
-  /* Virtual Memory #1 */
-  {
-    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE
-  },
-  /* Virtual Memory #2 */
-  {
-    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE
-  },
-};
-
-static AMM_InitParameters_t ammInitConfig =
-{
-  .p_PoolAddr = AMM_Pool,
-  .PoolSize = AMM_POOL_SIZE,
-  .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
-  .p_VirtualMemoryConfigList = vmConfig
-};
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -132,11 +107,6 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
-
-static void APPE_AMM_Init(void);
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
-static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 /* USER CODE BEGIN PFP */
 
@@ -182,9 +152,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Configure the system Power Mode */
   SystemPower_Config();
-
-  /* Initialize the Advance Memory Manager module */
-  APPE_AMM_Init();
 
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
@@ -312,6 +279,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -358,8 +330,6 @@ static void SystemPower_Config(void)
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
-  
-
 
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
@@ -368,10 +338,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-  /*Only 64k SRAM1 is necessary for this application*/
-  LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_PAGE1_RETENTION);
-  /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
-  LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+
   /* USER CODE END SystemPower_Config */
 }
 
@@ -386,18 +353,6 @@ static void APPE_RNG_Init(void)
 
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
-}
-
-static void APPE_AMM_Init(void)
-{
-  /* Initialize the Advance Memory Manager */
-  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
-  {
-    Error_Handler();
-  }
-
-  /* Register Advance Memory Manager task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_AMM, UTIL_SEQ_RFU, AMM_BackgroundProcess);
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
@@ -478,9 +433,6 @@ void UTIL_SEQ_PostIdle( void )
   (void)ll_sys_dp_slp_exit();
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
-#if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STDBY_SUPPORTED != 0 ) )
-  APP_BSP_PostIdle();
-#endif /* ( CFG_LPM_LEVEL && CFG_LPM_STDBY_SUPPORTED ) */
 
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
@@ -492,35 +444,6 @@ void UTIL_SEQ_PostIdle( void )
 void HWCB_RNG_Process( void )
 {
   UTIL_SEQ_SetTask(1U << CFG_TASK_HW_RNG, TASK_PRIO_RNG);
-}
-
-void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
-{
-  /* Fulfill the function handle */
-  p_BasicMemoryManagerFunctions->Init = AMM_WrapperInit;
-  p_BasicMemoryManagerFunctions->Allocate = AMM_WrapperAllocate;
-  p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
-}
-
-void AMM_ProcessRequest(void)
-{
-  /* Trigger to call Advance Memory Manager process function */
-  UTIL_SEQ_SetTask(1U << CFG_TASK_AMM, CFG_SEQ_PRIO_0);
-}
-
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
-{
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
-}
-
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
-{
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))

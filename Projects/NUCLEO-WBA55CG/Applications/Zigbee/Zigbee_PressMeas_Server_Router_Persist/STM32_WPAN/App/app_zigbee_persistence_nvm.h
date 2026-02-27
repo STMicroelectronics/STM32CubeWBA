@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    app_zibgee_persistence_nvm.h
   * @author  MCD Application Team
-  * @brief   Library to simpliest manage persistence on NVM.
+  * @brief   Library to simplest manage persistence on NVM.
   ******************************************************************************
   * @attention
   *

@@ -106,7 +106,8 @@ typedef struct
   uint16_t descStartHdl;
   uint16_t descEndHdl;
 
-  uint16_t status;
+  svcInfoStatus_t status;
+  uint8_t findIncludedServices; /* Set to TRUE to search for included services */
   /* USER CODE BEGIN SvcInfo_t */
 
   /* USER CODE END SvcInfo_t */
@@ -116,16 +117,13 @@ typedef struct
 typedef struct
 {
   GATT_CLIENT_APP_State_t state;
-
-  APP_BLE_ConnStatus_t connStatus;
   uint16_t connHdl;
+  uint16_t att_mtu;
 
   SvcInfo_t svcInfo[SVC_ID_MAX];
 
-  uint16_t ServiceChangedCharStartHdl;
   uint16_t ServiceChangedCharValueHdl;
   uint16_t ServiceChangedCharDescHdl;
-  uint16_t ServiceChangedCharEndHdl;
   uint8_t ServiceChangedCharProperties;
   /* USER CODE BEGIN BleClientAppContext_t */
 
@@ -149,7 +147,32 @@ typedef struct
 
 }BleClientAppContext_t;
 
+typedef enum
+{
+  PROC_GATT_EXCHANGE_CONFIG,
+  PROC_GATT_DISC_ALL_PRIMARY_SERVICES,
+  PROC_GATT_FIND_INCLUDED_SERVICES,
+  PROC_GATT_DISC_ALL_CHARS,
+  PROC_GATT_DISC_ALL_DESCS,
+  PROC_GATT_PROPERTIES_ENABLE_ALL,
+  /* USER CODE BEGIN ProcGattId_t */
+
+  /* USER CODE END ProcGattId_t */
+}ProcGattId_t;
+
+/* Context for the current GATT procedure. One procedure at a time is supported. */
+typedef struct
+{
+  ProcGattId_t current_gatt_proc;
+  uint8_t att_error_code;
+  uint8_t gatt_error_code;
+  uint16_t read_char_len;
+  uint8_t read_char[512];
+  uint16_t read_char_offset;
+}BleClientAppProcContext_t;
+
 /* Private defines ------------------------------------------------------------*/
+#define BLE_DEFAULT_ATT_MTU                                                   23
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -164,9 +187,8 @@ typedef struct
 
 /* Private variables ---------------------------------------------------------*/
 
-static BleClientAppContext_t a_ClientContext[BLE_CFG_CLT_MAX_NBR_CB];
-static uint16_t gattCharStartHdl = 0;
-static uint16_t gattCharValueHdl = 0;
+static BleClientAppContext_t a_ClientContext[CFG_BLE_NUM_CLIENT_CONTEXTS];
+static BleClientAppProcContext_t procClientContext;
 
 /* USER CODE BEGIN PV */
 
@@ -185,13 +207,16 @@ PWR_CO_GPIO_Status_t PWR_CO_GPIO_Status;
 static SVCCTL_EvtAckStatus_t Event_Handler(void *Event);
 static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt);
 static void gatt_parse_services_by_UUID(aci_att_find_by_type_value_resp_event_rp0 *p_evt);
+static void gatt_parse_included_serv(aci_att_read_by_type_resp_event_rp0 *p_evt);
 static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt);
 static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt);
-static void gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt);
+static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt);
+static int gatt_parse_indication(aci_gatt_indication_event_rp0 *p_evt);
 static void gatt_Notification(GATT_CLIENT_APP_Notification_evt_t *p_Notif);
-static void client_discover_all(void);
+static void client_discover_task(void);
 static void gatt_cmd_resp_release(void);
-static void gatt_cmd_resp_wait(void);
+static uint8_t gatt_cmd_resp_wait(void);
+static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId);
 /* USER CODE BEGIN PFP */
 
 void FormatingBytes(uint8_t *SendData, uint8_t nbByte);
@@ -212,9 +237,14 @@ void GATT_CLIENT_APP_Init(void)
   uint8_t i;
 
   /* USER CODE END GATT_CLIENT_APP_Init_1 */
-  for(index = 0; index < BLE_CFG_CLT_MAX_NBR_CB; index++)
+  for(index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
   {
-    a_ClientContext[index].connStatus = APP_BLE_IDLE;
+    /* USER CODE BEGIN GATT_CLIENT_APP_Init_5 */
+
+    /* USER CODE END GATT_CLIENT_APP_Init_5 */
+
+    a_ClientContext[index].connHdl = 0xFFFF;
+    a_ClientContext[index].state = GATT_CLIENT_APP_DISCONNECTED;
 
     for(svcIndex = 0; svcIndex < SVC_ID_MAX; svcIndex++)
     {
@@ -240,7 +270,7 @@ void GATT_CLIENT_APP_Init(void)
   SVCCTL_RegisterCltHandler(Event_Handler);
 
   /* Register a task allowing to discover all services and characteristics and enable all notifications */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_all);
+  UTIL_SEQ_RegTask(1U << CFG_TASK_DISCOVER_SERVICES_ID, UTIL_SEQ_RFU, client_discover_task);
 
   /* USER CODE BEGIN GATT_CLIENT_APP_Init_2 */
 
@@ -270,32 +300,66 @@ void GATT_CLIENT_APP_Notification(GATT_CLIENT_APP_ConnHandle_Notif_evt_t *p_Noti
     /* USER CODE END ConnOpcode */
 
     case PEER_CONN_HANDLE_EVT :
-      /* USER CODE BEGIN PEER_CONN_HANDLE_EVT */
+    {
+      uint8_t index;
 
-      /* USER CODE END PEER_CONN_HANDLE_EVT */
-      break;
+      for(index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
+      {
+        if(a_ClientContext[index].state == GATT_CLIENT_APP_DISCONNECTED)
+        {
+          /* USER CODE BEGIN PEER_CONN_HANDLE_EVT_1 */
+
+          /* USER CODE END PEER_CONN_HANDLE_EVT_1 */
+
+          a_ClientContext[index].connHdl = p_Notif->ConnHdl;
+          a_ClientContext[index].state = GATT_CLIENT_APP_CONNECTED;
+          a_ClientContext[index].att_mtu = BLE_DEFAULT_ATT_MTU;
+
+          /* USER CODE BEGIN PEER_CONN_HANDLE_EVT_2 */
+
+          /* USER CODE END PEER_CONN_HANDLE_EVT_2 */
+
+          break;
+        }
+      }
+      if(index == CFG_BLE_NUM_CLIENT_CONTEXTS)
+      {
+        LOG_ERROR_APP("Error: reached maximum number of connected servers!\n");
+        /* USER CODE BEGIN PEER_CONN_HANDLE_EVT_3 */
+
+        /* USER CODE END PEER_CONN_HANDLE_EVT_3 */
+      }
+    }
+    break;
 
     case PEER_DISCON_HANDLE_EVT :
-      /* USER CODE BEGIN PEER_DISCON_HANDLE_EVT */
     {
-      uint8_t index = 0;
-      for(index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+      for(uint8_t index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
       {
-        if (a_ClientContext[index].connHdl == p_Notif->ConnHdl)
+        if(a_ClientContext[index].connHdl == p_Notif->ConnHdl)
         {
-          a_ClientContext[index].state = GATT_CLIENT_APP_IDLE;
+          /* USER CODE BEGIN PEER_DISCON_HANDLE_EVT_1 */
+
+          /* USER CODE END PEER_DISCON_HANDLE_EVT_1 */
+
+          a_ClientContext[index].connHdl = 0xFFFF;
+          a_ClientContext[index].state = GATT_CLIENT_APP_DISCONNECTED;
+
+          /* USER CODE BEGIN PEER_DISCON_HANDLE_EVT_2 */
+
+          /* USER CODE END PEER_DISCON_HANDLE_EVT_2 */
+
+          break;
         }
       }
     }
-
-      /* USER CODE END PEER_DISCON_HANDLE_EVT */
-      break;
+    break;
 
     default:
-      /* USER CODE BEGIN ConnOpcode_Default */
+    /* USER CODE BEGIN ConnOpcode_Default */
 
-      /* USER CODE END ConnOpcode_Default */
-      break;
+    /* USER CODE END ConnOpcode_Default */
+    break;
   }
   /* USER CODE BEGIN GATT_CLIENT_APP_Notification_2 */
 
@@ -303,13 +367,15 @@ void GATT_CLIENT_APP_Notification(GATT_CLIENT_APP_ConnHandle_Notif_evt_t *p_Noti
   return;
 }
 
+/* Deprecated */
 uint8_t GATT_CLIENT_APP_Set_Conn_Handle(uint8_t index, uint16_t connHdl)
 {
   uint8_t ret;
 
-  if (index < BLE_CFG_CLT_MAX_NBR_CB)
+  if (index < CFG_BLE_NUM_CLIENT_CONTEXTS)
   {
     a_ClientContext[index].connHdl = connHdl;
+    a_ClientContext[index].state = GATT_CLIENT_APP_CONNECTED;
     ret = 0;
   }
   else
@@ -320,65 +386,200 @@ uint8_t GATT_CLIENT_APP_Set_Conn_Handle(uint8_t index, uint16_t connHdl)
   return ret;
 }
 
+int GATT_CLIENT_APP_Get_Index(uint16_t connHdl)
+{
+  uint8_t index;
+
+  if(connHdl > 0x0EFF)
+  {
+    return -1;
+  }
+
+  for (index = 0 ; index < CFG_BLE_NUM_CLIENT_CONTEXTS ; index++)
+  {
+    if (a_ClientContext[index].connHdl == connHdl)
+    {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
 uint8_t GATT_CLIENT_APP_Get_State(uint8_t index)
 {
   return a_ClientContext[index].state;
 }
 
-void GATT_CLIENT_APP_Discover_services(uint8_t index)
+void GATT_CLIENT_APP_DiscoverServices(uint16_t connection_handle, uint8_t start_task)
 {
-  GATT_CLIENT_APP_Procedure_Gatt(index, PROC_GATT_DISC_ALL_PRIMARY_SERVICES);
-  GATT_CLIENT_APP_Procedure_Gatt(index, PROC_GATT_DISC_ALL_CHARS);
-  GATT_CLIENT_APP_Procedure_Gatt(index, PROC_GATT_DISC_ALL_DESCS);
-  GATT_CLIENT_APP_Procedure_Gatt(index, PROC_GATT_PROPERTIES_ENABLE_ALL);
+  for(uint8_t index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
+  {
+    if(a_ClientContext[index].connHdl == connection_handle)
+    {
+      /* USER CODE BEGIN GATT_CLIENT_APP_Discover_services_1 */
+
+      /* USER CODE END GATT_CLIENT_APP_Discover_services_1 */
+      if(start_task)
+      {
+        a_ClientContext[index].state = GATT_CLIENT_APP_DISCOVER_SERVICES;
+
+        UTIL_SEQ_SetTask( 1U << CFG_TASK_DISCOVER_SERVICES_ID, CFG_SEQ_PRIO_0);
+
+      }
+      else
+      {
+        a_ClientContext[index].state = GATT_CLIENT_APP_CONNECTED;
+
+        GATT_CLIENT_APP_DiscoverServicesWithIndex(index);
+      }
+
+      /* USER CODE BEGIN GATT_CLIENT_APP_Discover_services_2 */
+
+      /* USER CODE END GATT_CLIENT_APP_Discover_services_2 */
+
+      break;
+    }
+  }
 
   return;
 }
 
-uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
+void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
+{
+  gatt_procedure(index, PROC_GATT_EXCHANGE_CONFIG);
+  gatt_procedure(index, PROC_GATT_DISC_ALL_PRIMARY_SERVICES);
+  gatt_procedure(index, PROC_GATT_FIND_INCLUDED_SERVICES);
+  gatt_procedure(index, PROC_GATT_DISC_ALL_CHARS);
+  gatt_procedure(index, PROC_GATT_DISC_ALL_DESCS);
+  gatt_procedure(index, PROC_GATT_PROPERTIES_ENABLE_ALL);
+}
+
+/* USER CODE BEGIN FD */
+
+/* USER CODE END FD */
+
+/*************************************************************
+ *
+ * LOCAL FUNCTIONS
+ *
+ *************************************************************/
+
+ static uint8_t gatt_procedure(uint8_t index, ProcGattId_t GattProcId)
 {
   uint16_t svcIdx;
   tBleStatus bleStatus = BLE_STATUS_SUCCESS;
   uint8_t status;
 
-  if (index >= BLE_CFG_CLT_MAX_NBR_CB)
+  if (index >= CFG_BLE_NUM_CLIENT_CONTEXTS)
   {
     status = 1;
   }
   else
   {
     status = 0;
+
+    UTIL_SEQ_ClrEvt(1U << CFG_EVENT_PROC_GATT_COMPLETE);
+
+    procClientContext.current_gatt_proc = GattProcId;
+
     switch (GattProcId)
     {
+      case PROC_GATT_EXCHANGE_CONFIG:
+      {
+        procClientContext.gatt_error_code = 0;
+
+        LOG_INFO_APP("GATT exchange configuration\n");
+        status = aci_gatt_exchange_config(a_ClientContext[index].connHdl);
+        if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
+        {
+          LOG_INFO_APP("Completed Successfully\n\n");
+        }
+        else
+        {
+          LOG_ERROR_APP("Failed, status=0x%02X, result=0x%02X\n\n", bleStatus, procClientContext.gatt_error_code);
+        }
+      }
+      break; /* PROC_GATT_EXCHANGE_CONFIG */
       case PROC_GATT_DISC_ALL_PRIMARY_SERVICES:
       {
-        a_ClientContext[index].state = GATT_CLIENT_APP_DISCOVER_SERVICES;
+        procClientContext.gatt_error_code = 0;
 
         LOG_INFO_APP("GATT services discovery\n");
         bleStatus = aci_gatt_disc_all_primary_services(a_ClientContext[index].connHdl);
 
-        if (bleStatus == BLE_STATUS_SUCCESS)
+        if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
         {
-          gatt_cmd_resp_wait();
           LOG_INFO_APP("PROC_GATT_DISC_ALL_PRIMARY_SERVICES services discovered Successfully\n\n");
         }
         else
         {
-          LOG_ERROR_APP("PROC_GATT_DISC_ALL_PRIMARY_SERVICES aci_gatt_disc_all_primary_services cmd Failed, status =0x%02X\n\n", bleStatus);
+          LOG_ERROR_APP("PROC_GATT_DISC_ALL_PRIMARY_SERVICES aci_gatt_disc_all_primary_services cmd Failed, status=0x%02X, result=0x%02X\n\n", bleStatus, procClientContext.gatt_error_code);
           status++;
         }
       }
       break; /* PROC_GATT_DISC_ALL_PRIMARY_SERVICES */
 
+      case PROC_GATT_FIND_INCLUDED_SERVICES:
+      {
+        LOG_INFO_APP("GATT Find Included Services\n");
+        for (svcIdx = 0; svcIdx < SVC_ID_MAX; svcIdx++)
+        {
+          if(a_ClientContext[index].svcInfo[svcIdx].charStartHdl != 0x0000
+             && a_ClientContext[index].svcInfo[svcIdx].findIncludedServices)
+          {
+            procClientContext.gatt_error_code = 0;
+
+            LOG_INFO_APP("  Service UUID 0x%04X, svcHdl[0x%04X - 0x%04X]\n",
+                         a_ClientContext[index].svcInfo[svcIdx].uuid,
+                         a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
+                         a_ClientContext[index].svcInfo[svcIdx].charEndHdl);
+
+            bleStatus = aci_gatt_find_included_services(a_ClientContext[index].connHdl,
+                                                        a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
+                                                        a_ClientContext[index].svcInfo[svcIdx].charEndHdl);
+
+            if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
+            {
+              LOG_INFO_APP("  Service UUID 0x%04X included service found Successfully\n\n",
+                           a_ClientContext[index].svcInfo[svcIdx].uuid);
+              a_ClientContext[index].svcInfo[svcIdx].status = SVC_INFO_STATUS_DISCOVERED;
+            }
+            else
+            {
+              LOG_ERROR_APP("  Service UUID 0x%04X included service found Failed, status =0x%02X, result=0x%02X\n\n",
+                            a_ClientContext[index].svcInfo[svcIdx].uuid, bleStatus, procClientContext.gatt_error_code);
+              status++;
+            }
+            /* USER CODE BEGIN PROC_GATT_FIND_INCLUDED_SERVICES_0 */
+
+            /* USER CODE END PROC_GATT_FIND_INCLUDED_SERVICES_0 */
+          }
+        }
+        /* USER CODE BEGIN PROC_GATT_FIND_INCLUDED_SERVICES */
+
+        /* USER CODE END PROC_GATT_FIND_INCLUDED_SERVICES */
+        if (status == 0)
+        {
+          LOG_INFO_APP("Included service discovery ended successfully\n\n");
+        }
+        else
+        {
+          LOG_ERROR_APP("Included service discovery failed\n\n");
+        }
+      }
+      break; /* PROC_GATT_FIND_INCLUDED_SERVICES */
+
       case PROC_GATT_DISC_ALL_CHARS:
       {
-        a_ClientContext[index].state = GATT_CLIENT_APP_DISCOVER_CHARACS;
-
         LOG_INFO_APP("DISCOVER_ALL_CHARS on ConnHdl=0x%04X\n",a_ClientContext[index].connHdl);
         for (svcIdx = 0; svcIdx < SVC_ID_MAX; svcIdx++)
         {
-          if(a_ClientContext[index].svcInfo[svcIdx].uuid != 0)
+          if(a_ClientContext[index].svcInfo[svcIdx].charStartHdl != 0x0000
+             && a_ClientContext[index].svcInfo[svcIdx].uuid != 0)
           {
+            procClientContext.gatt_error_code = 0;
+
             LOG_INFO_APP("  Service UUID 0x%04X, svcHdl[0x%04X - 0x%04X]\n",
                               a_ClientContext[index].svcInfo[svcIdx].uuid,
                               a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
@@ -388,17 +589,16 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
                               a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
                               a_ClientContext[index].svcInfo[svcIdx].charEndHdl);
 
-            if (bleStatus == BLE_STATUS_SUCCESS)
+            if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
             {
-              gatt_cmd_resp_wait();
               LOG_INFO_APP("  Service UUID 0x%04X characteristics discovered Successfully\n\n",
-                            a_ClientContext[index].svcInfo[svcIdx].uuid);
+                           a_ClientContext[index].svcInfo[svcIdx].uuid);
               a_ClientContext[index].svcInfo[svcIdx].status = SVC_INFO_STATUS_DISCOVERED;
             }
             else
             {
-              LOG_ERROR_APP("  Service UUID 0x%04X characteristics discovery Failed, status =0x%02X\n\n",
-                            a_ClientContext[index].svcInfo[svcIdx].uuid, bleStatus);
+              LOG_ERROR_APP("  Service UUID 0x%04X characteristics discovery Failed, status=0x%02X, result=0x%02X\n\n",
+                            a_ClientContext[index].svcInfo[svcIdx].uuid, bleStatus, procClientContext.gatt_error_code);
               status++;
             }
             /* USER CODE BEGIN PROC_GATT_DISC_ALL_CHARS_0 */
@@ -411,25 +611,26 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         /* USER CODE END PROC_GATT_DISC_ALL_CHARS */
         if (status == 0)
         {
-          LOG_INFO_APP("All characteristics discovered Successfully\n\n");
+          LOG_INFO_APP("All characteristics discovered Successfully \n\n");
         }
         else
         {
-          LOG_ERROR_APP("All characteristics discovery Failed\n\n");
+          LOG_ERROR_APP("All characteristics discovery Failed \n\n");
         }
       }
       break; /* PROC_GATT_DISC_ALL_CHARS */
 
       case PROC_GATT_DISC_ALL_DESCS:
       {
-        a_ClientContext[index].state = GATT_CLIENT_APP_DISCOVER_WRITE_DESC;
-
         LOG_INFO_APP("DISCOVER_ALL_CHAR_DESCS on ConnHdl=0x%04X\n",
                               a_ClientContext[index].connHdl);
         for (svcIdx = 0; svcIdx < SVC_ID_MAX; svcIdx++)
         {
-          if(a_ClientContext[index].svcInfo[svcIdx].uuid != 0)
+          if(a_ClientContext[index].svcInfo[svcIdx].charStartHdl != 0x0000
+             && a_ClientContext[index].svcInfo[svcIdx].uuid != 0)
           {
+            procClientContext.gatt_error_code = 0;
+
             LOG_INFO_APP("  Service UUID 0x%04X, svcHdl[0x%04X - 0x%04X]\n",
                               a_ClientContext[index].svcInfo[svcIdx].uuid,
                               a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
@@ -439,15 +640,14 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
                               a_ClientContext[index].svcInfo[svcIdx].charStartHdl,
                               a_ClientContext[index].svcInfo[svcIdx].charEndHdl);
 
-            if (bleStatus == BLE_STATUS_SUCCESS)
+            if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
             {
-              gatt_cmd_resp_wait();
               LOG_INFO_APP("  Descriptors discovered Successfully\n\n");
               a_ClientContext[index].svcInfo[svcIdx].status = SVC_INFO_STATUS_DISCOVERED;
             }
             else
             {
-              LOG_ERROR_APP("  Descriptors discovery Failed, status =0x%02X\n\n", bleStatus);
+              LOG_ERROR_APP("  Descriptors discovery Failed, status=0x%02X, result=0x%02X\n\n", bleStatus, procClientContext.gatt_error_code);
               status++;
             }
             /* USER CODE BEGIN PROC_GATT_DISC_ALL_DESCS_0 */
@@ -460,11 +660,11 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
         /* USER CODE END PROC_GATT_DISC_ALL_DESCS */
         if (status == 0)
         {
-          LOG_INFO_APP("All descriptors discovered Successfully\n\n");
+          LOG_INFO_APP("All descriptors discovered Successfully \n\n");
         }
         else
         {
-          LOG_ERROR_APP("All descriptors discovery Failed\n\n");
+          LOG_ERROR_APP("All descriptors discovery Failed \n\n");
         }
       }
       break; /* PROC_GATT_DISC_ALL_DESCS */
@@ -482,18 +682,19 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           {
             charPropVal = 0x0002;
           }
+
+          procClientContext.gatt_error_code = 0;
           bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
                                                 a_ClientContext[index].ServiceChangedCharDescHdl,
                                                 2,
                                                 (uint8_t *) &charPropVal);
-          if (bleStatus == BLE_STATUS_SUCCESS)
+          if (bleStatus == BLE_STATUS_SUCCESS && gatt_cmd_resp_wait() == BLE_STATUS_SUCCESS)
           {
-            gatt_cmd_resp_wait();
             LOG_INFO_APP(" ServiceChangedCharDescHdl =0x%04X\n",a_ClientContext[index].ServiceChangedCharDescHdl);
           }
           else
           {
-            LOG_ERROR_APP(" ServiceChangedCharDescHdl write Failed, status =0x%02X\n", bleStatus);
+            LOG_ERROR_APP(" ServiceChangedCharDescHdl write Failed, status =0x%02X, result=0x%02X\n", bleStatus, procClientContext.gatt_error_code);
             status++;
           }
         }
@@ -508,7 +709,7 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
             gatt_cmd_resp_wait();
-            LOG_INFO_APP(" aci_gatt_write_char_value sucess PWR_CO_NotificationDescHdl =0x%04X\n",
+            LOG_INFO_APP(" aci_gatt_write_char_value success PWR_CO_NotificationDescHdl =0x%04X\n",
                            a_ClientContext[index].PWR_CO_NotificationDescHdl);
           }
           else
@@ -521,14 +722,18 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
 
         if (status == 0)
         {
-          LOG_INFO_APP("All properties enabled Successfully\n\n");
+          LOG_INFO_APP("All properties enabled Successfully \n\n");
         }
         else
         {
-          LOG_ERROR_APP("All properties enabled Failed\n\n");
+          LOG_ERROR_APP("All properties enabled Failed \n\n");
         }
       }
       break; /* PROC_GATT_PROPERTIES_ENABLE_ALL */
+
+      /* USER CODE BEGIN GattProcId */
+
+      /* USER CODE END GattProcId */
 
     default:
       break;
@@ -537,16 +742,6 @@ uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId)
 
   return status;
 }
-
-/* USER CODE BEGIN FD */
-
-/* USER CODE END FD */
-
-/*************************************************************
- *
- * LOCAL FUNCTIONS
- *
- *************************************************************/
 
 /**
  * @brief  Event handler
@@ -575,50 +770,73 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         case ACI_ATT_READ_BY_GROUP_TYPE_RESP_VSEVT_CODE:
         {
           aci_att_read_by_group_type_resp_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-          gatt_parse_services((aci_att_read_by_group_type_resp_event_rp0 *)p_evt_rsp);
+          gatt_parse_services(p_evt_rsp);
         }
         break; /* ACI_ATT_READ_BY_GROUP_TYPE_RESP_VSEVT_CODE */
         case ACI_ATT_FIND_BY_TYPE_VALUE_RESP_VSEVT_CODE:
         {
           aci_att_find_by_type_value_resp_event_rp0 *p_evt_rsp = (void*) p_blecore_evt->data;
-          gatt_parse_services_by_UUID((aci_att_find_by_type_value_resp_event_rp0 *)p_evt_rsp);
+          gatt_parse_services_by_UUID(p_evt_rsp);
         }
         break; /* ACI_ATT_FIND_BY_TYPE_VALUE_RESP_VSEVT_CODE */
         case ACI_ATT_READ_BY_TYPE_RESP_VSEVT_CODE:
         {
           aci_att_read_by_type_resp_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-          gatt_parse_chars((aci_att_read_by_type_resp_event_rp0 *)p_evt_rsp);
+          if(procClientContext.current_gatt_proc == PROC_GATT_FIND_INCLUDED_SERVICES)
+          {
+            gatt_parse_included_serv(p_evt_rsp);
+          }
+          else if(procClientContext.current_gatt_proc == PROC_GATT_DISC_ALL_CHARS)
+          {
+            gatt_parse_chars(p_evt_rsp);
+          }
         }
         break; /* ACI_ATT_READ_BY_TYPE_RESP_VSEVT_CODE */
         case ACI_ATT_FIND_INFO_RESP_VSEVT_CODE:
         {
           aci_att_find_info_resp_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-          gatt_parse_descs((aci_att_find_info_resp_event_rp0 *)p_evt_rsp);
+          gatt_parse_descs(p_evt_rsp);
         }
         break; /* ACI_ATT_FIND_INFO_RESP_VSEVT_CODE */
         case ACI_GATT_NOTIFICATION_VSEVT_CODE:
         {
           aci_gatt_notification_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
-          gatt_parse_notification((aci_gatt_notification_event_rp0 *)p_evt_rsp);
+          if(gatt_parse_notification(p_evt_rsp) == 0)
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+          }
         }
         break;/* ACI_GATT_NOTIFICATION_VSEVT_CODE */
+        case ACI_GATT_INDICATION_VSEVT_CODE:
+        {
+          aci_gatt_indication_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
+          if(gatt_parse_indication(p_evt_rsp) == 0)
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+          }
+        }
+        break;
         case ACI_GATT_PROC_COMPLETE_VSEVT_CODE:
         {
+          LOG_DEBUG_APP(">>== ACI_GATT_PROC_COMPLETE_VSEVT_CODE\n");
           aci_gatt_proc_complete_event_rp0 *p_evt_rsp = (void*)p_blecore_evt->data;
           if(p_evt_rsp->Error_Code != BLE_STATUS_SUCCESS)
           {
-            LOG_INFO_APP("\n GATT procedure ended unsuccessfully, error code: 0x%02X\n",
-                         p_evt_rsp->Error_Code);
+            LOG_ERROR_APP("GATT procedure ended unsuccessfully, error code: 0x%02X\n",
+                          p_evt_rsp->Error_Code);
           }
-
-          /* Release GATT command response regardless of procedure success or failure */
+          else
+          {
+            LOG_DEBUG_APP("GATT Procedure completed successfully\n");
+          }
+          procClientContext.gatt_error_code = p_evt_rsp->Error_Code;
           gatt_cmd_resp_release();
         }
         break;/* ACI_GATT_PROC_COMPLETE_VSEVT_CODE */
         case ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE:
         {
-          aci_att_exchange_mtu_resp_event_rp0 *tx_pool_available;
-          tx_pool_available = (aci_att_exchange_mtu_resp_event_rp0 *)p_blecore_evt->data;
+          aci_gatt_tx_pool_available_event_rp0 *tx_pool_available;
+          tx_pool_available = (aci_gatt_tx_pool_available_event_rp0 *)p_blecore_evt->data;
           UNUSED(tx_pool_available);
           /* USER CODE BEGIN ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE */
 
@@ -627,10 +845,15 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         break;/* ACI_GATT_TX_POOL_AVAILABLE_VSEVT_CODE*/
         case ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE:
         {
+          int index;
           aci_att_exchange_mtu_resp_event_rp0 * exchange_mtu_resp;
           exchange_mtu_resp = (aci_att_exchange_mtu_resp_event_rp0 *)p_blecore_evt->data;
           LOG_INFO_APP("  MTU exchanged size = %d\n",exchange_mtu_resp->Server_RX_MTU );
-          UNUSED(exchange_mtu_resp);
+          index = GATT_CLIENT_APP_Get_Index(exchange_mtu_resp->Connection_Handle);
+          if(index >= 0)
+          {
+            a_ClientContext[index].att_mtu = exchange_mtu_resp->Server_RX_MTU;
+          }
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           if (exchange_mtu_resp->Server_RX_MTU < DATA_NOTIFICATION_MAX_PACKET_SIZE)
           {
@@ -656,10 +879,10 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
         }
         break;
 
-      /* USER CODE BEGIN VENDOR_SPECIFIC_DEBUG_EVT_CODE_1 */
+        /* USER CODE BEGIN VENDOR_SPECIFIC_DEBUG_EVT_CODE_1 */
 
-      /* USER CODE END VENDOR_SPECIFIC_DEBUG_EVT_CODE_1 */
-      default:
+        /* USER CODE END VENDOR_SPECIFIC_DEBUG_EVT_CODE_1 */
+        default:
         /* USER CODE BEGIN VENDOR_SPECIFIC_DEBUG_EVT_CODE_DEFAULT */
 
         /* USER CODE END VENDOR_SPECIFIC_DEBUG_EVT_CODE_DEFAULT */
@@ -671,10 +894,10 @@ static SVCCTL_EvtAckStatus_t Event_Handler(void *Event)
 
     /* USER CODE END GATT_CLIENT_EVENT_PACKET_1 */
     default:
-      /* USER CODE BEGIN GATT_CLIENT_EVENT_PACKET_DEFAULT */
+    /* USER CODE BEGIN GATT_CLIENT_EVENT_PACKET_DEFAULT */
 
-      /* USER CODE END GATT_CLIENT_EVENT_PACKET_DEFAULT */
-      break;
+    /* USER CODE END GATT_CLIENT_EVENT_PACKET_DEFAULT */
+    break;
   }/* end switch (event_pckt->evt) */
 
   return(return_value);
@@ -721,7 +944,7 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
   LOG_INFO_APP("ACI_ATT_READ_BY_GROUP_TYPE_RESP_VSEVT_CODE - ConnHdl=0x%04X\n",
                 p_evt->Connection_Handle);
 
-  for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+  for (index = 0 ; index < CFG_BLE_NUM_CLIENT_CONTEXTS ; index++)
   {
     if (a_ClientContext[index].connHdl == p_evt->Connection_Handle)
     {
@@ -729,8 +952,8 @@ static void gatt_parse_services(aci_att_read_by_group_type_resp_event_rp0 *p_evt
     }
   }
 
-  /* index < BLE_CFG_CLT_MAX_NBR_CB means connection handle identified */
-  if (index < BLE_CFG_CLT_MAX_NBR_CB)
+  /* index < CFG_BLE_NUM_CLIENT_CONTEXTS means connection handle identified */
+  if (index < CFG_BLE_NUM_CLIENT_CONTEXTS)
   {
     /* Number of attribute value tuples */
     numServ = (p_evt->Data_Length) / p_evt->Attribute_Data_Length;
@@ -821,6 +1044,83 @@ static void gatt_parse_services_by_UUID(aci_att_find_by_type_value_resp_event_rp
 }
 
 /**
+* function for parsing included services
+*/
+static void gatt_parse_included_serv(aci_att_read_by_type_resp_event_rp0 *p_evt)
+{
+  uint16_t uuid = 0, ServiceStartHdl, ServiceEndHdl;
+  uint8_t start_handle_offset;
+  uint8_t i, numHdlValuePair, index;
+
+  LOG_INFO_APP("  ACI_ATT_READ_BY_TYPE_RESP_VSEVT_CODE - ConnHdl=0x%04X\n",
+                p_evt->Connection_Handle);
+
+  for (index = 0 ; index < CFG_BLE_NUM_CLIENT_CONTEXTS ; index++)
+  {
+    if (a_ClientContext[index].connHdl == p_evt->Connection_Handle)
+    {
+      break;
+    }
+  }
+
+  /* index < CFG_BLE_NUM_CLIENT_CONTEXTS means connection handle identified */
+  if (index < CFG_BLE_NUM_CLIENT_CONTEXTS)
+  {
+    /* event data in Attribute_Data_List contains:
+    * 2 bytes for start handle
+    * 1 byte char properties
+    * 2 bytes handle
+    * 2 or 16 bytes data for UUID
+    */
+
+    /* Number of attribute value tuples */
+    numHdlValuePair = p_evt->Data_Length / p_evt->Handle_Value_Pair_Length;
+
+    start_handle_offset = 2;           /* Included Service Attribute Handle offset in bytes in Attribute_Data_List */
+
+    LOG_INFO_APP("  number of value tuples = %d\n", numHdlValuePair);
+    /* Loop on number of attribute value tuples */
+    for (i = 0; i < numHdlValuePair; i++)
+    {
+      if (p_evt->Handle_Value_Pair_Length == 8) /* UUID is included */
+      {
+        uuid = UNPACK_2_BYTE_PARAMETER(&p_evt->Handle_Value_Pair_Data[start_handle_offset + 4]);
+      }
+      ServiceStartHdl = UNPACK_2_BYTE_PARAMETER(&p_evt->Handle_Value_Pair_Data[start_handle_offset]);
+      ServiceEndHdl = UNPACK_2_BYTE_PARAMETER(&p_evt->Handle_Value_Pair_Data[start_handle_offset + 2]);
+
+      LOG_INFO_APP("    %d/%d handles [0x%04X - 0x%04X]",
+                     i + 1, numHdlValuePair, ServiceStartHdl, ServiceEndHdl);
+
+      if (uuid != 0x0) /* Supported only 16-bit UUIDs */
+      {
+        LOG_INFO_APP(", UUID=0x%04X", uuid);
+        for (int j = 0; j < SVC_ID_MAX; j++)
+        {
+          if(uuid == a_ClientContext[index].svcInfo[j].uuid)
+          {
+            a_ClientContext[index].svcInfo[j].charStartHdl  = ServiceStartHdl;
+            a_ClientContext[index].svcInfo[j].charEndHdl    = ServiceEndHdl;
+            a_ClientContext[index].svcInfo[j].status        = SVC_INFO_STATUS_FOUND;
+            LOG_INFO_APP(", found");
+          }
+        }
+      }
+
+      LOG_INFO_APP("\n");
+
+      start_handle_offset += p_evt->Handle_Value_Pair_Length;
+    }
+  }
+  else
+  {
+    LOG_INFO_APP("  ACI_ATT_READ_BY_TYPE_RESP_VSEVT_CODE, failed handle not found in connection table !\n");
+  }
+
+  return;
+}
+
+/**
 * function of GATT characteristics parse
 */
 static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
@@ -833,7 +1133,7 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
   LOG_INFO_APP("  ACI_ATT_READ_BY_TYPE_RESP_VSEVT_CODE - ConnHdl=0x%04X\n",
                 p_evt->Connection_Handle);
 
-  for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+  for (index = 0 ; index < CFG_BLE_NUM_CLIENT_CONTEXTS ; index++)
   {
     if (a_ClientContext[index].connHdl == p_evt->Connection_Handle)
     {
@@ -841,8 +1141,8 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
     }
   }
 
-  /* index < BLE_CFG_CLT_MAX_NBR_CB means connection handle identified */
-  if (index < BLE_CFG_CLT_MAX_NBR_CB)
+  /* index < CFG_BLE_NUM_CLIENT_CONTEXTS means connection handle identified */
+  if (index < CFG_BLE_NUM_CLIENT_CONTEXTS)
   {
     /* event data in Attribute_Data_List contains:
     * 2 bytes for start handle
@@ -896,7 +1196,6 @@ static void gatt_parse_chars(aci_att_read_by_type_resp_event_rp0 *p_evt)
         }
         else if (uuid == SERVICE_CHANGED_CHARACTERISTIC_UUID)
         {
-          a_ClientContext[index].ServiceChangedCharStartHdl = CharStartHdl;
           a_ClientContext[index].ServiceChangedCharValueHdl = CharValueHdl;
           LOG_INFO_APP(", GATT SERVICE_CHANGED_CHARACTERISTIC_UUID charac found\n");
         }
@@ -939,11 +1238,13 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
   uint16_t uuid, handle;
   uint8_t uuid_offset, uuid_size, uuid_short_offset, handle_uuid_pair_size;
   uint8_t i, numDesc, index;
+  static uint16_t gattCharStartHdl = 0;
+  static uint16_t gattCharValueHdl = 0;
 
   LOG_INFO_APP("  ACI_ATT_FIND_INFO_RESP_VSEVT_CODE - ConnHdl=0x%04X\n",
               p_evt->Connection_Handle);
 
-  for (index = 0 ; index < BLE_CFG_CLT_MAX_NBR_CB ; index++)
+  for (index = 0 ; index < CFG_BLE_NUM_CLIENT_CONTEXTS ; index++)
   {
     if (a_ClientContext[index].connHdl == p_evt->Connection_Handle)
     {
@@ -951,8 +1252,8 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
     }
   }
 
-  /* index < BLE_CFG_CLT_MAX_NBR_CB means connection handle identified */
-  if (index < BLE_CFG_CLT_MAX_NBR_CB)
+  /* index < CFG_BLE_NUM_CLIENT_CONTEXTS means connection handle identified */
+  if (index < CFG_BLE_NUM_CLIENT_CONTEXTS)
   {
     /* event data in Attribute_Data_List contains:
     * 2 bytes handle
@@ -1067,8 +1368,10 @@ static void gatt_parse_descs(aci_att_find_info_resp_event_rp0 *p_evt)
   return;
 }
 
-static void gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
+static int gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
 {
+  int ret = -1;
+
   LOG_DEBUG_APP("ACI_GATT_NOTIFICATION_VSEVT_CODE - ConnHdl=0x%04X, Attribute_Handle=0x%04X\n",
                 p_evt->Connection_Handle,
                 p_evt->Attribute_Handle);
@@ -1076,34 +1379,190 @@ static void gatt_parse_notification(aci_gatt_notification_event_rp0 *p_evt)
 
 /* USER CODE END gatt_parse_notification_1 */
 
-  return;
+  return ret;
 }
 
-static void client_discover_all(void)
+static int gatt_parse_indication(aci_gatt_indication_event_rp0 *p_evt)
 {
-  uint8_t index = 0;
-  /* USER CODE BEGIN client_discover_1 */
+  int ret = -1;
 
-  /* USER CODE END client_discover_1 */
+  LOG_DEBUG_APP("ACI_GATT_CLT_INDICATION_VSEVT_CODE - ConnHdl=0x%04X, Attribute_Handle=0x%04X\n",
+                p_evt->Connection_Handle,
+                p_evt->Attribute_Handle);
 
-  GATT_CLIENT_APP_Discover_services(index);
+  /* USER CODE BEGIN gatt_parse_indication_1 */
 
-  /* USER CODE BEGIN client_discover_2 */
+  /* USER CODE END gatt_parse_indication_1 */
 
-  /* USER CODE END client_discover_2 */
+  return ret;
+}
+
+static void client_discover_task(void)
+{
+  uint8_t index;
+
+  for(index = 0; index < CFG_BLE_NUM_CLIENT_CONTEXTS; index++)
+  {
+    if(a_ClientContext[index].state == GATT_CLIENT_APP_DISCOVER_SERVICES)
+    {
+      a_ClientContext[index].state = GATT_CLIENT_APP_CONNECTED;
+
+      /* USER CODE BEGIN client_discover_1 */
+
+      /* USER CODE END client_discover_1 */
+
+      GATT_CLIENT_APP_DiscoverServicesWithIndex(index);
+
+      /* USER CODE BEGIN client_discover_2 */
+
+      /* USER CODE END client_discover_2 */
+
+      /* Check if in the meantime another server has been connected. */
+      UTIL_SEQ_SetTask( 1U << CFG_TASK_DISCOVER_SERVICES_ID, CFG_SEQ_PRIO_0);
+
+      break;
+    }
+  }
+
   return;
 }
 
 static void gatt_cmd_resp_release(void)
 {
-  UTIL_SEQ_SetEvt(1U << CFG_IDLEEVT_PROC_GATT_COMPLETE);
+  UTIL_SEQ_SetEvt(1U << CFG_EVENT_PROC_GATT_COMPLETE);
   return;
 }
 
-static void gatt_cmd_resp_wait(void)
+static uint8_t gatt_cmd_resp_wait(void)
 {
-  UTIL_SEQ_WaitEvt(1U << CFG_IDLEEVT_PROC_GATT_COMPLETE);
-  return;
+  UTIL_SEQ_WaitEvt(1U << CFG_EVENT_PROC_GATT_COMPLETE);
+  return procClientContext.gatt_error_code;
+}
+
+static uint8_t ReadLongCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t Offset)
+{
+  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+
+  LOG_INFO_APP("Read Long\n");
+
+  procClientContext.gatt_error_code = 0;
+  procClientContext.att_error_code = 0;
+
+  /* Display Information characteristic */
+  ret = aci_gatt_read_long_char_value(connection_handle,
+                                      ValueHdl,
+                                      Offset);
+  if (ret != BLE_STATUS_SUCCESS || (ret = gatt_cmd_resp_wait()) != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_APP("aci_gatt_read_long_char_value failed, connHdl=0x%04X, ValueHdl=0x%04X, ret = 0x%02X\n",
+                connection_handle,
+                ValueHdl,
+                ret);
+    return ret;
+  }
+
+  LOG_INFO_APP("aci_gatt_read_long_char_value, connHdl=0x%04X, ValueHdl=0x%04X\n",
+              connection_handle,
+              ValueHdl);
+
+  return procClientContext.gatt_error_code;
+}
+
+tBleStatus GATT_CLIENT_APP_ReadCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t *data_length_p, uint8_t **data_p, uint8_t use_read_long)
+{
+  int index;
+  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+
+  index = GATT_CLIENT_APP_Get_Index(connection_handle);
+  if(index < 0)
+    return ret;
+
+  /* USER CODE BEGIN GATT_CLIENT_APP_ReadCharacteristic_1 */
+
+  /* USER CODE END GATT_CLIENT_APP_ReadCharacteristic_1 */
+
+  procClientContext.read_char_offset = 0;
+  procClientContext.gatt_error_code = 0;
+  procClientContext.att_error_code = 0;
+
+  UTIL_SEQ_ClrEvt(1U << CFG_EVENT_PROC_GATT_COMPLETE);
+
+  LOG_DEBUG_APP("aci_gatt_read_char_value, connHdl=0x%04X, ValueHdl=0x%04X\n",
+                connection_handle,
+                ValueHdl);
+
+  ret = aci_gatt_read_char_value(connection_handle,
+                                 ValueHdl);
+
+  if (ret != BLE_STATUS_SUCCESS || (ret = gatt_cmd_resp_wait()) != BLE_STATUS_SUCCESS)
+  {
+    LOG_ERROR_APP("aci_gatt_read_char_value failed, connHdl=0x%04X, ValueHdl=0x%04X\n",
+                connection_handle,
+                ValueHdl);
+    return ret;
+  }
+
+  if (use_read_long && procClientContext.read_char_len >= (a_ClientContext[index].att_mtu - 1))
+  {
+    ret = ReadLongCharacteristic(connection_handle, ValueHdl, procClientContext.read_char_len);
+  }
+
+  if(ret != BLE_STATUS_SUCCESS && procClientContext.att_error_code != 0x0B) /* 0x0B: Attribute not long */
+  {
+    *data_p = NULL;
+    *data_length_p = 0;
+  }
+  else
+  {
+    *data_p = procClientContext.read_char;
+    *data_length_p = procClientContext.read_char_len;
+  }
+
+  /* USER CODE BEGIN GATT_CLIENT_APP_ReadCharacteristic_2 */
+
+  /* USER CODE END GATT_CLIENT_APP_ReadCharacteristic_2 */
+
+  return ret;
+}
+
+tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t data_length, uint8_t *data)
+{
+  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
+
+  /* USER CODE BEGIN GATT_CLIENT_APP_WriteCharacteristic_1 */
+
+  /* USER CODE END GATT_CLIENT_APP_WriteCharacteristic_1 */
+
+  procClientContext.gatt_error_code = 0;
+  procClientContext.att_error_code = 0;
+
+  UTIL_SEQ_ClrEvt(1U << CFG_EVENT_PROC_GATT_COMPLETE);
+
+  ret = aci_gatt_write_char_value(connection_handle,
+                                  ValueHdl,
+                                  data_length,
+                                  data);
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_ERROR_APP("aci_gatt_write_char_value failed, connHdl=0x%04X, ValueHdl=0x%04X\n",
+                  connection_handle,
+                  ValueHdl);
+    return ret;
+  }
+  else
+  {
+    LOG_DEBUG_APP("aci_gatt_write_char_value, connHdl=0x%04X, ValueHdl=0x%04X\n",
+                  connection_handle,
+                  ValueHdl);
+  }
+  /* wait until a gatt procedure complete is received */
+  gatt_cmd_resp_wait();
+
+  /* USER CODE BEGIN GATT_CLIENT_APP_WriteCharacteristic_2 */
+
+  /* USER CODE END GATT_CLIENT_APP_WriteCharacteristic_2 */
+
+  return procClientContext.gatt_error_code;
 }
 
 /* USER CODE BEGIN LF */

@@ -71,7 +71,7 @@ typedef struct
 {
   UseCaseConnInfo_t              *pConnInfo;                     /* Pointer to Connection info structure */
   GMAP_LinkupProcState_t         LinkupState;                    /* State of the ongoing Linkup */
-  GMAS_Characteristic_t          CurrentLinkupChar;              /* HAP Characteristic being read/discovered */
+  GMAS_Characteristic_t          CurrentLinkupChar;              /* GMAP Characteristic being read/discovered */
   GMAP_GATT_CharacteristicInfo_t *pGattChar;                     /* Pointer on GATT Characteristic */
   uint16_t                       ReqHandle;                      /* Att Handle under process during ATT operation */
   uint8_t                        DelayDeallocation;              /* Indicate if the GMAP Client Instance deallocation

@@ -54,9 +54,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#ifdef OT_CLI_USE
-#include "uart.h"
-#endif /* OT_CLI_USE */
+#include "app_bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,10 +70,16 @@
 
 /* USER CODE BEGIN PD */
 #define C_RESSOURCE             "light"
-#define COAP_PAYLOAD_LENGTH      (2U)
+#define COAP_PAYLOAD_LENGTH      2
 
-#define COAP_SEND_TIMEOUT  (2000) /**< 2s */
-#define THREAD_LINK_POLL_PERIOD_MS (5000) /**< 5s */
+#ifndef GRL_TEST
+/* Enable periodic CoAp message transmission to Thread Leader */
+#define APP_THREAD_PERIODIC_TRANSMIT
+#endif
+
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+#define APP_THREAD_TRANSMIT_PERIOD      (1*1000)        /**< 1000ms */
+#endif
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -106,39 +110,55 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
                                         otCoapResponseHandler aHandler,
                                         void                  * aContext);
 
-static void APP_THREAD_Child_Role_Handler(void);
-static void APP_THREAD_CoapRequestHandler(void                * pContext,
-    otMessage           * pMessage,
-    const otMessageInfo * pMessageInfo);
-static void APP_THREAD_SendCoapMulticastRequest(void);
-static void Send_Coap_Msg_Task( void * argument );
+static void APP_THREAD_CoapRequestHandler(  void                * pContext,
+                                            otMessage           * pMessage,
+                                            const otMessageInfo * pMessageInfo);
 
+static void APP_THREAD_CoapSendDataResponse(otMessage           * pMessage,
+                                            const otMessageInfo * pMessageInfo);
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+static void APP_THREAD_CoapDataRespHandler( void                * aContext,
+                                            otMessage           * pMessage,
+                                            const otMessageInfo * pMessageInfo,
+                                            otError             result);
+#endif
+
+static void APP_THREAD_InitPayloadWrite(void);
+#if (CFG_BUTTON_SUPPORTED == 1)
+static void APP_THREAD_SendCoapMsgWithConf(void);
+#endif
+static bool APP_THREAD_CheckMsgValidity(void);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+static void APP_THREAD_TransmitRequest(void *arg);
+#endif
+static void Send_Coap_Msg_Task(void * argument);
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
 static otInstance * PtOpenThreadInstance;
 
 /* USER CODE BEGIN PV */
-static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler, "myContext", NULL};
+static otCoapResource OT_Ressource = {C_RESSOURCE, APP_THREAD_CoapRequestHandler, "MyOwnContext", NULL};
 static otMessageInfo OT_MessageInfo = {0};
+static otMessage* pOT_Message = NULL;
+static otMessage* pOT_MessageResponse = NULL;
 
 static uint8_t PayloadWrite[COAP_PAYLOAD_LENGTH]= {0};
-static uint8_t OT_ReceivedCommand = 0;
-static otMessage   * pOT_Message = NULL;
-bool coapAlreadyStart = FALSE;
+static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
 
-osTimerId_t APP_Thread_coapSendTimer;
-static void coapSendTimerCallback(void *arg);
+static uint8_t CounterRole= {0};
 
-
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+osTimerId_t APP_Thread_transmitTimerHandle;
+#endif
 
 const osThreadAttr_t stSendCoapMsgTaskAttributes = 
 {
   .name = "SendCoapMsg Task",
-  .priority = CFG_TASK_PRIO_SEND_COAP_MSG,
+  .priority = TASK_PRIO_SEND_COAP_MSG,
   .stack_size = TASK_SEND_COAP_MSG_STACK_SIZE
 };
-
 
 osSemaphoreId_t       SendCoapMsgSemaphore;
 os_thread_id          SendCoapMsgTaskId; 
@@ -235,7 +255,8 @@ void Thread_Init(void)
   ll_sys_thread_init();
 
   /* USER CODE BEGIN INIT TASKS */
-  /* Create thread for multicast request CoAp msg transmission and semaphore to control it*/
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+  /* Create thread for periodic CoAp msg transmission and semaphore to control it*/
   SendCoapMsgSemaphore = osSemaphoreNew( 1, 0, NULL );
   if ( SendCoapMsgSemaphore == NULL )
   { 
@@ -250,8 +271,9 @@ void Thread_Init(void)
     while(1);
   }
 
-  /**   * Create timer to handle COAP request sending */
-  APP_Thread_coapSendTimer = osTimerNew(coapSendTimerCallback, osTimerPeriodic, NULL, NULL);
+  /* Create timer to handle periodic CoAp msg transmission */
+  APP_Thread_transmitTimerHandle = osTimerNew(APP_THREAD_TransmitRequest, osTimerPeriodic, NULL, NULL);
+#endif
   /* USER CODE END INIT TASKS */
 }
 
@@ -343,6 +365,7 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_START,error);
   }
   /* USER CODE BEGIN DEVICECONFIG */
+#ifndef GRL_TEST  
   /* Start the COAP server */
   error = otCoapStart(PtOpenThreadInstance, OT_DEFAULT_COAP_PORT);
   if (error != OT_ERROR_NONE)
@@ -353,7 +376,8 @@ static void APP_THREAD_DeviceConfig(void)
   /* Add COAP resources */
   otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
 
-
+  APP_THREAD_InitPayloadWrite();
+#endif 
   /* USER CODE END DEVICECONFIG */
 }
 
@@ -380,15 +404,16 @@ static void APP_THREAD_TraceError(const char * pMess, uint32_t ErrCode)
   /* USER CODE BEGIN TRACE_ERROR */
   LOG_ERROR_APP("**** FATAL ERROR = %s (Err = %d)", pMess, ErrCode);
 
-  while (1)
+  __enable_irq();
+
+  while(1U == 1U)
   {
-#if CFG_LED_SUPPORTED
-    /* In this case, the LEDs on the Board will start blinking. */
-    BSP_LED_Toggle(LD1);
+#if CFG_LED_SUPPORTED      
+    APP_BSP_LED_Toggle(LD1);
     HAL_Delay(500U);
-    BSP_LED_Toggle(LD2);
+    APP_BSP_LED_Toggle(LD2);
     HAL_Delay(500U);
-    BSP_LED_Toggle(LD3);
+    APP_BSP_LED_Toggle(LD3);
     HAL_Delay(500U);
 #endif
   }
@@ -504,61 +529,94 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
     {
       case OT_DEVICE_ROLE_DISABLED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DISABLED */
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_Off(LD2);
-          BSP_LED_Off(LD3);
+      	  APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+          /* Stop timer for periodic CoAp msg transmission */
+          osTimerStop(APP_Thread_transmitTimerHandle);
+          LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DISABLED. CounterRole value = %d",CounterRole);
+
 #endif
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
       case OT_DEVICE_ROLE_DETACHED:
           /* USER CODE BEGIN OT_DEVICE_ROLE_DETACHED */
-      if (coapAlreadyStart == TRUE)
-      {
-        osTimerStop(APP_Thread_coapSendTimer);
-        coapAlreadyStart = FALSE;
-      }
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_Off(LD2);
-          BSP_LED_Off(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+          /* Stop timer for periodic CoAp msg transmission */
+          osTimerStop(APP_Thread_transmitTimerHandle);
+          LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is DETACHED. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
       case OT_DEVICE_ROLE_CHILD:
           /* USER CODE BEGIN OT_DEVICE_ROLE_CHILD */
-      APP_THREAD_Child_Role_Handler();
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_Off(LD2);
-          BSP_LED_On(LD3);
+#if ( CFG_LPM_LEVEL != 0)
+          UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* CFG_LPM_LEVEL */
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT  
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is CHILD. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
       case OT_DEVICE_ROLE_ROUTER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_ROUTER */
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_Off(LD2);
-          BSP_LED_On(LD3);
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_On(LD3);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT  
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is ROUTER. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
       case OT_DEVICE_ROLE_LEADER :
           /* USER CODE BEGIN OT_DEVICE_ROLE_LEADER */
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_On(LD2);
-          BSP_LED_Off(LD3);
+          APP_BSP_LED_On(LD2);
+          APP_BSP_LED_Off(LD3);
+#ifdef APP_THREAD_PERIODIC_TRANSMIT  
+          /* If timer for periodic CoAp msg transmission NOT running */
+          if (osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+          {
+            /* Start timer for periodic CoAp msg transmission */
+            osTimerStart(APP_Thread_transmitTimerHandle, pdMS_TO_TICKS(APP_THREAD_TRANSMIT_PERIOD));
+            LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+          }
+          CounterRole++;
+          LOG_INFO_APP("INFO: Role is LEADER. CounterRole value = %d",CounterRole);
 #endif
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
       default:
           /* USER CODE BEGIN DEFAULT */
-#if (CFG_LED_SUPPORTED == 1)
-          BSP_LED_Off(LD2);
-          BSP_LED_Off(LD3);
-#endif
+          APP_BSP_LED_Off(LD2);
+          APP_BSP_LED_Off(LD3);
           /* USER CODE END DEFAULT */
           break;
     }
@@ -654,7 +712,6 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
     }
 
     memset(&OT_MessageInfo, 0, sizeof(OT_MessageInfo));
-    memcpy(&OT_MessageInfo.mSockAddr, otThreadGetLinkLocalIp6Address(PtOpenThreadInstance), sizeof(otIp6Address));
     OT_MessageInfo.mPeerPort = OT_DEFAULT_COAP_PORT;
 
     if((aPeerAddress == NULL) && (aStringAddress != NULL))
@@ -697,52 +754,6 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
 }
 
 /**
- * @brief   Background Task for Send Coap Messages.
- */
-static void Send_Coap_Msg_Task( void * argument )
-{
-  UNUSED(argument);  
-  while(1)
-  {
-    /* Wait for task semaphore to be released */
-    osSemaphoreAcquire( SendCoapMsgSemaphore, osWaitForever );
-    APP_THREAD_SendCoapMulticastRequest();
-    osThreadYield();
-  }
-}
-
-static void coapSendTimerCallback(void *arg)
-{
-  (void)arg;
-  osSemaphoreRelease(SendCoapMsgSemaphore);
-  return;
-}
-
-
-/**
-  * @brief Send a COAP multicast request to all the devices which are connected
-  *        on the Thread network
-  * @param None
-  * @retval None
-  */
-static void APP_THREAD_SendCoapMulticastRequest(void)
-{
-  PayloadWrite[0] = 0xff;
-  PayloadWrite[1] = 0xff;
-
-  /* Send the COAP request */
-  APP_THREAD_CoapSendRequest(&OT_Ressource,
-      OT_COAP_TYPE_NON_CONFIRMABLE,
-      OT_COAP_CODE_PUT,
-      MULTICAST_FTD_MED,
-      NULL,
-      &PayloadWrite[0],
-      sizeof(PayloadWrite),
-      NULL,
-      NULL);
-}
-
-/**
  * @brief Handler called when the server receives a COAP request.
  *
  * @param pContext : Context
@@ -756,37 +767,227 @@ static void APP_THREAD_CoapRequestHandler(void                 * pContext,
 
 {
   LOG_INFO_APP("Received CoAP request (context = %s)", pContext);
-   do
-   {
-    if (otCoapMessageGetType(pMessage) != OT_COAP_TYPE_NON_CONFIRMABLE)
-    {
-      break;
-    }
-
-    if (otCoapMessageGetCode(pMessage) != OT_COAP_CODE_PUT)
-    {
-      break;
-    }
-
-    if (otMessageRead(pMessage, otMessageGetOffset(pMessage), &OT_ReceivedCommand, 1U) != 1U)
-    {
-      APP_THREAD_Error(ERR_THREAD_MESSAGE_READ, 0);
-    }
-   }
-   while(false);
-}
-
-static void APP_THREAD_Child_Role_Handler(void)
-{
-#if ( CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
-#endif /* CFG_LPM_LEVEL */
-
-  if (coapAlreadyStart == FALSE)
+  
+  if (otMessageRead(pMessage, otMessageGetOffset(pMessage), &PayloadRead, sizeof(PayloadRead)) != sizeof(PayloadRead))
   {
-    osTimerStart(APP_Thread_coapSendTimer, pdMS_TO_TICKS(COAP_SEND_TIMEOUT));
-    coapAlreadyStart = TRUE;
+    APP_THREAD_Error(ERR_THREAD_MESSAGE_READ, 0);
+  }
+
+  if (APP_THREAD_CheckMsgValidity() == true)
+  {
+    BSP_LED_Toggle(LD1);
+  }
+  
+  /* If Message is Confirmable, send response */
+  if (otCoapMessageGetType(pMessage) == OT_COAP_TYPE_CONFIRMABLE)
+  {
+    APP_THREAD_CoapSendDataResponse(pMessage, pMessageInfo);
   }
 }
+
+/**
+ * @brief Send a non-confirmable CoAp message.
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_SendCoapMsgWithNoConf(void)
+{
+  LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
+  
+  /* Send a NON-CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_NON_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+                              NULL, PayloadWrite, sizeof(PayloadWrite), NULL, NULL);
+
+}
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+/**
+ * @brief Send a confirmable CoAp message.
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_SendCoapMsgWithConf(void)
+{
+  LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
+  
+  /* Send a CONFIRMABLE PUT Request */
+  APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
+                             NULL, PayloadWrite, sizeof(PayloadWrite), APP_THREAD_CoapDataRespHandler, NULL);
+}
+#endif
+
+/**
+ * @brief This function acknowledges the data reception by sending an ACK
+ *        back to the sender.
+ * @param  pMessage coap message
+ * @param  pMessageInfo message info pointer
+ * @retval None
+ */
+static void APP_THREAD_CoapSendDataResponse(otMessage  * pMessage, const otMessageInfo * pMessageInfo)
+{
+  otError  error = OT_ERROR_NONE;
+
+  do
+  {
+    LOG_INFO_APP("APP_THREAD_CoapSendDataResponse");
+
+    pOT_MessageResponse = otCoapNewMessage(PtOpenThreadInstance, NULL);
+    if (pOT_MessageResponse == NULL)
+    {
+      LOG_WARNING_APP("WARNING : pOT_MessageResponse = NULL ! -> exit now");
+      break;
+    }
+
+    error = otCoapMessageInitResponse(pOT_MessageResponse, pMessage, OT_COAP_TYPE_ACKNOWLEDGMENT, OT_COAP_CODE_VALID);
+
+    error = otCoapSendResponse(PtOpenThreadInstance, pOT_MessageResponse, pMessageInfo);
+    if (error != OT_ERROR_NONE && pOT_MessageResponse != NULL)
+    {
+      otMessageFree(pOT_MessageResponse);
+      APP_THREAD_Error(ERR_THREAD_COAP_DATA_RESPONSE,error);
+    }
+  }
+  while(false);
+}
+
+/**
+ * @brief   Background Task for Send Coap Messages.
+ */
+static void Send_Coap_Msg_Task( void * argument )
+{
+  UNUSED(argument);  
+  while(1)
+  {
+    /* Wait for task semaphore to be released */
+    osSemaphoreAcquire( SendCoapMsgSemaphore, osWaitForever );
+    APP_THREAD_SendCoapMsgWithNoConf();
+    osThreadYield();
+  }
+}
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+/**
+ * @brief This function manages the data response handler.
+ *
+ * @param pHeader  context
+ * @param pMessage message pointer
+ * @param pMessageInfo message info pointer
+ * @param result error code
+ * @retval None
+ */
+static void APP_THREAD_CoapDataRespHandler( void                * pContext,
+                                            otMessage           * pMessage,
+                                            const otMessageInfo * pMessageInfo,
+                                            otError               result)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(pMessage);
+  UNUSED(pMessageInfo);
+
+  if (result == OT_ERROR_NONE)
+  {
+    LOG_INFO_APP("APP_THREAD_CoapDataRespHandler : NO ERROR");
+  }
+  else
+  {
+    LOG_WARNING_APP("APP_THREAD_CoapDataRespHandler : WARNING. Result = %d",result);
+  }
+}
+#endif
+
+/**
+ * @brief Initialize CoAP write buffer.
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_InitPayloadWrite(void)
+{
+  uint8_t i;
+  
+  for(i = 0; i < COAP_PAYLOAD_LENGTH; i++)
+  {
+    PayloadWrite[i] = 0xFF;
+  }
+}
+
+/**
+ * @brief  Compare the message received versus the original message.
+ * @param  None
+ * @retval None
+ */
+static bool APP_THREAD_CheckMsgValidity(void)
+{
+  bool valid = true;
+  uint32_t i;
+
+  for(i = 0; i < COAP_PAYLOAD_LENGTH; i++)
+  {
+    if(PayloadRead[i] != PayloadWrite[i])
+    {
+      valid = false;
+    }
+  }
+
+  if(valid == true)
+  {
+    LOG_INFO_APP("PAYLOAD Comparison OK!");
+  }
+  else
+  {
+    APP_THREAD_Error(ERR_THREAD_MSG_COMPARE_FAILED, 0);
+  }
+  
+  return valid;
+}
+
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+/**
+ * @brief  Trigger a CoAp message transmission.
+ * @param  arg
+ * @retval None
+ */
+static void APP_THREAD_TransmitRequest(void *arg)
+{
+  osSemaphoreRelease(SendCoapMsgSemaphore);
+}
+#endif
+
+#if (CFG_BUTTON_SUPPORTED == 1)
+/**
+ * @brief  Management of the SW1 button : Send non-confirmable CoAp message 
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button1Action(void)
+{
+  APP_THREAD_SendCoapMsgWithNoConf();
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+    /* If timer for periodic CoAp msg transmission running */
+    if(osTimerIsRunning(APP_Thread_transmitTimerHandle) == 0U)
+    {
+      /* Stop timer for periodic CoAp msg transmission */
+      osTimerStart(APP_Thread_transmitTimerHandle,100);
+    LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
+  }
+#endif
+}
+
+/**
+ * @brief  Management of the SW2 button : Send confirmable CoAp message 
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button2Action(void)
+{
+  APP_THREAD_SendCoapMsgWithConf();
+#ifdef APP_THREAD_PERIODIC_TRANSMIT
+  /* USER CODE BEGIN Button2Action */
+  osTimerStop(APP_Thread_transmitTimerHandle);
+  LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+  /* USER CODE END Button2Action */
+#endif
+}
+#endif
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

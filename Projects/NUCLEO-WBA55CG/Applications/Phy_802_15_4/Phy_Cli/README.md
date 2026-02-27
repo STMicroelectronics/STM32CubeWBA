@@ -115,8 +115,8 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
   - In order to perform a fully exhaustive PHY certification, it may be necessary to enable the "dynamic RX printing" using the *rx_start 1* command.
     This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed
     using default baudrate of 115200.
-  - By setting FULL_CERTIFICATION_CAPABLE to 1 the Baud rate of USART1 increases to 576000, where it has been verified that the application can display
-    1000 frames with a payload of 12 bytes with no delay inbetween.
+  - By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
+    - the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay in between.
   - Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.
 
 ### __Examples of commands__

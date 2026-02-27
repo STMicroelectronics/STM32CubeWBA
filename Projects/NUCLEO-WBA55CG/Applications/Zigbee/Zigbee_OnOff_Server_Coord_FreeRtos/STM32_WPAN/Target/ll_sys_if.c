@@ -102,6 +102,9 @@ static void ll_sys_sleep_clock_source_selection(void);
 static void LinkLayer_Task_Entry(void *argument)
 {
   UNUSED(argument);
+  /* USER CODE BEGIN LinkLayer_Task_Entry_0 */
+
+  /* USER CODE END LinkLayer_Task_Entry_0 */
 
   for(;;)
   {

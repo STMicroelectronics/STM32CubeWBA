@@ -44,6 +44,7 @@ typedef enum
 {
   P2P_SERVER_LED_C,
   P2P_SERVER_SWITCH_C,
+  P2P_SERVER_LONG_C,
   /* USER CODE BEGIN Service1_CharOpcode_t */
 
   /* USER CODE END Service1_CharOpcode_t */
@@ -56,6 +57,7 @@ typedef enum
   P2P_SERVER_LED_C_WRITE_NO_RESP_EVT,
   P2P_SERVER_SWITCH_C_NOTIFY_ENABLED_EVT,
   P2P_SERVER_SWITCH_C_NOTIFY_DISABLED_EVT,
+  P2P_SERVER_LONG_C_WRITE_NO_RESP_EVT,
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
 
   /* USER CODE END Service1_OpcodeEvt_t */
@@ -68,7 +70,8 @@ typedef struct
   uint8_t Length;
 
   /* USER CODE BEGIN Service1_Data_t */
-
+  uint16_t Offset;
+  
   /* USER CODE END Service1_Data_t */
 } P2P_SERVER_Data_t;
 
@@ -80,7 +83,7 @@ typedef struct
   uint16_t                AttributeHandle;
   uint8_t                 ServiceInstance;
   /* USER CODE BEGIN Service1_NotificationEvt_t */
-
+  uint16_t Prec_offset;
   /* USER CODE END Service1_NotificationEvt_t */
 } P2P_SERVER_NotificationEvt_t;
 

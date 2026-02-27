@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,6 +22,7 @@
 #include "host_stack_if.h"
 #include "app_conf.h"
 #include "ll_sys.h"
+#include "app_entry.h"
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "cmsis_os2.h"
@@ -41,9 +42,9 @@ extern uint8_t missed_hci_event_flag;
 /* USER CODE END EV */
 
 /* External function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN EFP */
-#undef BLE_WRAP_PREPROC
-#undef BLE_WRAP_POSTPROC
+
 /* USER CODE END EFP */
 
 /**
@@ -78,10 +79,10 @@ void BleStackCB_Process(void)
   if (missed_hci_event_flag)
   {
     missed_hci_event_flag = 0;
-    HCI_HARDWARE_ERROR_EVENT(0x03);
+    /* missed event, Link Layer fifo full */
   }
   /* BLE Host stack processing through background task */
-  osSemaphoreRelease(BleHostSemaphore);
+  osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_BLEhost);
 
   /* USER CODE BEGIN BleStackCB_Process 1 */
 

@@ -32,7 +32,6 @@
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 */
-/* USER CODE BEGIN 0 */
 /*
 // <e>Initialize Security Attribution Unit (SAU) CTRL register
 */
@@ -80,8 +79,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END0       0xbffffff      /* end address of SAU region 0 */
-
+#define SAU_INIT_END0       0x081FFFFF      /* end address of SAU region 0 */
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -101,19 +99,18 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START1     0x0C0FE000      /* start address of SAU region 1 */
+#define SAU_INIT_START1     0x0BF80000      /* start address of SAU region 1 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END1       0xc0fffff      /* end address of SAU region 1 */
-
+#define SAU_INIT_END1       0x0BFB7FFF      /* end address of SAU region 1 */
 /*
 //     <o>Region is
 //         <0=>Non-Secure
 //         <1=>Secure, Non-Secure Callable
 */
-#define SAU_INIT_NSC1       1
+#define SAU_INIT_NSC1       0
 /*
 //   </e>
 */
@@ -127,19 +124,18 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START2     0x20000000      /* start address of SAU region 2 */
+#define SAU_INIT_START2     0x0C0FE000      /* start address of SAU region 2 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END2       0x2fffffff      /* end address of SAU region 2 */
-
+#define SAU_INIT_END2       0x0C0FFFFF      /* end address of SAU region 2 */
 /*
 //     <o>Region is
 //         <0=>Non-Secure
 //         <1=>Secure, Non-Secure Callable
 */
-#define SAU_INIT_NSC2       0
+#define SAU_INIT_NSC2       1
 /*
 //   </e>
 */
@@ -153,12 +149,12 @@
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
 */
-#define SAU_INIT_START3     0x40000000      /* start address of SAU region 3 */
+#define SAU_INIT_START3     0x20000000      /* start address of SAU region 3 */
 
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END3       0x58027fff      /* end address of SAU region 3 */
+#define SAU_INIT_END3       0x2007FFFF      /* end address of SAU region 3 */
 
 /*
 //     <o>Region is
@@ -174,7 +170,7 @@
 //   <e>Initialize SAU Region 4
 //   <i> Setup SAU Region 4 memory attributes
 */
-#define SAU_INIT_REGION4    0
+#define SAU_INIT_REGION4    1
 
 /*
 //     <o>Start Address <0-0xFFFFFFE0>
@@ -184,8 +180,7 @@
 /*
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
-#define SAU_INIT_END4       0x00000000      /* end address of SAU region 4 */
-
+#define SAU_INIT_END4       0x4802BFFF      /* end address of SAU region 4 */
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -211,7 +206,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END5       0x00000000      /* end address of SAU region 5 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -237,7 +231,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END6       0x00000000      /* end address of SAU region 6 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -263,7 +256,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END7       0x00000000      /* end address of SAU region 7 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -298,7 +290,7 @@
 //   <i> Value for SCB->AIRCR register bit SYSRESETREQS
 */
 #define SCB_AIRCR_SYSRESETREQS_VAL  0
-/* USER CODE END 0 */
+
 /*
 //   <o>Priority of Non-Secure exceptions is
 //     <0=> Not altered
@@ -386,8 +378,8 @@
 //   <o.12> EXTI1_IRQn            <0=> Secure state
 //   <o.13> EXTI2_IRQn            <0=> Secure state
 //   <o.14> EXTI3_IRQn            <0=> Secure state
-//   <o.15> EXTI4_IRQn            <1=> Non-Secure state
-//   <o.16> EXTI5_IRQn            <1=> Non-Secure state
+//   <o.15> EXTI4_IRQn            <0=> Secure state
+//   <o.16> EXTI5_IRQn            <0=> Secure state
 //   <o.17> EXTI6_IRQn            <0=> Secure state
 //   <o.18> EXTI7_IRQn            <0=> Secure state
 //   <o.19> EXTI8_IRQn            <0=> Secure state
@@ -404,7 +396,7 @@
 //   <o.30> GPDMA_Channel1_IRQn   <1=> Non-Secure state
 //   <o.31> GPDMA_Channel2_IRQn   <0=> Secure state
 */
-#define NVIC_INIT_ITNS0_VAL      0x60018204
+#define NVIC_INIT_ITNS0_VAL      0x60000204
 
 /*
 //   </e>

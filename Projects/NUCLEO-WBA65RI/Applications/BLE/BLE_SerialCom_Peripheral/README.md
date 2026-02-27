@@ -72,6 +72,8 @@ On the client side when idle:
 - B2 clears database.  
 
 In case the central is a smartphone, open ST BLE Toolbox and click on COC.  
-Pairing is requested; click on "pair".  
+Pairing is requested; click on "pair". 
+
+Warning: with CubeIDE Debug variant, some transmitted characters may be missed.
 
 Please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Serial_Com#How_to_use_the_Bluetooth.C2.AE_Low_Energy_SerialCom_central_application"> STM32WBA Bluetooth LE Serial Communication.</a>  

@@ -18,7 +18,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-/* Common utilites */
+/* Common utilities */
 #include "utilities_common.h"
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)

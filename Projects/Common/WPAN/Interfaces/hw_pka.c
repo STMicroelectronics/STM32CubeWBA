@@ -20,6 +20,8 @@
 #include "stm32wbaxx_ll_bus.h"
 #include "stm32wbaxx_ll_pka.h"
 
+#warning "DEPRECATED: use Modules/pka_ctrl.c instead"
+
 /*****************************************************************************/
 
 extern void Error_Handler(void);
@@ -43,6 +45,16 @@ __WEAK int PKA_MutexTake(void)
 }
 
 __WEAK int PKA_MutexRelease(void)
+{
+  return 0; /* This shall be implemented by user */
+}
+
+__WEAK int PKA_TakeSemEndOfOperation(void)
+{
+  return 0; /* This shall be implemented by user */
+}
+
+__WEAK int PKA_ReleaseSemEndOfOperation(void)
 {
   return 0; /* This shall be implemented by user */
 }
@@ -89,6 +101,16 @@ int HW_PKA_Enable( void )
   SET_BIT(PKA->CLRFR, (PKA_CLRFR_PROCENDFC | PKA_CLRFR_RAMERRFC |
                        PKA_CLRFR_ADDRERRFC | PKA_CLRFR_OPERRFC));
 
+  /* Set priority and Enable PKA interrupt */
+  NVIC_SetPriority (PKA_IRQn, PKA_INTR_PRIO_PROCEND);
+  HAL_NVIC_EnableIRQ (PKA_IRQn);
+  
+  /* Take the end of operation semaphore before operation start */
+  if (0 != PKA_TakeSemEndOfOperation ())
+  {
+    Error_Handler();
+  }
+  
   /* Disable the RNG clock as it is no more needed ???
    */
   HW_RNG_DisableClock( 2 );
@@ -130,8 +152,12 @@ void HW_PKA_Start( uint32_t mode )
   /* Set the configuration */
   LL_PKA_Config( PKA, mode );
 
-  /* Start the PKA processing */
+  /* Setup IT end of process */
   LL_PKA_ClearFlag_PROCEND( PKA );
+  LL_PKA_EnableIT_PROCEND (PKA);
+  while (1u != LL_PKA_IsEnabledIT_PROCEND (PKA));
+  
+  /* Start the PKA processing */
   LL_PKA_Start( PKA );
 }
 
@@ -139,8 +165,17 @@ void HW_PKA_Start( uint32_t mode )
 
 int HW_PKA_EndOfOperation( void )
 {
-  /* Return 0 if the processing is still active */
-  return LL_PKA_IsActiveFlag_PROCEND( PKA );
+  /* Check if operation is still in progress */
+  if (1u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Wait until end of process semaphore is released */
+    while (0 != PKA_TakeSemEndOfOperation ());
+    
+    /* Disable the process end IT */
+    LL_PKA_DisableIT_PROCEND (PKA);
+  }
+  
+  return 0;
 }
 
 /*****************************************************************************/
@@ -174,6 +209,9 @@ void HW_PKA_Disable( void )
 
   if ( pv->run )
   {
+    /* Disable the PKA IRQ */
+    HAL_NVIC_DisableIRQ (PKA_IRQn);
+    
     /* Disable the PKA block */
     LL_PKA_Disable( PKA );
 
@@ -184,12 +222,29 @@ void HW_PKA_Disable( void )
 
     UTILS_EXIT_CRITICAL_SECTION( );
 
+    /* Release the end of operation semaphore */
+    if (0 != PKA_ReleaseSemEndOfOperation ())
+    {
+      Error_Handler();
+    }    
+    
     if (0 != PKA_MutexRelease())
     {
       Error_Handler();
     }
 
     pv->run = FALSE;
+  }
+}
+
+/*****************************************************************************/
+
+void HW_PKA_EndOfProcessCb (void)
+{
+  /* Release the end of operation semaphore */
+  if (0 != PKA_ReleaseSemEndOfOperation ())
+  {
+    Error_Handler();
   }
 }
 

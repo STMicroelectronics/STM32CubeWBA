@@ -27,6 +27,7 @@
 #include "stm32_seq.h"
 #include "adv_trace_usart_if.h"
 #include "host_stack_if.h"
+#include "serial_cmd_interpreter.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -44,12 +45,16 @@ static uint8_t buffUartRxIndex;
 static uint8_t a_buffCocTx[BUFFCOCTX_SIZE];
 static uint8_t buffCocTxLen;
 
+static uint8_t a_buffUartRxValid[BUFFUARTRX_SIZE];
+static uint8_t buffUartRxValidIndex;
+
 /* Global variables ----------------------------------------------------------*/
 extern uint8_t charRx;
 extern uint8_t real_time;
 
 /* Private function prototypes -----------------------------------------------*/
 static void RxUART_Init(void);
+static void RxUART_ValidProcess(uint8_t data);
 static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t size, uint8_t error);
 static void COC_PERIPH_APP_Terminal_Init(void);
 
@@ -118,6 +123,27 @@ static void RxUART_Init(void)
   UART_StartRx(COC_Periph_APP_Terminal_UART_RxCpltCallback);
 }
 
+static void RxUART_ValidProcess(uint8_t data)
+{
+  if(buffUartRxValidIndex < sizeof(a_buffUartRxValid))
+  {
+    a_buffUartRxValid[buffUartRxValidIndex++] = data;
+
+    if(data == '\r')
+    {
+      a_buffUartRxValid[buffUartRxValidIndex-1] = '\0';
+      Serial_CMD_Interpreter_CmdExecute( a_buffUartRxValid, buffUartRxValidIndex );
+      buffUartRxValidIndex = 0;
+    }
+  }
+  else
+  {
+    buffUartRxValidIndex = 0;
+  }
+
+  return;
+}
+
 static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t size, uint8_t error)
 {
  
@@ -126,7 +152,9 @@ static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t
   if(size == 1)
   {
     byte_received = pdata[0];
-    
+
+    RxUART_ValidProcess(byte_received);
+
     if(buffUartRxIndex < sizeof(a_buffUartRx))
     {
       a_buffUartRx[buffUartRxIndex++] = byte_received;
@@ -135,7 +163,7 @@ static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t
     {
       buffUartRxIndex = 0;
     }
-    
+
     if( (real_time ==1) || (real_time == 0 && (byte_received == '\n')))
     {
       memcpy(&a_buffCocTx[2], &a_buffUartRx[0], buffUartRxIndex);
@@ -146,13 +174,14 @@ static void COC_Periph_APP_Terminal_UART_RxCpltCallback(uint8_t *pdata, uint16_t
       a_buffCocTx[1] = 0;
 
       UTIL_SEQ_SetTask(1 << CFG_TASK_COC_PERIPH_TX_REQ_ID, CFG_SEQ_PRIO_0);      
-    }    
+    }
   }
   else
   {
-    
+
   }
   UART_StartRx(COC_Periph_APP_Terminal_UART_RxCpltCallback);
+
   return; 
 }
 

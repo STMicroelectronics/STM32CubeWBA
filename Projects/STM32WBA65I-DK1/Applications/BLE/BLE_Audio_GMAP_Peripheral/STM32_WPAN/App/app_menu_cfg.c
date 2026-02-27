@@ -661,7 +661,7 @@ static void Menu_SelectBroadcast(uint8_t id)
   status = GMAPAPP_SyncToPA(a_broadcast_sources[id].AdvSID,
                            &a_broadcast_sources[id].Address[0],
                            a_broadcast_sources[id].AddressType);
-  LOG_INFO_APP("PBPAPP_SyncToPA() returns status 0x%02X\n",status);
+  LOG_INFO_APP("GMAPAPP_SyncToPA() returns status 0x%02X\n",status);
 
   if (status == BLE_STATUS_SUCCESS)
   {

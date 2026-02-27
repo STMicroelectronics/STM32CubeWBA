@@ -239,6 +239,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
@@ -279,16 +284,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_otp.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Interface/hw_pka.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_pka.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Interface/hw_pka_p256.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_pka_p256.c</locationURI>
-		</link>
-		<link>
 			<name>Common/WPAN/Interface/hw_rng.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
@@ -317,6 +312,11 @@
 			<name>Common/WPAN/Modules/otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/pka_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/pka_ctrl.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/scm.c</name>
@@ -382,11 +382,6 @@
 			<name>Application/User/STM32_WPAN/Target/bleplat.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bleplat.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/STM32_WPAN/Target/bpka.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bpka.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/host_stack_if.c</name>

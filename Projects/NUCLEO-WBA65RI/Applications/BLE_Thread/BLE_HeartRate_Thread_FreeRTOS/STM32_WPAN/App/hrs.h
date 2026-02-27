@@ -59,6 +59,7 @@ typedef enum
   HRS_HRCP_WRITE_EVT,
   /* USER CODE BEGIN Service1_OpcodeEvt_t */
   HRS_RESET_ENERGY_EXPENDED_EVT,
+
   /* USER CODE END Service1_OpcodeEvt_t */
   HRS_BOOT_REQUEST_EVT
 } HRS_OpcodeEvt_t;
@@ -93,6 +94,7 @@ typedef struct{
     uint8_t     NbreOfValidRRIntervalValues;
     uint8_t     Flags;
 }HRS_MeasVal_t;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -116,6 +118,7 @@ typedef enum
   HRS_BODY_SENSOR_LOCATION_EAR_LOBE = 5,
   HRS_BODY_SENSOR_LOCATION_FOOT = 6
 }HRS_BodySensorLocation_t;
+
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

@@ -45,10 +45,10 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)
@@ -1722,7 +1722,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole)
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUCLLinks = MAX_NUM_UCL_LINK;
 
-  /*Published Audio Capabilites for Unicast Client and/or Broadcast Assistant Configuration*/
+  /*Published Audio Capabilities for Unicast Client and/or Broadcast Assistant Configuration*/
   APP_BAP_Config.PACSCltConfig.MaxNumSnkPACRecordsPerLink = MAX_NUM_CLT_SNK_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.MaxNumSrcPACRecordsPerLink = MAX_NUM_CLT_SRC_PAC_RECORDS_PER_LINK;
   APP_BAP_Config.PACSCltConfig.pStartRamAddr = (uint8_t *)&aPACSCltMemBuffer;
@@ -2567,7 +2567,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     {
       APP_ACL_Conn_t *p_conn;
       CSIP_SetMember_Info_t *p_info = (CSIP_SetMember_Info_t *) pNotification->pInfo;
-      LOG_INFO_APP("Coordinated Set Indentification Profile is linked on ConnHandle 0x%04X\n",
+      LOG_INFO_APP("Coordinated Set Identification Profile is linked on ConnHandle 0x%04X\n",
                    pNotification->ConnHandle);
       if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
@@ -2622,7 +2622,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 UNUSED(status);
               }
             }
-          break;;
+          break;
 
           case CSIP_COO_NEW_SET_MEMBER_DISCOVERED_EVT:
           {
@@ -2664,7 +2664,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,hciCmdResult);
             }
 #if (CFG_BLE_NUM_LINK > 0u)
-            /*Check if a CAP Linkup witha discovered Set Member should started*/
+            /*Check if a CAP Linkup with a discovered Set Member should started*/
             for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
             {
               if (GMAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)
@@ -3130,7 +3130,7 @@ static Sampling_Freq_t GMAPAPP_GetTargetFrequency(uint8_t Frequency, Audio_Role_
                   LOG_INFO_APP("ASE id %d is also starting, using combined frequency %d\n",
                                p_app_ase2->ID,
                                target_frequency);
-                  LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n",
+                  LOG_INFO_APP("Source Decimation Multiplier = %d, Sink Decimation Multiplier = %d\n",
                                GMAPAPP_Context.SourceDecimation, GMAPAPP_Context.SinkDecimation);
                   return target_frequency;
                 }

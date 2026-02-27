@@ -49,7 +49,7 @@
 /* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
-#define APP_ZIGBEE_CHANNEL                13u
+#define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
 #define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
 
@@ -94,8 +94,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-static UTIL_TIMER_Object_t            stTimerSendReportRequest;
-static uint16_t                       iDeviceShortAddress;
+static UTIL_TIMER_Object_t      stTimerSendReportRequest;
+static uint16_t                 iDeviceShortAddress;
 
 /* USER CODE END PV */
 
@@ -158,10 +158,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 
@@ -200,7 +197,7 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   /* Server Report callback */
   stZigbeeAppInfo.ThermostatClient->report = &APP_ZIGBEE_ThermostatServerReport;
   stZigbeeAppInfo.ThermostatClient->command = &APP_ZIGBEE_ThermostatServerCommand;
-
+  
   /* USER CODE END APP_ZIGBEE_ConfigEndpoints2 */
 }
 
@@ -293,7 +290,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 
@@ -445,6 +442,24 @@ static void APP_ZIGBEE_ThermostatServerReport( struct ZbZclClusterT * pstCluster
   {
     LOG_INFO_APP( "[THERMOSTAT] " LOG_DISPLAY64() " : Local Temperature : %s", LOG_NUMBER64( pstDataInd->src.extAddr ), szText );
   }
+}
+
+/**
+ * @brief  Management of the SW3 button. Play 'High' button of Menu
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button2Action(void)
+{
+}
+
+/**
+ * @brief  Management of the SW3 button. Play 'High' button of Menu
+ * @param  None
+ * @retval None
+ */
+void APP_BSP_Button3Action(void)
+{
 }
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    app_zigbee_persistence_nvm.c
   * @author  MCD Application Team
-  * @brief   Library to simpliest manage persistence on NVM.
+  * @brief   Library to simplest manage persistence on NVM.
   ******************************************************************************
   * @attention
   *
@@ -30,7 +30,6 @@
 
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
-#include "stm32wbaxx_nucleo.h"
 #include "stm32wbaxx_ll_icache.h"
 
 #include "zigbee.h"
@@ -205,7 +204,7 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
 {
   bool                bStatus = true;
   uint8_t             szFlashData[HW_FLASH_WIDTH];
-  uint16_t            iFinalBufferSize, iNbCopy, iPage, iBufferIndex, iNbRetry = 0;
+  uint16_t            iFinalBufferSize, iNbCopy, iBufferIndex, iNbRetry = 0;
   uint32_t            lFinalAddress, lTempAddress, lPersistenceStartAddress;
   PersistHeader_st    stPersistHeader;
 
@@ -250,13 +249,12 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
     if ( lFinalAddress >= lTempAddress )
     {
       lPersistenceCurrentAddress = lTempAddress;
-      iPage = ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE );
-      LOG_DEBUG_APP( "  Erase Page %d.", iPage );
+      LOG_DEBUG_APP( "  Erase Page %d.", ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE ) );
 
       bStatus = AppZbPersistence_ErasePage(lPersistenceCurrentAddress);
       if ( bStatus == false )
       {
-        LOG_ERROR_APP( "  Error, Cannot erase Page %d.", iPage );
+        LOG_ERROR_APP( "  Error, Cannot erase Page %d.", ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE ) );
       }
     }
   }
@@ -349,12 +347,11 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
           lPersistenceCurrentAddress = PERSISTENCE_START_ADDRESS;
         }
 
-        iPage = ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE );
-        LOG_DEBUG_APP( "  Erase Page %d.\n", iPage );
+        LOG_DEBUG_APP( "  Erase Page %d.\n", ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE ) );
 
         if ( AppZbPersistence_ErasePage( lPersistenceCurrentAddress ) == false )
         {
-          LOG_ERROR_APP( "  Error, Cannot erase Page %d.", iPage );
+          LOG_ERROR_APP( "  Error, Cannot erase Page %d.", ( ( lPersistenceCurrentAddress - PERSISTENCE_START_ADDRESS ) / FLASH_PAGE_SIZE ) );
         }
       }
     }
@@ -366,7 +363,7 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
 
   if ( bStatus != false )
   {
-    /* If OK, update Last Persist Informations */
+    /* If OK, update Last Persist Information */
     stLastPersistInfo.lBufferAddress = lPersistenceStartAddress + + sizeof(stPersistHeader);
     stLastPersistInfo.iBufferLength = iBufferLength;
   }
@@ -552,7 +549,7 @@ static HAL_StatusTypeDef AppZbPersistence_Startup( struct ZigBeeT * pstZigbee, s
 }
 
 /**
- * @brief   Initialize Persistence. If Persistance can be retrieve, load this setting.
+ * @brief   Initialize Persistence. If Persistence can be retrieve, load this setting.
  *
  * @return
  */
@@ -561,7 +558,7 @@ HAL_StatusTypeDef AppZbPersistence_Init( struct ZigBeeT * pstZigbee, struct ZbSt
   HAL_StatusTypeDef   eStatus = HAL_OK;
   uint32_t            lTimeout;
 
-  /* If needed, erase Persistence Informations */
+  /* If needed, erase Persistence Information */
   if ( eStatus == HAL_OK )
   {
     if ( cPersistenceType == APP_ZB_PERSISTENCE_TYPE_ENABLED_ERASED )

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -84,7 +84,6 @@ typedef enum
 {
   PROC_GAP_GEN_PHY_TOGGLE,
   PROC_GAP_GEN_CONN_TERMINATE,
-  PROC_GATT_EXCHANGE_CONFIG,
   /* USER CODE BEGIN ProcGapGeneralId_t */
 
   /* USER CODE END ProcGapGeneralId_t */
@@ -99,8 +98,6 @@ typedef enum
   PROC_GAP_PERIPH_ADVERTISE_STOP,
   PROC_GAP_PERIPH_ADVERTISE_DATA_UPDATE,
   PROC_GAP_PERIPH_CONN_PARAM_UPDATE,
-
-  PROC_GAP_PERIPH_SET_BROADCAST_MODE,
   /* USER CODE BEGIN ProcGapPeripheralId_t */
 
   /* USER CODE END ProcGapPeripheralId_t */
@@ -141,9 +138,11 @@ enum
 enum
 {
   BOARD_ID_NUCLEO_WBA5X =  0x8B,
-  BOARD_ID_DK_WBA5X     =  0x8C,
-  BOARD_ID_NUCLEO_WBA6X =  0x8E, 
-  BOARD_ID_DK_WBA6X     = 0x8F
+  BOARD_ID_DK_WBA5X     = 0x91,
+  BOARD_ID_B_WBA5M_WPAN = 0x8D,
+  BOARD_ID_NUCLEO_WBA6X = 0x8E,
+  BOARD_ID_DK_WBA6X     = 0x92,
+  BOARD_ID_B_WBA6M_WPAN = 0x93
 };
 
 /** 
@@ -156,12 +155,14 @@ enum
   FW_ID_DT_SERVER  =  0x88,
   FW_ID_COC_PERIPH =  0x87,
   FW_ID_HEART_RATE =  0x89,
-  FW_ID_HEALTH_THERMO = 0x8A
+  FW_ID_HEALTH_THERMO         = 0x8A,
+  FW_ID_HID                   = 0x8B,
+  FW_ID_SENSOR                = 0x9C,
+  FW_ID_GENERIC_HEALTH_SENSOR = 0x9D
 };
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
-
 extern osSemaphoreId_t    BleHostSemaphore;
 extern osSemaphoreId_t    GapProcCompleteSemaphore;
 
@@ -170,6 +171,7 @@ extern osSemaphoreId_t    GapProcCompleteSemaphore;
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_WIN_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define CONN_INT_MS(x) ((uint16_t)((x)/1.25f))
@@ -187,11 +189,16 @@ extern osSemaphoreId_t    GapProcCompleteSemaphore;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
-void APP_BLE_HostNvmStore(void);
+void APP_BLE_Deinit(void);
+void BleStack_Process_BG(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
 const uint8_t* BleGetBdAddress(void);
+tBleStatus SetGapAppearance(uint16_t appearance);
+tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
+void Ble_UserEvtRx(void);
+void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 void APP_BLE_AdvStart(void);
 void APP_BLE_AdvLowPower(void);

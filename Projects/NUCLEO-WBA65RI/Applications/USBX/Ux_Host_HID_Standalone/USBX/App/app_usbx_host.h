@@ -64,7 +64,6 @@ UINT MX_USBX_Host_Stack_Init(VOID);
 UINT MX_USBX_Host_Stack_DeInit(VOID);
 
 /* USER CODE BEGIN EFP */
-VOID USBX_APP_Host_Init(VOID);
 VOID USBH_DriverVBUS(uint8_t state);
 VOID USBX_Host_Process(VOID *arg);
 /* USER CODE END EFP */

@@ -10,7 +10,7 @@ The ZB Persistence is erased by press push button SW3.
 
 N.B. : 
  * It's recommended to complete erase the Flash before download the application firmware on each Device.
- * After a restart of PressMeas Server (Router), reports are send every 60 seconds (instead 5 seconds).
+ * After a restart of PressMeas Server (Router), reports are send every 60 seconds.
  * After an Erase of ZB Persistence on the Device, it's preferable to erase the other Device also (else there are not aligned).
 
 
@@ -33,7 +33,7 @@ For this application it is requested to have:
 
   * The Pressure Measure Client send a Report Request to obtains regularly the **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes.  
  
-  * The Pressure Measure Server send regularly (5 s) a Report with the latest value of **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes.  
+  * The Pressure Measure Server send regularly (60 seconds) a Report with the latest value of **ZCL_PRESS_MEAS_ATTR_MEAS_VAL** attributes.  
  
  
 <pre>
@@ -76,7 +76,7 @@ For this application it is requested to have:
              |           | ------------------------------------------------------------> | toggling  |
              |           | <------------------------------------------------------------ |           |
              |           |                                                               |           |
-             |           | <--- Report (every 5 seconds or 1 minute - see limitation) -- |           |
+             |           | <--- Report (every 1 minute - see limitation) --------------- |           |
              |           |                                                               |           |
              +-----------+                                                               +-----------+
   
@@ -100,10 +100,7 @@ For this application it is requested to have:
   
   4. It is now possible to see the green led toggling on the Server side (periodicity of 0.5s) and periodic tx/rx frames on wireshark or on Uart log every 5 seconds.
 
-  5. Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Client_Coord_Persist.PowerOff followed by Zigbee_PressMeas_Client_Coord_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Server_Router_Persist and periodic tx/rx frames on wireshark or on Uart log every 5 seconds.
-
-  6. Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Server_Router_Persist.PowerOff followed by Zigbee_PressMeas_Server_Router_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Client_Coord_Persist and periodic tx/rx frames on wireshark or on Uart log every 1 minute. This is a limitation.
-
+  5. Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Client_Coord_Persist.PowerOff followed by Zigbee_PressMeas_Client_Coord_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Server_Router_Persist and periodic tx/rx frames on wireshark or on Uart log every 1 minute.
 
 **Note:** When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.
 

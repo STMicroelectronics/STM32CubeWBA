@@ -211,7 +211,7 @@ void HAP_AclDisconnection(uint16_t ConnHandle)
 }
 
 /**
-  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event for a specified device is received
   * @param  ConnHandle: connection handle
   */
 void HAP_LinkEncrypted(uint16_t ConnHandle)

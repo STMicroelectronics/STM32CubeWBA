@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -527,9 +527,7 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
 #if (CFG_LPM_LEVEL != 0)
-  PWR_DisableSleepMode();
-  /* Disabling stop mode prevents also from entering in standby */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_IDLE_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
 #if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
@@ -545,8 +543,7 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
 #if (CFG_LPM_LEVEL != 0)
-  PWR_EnableSleepMode();
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
 #if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);

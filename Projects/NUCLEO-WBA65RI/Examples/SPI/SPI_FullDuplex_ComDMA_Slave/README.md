@@ -46,7 +46,7 @@ STM32 board's LEDs can be used to monitor the transfer status:
  - LD1 turns ON when the transmission/reception process is complete.
  - LD3 toggle when there is an error in transmission/reception process.
 
-**Note:** LD1 reamins ON since it shares the same pin as SPI1_CLK (PB4).
+**Note:** LD1 remains ON since it shares the same pin as SPI1_CLK (PB4).
 
 #### <b>Notes</b>
 

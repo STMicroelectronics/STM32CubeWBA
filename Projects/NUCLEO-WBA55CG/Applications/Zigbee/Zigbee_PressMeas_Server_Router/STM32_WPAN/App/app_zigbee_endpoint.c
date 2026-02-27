@@ -167,10 +167,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 
@@ -206,7 +203,7 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
-
+  
   /* USER CODE END APP_ZIGBEE_ConfigEndpoints2 */
 }
 
@@ -295,7 +292,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 

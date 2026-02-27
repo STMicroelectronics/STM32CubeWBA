@@ -19,7 +19,7 @@
 <body>
 <div class="row">
 <div class="col-sm-12 col-lg-8">
-<h2 id="ble_heartrate_thread_sed_sed-application-description"><strong>BLE_HeartRate_Thread_SED_FreeRTOS Application Description</strong></h2>
+<h2 id="ble_heartrate_thread_sed-application-description"><strong>BLE_HeartRate_Thread_SED_FreeRTOS Application Description</strong></h2>
 <p>How to use the Concurrency mode BLE/Thread with BLE Heart Rate profile and COAP messages transmission over Thread for a Sleepy End Device.</p>
 <p>This application demonstrates the BLE/Thread(SED) concurrency mode. The device is configured to attach to a Thread Leader and then sends COAP message every two seconds. This device is also configured in BLE with Heart Rate profile, starts advertising and is available to accept incoming connection in BLE. This application demonstrates the Low Power, in Standby mode.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
@@ -32,7 +32,7 @@
 <li>BLE_HeartRate_Thread_SED/Core/Inc/main.h Header for main.c file. This file contains the common defines of the application</li>
 <li>BLE_HeartRate_Thread_SED/Core/Inc/stm32wbaxx_hal_conf.h HAL configuration file</li>
 <li>BLE_HeartRate_Thread_SED/Core/Inc/stm32wbaxx_it.h This file contains the headers of the interrupt handlers</li>
-<li>BLE_HeartRate_Thread_SED/Core/Inc/stm32wbaxx_nucleo_conf.h STM32WBAXX nucleo board configuration file. This file should be copied to the application folder and renamed to stm32wbaxx_nucleo_conf.h</li>
+<li>BLE_HeartRate_Thread_SED/Core/Inc/stm32wbaxx_dk_conf.h STM32WBAXX DK board configuration file. This file should be copied to the application folder and renamed to stm32wbaxx_dk_conf.h</li>
 <li>BLE_HeartRate_Thread_SED/Core/Inc/utilities_conf.h Header for configuration file for STM32 Utilities</li>
 <li>BLE_HeartRate_Thread_SED/STM32_WPAN/App/app_ble.h Header for ble application</li>
 <li>BLE_HeartRate_Thread_SED/STM32_WPAN/App/app_thread.h Header for thread application</li>
@@ -127,18 +127,18 @@
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
 <li>This example runs on STM32WBA65xx devices.</li>
-<li>Connect the Discovery Kit to your PC with a USB cable type A to mini-B to ST-LINK connector (USB_STLINK).</li>
-<li>This example has been tested with an STMicroelectronics STM32WBA65i-DK board and can be easily tailored to any other supported device and development board.</li>
+<li>Connect the DK Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).</li>
+<li>This example has been tested with an STMicroelectronics STM32WBA65RI-DK board and can be easily tailored to any other supported device and development board.</li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>Minimum requirements for the demo:</p>
 <ul>
-<li>One STM32WBA65i-DK board flashed with BLE_HeartRate_Thread_SED_FreeRTOS application using current generated binary.</li>
-<li>Use a NUCLEO-WBA65RI board flashed with application Thread_Coap_Generic (NUCLEO-WBA65RI_Coap_Generic). Run this board first so that it becomes the Thread Leader.</li>
+<li>One STM32WBA65xx-DK board flashed with BLE_HeartRate_Thread_SED application using current generated binary.</li>
+<li>Use a second board flashed with application Thread_Coap_Generic. Run this board first so that it becomes the Thread Leader.</li>
 </ul>
 <p>In order to make the program work, you must do the following:</p>
 <ul>
-<li>Connect a STM32WBA65i-DK to your PC.</li>
+<li>Connect a STM32WBA65xx-DK board to your PC.</li>
 <li>Open your preferred toolchain.</li>
 <li>Rebuild all files and flash the board with the executable file.</li>
 </ul>
@@ -148,11 +148,11 @@ An End Device (or child) communicates primarily with a <strong>single Router</st
 <p>Our Application uses two devices :</p>
 <ul>
 <li>the Thread_Coap_Generic device will act as a Leader (Router).</li>
-<li>the BLE_HeartRate_Thread_SED_FreeRTOS device will act as an End Device (mode child).</li>
+<li>the BLE_HeartRate_Thread_SED device will act as an End Device (mode child).</li>
 </ul>
 <p>After the reset of the Thread_Coap_Generic device, it will be in Leader mode (<strong>Green LED2 ON</strong>).<br />
 Then power on the BLE_HeartRate_Thread_SED device, it will be in Child mode (LEDs are not driven because of Low Power).</p>
-<p>Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread_SED device) starts sending <strong>COAP command (Non-Confirmable)</strong> to the Thread Leader every two seconds. The Thread Leader will receive COAP commands to toggle its <strong>blue LED1</strong>.</p>
+<p>Once attached to the Thread Leader (Thread_Coap_Generic device), the Thread Child (BLE_HeartRate_Thread_SED device) starts sending <strong>COAP command (Non-Confirmable)</strong> to the Thread Leader every two seconds. The Thread Leader will receive COAP commands to toggle its <strong>blue LED1</strong>. On top of this periodic toggling, IF ENABLE (joystick disable by default), the joystick down of the thread Child (BLE_HeartRate_Thread_SED device) can send COAP command (Non-Confirmable) to the thread leader (easier to observe it with the log terminal of the Thread_Coap_Generic device). On top of this periodic toggling, IF ENABLE (joystick disable by default), the joystick left of the thread Child (BLE_HeartRate_Thread_SED device) can send COAP command (Confirmable) to the thread leader (easier to observe it with the log terminal of the Thread_Coap_Generic device).</p>
 <pre>
     
   ___________________________                       ___________________________
@@ -180,19 +180,22 @@ Then power on the BLE_HeartRate_Thread_SED device, it will be in Child mode (LED
 <p>During Thread activity, the BLE_HeartRate_Thread_SED device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.</p>
 <p>On the android/ios device, enable the Bluetooth communications, and if not done before:</p>
 <ul>
-<li>Install the ST BLE Toolbox application on the android device:
+<li><p>Install the ST BLE Toolbox application on the android device:</p>
 <ul>
 <li><a href="https://play.google.com/store/apps/details?id=com.st.dit.stbletoolbox"> ST BLE Toolbox Android</a></li>
 <li><a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a></li>
 </ul></li>
 <li><p>Then, click on the App icon, ST BLE Toolbox (android/ios device).</p></li>
-<li><p>In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs, you can reset the energy measurement.</li>
+<li><p>In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs, you can reset the energy measurement.</p></li>
 <li><p>After 60s of advertising, the application switch from fast advertising to low power advertising.</p></li>
 </ul>
 <h3 id="traces"><strong>Traces</strong></h3>
 <p>Traces are disabled because of Low Power.</p>
 <h3 id="power-consumption"><strong>Power Consumption</strong></h3>
-<p>Power consumption can be measured using the X-Nucleo-LPM01A board solution.</p>
+<p>Power consumption can be measured using the X-DK-LPM01A board solution.</p>
+<p>On STM32WBA65xx, the consumption should be:</p>
+<ul>
+<li>Standby mode: 5 uA</li>
 </ul>
 </div>
 </div>

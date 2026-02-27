@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -81,12 +81,10 @@ extern "C"{
 
 #define MODSUB( a, b, m )    MODADD( a, (m)-(b), m )
 
-#ifndef PAUSE
 #define PAUSE( t )           M_BEGIN \
                                __IO int _i; \
                                for ( _i = t; _i > 0; _i -- ); \
                              M_END
-#endif
 
 #define DIVF( x, y )         ((x)/(y))
 

@@ -49,7 +49,7 @@ extern "C" {
 #define TASK_PRIO_BLE_HOST                      osPriorityNormal
 #define TASK_PRIO_HCI_ASYNC_EVENT               osPriorityNormal
 #define TASK_PRIO_BLE_TIMER                     osPriorityNormal
-#define TASK_PRIO_BPKA                          osPriorityNormal
+#define TASK_PRIO_PKACTRL                       osPriorityNormal
 
 /* USER CODE BEGIN TASK_Priority_Define */
 #define TASK_PRIO_BUTTON_Bx                     osPriorityNormal
@@ -74,7 +74,7 @@ extern "C" {
 #define TASK_STACK_SIZE_BLE_HOST                RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_HCI_ASYNC_EVENT         (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_SMALL)
 #define TASK_STACK_SIZE_BLE_TIMER               RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_PKACTRL                 RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 

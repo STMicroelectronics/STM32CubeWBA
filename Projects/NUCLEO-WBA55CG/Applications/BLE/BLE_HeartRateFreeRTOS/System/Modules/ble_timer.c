@@ -44,13 +44,13 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static tListNode BLE_TIMER_RunningList;
-static tListNode BLE_TIMER_ExpiredList;
+static tListNode BLE_TIMER_RunningList = {0};
+static tListNode BLE_TIMER_ExpiredList = {0};
 
 /* FreeRTOS objects declaration */
 
-static osThreadId_t     BleTimerTaskHandle;
-static osSemaphoreId_t  BleTimerSemaphore;
+static osThreadId_t     BleTimerTaskHandle = NULL; /* Initialize to NULL for safe reset checks */
+static osSemaphoreId_t  BleTimerSemaphore  = NULL; /* Initialize to NULL for safe reset checks */
 
 const osThreadAttr_t BleTimerTask_attributes = {
   .name         = "BLE Timer Task",
@@ -76,7 +76,7 @@ static void BLE_TIMER_Task_Entry(void* argument);
 
 void BLE_TIMER_Init(void)
 {
-  /* This function initializes the timer Queue */
+  /* Initializes timers Queue */
   LST_init_head(&BLE_TIMER_RunningList);
   LST_init_head(&BLE_TIMER_ExpiredList);
 
@@ -91,6 +91,58 @@ void BLE_TIMER_Init(void)
     LOG_ERROR_APP( "BLE Timer FreeRTOS objects creation FAILED");
     Error_Handler();
   }
+}
+
+void BLE_TIMER_Deinit(void)
+{
+  tListNode *listNodeRemoved;
+
+  /* Delete the BLE Timer semaphore (only if it was created) */
+  if (BleTimerSemaphore != NULL)
+  {
+    LOG_INFO_APP("Deleting semaphore %s, status : ", BleTimerSemaphore_attributes.name);
+    if (osSemaphoreDelete(BleTimerSemaphore) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      BleTimerSemaphore = NULL;
+    }
+  }
+
+  /* Terminate the BLE Timer thread (only if it was created) */
+  if (BleTimerTaskHandle != NULL)
+  {
+    LOG_INFO_APP("Terminating thread %s, status : ", BleTimerTask_attributes.name);
+    if (osThreadTerminate(BleTimerTaskHandle) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      BleTimerTaskHandle = NULL;
+    }
+  }
+  while(LST_is_empty(&BLE_TIMER_RunningList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_RunningList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+  while(LST_is_empty(&BLE_TIMER_ExpiredList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_ExpiredList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+
+  /* Reset timers Queues */
+  LST_init_head(&BLE_TIMER_RunningList);
+  LST_init_head(&BLE_TIMER_ExpiredList);
+
 }
 
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
@@ -173,6 +225,9 @@ void BLE_TIMER_Background(void)
 static void BLE_TIMER_Task_Entry(void* argument)
 {
   UNUSED(argument);
+  /* USER CODE BEGIN BLE_TIMER_Task_Entry_0 */
+
+  /* USER CODE END BLE_TIMER_Task_Entry_0 */
 
   for(;;)
   {

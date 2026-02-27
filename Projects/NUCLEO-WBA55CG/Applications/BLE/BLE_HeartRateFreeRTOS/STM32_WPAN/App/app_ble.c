@@ -25,6 +25,9 @@
 #include "ble_core.h"
 #include "uuid.h"
 #include "svc_ctl.h"
+#include "baes.h"
+#include "pka_ctrl.h"
+#include "ble_timer.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -80,7 +83,7 @@ typedef struct
    * 0x01 : host should initiate security by sending the slave security
    *        request command
    * 0x02 : host need not send the clave security request but it
-   * has to wait for paiirng to complete before doing any other
+   * has to wait for pairing to complete before doing any other
    * processing
    */
   uint8_t initiateSecurity;
@@ -195,12 +198,18 @@ static AMM_VirtualMemoryCallbackFunction_t BLE_EVENTS_ResumeFlowProcessCb;
 static BleStack_init_t pInitParams;
 
 /* Host stack buffers */
-PLACE_IN_SECTION("TAG_HostStack") static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
-PLACE_IN_SECTION("TAG_HostStack") static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
-PLACE_IN_SECTION("TAG_HostStack") static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 2)];
-PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
-PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
-PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
+static osMemoryPoolId_t host_pool;
+static osMemoryPoolId_t gatt_pool;
+static osMemoryPoolId_t host_event_pool;
+static osMemoryPoolId_t host_nvm_pool;
+static osMemoryPoolId_t long_write_pool;
+static osMemoryPoolId_t extra_data_pool;
+static uint32_t *host_buffer;
+static uint32_t *gatt_buffer;
+static uint16_t *host_event_buffer;
+static uint64_t *host_nvm_buffer;
+static uint8_t *long_write_buffer;
+static uint8_t *extra_data_buffer;
 
 static osThreadId_t     BleHostTaskHandle;
 
@@ -278,6 +287,12 @@ static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t *p
 
 /* USER CODE END PFP */
 
+/* External functions prototypes ---------------------------------------------*/
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
+
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
@@ -292,6 +307,34 @@ void APP_BLE_Init(void)
   /* USER CODE END APP_BLE_Init_1 */
 
   LST_init_head(&BleAsynchEventQueue);
+
+  /* Create memory pools for BLE */
+  host_pool = osMemoryPoolNew(1, BLE_DYN_ALLOC_SIZE, NULL);
+  gatt_pool = osMemoryPoolNew(1, BLE_GATT_BUF_SIZE, NULL);
+  host_event_pool = osMemoryPoolNew(1, BLE_HOST_EVENT_BUF_SIZE, NULL);
+  host_nvm_pool = osMemoryPoolNew(1, CFG_BLE_NVM_SIZE_MAX*8, NULL);
+  long_write_pool = osMemoryPoolNew(1, CFG_BLE_LONG_WRITE_DATA_BUF_SIZE, NULL);
+  extra_data_pool = osMemoryPoolNew(1, CFG_BLE_EXTRA_DATA_BUF_SIZE, NULL);
+
+  /* Allocate buffers for BLE */
+  host_buffer = osMemoryPoolAlloc(host_pool, osWaitForever);
+  gatt_buffer = osMemoryPoolAlloc(gatt_pool, osWaitForever);
+  host_event_buffer = osMemoryPoolAlloc(host_event_pool, osWaitForever);
+  host_nvm_buffer  = osMemoryPoolAlloc(host_nvm_pool, osWaitForever);
+  long_write_buffer = osMemoryPoolAlloc(long_write_pool, osWaitForever);
+  extra_data_buffer = osMemoryPoolAlloc(extra_data_pool, osWaitForever);
+
+  /* Check allocation */
+  if (((host_buffer == NULL) && (BLE_DYN_ALLOC_SIZE != 0))
+      || ((gatt_buffer == NULL) && (BLE_GATT_BUF_SIZE != 0))
+      || ((host_event_buffer == NULL) && (BLE_HOST_EVENT_BUF_SIZE != 0))
+      || ((host_nvm_buffer == NULL) && (CFG_BLE_NVM_SIZE_MAX != 0))
+      || ((long_write_buffer == NULL) && (CFG_BLE_LONG_WRITE_DATA_BUF_SIZE != 0))
+      || ((extra_data_buffer == NULL) && (CFG_BLE_EXTRA_DATA_BUF_SIZE != 0)))
+  {
+    /* Buffer allocation failed, check FreeRTOS Heap size */
+    Error_Handler();
+  }
 
   /* Create BLE Host FreeRTOS objects */
 
@@ -315,7 +358,7 @@ void APP_BLE_Init(void)
     Error_Handler();
   }
 
-  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
+  /* Initialise NVM RAM buffer, invalidate it's content before restoration */
   host_nvm_buffer[0] = 0;
 
   /* Register A NVM buffer for BLE Host stack */
@@ -328,6 +371,11 @@ void APP_BLE_Init(void)
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Initialize BLE related modules */
+  BAES_Reset( );
+  PKACTRL_Reset();
+  BLE_TIMER_Init();
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -363,7 +411,7 @@ void APP_BLE_Init(void)
     LOG_INFO_APP("\n");
 
     /* USER CODE BEGIN APP_BLE_Init_3 */
-
+    /* Start to Advertise to accept a connection */
     uint16_t adv_cmd = 0;
     osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
 
@@ -375,6 +423,130 @@ void APP_BLE_Init(void)
 
   /* USER CODE END APP_BLE_Init_2 */
 
+  return;
+}
+
+/* All BLE activities must be stopped before calling this API */
+void APP_BLE_Deinit(void)
+{
+  /* USER CODE BEGIN APP_BLE_Deinit_1 */
+
+  /* USER CODE END APP_BLE_Deinit_1 */
+
+  aci_reset(0, 0);
+
+  /* Free memory buffers */
+  osMemoryPoolFree(host_buffer, host_pool);
+  osMemoryPoolFree(host_buffer, gatt_pool);
+  osMemoryPoolFree(host_buffer, host_event_pool);
+  osMemoryPoolFree(host_buffer, host_nvm_pool);
+  osMemoryPoolFree(host_buffer, long_write_pool);
+  osMemoryPoolFree(host_buffer, extra_data_pool);
+
+  /* Delete Memory Pools */
+  osMemoryPoolDelete(host_pool);
+  osMemoryPoolDelete(gatt_pool);
+  osMemoryPoolDelete(host_event_pool);
+  osMemoryPoolDelete(host_nvm_pool);
+  osMemoryPoolDelete(long_write_pool);
+  osMemoryPoolDelete(extra_data_pool);
+
+  /* De-initialize BLE related modules */
+  BAES_Reset( );
+  PKACTRL_Reset();
+  BLE_TIMER_Deinit();
+
+  tListNode *listNodeRemoved;
+
+  /* Free all the Asynchronous Event queue nodes */
+  while(LST_is_empty(&BleAsynchEventQueue) != TRUE)
+  {
+    LST_remove_tail(&BleAsynchEventQueue, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+
+  /* Delete BLE Host stack FreeRTOS objects */
+  /* Only delete semaphore if it was successfully created */
+  if (BleHostSemaphore != NULL)
+  {
+    LOG_INFO_APP("Deleting semaphore %s, status : ", BleHostSemaphore_attributes.name);
+    if (osSemaphoreDelete(BleHostSemaphore) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      BleHostSemaphore = NULL;
+    }
+  }
+
+  if (HciAsyncEvtSemaphore != NULL)
+  {
+    LOG_INFO_APP("Deleting semaphore %s, status : ", HciAsyncEvtSemaphore_attributes.name);
+    if (osSemaphoreDelete(HciAsyncEvtSemaphore) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      HciAsyncEvtSemaphore = NULL;
+    }
+  }
+
+  if (GapProcCompleteSemaphore != NULL)
+  {
+    LOG_INFO_APP("Deleting semaphore %s, status : ", GapProcCompleteSemaphore_attributes.name);
+    if (osSemaphoreDelete(GapProcCompleteSemaphore) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      GapProcCompleteSemaphore = NULL;
+    }
+  }
+
+  /* Terminate then delete the thread only if created */
+  if (BleHostTaskHandle != NULL)
+  {
+    LOG_INFO_APP("Terminating and Deleting thread %s, status : ", BleHostTask_attributes.name);
+    if (osThreadTerminate(BleHostTaskHandle) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      BleHostTaskHandle = NULL;
+    }
+
+  }
+
+  if (HciAsyncEvtTaskHandle != NULL)
+  {
+    LOG_INFO_APP("Terminating and Deleting thread %s, status : ", HciAsyncEvtTask_attributes.name);
+    if (osThreadTerminate(HciAsyncEvtTaskHandle) != osOK)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+      HciAsyncEvtTaskHandle = NULL;
+    }
+  }
+
+  /* USER CODE BEGIN APP_BLE_Deinit_2 */
+
+  /* USER CODE END APP_BLE_Deinit_2 */
   return;
 }
 
@@ -905,23 +1077,11 @@ void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId)
       else
       {
         LOG_INFO_APP("==>> aci_gap_terminate : Success\n");
+        gap_cmd_resp_wait();/* waiting for HCI_DISCONNECTION_COMPLETE_EVT_CODE */
       }
-      gap_cmd_resp_wait();/* waiting for HCI_DISCONNECTION_COMPLETE_EVT_CODE */
       break;
     }/* PROC_GAP_GEN_CONN_TERMINATE */
-    case PROC_GATT_EXCHANGE_CONFIG:
-    {
-      status = aci_gatt_exchange_config(bleAppContext.connectionHandle);
-      if (status != BLE_STATUS_SUCCESS)
-      {
-        LOG_INFO_APP("aci_gatt_exchange_config failure: reason=0x%02X\n", status);
-      }
-      else
-      {
-        LOG_INFO_APP("==>> aci_gatt_exchange_config : Success\n");
-      }
-      break;
-    }
+
     /* USER CODE BEGIN GAP_GENERAL */
 
     /* USER CODE END GAP_GENERAL */
@@ -1171,7 +1331,7 @@ tBleStatus SetGapAppearance(uint16_t appearance)
                                    0,
                                    2,
                                    (uint8_t *)&appearance);
-  LOG_INFO_APP("Set apperance 0x%04X in GAP database with status %d\n", appearance, ret);
+  LOG_INFO_APP("Set appearance 0x%04X in GAP database with status %d\n", appearance, ret);
 
   return ret;
 }
@@ -1219,9 +1379,6 @@ void APP_BLE_AdvStart(void)
 
 void APP_BLE_AdvLowPower(void)
 {
-  osTimerStop(advLowPowerTimerHandle);
-
-  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
   APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_LP);
 }
 
@@ -1262,7 +1419,7 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.extra_data_buffer       = (uint8_t*)extra_data_buffer;
   pInitParams.gatt_long_write_buffer  = (uint8_t*)long_write_buffer;
   pInitParams.host_event_fifo_buffer  = host_event_buffer;
-  pInitParams.host_event_fifo_buffer_size = sizeof(host_event_buffer)/sizeof(host_event_buffer[0]);
+  pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
   pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
   pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
@@ -1630,8 +1787,9 @@ static const uint8_t* BleGenerateBdAddress(void)
   uint32_t udn;
   uint32_t company_id;
   uint32_t device_id;
-  uint8_t a_BdAddrDefault[BD_ADDR_SIZE] ={0x65, 0x43, 0x21, 0x1E, 0x08, 0x00};
+  uint8_t a_BdAddrDefault[BD_ADDR_SIZE] ={0x00, 0x00, 0x00, 0xE1, 0x80, 0x00};
   uint8_t a_BDAddrNull[BD_ADDR_SIZE];
+
   memset(&a_BDAddrNull[0], 0x00, sizeof(a_BDAddrNull));
 
   a_BdAddr[0] = (uint8_t)(CFG_BD_ADDRESS & 0x0000000000FF);
@@ -1688,7 +1846,7 @@ static const uint8_t* BleGenerateBdAddress(void)
       }
       else
       {
-        memcpy(&a_BdAddr[0], a_BdAddrDefault,BD_ADDR_SIZE);
+        memcpy(&a_BdAddr[0], a_BdAddrDefault, BD_ADDR_SIZE);
         p_bd_addr = (const uint8_t *)a_BdAddr;
       }
     }
@@ -1963,6 +2121,10 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 
   UNUSED(ext_data);
 
+  /* USER CODE BEGIN BLECB_Indication */
+
+  /* USER CODE END BLECB_Indication */
+
   if (data[0] == HCI_EVENT_PKT_TYPE)
   {
     BLE_EVENTS_ResumeFlowProcessCb.Callback = BLE_ResumeFlowProcessCallback;
@@ -1996,6 +2158,9 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 static void BLE_HOST_Task_Entry(void* argument)
 {
   UNUSED(argument);
+  /* USER CODE BEGIN BLE_HOST_Task_Entry_0 */
+
+  /* USER CODE END BLE_HOST_Task_Entry_0 */
 
   while(1)
   {
@@ -2007,6 +2172,9 @@ static void BLE_HOST_Task_Entry(void* argument)
 static void HciAsyncEvt_Task_Entry(void* argument)
 {
   UNUSED(argument);
+  /* USER CODE BEGIN HciAsyncEvt_Task_Entry_0 */
+
+  /* USER CODE END HciAsyncEvt_Task_Entry_0 */
 
   while(1)
   {
@@ -2029,6 +2197,7 @@ void APP_BSP_Button1Action(void)
       adv_cmd = 2;
       osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
     }
+
     adv_cmd = 0;
     osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
   }

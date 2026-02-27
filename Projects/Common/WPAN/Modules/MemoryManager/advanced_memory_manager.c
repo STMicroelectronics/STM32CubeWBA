@@ -622,7 +622,7 @@ AMM_Function_Error_t AMM_Free (uint32_t * const p_BufferAddr)
         {
           occupiedOverRequired = (p_AmmVirtualMemoryList[memIdx].OccupiedSize - p_AmmVirtualMemoryList[memIdx].RequiredSize);
 
-          /* Check whether the occupied size has overlaped the required or not */
+          /* Check whether the occupied size has overlapped the required or not */
           if (occupiedOverRequired > 0x00)
           {
             /* Check if reserved memory is overlapped */

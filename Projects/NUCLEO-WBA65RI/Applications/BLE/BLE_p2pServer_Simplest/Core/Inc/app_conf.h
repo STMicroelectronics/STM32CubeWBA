@@ -242,24 +242,6 @@ typedef enum
 /* USER CODE END Log_level */
 
 /******************************************************************************
- * Debugger
- *
- *  When CFG_DEBUGGER_LEVEL is set to:
- *   - 0 : No Debugger available, SWD/JTAG pins are disabled.
- *   - 1 : Debugger available in RUN mode only.
- *   - 2 : Debugger available in low power mode.
- *
- ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL                  (0)
-
-/******************************************************************************
- * RealTime GPIO debug module configuration
- ******************************************************************************/
-
-#define CFG_RT_DEBUG_GPIO_MODULE            (0)
-#define CFG_RT_DEBUG_DTB                    (0)
-
-/******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
 /* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
@@ -275,8 +257,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
@@ -326,6 +308,11 @@ typedef enum
   #define CFG_LPM_STOP2_SUPPORTED   (0U)
   #undef CFG_LPM_STANDBY_SUPPORTED
   #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+#if !defined(PWR_STOP2_SUPPORT)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
 #endif
 
 /*********************************************************************

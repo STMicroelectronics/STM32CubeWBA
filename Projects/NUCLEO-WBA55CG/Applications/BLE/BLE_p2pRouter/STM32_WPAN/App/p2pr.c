@@ -300,7 +300,7 @@ static SVCCTL_EvtAckStatus_t P2PR_EventHandler(void *p_Event)
 
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           LOG_INFO_APP("  MTU exchanged size = %d\n",p_exchange_mtu->Server_RX_MTU);
-          UTIL_SEQ_SetEvt(1 << CFG_IDLEEVT_NODE_MTU_EXCHANGED_COMPLETE);
+          UTIL_SEQ_SetEvt(1 << CFG_EVENT_NODE_MTU_EXCHANGED_COMPLETE);
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
@@ -393,6 +393,10 @@ void P2PR_Init(void)
   {
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: P2prSvcHdle = 0x%04X\n",P2PR_Context.P2prSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * WRITEFWD

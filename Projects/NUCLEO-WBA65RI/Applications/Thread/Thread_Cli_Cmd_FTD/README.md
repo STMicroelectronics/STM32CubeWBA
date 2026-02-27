@@ -8,7 +8,7 @@ lang: en
 
 ## __Thread_Cli_Cmd_FTD Application Description__
 
-How to control the Thread stack via Cli commands.
+How to control the FTD (Full Thread Device) stack via Cli commands.
 
 ### __Keywords__
 
@@ -66,7 +66,8 @@ The Cli (Command Line Interface) commands are sent via an UART from an HyperTerm
 all available cli commands. Additional information can be found looking at the OpenThread 
 web site: [https://openthread.io/guides/](https://openthread.io/guides/) 
 - On the HyperTerminal 2, traces are displayed.  
-If you don't have the second HyperTerminal automatically, go to STM32CubeProgrammer and upgrade the firmware.  
+If you don't have the second HyperTerminal automatically, go to STM32CubeProgrammer and upgrade the firmware.
+To send commands through USART2, RTS hardware flow control is required: this needs solder bridge SB4 to be fitted on MB2130 board.  
 - As an example, the user can play the following scenario in order to properly initiate the Thread mesh network by typing the following commands: 
 ```
   >panid 0x1234

@@ -52,7 +52,7 @@ static tBleStatus HAP_IAC_IsATTProcedureInProgress(uint16_t ConnHandle,BleEATTBe
 
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)
 /**
-  * @brief  Initialize the Hearing Access Profile as Immmediate Alert Client Role
+  * @brief  Initialize the Hearing Access Profile as Immediate Alert Client Role
   * @retval status of the initialization
   */
 tBleStatus HAP_IAC_Init(void)
@@ -313,7 +313,7 @@ tBleStatus HAP_IAC_SetAlertLevel(uint16_t ConnHandle, HAP_IAC_AlertLevel_t Alert
 #if (BLE_CFG_HAP_IAC_ROLE == 1u)
 /**
    * @brief  Store GATT Database of the HAP IAS Characteristics and Services
-   * @param  ConnHandle: Connetion Handle of the remote connection
+   * @param  ConnHandle: Connection Handle of the remote connection
    * @param  [in] pData: pointer on buffer in which GATT Database of HAP characteristics in which information is stored
    * @param  [in] MaxDataLen: maximum data length to store
    * @param  [out] len : length in bytes of stored data
@@ -382,7 +382,7 @@ tBleStatus HAP_IAC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t M
           pData[(*len)+1] = (uint8_t) ((p_iac_inst->AlertLevelChar.ValueHandle>> 8 ));
           /* Characteristic Type*/
           pData[(*len)+2] = UUID_TYPE_16;
-          /* Alert Level Charactertistic UUID*/
+          /* Alert Level Characteristic UUID*/
           pData[(*len)+3] = (uint8_t) ALERT_LEVEL_CHARACTERISTIC_UUID;
           pData[(*len)+4] = (uint8_t) ((ALERT_LEVEL_CHARACTERISTIC_UUID >> 8 ));
           /*value length*/
@@ -641,7 +641,7 @@ SVCCTL_EvtAckStatus_t HAP_IAC_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_HAP_IAC_MSG("Handle = 0x%04X\n",handle);
                           p_iac_inst->AlertLevelChar.ValueHandle = handle;
                           p_iac_inst->AlertLevelChar.EndHandle = p_iac_inst->IASServiceEndHandle;
-                          p_iac_inst->AlertLevelChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_iac_inst->AlertLevelChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                         break;
 
                       default:

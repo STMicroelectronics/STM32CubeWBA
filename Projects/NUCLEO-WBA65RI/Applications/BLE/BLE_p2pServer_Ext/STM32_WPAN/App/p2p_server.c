@@ -23,7 +23,7 @@
 #include "p2p_server.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "stm32_seq.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,6 +36,7 @@ typedef struct{
   uint16_t  P2p_serverSvcHdle;                  /**< P2p_server Service Handle */
   uint16_t  Led_CCharHdle;                  /**< LED_C Characteristic Handle */
   uint16_t  Switch_CCharHdle;                  /**< SWITCH_C Characteristic Handle */
+  uint16_t  Long_CCharHdle;                  /**< LONG_C Characteristic Handle */
 /* USER CODE BEGIN Context */
   /* Place holder for Characteristic Descriptors Handle*/
 
@@ -72,6 +73,7 @@ typedef struct{
 /* Private variables ---------------------------------------------------------*/
 static const uint16_t SizeLed_C = 2;
 static const uint16_t SizeSwitch_C = 2;
+static const uint16_t SizeLong_C = 509;
 
 static P2P_SERVER_Context_t P2P_SERVER_Context;
 
@@ -107,13 +109,17 @@ do {\
  0000FE40CC7A482A984A7F2ED5B3E58F: Service 128bits UUID
  0000FE418E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
  0000FE428E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
+ 0000FE438E2245419D4C21EDAE82ED19: Characteristic 128bits UUID
  */
 #define COPY_P2P_SERVER_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x40,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
 #define COPY_LED_C_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x41,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 #define COPY_SWITCH_C_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x42,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_LONG_C_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x43,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
-
+extern uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
+extern uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
+uint8_t ReceivedData[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 /* USER CODE END PF */
 
 /**
@@ -207,9 +213,30 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
             /* USER CODE END Service1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             P2P_SERVER_Notification(&notification);
           }
+          else if(p_attribute_modified->Attr_Handle == (P2P_SERVER_Context.Long_CCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+
+            notification.EvtOpcode = P2P_SERVER_LONG_C_WRITE_NO_RESP_EVT;
+            /* USER CODE BEGIN Service1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            LOG_INFO_APP("-- GATT : LONG CHARAC RECEIVED\n");
+            notification.DataTransfered.Length = p_attribute_modified->Attr_Data_Length;
+            notification.DataTransfered.Offset = p_attribute_modified->Offset;
+            if ((notification.DataTransfered.Offset & 0x8000) == 0x8000)
+            {
+              LOG_INFO_APP("-- More data expected\n");
+            }
+            else
+            {
+              LOG_INFO_APP("-- End of long data\n");
+            }
+            notification.DataTransfered.p_Payload = p_attribute_modified->Attr_Data;
+            /* USER CODE END Service1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            P2P_SERVER_Notification(&notification);
+          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-
+          UTIL_SEQ_SetTask(1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
           break;/* ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
         }
@@ -253,7 +280,7 @@ static SVCCTL_EvtAckStatus_t P2P_SERVER_EventHandler(void *p_Event)
           UNUSED(p_exchange_mtu);
 
           /* USER CODE BEGIN ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
-
+          LOG_INFO_APP("  MTU exchanged size = %d\n",p_exchange_mtu->Server_RX_MTU );
           /* USER CODE END ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
@@ -329,16 +356,17 @@ void P2P_SERVER_Init(void)
   /**
    * P2P_Server
    *
-   * Max_Attribute_Records = 1 + 2*2 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
+   * Max_Attribute_Records = 1 + 2*3 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
    * service_max_attribute_record = 1 for P2P_Server +
    *                                2 for LED_C +
    *                                2 for SWITCH_C +
+   *                                2 for LONG_C +
    *                                1 for SWITCH_C configuration descriptor +
-   *                              = 6
+   *                              = 8
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 6;
+  max_attr_record = 8;
 
   /* USER CODE BEGIN SVCCTL_InitService */
   /* max_attr_record to be updated if descriptors have been added */
@@ -359,6 +387,10 @@ void P2P_SERVER_Init(void)
   {
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: P2p_serverSvcHdle = 0x%04X\n",P2P_SERVER_Context.P2p_serverSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * LED_C
@@ -413,6 +445,34 @@ void P2P_SERVER_Init(void)
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
 
   /* USER CODE END SVCCTL_InitService1Char2 */
+
+  /**
+   * LONG_C
+   */
+  COPY_LONG_C_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(P2P_SERVER_Context.P2p_serverSvcHdle,
+                          UUID_TYPE_128,
+                          (Char_UUID_t *) &uuid,
+                          SizeLong_C,
+                          CHAR_PROP_WRITE_WITHOUT_RESP,
+                          ATTR_PERMISSION_NONE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
+                          0x10,
+                          CHAR_VALUE_LEN_VARIABLE,
+                          &(P2P_SERVER_Context.Long_CCharHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : LONG_C, error code: 0x%02X\n", ret);
+  }
+  else
+  {
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Long_CCharHdle = 0x%04X\n",P2P_SERVER_Context.Long_CCharHdle);
+  }
+
+  /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+  /* Place holder for Characteristic Descriptors */
+
+  /* USER CODE END SVCCTL_InitService1Char3 */
 
   /* USER CODE BEGIN SVCCTL_InitService1Svc_2 */
 
@@ -472,6 +532,25 @@ tBleStatus P2P_SERVER_UpdateValue(P2P_SERVER_CharOpcode_t CharOpcode, P2P_SERVER
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
       /* USER CODE END Service1_Char_Value_2 */
+      break;
+
+    case P2P_SERVER_LONG_C:
+      ret = aci_gatt_update_char_value(P2P_SERVER_Context.P2p_serverSvcHdle,
+                                       P2P_SERVER_Context.Long_CCharHdle,
+                                       0, /* charValOffset */
+                                       pData->Length, /* charValueLen */
+                                       (uint8_t *)pData->p_Payload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value LONG_C command, error code: 0x%02X\n", ret);
+      }
+      else
+      {
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value LONG_C command\n");
+      }
+      /* USER CODE BEGIN Service1_Char_Value_3 */
+
+      /* USER CODE END Service1_Char_Value_3 */
       break;
 
     default:

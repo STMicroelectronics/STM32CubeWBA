@@ -41,7 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

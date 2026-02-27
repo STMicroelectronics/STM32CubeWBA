@@ -267,6 +267,10 @@ void DIS_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: DisSvcHdle = 0x%04X\n",DIS_Context.DisSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * PNI
    */

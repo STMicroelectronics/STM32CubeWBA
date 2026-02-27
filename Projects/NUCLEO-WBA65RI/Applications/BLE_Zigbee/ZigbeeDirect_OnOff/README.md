@@ -16,7 +16,7 @@ Connectivity, ZigbeeDirect, Zigbee protocol, BLE, 802.15.4 protocol
 For this application it is requested to have at least:
 
 * One STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff**
-* One IOS device loaded with Ubisys Smart Home application
+* One IOS device loaded with Ubisys Smart Home application or Ledvance Easy Direct application
 * One STM32WBA65xx board loaded with the application **ZigbeeDirect_OnOff_Server_Router_Identify** 
 
 
@@ -51,6 +51,9 @@ In this Demo, ZVD is the Coordinator.
 * To run the application :
     1. Start the first board. This board is configured as Zigbee Direct Device. 
     Launch the Ubisys Application and follow the instructions described in the chapter " Demo 2 procedure" of following wiki page :
+       https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup
+
+    2. Or Launch the Ledvance Application and follow the instructions described in the chapter " Demo 3 procedure" of following wiki page :
        https://wiki.st.com/stm32mcu/wiki/Connectivity:Ubisys_Smart_Home_Application_Zigbee_Direct_Setup
 
 ### __Help Commands__

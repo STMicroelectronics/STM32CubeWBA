@@ -47,8 +47,6 @@ __ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
 
 HASH_HandleTypeDef hhash;
 
-PKA_HandleTypeDef hpka;
-
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
@@ -66,7 +64,6 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
 static void MX_AES_Init(void);
-static void MX_PKA_Init(void);
 static void MX_HASH_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -116,7 +113,6 @@ int main(void)
   MX_RAMCFG_Init();
   MX_RTC_Init();
   MX_AES_Init();
-  MX_PKA_Init();
   MX_HASH_Init();
   /* USER CODE BEGIN 2 */
 
@@ -347,32 +343,6 @@ void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
-
-}
-
-/**
-  * @brief PKA Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_PKA_Init(void)
-{
-
-  /* USER CODE BEGIN PKA_Init 0 */
-
-  /* USER CODE END PKA_Init 0 */
-
-  /* USER CODE BEGIN PKA_Init 1 */
-
-  /* USER CODE END PKA_Init 1 */
-  hpka.Instance = PKA;
-  if (HAL_PKA_Init(&hpka) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN PKA_Init 2 */
-
-  /* USER CODE END PKA_Init 2 */
 
 }
 

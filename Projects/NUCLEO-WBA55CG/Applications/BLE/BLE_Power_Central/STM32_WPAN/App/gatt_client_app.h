@@ -36,16 +36,9 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 typedef enum
 {
-  GATT_CLIENT_APP_IDLE,
+  GATT_CLIENT_APP_DISCONNECTED,
   GATT_CLIENT_APP_CONNECTED,
-  GATT_CLIENT_APP_DISCONNECTING,
-  GATT_CLIENT_APP_DISCONN_COMPLETE,
   GATT_CLIENT_APP_DISCOVER_SERVICES,
-  GATT_CLIENT_APP_DISCOVER_CHARACS,
-  GATT_CLIENT_APP_DISCOVER_WRITE_DESC,
-  GATT_CLIENT_APP_DISCOVER_NOTIFICATION_CHAR_DESC,
-  GATT_CLIENT_APP_ENABLE_NOTIFICATION_DESC,
-  GATT_CLIENT_APP_DISABLE_NOTIFICATION_DESC,
   /* USER CODE BEGIN GATT_CLIENT_APP_State_t */
 
   /* USER CODE END GATT_CLIENT_APP_State_t */
@@ -59,17 +52,6 @@ typedef enum
 
   /* USER CODE END GATT_CLIENT_APP_Conn_Opcode_t */
 }GATT_CLIENT_APP_Conn_Opcode_t;
-
-typedef enum
-{
-  PROC_GATT_DISC_ALL_PRIMARY_SERVICES,
-  PROC_GATT_DISC_ALL_CHARS,
-  PROC_GATT_DISC_ALL_DESCS,
-  PROC_GATT_PROPERTIES_ENABLE_ALL,
-  /* USER CODE BEGIN ProcGattId_t */
-
-  /* USER CODE END ProcGattId_t */
-}ProcGattId_t;
 
 typedef struct
 {
@@ -87,6 +69,7 @@ typedef enum
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
+
 /* USER CODE BEGIN EC */
 
 #define ST_LPWR_CO_SERVICE_UUID                                       (0xFF10)
@@ -107,11 +90,14 @@ typedef enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void GATT_CLIENT_APP_Init(void);
-uint8_t GATT_CLIENT_APP_Procedure_Gatt(uint8_t index, ProcGattId_t GattProcId);
 void GATT_CLIENT_APP_Notification(GATT_CLIENT_APP_ConnHandle_Notif_evt_t *p_Notif);
 tBleStatus GATT_CLIENT_APP_Set_Conn_Handle(uint8_t index, uint16_t connHdle);
+int GATT_CLIENT_APP_Get_Index(uint16_t connection_handle);
+void GATT_CLIENT_APP_DiscoverServices(uint16_t connection_handle, uint8_t start_task);
+void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index);
 uint8_t GATT_CLIENT_APP_Get_State(uint8_t index);
-void GATT_CLIENT_APP_Discover_services(uint8_t index);
+tBleStatus GATT_CLIENT_APP_ReadCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t *data_length_p, uint8_t **data_p, uint8_t use_read_long);
+tBleStatus GATT_CLIENT_APP_WriteCharacteristic(uint16_t connection_handle, uint16_t ValueHdl, uint16_t data_length, uint8_t *data);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

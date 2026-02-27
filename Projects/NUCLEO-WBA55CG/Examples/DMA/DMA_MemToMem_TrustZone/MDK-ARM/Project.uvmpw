@@ -5,7 +5,7 @@
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
-  <WorkspaceName></WorkspaceName>
+  <WorkspaceName>C:\git\wba_v1.9.0\Firmware\Projects\NUCLEO-WBA55CG\Examples\DMA\DMA_MemToMem_TrustZone\MDK-ARM\Project.uvmpw</WorkspaceName>
 
   <project>
     <PathAndName>.\Secure\DMA_MemToMem_TrustZone_S.uvprojx</PathAndName>

@@ -122,7 +122,7 @@
           <Key>ST-LINKIII-KEIL_SWO</Key>
           <Name>-U-O142 -O2254 -SF4000 -C0 -A1 -A1 -A1 -I0 -HNlocalhost -HP7184 -P1 -TO131090 -TC10000000 -TT10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0STM32WBAx_1M_0800 -FS08000000 -FL0100000 -FP0($$Device:STM32WBA55CGUx$CMSIS\Flash\STM32WBAx_1M_0800.FLM)</Name>
         </SetRegEntry>
-        <SetRegEntry>		
+        <SetRegEntry>
           <Number>0</Number>
           <Key>UL2V8M</Key>
           <Name>UL2V8M(-S0 -C0 -P0 )  -FN2 -FC8000 -FD20000000 -FF0STM32WBAx_1M_0800 -FF1STM32WBAx_1M_0C00 -FL0100000 -FL1100000 -FS08000000 -FS1C000000 -FP0($$Device:STM32WBA55CGUx$CMSIS\Flash\STM32WBAx_1M_0800.FLM) -FP1($$Device:STM32WBA55CGUx$CMSIS\Flash\STM32WBAx_1M_0C00.FLM)</Name>
@@ -349,18 +349,6 @@
       <bDave2>0</bDave2>
       <PathWithFileName>../STM32_WPAN/Target/linklayer_plat.c</PathWithFileName>
       <FilenameWithoutPath>linklayer_plat.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>3</GroupNumber>
-      <FileNumber>14</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../STM32_WPAN/Target/bpka.c</PathWithFileName>
-      <FilenameWithoutPath>bpka.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -750,30 +738,6 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>40</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Projects/Common/WPAN/Interfaces/hw_pka.c</PathWithFileName>
-      <FilenameWithoutPath>hw_pka.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
-      <FileNumber>41</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Projects/Common/WPAN/Interfaces/hw_pka_p256.c</PathWithFileName>
-      <FilenameWithoutPath>hw_pka_p256.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>12</GroupNumber>
       <FileNumber>42</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
@@ -837,6 +801,18 @@
       <bDave2>0</bDave2>
       <PathWithFileName>../../../../../../Projects/Common/WPAN/Modules/otp.c</PathWithFileName>
       <FilenameWithoutPath>otp.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>13</GroupNumber>
+      <FileNumber>38</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</PathWithFileName>
+      <FilenameWithoutPath>pka_ctrl.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

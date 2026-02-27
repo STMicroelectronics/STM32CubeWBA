@@ -1,0 +1,9 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1;..\..\..\..\..\..\Drivers\BSP\Components\Common;..\..\..\..\..\..\Drivers\BSP\Components\ssd1315;..\..\..\..\..\..\Utilities\LCD;STM32_WPAN\App;
+
+[Groups]
+Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.c;../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery_bus.c;../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery_lcd.c;
+Drivers/Components=../../../../../../Drivers/BSP/Components/ssd1315/ssd1315.c;../../../../../../Drivers/BSP/Components/ssd1315/ssd1315_reg.c;
+Utilities=../../../../../../Utilities/LCD/stm32_lcd.c;
+Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;
+App/STM32_WPAN/App=../STM32_WPAN/App/app_coap.c;

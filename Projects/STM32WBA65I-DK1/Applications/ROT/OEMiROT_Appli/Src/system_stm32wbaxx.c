@@ -19,9 +19,9 @@
   ******************************************************************************
   *   This file provides two functions and one global variable to be called from
   *   user application:
-  *      - SystemInit(): This function is called at secure startup just after reset
-  *                      and before branch to secure main program.
-  *                      This call is made inside the "startup_stm32wbaxx.s" file.
+  *      - SystemInit(): This function is called at startup just after reset and
+  *                      before branch to main program. This call is made inside
+  *                      the "startup_stm32wbaxx.s" file.
   *
   *      - SystemCoreClock variable: Contains the core clock (HCLK), it can be used
   *                                  by the user application to setup the SysTick
@@ -30,13 +30,6 @@
   *      - SystemCoreClockUpdate(): Updates the variable SystemCoreClock and must
   *                                 be called whenever the core clock is changed
   *                                 during program execution.
-  *
-  *      - SECURE_SystemCoreClockUpdate(): Non-secure callable function to update
-  *                                        the variable SystemCoreClock and return
-  *                                        its value to the non-secure calling
-  *                                        application. It must be called whenever
-  *                                        the core clock is changed during program
-  *                                        execution.
   *
   *   After each device reset the HSI (16 MHz) is used as system clock source.
   *   Then SystemInit() function is called, in "startup_stm32wbaxx.s" file, to
@@ -97,11 +90,7 @@
 /** @addtogroup STM32WBAxx_System_Private_TypesDefinitions
   * @{
   */
-#if defined ( __ICCARM__ )
-#  define CMSE_NS_ENTRY __cmse_nonsecure_entry
-#else
-#  define CMSE_NS_ENTRY __attribute((cmse_nonsecure_entry))
-#endif
+
 /**
   * @}
   */
@@ -141,8 +130,6 @@
 #endif /* VECT_TAB_SRAM */
 #endif /* USER_VECT_TAB_ADDRESS */
 
-static void flash_init_cfg(void);
-
 /******************************************************************************/
 
 /**
@@ -180,7 +167,8 @@ static void flash_init_cfg(void);
 /** @addtogroup STM32WBAxx_System_Private_FunctionPrototypes
   * @{
   */
-
+static void flash_init_cfg(void);
+static void SecureSystemInit(void);
 /**
   * @}
   */
@@ -197,11 +185,95 @@ static void flash_init_cfg(void);
 
 void SystemInit(void)
 {
+#if defined(STM32WBAXX_SI_CUT1_0)
+  __IO uint32_t timeout_cpu_cycles;
+#endif
+#if defined(STM32WBAXX_SI_CUT1_0) || defined (VREFBUF)
+  __IO uint32_t tmpreg;
+#endif
+
   /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
   SCB->CPACR |= ((3UL << 20U)|(3UL << 22U));  /* set CP10 and CP11 Full Access */
 #endif
   flash_init_cfg();                         /* init the flash to full secure */
+
+  /* Set resources as secure */
+  SecureSystemInit();
+
+#if defined(STM32WBAXX_SI_CUT1_0)
+  /* Work-around for ADC peripheral issue possibly impacting system
+     power consumption.
+     Refer to STM32WBA errata sheet item "HSI16 clock cannot be stopped when
+     used as kernel clock by ADC".
+     Actions: Perform a ADC activation sequence in order to update state
+               of internal signals.
+  */
+  /* Enable ADC kernel clock */
+  SET_BIT(RCC->AHB4ENR, RCC_AHB4ENR_ADC4EN);
+  /* Delay after an RCC peripheral clock enabling */
+  tmpreg = READ_BIT(RCC->AHB4ENR, RCC_AHB4ENR_ADC4EN);
+  (void)tmpreg;
+
+  /* Enable ADC */
+  SET_BIT(ADC4->CR, ADC_CR_ADEN);
+
+  /* Poll for ADC ready */
+  /* Set timeout 2 ADC clock cycles */
+  /* Note: Approximative computation and timeout execution not taking into
+           account processing CPU cycles */
+  timeout_cpu_cycles = 2;
+  while (READ_BIT(ADC4->ISR, ADC_ISR_ADRDY) == 0U)
+  {
+    timeout_cpu_cycles--;
+    if(timeout_cpu_cycles == 0U)
+    {
+      break;
+    }
+  }
+
+  /* Disable ADC */
+  SET_BIT(ADC4->CR, ADC_CR_ADDIS);
+
+  /* Poll for ADC disable is effective */
+  /* Set timeout 6 ADC clock cycles */
+  /* Note: Approximative computation and timeout execution not taking into
+           account processing CPU cycles */
+  timeout_cpu_cycles = 6;
+  while (READ_BIT(ADC4->CR, ADC_CR_ADEN) != 0U)
+  {
+    timeout_cpu_cycles--;
+    if(timeout_cpu_cycles == 0U)
+    {
+      break;
+    }
+  }
+
+  /* Disable ADC internal voltage regulator */
+  CLEAR_BIT(ADC4->CR, ADC_CR_ADVREGEN);
+
+  /* Disable ADC kernel clock */
+  CLEAR_BIT(RCC->AHB4ENR, RCC_AHB4ENR_ADC4EN);
+#endif
+
+#if defined (VREFBUF)
+  /* Work-around for VREFBUF peripheral issue.
+     Refer to STM32WBA errata sheet item "VREF BUFF cannot be trimmed by EngiBit".
+     Actions: Our SW copies the TRIM V11 (R1) in VREFBUF CCR (to guarantee the correct start
+               trim instead the current bad value 111111).
+  */
+  /* Enable VREFBUF kernel clock */
+  SET_BIT(RCC->APB7ENR, RCC_APB7ENR_VREFEN);
+  /* Delay after an RCC peripheral clock enabling */
+  tmpreg = READ_BIT(RCC->APB7ENR, RCC_APB7ENR_VREFEN);
+  (void)tmpreg;
+
+  /* Set TRIM V11 (R1) value */
+  MODIFY_REG(VREFBUF->CCR, VREFBUF_CCR_TRIM, ((*(uint32_t *)(FLASH_ENGY_BASE + 0x2ABUL)) & 0x3FUL));
+
+  /* Disable VREFBUF kernel clock */
+  CLEAR_BIT(RCC->APB7ENR, RCC_APB7ENR_VREFEN);
+#endif /* VREFBUF */
 }
 
 /**
@@ -209,11 +281,6 @@ void SystemInit(void)
   *         The SystemCoreClock variable contains the core clock (HCLK), it can
   *         be used by the user application to setup the SysTick timer or configure
   *         other parameters.
-  *
-  * @note   Depending on secure or non-secure compilation, the adequate RCC peripheral
-  *         memory are is accessed thanks to RCC alias defined in stm32wbxxxx.h device file
-  *         so either from RCC_S peripheral register mapped memory in secure or from
-  *         RCC_NS peripheral register mapped memory in non-secure.
   *
   * @note   Each time the core clock (HCLK) changes, this function must be called
   *         to update SystemCoreClock variable value. Otherwise, any configuration
@@ -278,11 +345,11 @@ void SystemCoreClockUpdate(void)
       /* Check if fractional part is enable */
       if ((tmp1 & RCC_PLL1CFGR_PLL1FRACEN) != 0x00u)
       {
-        fracn = ((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos);
+        fracn = (float_t)((uint32_t)((RCC->PLL1FRACR & RCC_PLL1FRACR_PLL1FRACN) >> RCC_PLL1FRACR_PLL1FRACN_Pos));
       }
       else
       {
-        fracn = 0;
+        fracn = (float_t)0U;
       }
 
       /* determine PLL source */
@@ -305,8 +372,8 @@ void SystemCoreClockUpdate(void)
       }
 
       /* Compute VCO output frequency */
-      pllvco = ((float) tmp1 / (float)pllm) * (((float)plln + (float)(fracn / 0x2000u)));
-      SystemCoreClock = (uint32_t)((float_t) pllvco /(float_t) pllr);
+      pllvco = ((float_t) tmp1 / (float_t)pllm) * (((float_t)plln + (float_t)(fracn / (float_t)0x2000U)));
+      SystemCoreClock = (uint32_t)((float_t)(pllvco / (float_t)pllr));
       break;
 
     case 0x00u:  /* HSI used as system clock source */
@@ -321,6 +388,89 @@ void SystemCoreClockUpdate(void)
 
   /* HCLK clock frequency */
   SystemCoreClock >>= tmp1;
+}
+
+/**
+  * @brief  Configure all securable resources as secure
+  * @param  None
+  * @retval None
+  */
+void SecureSystemInit(void)
+{
+  /* Clock enabling */
+  RCC->AHB1ENR |= 0x81031101UL;
+  RCC->AHB2ENR |= 0x403FC0DFUL;
+  RCC->AHB4ENR |= 0x00000024UL;
+  RCC->AHB5ENR |= 0x00000003UL;
+  RCC->APB1ENR1 |= 0x00664807UL;
+  RCC->APB1ENR2 |= 0x00000022UL;
+  RCC->APB2ENR  |= 0x00265800UL;
+  RCC->APB7ENR  |= 0x003088E2UL;
+
+  /* Illegal access interrupts configuration */
+  GTZC_TZIC->IER1 |= 0x000367C7UL;
+  GTZC_TZIC->IER2 |= 0x038F00EBUL;
+  GTZC_TZIC->IER3 |= 0x01C1FC58UL;
+  GTZC_TZIC->IER4 |= 0xC3C0EF87UL;
+
+  /* Securable peripherals security and privilege management */
+  GTZC_TZSC->SECCFGR1  |= 0x000367C7UL;
+  GTZC_TZSC->SECCFGR2  |= 0x038F00EBUL;
+  GTZC_TZSC->SECCFGR3  |= 0x01C17C58UL;
+
+  /* TrustZone-aware peripherals security and privilege management */
+
+  /* PWR */
+  PWR->SECCFGR  |= 0x000070FFUL;
+
+  /* RCC */
+  RCC->SECCFGR  |= 0x000010FBUL;
+
+  /* GPIO */
+  GPIOA->SECCFGR |= 0x0000FFFFUL;
+  GPIOB->SECCFGR |= 0x0000FFFFUL;
+  GPIOC->SECCFGR |= 0x0000FFFFUL;
+#if defined(STM32WBA65xx)
+  GPIOD->SECCFGR |= 0x0000FFFFUL;
+  GPIOE->SECCFGR |= 0x0000007FUL;
+  GPIOG->SECCFGR |= 0x0000FFFCUL;
+#endif
+  GPIOH->SECCFGR |= 0x0000000BUL;
+
+  /* SYSCFG */
+  SYSCFG->SECCFGR |= 0x0000000BUL;
+
+  /* DMA */
+  GPDMA1->SECCFGR  |= 0x000000FFUL;
+
+  /* EXTI */
+  EXTI->SECCFGR1  |= 0x001FFFFFUL;
+
+  /* RTC and TAMP */
+  /* Registers accesses enabling */
+  PWR->DBPR     |= PWR_DBPR_DBP;
+
+  /* RTC */
+  RTC->SECCFGR  |= 0x0000E00FUL;
+
+  /* TAMP */
+  TAMP->SECCFGR  |= 0xC07F807FUL;
+
+  /* Registers accesses disabling */
+  PWR->DBPR     &= ~PWR_DBPR_DBP;
+
+  /* HSEM */
+  HSEM->SECCFGR |= 0x0000FFFFUL;
+
+  /* Clock disabling */
+  RCC->AHB1ENR &= ~(0x01031001UL);
+  RCC->AHB2ENR &= ~(0x003FC0DFUL);
+  RCC->AHB4ENR &= ~(0x00000024UL);
+  RCC->AHB5ENR &= ~(0x00000003UL);
+  RCC->APB1ENR1 &= ~(0x00664807UL);
+  RCC->APB1ENR2 &= ~(0x00000022UL);
+  RCC->APB2ENR  &= ~(0x00265800UL);
+  RCC->APB7ENR  &= ~(0x003088E2UL);
 }
 
 /*----------------------------------------------------------------------------

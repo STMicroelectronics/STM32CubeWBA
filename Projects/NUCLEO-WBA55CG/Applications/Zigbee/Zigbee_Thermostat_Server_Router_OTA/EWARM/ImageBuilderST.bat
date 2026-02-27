@@ -1,0 +1,1 @@
+py.exe ../../Zigbee_ApplicationInstallManager/ImageBuilder/ImageBuilderST.py --create ZB_Therm_SrvRt_OTA/Exe/Zigbee_Thermostat_Server_Router_OTA.bin --output ZB_Therm_SrvRt_OTA/Exe/ZigbeeThermostatServerRouterOTA_Image.bin --manuf-id 0x1041 --image-type 0x01 --version 0x2000 --header-string "Thermostat Server Router OTA"

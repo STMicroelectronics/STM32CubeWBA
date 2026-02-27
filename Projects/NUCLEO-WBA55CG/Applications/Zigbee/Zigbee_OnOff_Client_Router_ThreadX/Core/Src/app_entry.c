@@ -31,20 +31,22 @@
 #include "stm32_lpm.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "stm32_timer.h"
-#include "advanced_memory_manager.h"
-#include "stm32_mm.h"
 #if (CFG_LOG_SUPPORTED != 0)
 #include "stm32_adv_trace.h"
 #include "serial_cmd_interpreter.h"
 #endif /* CFG_LOG_SUPPORTED */
 #include "otp.h"
 #include "scm.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "stm32wbaxx_ll_rcc.h"
 #include "timer_if.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "tx_low_power.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "assert.h"
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 extern void ll_sys_mac_cntrl_init( void );
@@ -60,8 +62,6 @@ extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
-                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -101,34 +101,7 @@ static uint32_t lowPowerTimeDiffRemaining = 0;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-/* AMM configuration */
-static uint32_t AMM_Pool[AMM_POOL_SIZE];
-static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
-{
-  /* Virtual Memory #1 */
-  {
-    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE
-  },
-  /* Virtual Memory #2 */
-  {
-    .Id = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE
-  },
-};
-
-static AMM_InitParameters_t ammInitConfig =
-{
-  .p_PoolAddr = AMM_Pool,
-  .PoolSize = AMM_POOL_SIZE,
-  .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
-  .p_VirtualMemoryConfigList = vmConfig
-};
-
 /* ThreadX objects declaration */
-static TX_THREAD      AmmTaskHandle;
-static TX_SEMAPHORE   AmmSemaphore;
-
 static TX_THREAD      RngTaskHandle;
 static TX_SEMAPHORE   RngSemaphore;
 
@@ -158,12 +131,6 @@ static void System_Init( void );
 static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
-
-static void APPE_AMM_Init(void);
-static void AMM_Task_Entry(ULONG lArgument);
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize);
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
-static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 void MX_APPE_InitTask(ULONG lArgument);
 static void RNG_Task_Entry(ULONG lArgument);
@@ -255,9 +222,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Configure the system Power Mode */
   SystemPower_Config();
-
-  /* Initialize the Advance Memory Manager module */
-  APPE_AMM_Init();
 
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
@@ -380,6 +344,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -430,8 +399,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   /* Disable LowPower during Init */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 
   UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
 
@@ -459,6 +427,9 @@ static void SystemPower_Config(void)
 static void RNG_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN RNG_Task_Entry_0 */
+
+  /* USER CODE END RNG_Task_Entry_0 */
 
   for(;;)
   {
@@ -501,59 +472,18 @@ static void APPE_RNG_Init(void)
   }
 }
 
-static void APPE_AMM_Init(void)
-{
-  /* Initialize the Advance Memory Manager */
-  if( AMM_Init(&ammInitConfig) != AMM_ERROR_OK )
-  {
-    Error_Handler();
-  }
-
-  UINT TXstatus;
-  CHAR *pStack;
-
-  /* Create Advance Memory Manager ThreadX objects */
-
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_AMM, TX_NO_WAIT);
-
-  if( TXstatus == TX_SUCCESS )
-  {
-    TXstatus = tx_thread_create(&AmmTaskHandle, "AMM Task", AMM_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_AMM,
-                                 TASK_PRIO_AMM, TASK_PREEMP_AMM,
-                                 TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    TXstatus |= tx_semaphore_create(&AmmSemaphore, "AMM Semaphore", 0);
-  }
-
-  if( TXstatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "AMM ThreadX objects creation FAILED, status: %d", TXstatus);
-    Error_Handler();
-  }
-}
-
-static void AMM_Task_Entry(ULONG lArgument)
-{
-  UNUSED(lArgument);
-
-  for(;;)
-  {
-    tx_semaphore_get(&AmmSemaphore, TX_WAIT_FOREVER);
-    AMM_BackgroundProcess();
-    tx_thread_relinquish();
-  }
-}
-
 #if (CFG_LPM_LEVEL != 0)
 static void IDLE_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN IDLE_Task_Entry_0 */
+
+  /* USER CODE END IDLE_Task_Entry_0 */
 
   while(1)
   {
     /* When no other activities to be done we decide to go in low power
-       This mechansim is in charge to mange low power at application level
+       This mechanism is in charge to mange low power at application level
        without the support of ThreadX low power framework */
     UTILS_ENTER_CRITICAL_SECTION();
     ThreadXLowPowerUserEnter();
@@ -591,35 +521,6 @@ void HWCB_RNG_Process( void )
   }
 }
 
-void AMM_RegisterBasicMemoryManager (AMM_BasicMemoryManagerFunctions_t * const p_BasicMemoryManagerFunctions)
-{
-  /* Fulfill the function handle */
-  p_BasicMemoryManagerFunctions->Init = AMM_WrapperInit;
-  p_BasicMemoryManagerFunctions->Allocate = AMM_WrapperAllocate;
-  p_BasicMemoryManagerFunctions->Free = AMM_WrapperFree;
-}
-
-void AMM_ProcessRequest(void)
-{
-  /* Trigger to call Advance Memory Manager process function */
-  tx_semaphore_put(&AmmSemaphore);
-}
-
-static void AMM_WrapperInit(uint32_t * const p_PoolAddr, const uint32_t PoolSize)
-{
-  UTIL_MM_Init ((uint8_t *)p_PoolAddr, ((size_t)PoolSize * sizeof(uint32_t)));
-}
-
-static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize)
-{
-  return (uint32_t *)UTIL_MM_GetBuffer (((size_t)BufferSize * sizeof(uint32_t)));
-}
-
-static void AMM_WrapperFree (uint32_t * const p_BufferAddr)
-{
-  UTIL_MM_ReleaseBuffer ((void *)p_BufferAddr);
-}
-
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
 /* RNG module turn off HSI clock when traces are not used and low power used */
 void RNG_KERNEL_CLK_OFF(void)
@@ -653,7 +554,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -664,7 +565,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
@@ -705,9 +606,15 @@ void ThreadXLowPowerUserEnter( void )
   LL_PWR_ClearFlag_STOP();
 
 #if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_BLE_EnterDeepSleep();
+    APP_SYS_LPM_EnterLowPowerMode();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
@@ -736,7 +643,7 @@ void ThreadXLowPowerUserEnter( void )
 
   /* Disable SysTick Interrupt */
   SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
 
   lowPowerTimeAfterSleep = getCurrentTime();
   /* Compute time spent in low power state and report precision loss */

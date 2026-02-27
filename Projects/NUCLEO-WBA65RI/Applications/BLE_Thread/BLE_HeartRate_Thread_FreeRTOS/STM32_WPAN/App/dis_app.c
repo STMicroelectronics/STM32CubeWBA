@@ -164,7 +164,7 @@ void DIS_APP_Init(void)
   dis_information_data.p_Payload = (uint8_t*)DISAPP_MANUFACTURER_NAME;
   dis_information_data.Length = sizeof(DISAPP_MANUFACTURER_NAME);
   DIS_UpdateValue(DIS_MANS, &dis_information_data);
-  
+
   /* USER CODE END Service2_APP_Init */
   return;
 }

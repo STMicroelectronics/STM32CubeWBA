@@ -95,6 +95,50 @@ static uint32_t MaxRegisteredId = ADCCTRL_NO_CONFIG;
  */
 static ADC_TypeDef * p_ADCHandle = ADCCTRL_HWADDR;
 
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
+/**
+ * @brief ADC Handle configuration for LL VRefInt request
+ */
+ static ADCCTRL_Handle_t VRefIntRequest_Handle =
+ {
+   .Uid = 0x00,
+   .State = ADCCTRL_HANDLE_NOT_REG,
+   .InitConf =
+   {
+     .ConvParams =
+     {
+       .TriggerFrequencyMode = LL_ADC_TRIGGER_FREQ_LOW,
+       .Resolution = LL_ADC_RESOLUTION_12B,
+       .DataAlign = LL_ADC_DATA_ALIGN_RIGHT,
+       .TriggerStart = LL_ADC_REG_TRIG_SOFTWARE,
+       .TriggerEdge = LL_ADC_REG_TRIG_EXT_RISING,
+       .ConversionMode = LL_ADC_REG_CONV_SINGLE,
+       .DmaTransfer = LL_ADC_REG_DMA_TRANSFER_NONE,
+       .Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN,
+       .SamplingTimeCommon1 = LL_ADC_SAMPLINGTIME_814CYCLES_5,
+       .SamplingTimeCommon2 = LL_ADC_SAMPLINGTIME_1CYCLE_5
+     },
+     .SeqParams =
+     {
+       .Setup = LL_ADC_REG_SEQ_CONFIGURABLE,
+       .Length = LL_ADC_REG_SEQ_SCAN_DISABLE,
+       .DiscMode = LL_ADC_REG_SEQ_DISCONT_DISABLE
+     },
+     .LowPowerParams =
+     {
+       .AutoPowerOff = DISABLE,
+       .AutonomousDPD = LL_ADC_LP_AUTONOMOUS_DPD_DISABLE
+     }
+   },
+   .ChannelConf =
+   {
+     .Channel = LL_ADC_CHANNEL_VREFINT,      /* Internal reference voltage channel */
+     .Rank = LL_ADC_REG_RANK_1,
+     .SamplingTime = LL_ADC_SAMPLINGTIME_COMMON_1
+   }
+ };
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
+
 /* Global variables ----------------------------------------------------------*/
 /* Error Handler */
 extern void Error_Handler(void);
@@ -167,6 +211,13 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_Init (void)
 
     /* Reset ADC Client list */
     ClientList = 0x00u;
+    
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
+    /* Setup the VRefInt handle */
+    MaxRegisteredId = MaxRegisteredId + 1u;
+    VRefIntRequest_Handle.Uid = MaxRegisteredId;
+    VRefIntRequest_Handle.State = ADCCTRL_HANDLE_REG;
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
 
     /* Deactivate the ADC */
     AdcDeactivate();
@@ -321,6 +372,10 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t *
   /* Variables for ADC conversion data */
   __IO uint16_t uhADCxConvertedData = 0x00;
 
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
+  uint16_t vddValue = 0x00;
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
+
   SYSTEM_DEBUG_SIGNAL_SET(ADC_TEMPERATURE_ACQUISITION);
 
   /* Null pointer for handle or payload */
@@ -351,6 +406,68 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t *
 
     if (ADCCTRL_OK == error)
     {
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)     
+      /* Configure the ADC before use */
+      error = AdcConfigure (&VRefIntRequest_Handle);
+
+      /* Enable ADC */
+      LL_ADC_Enable(p_ADCHandle);
+
+      if (ADCCTRL_OK == error)
+      {
+        /* Return the read value */
+        uhADCxConvertedData = AdcReadRaw (p_Handle);
+
+        /* Computation of ADC conversions raw data to physical values             */
+        /* using LL ADC driver helper macro.                                      */
+        vddValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (uhADCxConvertedData,
+                                                     VRefIntRequest_Handle.InitConf.ConvParams.Resolution);
+      }
+      else
+      {
+        error = ADCCTRL_ERROR_CONFIG;
+      }
+      
+      if (ADCCTRL_OK == error)
+      {
+        /* Configure the ADC before use - Temperature handle */
+        error = AdcConfigure (p_Handle);
+        
+        /* Enable ADC */
+        LL_ADC_Enable(p_ADCHandle);
+        
+        if (ADCCTRL_NOK == error)
+        {
+          error = ADCCTRL_ERROR_CONFIG;
+        }
+      }
+
+      if (ADCCTRL_OK == error)
+      {
+        /* Return the read value */
+        uhADCxConvertedData = AdcReadRaw (p_Handle);
+
+        /* Computation of ADC conversions raw data to physical values             */
+        /* using LL ADC driver helper macro.                                      */
+        if(*TEMPSENSOR_CAL1_ADDR == *TEMPSENSOR_CAL2_ADDR)
+        {
+          /* Case of samples not calibrated in production */
+          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE_TYP_PARAMS (TEMPSENSOR_TYP_AVGSLOPE,
+                                                               TEMPSENSOR_TYP_CAL1_V,
+                                                               TEMPSENSOR_CAL1_TEMP,
+                                                               vddValue,
+                                                               uhADCxConvertedData,
+                                                               p_Handle->InitConf.ConvParams.Resolution);
+        }
+        else
+        {
+          /* Case of samples calibrated in production */
+          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE (vddValue,
+                                                    uhADCxConvertedData,
+                                                    p_Handle->InitConf.ConvParams.Resolution);
+        }
+      }
+#else
       /* Is the current config IS NOT the same as the one requested ? */
       if (CurrentConfig != p_Handle->Uid)
       {
@@ -360,7 +477,7 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t *
         /* Enable ADC */
         LL_ADC_Enable(p_ADCHandle);
       }
-
+      
       if (ADCCTRL_OK == error)
       {
         /* Return the read value */
@@ -390,6 +507,7 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t *
       {
         error = ADCCTRL_ERROR_CONFIG;
       }
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
 
       /* Release the mutex */
       ADCCTRL_MutexRelease ();
@@ -405,7 +523,11 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestCoreVoltage (const ADCCTRL_Handle_t *
   ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
 
   /* Variables for ADC conversion data */
-  __IO uint16_t uhADCxConvertedData = 0x00;
+  __IO uint16_t uhADCxConvertedData = 0x00;  
+
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
+  uint16_t vddValue = 0x00;
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
 
   SYSTEM_DEBUG_SIGNAL_SET(ADC_TEMPERATURE_ACQUISITION);
 
@@ -437,6 +559,54 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestCoreVoltage (const ADCCTRL_Handle_t *
 
     if (ADCCTRL_OK == error)
     {
+#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)      
+      /* Configure the ADC before use */
+      error = AdcConfigure (&VRefIntRequest_Handle);
+
+      /* Enable ADC */
+      LL_ADC_Enable(p_ADCHandle);
+
+      if (ADCCTRL_OK == error)
+      {
+        /* Return the read value */
+        uhADCxConvertedData = AdcReadRaw (p_Handle);
+
+        /* Computation of ADC conversions raw data to physical values             */
+        /* using LL ADC driver helper macro.                                      */
+        vddValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (uhADCxConvertedData,
+                                                     VRefIntRequest_Handle.InitConf.ConvParams.Resolution);
+      }
+      else
+      {
+        error = ADCCTRL_ERROR_CONFIG;
+      }
+
+      if (ADCCTRL_OK == error)
+      {
+        /* Configure the ADC before use - Core Voltage handle */
+        error = AdcConfigure (p_Handle);
+        
+        /* Enable ADC */
+        LL_ADC_Enable(p_ADCHandle);
+        
+        if (ADCCTRL_NOK == error)
+        {
+          error = ADCCTRL_ERROR_CONFIG;
+        }
+      }
+      
+      if (ADCCTRL_OK == error)
+      {
+        /* Return the read value */
+        uhADCxConvertedData = AdcReadRaw (p_Handle);
+
+        /* Computation of ADC conversions raw data to physical values             */
+        /* using LL ADC driver helper macro.                                      */
+        *p_ReadValue = __LL_ADC_CALC_DATA_TO_VOLTAGE (vddValue,
+                                                      uhADCxConvertedData,
+                                                      p_Handle->InitConf.ConvParams.Resolution);
+      }
+#else
       /* Is the current config IS NOT the same as the one requested ? */
       if (CurrentConfig != p_Handle->Uid)
       {
@@ -462,6 +632,7 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestCoreVoltage (const ADCCTRL_Handle_t *
       {
         error = ADCCTRL_ERROR_CONFIG;
       }
+#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
 
       /* Release the mutex */
       ADCCTRL_MutexRelease ();
@@ -663,7 +834,7 @@ void AdcDeactivate (void)
 ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
 {
   ADCCTRL_Cmd_Status_t error = ADCCTRL_OK;
-
+  
   __IO uint32_t backup_setting_adc_dma_transfer = 0U;
 
   LL_ADC_InitTypeDef ADC_InitStruct = {0};
@@ -707,14 +878,14 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
     /* Update init and configuration parameters with requested values */
     ADC_InitStruct.Resolution = p_Handle->InitConf.ConvParams.Resolution;
     ADC_InitStruct.DataAlignment = p_Handle->InitConf.ConvParams.DataAlign;
-
+    
     ADC_REG_InitStruct.TriggerSource = p_Handle->InitConf.ConvParams.TriggerStart;
     ADC_REG_InitStruct.SequencerLength = p_Handle->InitConf.SeqParams.Length;
     ADC_REG_InitStruct.SequencerDiscont = p_Handle->InitConf.SeqParams.DiscMode;
     ADC_REG_InitStruct.ContinuousMode = p_Handle->InitConf.ConvParams.ConversionMode;
     ADC_REG_InitStruct.DMATransfer = p_Handle->InitConf.ConvParams.DmaTransfer;
     ADC_REG_InitStruct.Overrun = p_Handle->InitConf.ConvParams.Overrun;
-
+    
     /* Configure Regular Channel - Only for internal channels */
     if (LL_ADC_CHANNEL_VREFINT == p_Handle->ChannelConf.Channel)
     {
@@ -726,60 +897,60 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
       LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
                                      LL_ADC_PATH_INTERNAL_TEMPSENSOR);
     }
-    else
+    else 
     {
       LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
                                      LL_ADC_PATH_INTERNAL_NONE);
     }
-
+    
     /* Set trigger frequency */
-    LL_ADC_SetTriggerFrequencyMode(p_ADCHandle,
+    LL_ADC_SetTriggerFrequencyMode(p_ADCHandle, 
                                    p_Handle->InitConf.ConvParams.TriggerFrequencyMode);
-
+    
     /* Apply the requested ADC configuration - Init part */
-    if (SUCCESS != LL_ADC_Init(p_ADCHandle,
+    if (SUCCESS != LL_ADC_Init(p_ADCHandle, 
                                &ADC_InitStruct))
     {
       error = ADCCTRL_NOK;
     }
     else
-    {
+    {      
       /* Set Sequencer if configurable */
-      LL_ADC_REG_SetSequencerConfigurable(p_ADCHandle,
+      LL_ADC_REG_SetSequencerConfigurable(p_ADCHandle, 
                                           p_Handle->InitConf.SeqParams.Setup);
-
+      
       /* Apply the requested ADC configuration - Register init part */
-      if (SUCCESS != LL_ADC_REG_Init(p_ADCHandle,
+      if (SUCCESS != LL_ADC_REG_Init(p_ADCHandle, 
                                      &ADC_REG_InitStruct))
-      {
+      {      
         error = ADCCTRL_NOK;
       }
-      else
+      else 
       {
         /* Set Low power characteristics */
-        LL_ADC_SetLPModeAutoPowerOff(p_ADCHandle,
+        LL_ADC_SetLPModeAutoPowerOff(p_ADCHandle, 
                                      p_Handle->InitConf.LowPowerParams.AutoPowerOff);
-        LL_ADC_SetLPModeAutonomousDPD(p_ADCHandle,
+        LL_ADC_SetLPModeAutonomousDPD(p_ADCHandle, 
                                       p_Handle->InitConf.LowPowerParams.AutonomousDPD);
 
         /* Set Sampling time for channels */
-        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle,
-                                             LL_ADC_SAMPLINGTIME_COMMON_1,
+        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle, 
+                                             LL_ADC_SAMPLINGTIME_COMMON_1, 
                                              p_Handle->InitConf.ConvParams.SamplingTimeCommon1);
-        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle,
-                                             LL_ADC_SAMPLINGTIME_COMMON_2,
+        LL_ADC_SetSamplingTimeCommonChannels(p_ADCHandle, 
+                                             LL_ADC_SAMPLINGTIME_COMMON_2, 
                                              p_Handle->InitConf.ConvParams.SamplingTimeCommon2);
-
+        
         /* Configure the channel */
-        LL_ADC_REG_SetSequencerRanks(p_ADCHandle,
-                                     p_Handle->ChannelConf.Rank,
+        LL_ADC_REG_SetSequencerRanks(p_ADCHandle, 
+                                     p_Handle->ChannelConf.Rank, 
                                      p_Handle->ChannelConf.Channel);
-        LL_ADC_SetChannelSamplingTime(p_ADCHandle,
-                                      p_Handle->ChannelConf.Channel,
+        LL_ADC_SetChannelSamplingTime(p_ADCHandle, 
+                                      p_Handle->ChannelConf.Channel, 
                                       p_Handle->ChannelConf.SamplingTime);
-
+        
         /* Update the current configuration */
-        CurrentConfig = p_Handle->Uid;
+        CurrentConfig = p_Handle->Uid; 
       }
     }
   }

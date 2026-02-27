@@ -216,7 +216,7 @@ void PWR_APP_Init(void)
 
 void Disable_GPIOs(void)
 {
-#if(CFG_LPM_LEVEL > 1)
+#if( (CFG_DEBUGGER_LEVEL == 0 ) && (CFG_LOG_SUPPORTED == 0) )
   /*Put all GPIOs on analog*/
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};

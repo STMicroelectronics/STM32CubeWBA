@@ -36,3 +36,6 @@ Once powered, the application automatically connects to the BLE_Power_Peripheral
 
 - B1 click : Start data transfer to the BLE_Power_Peripheral.  
 - B3 click : Switch the Connection Interval.  
+
+For more information, please refer to the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Power_Consumption_Measurement"> 
+STM32WBA Bluetooth LE - Power consumption applications ST wiki.</a>   

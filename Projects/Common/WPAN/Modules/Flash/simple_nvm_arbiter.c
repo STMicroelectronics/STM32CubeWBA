@@ -574,6 +574,9 @@ SNVMA_Cmd_Status_t SNVMA_Restore (const SNVMA_BufferId_t BufferId)
     /* Set that a command is pending */
     SNVMA_CommandPending = TRUE;
 
+    /* Leave critical section */
+    UTILS_EXIT_CRITICAL_SECTION();
+
     /* Check bank integrity - Header plausibility */
     if (IsHeaderOk (SNVMA_NvmConfiguration[nvmId].p_BankForRestore->p_StartAddr,
                     nvmId) == FALSE)
@@ -642,8 +645,6 @@ SNVMA_Cmd_Status_t SNVMA_Restore (const SNVMA_BufferId_t BufferId)
     /* Release the pending flag */
     SNVMA_CommandPending = FALSE;
 
-    /* Leave critical section */
-    UTILS_EXIT_CRITICAL_SECTION ();
   }
 
   LOG_DEBUG_SYSTEM("\r\nSNVMA_Restore returned 0x%02X", (uint8_t)error);

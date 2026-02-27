@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -43,18 +43,23 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "bpka.h"
+#include "pka_ctrl.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
 #include "app_debug.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "stm32wbaxx_ll_rcc.h"
 #include "assert.h"
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,7 +69,8 @@ extern void ll_sys_mac_cntrl_init( void );
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-
+#define AMM_POOL_SIZE ( DIVC(CFG_MM_POOL_SIZE, sizeof (uint32_t)) +\
+                      (AMM_VIRTUAL_INFO_ELEMENT_SIZE * CFG_AMM_VIRTUAL_MEMORY_NUMBER) )
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -101,18 +107,18 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* AMM configuration */
-static uint32_t AMM_Pool[CFG_AMM_POOL_SIZE];
+static uint32_t AMM_Pool[AMM_POOL_SIZE];
 static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 {
   /* Virtual Memory #1 */
   {
-    .Id = CFG_AMM_VIRTUAL_STACK_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_STACK_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_TIMERS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE
   },
   /* Virtual Memory #2 */
   {
-    .Id = CFG_AMM_VIRTUAL_APP_BLE,
-    .BufferSize = CFG_AMM_VIRTUAL_APP_BLE_BUFFER_SIZE
+    .Id = CFG_AMM_VIRTUAL_BLE_EVENTS,
+    .BufferSize = CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE
   },
   /* Virtual Memory #3 */
   {
@@ -129,10 +135,13 @@ static AMM_VirtualMemoryConfig_t vmConfig[CFG_AMM_VIRTUAL_MEMORY_NUMBER] =
 static AMM_InitParameters_t ammInitConfig =
 {
   .p_PoolAddr = AMM_Pool,
-  .PoolSize = CFG_AMM_POOL_SIZE,
+  .PoolSize = AMM_POOL_SIZE,
   .VirtualMemoryNumber = CFG_AMM_VIRTUAL_MEMORY_NUMBER,
   .p_VirtualMemoryConfigList = vmConfig
 };
+
+static uint8_t PkaMut = 0u;
+static uint8_t EndOfProcSem = 0u;
 
 /* USER CODE BEGIN PV */
 
@@ -156,7 +165,11 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 static void APPE_FLASH_MANAGER_Init( void );
 
-static void APPE_BPKA_Init( void );
+static void APPE_PKACTRL_Init( void );
+int PKACTRL_MutexTake(void);
+int PKACTRL_MutexRelease(void);
+int PKACTRL_TakeSemEndOfOperation(void);
+int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -213,17 +226,13 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_FLASH_MANAGER_Init();
 
   /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)  
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
+  /* Initialize Peripherals */
+  APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
-  /* Initialize the Ble Public Key Accelerator module */
-  APPE_BPKA_Init();
+  /* Initialize the Public Key Accelerator module */
+  APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
@@ -246,7 +255,6 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Initialization of Zigbee Direct */
   APP_ZIGBEE_DirectInit();
-
   /* USER CODE END APPE_Init_2 */
 
   APP_DEBUG_SIGNAL_RESET(APP_APPE_INIT);
@@ -306,6 +314,10 @@ static void System_Init( void )
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
+
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
@@ -350,22 +362,41 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
   /* Setup GPIOA 13, 14, 15 in Analog no pull */
-  GPIO_InitTypeDef DbgIOsInit = {0};
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  if(__HAL_RCC_GPIOA_IS_CLK_ENABLED() == 0)
+  {
     __HAL_RCC_GPIOA_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOA, &DbgIOsInit);
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOA->PUPDR &= ~0xFC000000;
+    GPIOA->MODER |= 0xFC000000;
+  }
 
-  DbgIOsInit.Mode = GPIO_MODE_ANALOG;
-  DbgIOsInit.Pull = GPIO_NOPULL;
-  DbgIOsInit.Pin = GPIO_PIN_3|GPIO_PIN_4;
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  if(__HAL_RCC_GPIOB_IS_CLK_ENABLED() == 0)
+  {
     __HAL_RCC_GPIOB_CLK_ENABLE();
-  HAL_GPIO_Init(GPIOB, &DbgIOsInit);
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+  }
+  else
+  {
+    GPIOB->PUPDR &= ~0x3C0;
+    GPIOB->MODER |= 0x3C0;
+  }
 #endif /* CFG_DEBUGGER_LEVEL */
 
 #if (CFG_SCM_SUPPORTED == 1)
@@ -377,22 +408,21 @@ static void SystemPower_Config(void)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
 
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
   /* Enable SRAM1, SRAM2 and RADIO retention*/
   LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_FULL_RETENTION);
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
-#else /* (CFG_LPM_STDBY_SUPPORTED > 0) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-#endif /* (CFG_LPM_STDBY_SUPPORTED > 0) */
+#else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
 
   /* Linker script is configured to use only SRAM1, so we can disable SRAM2 retention */
   LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
-
   /* USER CODE END SystemPower_Config */
 }
 
@@ -431,12 +461,12 @@ static void APPE_FLASH_MANAGER_Init(void)
 }
 
 /**
- * @brief Initialize Ble Public Key Accelerator module
+ * @brief Initialize Public Key Accelerator module
  */
-static void APPE_BPKA_Init(void)
+static void APPE_PKACTRL_Init(void)
 {
-  /* Register Ble Public Key Accelerator task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
+  /* Register Public Key Accelerator task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_PKACTRL, UTIL_SEQ_RFU, PKACTRL_BG_Process);
 }
 
 static void APPE_AMM_Init(void)
@@ -470,7 +500,7 @@ void UTIL_SEQ_Idle( void )
   SCM_HSE_StopStabilizationTimer();
   /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
   HAL_ResumeTick();
 #endif /* CFG_LPM_LEVEL */
   return;
@@ -484,11 +514,18 @@ void UTIL_SEQ_PreIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_PWR_ClearFlag_STOP();
 
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
-
+#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
 
 #if defined(STM32WBAXX_SI_CUT1_0)
@@ -519,8 +556,8 @@ void UTIL_SEQ_PostIdle( void )
   /* USER CODE END UTIL_SEQ_PostIdle_1 */
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-  ll_sys_dp_slp_exit();
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+  (void)ll_sys_dp_slp_exit();
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -528,9 +565,9 @@ void UTIL_SEQ_PostIdle( void )
   return;
 }
 
-void BPKACB_Process( void )
+void PKACTRL_CB_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BPKA, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_PKACTRL, CFG_SEQ_PRIO_0);
 }
 
 /**
@@ -609,7 +646,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -620,7 +657,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
@@ -637,8 +674,8 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
 {
   /* USER CODE BEGIN Serial_CMD_Interpreter_CmdExecute_1 */
-  
-  /* Simulate button press from UART commands. */
+
+  /* Threat USART Command to simulate button press for instance. */
   (void)APP_BSP_SerialCmdExecute( pRxBuffer, iRxBufferSize );
 
   /* USER CODE END Serial_CMD_Interpreter_CmdExecute_1 */
@@ -653,6 +690,86 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
 {
   Error_Handler();
   __builtin_unreachable();
+}
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+
+  /* Check if mutex is available */
+  if (0u != PkaMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  /* Increment mutex */
+  PkaMut++;
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+
+  if (0u != PkaMut)
+  {
+    PkaMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+
+  /* Check if semaphore is available */
+  if (0u != EndOfProcSem)
+  {
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
+  }
+
+  /* Increment semaphore */
+  EndOfProcSem++;
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+
+  if (0u != EndOfProcSem)
+  {
+    EndOfProcSem = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

@@ -47,10 +47,10 @@
 #define LINKUP_RETRY_TIMEOUT                    (4000u)
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)
@@ -1278,7 +1278,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
                      HAPAPP_Context.AvailableSnkAudioContext,
                      HAPAPP_Context.AvailableSrcAudioContext);
       }
-      /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+      /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
       for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
       {
         if ((HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -1292,7 +1292,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                /* Send an response to the Enable Operation request if no CIS is still up*/
                 if (HAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1325,7 +1325,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                /* Send an response to the Enable Operation request if no CIS is still up*/
                 if (HAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1422,7 +1422,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 #if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-          /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+          /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
           for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
           {
             if (HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
@@ -2360,7 +2360,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           Audio_Context_t snk_context = 0;
           Audio_Context_t src_context = 0;
 
-          /* If ASE State Notification is received, we can consider that potential reponse to an Enable Operation Request
+          /* If ASE State Notification is received, we can consider that potential response to an Enable Operation Request
            * is no more expected by remote CAP Initiator
            */
           p_ase->enable_req = 0u;
@@ -2452,7 +2452,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 }
               }
 
-              /*Set new available audio contexts for BAP Annoucement*/
+              /*Set new available audio contexts for BAP Announcement*/
               status = CAP_SetAvailableAudioContexts(HAPAPP_Context.AvailableSnkAudioContext,
                                                      HAPAPP_Context.AvailableSrcAudioContext);
               if (status == BLE_STATUS_SUCCESS)
@@ -2481,7 +2481,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (streaming_ongoing == 0u)
             {
               uint8_t enable_ongoing = 0u;
-              /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+              /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
               for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
               {
                 if ((HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -2495,7 +2495,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                        /* Send an response to the Enable Operation request if no CIS is still up*/
                         if (HAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2528,7 +2528,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                        /* Send an response to the Enable Operation request if no CIS is still up*/
                         if (HAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2687,7 +2687,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                        snk_context,
                        src_context);
 
-          /*Set new available audio contexts for BAP Annoucement*/
+          /*Set new available audio contexts for BAP Announcement*/
           status = CAP_SetAvailableAudioContexts(snk_context,src_context);
           if (status == BLE_STATUS_SUCCESS)
           {
@@ -2807,7 +2807,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               if ((p_other_conn->AvailableSnkAudioContext != HAPAPP_Context.AvailableSnkAudioContext) \
                   || (p_other_conn->AvailableSrcAudioContext != HAPAPP_Context.AvailableSrcAudioContext))
               {
-                /*we update the Audio Contexts availablity to other connected CAP Initiator*/
+                /*we update the Audio Contexts availability to other connected CAP Initiator*/
                 ret = CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
                                                        HAPAPP_Context.AvailableSnkAudioContext,
                                                        HAPAPP_Context.AvailableSrcAudioContext);
@@ -2838,7 +2838,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                               p_info->ASE_ID,
                               pNotification->ConnHandle);
                 }
-                LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X shall be terminated before send a reponse to the Enable Request\n");
+                LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X shall be terminated before send a response to the Enable Request\n");
                 /*Terminate the streaming with this device*/
                 ret = CAP_Unicast_TerminateAudioStream(p_other_conn->Acl_Conn_Handle);
                 LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X returns status 0x%02X\n",
@@ -3336,7 +3336,7 @@ static void LinkupRetry_TimerCallback(void *arg)
 static void APP_LinkupTaskHandler(void)
 {
   tBleStatus status;
-  LOG_INFO_APP("Retry to perfom Linkup with a remote connected device\n");
+  LOG_INFO_APP("Retry to perform Linkup with a remote connected device\n");
   for (uint8_t conn = 0; conn < CFG_BLE_NUM_LINK ; conn++)
   {
     if ( HAPAPP_Context.ACL_Conn[conn].LinkupRetry == 1u)
@@ -3466,7 +3466,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                      available_snk_context,
                      available_src_context);
 
-        /*Set new available audio contexts for BAP Annoucement*/
+        /*Set new available audio contexts for BAP Announcement*/
         status = CAP_SetAvailableAudioContexts(available_snk_context,available_src_context);
         if (status == BLE_STATUS_SUCCESS)
         {
@@ -3521,7 +3521,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
               if ((HAPAPP_Context.ACL_Conn[conn].AvailableSnkAudioContext != HAPAPP_Context.AvailableSnkAudioContext) \
                   || (HAPAPP_Context.ACL_Conn[conn].AvailableSrcAudioContext != HAPAPP_Context.AvailableSrcAudioContext))
               {
-                /* we update the Audio Contexts availablity to other connected CAP Initiators */
+                /* we update the Audio Contexts availability to other connected CAP Initiators */
                 status = CAP_UpdateAvailableAudioContexts(HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
                                                           HAPAPP_Context.AvailableSnkAudioContext,
                                                           HAPAPP_Context.AvailableSrcAudioContext);
@@ -4274,7 +4274,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_READ_FEATURES_STATUS;
         }
       }
-      /* Schedule pendning CCP operation if it exists*/
+      /* Schedule pending CCP operation if it exists*/
       HAP_SchedulePendingContentControlOp(p_conn);
       break;
     }
@@ -4297,7 +4297,7 @@ static void CCP_MetaEvt_Notification(CCP_Notification_Evt_t *pNotification)
           p_conn->CurrentContentCtrlOp &= ~CCP_CLT_OP_TERMINATE_CALL;
         }
       }
-      /* Schedule pendning CCP operation if it exists*/
+      /* Schedule pending CCP operation if it exists*/
       HAP_SchedulePendingContentControlOp(p_conn);
       break;
     }

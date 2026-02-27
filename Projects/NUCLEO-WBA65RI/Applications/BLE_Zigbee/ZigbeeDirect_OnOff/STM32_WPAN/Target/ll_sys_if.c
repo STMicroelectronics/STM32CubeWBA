@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -25,16 +25,22 @@
 #include "ll_intf_cmn.h"
 #include "ll_sys.h"
 #include "ll_sys_if.h"
+#include "platform.h"
 #include "stm32_rtos.h"
 #include "utilities_common.h"
-
+#if (CFG_LPM_STANDBY_SUPPORTED == 0)
+extern void profile_reset(void);
+#endif
 /* Private defines -----------------------------------------------------------*/
 /* Radio event scheduling method - must be set at 1 */
 #define USE_RADIO_LOW_ISR                   (1)
 #define NEXT_EVENT_SCHEDULING_FROM_ISR      (1)
 
-/* USER CODE BEGIN PD */
+#define LSI_RCO_CALIB_PERIOD_MS            (15000U) /* LSI calib period in ms */
+#define LSI_RCO_CALIB_DURATION_CYCLE       (24U)    /* LSI calib duration in LL sleep timer clock cycles */
 
+/* USER CODE BEGIN PD */
+#include "ll_intf.h"
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -131,6 +137,12 @@ void ll_sys_config_params(void)
 
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
+
+#if (USE_CTE_DEGRADATION == 1u)
+  /* Apply CTE degradation */
+  ll_sys_apply_cte_settings ();
+#endif /* (USE_CTE_DEGRADATION == 1u) */
+
 /* USER CODE BEGIN ll_sys_config_params_2 */
 
 /* USER CODE END ll_sys_config_params_2 */
@@ -229,6 +241,12 @@ void ll_sys_reset(void)
   bsca = ll_sys_BLE_sleep_clock_accuracy_selection();
   ll_intf_le_set_sleep_clock_accuracy(bsca);
 
+  if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
+  {
+    /* Configure RCO calibration */
+    ll_intf_le_set_rco_clbr_evnt_params(LSI_RCO_CALIB_DURATION_CYCLE, LSI_RCO_CALIB_PERIOD_MS);
+  }
+
   /* Update link layer timings depending on selected configuration */
   if(LL_RCC_RADIO_GetSleepTimerClockSource() == LL_RCC_RADIOSLEEPSOURCE_LSI)
   {
@@ -254,4 +272,23 @@ void ll_sys_reset(void)
   /* USER CODE BEGIN ll_sys_reset_2 */
 
   /* USER CODE END ll_sys_reset_2 */
+}
+#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx)
+void ll_sys_apply_cte_settings(void)
+{
+  ll_intf_apply_cte_degrad_change();
+}
+#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx) */
+
+#if (CFG_LPM_STANDBY_SUPPORTED == 0)
+void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time, uint32_t* average_drift_time, uint8_t reset)
+{
+  ll_intf_get_profile_statistics(exec_time, drift_time, average_drift_time, reset);
+}
+#endif
+
+void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time)
+{
+  /* first parameter otInstance *aInstance is unused */
+  radio_set_rtl_polling_time(NULL, rtl_polling_time);
 }

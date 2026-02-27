@@ -1,0 +1,32 @@
+#! armclang --target=arm-arm-none-eabi -march=armv8-m.main -E -xc
+/*************************************************************************************************/
+#include "appli_region_defs.h"
+/*************************************************************************************************/
+#define ROM_NS_START           NS_CODE_START
+#define ROM_NS_SIZE            NS_CODE_SIZE
+
+#define RAM_NS_START           NS_RAM_START  /* SRAM1 start @ */
+#define RAM_NS_SIZE            NS_RAM_SIZE     /* SRAM1 448k */
+
+/*************************************************************************************************/
+LR_IROM1 ROM_NS_START  ROM_NS_SIZE  {    ; load region size_region
+  ER_IROM1 ROM_NS_START  ROM_NS_SIZE  {  ; load address = execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+
+  ER_DATA (RAM_NS_START + RAM_NS_NO_INIT_SIZE) (RAM_NS_SIZE - RAM_NS_NO_INIT_SIZE) {
+        .ANY (+ZI +RW)
+    }
+  /* MSP */
+  ARM_LIB_STACK_MSP +0 ALIGN 32 EMPTY NS_MSP_STACK_SIZE {
+  }
+  /* PSP */
+  ARM_LIB_STACK +0 ALIGN 32 EMPTY NS_PSP_STACK_SIZE {
+  }
+
+  ARM_LIB_HEAP +0 ALIGN 8 EMPTY NS_HEAP_SIZE {
+  }
+}

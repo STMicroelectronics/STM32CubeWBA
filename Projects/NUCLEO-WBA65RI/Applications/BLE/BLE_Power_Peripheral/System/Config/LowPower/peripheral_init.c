@@ -158,7 +158,7 @@ void MX_StandbyExit_PeripheralInit(void)
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
-#if(CFG_LPM_LEVEL != 2 )
+#if( (CFG_DEBUGGER_LEVEL == 1 ) || (CFG_LOG_SUPPORTED == 1) )
   MX_GPIO_Init();
 #endif
 

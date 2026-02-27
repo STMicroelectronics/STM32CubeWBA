@@ -91,6 +91,9 @@ static bool system_startup_done = FALSE;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region = LOG_REGION_ALL_REGIONS };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
+static uint8_t PkaMut = 0u;
+static uint8_t EndOfProcSem = 0u;
+
 /* USER CODE BEGIN PV */
 #if (CFG_BUTTON_SUPPORTED == 1)
 /* Button management */
@@ -109,6 +112,10 @@ static void Config_HSE(void);
 static void RNG_Init( void );
 static void System_Init( void );
 static void SystemPower_Config( void );
+int PKACTRL_MutexTake(void);
+int PKACTRL_MutexRelease(void);
+int PKACTRL_TakeSemEndOfOperation(void);
+int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
 #if (CFG_LED_SUPPORTED == 1)
@@ -560,6 +567,100 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+ int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+
+  /* Check if mutex is available */
+  if (0u != PkaMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  /* Increment mutex */
+  PkaMut++;
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+
+  if (0u != PkaMut)
+  {
+    PkaMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+
+  /* Check if semaphore is available */
+  if (0u != EndOfProcSem)
+  {
+#if (CFG_LPM_LEVEL != 0)
+    /* Avoid going in standby during computation */
+    UTIL_LPM_SetMaxMode ((1 << CFG_LPM_PKA_OVR_IT),
+#if (UTIL_LPM_LEGACY_ENABLED == 1)
+                         UTIL_LPM_SLEEPMODE);
+#else
+                         UTIL_LPM_SLEEP_MODE);
+#endif /* (UTIL_LPM_LEGACY_ENABLED == 1) */
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
+  }
+
+  /* Increment semaphore */
+  EndOfProcSem++;
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+
+  if (0u != EndOfProcSem)
+  {
+    EndOfProcSem = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore standby */
+    UTIL_LPM_SetMaxMode ((1 << CFG_LPM_PKA_OVR_IT),
+#if (UTIL_LPM_LEGACY_ENABLED == 1)
+                         UTIL_LPM_OFFMODE);
+#else
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+                         UTIL_LPM_STANDBY_MODE);
+#else
+                         UTIL_LPM_STOP1_MODE);
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (UTIL_LPM_LEGACY_ENABLED == 1) */
+#endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 #if (CFG_BUTTON_SUPPORTED == 1)

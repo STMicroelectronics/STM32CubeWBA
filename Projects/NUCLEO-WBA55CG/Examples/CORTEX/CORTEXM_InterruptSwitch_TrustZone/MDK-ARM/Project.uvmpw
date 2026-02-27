@@ -5,7 +5,7 @@
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
-  <WorkspaceName></WorkspaceName>
+  <WorkspaceName>C:\git\wba_v1.9.0\Firmware\Projects\NUCLEO-WBA55CG\Examples\CORTEX\CORTEXM_InterruptSwitch_TrustZone\MDK-ARM\Project.uvmpw</WorkspaceName>
 
   <project>
     <PathAndName>.\Secure\CORTEXM_InterruptSwitch_TrustZone_S.uvprojx</PathAndName>

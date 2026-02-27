@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -41,36 +41,14 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* FreeRTOS priorities by default  */
-#define TASK_PRIO_LINK_LAYER                    osPriorityRealtime2
-#define TASK_PRIO_TEMP_MEAS_LL                  osPriorityRealtime2
-#define TASK_PRIO_AMM                           osPriorityNormal
-#define TASK_PRIO_RNG                           osPriorityHigh
-#define TASK_PRIO_FLASH_MANAGER                 osPriorityNormal
-#define TASK_PRIO_BLE_HOST                      osPriorityNormal
-#define TASK_PRIO_HCI_ASYNC_EVENT               osPriorityNormal
-#define TASK_PRIO_BLE_TIMER                     osPriorityNormal
-#define TASK_PRIO_BPKA                          osPriorityNormal
+#define TASK_PRIO_WPAN                          osPriorityNormal
 
 /* USER CODE BEGIN TASK_Priority_Define */
-#define TASK_PRIO_BUTTON_Bx                     osPriorityNormal
-#define TASK_PRIO_JOYSTICK_x                   osPriorityNormal
+#define TASK_PRIO_JOYSTICK_x                     osPriorityNormal3
+#define TASK_PRIO_SEND_COAP_MSG                 osPriorityNormal1
 /* USER CODE END TASK_Priority_Define */
 
 #define RTOS_MAX_THREAD                         (20u)
-#define CFG_TASK_PRIO_ALARM                     osPriorityRealtime1
-
-#define CFG_TASK_PRIO_US_ALARM                  CFG_TASK_PRIO_ALARM
-
-#define CFG_TASK_PRIO_TASKLETS                  osPriorityRealtime1
-
-#define CFG_TASK_PRIO_CLI_UART                  osPriorityRealtime1
-
-#define CFG_TASK_PRIO_SEND_COAP_MSG             osPriorityHigh
-
-#define CFG_TASK_PRIO_ADVERTISING		osPriorityNormal
-
-#define CFG_TASK_PRIO_HRS_APP_MEAS		osPriorityNormal
-
 
 #define RTOS_STACK_SIZE_LARGE                   ( 1024u * 3u )
 #define RTOS_STACK_SIZE_MODERATE                ( 2048u )
@@ -80,24 +58,10 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_FLASH_MANAGER           (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_REDUCED)
-#define TASK_STACK_SIZE_BLE_HOST                RTOS_STACK_SIZE_MODERATE
-#define TASK_STACK_SIZE_HCI_ASYNC_EVENT         (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_SMALL)
-#define TASK_STACK_SIZE_BLE_TIMER               RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_JOYSTICK_x              RTOS_STACK_SIZE_NORMAL
-#define TASK_ALARM_STACK_SIZE                   (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_REDUCED)
-#define TASK_ALARM_US_STACK_SIZE                RTOS_STACK_SIZE_NORMAL
-#define TASK_TASKLETS_STACK_SIZE                RTOS_STACK_SIZE_LARGE
-#define TASK_CLI_UART_STACK_SIZE                RTOS_STACK_SIZE_LARGE
-#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL
-#define TASK_ADVERTISING_STACK_SIZE		RTOS_STACK_SIZE_MODERATE
-#define TASK_HRS_APP_MEAS_STACK_SIZE		RTOS_STACK_SIZE_MODERATE
-
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
+/* USER CODE BEGIN TASK_Size_Define */
+#define TASK_STACK_SIZE_JOYSTICK_x               RTOS_STACK_SIZE_NORMAL
+#define TASK_SEND_COAP_MSG_STACK_SIZE           RTOS_STACK_SIZE_NORMAL  
 /* USER CODE END TASK_Size_Define */
 
 /* Attributes needed by CMSIS */

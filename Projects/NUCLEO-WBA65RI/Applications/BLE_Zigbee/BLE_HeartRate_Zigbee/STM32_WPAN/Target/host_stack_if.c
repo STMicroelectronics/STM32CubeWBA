@@ -22,6 +22,7 @@
 #include "host_stack_if.h"
 #include "app_conf.h"
 #include "ll_sys.h"
+#include "app_entry.h"
 #include "app_ble.h"
 #include "auto/ble_raw_api.h"
 #include "stm32_seq.h"
@@ -41,6 +42,7 @@ extern uint8_t missed_hci_event_flag;
 /* USER CODE END EV */
 
 /* External function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
@@ -77,7 +79,7 @@ void BleStackCB_Process(void)
   if (missed_hci_event_flag)
   {
     missed_hci_event_flag = 0;
-    HCI_HARDWARE_ERROR_EVENT(0x03);
+    /* missed event, Link Layer fifo full */
   }
   /* BLE Host stack processing through background task */
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_HOST, CFG_SEQ_PRIO_0);

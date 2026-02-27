@@ -41,7 +41,6 @@
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 */
-/* USER CODE BEGIN 0 */
 /*
 // <e>Initialize Security Attribution Unit (SAU) CTRL register
 */
@@ -90,7 +89,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END0       0x080FFFFF      /* end address of SAU region 0 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -116,7 +114,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END1       0x0BF97FFF      /* end address of SAU region 1 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -142,7 +139,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END2       0x0C07FFFF      /* end address of SAU region 2 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -194,7 +190,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END4       0x4FFFFFFF      /* end address of SAU region 4 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -220,7 +215,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END5       0x00000000      /* end address of SAU region 5 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -246,7 +240,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END6       0x00000000      /* end address of SAU region 6 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -272,7 +265,6 @@
 //     <o>End Address <0x1F-0xFFFFFFFF>
 */
 #define SAU_INIT_END7       0x00000000      /* end address of SAU region 7 */
-
 /*
 //     <o>Region is
 //         <0=>Non-Secure
@@ -307,7 +299,7 @@
 //   <i> Value for SCB->AIRCR register bit SYSRESETREQS
 */
 #define SCB_AIRCR_SYSRESETREQS_VAL  0
-/* USER CODE END 0 */
+
 /*
 //   <o>Priority of Non-Secure exceptions is
 //     <0=> Not altered

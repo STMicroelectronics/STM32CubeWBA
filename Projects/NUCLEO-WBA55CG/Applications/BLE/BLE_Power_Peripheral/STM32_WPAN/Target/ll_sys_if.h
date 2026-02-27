@@ -40,28 +40,18 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define DRIFT_TIME_DEFAULT                      (13)
+#define DRIFT_TIME_DEFAULT                      (14)
 #define DRIFT_TIME_EXTRA_LSI2                   (9)
 #define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
 
-#define EXEC_TIME_DEFAULT                       (24)
+#define EXEC_TIME_DEFAULT                       (28)
 #define EXEC_TIME_EXTRA_LSI2                    (3)
 #define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
 
 #define SCHDL_TIME_DEFAULT                      (20)
 /* USER CODE BEGIN EC */
-#define DRIFT_TIME_OPTIMIZED                    (13)
-#define EXEC_TIME_OPTIMIZED                     (20)
-
-#if DRIFT_TIME_EXTRA_GCC_DEBUG
-    #undef  DRIFT_TIME_EXTRA_GCC_DEBUG
-    #define DRIFT_TIME_EXTRA_GCC_DEBUG          (5)  
-#endif  
-  
-#if EXEC_TIME_EXTRA_GCC_DEBUG
-    #undef  EXEC_TIME_EXTRA_GCC_DEBUG
-    #define EXEC_TIME_EXTRA_GCC_DEBUG           (1) 
-#endif
+#define DRIFT_TIME_OPTIMIZED                    (14)
+#define EXEC_TIME_OPTIMIZED                     (19)
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/

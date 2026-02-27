@@ -62,7 +62,7 @@
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
+          <state>A compact configuration of the C/C++14 runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
         </option>
         <option>
           <name>OGProductVersion</name>
@@ -675,7 +675,7 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -683,7 +683,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_S.bin</state>
+          <state>BLE_p2pServer_TZ_S.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1121,6 +1121,9 @@
       <file>
         <name>$PROJ_DIR$\..\startup_stm32wba65xx.s</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\stm32wbaxx_ResetHandler_S.s</name>
+      </file>
     </group>
     <group>
       <name>User</name>
@@ -1153,22 +1156,25 @@
   <group>
     <name>Drivers</name>
     <group>
+      <name>BSP</name>
+      <group>
+        <name>STM32WBAxx_Nucleo</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo\stm32wbaxx_nucleo.c</name>
+        </file>
+      </group>
+    </group>
+    <group>
       <name>CMSIS</name>
       <file>
         <name>$PROJ_DIR$\..\..\Secure\Core\Src\system_stm32wbaxx_s.c</name>
       </file>
     </group>
     <group>
-      <name>BSP</name>
-      <group>
-        <name>STM32WBAxx_Nucleo</name>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
-        </file>
-      </group>
-    </group>
-    <group>
       <name>STM32WBAxx_HAL_Driver</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_pka.c</name>
+      </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
       </file>

@@ -1,0 +1,25 @@
+; *************************************************************
+; *** Scatter-Loading Description File                      ***
+; *************************************************************
+LR_IROM1 0x08000000 0x007FA000  {
+  ER_IROM1 0x08000000 0x007FA000  {
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+
+  RW_IRAM1 0x20000000 0x18000 {
+    .ANY (+RW +ZI)
+  }
+}
+
+LR_IROM_NVM_USER 0x087FA000 0x2000 {
+  ER_IROM_NVM_USER 0x087FA000 0x2000 {
+  }
+}
+;LR_IROM_NVM 0x087FC000 0x4000 {
+;  ER_IROM_NVM 0x087FC000 0x4000 {
+;  }
+;}
+

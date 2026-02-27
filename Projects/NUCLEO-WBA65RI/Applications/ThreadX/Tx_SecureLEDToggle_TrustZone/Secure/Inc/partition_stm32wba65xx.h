@@ -32,7 +32,6 @@
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> -----------------
 */
-/* USER CODE BEGIN 0 */
 /*
 // <e>Initialize Security Attribution Unit (SAU) CTRL register
 */
@@ -298,7 +297,6 @@
 //   <i> Value for SCB->AIRCR register bit SYSRESETREQS
 */
 #define SCB_AIRCR_SYSRESETREQS_VAL  0
-/* USER CODE END 0 */
 /*
 //   <o>Priority of Non-Secure exceptions is
 //     <0=> Not altered

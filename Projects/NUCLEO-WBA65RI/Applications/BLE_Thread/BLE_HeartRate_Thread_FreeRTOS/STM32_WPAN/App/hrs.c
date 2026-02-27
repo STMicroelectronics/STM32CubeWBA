@@ -58,6 +58,7 @@ typedef struct{
 #define HRS_CNTL_POINT_RESET_ENERGY_EXPENDED      (0x01)
 #define HRS_CNTL_POINT_VALUE_IS_SUPPORTED         (0x00)
 #define HRS_CNTL_POINT_VALUE_NOT_SUPPORTED        (0x80)
+
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -149,7 +150,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN Service1_Char_1 */
-                LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
+            LOG_INFO_APP("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE HRS_NOTIFICATION_DISABLED\n");
 
             /* USER CODE END Service1_Char_1 */
             switch(p_attribute_modified->Attr_Data[0])
@@ -221,11 +222,11 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
             {
               /* received a correct value for HRM control point char */
               aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00, /* write_status = 0 (no error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_IS_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x00, /* write_status = 0 (no error))*/
+                                    (uint8_t)HRS_CNTL_POINT_VALUE_IS_SUPPORTED, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
 
               /**
                * Notify the application to Reset The Energy Expended Value
@@ -237,11 +238,11 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
             {
               /* received value of HRM control point char is incorrect */
               aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x1, /* write_status = 1 (error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_NOT_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x1, /* write_status = 1 (error))*/
+                                    (uint8_t)HRS_CNTL_POINT_VALUE_NOT_SUPPORTED, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
             }
 
             /*USER CODE END Service1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
@@ -362,6 +363,10 @@ void HRS_Init(void)
   {
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * HRME

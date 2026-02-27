@@ -4,7 +4,7 @@ How to use the Messaging cluster on a device acting as a Router within a Central
 
 The purpose of this application is to show how to create a Zigbee centralized network with CBKE Keys, and how to communicate from one node to another one using the Messaging cluster. Once the Zigbee mesh network is created, the Server can send messages to the Client through push buttons SW1/SW2.
 
-Caution : to use this application, you need to add the CBKE Keys. To obtains theses keys, you need to create an account on Certicom site (www.certicom.com) and request a 'ZigBee 1.2 Test Certificate' for each devices.
+Caution : to use this application, you need to add the CBKE Keys. To obtains these keys, you need to create an account on Certicom site (www.certicom.com) and request a 'ZigBee 1.2 Test Certificate' for each devices.
 
 ### __Keywords__
 

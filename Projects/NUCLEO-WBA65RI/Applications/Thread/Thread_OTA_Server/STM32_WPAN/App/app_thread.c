@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -403,8 +404,7 @@ static void APP_THREAD_DeviceConfig(void)
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();
@@ -1033,7 +1033,7 @@ static bool APP_THREAD_SetBinCrc(uint32_t *fuotaBinaryCrcAddress)
   
     if (APP_THREAD_OTA_WriteWordToFlash(lCrcAddress, lCrc) != APP_THREAD_OK)
     {
-      LOG_ERROR_APP( "[OTA] Error, Writting CRC to Flash failed." );
+      LOG_ERROR_APP( "[OTA] Error, Writing CRC to Flash failed." );
       return false;
     }
     

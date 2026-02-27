@@ -42,6 +42,7 @@ extern uint8_t missed_hci_event_flag;
 /* USER CODE END EV */
 
 /* External function prototypes -----------------------------------------------*/
+
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
@@ -78,7 +79,7 @@ void BleStackCB_Process(void)
   if (missed_hci_event_flag)
   {
     missed_hci_event_flag = 0;
-    HCI_HARDWARE_ERROR_EVENT(0x03);
+    /* missed event, Link Layer fifo full */
   }
   /* BLE Host stack processing through background task */
   tx_semaphore_put(&BleHostSemaphore);

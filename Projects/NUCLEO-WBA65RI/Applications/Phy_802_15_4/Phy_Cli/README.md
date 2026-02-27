@@ -99,8 +99,8 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
 
 ### __Standalone binary__
 
-  - The commands are sent via an CLI UART (USART1) from an HyperTerminal to the STM32WB55A_Nucleo Board.
-  - The results are sent via an CLI UART (USART1) from the STM32WB55A_Nucleo Board (PC) to an HyperTerminal or STM32CubeMonitorRF.
+  - The commands are sent via an CLI UART (USART1) from an HyperTerminal to the STM32WB65_Nucleo Board.
+  - The results are sent via an CLI UART (USART1) from the STM32WB65_Nucleo Board (PC) to an HyperTerminal or STM32CubeMonitorRF.
   - At startup. '802_15_4_CLI Appli' should be displayed on the PRINT UART Hyperterminal.
 
   - The Hyperterminal must be configured as follow :
@@ -116,7 +116,7 @@ A dedicated application allows the control and the test of the 802_15_4 radio vi
     This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed
     using default baudrate of 115200.
   - By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
-    - the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.
+    - the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay in between.
     - SMPS is enabled at init (ensure the board used is SMPS compatible)
     - The *tx_on* signal is readable at the PA1 GPIO, required for turnaround times certification tests.
   - Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.

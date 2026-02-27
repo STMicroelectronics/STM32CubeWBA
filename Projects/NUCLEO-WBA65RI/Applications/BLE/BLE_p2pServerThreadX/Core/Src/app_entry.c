@@ -41,7 +41,7 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "bpka.h"
+#include "pka_ctrl.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
@@ -58,6 +58,7 @@
 #if (CFG_LPM_LEVEL != 0)
 #include "tx_low_power.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -137,6 +138,9 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
+static TX_SEMAPHORE PkaSemaphore;
+static TX_SEMAPHORE PkaEndOfOperationSemaphore;
+
 /* ThreadX objects declaration */
 static TX_THREAD      AmmTaskHandle;
 static TX_SEMAPHORE   AmmSemaphore;
@@ -147,8 +151,8 @@ static TX_SEMAPHORE   RngSemaphore;
 static TX_THREAD      FlashManagerTaskHandle;
 static TX_SEMAPHORE   FlashManagerSemaphore;
 
-static TX_THREAD      BpkaTaskHandle;
-static TX_SEMAPHORE   BpkaSemaphore;
+static TX_THREAD      PKACtrlTaskHandle;
+static TX_SEMAPHORE   PKACtrlSemaphore;
 
 static TX_MUTEX       crcCtrlMutex;
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
@@ -191,8 +195,12 @@ static void RNG_Task_Entry(ULONG lArgument);
 static void APPE_FLASH_MANAGER_Init( void );
 static void FLASH_Manager_Task_Entry(ULONG lArgument);
 
-static void APPE_BPKA_Init( void );
-static void BPKA_Task_Entry(ULONG lArgument);
+static void APPE_PKACTRL_Init( void );
+int PKACTRL_MutexTake(void);
+int PKACTRL_MutexRelease(void);
+int PKACTRL_TakeSemEndOfOperation(void);
+int PKACTRL_ReleaseSemEndOfOperation(void);
+static void PKACTRL_Task_Entry(ULONG lArgument);
 
 #if (CFG_LPM_LEVEL != 0)
 static void IDLE_Task_Entry(ULONG lArgument);
@@ -258,6 +266,26 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
 
+  /* Create PKA semaphore */
+  TXstatus = tx_semaphore_create (&PkaSemaphore,
+                            "PKA Semaphore",
+                            1);
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "PKA Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+
+  /* Create PKA end of operation flag semaphore */
+  TXstatus = tx_semaphore_create (&PkaEndOfOperationSemaphore,
+                                  "PKA End of Operation Semaphore",
+                                  1);
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "PKA End of Operation Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
   /* USER CODE BEGIN APPE_Init_1 */
 #if (CFG_LED_SUPPORTED == 1)
   APP_BSP_LedInit();
@@ -285,8 +313,8 @@ uint32_t MX_APPE_Init(void *p_param)
   }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 
-  /* Initialize the Ble Public Key Accelerator module */
-  APPE_BPKA_Init();
+  /* Initialize the Public Key Accelerator module */
+  APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
@@ -350,7 +378,9 @@ static void System_Init( void )
   UTIL_TIMER_Init();
 
   /* USER CODE BEGIN System_Init_1 */
-
+#if ((CFG_RT_DEBUG_DTB == 1) && (CFG_BUTTON_SUPPORTED == 1))
+#warning "DTB signal tx_on may be overwritten by buttons IOs configuration on PA1 pin"
+#endif
   /* USER CODE END System_Init_1 */
 
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
@@ -401,6 +431,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -444,7 +479,7 @@ static void SystemPower_Config(void)
   LL_PWR_SetRadioSBRetention(LL_PWR_RADIO_SB_FULL_RETENTION); /* Retain sleep timer configuration */
 
 #else /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
@@ -466,13 +501,15 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-
   /* USER CODE END SystemPower_Config */
 }
 
 static void RNG_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN RNG_Task_Entry_0 */
+
+  /* USER CODE END RNG_Task_Entry_0 */
 
   for(;;)
   {
@@ -557,30 +594,30 @@ static void APPE_FLASH_MANAGER_Init(void)
 }
 
 /**
- * @brief Initialize Ble Public Key Accelerator module
+ * @brief Initialize Public Key Accelerator module
  */
-static void APPE_BPKA_Init(void)
+static void APPE_PKACTRL_Init(void)
 {
   UINT TXstatus;
   CHAR *pStack;
 
   /* Create Public Key Accelerator ThreadX objects */
 
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_BPKA, TX_NO_WAIT);
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_PKACTRL, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
   {
-    TXstatus = tx_thread_create(&BpkaTaskHandle, "BPKA Task", BPKA_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_BPKA,
-                                 TASK_PRIO_BPKA, TASK_PREEMP_BPKA,
+    TXstatus = tx_thread_create(&PKACtrlTaskHandle, "PKACTRL Task", PKACTRL_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_PKACTRL,
+                                 TASK_PRIO_PKACTRL, TASK_PREEMP_PKACTRL,
                                  TX_NO_TIME_SLICE, TX_AUTO_START);
 
-    TXstatus |= tx_semaphore_create(&BpkaSemaphore, "BPKA Semaphore", 0);
+    TXstatus |= tx_semaphore_create(&PKACtrlSemaphore, "PKACTRL Semaphore", 0);
   }
 
   if( TXstatus != TX_SUCCESS )
   {
-    LOG_ERROR_APP( "BPKA ThreadX objects creation FAILED, status: %d", TXstatus);
+    LOG_ERROR_APP( "PKACTRL ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
 }
@@ -620,6 +657,9 @@ static void APPE_AMM_Init(void)
 static void AMM_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN AMM_Task_Entry_0 */
+
+  /* USER CODE END AMM_Task_Entry_0 */
 
   for(;;)
   {
@@ -632,6 +672,9 @@ static void AMM_Task_Entry(ULONG lArgument)
 static void FLASH_Manager_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN FLASH_Manager_Task_Entry_0 */
+
+  /* USER CODE END FLASH_Manager_Task_Entry_0 */
 
   for(;;)
   {
@@ -641,14 +684,17 @@ static void FLASH_Manager_Task_Entry(ULONG lArgument)
   }
 }
 
-static void BPKA_Task_Entry(ULONG lArgument)
+static void PKACTRL_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN PKACTRL_Task_Entry_0 */
+
+  /* USER CODE END PKACTRL_Task_Entry_0 */
 
   for(;;)
   {
-    tx_semaphore_get(&BpkaSemaphore, TX_WAIT_FOREVER);
-    BPKA_BG_Process();
+    tx_semaphore_get(&PKACtrlSemaphore, TX_WAIT_FOREVER);
+    PKACTRL_BG_Process();
     tx_thread_relinquish();
   }
 }
@@ -657,11 +703,14 @@ static void BPKA_Task_Entry(ULONG lArgument)
 static void IDLE_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN IDLE_Task_Entry_0 */
+
+  /* USER CODE END IDLE_Task_Entry_0 */
 
   while(1)
   {
     /* When no other activities to be done we decide to go in low power
-       This mechansim is in charge to mange low power at application level
+       This mechanism is in charge to mange low power at application level
        without the support of ThreadX low power framework */
     UTILS_ENTER_CRITICAL_SECTION();
     ThreadXLowPowerUserEnter();
@@ -688,9 +737,9 @@ static uint32_t getCurrentTime(void)
  *
  *************************************************************/
 
-void BPKACB_Process( void )
+void PKACTRL_CB_Process( void )
 {
-  tx_semaphore_put(&BpkaSemaphore);
+  tx_semaphore_put(&PKACtrlSemaphore);
 }
 
 /**
@@ -769,7 +818,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -780,7 +829,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
@@ -821,7 +870,13 @@ void ThreadXLowPowerUserEnter( void )
   LL_PWR_ClearFlag_STOP();
 
 #if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
     APP_SYS_BLE_EnterDeepSleep();
   }
@@ -852,7 +907,7 @@ void ThreadXLowPowerUserEnter( void )
 
   /* Disable SysTick Interrupt */
   SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
 
   lowPowerTimeAfterSleep = getCurrentTime();
   /* Compute time spent in low power state and report precision loss */
@@ -890,7 +945,7 @@ void ThreadXLowPowerUserExit( void )
   SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
   (void)ll_sys_dp_slp_exit();
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */
@@ -1020,6 +1075,82 @@ ADCCTRL_Cmd_Status_t ADCCTRL_MutexRelease(void)
   return adc_status;
 }
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Take the semaphore */
+  TXstatus = tx_semaphore_get(&PkaSemaphore,
+                          TX_WAIT_FOREVER);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Release the semaphore */
+  TXstatus = tx_semaphore_put(&PkaSemaphore);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+  /* Take the semaphore */
+  TXstatus = tx_semaphore_get(&PkaEndOfOperationSemaphore,
+                              TX_WAIT_FOREVER);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Release the semaphore */
+  TXstatus = tx_semaphore_put(&PkaEndOfOperationSemaphore);
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 

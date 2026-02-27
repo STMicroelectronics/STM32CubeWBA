@@ -63,7 +63,8 @@
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_MEAS_TEMPERATURE
 #define APP_ZIGBEE_CLUSTER_NAME           "TempMeas Server"
 
-#define APP_ZIGBEE_ZED_SLEEP_TIME         1u            /* For a ZED, Sleep Time Unit is 30 seconds. */
+/* Timeout = (60 * 2^APP_ZIGBEE_SED_SLEEP_TIME) seconds. SED KeepAlive is send every (TimeOut / 4) */
+#define APP_ZIGBEE_SED_SLEEP_TIME         1u          /* TimeOut = 2mn. */
 
 /* MeasTemperature specific defines ----------------------------------------------------*/
 #define APP_ZIGBEE_TEMP_MIN               -4000
@@ -238,9 +239,9 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
 
-  /* Add End Device configuration */
+  /* Add 'Sleepy End Device' configuration */
   pstConfig->capability &= ~( MCP_ASSOC_CAP_RXONIDLE | MCP_ASSOC_CAP_DEV_TYPE | MCP_ASSOC_CAP_ALT_COORD );
-  pstConfig->endDeviceTimeout = APP_ZIGBEE_ZED_SLEEP_TIME;
+  pstConfig->endDeviceTimeout = APP_ZIGBEE_SED_SLEEP_TIME;
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
@@ -270,7 +271,6 @@ void APP_ZIGBEE_SetNewDevice( uint16_t iShortAddress, uint64_t dlExtendedAddress
   /* USER CODE END APP_ZIGBEE_SetNewDevice */
 }
 
-
 /**
  * @brief  Print application information to the console
  * @param  None
@@ -290,7 +290,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 

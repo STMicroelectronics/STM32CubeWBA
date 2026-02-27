@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -53,10 +53,10 @@
  *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
  *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  ******************************************************************************/
-#define CFG_LPM_LEVEL               (0U)
+#define CFG_LPM_LEVEL               (1U)
 
-#define CFG_LPM_STOP1_SUPPORTED     (0U)
-#define CFG_LPM_STANDBY_SUPPORTED   (0U)
+#define CFG_LPM_STOP1_SUPPORTED     (1U)
+#define CFG_LPM_STANDBY_SUPPORTED   (1U)
 
 /**
  * Defines to use dynamic low power wakeup time profilling.
@@ -86,6 +86,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -118,9 +119,8 @@ typedef enum
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
  * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
-#define CFG_LOG_SUPPORTED           (1U)
+#define CFG_LOG_SUPPORTED           (0U)
 
-/* Usart used by LOG */
 extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
@@ -151,7 +151,7 @@ extern UART_HandleTypeDef           huart1;
  *   the value assigned to the define is :
  *   (1U << LOG_REGION_BLE | 1U << LOG_REGION_APP)
  ******************************************************************************/
-#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_INFO
+#define APPLI_CONFIG_LOG_LEVEL      LOG_VERBOSE_WARNING
 #define APPLI_CONFIG_LOG_REGION     (LOG_REGION_ALL_REGIONS)
 /* USER CODE BEGIN Log_level */
 
@@ -177,7 +177,9 @@ typedef enum
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
+  CFG_TASK_BSP_BUTTON_B1,		        /* Task linked to push-button. */
   CFG_TASK_BSP_BUTTON_B2,
+  CFG_TASK_BSP_BUTTON_B3,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -207,9 +209,9 @@ typedef enum
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 /* USER CODE BEGIN TASK_ID_Define */
-
+#define TASK_BSP_BUTTON_B1                      ( 1u << CFG_TASK_BSP_BUTTON_B1 )
 #define TASK_BSP_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
-
+#define TASK_BSP_BUTTON_B3                      ( 1u << CFG_TASK_BSP_BUTTON_B3 )
 
 /* USER CODE END TASK_ID_Define */
 
@@ -220,6 +222,8 @@ typedef enum
 typedef enum
 {
   CFG_EVENT_PKA_COMPLETED,
+  CFG_PKA_MUTEX,
+  CFG_PKA_END_OF_PROCESS,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */
@@ -270,16 +274,16 @@ typedef enum
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                 (3)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#define RADIO_SW_LOW_INTR_NUM               HASH_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
+#define RADIO_SW_LOW_INTR_NUM               ADC4_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
@@ -304,6 +308,12 @@ typedef enum
 
 /* USER CODE END HW_RNG_Configuration */
 
+/******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
+
 /* USER CODE BEGIN Defines */
 #define CFG_BSP_ON_SEQUENCER                    (1)
 #define CFG_BSP_ON_CEB                          (1)
@@ -314,7 +324,7 @@ typedef enum
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
 
-#define CFG_LED_SUPPORTED           (0)
+#define CFG_LED_SUPPORTED           (1)
 #define CFG_BUTTON_SUPPORTED        (1)
 
 /**

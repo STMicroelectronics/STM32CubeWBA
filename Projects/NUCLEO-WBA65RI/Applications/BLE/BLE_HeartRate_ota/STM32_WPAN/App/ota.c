@@ -427,6 +427,10 @@ void OTA_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: OtaSvcHdle = 0x%04X\n",OTA_Context.OtaSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * BASE_ADR
    */

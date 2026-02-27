@@ -363,6 +363,7 @@
                     <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules</state>
                     <state>$PROJ_DIR$\..\System\Config</state>
+                    <state>$PROJ_DIR$\..\System\Config</state>
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
                     <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug</state>
@@ -1211,9 +1212,6 @@
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</name>
                     </file>
                     <file>
@@ -1236,6 +1234,9 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\otp.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\pka_ctrl.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\scm.c</name>

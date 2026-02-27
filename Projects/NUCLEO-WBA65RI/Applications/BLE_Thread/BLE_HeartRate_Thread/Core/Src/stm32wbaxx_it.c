@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+#include "pka_ctrl.h"
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -66,12 +67,10 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-extern UART_HandleTypeDef hlpuart1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -206,7 +205,6 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -293,34 +291,6 @@ void GPDMA1_Channel1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles GPDMA1 Channel 2 global interrupt.
-  */
-void GPDMA1_Channel2_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel2_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel2);
-  /* USER CODE BEGIN GPDMA1_Channel2_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles GPDMA1 Channel 3 global interrupt.
-  */
-void GPDMA1_Channel3_IRQHandler(void)
-{
-  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 0 */
-
-  /* USER CODE END GPDMA1_Channel3_IRQn 0 */
-  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel3);
-  /* USER CODE BEGIN GPDMA1_Channel3_IRQn 1 */
-
-  /* USER CODE END GPDMA1_Channel3_IRQn 1 */
-}
-
-/**
   * @brief This function handles USART1 global interrupt.
   */
 void USART1_IRQHandler(void)
@@ -335,17 +305,17 @@ void USART1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles LPUART1 global interrupt.
+  * @brief This function handles USART2 global interrupt.
   */
-void LPUART1_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
-  /* USER CODE BEGIN LPUART1_IRQn 0 */
+  /* USER CODE BEGIN USART2_IRQn 0 */
 
-  /* USER CODE END LPUART1_IRQn 0 */
-  HAL_UART_IRQHandler(&hlpuart1);
-  /* USER CODE BEGIN LPUART1_IRQn 1 */
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
 
-  /* USER CODE END LPUART1_IRQn 1 */
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**
@@ -372,6 +342,27 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
+}
+
+/**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the PKACTRL Callback */
+    PKACTRL_EndOfProcessCb();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
 }
 
 /**
@@ -441,28 +432,7 @@ void COMP_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-/**
-  * @brief This function handles EXTI Line6 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
 
-/**
-  * @brief This function handles EXTI Line7 interrupt.
-  */
-void EXTI5_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
+/* EXTI for Nucleo buttons are managed by 'app_bsp.c' */
 
 /* USER CODE END 1 */

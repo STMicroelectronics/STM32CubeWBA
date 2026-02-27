@@ -25,6 +25,9 @@
 #include "ble_core.h"
 #include "uuid.h"
 #include "svc_ctl.h"
+#include "baes.h"
+#include "pka_ctrl.h"
+#include "ble_timer.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -63,7 +66,6 @@ typedef enum
 #define NUM_OF_TX_ASYNCHRO        50
 #define NUM_OF_RX_BUFFER          12
 #define NUM_OF_TX_BUFFER           (NUM_OF_TX_ASYNCHRO + NUM_OF_TX_SYNCHRO)
-
 typedef struct
 {
   tListNode                 node;  /* Actual node in the list */
@@ -73,13 +75,11 @@ typedef struct
 /* Global variables structure */
 typedef struct
 {
-  volatile uint8_t uart_tx_on;
+  volatile uint8_t tm_tx_on;
   uint8_t  rx_state;
   uint8_t  rxReceivedState;
   UART_node buff_node[NUM_OF_RX_BUFFER+NUM_OF_TX_BUFFER];
 } HciTransport_var_t;
-
-extern RNG_HandleTypeDef hrng;
 
 /* Private defines -----------------------------------------------------------*/
 /* GATT buffer size (in bytes)*/
@@ -100,7 +100,7 @@ extern RNG_HandleTypeDef hrng;
 
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
-/* Definitions for "uart_rx_state" */
+/* Definitions for "tm_rx_state" */
 #define HCI_RX_STATE_WAIT_TYPE    0
 #define HCI_RX_STATE_WAIT_HEADER  1
 #define HCI_RX_STATE_WAIT_PAYLOAD 2
@@ -143,7 +143,9 @@ PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 
 /* USER CODE BEGIN PV */
+#if (CFG_LPM_LEVEL != 0)
 static LowPowerModeStatus_t LowPowerModeStatus;
+#endif /* (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE END PV */
 
@@ -164,17 +166,23 @@ static void TM_UART_RxComplete(uint8_t *buffer);
 
 static void BLEUART_Write(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size);
 static void BLEUART_Read(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size);
-
 static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type);
 static uint16_t HCI_GetDataToSend(uint8_t **dataToSend);
 static uint8_t* HCI_GetFreeTxBuffer(uint8_t hci_event_type);
 static uint8_t* HCI_GetDataReceived(void);
 static uint8_t* HCI_GetFreeRxBuffer(void);
-
 /* USER CODE BEGIN PFP */
+#if (CFG_LPM_LEVEL != 0)
 static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status );
+#endif /* (CFG_LPM_LEVEL != 0) */
 
 /* USER CODE END PFP */
+
+/* External functions prototypes ---------------------------------------------*/
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
 
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef huart1;
@@ -193,7 +201,7 @@ void APP_BLE_Init(void)
   /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
 
-  /* Initialise NVM RAM buffer, invalidate it's content before restauration */
+  /* Initialise NVM RAM buffer, invalidate it's content before restoration */
   host_nvm_buffer[0] = 0;
 
   /* Register A NVM buffer for BLE Host stack */
@@ -206,6 +214,11 @@ void APP_BLE_Init(void)
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Initialize BLE related modules */
+  BAES_Reset( );
+  PKACTRL_Reset();
+  BLE_TIMER_Init();
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -261,7 +274,7 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.extra_data_buffer       = (uint8_t*)extra_data_buffer;
   pInitParams.gatt_long_write_buffer  = (uint8_t*)long_write_buffer;
   pInitParams.host_event_fifo_buffer  = host_event_buffer;
-  pInitParams.host_event_fifo_buffer_size = sizeof(host_event_buffer)/sizeof(host_event_buffer[0]);
+  pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
   pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
   pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
@@ -284,7 +297,7 @@ static uint8_t HOST_BLE_Init(void)
 static void TM_Init(void)
 {
   /* UART init. */
-  HCI_var.uart_tx_on = 0;
+  HCI_var.tm_tx_on = 0;
   HCI_var.rx_state = HCI_RX_STATE_WAIT_TYPE;
   HCI_var.rxReceivedState = 0;
 
@@ -306,9 +319,10 @@ static void TM_Init(void)
   BLEUART_Read(&huart1, HCI_GetFreeRxBuffer(), 1 /*IDENTIFIER_OFFSET*/);
 
   /* USER CODE BEGIN TM_Init */
+#if (CFG_LPM_LEVEL != 0)
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP_BLE, UTIL_LPM_SLEEP_MODE);
   LowPowerModeStatus = LOW_POWER_MODE_DISABLE;
-
+#endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE END TM_Init */
 
   os_enable_isr();
@@ -398,12 +412,12 @@ static void TM_TxToHost(void)
     }
   }
 
-  if( HCI_var.uart_tx_on == 1 )
+  if( HCI_var.tm_tx_on == 1 )
   {
     uint8_t *pData = 0;
     uint16_t size;
 
-    HCI_var.uart_tx_on |= 2;
+    HCI_var.tm_tx_on |= 2;
     size = HCI_GetDataToSend(&pData);
 
     if( pData != 0 )
@@ -439,11 +453,11 @@ static void TM_UART_TxComplete(uint8_t *buffer)
 
   if ( LST_get_size(&UART_TX_List) == 0)
   {
-    HCI_var.uart_tx_on = 0; /* No more data to send */
+    HCI_var.tm_tx_on = 0; /* No more data to send */
   }
   else
   {
-    HCI_var.uart_tx_on = 1; /* More data to send */
+    HCI_var.tm_tx_on = 1; /* More data to send */
     UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID,CFG_SEQ_PRIO_0);
   }
 }
@@ -518,7 +532,7 @@ static void TM_UART_RxComplete( uint8_t *buffer )
   BLEUART_Read(&huart1, data, size_to_receive );
   os_enable_isr();
 
-  UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID,CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID, CFG_SEQ_PRIO_0);
 }
 
 static void BLEUART_Write(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t size)
@@ -539,7 +553,6 @@ static void BLEUART_Read(UART_HandleTypeDef *huart, uint8_t *buffer, uint16_t si
     assert_param(0);
   }
 }
-
 static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type)
 {
   uint16_t size;
@@ -551,7 +564,7 @@ static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type)
     return BLE_STATUS_FAILED;
   }
 
-  HCI_var.uart_tx_on |= 1;
+  HCI_var.tm_tx_on |= 1;
 
   if (data[0] == HCI_ACLDATA_PKT_TYPE)
   {
@@ -582,7 +595,6 @@ static int HCI_UartSend(uint8_t *data, uint8_t hci_event_type)
 
   return BLE_STATUS_SUCCESS;
 }
-
 static uint16_t HCI_GetDataToSend(uint8_t **dataToSend)
 {
   uint16_t size;
@@ -679,7 +691,7 @@ static uint8_t* HCI_GetDataReceived(void)
 }
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTION */
-
+#if (CFG_LPM_LEVEL != 0)
 static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status )
 {
   if(LowPowerModeStatus == LOW_POWER_MODE_DISABLE)
@@ -721,7 +733,7 @@ static void TM_SetLowPowerMode( LowPowerModeStatus_t low_power_mode_status )
   }
   return;
 }
-
+#endif /* (CFG_LPM_LEVEL != 0) */
 /* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************
@@ -759,6 +771,10 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   uint8_t status;
   uint8_t bufferHci[HCI_DATA_MAX_SIZE];
 
+  /* USER CODE BEGIN BLECB_Indication */
+
+  /* USER CODE END BLECB_Indication */
+
   /* Copy data to buffer */
   MEMCPY( &bufferHci[0], data, length);
 
@@ -784,12 +800,12 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 
   if(status == BLE_STATUS_SUCCESS)
   {
-    /* If packet has been sucessfully processed, run TX to host task */
+    /* If packet has been successfully processed, run TX to host task */
     UTIL_SEQ_SetTask(1U << CFG_TASK_TX_TO_HOST_ID,CFG_SEQ_PRIO_0);
   }
   else
   {
-    /* If packet hasn't been sucessfully processed, run Notify Event task */
+    /* If packet hasn't been successfully processed, run Notify Event task */
     UTIL_SEQ_SetTask(1U << CFG_TASK_NOTIFY_EVENT_ID, CFG_SEQ_PRIO_0);
   }
   return status;
@@ -800,13 +816,17 @@ tBleStatus BLECB_Indication( const uint8_t* data,
 #if (CFG_BUTTON_SUPPORTED == 1)
 void APPE_Button1Action(void)
 {
+#if (CFG_LPM_LEVEL != 0)
   /* Enter/Exit Stop Mode */
   TM_SetLowPowerMode(LOW_POWER_MODE_STOP);
+#endif /* (CFG_LPM_LEVEL != 0) */
 }
 void APPE_Button2Action(void)
 {
+#if (CFG_LPM_LEVEL != 0)
   /* Enter Standby Mode, exit must be performed by reset */
   TM_SetLowPowerMode(LOW_POWER_MODE_STDBY);
+#endif /* (CFG_LPM_LEVEL != 0) */
 }
 #endif
 

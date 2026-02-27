@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+#include "pka_ctrl.h"
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -238,18 +239,18 @@ void RCC_IRQHandler(void)
   if(__HAL_RCC_GET_IT(RCC_IT_HSERDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_HSERDY);
-    #if (CFG_SCM_SUPPORTED == 1)
+#if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     SCM_HSE_StartStabilizationTimer();
     /* SCM HSE END */
-    #endif /* CFG_SCM_SUPPORTED */
+#endif /* CFG_SCM_SUPPORTED */
   }
   else if(__HAL_RCC_GET_IT(RCC_IT_PLL1RDY))
   {
     __HAL_RCC_CLEAR_IT(RCC_IT_PLL1RDY);
-    #if (CFG_SCM_SUPPORTED == 1)
-      scm_pllrdy_isr();
-    #endif /* CFG_SCM_SUPPORTED */
+#if (CFG_SCM_SUPPORTED == 1)
+    scm_pllrdy_isr();
+#endif /* CFG_SCM_SUPPORTED */
   }
   /* USER CODE BEGIN RCC_IRQn 1 */
 
@@ -347,6 +348,20 @@ void RADIO_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)
@@ -377,28 +392,5 @@ void HASH_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-/**
-  * @brief This function handles EXTI Line4 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
-
-/**
-  * @brief This function handles EXTI Line5 interrupt.
-  */
-void EXTI5_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
 
 /* USER CODE END 1 */

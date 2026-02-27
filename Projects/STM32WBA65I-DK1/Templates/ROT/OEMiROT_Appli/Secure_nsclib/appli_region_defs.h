@@ -28,14 +28,14 @@
 #define USE_STM32WBA55G_DK1
 /* #define USE_NUCLEO_64 */
 #else
-#error “unsupported target”
+#error "unsupported target"
 #endif
 
 #if defined(USE_STM32WBA65I_DK) && defined(USE_NUCLEO_64)
-#error “only 1 board type allowed”
+#error "only 1 board type allowed"
 #endif
 #if defined(USE_STM32WBA55I_DK) && defined(USE_NUCLEO_64)
-#error “only 1 board type allowed”
+#error "only 1 board type allowed"
 #endif
 
 #if defined(STM32WBA65xx)

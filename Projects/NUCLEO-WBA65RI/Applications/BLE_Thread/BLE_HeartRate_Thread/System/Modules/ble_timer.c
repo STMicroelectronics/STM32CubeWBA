@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -44,31 +44,55 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-tListNode               BLE_TIMER_List;
-static BLE_TIMER_t      *BLE_TIMER_timer;
+static tListNode BLE_TIMER_RunningList = {0};
+static tListNode BLE_TIMER_ExpiredList = {0};
 
 /* Private functions prototype------------------------------------------------*/
-static void BLE_TIMER_Background(void);
 static void BLE_TIMER_Callback(void* arg);
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id);
 
 void BLE_TIMER_Init(void)
 {
-  /* This function initializes the timer Queue */
-  LST_init_head(&BLE_TIMER_List);
+  /* Initializes timers Queue */
+  LST_init_head(&BLE_TIMER_RunningList);
+  LST_init_head(&BLE_TIMER_ExpiredList);
 
   /* Register BLE Timer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
 }
 
+void BLE_TIMER_Deinit(void)
+{
+  tListNode *listNodeRemoved;
+
+  /* Register BLE Timer task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
+  while(LST_is_empty(&BLE_TIMER_RunningList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_RunningList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+  while(LST_is_empty(&BLE_TIMER_ExpiredList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_ExpiredList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+
+  /* Reset timers Queues */
+  LST_init_head(&BLE_TIMER_RunningList);
+  LST_init_head(&BLE_TIMER_ExpiredList);
+
+}
+
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 {
+  BLE_TIMER_t *timer = NULL;
+
   /* If the timer's id already exists, stop it */
   BLE_TIMER_Stop(id);
 
   /* Create a new timer instance and add it to the list */
-  BLE_TIMER_t *timer = NULL;
-  if(AMM_ERROR_OK != AMM_Alloc (CFG_AMM_VIRTUAL_STACK_BLE,
+  if(AMM_ERROR_OK != AMM_Alloc (CFG_AMM_VIRTUAL_BLE_TIMERS,
                                 DIVC(sizeof(BLE_TIMER_t), sizeof(uint32_t)),
                                 (uint32_t **)&timer,
                                 NULL))
@@ -76,29 +100,35 @@ uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
     return BLE_STATUS_INSUFFICIENT_RESOURCES;
   }
 
-  timer->id = id;
-  LST_insert_tail(&BLE_TIMER_List, (tListNode *)timer);
-
   if(UTIL_TIMER_Create(&timer->timerObject, timeout, UTIL_TIMER_ONESHOT, &BLE_TIMER_Callback, timer) != UTIL_TIMER_OK)
   {
-    LST_remove_node ((tListNode *)timer);
     (void)AMM_Free((uint32_t *)timer);
     return BLE_STATUS_FAILED;
   }
 
   if(UTIL_TIMER_Start(&timer->timerObject) != UTIL_TIMER_OK)
   {
-    LST_remove_node ((tListNode *)timer);
     (void)AMM_Free((uint32_t *)timer);
     return BLE_STATUS_FAILED;
   }
 
+  timer->id = id;
+  LST_insert_tail(&BLE_TIMER_RunningList, (tListNode *)timer);
+
   return BLE_STATUS_SUCCESS;
 }
 
-void BLE_TIMER_Stop(uint16_t id){
-  /* Search for the id in the timers list */
-  BLE_TIMER_t* timer = BLE_TIMER_GetFromList(&BLE_TIMER_List, id);
+void BLE_TIMER_Stop(uint16_t id)
+{
+  BLE_TIMER_t* timer;
+
+  /* Search for the id in the running timers list */
+  timer = BLE_TIMER_GetFromList(&BLE_TIMER_RunningList, id);
+  /* If not found, try elapsed timers list */
+  if (NULL == timer)
+  {
+    timer = BLE_TIMER_GetFromList(&BLE_TIMER_ExpiredList, id);
+  }
 
   /* If the timer's id exists, stop it */
   if(NULL != timer)
@@ -110,27 +140,42 @@ void BLE_TIMER_Stop(uint16_t id){
   }
 }
 
-static void BLE_TIMER_Background(void)
+void BLE_TIMER_Background(void)
 {
-  BLEPLATCB_TimerExpiry( (uint16_t)BLE_TIMER_timer->id);
-  BleStackCB_Process();
+  BLE_TIMER_t* timer;
 
-  /* Delete the BLE_TIMER_timer from the list */
-  LST_remove_node((tListNode *)BLE_TIMER_timer);
+  if (TRUE != LST_is_empty(&BLE_TIMER_ExpiredList))
+  {
+    /* Get first timer from (sorted) expired list and remove it from this list */
+    LST_remove_head(&BLE_TIMER_ExpiredList, (tListNode **)&timer);
+    BLEPLATCB_TimerExpiry(timer->id);
+    BleStackCB_Process();
+    (void)AMM_Free((uint32_t *)timer);
 
-  (void)AMM_Free((uint32_t *)BLE_TIMER_timer);
+    if (TRUE != LST_is_empty(&BLE_TIMER_ExpiredList))
+    {
+      /* At least one other timer expired and has not been processed,
+         so trigger task again */
+      UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_TIMER_BCKGND, CFG_SEQ_PRIO_0);
+    }
+  }
 }
 
 static void BLE_TIMER_Callback(void* arg)
 {
-  BLE_TIMER_timer = (BLE_TIMER_t*)arg;
+  /* Remove timer from running list */
+  LST_remove_node((tListNode *)arg);
+  /* Add it to expired list */
+  LST_insert_tail(&BLE_TIMER_ExpiredList, (tListNode *)arg);
 
   UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_TIMER_BCKGND, CFG_SEQ_PRIO_0);
 }
 
 static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id)
 {
-  BLE_TIMER_t* currentNode = (BLE_TIMER_t*)listHead->next;
+  BLE_TIMER_t* currentNode;
+
+  LST_get_next_node(listHead, (tListNode **)&currentNode);
   while((tListNode *)currentNode != listHead)
   {
     if(currentNode->id == id)
@@ -141,4 +186,3 @@ static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id)
   }
   return NULL;
 }
-

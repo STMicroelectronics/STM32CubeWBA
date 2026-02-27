@@ -51,7 +51,6 @@
 /* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
-#define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           0x07FFF800u
 #define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
 
@@ -319,13 +318,14 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   LOG_INFO_APP( "Application Flashed : Zigbee %s%s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
+  LOG_INFO_APP( "Channel Mask used: 0x%08X.", APP_ZIGBEE_CHANNEL_MASK );
 
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER1_NAME, APP_ZIGBEE_ENDPOINT );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER2_NAME, APP_ZIGBEE_ENDPOINT );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER3_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER1_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER2_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER3_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 
@@ -365,9 +365,9 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclCluste
  */
 static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
 {
- enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
-  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOffCallback */
-  uint8_t cEndpoint;
+  enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
+  /* USER CODE BEGIN APP_ZIGBEE_OnOffServerOnCallback */
+   uint8_t cEndpoint;
 
   cEndpoint = ZbZclClusterGetEndpoint( pstCluster );
   if ( cEndpoint == APP_ZIGBEE_ENDPOINT)
@@ -381,8 +381,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclCluster
     /* Unknown endpoint */
     eStatus = ZCL_STATUS_FAILURE;
   }
-
-  /* USER CODE END APP_ZIGBEE_OnOffServerOffCallback */
+  /* USER CODE END APP_ZIGBEE_OnOffServerOnCallback */
   return eStatus;
 }
 
@@ -452,8 +451,7 @@ static enum ZclStatusCodeT APP_ZIGBEE_LevelControlServerMoveCallback( struct ZbZ
 static enum ZclStatusCodeT APP_ZIGBEE_LevelControlServerStepCallback( struct ZbZclClusterT * pstCluster, struct ZbZclLevelClientStepReqT *req, struct ZbZclAddrInfoT * pstSrcInfo, void * arg )
 {
   enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
-
-  /* USER CODE BEGIN APP_ZIGBEE_LevelControlServerStepCallback */ 
+  /* USER CODE BEGIN APP_ZIGBEE_LevelControlServerStepCallback */
 
   /* USER CODE END APP_ZIGBEE_LevelControlServerStepCallback */
   return eStatus;

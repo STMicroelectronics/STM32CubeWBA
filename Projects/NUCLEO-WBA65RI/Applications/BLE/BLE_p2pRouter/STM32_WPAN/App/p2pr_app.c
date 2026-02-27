@@ -599,33 +599,21 @@ static void P2PR_Connect_Request(void)
       if (result == BLE_STATUS_SUCCESS)
       {
         LOG_INFO_APP("  wait for event HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE\n");
-        UTIL_SEQ_WaitEvt(1u << CFG_IDLEEVT_NODE_CONNECTION_COMPLETE);
+        UTIL_SEQ_WaitEvt(1u << CFG_EVENT_NODE_CONNECTION_COMPLETE);
 
         P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTING;
         P2PR_APP_Context.P2PR_device_connHdl[device_index] = last_connHdl;
         GATT_CLIENT_APP_Set_Conn_Handle(device_index, P2PR_APP_Context.P2PR_device_connHdl[device_index]);
 
-        result = aci_gatt_exchange_config(P2PR_APP_Context.P2PR_device_connHdl[device_index]);
-        if (result != BLE_STATUS_SUCCESS)
-        {
-          LOG_INFO_APP("  Fail   : MTU exchange 0x%02X\n", result);
-        }
-        else
-        {
-          LOG_INFO_APP("  Success: MTU exchange\n");
-          UTIL_SEQ_WaitEvt(1 << CFG_IDLEEVT_NODE_MTU_EXCHANGED_COMPLETE);
-          UTIL_SEQ_WaitEvt(1 << CFG_IDLEEVT_PROC_GATT_COMPLETE);
-        }
-
         LOG_INFO_APP("Discover services, characteristics and descriptors for table index %d\n",device_index);
         P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_DISCOVERING;
-        GATT_CLIENT_APP_Discover_services(device_index);
+        GATT_CLIENT_APP_DiscoverServicesWithIndex(device_index);
         /* Confirm service discovery completed successfully before updating status */ 
         if(P2PR_APP_Context.P2PR_device_status[device_index] == P2PR_DEV_DISCOVERING)
         {
           P2PR_APP_Context.P2PR_device_status[device_index] = P2PR_DEV_CONNECTED;
         }
-        
+  
         APP_BSP_LED_Off(LED_BLUE);
 
         P2PR_notifDevInfo(device_index);

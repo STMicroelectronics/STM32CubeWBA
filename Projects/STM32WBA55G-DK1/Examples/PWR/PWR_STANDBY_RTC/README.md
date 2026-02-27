@@ -1,4 +1,3 @@
-
 ---
 pagetitle: Readme
 lang: en
@@ -8,9 +7,8 @@ lang: en
 
 ## <b>PWR_STANDBY_RTC Example Description</b>
 
-How to enter the Standby mode and wake-up from this mode by using an external 
+How to enter the Standby mode and wake-up from this mode by using an external
 reset or the RTC wakeup timer.
-
 
 In the associated software, the system clock is set to 100 MHz and the SysTick is
 programmed to generate an interrupt each 1 ms.
@@ -32,16 +30,15 @@ LD3 is used to monitor the system state as follows:
 
 These steps are repeated in an infinite loop.
 
-
-Note: This example can not be used in DEBUG mode due to the fact 
-      that the Cortex-M33 core is no longer clocked during low power mode 
+Note: This example can not be used in DEBUG mode due to the fact
+      that the Cortex-M33 core is no longer clocked during low power mode
       so debugging features are disabled.
 
 #### <b>Notes</b>
 
- 1. Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select 
-    the RTC clock source; in this case the Backup domain will be reset in  
-    order to modify the RTC Clock source, as consequence RTC registers (including 
+ 1. Care must be taken when HAL_RCCEx_PeriphCLKConfig() is used to select
+    the RTC clock source; in this case the Backup domain will be reset in
+    order to modify the RTC Clock source, as consequence RTC registers (including
     the backup registers) and RCC_CSR register are set to their reset values.
 
  2. Care must be taken when using HAL_Delay(), this function provides accurate delay (in milliseconds)
@@ -49,7 +46,7 @@ Note: This example can not be used in DEBUG mode due to the fact
     a peripheral ISR process, then the SysTick interrupt must have higher priority (numerically lower)
     than the peripheral interrupt. Otherwise the caller ISR process will be blocked.
     To change the SysTick interrupt priority you have to use HAL_NVIC_SetPriority() function.
-      
+
  3. The application needs to ensure that the SysTick time base is always set to 1 millisecond
     to have correct HAL operation.
 
@@ -73,23 +70,21 @@ Power, PWR, Standby mode, Interrupt, EXTI, Wakeup, Low Power, RTC, External rese
   - This example runs on STM32WBA55CGUx devices
 
   - This example has been tested with STMicroelectronics STM32WBA55G-DK1
-    board and can be easily tailored to any other supported device 
+    board and can be easily tailored to any other supported device
     and development board.
 
   - STM32WBA55G-DK1 Set-up
-    - LD3 connected to PA.00 or PB.15 pin (IO used is dependant of board revision)
+    - LD3 connected to PA.00 or PB.15 pin (IO used is dependent of board revision)
 
 ### <b>How to use it ?</b>
 
 In order to make the program work, you must do the following :
 
- - Open your preferred toolchain 
+ - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Once the image is loaded, power off the NUCLEO board in unplugging
-   the power cable then power on the board again 
+   the power cable then power on the board again
  - Run the example
 
-
 :::
 :::
-

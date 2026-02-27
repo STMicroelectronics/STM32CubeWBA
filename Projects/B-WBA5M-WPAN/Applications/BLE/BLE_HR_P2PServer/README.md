@@ -30,7 +30,7 @@ Reset the B-WBA5M-WPAN Nucleo board and launch the remote interface on PC/androi
    - Select the Heart Rate service.  
    - Sensor position, Heart Rate values and energy measurement are launched and displayed in graphs, the energy measurement can be reset.  
 
-For more informations, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Bluetooth LE - Heart Rate Sensor ST wiki.</a>  
+For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_HeartRate#Heart_Rate_Profile"> Bluetooth LE - Heart Rate Sensor ST wiki.</a>  
 
  - P2P service:  
    - Select the P2P Server service.  

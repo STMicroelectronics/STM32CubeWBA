@@ -8,7 +8,7 @@ lang: en
 
 ## __Thread_Cli_Cmd_MTD Application Description__
 
-How to control the Thread stack via Cli commands.
+How to control the MTD (Minimal Thread Device) stack via Cli commands.
 
 ### __Keywords__
 
@@ -66,7 +66,8 @@ The Cli (Command Line Interface) commands are sent via an UART from an HyperTerm
 all available cli commands. Additional information can be found looking at the OpenThread 
 web site: [https://openthread.io/guides/](https://openthread.io/guides/) 
 - On the HyperTerminal 2, traces are displayed.  
-If you don't have the second HyperTerminal automatically, go to STM32CubeProgrammer and upgrade the firmware.  
+If you don't have the second HyperTerminal automatically, go to STM32CubeProgrammer and upgrade the firmware.
+To send commands through USART2, RTS hardware flow control is required: this needs solder bridge SB4 to be fitted on MB2130 board.  
 - As an example, the user can play the following scenario in order to properly initiate the Thread mesh network by typing the following commands: 
 ```
   >panid 0x1234
@@ -83,12 +84,12 @@ If you don't have the second HyperTerminal automatically, go to STM32CubeProgram
 At this point, the user can check the state of its device by using the cli command 'state':
 ```
   >state
-   leader
+   detached
    Done
 ```
 **Note:** With **MTD** config, we have only Child role.  
 
-- When running on two STM32WBA65xx Nucleo boards the same Thread_Cli_Cmd_MTD application, and by playing the same scenario as described above on both boards, the first board should reach the state 'leader', while the second one should reach the state 'child'. 
+- When running on two STM32WBA65xx Nucleo boards the Thread_Cli_Cmd_MTD/Thread_Cli_Cmd_FTD applications, and by playing the same scenario as described above on both boards, the FTD board should reach the state 'leader', while the second one should reach the state 'child'. 
  
   
 **Note:** The application needs to ensure that the SysTick time base is always set to 1 millisecond to have correct HAL operation.    

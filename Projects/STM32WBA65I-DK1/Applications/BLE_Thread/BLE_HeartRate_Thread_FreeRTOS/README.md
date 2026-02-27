@@ -112,7 +112,7 @@ Connectivity, Concurrency, BLE protocol, Thread, COAP, STM32WBA, FreeRTOS
 ### __Hardware and Software environment__
 
 - This example runs on STM32WBA65xx devices.
-- Connect the Discovery Kit to your PC with a USB cable type A to mini-B to ST-LINK connector (USB_STLINK).
+- Connect the Discovery Kit to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).
 - This example has been tested with an STMicroelectronics STM32WBA65i-DK board and can be easily 
 	tailored to any other supported device and development board.
 
@@ -181,7 +181,7 @@ The Thread_Coap_Generic device will receive COAP commands to toggle its **blue L
   |                             |                       |                         |
   | LED : Red                   |                       | LED : Green             |
   |-----------------------------|                       |-------------------------|
-  | ROLE re-negociation phase   | Details not described | ROLE negociation phase  |
+  | ROLE re-negotiation phase   | Details not described | ROLE negotiation phase  |
   |            every 1sec -->   |==>  NOTHING!          |                         | 
   |-----------------------------|                       |-------------------------|
   |                             |                       |                         |

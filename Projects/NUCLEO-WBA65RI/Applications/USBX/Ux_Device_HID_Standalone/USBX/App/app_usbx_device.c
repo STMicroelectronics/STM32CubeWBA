@@ -45,6 +45,7 @@
 static ULONG hid_mouse_interface_number;
 static ULONG hid_mouse_configuration_number;
 static UX_SLAVE_CLASS_HID_PARAMETER hid_mouse_parameter;
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 
 /* USER CODE BEGIN PV */
 extern uint8_t User_Button_State;
@@ -65,6 +66,8 @@ UINT MX_USBX_Device_Init(VOID)
 {
   UINT ret = UX_SUCCESS;
   /* USER CODE BEGIN MX_USBX_Device_Init 0 */
+  /* USB_OTG_HS init function */
+  MX_USB_OTG_HS_PCD_Init();
   /* USER CODE END MX_USBX_Device_Init 0 */
 
   /* Initialize the Stack USB Device*/
@@ -76,7 +79,9 @@ UINT MX_USBX_Device_Init(VOID)
   }
 
   /* USER CODE BEGIN MX_USBX_Device_Init 1 */
-  USBX_APP_Device_Init();
+  /* Start the USB device */
+  HAL_PCD_Start(&hpcd_USB_OTG_HS);
+
   /* USER CODE END MX_USBX_Device_Init 1 */
 
   /* USER CODE BEGIN MX_USBX_Device_Init 2 */
@@ -193,7 +198,7 @@ UINT MX_USBX_Device_Stack_DeInit(void)
   /* USER CODE END MX_USBX_Device_Stack_DeInit_PreTreatment_0 */
 
   /* Unregister USB device controller. */
-  if (_ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
+  if (ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }
@@ -231,31 +236,6 @@ VOID USBX_Device_Process(VOID *arg)
 {
   ux_device_stack_tasks_run();
   USBX_DEVICE_HID_MOUSE_Task();
-}
-
-/**
-  * @brief  USBX_APP_Device_Init
-  *         Initialization of USB device.
-  * @param  none
-  * @retval none
-  */
-VOID USBX_APP_Device_Init(VOID)
-{
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_0 */
-
-  /* USER CODE END USB_Device_Init_PreTreatment_0 */
-
-
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_1 */
-
-  /* USER CODE END USB_Device_Init_PreTreatment_1 */
-
-  /* Start the USB device */
-  HAL_PCD_Start(&hpcd_USB_OTG_HS);
-
-  /* USER CODE BEGIN USB_Device_Init_PostTreatment */
-
-  /* USER CODE END USB_Device_Init_PostTreatment */
 }
 
 /**

@@ -95,7 +95,7 @@ For this application it is requested to have:
 
 * To get the traces you need to connect your Board to the Hyperterminal (through the STLink Virtual COM Port).  
 
-* The UART must be configured as follows (unavilable for a Sleepy app) :  
+* The UART must be configured as follows (unavailable for a Sleepy app) :  
 <br>
 BaudRate       = 115200 baud</br>
 Word Length    = 8 Bits</br>

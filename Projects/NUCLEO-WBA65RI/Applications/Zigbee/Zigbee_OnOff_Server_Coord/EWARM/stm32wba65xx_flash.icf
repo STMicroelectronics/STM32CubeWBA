@@ -15,7 +15,7 @@ define symbol __region_SRAM1_end__         = 0x2003FFFF;
 define symbol __region_SRAM2_start__       = 0x20040000;
 define symbol __region_SRAM2_end__         = 0x2007FFFF;
 
-define symbol __size_heap__                = 0x0400;
+define symbol __size_heap__                = 0x10000;
 define symbol __size_cstack__              = 0x1000;
 define symbol __intvec_start__             = __region_FLASH_start__;
 

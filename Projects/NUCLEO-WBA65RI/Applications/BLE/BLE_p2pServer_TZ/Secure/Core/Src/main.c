@@ -63,7 +63,6 @@ static void MX_GPIO_Init(void);
 static void MX_GTZC_S_Init(void);
 static void MX_SAU_Init(void);
 static void MX_RTC_Init(void);
-static void MX_FLASH_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -85,6 +84,9 @@ int main(void)
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
+
+  /* Configure The Vector Table address */
+  SCB->VTOR = 0x0C000000;
 
   /* MPU Configuration--------------------------------------------------------*/
   MPU_Config();
@@ -112,7 +114,6 @@ int main(void)
   MX_GPIO_Init();
   MX_SAU_Init();
   MX_RTC_Init();
-  MX_FLASH_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -174,7 +175,7 @@ void SystemClock_Config(void)
 
   /** Supply configuration update enable
   */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+  HAL_PWREx_ConfigSupply(PWR_SMPS_SUPPLY);
 
   /** Configure the main internal regulator output voltage
   */
@@ -248,68 +249,6 @@ void PeriphCommonClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief FLASH Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_FLASH_Init(void)
-{
-
-  /* USER CODE BEGIN FLASH_Init 0 */
-
-  /* USER CODE END FLASH_Init 0 */
-
-  FLASH_OBProgramInitTypeDef pOBInit = {0};
-
-  /* USER CODE BEGIN FLASH_Init 1 */
-
-  /* USER CODE END FLASH_Init 1 */
-  if (HAL_FLASH_Unlock() != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Option Bytes settings */
-
-  if (HAL_FLASH_OB_Unlock() != HAL_OK)
-  {
-    Error_Handler();
-  }
-  pOBInit.OptionType = OPTIONBYTE_BOOTADDR|OPTIONBYTE_WMSEC;
-  pOBInit.WMSecConfig = OB_WMSEC_AREA1|OB_WMSEC_SECURE_AREA_CONFIG
-                              |OB_WMSEC_HDP_AREA_ENABLE;
-  pOBInit.WMSecStartPage = 0;
-  pOBInit.WMSecEndPage = 127;
-  pOBInit.WMHDPEndPage = 0;
-  if (HAL_FLASHEx_OBProgram(&pOBInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  pOBInit.BootAddrConfig = OB_BOOTADDR_SEC0;
-  pOBInit.BootAddr = 0x0C000000;
-  if (HAL_FLASHEx_OBProgram(&pOBInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_FLASH_OB_Lock() != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_FLASH_Lock() != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Launch Option Bytes Loading */
-  /*HAL_FLASH_OB_Launch(); */
-
-  /* USER CODE BEGIN FLASH_Init 2 */
-
-  /* USER CODE END FLASH_Init 2 */
-
 }
 
 /**
@@ -508,15 +447,18 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*IO attributes management functions */
-  HAL_GPIO_ConfigPinAttributes(GPIOB, GPIO_PIN_12|GPIO_PIN_4, GPIO_PIN_NSEC);
+  HAL_GPIO_ConfigPinAttributes(GPIOB, GPIO_PIN_12, GPIO_PIN_NSEC);
 
   /*IO attributes management functions */
   HAL_GPIO_ConfigPinAttributes(GPIOA, GPIO_PIN_8|GPIO_PIN_14|GPIO_PIN_13, GPIO_PIN_NSEC);
 
   /*IO attributes management functions */
-  HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_13|GPIO_PIN_5, GPIO_PIN_NSEC);
+  HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_13, GPIO_PIN_NSEC);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* We don't let STM32CubeMX handle button as it will be handled by the bsp files*/
+  /* We set EXTI4_IRQn and EXTI5_IRQn as Non-Secure interrupt */
+  NVIC->ITNS[0] |= (1<<15 | 1<<16);
   HAL_GPIO_ConfigPinAttributes(GPIOC, GPIO_PIN_4 | GPIO_PIN_13 | GPIO_PIN_5, GPIO_PIN_NSEC);
   HAL_GPIO_ConfigPinAttributes(GPIOB, GPIO_PIN_8 | GPIO_PIN_4, GPIO_PIN_NSEC);
 

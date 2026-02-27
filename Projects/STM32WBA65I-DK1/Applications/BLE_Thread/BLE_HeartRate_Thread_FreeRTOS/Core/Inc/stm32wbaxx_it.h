@@ -51,21 +51,21 @@ void HardFault_Handler(void);
 void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
-void SVC_Handler(void);
 void DebugMon_Handler(void);
-void PendSV_Handler(void);
-void SysTick_Handler(void);
 void RTC_IRQHandler(void);
 void RCC_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel1_IRQHandler(void);
+void GPDMA1_Channel2_IRQHandler(void);
+void GPDMA1_Channel3_IRQHandler(void);
 void USART1_IRQHandler(void);
+void USART2_IRQHandler(void);
 void TIM16_IRQHandler(void);
+void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
-void HASH_IRQHandler(void);
-/* USER CODE BEGIN EFP */
 void WKUP_IRQHandler(void);
-void ADC4_IRQHandler(void);
+void COMP_IRQHandler(void);
+/* USER CODE BEGIN EFP */
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

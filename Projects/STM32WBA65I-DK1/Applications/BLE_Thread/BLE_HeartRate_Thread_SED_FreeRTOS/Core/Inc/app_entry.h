@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -30,6 +30,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 #include "app_common.h"
+#include "cmsis_os2.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -57,11 +58,12 @@ extern "C" {
 #define CFG_FW_BUILD              (0)
 #define CFG_FW_BRANCH             (0)
 #define CFG_FW_SUBVERSION         (0)
-#define CFG_FW_MINOR_VERSION      (6)
+#define CFG_FW_MINOR_VERSION      (5)
 #define CFG_FW_MAJOR_VERSION      (1)
 /* USER CODE END EC */
 
 /* Exported variables --------------------------------------------------------*/
+extern osThreadId_t WpanTaskHandle;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -74,6 +76,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_LinkLayerInit(void);
 
 /* USER CODE BEGIN EFP */
 

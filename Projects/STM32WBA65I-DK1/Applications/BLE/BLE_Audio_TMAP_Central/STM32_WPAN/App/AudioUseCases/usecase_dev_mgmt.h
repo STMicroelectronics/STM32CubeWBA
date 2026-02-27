@@ -182,19 +182,19 @@ void HAP_AclDisconnection(uint16_t ConnHandle);
 void GMAP_AclDisconnection(uint16_t ConnHandle);
 
 /**
-  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event for a specified device is received
   * @param  ConnHandle: connection handle
   */
 void TMAP_LinkEncrypted(uint16_t ConnHandle);
 
 /**
-  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event for a specified device is received
   * @param  ConnHandle: connection handle
   */
 void HAP_LinkEncrypted(uint16_t ConnHandle);
 
 /**
-  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event fo a specified device is received
+  * @brief Indicate that HCI_ENCRYPTION_CHANGE_EVT_CODE event for a specified device is received
   * @param  ConnHandle: connection handle
   */
 void GMAP_LinkEncrypted(uint16_t ConnHandle);

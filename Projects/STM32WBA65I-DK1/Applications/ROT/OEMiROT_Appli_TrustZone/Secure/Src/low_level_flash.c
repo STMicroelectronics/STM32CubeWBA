@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <inttypes.h>
 
+extern void Error_Handler(void);
+
 #ifndef ARG_UNUSED
 #define ARG_UNUSED(arg)  ((void)arg)
 #endif /* ARG_UNUSED */
@@ -681,6 +683,6 @@ void NMI_Handler(void)
   else
   {
     /* This exception occurs for another reason than flash double ECC errors */
-    while (1U);
+    Error_Handler();
   }
 }

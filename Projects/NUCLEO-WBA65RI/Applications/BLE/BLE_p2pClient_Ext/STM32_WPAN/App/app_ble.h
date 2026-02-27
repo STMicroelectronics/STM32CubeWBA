@@ -83,7 +83,6 @@ typedef enum
 {
   PROC_GAP_GEN_PHY_TOGGLE,
   PROC_GAP_GEN_CONN_TERMINATE,
-  PROC_GATT_EXCHANGE_CONFIG,
   /* USER CODE BEGIN ProcGapGeneralId_t */
 
   /* USER CODE END ProcGapGeneralId_t */
@@ -131,6 +130,7 @@ typedef enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void APP_BLE_Deinit(void);
 void BleStack_Process_BG(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Client_Connection_Status( uint16_t Connection_Handle );
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);

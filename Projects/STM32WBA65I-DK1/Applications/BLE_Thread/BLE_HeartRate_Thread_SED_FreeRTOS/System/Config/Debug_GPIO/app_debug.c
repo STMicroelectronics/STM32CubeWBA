@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -776,7 +776,7 @@ const st_gpio_debug_t general_debug_table[RT_DEBUG_SIGNALS_TOTAL_NUM] = {
 
 #if (USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP == 1)
   [RT_DEBUG_BACK_FROM_DEEP_SLEEP] = GPIO_DEBUG_BACK_FROM_DEEP_SLEEP,
-#endif /* USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP */  
+#endif /* USE_RT_DEBUG_BACK_FROM_DEEP_SLEEP */
 
 /************************************************/
 /** Application signals in general debug table **/

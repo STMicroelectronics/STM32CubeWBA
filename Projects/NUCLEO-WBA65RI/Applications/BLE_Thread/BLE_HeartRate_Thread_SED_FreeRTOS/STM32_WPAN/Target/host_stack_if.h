@@ -48,7 +48,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* Halt if any aci/hci functions call is made under ISR context, for debug purpose. */
-/* Aquire Link Layer Mutex before calling any aci/hci functions */
+/* Acquire Link Layer Mutex before calling any aci/hci functions */
 #define BLE_WRAP_PREPROC() do{ \
                              if( __get_IPSR() != 0 )while(1); \
                              osMutexAcquire(LinkLayerMutex, osWaitForever); \

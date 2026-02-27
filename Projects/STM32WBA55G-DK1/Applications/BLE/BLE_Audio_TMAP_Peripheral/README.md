@@ -12,7 +12,7 @@ The TMAP Peripheral application, in __Broadcast Sink role__, scans and synchroni
 
 The TMAP Peripheral application, in __Scan Delegator role__, performs the following actions:<br>
 - Advertises and accept connection from remote devices.<br>
-- Accepts, scans and synchronize audio streams from remote Broadcast Sources added by remote Broacast Assistants.<br>
+- Accepts, scans and synchronize audio streams from remote Broadcast Sources added by remote Broadcast Assistants.<br>
 - Supports Volume Control, Call Control, and Media Control features.<br>
 <br>
 
@@ -82,7 +82,7 @@ In order to make the program work, you must do the following:
 
 ### __Documentation__
 
-   - Wiki pages related to the LE Audio solutions developped by STMicroelectronics are available here:
+   - Wiki pages related to the LE Audio solutions developed by STMicroelectronics are available here:
      - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a>
 	 - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a>
      - <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a>

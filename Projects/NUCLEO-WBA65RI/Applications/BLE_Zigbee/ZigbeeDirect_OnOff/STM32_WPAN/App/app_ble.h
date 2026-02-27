@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Private includes ----------------------------------------------------------*/
+#include "ble_types.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -82,7 +83,6 @@ typedef enum
 {
   PROC_GAP_GEN_PHY_TOGGLE,
   PROC_GAP_GEN_CONN_TERMINATE,
-  PROC_GATT_EXCHANGE_CONFIG,
   /* USER CODE BEGIN ProcGapGeneralId_t */
 
   /* USER CODE END ProcGapGeneralId_t */
@@ -156,12 +156,12 @@ enum
 /* USER CODE END EC */
 
 /* External variables --------------------------------------------------------*/
-
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
 
 /* Exported macro ------------------------------------------------------------*/
+#define ADV_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_WIN_MS(x) ((uint16_t)((x)/0.625f))
 #define SCAN_INT_MS(x) ((uint16_t)((x)/0.625f))
 #define CONN_INT_MS(x) ((uint16_t)((x)/1.25f))
@@ -179,11 +179,16 @@ enum
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
-void APP_BLE_HostNvmStore(void);
+void APP_BLE_Deinit(void);
+void BleStack_Process_BG(void);
 APP_BLE_ConnStatus_t APP_BLE_Get_Server_Connection_Status(void);
 void APP_BLE_Procedure_Gap_General(ProcGapGeneralId_t ProcGapGeneralId);
 void APP_BLE_Procedure_Gap_Peripheral(ProcGapPeripheralId_t ProcGapPeripheralId);
 const uint8_t* BleGetBdAddress(void);
+tBleStatus SetGapAppearance(uint16_t appearance);
+tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
+void Ble_UserEvtRx(void);
+void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

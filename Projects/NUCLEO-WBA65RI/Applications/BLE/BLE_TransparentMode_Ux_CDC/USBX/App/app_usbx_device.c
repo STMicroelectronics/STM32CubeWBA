@@ -47,6 +47,7 @@
 static ULONG cdc_acm_interface_number;
 static ULONG cdc_acm_configuration_number;
 static UX_SLAVE_CLASS_CDC_ACM_PARAMETER cdc_acm_parameter;
+extern PCD_HandleTypeDef           hpcd_USB_OTG_HS;
 
 /* USER CODE BEGIN PV */
 extern PCD_HandleTypeDef           hpcd_USB_OTG_HS;
@@ -194,7 +195,7 @@ UINT MX_USBX_Device_Stack_DeInit(void)
 
   /* Unregister USB device controller. */
 
-  if (_ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
+  if (ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }
@@ -251,7 +252,7 @@ VOID USBX_APP_Device_Init(VOID)
   /* USER CODE BEGIN USB_Device_Init_PreTreatment_1 */
   HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_HS, 0x200);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 0, 0x10);
-  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 1, 0x20);
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 1, 0x40);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 2, 0x10);
   /* USER CODE END USB_Device_Init_PreTreatment_1 */
 

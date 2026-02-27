@@ -27,6 +27,9 @@
 #include "linklayer_plat.h"
 #include "scm.h"
 #include "log_module.h"
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+#include "adc_ctrl.h"
+#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 #if (CFG_LPM_LEVEL != 0)
 #include "stm32_lpm.h"
@@ -45,6 +48,11 @@ void (*low_isr_callback)(void) = NULL;
 
 /* RNG handle */
 extern RNG_HandleTypeDef hrng;
+
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+/* Link Layer temperature request from background */
+extern void ll_sys_bg_temperature_measurement(void);
+#endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -527,9 +535,7 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 void LINKLAYER_PLAT_RCOStartClbr(void)
 {
 #if (CFG_LPM_LEVEL != 0)
-  PWR_DisableSleepMode();
-  /* Disabling stop mode prevents also from entering in standby */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_IDLE_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
 #if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_32MHZ);
@@ -545,8 +551,7 @@ void LINKLAYER_PLAT_RCOStartClbr(void)
 void LINKLAYER_PLAT_RCOStopClbr(void)
 {
 #if (CFG_LPM_LEVEL != 0)
-  PWR_EnableSleepMode();
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_HW_RCO_CLBR, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
 #if (CFG_SCM_SUPPORTED == 1)
   scm_setsystemclock(SCM_USER_LL_HW_RCO_CLBR, HSE_16MHZ);
@@ -560,6 +565,9 @@ void LINKLAYER_PLAT_RCOStopClbr(void)
   */
 void LINKLAYER_PLAT_RequestTemperature(void)
 {
+#if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
+  ll_sys_bg_temperature_measurement();
+#endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
 }
 
 /**

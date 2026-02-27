@@ -234,7 +234,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 /* End download address fit in the download area */
                 /* Erase the sector */
                 /* Clear events before start testing */
-                UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                 while(error != FM_OK)
                 {  
@@ -251,10 +251,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   if (error == FM_OK)
                   {
                     /* Wait for Erase callback to be invoked */
-                    UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Check status of Erase status. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
@@ -266,10 +266,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   else if(error == FM_BUSY)
                   {
                     /* Wait for Erase callback to be invoked */
-                    UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                     
                     /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
                   else
                   {
@@ -327,9 +327,9 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 /* End download address fit in the download area */
 
                 /* Clear events before start testing */
-                UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
-                /* Erase targetted sectors */
+                /* Erase targeted sectors */
                 while(error != FM_OK)
                 {  
                   /* Flash manager Erase */
@@ -345,10 +345,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   if (error == FM_OK)
                   {
                     /* Wait for Erase callback to be invoked */
-                    UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                     /* Check status of Erase. */
                     if (FM_EraseStatus != FM_OPERATION_COMPLETE)
@@ -360,10 +360,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   else if(error == FM_BUSY)
                   {
                     /* Wait for Erase callback to be invoked */
-                    UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                     
                     /* Clear events before start testing */
-                    UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+                    UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
                   else
                   {
@@ -448,7 +448,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 size_left );
 
         /* Clear events before start testing */
-        UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+        UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
         while(error != FM_OK)
         {  
@@ -462,10 +462,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           if (error == FM_OK)
           {
             /* Wait for Write callback to be invoked */
-            UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+            UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
             /* Clear events before start testing */
-            UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+            UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
             /* Check status of Write op. */
             if (FM_WriteStatus != FM_OPERATION_COMPLETE)
@@ -477,10 +477,10 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           else if(error == FM_BUSY)
           {
             /* Wait for Write callback to be invoked */
-            UTIL_SEQ_WaitEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+            UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
             
             /* Clear events before start testing */
-            UTIL_SEQ_ClrEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+            UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
           }
           else
           {
@@ -630,7 +630,7 @@ static void FM_WriteCallback (FM_FlashOp_Status_t Status)
   FM_WriteStatus = Status;
 
   /* Set event on Process request call */
-  UTIL_SEQ_SetEvt ( 1 << CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID);
+  UTIL_SEQ_SetEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 }
 
 static void FM_EraseCallback (FM_FlashOp_Status_t Status)
@@ -639,7 +639,7 @@ static void FM_EraseCallback (FM_FlashOp_Status_t Status)
   FM_EraseStatus = Status;
 
   /* Set event on Process request call */
-  UTIL_SEQ_SetEvt ( 1 << CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID);
+  UTIL_SEQ_SetEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 }
 
 /* USER CODE END FD */

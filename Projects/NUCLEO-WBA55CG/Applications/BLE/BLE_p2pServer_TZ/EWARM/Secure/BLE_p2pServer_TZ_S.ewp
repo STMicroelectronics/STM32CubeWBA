@@ -44,11 +44,11 @@
         </option>
         <option>
           <name>Input description</name>
-          <state></state>
+          <state>Full formatting, without multibyte support.</state>
         </option>
         <option>
           <name>Output description</name>
-          <state></state>
+          <state>Full formatting, without multibyte support.</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -70,7 +70,7 @@
         </option>
         <option>
           <name>RTDescription</name>
-          <state></state>
+          <state>A compact configuration of the C/C++14 runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
@@ -103,7 +103,7 @@
         <option>
           <name>GBECoreSlave</name>
           <version>34</version>
-          <state>0</state>
+          <state>61</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -674,15 +674,15 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>3</state>
-        </option>
-        <option>
-          <name>OCOutputOverride</name>
           <state>1</state>
         </option>
         <option>
+          <name>OCOutputOverride</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>OOCOutputFile</name>
-          <state>BLE_p2pServer_TZ_S.bin</state>
+          <state>BLE_p2pServer_TZ_S.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1107,6 +1107,11 @@
       <archiveVersion>2</archiveVersion>
       <data></data>
     </settings>
+    <settings>
+      <name>Coder</name>
+      <archiveVersion>0</archiveVersion>
+      <data></data>
+    </settings>
   </configuration>
   <group>
     <name>Application</name>
@@ -1167,10 +1172,7 @@
     <group>
       <name>STM32WBAxx_HAL_Driver</name>
       <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</name>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_pka.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</name>
@@ -1207,6 +1209,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_gtzc.c</name>

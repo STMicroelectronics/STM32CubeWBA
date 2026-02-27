@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -108,7 +109,7 @@ typedef void (*fct_t)(void);
 /* Define list of reboot reason */
 #define FUOTA_MAGIC_KEYWORD_M33_APP         0xBF806133u       /* Keyword found at the end of Zigbee Ota file for M33 Application Processor binary */
 
-#define HW_FLASH_WIDTH                      (16u)   // Write Lentgh in Bytes (128 bits = 4 words) 
+#define HW_FLASH_WIDTH                      (16u)   /* Write Length in Bytes (128 bits = 4 words)  */
 
 #define C_RESSOURCE_FUOTA_PROVISIONING     "FUOTA_PROVISIONING"
 #define C_RESSOURCE_FUOTA_PARAMETERS       "FUOTA_PARAMETERS"
@@ -411,8 +412,7 @@ static void APP_THREAD_DeviceConfig(void)
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();

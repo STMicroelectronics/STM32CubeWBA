@@ -68,11 +68,11 @@ In our Application which uses two devices, one device will act as a Leader (the 
   |                         |                     | |                         |
   |   "Leader" state        |<====================| |                         |
   |   Green LED ON          |                       |                         |
+  |   Blue LED ON           |                       |                         |
   |                         |                       |                         |
   |                         |                       |                         |
   |                         |                       |                         |
-  |                         |                       |                         |
-  |   Commissiong  <--|<=== Joiner Start =====| <-- SW 3                      |
+  |   Commissioning      <--|<=== Joiner Start =====| <-- SW 3                |
   |   Completed             |                       |  BLUE LED Fast Toggling |
   |          |              |                       |                         |
   |           ------------->|=====================> |  Joined the Network     |
@@ -80,7 +80,7 @@ In our Application which uses two devices, one device will act as a Leader (the 
   |   Green LED ON          |                       |  Red LED ON             |
   |                         |                       |                         |  
   ---------------------------                       ---------------------------
-  | Role : Comissioner      |                       | Role : Joiner           |
+  | Role : Commissioner     |                       | Role : Joiner           |
   |                         |                       |                         |
   | LED : Green             |                       | LED : Red               |
   |                         |                       |                         |

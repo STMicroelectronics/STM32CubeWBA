@@ -29,4 +29,4 @@ Reset the B-WBA6M-WPAN Nucleo board and launch remote interface on PC/android/io
  - Select Environmental Data to display temperature and humidity.  
  - Display Plot Data and play the accelerometer data (moving the board will modify the displayed values).  
 
-For more informations, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA6M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA6M-WPAN ST BLE Sensor application.</a>  
+For more information, please refer to <a href="https://wiki.st.com/stm32mcu/wiki/STM32StepByStep:STM32WBA6M_Discovery_Kit_Out_Of_Box_Demonstration"> B-WBA6M-WPAN ST BLE Sensor application.</a>  

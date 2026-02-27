@@ -139,7 +139,7 @@ static const char gap_ad_local_name[] = { AD_TYPE_COMPLETE_LOCAL_NAME, 'P', '2',
 
 uint8_t exData[25] ={
                        8, AD_TYPE_COMPLETE_LOCAL_NAME, 'p', '2', 'p', 'S', '_', 'S', 'I',  /* Complete name */
-                       15, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x30, 0x00, 0x00 , 0x00, 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00, 
+                       15, AD_TYPE_MANUFACTURER_SPECIFIC_DATA, 0x00, 0x00, 0x00 , 0x00, 0x00 , 0x00 , 0x00 , 0x00 , 0x00, 0x00, 0x00, 0x00 , 0x00 , 0x00, 
                        };
 /* USER CODE END GV */
 
@@ -154,6 +154,7 @@ void LINKLAYER_DEBUG_SIGNAL_TOGGLE(void* signal);
 
 /* USER CODE BEGIN PFP */
 static void BLE_GATT_MyBLENotifyCharacteristic_Update(void);
+static void fill_manuf_data(uint8_t *p_adv_data, uint8_t tab_size);
 /* USER CODE END PFP */
 
 /* External variables --------------------------------------------------------*/
@@ -383,7 +384,7 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init */
-
+  fill_manuf_data(&exData[11], sizeof(exData));
   /* USER CODE END Ble_Hci_Gap_Gatt_Init */
 
   ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
@@ -581,6 +582,26 @@ static void BLE_GATT_MyBLENotifyCharacteristic_Update()
   }
 }
 
+static void fill_manuf_data(uint8_t *p_adv_data, uint8_t tab_size)
+{
+  if (tab_size >= 14)
+  {
+    p_adv_data[0] = ST_MANUF_ID;
+    p_adv_data[1] = 0x00;
+    p_adv_data[2] = BLUESTSDK_V2; /* blueST SDK version */
+    p_adv_data[3] = BOARD_ID_NUCLEO_WBA5X; /* Board ID */
+    p_adv_data[4] = FW_ID_P2P_SERVER; /* FW ID */
+    p_adv_data[5] = 0x00; /* FW data 1 */
+    p_adv_data[6] = 0x00; /* FW data 2 */
+    p_adv_data[7] = 0x00; /* FW data 3 */
+    p_adv_data[8] = a_MBdAddr[5]; /* MSB BD address */
+    p_adv_data[9] = a_MBdAddr[4];
+    p_adv_data[10] = a_MBdAddr[3];
+    p_adv_data[11] = a_MBdAddr[2];
+    p_adv_data[12] = a_MBdAddr[1];
+    p_adv_data[13] = a_MBdAddr[0]; /* LSB BD address */
+  }
+}
 /* USER CODE END FD_LOCAL_FUNCTION */
 
 /*************************************************************

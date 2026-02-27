@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    Tunneling_app.c
+  * @file    TUNNELING_app.c
   * @author  MCD Application Team
-  * @brief   Tunneling_app application definition.
+  * @brief   TUNNELING_app application definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file

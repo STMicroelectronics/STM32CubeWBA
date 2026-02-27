@@ -20,6 +20,8 @@
 #include "app_common.h"
 #include "stm32wbaxx_ll_pka.h"
 
+#warning "DEPRECATED: use Modules/pka_ctrl.c instead"
+
 /*****************************************************************************/
 
 static const uint32_t HW_PKA_P256_gfp[8] =

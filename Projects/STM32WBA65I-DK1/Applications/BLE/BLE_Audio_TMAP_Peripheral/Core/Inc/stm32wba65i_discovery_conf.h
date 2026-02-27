@@ -34,7 +34,7 @@ extern "C" {
 #define USE_STM32WBA65I_DK1                  1U
 
 /* COM define */
-#define USE_BSP_COM_FEATURE                  1U
+#define USE_BSP_COM_FEATURE                  0U
 #define USE_COM_LOG                          0U
 
 /* IRQ priorities (Default is 15 as lowest priority level) */

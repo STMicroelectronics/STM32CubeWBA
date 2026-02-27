@@ -64,10 +64,10 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 #define APP_ZIGBEE_CHIP_VERSION                     0x20        // Cut 2.0
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
-#define APP_ZIGBEE_APP_DATE_CODE                    "20251028"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.8"
-#define APP_ZIGBEE_APP_VERSION                      0x18                    // Application Version v1.8
-#define APP_ZIGBEE_STACK_VERSION                    ( ( 25u << 2u ) | 1u )  // Stack Version 2025.1
+#define APP_ZIGBEE_APP_DATE_CODE                    "20260301"
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.9"
+#define APP_ZIGBEE_APP_VERSION                      0x19                    // Application Version v1.9
+#define APP_ZIGBEE_STACK_VERSION                    ( ( 26u << 2u ) | 1u )  // Stack Version 2026.1
 
 /* USER CODE BEGIN PD */
 
@@ -118,13 +118,13 @@ void APP_ZIGBEE_NwkFormOrJoinTaskInit( void )
   {
     /* Create the Timer service to can advertise user during the time of the Join (by default 17 seconds) */
     UTIL_TIMER_Create( &stBlinckLedTimer, APP_ZIGBEE_BLINK_LED_DELAY, UTIL_TIMER_PERIODIC, &APP_ZIGBEE_BlinckLedTimerCallback, NULL );
+
+    /* Launch Blue Led Blink during Join */
+    UTIL_TIMER_Start( &stBlinckLedTimer );
   }
 
   /* Create the Task associated with network creation process */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, UTIL_SEQ_RFU, APP_ZIGBEE_NwkFormOrJoin );
-
-  /* Launch Blue Led Blink during Join */
-  UTIL_TIMER_Start( &stBlinckLedTimer );
 
   /* launch the startup of the mesh network setup */
   UTIL_SEQ_SetTask( 1U << CFG_TASK_ZIGBEE_NETWORK_FORM, TASK_PRIO_ZIGBEE_NETWORK_FORM );
@@ -214,7 +214,10 @@ void APP_ZIGBEE_StackLayersInit( void )
   APP_ZIGBEE_PrintApplicationInfo();
 
   /* Create the NwkFormOrJoin Task */
-  APP_ZIGBEE_NwkFormOrJoinTaskInit();
+  if ( stZigbeeAppInfo.bNwkStartup != false )
+  {
+    APP_ZIGBEE_NwkFormOrJoinTaskInit();
+  }
 }
 
 /**
@@ -325,10 +328,12 @@ void APP_ZIGBEE_NwkFormOrJoin(void)
       if ( stZigbeeAppInfo.eStartupControl == ZbStartTypeForm )
         { LOG_INFO_APP( "Mesh network created." ); }
       else
-        { LOG_INFO_APP( "Association accepted." ); }
+      {
+        LOG_INFO_APP( "Association accepted." );
 
-      /* Stop Blue Led Blink during Join */
-      UTIL_TIMER_Stop( &stBlinckLedTimer );
+        /* Stop Blue Led Blink during Join */
+        UTIL_TIMER_Stop( &stBlinckLedTimer );
+      }
 
       /* USER CODE BEGIN APP_ZIGBEE_NwkFormOrJoin */
       APP_LED_ON( LED_JOIN );
@@ -493,117 +498,6 @@ bool APP_ZIGBEE_IsAppliJoinNetwork( void )
   }
 
   return( bJoinOk );
-}
-
-/**
- * @brief   Indicate a Device with Install Code request a Join.
- *          Add the LinkKey (from Install Code) on List and start a Join during 30s.
- *
- * @param   dlExtendedAddress   Device Extended Address
- * @param   szInstallCode       Device Install Code
- * @param   cPermitJoinDelay    Time to Device to Join network. If 0, PermitJoin is not called.
- */
-void APP_ZIGBEE_AddDeviceWithInstallCode( uint64_t dlExtendedAddress, uint8_t * szInstallCode, uint8_t cPermitJoinDelay )
-{
-  uint32_t                  lTcPolicy = 0;
-  struct ZbApsmeAddKeyReqT  stAddKeyReq;
-  struct ZbApsmeAddKeyConfT stAddKeyConf;
-  static  bool              bTrustCenterDone = false;
-
-  if ( bTrustCenterDone == false )
-  {
-    ZbApsGet( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_TRUST_CENTER_POLICY, &lTcPolicy, sizeof(lTcPolicy));
-    lTcPolicy |= (ZB_APSME_POLICY_IC_SUPPORTED | ZB_APSME_POLICY_TCLK_UPDATE_REQUIRED | ZB_APSME_POLICY_TC_POLICY_CHANGE);
-
-    ZbApsSet( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_TRUST_CENTER_POLICY, &lTcPolicy, sizeof(lTcPolicy) );
-    bTrustCenterDone = true;
-  }
-
-  /* Register 'Application Link Key' for the Device */
-  memset( &stAddKeyConf, 0, sizeof( stAddKeyConf ) );
-  memset( &stAddKeyReq, 0, sizeof( stAddKeyReq ) );
-
-  stAddKeyReq.keyType = ZB_SEC_KEYTYPE_TC_LINK;
-  stAddKeyReq.keySeqNumber = 0;
-  stAddKeyReq.partnerAddr = dlExtendedAddress;
-
-  /*Extract Link Key from the Install Code*/
-  ZbAesMmoHash( szInstallCode, ( ZB_SEC_KEYSIZE + 2u ), stAddKeyReq.key );
-
-  /* Add the new Link Key */
-  ZbApsmeAddKeyReq( stZigbeeAppInfo.pstZigbee, &stAddKeyReq, &stAddKeyConf );
-  if ( stAddKeyConf.status != ZB_STATUS_SUCCESS )
-  {
-    LOG_ERROR_APP( "Error Add Link Key (0x%02X)", stAddKeyConf.status );
-  }
-  else
-  {
-    LOG_INFO_APP( "Add of Device Link Key OK." );
-    if ( cPermitJoinDelay != 0 )
-    {
-      APP_ZIGBEE_PermitJoin( cPermitJoinDelay );
-      LOG_INFO_APP( "Device can now Join Network during %d seconds.", cPermitJoinDelay );
-    }
-  }
-}
-
-/**
- * @brief  Get the number of entries in Binding Table and display it if needed.
- *
- * @param  bDisplay   Indicate if display Table informations (true) or not (false)
- * @retval Number of entries
- */
-uint16_t APP_ZIGBEE_GetDisplayBindTable( bool bDisplay )
-{
-  bool                  bEndDone = false;
-  uint16_t              iIndex = 0, iCount = 0;
-  struct ZbApsmeBindT   stBindEntry;
-  enum ZbStatusCodeT    eStatus;
-
-  if ( bDisplay != false )
-  {
-    LOG_INFO_APP( "[FIND-BIND] Printing Binding table below:" );
-    LOG_INFO_APP( "  Item | ClusterId | Dest. Ext. Address | Dst EP | Src EP |" );
-    LOG_INFO_APP( "  -----|-----------|--------------------|--------|--------|" );
-  }
-
-  /* Go through each elements */
-  do
-  {
-    /* Check the end of the table */
-    eStatus = ZbApsGetIndex( stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_BINDING_TABLE, &stBindEntry, sizeof(stBindEntry), iIndex );
-    if ( eStatus != ZB_APS_STATUS_SUCCESS)
-    {
-      if ( eStatus != ZB_APS_STATUS_INVALID_INDEX )
-      {
-        LOG_ERROR_APP( "ERROR ! ZbApsGetIndex failed (0x%02X)", eStatus );
-      }
-      bEndDone = true;
-    }
-    else
-    {
-      /* If empty, ignore */
-      if ( stBindEntry.srcExtAddr != 0u )
-      {
-        if ( bDisplay != false )
-        {
-          /* Display element */
-          LOG_INFO_APP( "   %2d  |   0x%03X   | " LOG_DISPLAY64() " |  0x%02X  |  0x%02X  |", iIndex, stBindEntry.clusterId,
-                        LOG_NUMBER64(stBindEntry.dst.extAddr), stBindEntry.dst.endpoint, stBindEntry.srcEndpt );
-        }
-        iCount++;
-      }
-    }
-    iIndex++;
-  }
-  while ( bEndDone == false );
-
-  if ( bDisplay != false )
-  {
-    LOG_INFO_APP( "  Found %d Binds", iCount );
-  }
-
-  return iCount;
 }
 
 /**
@@ -815,7 +709,10 @@ void APP_ZIGBEE_SerialCommandInstallCode( uint8_t * pRxBuffer, uint16_t iRxBuffe
 
       LOG_INFO_APP( "Command Install Code with ExtAddress " LOG_DISPLAY64() " and InstallCode %s.",
                    LOG_NUMBER64(dlExtendedAddress), &pRxBuffer[3u + ( sizeof(dlExtendedAddress) * 2u ) + 1u] );
-      APP_ZIGBEE_AddDeviceWithInstallCode( dlExtendedAddress, szInstallCode, 30 );
+      if ( AppZbUtil_AddDeviceWithInstallCode( stZigbeeAppInfo.pstZigbee, dlExtendedAddress, szInstallCode ) != false )
+      {
+        APP_ZIGBEE_PermitJoin( 30 );
+      }
     }
     else
     {

@@ -44,7 +44,7 @@
                 </option>
                 <option>
                     <name>MemFile</name>
-                    <state />
+                    <state>$TOOLKIT_DIR$\config\debugger\ST\STM32WBA55CG.ddf</state>
                 </option>
                 <option>
                     <name>RunToEnable</name>
@@ -88,7 +88,7 @@
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
-                    <state>9.20.1.43525</state>
+                    <state>9.60.3.7274</state>
                 </option>
                 <option>
                     <name>UseFlashLoader</name>
@@ -112,7 +112,7 @@
                 </option>
                 <option>
                     <name>FlashLoadersV3</name>
-                    <state />
+                    <state>$TOOLKIT_DIR$/config/flashloader/ST/FlashSTM32WBAxxxG.board</state>
                 </option>
                 <option>
                     <name>OCImagesSuppressCheck1</name>
@@ -1256,7 +1256,7 @@
                 </option>
                 <option>
                     <name>CCSTLinkUsbSerialNoSelect</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCSTLinkJtagSpeedList</name>
@@ -1286,7 +1286,7 @@
                 </option>
                 <option>
                     <name>CCSTLinkTargetVoltage</name>
-                    <state>###Uninitialized###</state>
+                    <state>3.3</state>
                 </option>
             </data>
         </settings>

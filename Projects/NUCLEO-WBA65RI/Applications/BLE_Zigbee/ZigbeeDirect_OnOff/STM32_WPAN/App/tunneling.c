@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    Tunneling.c
+  * @file    TUNNELING.c
   * @author  MCD Application Team
-  * @brief   Tunneling definition.
+  * @brief   TUNNELING definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -165,7 +165,7 @@ static SVCCTL_EvtAckStatus_t TUNNELING_EventHandler(void *p_Event)
               /* USER CODE END Service4_Char_1_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
+              case (0x00):
                 /* USER CODE BEGIN Service4_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service4_Char_1_Disabled_BEGIN */
@@ -177,15 +177,15 @@ static SVCCTL_EvtAckStatus_t TUNNELING_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
-                /* USER CODE BEGIN Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
+                /* USER CODE BEGIN Service4_Char_1_COMSVC_Indication_BEGIN */
 
-                /* USER CODE END Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+                /* USER CODE END Service4_Char_1_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = TUNNELING_TUNNZDTSNPDU_INDICATE_ENABLED_EVT;
                 TUNNELING_Notification(&notification);
-                /* USER CODE BEGIN Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE BEGIN Service4_Char_1_COMSVC_Indication_END */
 
-                /* USER CODE END Service4_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE END Service4_Char_1_COMSVC_Indication_END */
                 break;
 
               default:
@@ -344,10 +344,10 @@ void TUNNELING_Init(void)
   SVCCTL_RegisterSvcHandler(TUNNELING_EventHandler);
 
   /**
-   * Tunneling
+   * TUNNELING
    *
    * Max_Attribute_Records = 1 + 2*1 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
-   * service_max_attribute_record = 1 for Tunneling +
+   * service_max_attribute_record = 1 for TUNNELING +
    *                                2 for TUNNZDTSNPDU +
    *                                1 for TUNNZDTSNPDU configuration descriptor +
    *                              = 4
@@ -369,12 +369,16 @@ void TUNNELING_Init(void)
                              &(TUNNELING_Context.TunnelingSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: Tunneling, error code: 0x%x \n\r", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: TUNNELING, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: Tunneling \n\r");
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: TunnelingSvcHdle = 0x%04X\n",TUNNELING_Context.TunnelingSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * TUNNZDTSNPDU
@@ -392,11 +396,11 @@ void TUNNELING_Init(void)
                           &(TUNNELING_Context.TunnzdtsnpduCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : TUNNZDTSNPDU, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : TUNNZDTSNPDU, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : TUNNZDTSNPDU\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : TunnzdtsnpduCharHdle = 0x%04X\n",TUNNELING_Context.TunnzdtsnpduCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService4Char1 */
@@ -434,11 +438,11 @@ tBleStatus TUNNELING_UpdateValue(TUNNELING_CharOpcode_t CharOpcode, TUNNELING_Da
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value TUNNZDTSNPDU command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value TUNNZDTSNPDU command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value TUNNZDTSNPDU command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value TUNNZDTSNPDU command\n");
       }
       /* USER CODE BEGIN Service4_Char_Value_1 */
 

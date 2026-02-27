@@ -70,6 +70,8 @@ UINT MX_USBX_Host_Init(VOID)
   UINT ret = UX_SUCCESS;
 
   /* USER CODE BEGIN MX_USBX_Host_Init0 */
+  /* USB_OTG_HS init function */
+  MX_USB_OTG_HS_HCD_Init();
 
   /* USER CODE END MX_USBX_Host_Init0 */
   /* Initialize the Stack Host USB*/
@@ -86,8 +88,16 @@ UINT MX_USBX_Host_Init(VOID)
 
   /* USER CODE BEGIN MX_USBX_Host_Init 2 */
 
-  /* Initialize USBX_Host */
-  USBX_APP_Host_Init();
+  /* Start USB Host */
+  HAL_HCD_Start(&hhcd_USB_OTG_HS);
+
+  /* Start Application Message */
+  USBH_UsrLog("**** USB OTG HS in HID Host **** \n");
+  USBH_UsrLog("USB Host library started.\n");
+
+  /* Wait for Device to be attached */
+  USBH_UsrLog("Starting HID Application");
+  USBH_UsrLog("Connect your HID Device");
 
   /* USER CODE END MX_USBX_Host_Init 2 */
 
@@ -321,9 +331,9 @@ UINT MX_USBX_Host_Stack_Init(void)
   if (ux_host_stack_class_register(_ux_system_host_class_hid_name,
                                    ux_host_class_hid_entry) != UX_SUCCESS)
   {
-    /* USER CODE BEGIN USBX_HSOT_HID_REGISTER_ERROR */
+    /* USER CODE BEGIN USBX_HOST_HID_REGISTER_ERROR */
     return UX_ERROR;
-    /* USER CODE END USBX_HSOT_HID_REGISTER_ERROR */
+    /* USER CODE END USBX_HOST_HID_REGISTER_ERROR */
   }
 
   /* Initialize the host hid mouse client */
@@ -345,9 +355,15 @@ UINT MX_USBX_Host_Stack_Init(void)
   }
 
   /* Register all the USB host controllers available in this system. */
-  ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
-                             _ux_hcd_stm32_initialize, USB_OTG_HS_BASE,
-                             (ULONG)&hhcd_USB_OTG_HS);
+  if (ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
+                                 _ux_hcd_stm32_initialize, USB_OTG_HS_BASE,
+                                 (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
+  {
+    /* USER CODE BEGIN USBX_HOST_STACK_HCD_REGISTER_ERROR */
+    return UX_ERROR;
+    /* USER CODE END USBX_HOST_STACK_HCD_REGISTER_ERROR */
+  }
+
   /* USER CODE BEGIN MX_USBX_Host_Stack_Init_PreTreatment_1 */
   /* USER CODE END MX_USBX_Host_Stack_Init_PreTreatment_1 */
 
@@ -372,9 +388,12 @@ UINT MX_USBX_Host_Stack_DeInit(void)
   /* USER CODE END MX_USBX_Host_Stack_DeInit_PreTreatment_0 */
 
   /* Unregister all the USB host controllers available in this system. */
-  ux_host_stack_hcd_unregister(_ux_system_host_hcd_stm32_name,
-                               USB_OTG_HS_BASE,
-                               (ULONG)&hhcd_USB_OTG_HS);
+  if (ux_host_stack_hcd_unregister(_ux_system_host_hcd_stm32_name,
+                                  USB_OTG_HS_BASE,
+                                  (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
+  {
+    return UX_ERROR;
+  }
 
   /* Unregister the host hid class */
   if (ux_host_stack_class_unregister(ux_host_class_hid_entry) != UX_SUCCESS)
@@ -408,35 +427,6 @@ VOID USBX_Host_Process(VOID *arg)
   ux_host_stack_tasks_run();
   USBX_HOST_HID_MOUSE_Task();
   USBX_HOST_HID_KEYBORAD_Task();
-}
-
-/**
-  * @brief  USBX_APP_Host_Init
-  *         Initialization of USB host.
-  * @param  none
-  * @retval none
-  */
-VOID USBX_APP_Host_Init(VOID)
-{
-  /* USER CODE BEGIN USB_Host_Init_PreTreatment_0 */
-
-  /* USER CODE END USB_Host_Init_PreTreatment_0 */
-
-
-  /* Enable USB Global Interrupt*/
-  HAL_HCD_Start(&hhcd_USB_OTG_HS);
-
-  /* USER CODE BEGIN USB_Host_Init_PostTreatment1 */
-
-  /* Start Application Message */
-  USBH_UsrLog("**** USB OTG HS in HID Host **** \n");
-  USBH_UsrLog("USB Host library started.\n");
-
-  /* Wait for Device to be attached */
-  USBH_UsrLog("Starting HID Application");
-  USBH_UsrLog("Connect your HID Device");
-
-  /* USER CODE END USB_Host_Init_PostTreatment1 */
 }
 
 /* USER CODE END 1 */

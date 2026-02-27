@@ -157,7 +157,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    __________________________________                       __________________________________
                    |  BLE_HeartRate_Thread_FreeRTOS |                       | Thread_Coap_Generic            |
                    |________________________________|                       |________________________________|
-                   | USART1                         |                       | USART1                         |
+                   | USART1 for log                 |                       | USART1                         |
                    |  every 1 sec (after reset) --> |======>  COAP ======>  | BLUE LED TOGGLE (ON/OFF)       |
                    |  or restarting (if stopped)    | Resource :light       |  every 1 sec                   |
                    |     with SW1                   | Mode: Multicast       |                                |
@@ -187,7 +187,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |                                |                       |                                |
                    | LED : Red                      |                       | LED : Green                    |
                    |--------------------------------|                       |--------------------------------|
-                   | ROLE re-negociation phase      | Details not described | ROLE negociation phase         |
+                   | ROLE re-negotiation phase      | Details not described | ROLE negotiation phase         |
                    |            every 1sec -->      |==>  NOTHING!          |                                |  
                    |--------------------------------|                       |--------------------------------|
                    | Role : Leader                  |                       | Role : Router                  |
@@ -221,7 +221,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |________________________________|                       |________________________________|
                    |                                |                       |                                |
                    |       _________________________|                       |       _________________________|
-                   |      |COM2                     |                       |      |LPUART1                    |
+                   |      |USART2-optional          |                       |      |LPUART1                  |
                    |      |                         |                       |      |                         |
                    |      |     Thread stack control|                       |      |     Thread stack control|
                    |      |       via Cli commands  |                       |      |       via Cli commands  |
@@ -231,7 +231,7 @@ The Thread_Coap_Generic device will receive COAP commands and send to BLE_HeartR
                    |      |_________________________|                       |      |_________________________|
                    |                                |                       |                                |
                    |________________________________|                       |________________________________|
-
+ 
   
 </pre> 
 
@@ -245,6 +245,7 @@ On the android/ios device, enable the Bluetooth communications, and if not done 
     - <a href="https://apps.apple.com/us/app/st-ble-toolbox/id1531295550"> ST BLE Toolbox iOS</a>
 
 
+
 - Then, click on the App icon, ST BLE Toolbox (android/ios device).
 
 - In the Heart Rate interface, HearRate and energy measurement are launched and displayed in graphs,
@@ -254,7 +255,7 @@ On the android/ios device, enable the Bluetooth communications, and if not done 
 
 ### __Traces__
 
-* To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port).
+* To get the traces you need to connect your board to the Hyperterminal (through the STLink Virtual COM Port 1).
 
 * The UART must be configured as follows:<br>
   - BaudRate       = 115200 baud</br>
@@ -264,7 +265,7 @@ On the android/ios device, enable the Bluetooth communications, and if not done 
   - Flow control   = none</br>
   - Terminal   "Go to the Line" :    <LF>   
 
-* It is also possible to control and configure the Thread stack through Cli commands. For that, connect the COM2 of your board to an Hyperterminal through STLink cable.<br>
+* It is also possible to control and configure the Thread stack through Cli commands. For that, connect your board to the Hyperterminal (through the STLink Virtual COM Port 2). To send commands through USART2, RTS hardware flow control is required (hence, it is optional): this needs solder bridge SB4 to be fitted on MB2130 board.<br>
 The Serial interface must be configured as follows:<br>
   - BaudRate       = 115200 baud</br>
   - Word Length    = 8 Bits</br>

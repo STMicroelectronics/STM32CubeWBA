@@ -46,13 +46,13 @@ static ULONG cdc_acm_interface_number;
 static ULONG cdc_acm_configuration_number;
 static UX_SLAVE_CLASS_CDC_ACM_PARAMETER cdc_acm_parameter;
 static TX_THREAD ux_device_app_thread;
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 
 /* USER CODE BEGIN PV */
 
 static TX_THREAD ux_cdc_read_thread;
 static TX_THREAD ux_cdc_write_thread;
 TX_EVENT_FLAGS_GROUP EventFlag;
-extern PCD_HandleTypeDef           hpcd_USB_OTG_HS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,17 +73,11 @@ UINT MX_USBX_Device_Init(VOID *memory_ptr)
   UCHAR *pointer;
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
   /* USER CODE BEGIN MX_USBX_Device_Init 0 */
+
   /* USER CODE END MX_USBX_Device_Init 0 */
 
-  /* Initialize the Stack USB Device*/
-  if (MX_USBX_Device_Stack_Init() != UX_SUCCESS)
-  {
-    /* USER CODE BEGIN MAIN_INITIALIZE_STACK_ERROR */
-    return UX_ERROR;
-    /* USER CODE END MAIN_INITIALIZE_STACK_ERROR */
-  }
-
   /* USER CODE BEGIN MX_USBX_Device_Init 1 */
+
   /* USER CODE END MX_USBX_Device_Init 1 */
 
   /* Allocate the stack for device application main thread */
@@ -247,8 +241,19 @@ static VOID app_ux_device_thread_entry(ULONG thread_input)
 {
   /* USER CODE BEGIN app_ux_device_thread_entry */
 
-  /* Initialization of USB device */
-  USBX_APP_Device_Init();
+  /* USB_OTG_HS init function */
+  MX_USB_OTG_HS_PCD_Init();
+
+  /* Initialize the Stack USB Device*/
+  if (MX_USBX_Device_Stack_Init() != UX_SUCCESS)
+  {
+    /* USER CODE BEGIN MAIN_INITIALIZE_STACK_ERROR */
+    Error_Handler();
+    /* USER CODE END MAIN_INITIALIZE_STACK_ERROR */
+  }
+
+  /* Start the USB device */
+  HAL_PCD_Start(&hpcd_USB_OTG_HS);
 
   /* USER CODE END app_ux_device_thread_entry */
 }
@@ -268,7 +273,7 @@ UINT MX_USBX_Device_Stack_DeInit(void)
   /* USER CODE END MX_USBX_Device_Stack_DeInit_PreTreatment_0 */
 
   /* Unregister USB device controller. */
-  if (_ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
+  if (ux_dcd_stm32_uninitialize((ULONG)USB_OTG_HS, (ULONG)&hpcd_USB_OTG_HS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }
@@ -296,32 +301,6 @@ UINT MX_USBX_Device_Stack_DeInit(void)
 }
 
 /* USER CODE BEGIN 1 */
-
-/**
-  * @brief  USBX_APP_Device_Init
-  *         Initialization of USB device.
-  * @param  none
-  * @retval none
-  */
-VOID USBX_APP_Device_Init(VOID)
-{
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_0 */
-
-  /* USER CODE END USB_Device_Init_PreTreatment_0 */
-
-
-  /* USER CODE BEGIN USB_Device_Init_PreTreatment_1 */
-
-  /* USER CODE END USB_Device_Init_PreTreatment_1 */
-
-  /* Start the USB device */
-  HAL_PCD_Start(&hpcd_USB_OTG_HS);
-
-  /* USER CODE BEGIN USB_Device_Init_PostTreatment */
-
-  /* USER CODE END USB_Device_Init_PostTreatment */
-}
-
 /**
   * @brief  USBX_APP_UART_Init
   *         Initialization of UART.

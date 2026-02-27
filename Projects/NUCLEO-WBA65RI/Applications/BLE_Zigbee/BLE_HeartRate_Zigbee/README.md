@@ -86,10 +86,15 @@ For this application it is requested to have at least:
                | OnOff  |                                      | OnOff  |        
                | Client |                                      | Server | 
                |        |                                      |        |
- Every 1 sec   |        |                                      |        |
- or PushB SW1=>|        |    ZbZclOnOffClientToggleReq         |        |
+               |        |                                      |        |
+ PushB SW1   =>|        |    ZbZclOnOffClientToggleReq         |        |
                |        | -----------------------------------> |        | => RED LED Toggle
-               |        |                                      |        |   
+               |        |                                      |        |  
+               |        |                                      |        |
+ PushB SW3   =>|        |    ZbZclOnOffClientToggleReq         |        |
+               |        | -----------------------------------> |        | => RED LED Toggle
+               |        |    (Every one second)                |        |
+               |        |                                      |        |			   
                +--------+                                      +--------+
                   Router                                          Coord.
              
@@ -108,8 +113,8 @@ In order to make the program work, you must do the following:
    3. Start the second board, flashed with BLE_HeartRate_Zigbee application. This board is configured as Zigbee router and will be attached to the network created by the coordinator.
 At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.    
 
-   4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. It is done automatically every one second or by pressing on the SW1 push button. 
-You must see the Red LED toggling on the Server side.
+   4. It is now possible to send OnOff Cluster commands from the Client to the Server in multicast mode. After pressing SW3, it is done automatically once every second, whereas pressing the SW1 push 
+    button performs it only once. You must see the Red LED toggling on the Server side.
 
 During Zigbee activity, the BLE_HeartRate_Zigbee device is also configured in BLE with Heart Rate profile, performs advertising and is available to accept incoming connection in BLE.    
 

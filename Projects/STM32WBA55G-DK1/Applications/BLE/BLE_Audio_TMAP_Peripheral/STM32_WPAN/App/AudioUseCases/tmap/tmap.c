@@ -552,7 +552,7 @@ SVCCTL_EvtAckStatus_t TMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_TMAP_MSG("Handle = 0x%04X\n",handle);
                           p_tmap_clt->TMAPRoleChar.ValueHandle = handle;
                           p_tmap_clt->TMAPRoleChar.EndHandle = p_tmap_clt->ServiceEndHandle;
-                          p_tmap_clt->TMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_tmap_clt->TMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_tmap_clt->pGattChar = &p_tmap_clt->TMAPRoleChar;
                         break;
 

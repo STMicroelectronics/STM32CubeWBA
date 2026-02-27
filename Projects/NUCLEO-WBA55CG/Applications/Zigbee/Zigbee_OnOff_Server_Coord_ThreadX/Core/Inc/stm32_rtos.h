@@ -30,6 +30,7 @@ extern "C" {
 #include "tx_api.h"
 #include "tx_initialize.h"
 #include "tx_thread.h"
+#include "tx_semaphore.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -47,9 +48,6 @@ extern "C" {
 
 #define TASK_PRIO_TEMP_MEAS_LL                  (7u)
 #define TASK_PREEMP_TEMP_MEAS_LL                (0u)
-
-#define TASK_PRIO_AMM                           (15u)
-#define TASK_PREEMP_AMM                         (0u)
 
 #define TASK_PRIO_RNG                           (11u)
 #define TASK_PREEMP_RNG                         (0u)
@@ -87,7 +85,6 @@ extern "C" {
 /* Tasks stack sizes by default  */
 #define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_MAC_LAYER               RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_ZIGBEE_LAYER            RTOS_STACK_SIZE_LARGE

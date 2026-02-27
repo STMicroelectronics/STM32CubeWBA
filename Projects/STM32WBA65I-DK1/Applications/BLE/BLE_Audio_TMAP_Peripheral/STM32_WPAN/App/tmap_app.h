@@ -304,6 +304,7 @@ typedef uint8_t APP_PASyncState_t;
 #define APP_PA_SYNC_STATE_IDLE           (0x00)
 #define APP_PA_SYNC_STATE_SYNCHRONIZING  (0x01)
 #define APP_PA_SYNC_STATE_SYNCHRONIZED   (0x02)
+#define APP_PA_SYNC_STATE_BASE_RECEIVED  (0x03)
 
 typedef uint8_t APP_BIGSyncState_t;
 #define APP_BIG_SYNC_STATE_IDLE          (0x00)

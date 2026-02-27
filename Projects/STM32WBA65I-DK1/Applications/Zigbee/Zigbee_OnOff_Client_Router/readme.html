@@ -25,8 +25,8 @@
 <h3 id="hardware-requirements"><strong>Hardware Requirements</strong></h3>
 <p>For this application it is requested to have at least:</p>
 <ul>
-<li>One STM32WBA65xx Nucleo board loaded with application <strong>Zigbee_OnOff_Server_Coord</strong></li>
-<li>One or more STM32WBA65xx board loaded with application <strong>Zigbee_OnOff_Client_Router</strong> </br></li>
+<li>One STM32WBA55xx/STM32WBA65xx Discovery board loaded with application <strong>Zigbee_OnOff_Server_Coord</strong></li>
+<li>One or more STM32WBA55xx/STM32WBA65xx board loaded with application <strong>Zigbee_OnOff_Client_Router</strong> </br></li>
 </ul>
 <pre>
     
@@ -45,7 +45,7 @@
 </pre>
 <h3 id="application-setup"><strong>Application Setup</strong></h3>
 <ul>
-<li>First, open the projects, build them and load your generated applications on your STM32WBA65xx devices.</li>
+<li>First, open the projects, build them and load your generated applications on your STM32WBA55xx/STM32WBA65xx devices.</li>
 <li>To run the application :
 <ol type="1">
 <li><p>Start the first board. It must be the coordinator of the Zigbee network so in this demo application it is the device running Zigbee_OnOff_Server_Coord application.</p></li>
@@ -58,10 +58,8 @@
 <p><strong>Note:</strong> When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA65xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA65CGA_Nucleo board and can be easily tailored to any other supported device and development board.</p></li>
-<li><p>On STM32WBA65CGA_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows: <br><br />
-<strong>JP1:</strong></br> 1-2: [ON]</br> 3-4: [OFF]</br> 5-6: [OFF]</br> 7-8: [OFF]</br> 9-10: [OFF]</br> <br> <strong>JP2:</strong></br> 1-2: [ON]</p></li>
+<li><p>This example runs on STM32WBA55xx/STM32WBA65xx devices.</p></li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA55G_Discovery/STM32WBA65I_Discovery board and can be easily tailored to any other supported device and development board.</p></li>
 </ul>
 <h3 id="traces"><strong>Traces</strong></h3>
 <ul>

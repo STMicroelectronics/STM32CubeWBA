@@ -43,8 +43,8 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static tListNode BLE_TIMER_RunningList;
-static tListNode BLE_TIMER_ExpiredList;
+static tListNode BLE_TIMER_RunningList = {0};
+static tListNode BLE_TIMER_ExpiredList = {0};
 
 /* Private functions prototype------------------------------------------------*/
 static void BLE_TIMER_Callback(void* arg);
@@ -52,12 +52,35 @@ static BLE_TIMER_t* BLE_TIMER_GetFromList(tListNode * listHead, uint16_t id);
 
 void BLE_TIMER_Init(void)
 {
-  /* This function initializes the timer Queue */
+  /* Initializes timers Queue */
   LST_init_head(&BLE_TIMER_RunningList);
   LST_init_head(&BLE_TIMER_ExpiredList);
 
   /* Register BLE Timer task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
+}
+
+void BLE_TIMER_Deinit(void)
+{
+  tListNode *listNodeRemoved;
+
+  /* Register BLE Timer task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_TIMER_BCKGND, UTIL_SEQ_RFU, BLE_TIMER_Background);
+  while(LST_is_empty(&BLE_TIMER_RunningList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_RunningList, &listNodeRemoved);
+    free(listNodeRemoved);
+  }
+  while(LST_is_empty(&BLE_TIMER_ExpiredList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_ExpiredList, &listNodeRemoved);
+    free(listNodeRemoved);
+  }
+
+  /* Reset timers Queues */
+  LST_init_head(&BLE_TIMER_RunningList);
+  LST_init_head(&BLE_TIMER_ExpiredList);
+
 }
 
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)

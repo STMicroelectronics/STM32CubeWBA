@@ -10,13 +10,13 @@
       <TargetName>Thread_OTA_Server</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6220000::V6.22::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32WBA55CGUx</Device>
+          <Device>STM32WBA65CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0-RC2</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2001FFFF) IROM(0x8000000-0x80FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32WBA55CGUx$CMSIS\SVD\STM32WBA55.svd</SFDFile>
+          <SFDFile>$$Device:STM32WBA65CGUx$CMSIS\SVD\STM32WBA65.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums</MiscControls>
               <Define>USE_FULL_LL_DRIVER,OPENTHREAD_FTD,OPENTHREAD_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,OPENTHREAD_PROJECT_CORE_CONFIG_FILE=&lt;stm32wba-openthread-ftd-config.h&gt;,MAC,MAC_LAYER,USE_HAL_DRIVER,USE_FULL_ASSERT,STM32WBA65xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../System/Interfaces;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Utilities/trace/adv_trace;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/Third_Party/mbedtls/include;../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
+              <IncludePath>../Core/Inc;../System/Interfaces;../System/Config;../System/Config/Log;../System/Config/LowPower;../System/Config/Debug_GPIO;../System/Config/CRC_Ctrl;../STM32_WPAN/App;../STM32_WPAN/Target;../../../../../../Utilities/trace/adv_trace;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc/Legacy;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/thread;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/_40nm_reg_files;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/porting;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/src/shrd_utils/inc;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/common;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/platform;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/include/openthread;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config;../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls;../../../../../../Middlewares/Third_Party/mbedtls/include;../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -395,11 +395,6 @@
         <Group>
           <GroupName>Application/User/STM32_WPAN/App</GroupName>
           <Files>
-            <File>
-              <FileName>app_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../STM32_WPAN/App/app_bsp.c</FilePath>
-            </File>
             <File>
               <FileName>app_thread.c</FileName>
               <FileType>1</FileType>
@@ -516,16 +511,6 @@
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</FilePath>
             </File>
             <File>
-              <FileName>hw_pka.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_pka.c</FilePath>
-            </File>
-            <File>
-              <FileName>hw_pka_p256.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_pka_p256.c</FilePath>
-            </File>
-            <File>
               <FileName>hw_rng.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_rng.c</FilePath>
@@ -534,6 +519,11 @@
               <FileName>timer_if.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/timer_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -554,6 +544,11 @@
               <FileName>otp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/otp.c</FilePath>
+            </File>
+            <File>
+              <FileName>pka_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</FilePath>
             </File>
             <File>
               <FileName>scm.c</FileName>

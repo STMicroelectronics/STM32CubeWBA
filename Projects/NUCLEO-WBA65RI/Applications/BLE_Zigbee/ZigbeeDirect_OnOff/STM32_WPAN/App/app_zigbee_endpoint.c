@@ -33,11 +33,11 @@
 #include "stm32_lpm.h"
 #include "stm32_rtos.h"
 #include "stm32_timer.h"
+#include "stm32_lpm_if.h"
 
 #include "zigbee.h"
 #include "zigbee.nwk.h"
 #include "zigbee.security.h"
-#include "zigbee.bdb.h"
 
 /* Private includes -----------------------------------------------------------*/
 #include "zcl/zcl.h"
@@ -56,14 +56,13 @@
 
 #define APP_ZIGBEE_ENDPOINT               1u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
-#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_ONOFF_LIGHT
-#define APP_ZIGBEE_GROUP_ADDRESS          0x0001u
+#define APP_ZIGBEE_DEVICE_ID              ZCL_DEVICE_ONOFF_SWITCH
 
 #define APP_ZIGBEE_CLUSTER_ID             ZCL_CLUSTER_ONOFF
 #define APP_ZIGBEE_CLUSTER_NAME           "OnOff Server"
 
 /* USER CODE BEGIN PD */
-#define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME "(Zigbee Direct)"
+#define APP_ZIGBEE_APPLICATION_NAME       APP_ZIGBEE_CLUSTER_NAME
 #define APP_ZIGBEE_APPLICATION_OS_NAME    ""
 
 #define APP_ONOFF_LED                       LED_RED
@@ -78,8 +77,6 @@
 // -- Redefine Clusters to better code read --
 #define OnOffServer                       pstZbCluster[0]
 
-
-#define DEFAULT_EP_BDB_COMMISSION_GRP_ID     0xffffU
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
@@ -95,10 +92,13 @@
 
 /* USER CODE END PV */
 
+/* Private function prototypes -----------------------------------------------*/
+
 /* OnOff Server Callbacks */
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOffCallback               ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOnCallback                ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerToggleCallback            ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+
 static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
 {
   .off = APP_ZIGBEE_OnOffServerOffCallback,
@@ -106,14 +106,13 @@ static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
   .toggle = APP_ZIGBEE_OnOffServerToggleCallback,
 };
 
+/* USER CODE BEGIN PFP */
 static enum ZclStatusCodeT my_trigger_effect_callback(
     struct ZbZclClusterT *cluster,
     struct ZbZclIdentifyClientTriggerEffectT *info,
     struct ZbZclAddrInfoT *src_info,
     void *arg);
 static void my_identify_callback(struct ZbZclClusterT *cluster, enum ZbZclIdentifyServerStateT state, void *arg);
-/* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Functions Definition ------------------------------------------------------*/
@@ -129,13 +128,21 @@ void APP_ZIGBEE_ApplicationInit(void)
 
   /* Initialization of the Zigbee stack */
   APP_ZIGBEE_Init();
-  
-  /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */  
+
+  /* Configure Application Form/Join parameters : Startup, Persistence and Start with/without Form/Join */
   stZigbeeAppInfo.eStartupControl = ZbStartTypeJoin;
   stZigbeeAppInfo.bPersistNotification = false;
- 
+  stZigbeeAppInfo.bNwkStartup = true;
+
   /* USER CODE BEGIN APP_ZIGBEE_ApplicationInit */
-  stZigbeeAppInfo.bNwkStartup = false; /* Override */
+
+  stZigbeeAppInfo.bNwkStartup = false; /* By default, we need to let the phone form the mesh network */
+
+#ifdef ZDD_IS_ZC
+  /* Configure Application to Form the network */
+  stZigbeeAppInfo.eStartupControl = ZbStartTypeForm;
+  stZigbeeAppInfo.bNwkStartup = true;
+#endif
   
    /* Register a dedicated task for displaying infos */
   APP_ZIGBEE_InitStatusDebug();
@@ -163,23 +170,8 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
-}
-
-/**
- * @brief  Zigbee persistence startup
- * @param  None
- * @retval None
- */
-void APP_ZIGBEE_PersistenceStartup(void)
-{
-  /* USER CODE BEGIN APP_ZIGBEE_PersistenceStartup */
-
-  /* USER CODE END APP_ZIGBEE_PersistenceStartup */
 }
 
 /**
@@ -191,13 +183,8 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 {
   struct ZbApsmeAddEndpointReqT   stRequest;
   struct ZbApsmeAddEndpointConfT  stConfig;
-  uint16_t ausInputClusterList[1] = {
-    ZCL_CLUSTER_ONOFF
-  };
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints1 */
 
-  
-  
   /* USER CODE END APP_ZIGBEE_ConfigEndpoints1 */
 
   /* Add EndPoint */
@@ -207,20 +194,16 @@ void APP_ZIGBEE_ConfigEndpoints(void)
   stRequest.profileId = APP_ZIGBEE_PROFILE_ID;
   stRequest.deviceId = APP_ZIGBEE_DEVICE_ID;
   stRequest.endpoint = APP_ZIGBEE_ENDPOINT;
-  stRequest.version = 1;
-  stRequest.inputClusterCount = 1;
-  stRequest.inputClusterList = ausInputClusterList;
-  stRequest.outputClusterCount = 0;
-  stRequest.outputClusterList = NULL;
-  stRequest.bdbCommissioningGroupID = DEFAULT_EP_BDB_COMMISSION_GRP_ID;
-
   ZbZclAddEndpoint( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
   assert( stConfig.status == ZB_STATUS_SUCCESS );
 
   /* Add OnOff Server Cluster */
   stZigbeeAppInfo.OnOffServer = ZbZclOnOffServerAlloc( stZigbeeAppInfo.pstZigbee, APP_ZIGBEE_ENDPOINT, &stOnOffServerCallbacks, NULL );
   assert( stZigbeeAppInfo.OnOffServer != NULL );
-  ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer );
+  if ( ZbZclClusterEndpointRegister( stZigbeeAppInfo.OnOffServer ) == false )
+  {
+    LOG_ERROR_APP( "Error during OnOff Server Endpoint Register." );
+  }
 
   /* USER CODE BEGIN APP_ZIGBEE_ConfigEndpoints2 */
 
@@ -234,16 +217,9 @@ void APP_ZIGBEE_ConfigEndpoints(void)
  */
 bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
-  struct ZbApsmeAddGroupReqT  stRequest;
-  struct ZbApsmeAddGroupConfT stConfig;
+  /* Not used */
 
-  memset( &stRequest, 0, sizeof( stRequest ) );
-
-  stRequest.endpt = APP_ZIGBEE_ENDPOINT;
-  stRequest.groupAddr = APP_ZIGBEE_GROUP_ADDRESS;
-  ZbApsmeAddGroupReq( stZigbeeAppInfo.pstZigbee, &stRequest, &stConfig );
-
-  return true;
+  return false;
 }
 
 /**
@@ -264,10 +240,6 @@ void APP_ZIGBEE_GetStartupConfig( struct ZbStartupT * pstConfig )
   pstConfig->channelList.count = 1;
   pstConfig->channelList.list[0].page = 0;
   pstConfig->channelList.list[0].channelMask = APP_ZIGBEE_CHANNEL_MASK;
-
-  /* Display the main configuration */
-  LOG_INFO_APP( "Inside GetStartupConfig pstConfig->capability = %x ",pstConfig->capability);
-  LOG_INFO_APP( "Inside GetStartupConfig pstConfig->endDeviceTimeout = %d ",pstConfig->endDeviceTimeout);
 
   /* Set the TX-Power */
   if ( APP_ZIGBEE_SetTxPower( APP_ZIGBEE_TX_POWER ) == false )
@@ -316,7 +288,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 
@@ -419,7 +391,9 @@ void APP_ZIGBEE_DirectInit(void)
 
   /* Initialization of Zigbee Direct */
   memset(&stZddConfig, 0, sizeof(stZddConfig));
+#ifndef ZDD_IS_ZC
   APP_ZIGBEE_GetStartupConfig(&stZddConfig.startup); 
+#endif
   stZddConfig.open_tunnel = true;
   stZddConfig.zdd_server_endpt = APP_ZIGBEE_ENDPOINT;
   stZddConfig.identify_callbacks.identify = my_identify_callback;

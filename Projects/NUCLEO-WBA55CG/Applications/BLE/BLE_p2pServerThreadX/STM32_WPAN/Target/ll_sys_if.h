@@ -41,11 +41,11 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define DRIFT_TIME_DEFAULT                      (13)
+#define DRIFT_TIME_DEFAULT                      (14)
 #define DRIFT_TIME_EXTRA_LSI2                   (9)
 #define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
 
-#define EXEC_TIME_DEFAULT                       (24)
+#define EXEC_TIME_DEFAULT                       (28)
 #define EXEC_TIME_EXTRA_LSI2                    (3)
 #define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
 

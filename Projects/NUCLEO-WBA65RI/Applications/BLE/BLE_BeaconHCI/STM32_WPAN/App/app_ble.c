@@ -25,6 +25,8 @@
 #include "ble_core.h"
 #include "uuid.h"
 #include "svc_ctl.h"
+#include "baes.h"
+#include "pka_ctrl.h"
 #include "app_ble.h"
 #include "host_stack_if.h"
 #include "ll_sys_if.h"
@@ -109,6 +111,12 @@ static const uint8_t* BleGenerateERValue(void);
 
 /* USER CODE END PFP */
 
+/* External functions prototypes ---------------------------------------------*/
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
+
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
@@ -133,6 +141,10 @@ void APP_BLE_Init(void)
   UNUSED(bleAppContext.dummy);
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Initialize BLE related modules */
+  BAES_Reset( );
+  PKACTRL_Reset();
 
   /* Initialize the BLE Host */
   if (HOST_BLE_Init() == 0u)
@@ -213,6 +225,34 @@ void APP_BLE_Init(void)
 
   /* USER CODE END APP_BLE_Init_2 */
 
+  return;
+}
+
+/* All BLE activities must be stopped before calling this API */
+void APP_BLE_Deinit(void)
+{
+  /* USER CODE BEGIN APP_BLE_Deinit_1 */
+
+  /* USER CODE END APP_BLE_Deinit_1 */
+
+  aci_reset(0, 0);
+
+  /* De-initialize BLE related modules */
+  BAES_Reset( );
+  PKACTRL_Reset();
+
+  tListNode *listNodeRemoved;
+
+  /* Free all the Asynchronous Event queue nodes */
+  while(LST_is_empty(&BleAsynchEventQueue) != TRUE)
+  {
+    LST_remove_tail(&BleAsynchEventQueue, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+
+  /* USER CODE BEGIN APP_BLE_Deinit_2 */
+
+  /* USER CODE END APP_BLE_Deinit_2 */
   return;
 }
 
@@ -568,8 +608,9 @@ static const uint8_t* BleGenerateBdAddress(void)
   uint32_t udn;
   uint32_t company_id;
   uint32_t device_id;
-  uint8_t a_BdAddrDefault[BD_ADDR_SIZE] ={0x65, 0x43, 0x21, 0x1E, 0x08, 0x00};
+  uint8_t a_BdAddrDefault[BD_ADDR_SIZE] ={0x00, 0x00, 0x00, 0xE1, 0x80, 0x00};
   uint8_t a_BDAddrNull[BD_ADDR_SIZE];
+
   memset(&a_BDAddrNull[0], 0x00, sizeof(a_BDAddrNull));
 
   a_BdAddr[0] = (uint8_t)(CFG_BD_ADDRESS & 0x0000000000FF);
@@ -626,7 +667,7 @@ static const uint8_t* BleGenerateBdAddress(void)
       }
       else
       {
-        memcpy(&a_BdAddr[0], a_BdAddrDefault,BD_ADDR_SIZE);
+        memcpy(&a_BdAddr[0], a_BdAddrDefault, BD_ADDR_SIZE);
         p_bd_addr = (const uint8_t *)a_BdAddr;
       }
     }
@@ -804,6 +845,10 @@ tBleStatus BLECB_Indication( const uint8_t* data,
   uint16_t total_length = (length+ext_length);
 
   UNUSED(ext_data);
+
+  /* USER CODE BEGIN BLECB_Indication */
+
+  /* USER CODE END BLECB_Indication */
 
   if (data[0] == HCI_EVENT_PKT_TYPE)
   {

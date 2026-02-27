@@ -40,7 +40,7 @@ ENTRY(Reset_Handler)
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
 _Min_Heap_Size = 0x0; /* required amount of heap */
-_Min_Stack_Size = 0x1000; /* required amount of stack */
+_Min_Stack_Size = 0x1000; /* required amount of stack */
 /* Start user variables */
 
 /* End user variables */
@@ -58,15 +58,14 @@ MEMORY
 /* Sections */
 SECTIONS
 {
-  /* The startup code into "FLASH" Rom type memory */
-  .isr_vector :
+ /*  Unitialized isr_vector section into "isr_vector" isr_vector type memory [MMT section] */
+ .isr_vector :
   {
     . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
+    KEEP (*(.isr_vector))
     . = ALIGN(4);
   } >FLASH
-
-  /* The program code and other data into "FLASH" Rom type memory */
+/* The program code and other data into "FLASH" Rom type memory */
   .text :
   {
     . = ALIGN(4);

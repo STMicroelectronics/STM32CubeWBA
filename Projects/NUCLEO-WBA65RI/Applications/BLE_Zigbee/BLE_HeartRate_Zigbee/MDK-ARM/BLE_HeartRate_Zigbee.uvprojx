@@ -10,13 +10,13 @@
       <TargetName>BLE_HeartRate_Zigbee</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
+      <pCCUsed>6220000::V6.22::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B02</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00080000) IROM(0x08000000,0x00200000) CPUTYPE("Cortex-M33") FPU3(SFPU) DSP TZ CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -83,7 +83,7 @@
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>fromelf #L --bincombined  --output=$L@L.bin</UserProg1Name>
-            <UserProg2Name />
+            <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
@@ -133,7 +133,7 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>1</Capability>
+            <Capability>0</Capability>
             <DriverSelection>4102</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>-fshort-enums</MiscControls>
-              <Define>STM32,STM32WBA,STM32WBA65xx,PHY_40nm_3_40_aSTM32WBA65RIx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,BLE_LL,MAC,MAC_LAYER,APPLICATION_USE_BAREMETAL,APPLICATION_USE_PERSISTENCE,APPLICATION_USE_EEPROM,APPLICATION_USE_NUCLEO,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,APPLICATION_USE_AMM,DISABLE_RFTS_EXT_EVNT_HNDLR=1</Define>
+              <Define>STM32,STM32WBA,STM32WBA65xx,PHY_40nm_3_40_a,STM32WBA65RIx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,BLE_LL,MAC,MAC_LAYER,APPLICATION_USE_BAREMETAL,APPLICATION_USE_PERSISTENCE,APPLICATION_USE_EEPROM,APPLICATION_USE_NUCLEO,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,APPLICATION_USE_AMM,DISABLE_RFTS_EXT_EVNT_HNDLR=1,BLE_STACK_BASIC_FEATURES</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Core\Inc;..\STM32_WPAN\App;..\STM32_WPAN\Target;..\System\Config\CRC_Ctrl;..\System\Config\ADC_Ctrl;..\System\Config\Debug_GPIO;..\System\Config\Log;..\System\Config\LowPower;..\System\Config\Flash;..\System\Interfaces;..\System\Modules;..\..\..\..\..\..\Utilities\trace\adv_trace;..\..\..\..\..\..\Utilities\misc;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\tim_serv;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\..\..\..\Utilities\conf;..\..\..\..\..\..\Projects\Common\WPAN\Interfaces;..\..\..\..\..\..\Projects\Common\WPAN\Modules;..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Flash;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log;..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager;..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug;..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Nvm;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\concurrent\ble_15_4;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Src;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\include;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\include\auto;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\_40nm_reg_files;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\core\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\mac_utilities\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\include;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\port\stm32wba;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\port\mac;..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc\Legacy;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</IncludePath>
+              <IncludePath>..\Core\Inc;..\STM32_WPAN\App;..\STM32_WPAN\Target;..\System\Config\CRC_Ctrl;..\System\Config\ADC_Ctrl;..\System\Config\Debug_GPIO;..\System\Config;..\System\Config\Log;..\System\Config\LowPower;..\System\Config\Flash;..\System\Interfaces;..\System\Modules;..\..\..\..\..\..\Utilities\trace\adv_trace;..\..\..\..\..\..\Utilities\misc;..\..\..\..\..\..\Utilities\sequencer;..\..\..\..\..\..\Utilities\tim_serv;..\..\..\..\..\..\Utilities\lpm\tiny_lpm;..\..\..\..\..\..\Utilities\conf;..\..\..\..\..\..\Projects\Common\WPAN\Interfaces;..\..\..\..\..\..\Projects\Common\WPAN\Modules;..\..\..\..\..\..\Projects\Common\WPAN\Modules\BasicAES;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Flash;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log;..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager;..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug;..\..\..\..\..\..\Projects\Common\WPAN\Modules\SerialCmdInterpreter;..\..\..\..\..\..\Projects\Common\WPAN\Modules\Nvm;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\concurrent\ble_15_4;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Src;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_sys\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\include;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\stack\include\auto;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\ble\svc\Inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\_40nm_reg_files;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\core\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\mac_utilities\inc;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\include;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\port\stm32wba;..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\zigbee\stack\port\mac;..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc;..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc\Legacy;..\..\..\..\..\..\Drivers\CMSIS\Include;..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -475,11 +475,6 @@
           <GroupName>Application/User/STM32_WPAN/App</GroupName>
           <Files>
             <File>
-              <FileName>app_ble.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\STM32_WPAN\App\app_ble.c</FilePath>
-            </File>
-            <File>
               <FileName>dis.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\STM32_WPAN\App\dis.c</FilePath>
@@ -510,9 +505,14 @@
               <FilePath>..\STM32_WPAN\App\app_zigbee_endpoint.c</FilePath>
             </File>
             <File>
-              <FileName>app_bsp.c</FileName>
+              <FileName>app_ble.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\STM32_WPAN\App\app_bsp.c</FilePath>
+              <FilePath>..\STM32_WPAN\App\app_ble.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_zigbee_utility.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\App\app_zigbee_utility.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -533,11 +533,6 @@
               <FileName>linklayer_plat.c</FileName>
               <FileType>1</FileType>
               <FilePath>../STM32_WPAN/Target/linklayer_plat.c</FilePath>
-            </File>
-            <File>
-              <FileName>bpka.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../STM32_WPAN/Target/bpka.c</FilePath>
             </File>
             <File>
               <FileName>ll_sys_if.c</FileName>
@@ -589,6 +584,11 @@
         <Group>
           <GroupName>Drivers/STM32WBAxx_HAL_Driver</GroupName>
           <Files>
+            <File>
+              <FileName>stm32wbaxx_ll_pka.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</FilePath>
+            </File>
             <File>
               <FileName>stm32wbaxx_hal_adc.c</FileName>
               <FileType>1</FileType>
@@ -748,6 +748,11 @@
               <FileName>stm32wbaxx_ll_adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_ll_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_hal_pka.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Src\stm32wbaxx_hal_pka.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -965,16 +970,6 @@
               <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\hw_otp.c</FilePath>
             </File>
             <File>
-              <FileName>hw_pka.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\hw_pka.c</FilePath>
-            </File>
-            <File>
-              <FileName>hw_pka_p256.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\hw_pka_p256.c</FilePath>
-            </File>
-            <File>
               <FileName>hw_rng.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\hw_rng.c</FilePath>
@@ -983,6 +978,11 @@
               <FileName>timer_if.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\timer_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1008,6 +1008,11 @@
               <FileName>otp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\Common\WPAN\Modules\otp.c</FilePath>
+            </File>
+            <File>
+              <FileName>pka_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</FilePath>
             </File>
             <File>
               <FileName>scm.c</FileName>

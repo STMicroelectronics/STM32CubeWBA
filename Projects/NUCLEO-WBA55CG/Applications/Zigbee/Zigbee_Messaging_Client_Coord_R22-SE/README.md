@@ -4,7 +4,7 @@ How to use the Messaging cluster on a device acting as a Coordinator within a Ce
 
 The purpose of this application is to show how to create a Zigbee centralized network, and how to communicate from one node to another one using the Messaging cluster. Once the Zigbee mesh network is created, the Server can send messages to the Client through push buttons SW1/SW2.
 
-Caution : to use this application, you need to add the CBKE Keys. To obtains theses keys, you need to create an account on Certicom site (www.certicom.com) and request a 'ZigBee 1.2 Test Certificate' for each devices.
+Caution : to use this application, you need to add the CBKE Keys. To obtains these keys, you need to create an account on Certicom site (www.certicom.com) and request a 'ZigBee 1.2 Test Certificate' for each devices.
 
 ### __Keywords__
 
@@ -31,14 +31,14 @@ For this application it is requested to have at least:
                |            | -----------------------------------> |            | 
                |            |                                      |            |
    PushB SW2=> |            |   Send "Goodbye" message             |            |=> display after 10 seconds
-			   |            | -----------------------------------> |            |
-			   |            |                                      |            |
-   Long 	   |            |   Send "Goodbye" message             |            |
+			         |            | -----------------------------------> |            |
+			         |            |                                      |            |
+   Long 	     |            |   Send "Goodbye" message             |            |
    PushB SW2=> |            | -----------------------------------> |            |=> display after 10 seconds and ask for confirmation
-			   |            |                                      |            |
-			   |            |   Send confirmation for message ID x |            |
-			   |            | <----------------------------------- |            |<= PushB SW1
-			   |            |                                      |            |
+			         |            |                                      |            |
+			         |            |   Send confirmation for message ID x |            |
+			         |            | <----------------------------------- |            |<= PushB SW1
+			         |            |                                      |            |
                +------------+                                      +------------+
 
 </pre> 

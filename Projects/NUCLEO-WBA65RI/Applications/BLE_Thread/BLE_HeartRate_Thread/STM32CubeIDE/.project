@@ -39,11 +39,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/BLE_HeartRate_Thread.ioc</locationURI>
 		</link>
 		<link>
-			<name>Doc/README.md</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/README.md</locationURI>
-		</link>
-		<link>
 			<name>Utilities/stm32_adv_trace.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Utilities/trace/adv_trace/stm32_adv_trace.c</locationURI>
@@ -249,14 +244,14 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_icache.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_pka.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/Core/app_entry.c</name>
@@ -281,82 +276,147 @@
 		<link>
 			<name>Common/WPAN/Interface/adv_trace_usart_if.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/adv_trace_usart_if.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Interface/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Interface/hw_aes.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_aes.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_aes.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Interface/hw_otp.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_otp.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Interface/hw_pka.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_pka.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Interface/hw_pka_p256.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_pka_p256.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_otp.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Interface/hw_rng.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_rng.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Interface/timer_if.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/timer_if.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/timer_if.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/RTDebug.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/RTDebug_dtb.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/adc_ctrl.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/adc_ctrl.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/adc_ctrl.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/advanced_memory_manager.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/app_sys.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/app_sys.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/app_sys.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/baes_ccm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ccm.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/baes_cmac.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_cmac.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/baes_ecb.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ecb.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/crc_ctrl.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/crc_ctrl.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/crc_ctrl.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/flash_driver.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Flash/flash_driver.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/flash_manager.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Flash/flash_manager.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/log_module.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Log/log_module.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/otp.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/otp.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/pka_ctrl.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/pka_ctrl.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/rf_timing_synchro.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Flash/rf_timing_synchro.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/scm.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/scm.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/scm.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/serial_cmd_interpreter.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/simple_nvm_arbiter.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/stm32_mm.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/stm_list.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/stm_list.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/stm_list.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/stm_queue.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/stm_queue.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/stm_queue.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/temp_measurement.c</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/temp_measurement.c</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/temp_measurement.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>
 		</link>
 		<link>
 			<name>Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c</name>
@@ -449,11 +509,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_ble.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/App/app_thread.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_thread.c</locationURI>
@@ -484,11 +539,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bleplat.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/Target/bpka.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/bpka.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/Target/host_stack_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/host_stack_if.c</locationURI>
@@ -517,76 +567,6 @@
 			<name>Application/User/System/Modules/ble_timer.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Modules/ble_timer.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Flash/flash_driver.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Flash/flash_driver.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Flash/flash_manager.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Flash/flash_manager.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Flash/rf_timing_synchro.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/Log/log_module.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Log/log_module.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/RTDebug/RTDebug.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Config/ADC_Ctrl/adc_ctrl_conf.c</name>

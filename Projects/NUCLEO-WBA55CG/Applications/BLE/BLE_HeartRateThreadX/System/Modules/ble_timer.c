@@ -44,13 +44,14 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static tListNode BLE_TIMER_RunningList;
-static tListNode BLE_TIMER_ExpiredList;
+static tListNode BLE_TIMER_RunningList = {0};
+static tListNode BLE_TIMER_ExpiredList = {0};
 
 /* ThreadX objects declaration */
 
-static TX_THREAD        BleTimerTaskHandle;
-static TX_SEMAPHORE     BleTimerSemaphore;
+static TX_THREAD        BleTimerTaskHandle = {0};
+static TX_SEMAPHORE     BleTimerSemaphore  = {0};
+static CHAR            *BleTimerStack_p;
 
 /* Private functions prototype------------------------------------------------*/
 static void BLE_TIMER_Callback(void* arg);
@@ -59,21 +60,19 @@ static void BLE_TIMER_Task_Entry(ULONG lArgument);
 
 void BLE_TIMER_Init(void)
 {
-  /* This function initializes the timer Queue */
+  /* Initializes timers Queue */
   LST_init_head(&BLE_TIMER_RunningList);
   LST_init_head(&BLE_TIMER_ExpiredList);
 
   UINT TXstatus;
-  CHAR *pStack;
-
   /* Create BLE Timer ThreadX objects */
 
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_BLE_TIMER, TX_NO_WAIT);
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&BleTimerStack_p, TASK_STACK_SIZE_BLE_TIMER, TX_NO_WAIT);
 
   if( TXstatus == TX_SUCCESS )
   {
     TXstatus = tx_thread_create(&BleTimerTaskHandle, "BLE Timer Task", BLE_TIMER_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_BLE_TIMER,
+                                 BleTimerStack_p, TASK_STACK_SIZE_BLE_TIMER,
                                  TASK_PRIO_BLE_TIMER, TASK_PREEMP_BLE_TIMER,
                                  TX_NO_TIME_SLICE, TX_AUTO_START);
 
@@ -85,6 +84,81 @@ void BLE_TIMER_Init(void)
     LOG_ERROR_APP( "BLE Timer ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
+}
+
+void BLE_TIMER_Deinit(void)
+{
+  tListNode *listNodeRemoved;
+
+  /* Delete BLE Timer ThreadX objects */
+  /* Only delete semaphore if it was successfully created: check its internal ID */
+  if (BleTimerSemaphore.tx_semaphore_id == TX_SEMAPHORE_ID)
+  {
+    LOG_INFO_APP("Deleting semaphore %s, status : ",BleTimerSemaphore.tx_semaphore_name);
+    if (tx_semaphore_delete(&BleTimerSemaphore) != TX_SUCCESS)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("SUCCESS\n");
+    }
+  }
+
+  /* Terminate then delete the thread only if created */
+  if (BleTimerTaskHandle.tx_thread_id == TX_THREAD_ID)
+  {
+    LOG_INFO_APP("Terminating and Deleting thread %s, status : ",BleTimerTaskHandle.tx_thread_name);
+    if (tx_thread_terminate(&BleTimerTaskHandle) != TX_SUCCESS)
+    {
+      LOG_INFO_APP("FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      if (tx_thread_delete(&BleTimerTaskHandle) != TX_SUCCESS)
+      {
+        LOG_INFO_APP("FAILED\n");
+        Error_Handler();
+      }
+      else
+      {
+        LOG_INFO_APP("SUCCESS\n");
+      }
+    }
+  }
+
+  /* Release the allocated memory if present */
+  if (BleTimerStack_p != NULL)
+  {
+    if (tx_byte_release(BleTimerStack_p) != TX_SUCCESS)
+    {
+      LOG_INFO_APP("BLE Timer memory release FAILED\n");
+      Error_Handler();
+    }
+    else
+    {
+      LOG_INFO_APP("BLE Timer memory release SUCCESS\n");
+      BleTimerStack_p = NULL;
+    }
+  }
+
+  while(LST_is_empty(&BLE_TIMER_RunningList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_RunningList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+  while(LST_is_empty(&BLE_TIMER_ExpiredList) != TRUE)
+  {
+    LST_remove_tail(&BLE_TIMER_ExpiredList, &listNodeRemoved);
+    (void)AMM_Free((uint32_t *)listNodeRemoved);
+  }
+
+  /* Reset timers Queues */
+  LST_init_head(&BLE_TIMER_RunningList);
+  LST_init_head(&BLE_TIMER_ExpiredList);
+
 }
 
 uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
@@ -167,6 +241,9 @@ void BLE_TIMER_Background(void)
 static void BLE_TIMER_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN BLE_TIMER_Task_Entry_0 */
+
+  /* USER CODE END BLE_TIMER_Task_Entry_0 */
 
   for(;;)
   {

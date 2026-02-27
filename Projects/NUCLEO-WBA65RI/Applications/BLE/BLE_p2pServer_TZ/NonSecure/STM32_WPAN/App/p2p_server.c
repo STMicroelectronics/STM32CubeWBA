@@ -360,6 +360,10 @@ void P2P_SERVER_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: P2p_serverSvcHdle = 0x%04X\n",P2P_SERVER_Context.P2p_serverSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * LED_C
    */

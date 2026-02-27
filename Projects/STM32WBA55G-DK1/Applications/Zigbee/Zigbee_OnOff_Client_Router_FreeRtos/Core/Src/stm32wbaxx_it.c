@@ -26,7 +26,9 @@
 #include "scm.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#if (CFG_JOYSTICK_SUPPORTED == 1)
 #include "app_bsp.h"
+#endif /* CFG_JOYSTICK_SUPPORTED */
 
 /* USER CODE END Includes */
 
@@ -308,6 +310,20 @@ void RADIO_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles HASH global interrupt.
   */
 void HASH_IRQHandler(void)
@@ -340,22 +356,13 @@ void HASH_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 
 /**
-  * @brief This function handles WKUP global interrupt.
-  */
-void WKUP_IRQHandler(void)
-{
-  /* Verif WakeUp Source */
-  
-  /* Clear all WakeUp flags*/
-  LL_PWR_ClearFlag_WU( );
-}
-
-/**
   * @brief This function handles ADC4 interrupt.
   */
 void ADC4_IRQHandler(void)
 {
+#if (CFG_JOYSTICK_SUPPORTED == 1)
   BSP_JOY_IRQHandler(JOY1, JOY_NONE);
+#endif /* CFG_JOYSTICK_SUPPORTED */
 }
 
 /* USER CODE END 1 */

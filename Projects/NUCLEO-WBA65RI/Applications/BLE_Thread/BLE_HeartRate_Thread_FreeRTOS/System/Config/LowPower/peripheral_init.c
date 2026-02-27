@@ -34,11 +34,10 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern PKA_HandleTypeDef hpka;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel3;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel2;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
@@ -99,18 +98,22 @@ void MX_StandbyExit_PeripheralInit(void)
   __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
 
+  memset(&hpka, 0, sizeof(hpka));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
-  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
   memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
-  memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
-  memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
+  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
+#if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
+#endif
 
   MX_GPIO_Init();
   MX_GPDMA1_Init();
+#if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
+#endif
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
+  MX_PKA_Init();
   CRCCTRL_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
@@ -128,9 +131,9 @@ void MX_Stop2Exit_PeripheralInit(void)
   /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
   /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
 
-    memset(&handle_GPDMA1_Channel3, 0, sizeof(handle_GPDMA1_Channel3));
-    memset(&handle_GPDMA1_Channel2, 0, sizeof(handle_GPDMA1_Channel2));
+    memset(&hpka, 0, sizeof(hpka));
 
+  MX_PKA_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */

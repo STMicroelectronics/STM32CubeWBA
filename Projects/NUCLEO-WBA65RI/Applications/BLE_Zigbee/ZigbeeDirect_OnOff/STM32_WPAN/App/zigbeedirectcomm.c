@@ -219,7 +219,7 @@ static SVCCTL_EvtAckStatus_t ZIGBEEDIRECTCOMM_EventHandler(void *p_Event)
               /* USER CODE END Service2_Char_5_attribute_modified */
 
               /* Disabled Notification management */
-              case 0x0:
+              case (0x00):
                 /* USER CODE BEGIN Service2_Char_5_Disabled_BEGIN */
 
                 /* USER CODE END Service2_Char_5_Disabled_BEGIN */
@@ -231,7 +231,7 @@ static SVCCTL_EvtAckStatus_t ZIGBEEDIRECTCOMM_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Notification management */
-              case 0x1:
+              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
                 /* USER CODE BEGIN Service2_Char_5_COMSVC_Notification_BEGIN */
 
                 /* USER CODE END Service2_Char_5_COMSVC_Notification_BEGIN */
@@ -520,12 +520,16 @@ void ZIGBEEDIRECTCOMM_Init(void)
                              &(ZIGBEEDIRECTCOMM_Context.ZigbeedirectcommSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: ZigbeeDirectComm, error code: 0x%x \n\r", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: ZigbeeDirectComm, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: ZigbeeDirectComm \n\r");
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: ZigbeedirectcommSvcHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.ZigbeedirectcommSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * FORMNETWORK
@@ -543,11 +547,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.FormnetworkCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : FORMNETWORK, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : FORMNETWORK, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : FORMNETWORK\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : FormnetworkCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.FormnetworkCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char1 */
@@ -571,11 +575,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.JoinnetworkCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : JOINNETWORK, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : JOINNETWORK, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : JOINNETWORK\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : JoinnetworkCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.JoinnetworkCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char2 */
@@ -599,11 +603,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.PermitjoinCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : PERMITJOIN, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : PERMITJOIN, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : PERMITJOIN\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : PermitjoinCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.PermitjoinCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char3 */
@@ -627,11 +631,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.LeavenetworkCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : LEAVENETWORK, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : LEAVENETWORK, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : LEAVENETWORK\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : LeavenetworkCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.LeavenetworkCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char4 */
@@ -655,11 +659,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.CommstatusCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : COMMSTATUS, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : COMMSTATUS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : COMMSTATUS\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : CommstatusCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.CommstatusCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char5 */
@@ -683,11 +687,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.ManagejoinerCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : MANAGEJOINER, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : MANAGEJOINER, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : MANAGEJOINER\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : ManagejoinerCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.ManagejoinerCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char6 */
@@ -711,11 +715,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.CommidentityCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : COMMIDENTITY, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : COMMIDENTITY, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : COMMIDENTITY\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : CommidentityCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.CommidentityCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char7 */
@@ -739,11 +743,11 @@ void ZIGBEEDIRECTCOMM_Init(void)
                           &(ZIGBEEDIRECTCOMM_Context.FindbindCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : FINDBIND, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : FINDBIND, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : FINDBIND\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : FindbindCharHdle = 0x%04X\n",ZIGBEEDIRECTCOMM_Context.FindbindCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService2Char8 */
@@ -781,11 +785,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value FORMNETWORK command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value FORMNETWORK command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value FORMNETWORK command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value FORMNETWORK command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_1 */
 
@@ -800,11 +804,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value JOINNETWORK command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value JOINNETWORK command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value JOINNETWORK command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value JOINNETWORK command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_2 */
 
@@ -819,11 +823,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value PERMITJOIN command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value PERMITJOIN command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value PERMITJOIN command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value PERMITJOIN command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_3 */
 
@@ -838,11 +842,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value LEAVENETWORK command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value LEAVENETWORK command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value LEAVENETWORK command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value LEAVENETWORK command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_4 */
 
@@ -857,11 +861,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value COMMSTATUS command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value COMMSTATUS command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value COMMSTATUS command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value COMMSTATUS command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_5 */
 
@@ -876,11 +880,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value MANAGEJOINER command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value MANAGEJOINER command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value MANAGEJOINER command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value MANAGEJOINER command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_6 */
 
@@ -895,11 +899,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value COMMIDENTITY command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value COMMIDENTITY command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value COMMIDENTITY command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value COMMIDENTITY command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_7 */
 
@@ -914,11 +918,11 @@ tBleStatus ZIGBEEDIRECTCOMM_UpdateValue(ZIGBEEDIRECTCOMM_CharOpcode_t CharOpcode
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value FINDBIND command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value FINDBIND command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value FINDBIND command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value FINDBIND command\n");
       }
       /* USER CODE BEGIN Service2_Char_Value_8 */
 

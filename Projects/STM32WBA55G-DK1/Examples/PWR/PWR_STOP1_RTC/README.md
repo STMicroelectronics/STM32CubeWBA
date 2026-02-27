@@ -6,7 +6,7 @@ lang: en
 ::: {.row}
 ::: {.col-sm-12 .col-lg-8}
 
-## <b>PWR_STOP1_RTC Example Description</b> 
+## <b>PWR_STOP1_RTC Example Description</b>
 
 How to enter the STOP 1 mode and wake-up from this mode by using the RTC wakeup timer.
 It allows to measure the current consumption in STOP 1 mode with RTC enabled.
@@ -71,7 +71,7 @@ Power, PWR, STOP1 mode, Interrupt, EXTI, Wakeup, Low Power, RTC, LSI,
     and development board.
 
 - STM32WBA55G-DK1 Set-up
-  - LD3 connected to PA.00 or PB.15 pin (IO used is dependant of board revision)
+  - LD3 connected to PA.00 or PB.15 pin (IO used is dependent of board revision)
 
 ### **How to use it ?**
 

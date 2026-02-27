@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,8 +18,8 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __APP_FREERTOS_H__
-#define __APP_FREERTOS_H__
+#ifndef __APP_FREERTOS_H
+#define __APP_FREERTOS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,21 +54,22 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-extern osTimerId_t	  advLowPowerTimerHandle;
-extern osTimerId_t        HRSAPPMeasurementsTimerHandle;
+extern osThreadId_t advertisingTaskHandle;
+extern osThreadId_t HRSAPPMeasurementsTaskHandle;
+extern osTimerId_t advLowPowerTimerHandle;
+extern osTimerId_t HRSAPPMeasurementsTimerHandle;
 extern osMessageQueueId_t advertisingCmdQueueHandle;
-extern osSemaphoreId_t    HRSAPPMeasurementsSemaphoreHandle;
-extern osMutexId_t        LinkLayerMutex;
+extern osSemaphoreId_t HRSAPPMeasurementsSemaphoreHandle;
 
 /* Exported function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+void ADVInitTask_Entry(void *argument);
+/* USER CODE END FunctionPrototypes */
 
 void advertisingTask_Entry(void *argument);
 void HRSAPPMeasurementsTask_Entry(void *argument);
 void advLowPowerTimer_cb(void *argument);
 void HRSAPPMeasurementsTimer_cb(void *argument);
-
-/* USER CODE END FunctionPrototypes */
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -84,4 +85,4 @@ unsigned long getRunTimeCounterValue(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /* __APP_FREERTOS_H__ */
+#endif /* __APP_FREERTOS_H */

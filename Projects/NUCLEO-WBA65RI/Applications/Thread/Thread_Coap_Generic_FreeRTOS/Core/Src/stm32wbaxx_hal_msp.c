@@ -85,28 +85,7 @@ void HAL_MspInit(void)
   HAL_NVIC_EnableIRQ(RADIO_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
-  //Do not remove, it prevents hardfault in OT stack
-  MPU_Attributes_InitTypeDef MPU_AttributesInit;
-  MPU_Region_InitTypeDef MPU_RegionInit;
-
-  HAL_MPU_Disable();
-
-  MPU_AttributesInit.Number = 0;
-  MPU_AttributesInit.Attributes = INNER_OUTER(MPU_NOT_CACHEABLE);
-  HAL_MPU_ConfigMemoryAttributes(&MPU_AttributesInit);
-
-  MPU_RegionInit.Enable = MPU_REGION_ENABLE;
-  MPU_RegionInit.Number = 0;
-  MPU_RegionInit.AttributesIndex  = 0;
-  MPU_RegionInit.BaseAddress = SRAM6_BASE;
-  MPU_RegionInit.LimitAddress = SRAM6_BASE + SRAM6_SIZE - 1;
-  MPU_RegionInit.AccessPermission = MPU_REGION_ALL_RW;
-  MPU_RegionInit.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_RegionInit.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-  HAL_MPU_ConfigRegion(&MPU_RegionInit);
-
-  HAL_MPU_Enable(MPU_HFNMI_PRIVDEF);
-
+  
   /* USER CODE END MspInit 1 */
 }
 
@@ -362,5 +341,44 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+  * @brief PKA MSP Initialization
+  * This function configures the hardware resources used in this example
+  * @param hpka: PKA handle pointer
+  * @retval None
+  */
+void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_PKA_CLK_ENABLE();
+    /* PKA interrupt Init */
+    HAL_NVIC_SetPriority(PKA_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(PKA_IRQn);
+
+    HW_RNG_EnableClock(0x04);
+  }
+}
+
+/**
+  * @brief PKA MSP De-Initialization
+  * This function freeze the hardware resources used in this example
+  * @param hpka: PKA handle pointer
+  * @retval None
+  */
+void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    __HAL_RCC_PKA_CLK_DISABLE();
+
+    /* PKA interrupt DeInit */
+    HAL_NVIC_DisableIRQ(PKA_IRQn);
+
+    HW_RNG_DisableClock(0x04);
+  }
+}
 
 /* USER CODE END 1 */

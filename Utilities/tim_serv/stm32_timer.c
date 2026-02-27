@@ -1,24 +1,5 @@
 /*!
- * \file      timer.c
- *
- * \brief     Timer objects and scheduling management implementation
- *
- * \copyright Revised BSD License, see section \ref LICENSE.
- *
- * \code
- *                ______                              _
- *               / _____)             _              | |
- *              ( (____  _____ ____ _| |_ _____  ____| |__
- *               \____ \| ___ |    (_   _) ___ |/ ___)  _ \
- *               _____) ) ____| | | || |_| ____( (___| | | |
- *              (______/|_____)_|_|_| \__)_____)\____)_| |_|
  *              (C)2013-2017 Semtech
- *
- * \endcode
- *
- * \author    Miguel Luis ( Semtech )
- *
- * \author    Gregory Cristian ( Semtech )
  */
 
 /******************************************************************************
@@ -364,23 +345,24 @@ uint32_t UTIL_TIMER_GetFirstRemainingTime(void)
 
 void UTIL_TIMER_IRQ_Handler( void )
 {
-  UTIL_TIMER_Object_t *cur, *exec = NULL;
+  UTIL_TIMER_Object_t* cur;
   uint32_t old, now, DeltaContext;
-  void ( *FunctionCallback )( void *) = NULL;
-  void *argument = NULL;
+  UTIL_TIMER_Object_t *ExecutionHead = NULL;
+  UTIL_TIMER_Object_t *currentExecutionHead = NULL;
 
   UTIL_TIMER_ENTER_CRITICAL_SECTION();
 
   old  =  UTIL_TimerDriver.GetTimerContext( );
   now  =  UTIL_TimerDriver.SetTimerContext( );
-  DeltaContext = now  - old; /*intentional wrap around */
 
+  DeltaContext = now  - old; /*intentional wrap around */
+  
   /* update timeStamp based upon new Time Reference*/
   /* because delta context should never exceed 2^32*/
   if ( TimerListHead != NULL )
   {
     cur = TimerListHead;
-	do {
+	  do {
       if (cur->Timestamp > DeltaContext)
       {
         cur->Timestamp -= DeltaContext;
@@ -388,41 +370,53 @@ void UTIL_TIMER_IRQ_Handler( void )
       else
       {
         cur->Timestamp = 0;
-
-        /* get the first expired timer and save it context callback */
-        if (FunctionCallback == NULL)
-        {
-            /* remove the current from the chain list as it is the first expired */
-            TimerListHead = TimerListHead->Next;
-            cur->IsPending = 0;
-            cur->IsRunning = 0;
-            /* save for execution when chain list is fully update */
-            if(( cur->Mode == UTIL_TIMER_PERIODIC) && (cur->IsReloadStopped == 0U))
-            {
-              exec = cur;
-            }
-            argument = cur->argument;
-            FunctionCallback = cur->Callback;
-        }
       }
       cur = cur->Next;
     } while(cur != NULL);
-
-	if (exec != NULL) (void)UTIL_TIMER_Start(exec);
-
-    /* start the next TimerListHead if it exists and it is not pending*/
-    if(( TimerListHead != NULL ) && (TimerListHead->IsPending == 0U))
-    {
-      TimerSetTimeout( TimerListHead );
-    }
   }
 
-  UTIL_TIMER_EXIT_CRITICAL_SECTION();
-
-  // Call user call back
-  if (FunctionCallback != NULL)
+  /* Execute expired timer and update the list */
+  /* Create the chain list of the callback to execute */
+  while ((TimerListHead != NULL) && ((TimerListHead->Timestamp == 0U) || (TimerListHead->Timestamp < UTIL_TimerDriver.GetTimerElapsedTime(  ))))
   {
-    FunctionCallback(argument);
+      cur = TimerListHead;
+      TimerListHead = TimerListHead->Next;
+      cur->IsPending = 0;
+      cur->IsRunning = 0;
+
+      /* insert timer into the execution list */
+      if ( ExecutionHead == NULL )
+      {
+        currentExecutionHead = ExecutionHead = cur;
+        currentExecutionHead->NextExecution = NULL;
+      }
+      else
+      {
+        currentExecutionHead->NextExecution = cur;
+        currentExecutionHead = cur;
+        currentExecutionHead->NextExecution = NULL;
+      }
+
+      /* if the timer is of periodic type, restart it */
+      if(( cur->Mode == UTIL_TIMER_PERIODIC) && (cur->IsReloadStopped == 0U))
+      {
+        (void)UTIL_TIMER_Start(cur);
+      }
+  }
+
+  /* start the next TimerListHead if it exists and it is not pending*/
+  if(( TimerListHead != NULL ) && (TimerListHead->IsPending == 0U))
+  {
+    TimerSetTimeout( TimerListHead );
+  }
+  UTIL_TIMER_EXIT_CRITICAL_SECTION();
+ 
+  /* Execute all callbacks in the execution list */
+  while ( ExecutionHead != NULL )
+  {
+    currentExecutionHead = ExecutionHead;
+    ExecutionHead = ExecutionHead->NextExecution;
+    currentExecutionHead->Callback(currentExecutionHead->argument);
   }
 }
 

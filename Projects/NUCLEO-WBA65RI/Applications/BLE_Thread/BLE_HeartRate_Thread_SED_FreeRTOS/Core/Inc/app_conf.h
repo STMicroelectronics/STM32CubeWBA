@@ -67,8 +67,8 @@
 
 #define ADV_INTERVAL_MIN                  (80)
 #define ADV_INTERVAL_MAX                  (100)
-#define ADV_LP_INTERVAL_MIN               (1600)
-#define ADV_LP_INTERVAL_MAX               (4000)
+#define ADV_LP_INTERVAL_MIN               (1000)
+#define ADV_LP_INTERVAL_MAX               (2500)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
 
@@ -276,6 +276,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -445,8 +446,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
@@ -470,6 +471,12 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
+
+/******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
 
 /******************************************************************************
  * MEMORY MANAGER
@@ -497,7 +504,8 @@ typedef enum
  */
 
 #define CFG_LED_SUPPORTED                       (0)
-#define CFG_BUTTON_SUPPORTED                    (0)
+#define CFG_BUTTON_SUPPORTED                    (1)
+#define BLE_RADIO_ACTIVITY_ON_LED_SUPPORT       (0)
 
 /**
  * Overwrite LPM configuration imposed by OpenThread CLI Option
@@ -546,6 +554,11 @@ typedef enum
   #define CFG_LPM_STOP2_SUPPORTED   (0U)
   #undef CFG_LPM_STANDBY_SUPPORTED
   #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+#if !defined(PWR_STOP2_SUPPORT)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
 #endif
 
 /*********************************************************************

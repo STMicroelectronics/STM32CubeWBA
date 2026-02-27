@@ -30,6 +30,7 @@ extern "C" {
 #include "tx_api.h"
 #include "tx_initialize.h"
 #include "tx_thread.h"
+#include "tx_semaphore.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -66,8 +67,8 @@ extern "C" {
 #define TASK_PRIO_BLE_TIMER                     (15u)
 #define TASK_PREEMP_BLE_TIMER                   (0u)
 
-#define TASK_PRIO_BPKA                          (15u)
-#define TASK_PREEMP_BPKA                        (0u)
+#define TASK_PRIO_PKACTRL                       (15u)
+#define TASK_PREEMP_PKACTRL                     (0u)
 
 #define TASK_PRIO_IDLE                          (31u)
 #define TASK_PREEMP_IDLE                        (0u)
@@ -96,7 +97,7 @@ extern "C" {
 #define TASK_STACK_SIZE_BLE_HOST                RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_HCI_ASYNC_EVENT         (RTOS_STACK_SIZE_NORMAL + RTOS_STACK_SIZE_SMALL)
 #define TASK_STACK_SIZE_BLE_TIMER               RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_BPKA                    RTOS_STACK_SIZE_REDUCED
+#define TASK_STACK_SIZE_PKACTRL                 RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
 #define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL

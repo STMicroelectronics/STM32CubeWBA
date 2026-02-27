@@ -53,8 +53,6 @@ DMA_HandleTypeDef handle_GPDMA1_Channel2;
 DMA_HandleTypeDef handle_GPDMA1_Channel1;
 DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
-PKA_HandleTypeDef hpka;
-
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
@@ -67,7 +65,6 @@ RTC_HandleTypeDef hrtc;
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPDMA1_Init(void);
-static void MX_PKA_Init(void);
 static void MX_AES_Init(void);
 static void MX_HASH_Init(void);
 static void MX_LPUART1_UART_Init(void);
@@ -118,7 +115,6 @@ int main(void)
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
   MX_RTC_Init();
-  MX_PKA_Init();
   MX_AES_Init();
   MX_HASH_Init();
   MX_LPUART1_UART_Init();
@@ -451,32 +447,6 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
-  * @brief PKA Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_PKA_Init(void)
-{
-
-  /* USER CODE BEGIN PKA_Init 0 */
-
-  /* USER CODE END PKA_Init 0 */
-
-  /* USER CODE BEGIN PKA_Init 1 */
-
-  /* USER CODE END PKA_Init 1 */
-  hpka.Instance = PKA;
-  if (HAL_PKA_Init(&hpka) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN PKA_Init 2 */
-
-  /* USER CODE END PKA_Init 2 */
 
 }
 

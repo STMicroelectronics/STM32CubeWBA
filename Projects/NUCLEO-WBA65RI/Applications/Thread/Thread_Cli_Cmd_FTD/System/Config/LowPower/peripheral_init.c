@@ -31,6 +31,7 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
+extern PKA_HandleTypeDef hpka;
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
@@ -93,6 +94,7 @@ void MX_StandbyExit_PeripheralInit(void)
   __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
 
+  memset(&hpka, 0, sizeof(hpka));
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&huart1, 0, sizeof(huart1));
 #if (CFG_LOG_SUPPORTED == 1)
@@ -106,6 +108,7 @@ void MX_StandbyExit_PeripheralInit(void)
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART2_UART_Init();
 #endif
+  MX_PKA_Init();
 
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
   APP_BSP_StandbyExit();
@@ -120,8 +123,10 @@ void MX_Stop2Exit_PeripheralInit(void)
   /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
   /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
 
+    memset(&hpka, 0, sizeof(hpka));
     memset(&huart2, 0, sizeof(huart2));
 
+  MX_PKA_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */

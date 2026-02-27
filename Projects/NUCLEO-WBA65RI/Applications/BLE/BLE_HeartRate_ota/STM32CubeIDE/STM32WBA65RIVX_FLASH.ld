@@ -44,7 +44,7 @@ _Min_Stack_Size = 0x1000; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM      (rw)     : ORIGIN = 0x20000020,   LENGTH = (448K - 0x20)
+  RAM      (rw)     : ORIGIN = 0x20000020,   LENGTH = (64K - 0x20) /* use only page 1 of SRAM1 */
   RAM2     (rw)     : ORIGIN = 0x20070000,   LENGTH = 64K
 
   NVM      (r)      : ORIGIN = 0x081FC000,   LENGTH = 16K

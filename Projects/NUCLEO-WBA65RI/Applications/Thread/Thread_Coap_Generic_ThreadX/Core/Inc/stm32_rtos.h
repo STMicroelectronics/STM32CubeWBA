@@ -30,6 +30,7 @@ extern "C" {
 #include "tx_api.h"
 #include "tx_initialize.h"
 #include "tx_thread.h"
+#include "tx_semaphore.h"
 #include "app_threadx.h"
 /* USER CODE BEGIN Includes */
 
@@ -103,7 +104,8 @@ extern "C" {
 #define TASK_STACK_SIZE_RCP_SPINEL_RX           RTOS_STACK_SIZE_NORMAL
 #define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
-#define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
+// TODO #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL
+#define TASK_STACK_SIZE_BUTTON_Bx               RTOS_STACK_SIZE_NORMAL
 
 /* USER CODE END TASK_Size_Define */
 

@@ -67,8 +67,8 @@
 
 #define ADV_INTERVAL_MIN                  (80)
 #define ADV_INTERVAL_MAX                  (100)
-#define ADV_LP_INTERVAL_MIN               (1600)
-#define ADV_LP_INTERVAL_MAX               (4000)
+#define ADV_LP_INTERVAL_MIN               (1000)
+#define ADV_LP_INTERVAL_MAX               (2500)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
 
@@ -276,6 +276,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -314,9 +315,9 @@ extern UART_HandleTypeDef           huart1;
 #define LOG_UART_HANDLER            huart1
 
 /* Configure Log display settings */
-#define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (0U)
+#define CFG_LOG_INSERT_COLOR_INSIDE_THE_TRACE       (1U)
 #define CFG_LOG_INSERT_TIME_STAMP_INSIDE_THE_TRACE  (0U)
-#define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (0U)
+#define CFG_LOG_INSERT_EOL_INSIDE_THE_TRACE         (1U)
 
 #define CFG_LOG_TRACE_FIFO_SIZE     (4096U)
 #define CFG_LOG_TRACE_BUF_SIZE      (256U)
@@ -347,6 +348,13 @@ extern UART_HandleTypeDef           huart1;
 /* USER CODE END Log_level */
 
 /******************************************************************************
+ * Configure Serial Link used for Thread Command Line
+ ******************************************************************************/
+#define OT_CLI_USE                  (1U)
+extern UART_HandleTypeDef           huart2;
+#define OT_CLI_UART_HANDLER         huart2
+
+/******************************************************************************
  * Sequencer
  ******************************************************************************/
 
@@ -359,16 +367,16 @@ typedef enum
   CFG_TASK_HW_RNG,
   CFG_TASK_LINK_LAYER,
   CFG_TASK_HCI_ASYNCH_EVT_ID,
+  CFG_TASK_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
   CFG_TASK_AMM,
-  CFG_TASK_BPKA,
+  CFG_TASK_PKACTRL,
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   CFG_TASK_OT_UART,
   CFG_TASK_OT_ALARM,
   CFG_TASK_OT_US_ALARM,
   CFG_TASK_OT_TASKLETS,
-  CFG_TASK_SEND_COAP_MSG,
   CFG_TASK_OT_RCP_SPINEL_RX,
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
@@ -379,7 +387,7 @@ typedef enum
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
 
-  CFG_TASK_COAP_SEND_MSG,
+  CFG_TASK_SEND_COAP_MSG,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -405,35 +413,24 @@ typedef enum
 /* Sequencer configuration */
 #define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
 
-/**
- * This is a bit mapping over 32bits listing all events id supported in the application
- */
-typedef enum
-{
-  CFG_IDLEEVT_PROC_GAP_COMPLETE,
-  /* USER CODE BEGIN CFG_IdleEvt_Id_t */
-
-  /* USER CODE END CFG_IdleEvt_Id_t */
-} CFG_IdleEvt_Id_t;
-
-/* Sequencer priorities by default  */
-#define CFG_TASK_PRIO_ALARM                 CFG_SEQ_PRIO_1
-#define CFG_TASK_PRIO_US_ALARM              CFG_TASK_PRIO_ALARM
-#define CFG_TASK_PRIO_TASKLETS              CFG_SEQ_PRIO_0
-
 /* Sequencer defines */
 #define TASK_HW_RNG                         ( 1u << CFG_TASK_HW_RNG )
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 #define TASK_FLASH_MNGR                     ( 1u << CFG_TASK_FLASH_MANAGER )
- 
 /* USER CODE BEGIN TASK_ID_Define */
-#define TASK_BSP_BUTTON_B1                      ( 1u << CFG_TASK_BSP_BUTTON_B1 )
-#define TASK_BSP_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
-#define TASK_BSP_BUTTON_B3                      ( 1u << CFG_TASK_BSP_BUTTON_B3 )
 
+/* USER CODE END TASK_ID_Define */
+
+/**
+ * These are the lists of events id registered to the sequencer
+ * Each event id shall be in the range [0:31]
+ */
 typedef enum
 {
   CFG_EVENT_PKA_COMPLETED,
+  CFG_PKA_MUTEX,
+  CFG_PKA_END_OF_PROCESS,
+  CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */
@@ -476,7 +473,7 @@ typedef enum
  *   - 2 : Debugger available in low power mode.
  *
  ******************************************************************************/
-#define CFG_DEBUGGER_LEVEL                  (1)
+#define CFG_DEBUGGER_LEVEL                  (0)
 
 /******************************************************************************
  * RealTime GPIO debug module configuration
@@ -502,23 +499,23 @@ typedef enum
  * HW RADIO configuration
  ******************************************************************************/
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
-#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (0)
+#define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
 /* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
 #define USE_CTE_DEGRADATION                 (0)
 
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
-#define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
+#define RADIO_INTR_PRIO_LOW                 (7)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
 
-#define RADIO_SW_LOW_INTR_NUM               ADC4_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
+#define RADIO_SW_LOW_INTR_NUM               COMP_IRQn      /* Selected interrupt vector for 2.4GHz RADIO low ISR */
 #define RADIO_SW_LOW_INTR_PRIO              (15)           /* 2.4GHz RADIO low ISR priority */
 
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
@@ -544,13 +541,19 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
+
+/******************************************************************************
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (4000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (1024U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
 #define CFG_AMM_VIRTUAL_BLE_TIMERS                        (1U)
-#define CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE     (400U)  /* words (32 bits) */
+#define CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE     (64U)  /* words (32 bits) */
 #define CFG_AMM_VIRTUAL_BLE_EVENTS                        (2U)
 #define CFG_AMM_VIRTUAL_BLE_EVENTS_BUFFER_SIZE     (64U)  /* words (32 bits) */
 
@@ -604,6 +607,23 @@ typedef enum
   #undef CFG_LPM_STANDBY_SUPPORTED
   #define CFG_LPM_STANDBY_SUPPORTED (0U)
 #endif
+
+#if !defined(PWR_STOP2_SUPPORT)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
+#endif
+
+/*********************************************************************
+ * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
+ * Please use a combination of previous defines instead
+ * Temporary define for backward compatibility
+ *********************************************************************/
+ #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
+ #define CFG_LPM_STDBY_SUPPORTED (1U)
+ #else
+ #define CFG_LPM_STDBY_SUPPORTED (0U)
+ #endif
+
 /* USER CODE BEGIN Defines_2 */
 /**
  * Switch to enable/disable BLE radio activity shown on green LED

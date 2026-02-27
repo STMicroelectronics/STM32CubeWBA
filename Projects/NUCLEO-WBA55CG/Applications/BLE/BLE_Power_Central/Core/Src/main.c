@@ -103,7 +103,7 @@ int main(void)
   SystemPower_Config();
 
   /* USER CODE BEGIN SysInit */
-  #if (CFG_RF_TX_POWER_TABLE_ID == 1)
+  #if ((CFG_RF_TX_POWER_TABLE_ID == 1)||(CFG_RF_TX_POWER_TABLE_ID == 3))
   if (HAL_PWREx_GetSupplyConfig() == PWR_SMPS_SUPPLY)
   {
     HAL_PWREx_SetREGVDDHPAInputSupply(PWR_RADIO_REG_VDDHPA_VD11);
@@ -238,6 +238,7 @@ static void SystemPower_Config(void)
   HAL_NVIC_SetPriority(WKUP_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(WKUP_IRQn);
 /* USER CODE BEGIN PWR */
+
 /* USER CODE END PWR */
 }
 
@@ -376,7 +377,6 @@ void MX_ICACHE_Init(void)
   /* USER CODE END ICACHE_Init 0 */
 
   /* USER CODE BEGIN ICACHE_Init 1 */
-
   /* USER CODE END ICACHE_Init 1 */
 
   /** Full retention for ICACHE in stop mode
@@ -388,7 +388,6 @@ void MX_ICACHE_Init(void)
   LL_ICACHE_SetMode(LL_ICACHE_1WAY);
   LL_ICACHE_Enable();
   /* USER CODE BEGIN ICACHE_Init 2 */
-
   /* USER CODE END ICACHE_Init 2 */
 
 }
@@ -593,7 +592,7 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-#if(CFG_LPM_LEVEL > 1)
+#if( (CFG_DEBUGGER_LEVEL == 0 ) && (CFG_LOG_SUPPORTED == 0) )
 void Standby_Restore_GPIO(void)
 {
 }

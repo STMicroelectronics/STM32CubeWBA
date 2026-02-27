@@ -53,10 +53,10 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)

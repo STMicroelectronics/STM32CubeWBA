@@ -121,7 +121,6 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
   hci_event_pckt *p_event_pckt;
   evt_blecore_aci *p_blecore_evt;
   aci_gatt_attribute_modified_event_rp0 *p_attribute_modified;
-  aci_gatt_write_permit_req_event_rp0   *p_write_perm_req;
   HRS_NotificationEvt_t                 notification;
   /* USER CODE BEGIN Service1_EventHandler_1 */
 
@@ -212,41 +211,6 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
 
           /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
-          p_write_perm_req = (aci_gatt_write_permit_req_event_rp0*)p_blecore_evt->data;
-          if(p_write_perm_req->Attribute_Handle == (HRS_Context.HrcpCharHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /*USER CODE BEGIN Service1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-
-            if (p_write_perm_req->Data[0] == HRS_CNTL_POINT_RESET_ENERGY_EXPENDED)
-            {
-              /* received a correct value for HRM control point char */
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00, /* write_status = 0 (no error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_IS_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
-
-              /**
-               * Notify the application to Reset The Energy Expended Value
-               */
-              notification.EvtOpcode = HRS_RESET_ENERGY_EXPENDED_EVT;
-              HRS_Notification(&notification);
-            }
-            else
-            {
-              /* received value of HRM control point char is incorrect */
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x1, /* write_status = 1 (error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_NOT_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
-            }
-
-            /*USER CODE END Service1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          }
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -372,12 +336,16 @@ void HRS_Init(void)
                              &(HRS_Context.HrsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * HRME
@@ -395,11 +363,11 @@ void HRS_Init(void)
                           &(HRS_Context.HrmeCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HRME, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : HRME, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrmeCharHdle = 0x%04X\n",HRS_Context.HrmeCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : HrmeCharHdle = 0x%04X\n",HRS_Context.HrmeCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
@@ -422,11 +390,11 @@ void HRS_Init(void)
                           &(HRS_Context.BslCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : BSL, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : BSL, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BslCharHdle = 0x%04X\n",HRS_Context.BslCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : BslCharHdle = 0x%04X\n",HRS_Context.BslCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
@@ -443,17 +411,17 @@ void HRS_Init(void)
                           SizeHrcp,
                           CHAR_PROP_WRITE,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP,
+                          GATT_DONT_NOTIFY_EVENTS,
                           0x10,
                           CHAR_VALUE_LEN_CONSTANT,
                           &(HRS_Context.HrcpCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HRCP, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : HRCP, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrcpCharHdle = 0x%04X\n",HRS_Context.HrcpCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : HrcpCharHdle = 0x%04X\n",HRS_Context.HrcpCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
@@ -490,11 +458,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HRME command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value HRME command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HRME command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value HRME command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -509,11 +477,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value BSL command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value BSL command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value BSL command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value BSL command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -528,11 +496,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_DEBUG_APP("  Fail   : aci_gatt_update_char_value HRCP command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value HRCP command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_DEBUG_APP("  Success: aci_gatt_update_char_value HRCP command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value HRCP command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

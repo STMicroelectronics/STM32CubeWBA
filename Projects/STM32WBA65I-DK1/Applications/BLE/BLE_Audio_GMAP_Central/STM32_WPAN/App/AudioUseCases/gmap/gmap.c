@@ -126,13 +126,13 @@ tBleStatus GMAP_Linkup(uint16_t ConnHandle)
       }
       else
       {
-        BLE_DBG_GMAP_MSG("TMAP Link Up procedure is aborted because no available EATT Bearer\n");
+        BLE_DBG_GMAP_MSG("GMAP Link Up procedure is aborted because no available EATT Bearer\n");
         return BLE_STATUS_BUSY;
       }
     }
     else if (BLE_AUDIO_STACK_ATT_IsRegisteredATTProcedure(p_conn_info->Connection_Handle,0) == BLE_STATUS_SUCCESS)
     {
-      BLE_DBG_GMAP_MSG("TMAP Link Up procedure is aborted because ATT Bearer already used\n");
+      BLE_DBG_GMAP_MSG("GMAP Link Up procedure is aborted because ATT Bearer already used\n");
       return BLE_STATUS_BUSY;
     }
 
@@ -184,7 +184,7 @@ tBleStatus GMAP_Linkup(uint16_t ConnHandle)
       }
       else
       {
-        BLE_DBG_GMAP_MSG("No ressource to use a GMAP Client Instance\n");
+        BLE_DBG_GMAP_MSG("No resource to use a GMAP Client Instance\n");
         hciCmdResult = BLE_STATUS_FAILED;
       }
     }
@@ -442,7 +442,7 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
                           p_gmap_clt->GMAPRoleChar.ValueHandle = handle;
                           p_gmap_clt->GMAPRoleChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                          p_gmap_clt->GMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->GMAPRoleChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_gmap_clt->pGattChar = &p_gmap_clt->GMAPRoleChar;
                         break;
 
@@ -453,7 +453,7 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
                           p_gmap_clt->UGGFeaturesChar.ValueHandle = handle;
                           p_gmap_clt->UGGFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                          p_gmap_clt->UGGFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->UGGFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_gmap_clt->pGattChar = &p_gmap_clt->UGGFeaturesChar;
                         break;
 
@@ -464,7 +464,7 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
                           p_gmap_clt->UGTFeaturesChar.ValueHandle = handle;
                           p_gmap_clt->UGTFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                          p_gmap_clt->UGTFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->UGTFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_gmap_clt->pGattChar = &p_gmap_clt->UGTFeaturesChar;
                         break;
 
@@ -475,7 +475,7 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
                           p_gmap_clt->BGSFeaturesChar.ValueHandle = handle;
                           p_gmap_clt->BGSFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                          p_gmap_clt->BGSFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->BGSFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_gmap_clt->pGattChar = &p_gmap_clt->BGSFeaturesChar;
                         break;
 
@@ -486,7 +486,7 @@ SVCCTL_EvtAckStatus_t GMAP_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_GMAP_MSG("Handle = 0x%04X\n",handle);
                           p_gmap_clt->BGRFeaturesChar.ValueHandle = handle;
                           p_gmap_clt->BGRFeaturesChar.EndHandle = p_gmap_clt->ServiceEndHandle;
-                          p_gmap_clt->BGRFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_gmap_clt->BGRFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_gmap_clt->pGattChar = &p_gmap_clt->BGRFeaturesChar;
                         break;
 
@@ -855,7 +855,7 @@ static tBleStatus GMAP_CLT_Linkup_Process(GMAP_CltInst_t *pGMAP_Clt,BleEATTBeare
 static void GMAP_CLT_Post_Linkup_Event(GMAP_CltInst_t *pGMAP_Clt, tBleStatus const Status)
 {
   GMAP_Notification_Evt_t evt;
-  GMAP_AttServiceInfo_Evt_t parms;
+  GMAP_AttServiceInfo_Evt_t params;
 
   BLE_DBG_GMAP_MSG("GMAP Client notifies GMAP Linkup is complete with status 0x%x\n",Status);
 
@@ -869,14 +869,14 @@ static void GMAP_CLT_Post_Linkup_Event(GMAP_CltInst_t *pGMAP_Clt, tBleStatus con
     evt.EvtOpcode = (GMAP_NotCode_t) GMAP_LINKUP_COMPLETE_EVT;
     if (evt.Status == BLE_STATUS_SUCCESS)
     {
-      parms.GMAPRole = pGMAP_Clt->GMAPRole;
-      parms.UGGFeatures = pGMAP_Clt->UGGFeatures;
-      parms.UGTFeatures = pGMAP_Clt->UGTFeatures;
-      parms.BGSFeatures = pGMAP_Clt->BGSFeatures;
-      parms.BGRFeatures = pGMAP_Clt->BGRFeatures;
-      parms.StartAttHandle = pGMAP_Clt->ServiceStartHandle;
-      parms.EndAttHandle = pGMAP_Clt->ServiceEndHandle;
-      evt.pInfo = (void *) &parms;
+      params.GMAPRole = pGMAP_Clt->GMAPRole;
+      params.UGGFeatures = pGMAP_Clt->UGGFeatures;
+      params.UGTFeatures = pGMAP_Clt->UGTFeatures;
+      params.BGSFeatures = pGMAP_Clt->BGSFeatures;
+      params.BGRFeatures = pGMAP_Clt->BGRFeatures;
+      params.StartAttHandle = pGMAP_Clt->ServiceStartHandle;
+      params.EndAttHandle = pGMAP_Clt->ServiceEndHandle;
+      evt.pInfo = (void *) &params;
     }
     else
     {

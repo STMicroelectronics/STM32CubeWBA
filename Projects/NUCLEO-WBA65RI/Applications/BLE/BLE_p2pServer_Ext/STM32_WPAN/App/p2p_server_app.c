@@ -91,7 +91,11 @@ static P2P_SERVER_APP_Context_t P2P_SERVER_APP_Context;
 uint8_t a_P2P_SERVER_UpdateCharData[247];
 
 /* USER CODE BEGIN PV */
-
+static uint8_t Long_Written_Data[509];
+static uint8_t i = 0;
+static uint8_t j;
+static uint16_t Long_Written_Data_Length;
+static uint16_t Long_Written_Data_Offset;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -151,6 +155,46 @@ void P2P_SERVER_Notification(P2P_SERVER_NotificationEvt_t *p_Notification)
       LOG_INFO_APP("-- P2P APPLICATION SERVER : NOTIFICATION DISABLED\n");
       LOG_INFO_APP(" \n\r");
       /* USER CODE END Service1Char2_NOTIFY_DISABLED_EVT */
+      break;
+
+    case P2P_SERVER_LONG_C_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN Service1Char3_WRITE_NO_RESP_EVT */
+      if (p_Notification->DataTransfered.Offset == 0x8000)
+      {
+        LOG_INFO_APP("-- First block received\n");
+        UNUSED(Long_Written_Data);
+        for (i=0;i<p_Notification->DataTransfered.Length ;i++)
+        {
+          Long_Written_Data[i] = p_Notification->DataTransfered.p_Payload[i];
+        }
+        j = p_Notification->DataTransfered.Length - 1;
+        Long_Written_Data_Length = p_Notification->DataTransfered.Length;
+      }
+      else if ((p_Notification->DataTransfered.Offset & 0x0FFF) == p_Notification->DataTransfered.Offset)
+      {
+        Long_Written_Data_Offset = p_Notification->DataTransfered.Offset & 0x0FFF; 
+        Long_Written_Data_Length += p_Notification->DataTransfered.Length;
+        j = Long_Written_Data_Offset;
+        for (i=0;i<p_Notification->DataTransfered.Length ;i++)
+        {
+          Long_Written_Data[j] = p_Notification->DataTransfered.p_Payload[i];
+          j++;
+        }
+        LOG_INFO_APP("-- Last block received \n");
+      }
+      else
+      {
+        LOG_INFO_APP("-- More data expected\n");
+        Long_Written_Data_Offset = p_Notification->DataTransfered.Offset & 0x0FFF;
+        Long_Written_Data_Length += p_Notification->DataTransfered.Length;
+        j = Long_Written_Data_Offset;
+        for (i=0;i<p_Notification->DataTransfered.Length ;i++)
+        {
+          Long_Written_Data[j] = p_Notification->DataTransfered.p_Payload[i];
+          j++;
+        }
+      }
+      /* USER CODE END Service1Char3_WRITE_NO_RESP_EVT */
       break;
 
     default:

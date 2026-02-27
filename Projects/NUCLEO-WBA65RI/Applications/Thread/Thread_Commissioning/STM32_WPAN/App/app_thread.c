@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -92,8 +93,9 @@ static void APP_THREAD_CliInit(otInstance *aInstance);
 static void APP_THREAD_ProcessUart(void);
 #endif // OT_CLI_USE
 
+static void APP_THREAD_PersistenceStartup(void);
+
 /* USER CODE BEGIN PFP */
-static void APP_THREAD_AppInit(void);
 static void APP_THREAD_JoinerHandler(otError OtError, void *pContext);
 static void APP_THREAD_ConfigJoiner(void);
 static void APP_THREAD_ConfigLeaderDevice(void);
@@ -140,15 +142,8 @@ void ProcessTasklets(void)
  */
 void ProcessOpenThreadTasklets(void)
 {
-  /* wakeUp the system */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-  //ll_sys_dp_slp_exit();
-
   /* process the tasklet */
   otTaskletsProcess(PtOpenThreadInstance);
-
-  /* put the IP802_15_4 back to sleep mode */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
 
   /* reschedule the tasklets if any */
   ProcessTasklets();
@@ -198,6 +193,8 @@ void Thread_Init(void)
   uint8_t *otInstanceBuffer = NULL;
 #endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
 
+  APP_THREAD_PersistenceStartup();
+
   otSysInit(0, NULL);
 
 #if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
@@ -228,7 +225,19 @@ void Thread_Init(void)
   ll_sys_thread_init();
 
   /* USER CODE BEGIN INIT TASKS */
-  APP_THREAD_AppInit();
+  /* Set the commissioning task */
+  UTIL_SEQ_RegTask(1<< CFG_TASK_START_COMMISSIONER, UTIL_SEQ_RFU, APP_THREAD_StartCommissioner);
+    /**
+   * Create timer to handle LED toggling
+   */
+  UTIL_TIMER_Create(&timerThreadApp_Id,
+                    LED_TIMEOUT,
+                    UTIL_TIMER_PERIODIC,
+                    &APP_THREAD_TimingElapsed,
+                    NULL);
+
+  UTIL_TIMER_Start(&timerThreadApp_Id);
+  
   /* USER CODE END INIT TASKS */
 }
 
@@ -247,6 +256,24 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_SET_STATE_CB,error);
   }
 
+  error = otPlatRadioSetCcaEnergyDetectThreshold(PtOpenThreadInstance, C_CCA_THRESHOLD);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_SET_THRESHOLD,error);
+  }
+
+  otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
+
+  error = otIp6SetEnabled(PtOpenThreadInstance, true);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_IPV6_ENABLE,error);
+  }
+  error = otThreadSetEnabled(PtOpenThreadInstance, false);
+  if (error != OT_ERROR_NONE)
+  {
+    APP_THREAD_Error(ERR_THREAD_START,error);
+  }
   /* USER CODE BEGIN DEVICECONFIG */
 
 
@@ -256,27 +283,12 @@ static void APP_THREAD_DeviceConfig(void)
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();
 
-  UTIL_SEQ_RegTask(1<< CFG_TASK_START_COMMISSIONER, UTIL_SEQ_RFU, APP_THREAD_StartCommissioner);
-
   APP_THREAD_DeviceConfig();
-
-  
-  /**
-   * Create timer to handle LED toggling
-   */
-  UTIL_TIMER_Create(&timerThreadApp_Id,
-                    LED_TIMEOUT,
-                    UTIL_TIMER_PERIODIC,
-                    &APP_THREAD_TimingElapsed,
-                    NULL);
-
-  UTIL_TIMER_Start(&timerThreadApp_Id);
 }
 
 /**
@@ -446,7 +458,7 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           APP_LED_OFF(LD3);
           if (APP_THREAD_DeviceIsLeader == TRUE)
           {
-            UTIL_SEQ_SetTask(TASK_START_COMMISSIONER, TASK_PRIO_COMMISSIONER);
+            UTIL_SEQ_SetTask(TASK_START_COMMISSIONER, CFG_SEQ_PRIO_1);
           }
           ToggleBlueLedMode = NO_TOGGLING;
           BSP_LED_On(LD1);
@@ -486,6 +498,18 @@ static void APP_THREAD_CliInit(otInstance *aInstance)
   otCliInit(aInstance, CliUartOutput, aInstance);
 }
 #endif /* OT_CLI_USE */
+
+/**
+ * @brief  Thread persistence startup
+ * @param  None
+ * @retval None
+ */
+static void APP_THREAD_PersistenceStartup(void)
+{
+  /* USER CODE BEGIN APP_THREAD_PersistenceStartup */
+
+  /* USER CODE END APP_THREAD_PersistenceStartup */
+}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS */
 /**
@@ -653,9 +677,7 @@ static void APP_THREAD_ConfigLeaderDevice(void)
   APP_THREAD_DeviceIsLeader = TRUE;
 }
 
-static void APP_THREAD_AppInit(void)
-{
-}
+
 
 /**
  * @brief Joiner configuration.

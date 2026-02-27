@@ -53,8 +53,7 @@ UINT MX_USBX_Init(VOID)
     /* USER CODE END USBX_SYSTEM_INITIALIZE_ERROR */
   }
 
-  ret = MX_USBX_Host_Init();
-  if(ret != UX_SUCCESS)
+  if (MX_USBX_Host_Init() != UX_SUCCESS)
   {
     /* USER CODE BEGIN MX_USBX_Host_Init_Error */
     while(1)

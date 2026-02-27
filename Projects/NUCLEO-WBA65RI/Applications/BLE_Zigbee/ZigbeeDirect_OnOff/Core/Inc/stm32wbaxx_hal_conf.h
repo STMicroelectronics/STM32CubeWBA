@@ -37,7 +37,7 @@ extern "C" {
 #define HAL_ADC_MODULE_ENABLED
 /*#define HAL_COMP_MODULE_ENABLED   */
 #define HAL_CRC_MODULE_ENABLED
-/*#define HAL_CRYP_MODULE_ENABLED   */
+#define HAL_CRYP_MODULE_ENABLED
 /*#define HAL_GTZC_MODULE_ENABLED   */
 /*#define HAL_HASH_MODULE_ENABLED   */
 /*#define HAL_HSEM_MODULE_ENABLED   */
@@ -46,7 +46,7 @@ extern "C" {
 /*#define HAL_IRDA_MODULE_ENABLED   */
 /*#define HAL_IWDG_MODULE_ENABLED   */
 /*#define HAL_LPTIM_MODULE_ENABLED   */
-/*#define HAL_PKA_MODULE_ENABLED   */
+#define HAL_PKA_MODULE_ENABLED
 #define HAL_RAMCFG_MODULE_ENABLED
 #define HAL_RNG_MODULE_ENABLED
 #define HAL_RTC_MODULE_ENABLED
@@ -59,6 +59,8 @@ extern "C" {
 #define HAL_UART_MODULE_ENABLED
 /*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_WWDG_MODULE_ENABLED   */
+/*#define HAL_PCD_MODULE_ENABLED   */
+/*#define HAL_HCD_MODULE_ENABLED   */
 #define HAL_EXTI_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
@@ -135,7 +137,7 @@ extern "C" {
   */
 
 #define  VDD_VALUE                    3300UL /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            (14UL)  /*!< tick interrupt priority (lowest by default) */
+#define  TICK_INT_PRIORITY            (15UL)  /*!< tick interrupt priority (lowest by default) */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              1U               /*!< Enable prefetch */
 
@@ -160,12 +162,13 @@ extern "C" {
 #define  USE_HAL_COMP_REGISTER_CALLBACKS       0U /* COMP register callback disabled      */
 #define  USE_HAL_CRYP_REGISTER_CALLBACKS       0U /* CRYP register callback disabled      */
 #define  USE_HAL_HASH_REGISTER_CALLBACKS       0U /* HASH register callback disabled      */
+#define  USE_HAL_HCD_REGISTER_CALLBACKS        0U /* HCD register callback disabled       */
 
 #define  USE_HAL_I2C_REGISTER_CALLBACKS        0U /* I2C register callback disabled       */
 #define  USE_HAL_IRDA_REGISTER_CALLBACKS       0U /* IRDA register callback disabled      */
 #define  USE_HAL_IWDG_REGISTER_CALLBACKS       0U /* IWDG register callback disabled      */
 #define  USE_HAL_LPTIM_REGISTER_CALLBACKS      0U /* LPTIM register callback disabled     */
-
+#define  USE_HAL_PCD_REGISTER_CALLBACKS        0U /* PCD register callback disabled       */
 #define  USE_HAL_PKA_REGISTER_CALLBACKS        0U /* PKA register callback disabled       */
 #define  USE_HAL_RAMCFG_REGISTER_CALLBACKS     0U /* RAMCFG register callback disabled    */
 #define  USE_HAL_RNG_REGISTER_CALLBACKS        0U /* RNG register callback disabled       */
@@ -203,6 +206,10 @@ extern "C" {
 #ifdef HAL_DMA_MODULE_ENABLED
 #include "stm32wbaxx_hal_dma.h"
 #endif /* HAL_DMA_MODULE_ENABLED */
+
+#ifdef HAL_RCC_MODULE_ENABLED
+#include "stm32wbaxx_hal_rcc.h"
+#endif /* HAL_RCC_MODULE_ENABLED */
 
 #ifdef HAL_ADC_MODULE_ENABLED
 #include "stm32wbaxx_hal_adc.h"
@@ -244,6 +251,10 @@ extern "C" {
 #include "stm32wbaxx_hal_hash.h"
 #endif /* HAL_HASH_MODULE_ENABLED */
 
+#ifdef HAL_HCD_MODULE_ENABLED
+#include "stm32wbaxx_hal_hcd.h"
+#endif /* HAL_HCD_MODULE_ENABLED */
+
 #ifdef HAL_HSEM_MODULE_ENABLED
 #include "stm32wbaxx_hal_hsem.h"
 #endif /* HAL_HSEM_MODULE_ENABLED */
@@ -268,6 +279,10 @@ extern "C" {
 #include "stm32wbaxx_hal_lptim.h"
 #endif /* HAL_LPTIM_MODULE_ENABLED */
 
+#ifdef HAL_PCD_MODULE_ENABLED
+#include "stm32wbaxx_hal_pcd.h"
+#endif /* HAL_PCD_MODULE_ENABLED */
+
 #ifdef HAL_PKA_MODULE_ENABLED
 #include "stm32wbaxx_hal_pka.h"
 #endif /* HAL_PKA_MODULE_ENABLED */
@@ -279,10 +294,6 @@ extern "C" {
 #ifdef HAL_RAMCFG_MODULE_ENABLED
 #include "stm32wbaxx_hal_ramcfg.h"
 #endif /* HAL_RAMCFG_MODULE_ENABLED */
-
-#ifdef HAL_RCC_MODULE_ENABLED
-#include "stm32wbaxx_hal_rcc.h"
-#endif /* HAL_RCC_MODULE_ENABLED */
 
 #ifdef HAL_RNG_MODULE_ENABLED
 #include "stm32wbaxx_hal_rng.h"

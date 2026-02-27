@@ -50,6 +50,7 @@
 #include "joiner.h"
 #include "alarm.h"
 #include OPENTHREAD_CONFIG_FILE
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -63,11 +64,11 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+#define C_PANID                 0xBA98U
+#define C_CHANNEL_NB            16U
 #define C_CCA_THRESHOLD         (-70)
 
 /* USER CODE BEGIN PD */
-#define C_PANID                 0xBA98U
-#define C_CHANNEL_NB            16U
 #define C_RESSOURCE                   "light"
 #define COAP_PAYLOAD_LENGTH           (2U)
 
@@ -176,15 +177,8 @@ void ProcessTasklets(void)
  */
 void ProcessOpenThreadTasklets(void)
 {
-  /* wakeUp the system */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_ON);
-  //ll_sys_dp_slp_exit();
-
   /* process the tasklet */
   otTaskletsProcess(PtOpenThreadInstance);
-
-  /* put the IP802_15_4 back to sleep mode */
-  //ll_sys_radio_hclk_ctrl_req(LL_SYS_RADIO_HCLK_LL_BG, LL_SYS_RADIO_HCLK_OFF);
 
   /* reschedule the tasklets if any */
   ProcessTasklets();
@@ -278,9 +272,8 @@ void Thread_Init(void)
 static void APP_THREAD_DeviceConfig(void)
 {
   otError error = OT_ERROR_NONE;
-#ifndef GRL_TEST
   otNetworkKey networkKey = {{0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00}};
-#endif
+
   error = otSetStateChangedCallback(PtOpenThreadInstance, APP_THREAD_StateNotif, NULL);
   if (error != OT_ERROR_NONE)
   {
@@ -293,7 +286,6 @@ static void APP_THREAD_DeviceConfig(void)
     APP_THREAD_Error(ERR_THREAD_SET_THRESHOLD,error);
   }
 
-#ifndef GRL_TEST
   error = otLinkSetChannel(PtOpenThreadInstance, C_CHANNEL_NB);
   if (error != OT_ERROR_NONE)
   {
@@ -311,7 +303,6 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_SET_NETWORK_KEY,error);
   }
-#endif
 
   otPlatRadioEnableSrcMatch(PtOpenThreadInstance, true);
 
@@ -320,19 +311,11 @@ static void APP_THREAD_DeviceConfig(void)
   {
     APP_THREAD_Error(ERR_THREAD_IPV6_ENABLE,error);
   }
-
-#ifdef GRL_TEST
-  error = otThreadSetEnabled(PtOpenThreadInstance, false);
-#else
-   error = otThreadSetEnabled(PtOpenThreadInstance, true);
-#endif 
-
+  error = otThreadSetEnabled(PtOpenThreadInstance, true);
   if (error != OT_ERROR_NONE)
   {
     APP_THREAD_Error(ERR_THREAD_START,error);
   }
-
-#ifndef GRL_TEST
   /* USER CODE BEGIN DEVICECONFIG */
   /* Start the COAP server */
   error = otCoapStart(PtOpenThreadInstance, OT_DEFAULT_COAP_PORT);
@@ -345,15 +328,13 @@ static void APP_THREAD_DeviceConfig(void)
   otCoapAddResource(PtOpenThreadInstance, &OT_Ressource);
 
   APP_THREAD_InitPayloadWrite();
-#endif 
   /* USER CODE END DEVICECONFIG */
 }
 
 void APP_THREAD_Init( void )
 {
 #if (CFG_LPM_LEVEL != 0)
-  UTIL_LPM_SetStopMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1 << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1 << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 #endif // CFG_LPM_LEVEL
 
   Thread_Init();
@@ -953,6 +934,7 @@ void APP_BSP_Button2Action(void)
  * @param  None
  * @retval None
  */
+#ifdef CFG_COAP_MSG
 void APP_BSP_CoapMsgRateAction(void)
 {
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
@@ -964,6 +946,7 @@ void APP_BSP_CoapMsgRateAction(void)
   }
 #endif
 }
+#endif /* CFG_COAP_MSG */
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

@@ -28,6 +28,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
 #include "app_zigbee_endpoint.h"
+#include "app_zigbee_utility.h"
 #include "zigbee.h"
 /* USER CODE BEGIN Includes */
 

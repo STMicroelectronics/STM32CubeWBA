@@ -1,0 +1,40 @@
+/**********************************************************************************/
+/**** Linker File (ICF)                                                        ****/
+/**********************************************************************************/
+
+/*-Symbols-*/
+define symbol __region_FLASH_start__       = 0x08000000;
+define symbol __region_FLASH_end__         = 0x0807FFFF;
+
+define symbol __region_SRAM1_start__       = 0x20000000;
+define symbol __region_SRAM1_end__         = 0x2000FFFF;
+define symbol __region_SRAM2_start__       = 0x20010000;
+define symbol __region_SRAM2_end__         = 0x20017FFF;
+
+define symbol __size_heap__                = 0x0000;
+define symbol __size_cstack__              = 0x1000;
+define symbol __intvec_start__             = __region_FLASH_start__;
+
+/*-Memory Regions-*/
+define memory mem with size = 4G;
+define region FLASH_region    = mem:[from __region_FLASH_start__ to __region_FLASH_end__];
+define region SRAM1_region    = mem:[from __region_SRAM1_start__ to __region_SRAM1_end__];
+define region SRAM2_region    = mem:[from __region_SRAM2_start__ to __region_SRAM2_end__];
+define region SRAM_region     = SRAM1_region | SRAM2_region;
+
+/*-Blocks-*/
+define block HEAP      with alignment = 8, size = __size_heap__   { };
+define block CSTACK    with alignment = 8, size = __size_cstack__ { };
+
+/*-Initialization strategies-*/
+initialize by copy { readwrite };
+do not initialize  { section .noinit };
+
+/*-Sections placements-*/
+place at address mem:__intvec_start__ { readonly section .intvec };
+
+place in FLASH_region       { readonly };
+
+place in SRAM1_region       { block HEAP, block CSTACK };
+place in SRAM2_region       { };
+place in SRAM_region        { readwrite };

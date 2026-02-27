@@ -35,10 +35,10 @@
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)
@@ -114,6 +114,7 @@ static uint32_t aCAPMemBuffer[DIVC(CAP_DYN_ALLOC_SIZE,4)];
 static uint32_t aPACSSrvMemBuffer[DIVC(BAP_PACS_SRV_DYN_ALLOC_SIZE,4)];
 static uint32_t aNvmMgmtMemBuffer[DIVC(BAP_NVM_MGMT_DYN_ALLOC_SIZE,4)];
 static uint32_t aBASSSrvMemBuffer[DIVC(BAP_BASS_SRV_DYN_ALLOC_SIZE,4)];
+static uint32_t aBASEMemBuffer[DIVC(BAP_BASE_TOTAL_BUFFER_SIZE,4)];
 static uint32_t aAudioInitBuffer[BLE_AUDIO_DYN_ALLOC_SIZE];
 static BleAudioInit_t BleAudioInit;
 
@@ -235,7 +236,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
             name_ptr = &data->pBAPReport->pAdvertisingData[parse_index + 2];
             name_len = MIN(data->pBAPReport->pAdvertisingData[parse_index] - 1, 29);
           }
-          /* Thrid priority to the Broadcast ID */
+          /* Third priority to the Broadcast ID */
           else if (data->pBAPReport->pAdvertisingData[parse_index + 1] == AD_TYPE_SERVICE_DATA &&
               data->pBAPReport->pAdvertisingData[parse_index + 2] == 0x52 &&
               data->pBAPReport->pAdvertisingData[parse_index + 3] == 0x18)
@@ -295,6 +296,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
 
       LOG_INFO_APP(">>== PBP_PBK_PA_SYNC_ESTABLISHED_EVT\n");
       BAP_PA_Sync_Established_Data_t *data = (BAP_PA_Sync_Established_Data_t*) pNotification->pInfo;
+      LOG_INFO_APP("     - Status : 0x%02x\n",pNotification->Status);
       LOG_INFO_APP("     - SyncHandle : 0x%02x\n",data->SyncHandle);
       PBPAPP_Context.PASyncHandle = data->SyncHandle;
       PBPAPP_Context.PASyncState = PBPAPP_PA_SYNC_STATE_SYNCHRONIZED;
@@ -404,7 +406,6 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           base_data->pBasePayload += index;
           base_data->BasePayloadLength -= index;
 
-          PBPAPP_Context.base_subgroups[i].pBIS = &(PBPAPP_Context.base_bis[i]);
           LOG_INFO_APP("    BAP_BSNK_ParseBASESubgroup INFO Number :%d\n", i);
           LOG_INFO_APP("    Codec ID : 0x%08x\n",PBPAPP_Context.base_subgroups[i].CodecID);
           LOG_INFO_APP("    Codec specific config length : %d bytes\n",
@@ -534,11 +535,12 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
       tBleStatus ret;
       BAP_BIG_Sync_Established_Data_t *data = (BAP_BIG_Sync_Established_Data_t*) pNotification->pInfo;
       LOG_INFO_APP(">>== PBP_PBK_BIG_SYNC_ESTABLISHED_EVT\n");
-      LOG_INFO_APP("     - BIG_Handle = 0x%02x\n",data->BIGHandle);
-      LOG_INFO_APP("     - Num BISes = %d\n",data->NumBISes);
+      LOG_INFO_APP("     - Status = 0x%02x\n",pNotification->Status);
 
       if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
+        LOG_INFO_APP("     - BIG_Handle = 0x%02x\n",data->BIGHandle);
+        LOG_INFO_APP("     - Num BISes = %d\n",data->NumBISes);
         UTIL_MEM_cpy_8(&(PBPAPP_Context.current_BIS_conn_handles[0]),
                         data->pConnHandle,
                         (data->NumBISes * sizeof(uint16_t)));
@@ -944,6 +946,14 @@ static uint8_t PBPAPP_Init(CAP_Role_t CAP_Role, BAP_Role_t BAP_Role)
     PBPAPP_BAP_Config.BASSSrvConfig.MaxNumBaseSubgroups = MAX_NUM_BASS_BASE_SUBGROUPS;
     PBPAPP_BAP_Config.BASSSrvConfig.pStartRamAddr = (uint8_t *)&aBASSSrvMemBuffer;
     PBPAPP_BAP_Config.BASSSrvConfig.RamSize = BAP_BASS_SRV_DYN_ALLOC_SIZE;
+  }
+
+  if (((PBPAPP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR)
+   || ((PBPAPP_BAP_Config.Role & BAP_ROLE_BROADCAST_SINK) == BAP_ROLE_BROADCAST_SINK))
+  {
+    /* BASE structure for fragmented PA reports */
+    PBPAPP_BAP_Config.BASEStrConfig.pStartRamAddr = (uint8_t *)&aBASEMemBuffer;
+    PBPAPP_BAP_Config.BASEStrConfig.RamSize = BAP_BASE_TOTAL_BUFFER_SIZE;
   }
 
   /*Isochronous Channels Configuration*/

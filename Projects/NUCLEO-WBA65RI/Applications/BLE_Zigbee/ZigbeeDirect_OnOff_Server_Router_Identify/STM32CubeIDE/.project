@@ -53,11 +53,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/App/app_zigbee.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_zigbee.c</locationURI>
@@ -136,6 +131,11 @@
 			<name>Common/WPAN/Interfaces/timer_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/timer_if.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Interfaces/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/app_bsp.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/BasicAES/baes_ccm.c</name>

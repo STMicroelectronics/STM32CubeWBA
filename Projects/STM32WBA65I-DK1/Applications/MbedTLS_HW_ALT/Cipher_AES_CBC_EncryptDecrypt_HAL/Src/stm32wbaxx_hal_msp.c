@@ -251,4 +251,3 @@ void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
   }
 }
 #endif /* HAL_PKA_MODULE_ENABLED */
-

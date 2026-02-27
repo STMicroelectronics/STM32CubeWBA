@@ -1,0 +1,41 @@
+#! armclang --target=arm-arm-none-eabi -march=armv8-m.main -E -xc
+/*************************************************************************************************/
+#include "appli_region_defs.h"
+/*************************************************************************************************/
+#define ROM_S_START            (S_CODE_START)
+#define ROM_S_SIZE             (S_CODE_SIZE + NSC_CODE_SIZE)
+
+#define ROM_NSC_START          (S_CODE_START + S_CODE_SIZE + NSC_CODE_SIZE)
+#define ROM_NSC_SIZE           (BL2_TRAILER_SIZE)
+
+#define RAM_S_START             S_RAM_START  /* SRAM2 start @ */
+#define RAM_S_SIZE              S_RAM_SIZE     /* SRAM2 64K */
+
+/*************************************************************************************************/
+LR_IROM2 ROM_S_START  ROM_S_SIZE {    ; load region size_region
+  ER_IROM2 ROM_S_START ROM_S_SIZE {  ; load address = execution address
+   *.o (RESET, +First)
+   *(InRoot$$Sections)
+   .ANY (+RO)
+   .ANY (+XO)
+  }
+
+  RW_IRAM2 RAM_S_START RAM_S_SIZE  {  ; RW data
+   .ANY (+RW +ZI)
+  }
+  /* MSP */
+  ARM_LIB_STACK_MSP +0 ALIGN 32 EMPTY S_MSP_STACK_SIZE {
+  }
+  /* PSP */
+  ARM_LIB_STACK +0 ALIGN 32 EMPTY S_PSP_STACK_SIZE {
+  }
+
+  ARM_LIB_HEAP +0 ALIGN 8 EMPTY S_HEAP_SIZE {
+  }
+}
+
+LR_IROM3 ROM_NSC_START ROM_NSC_SIZE  {    ; load region size_region
+  ER_IROM3 ROM_NSC_START ROM_NSC_SIZE  {  ; load address = execution address
+   *(Veneer$$CMSE)                   ; check with partition.h
+  }
+}

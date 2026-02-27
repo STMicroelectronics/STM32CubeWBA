@@ -46,4 +46,3 @@ extern "C" {
 #endif
 
 #endif /* STM32WBA65I_DK1_CONF_H */
-

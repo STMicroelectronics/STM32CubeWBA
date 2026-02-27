@@ -26,6 +26,7 @@
 #include "log_module.h"
 #include "app_entry.h"
 #include "app_zigbee.h"
+#include "app_zigbee_cbke_key.h"
 #include "dbg_trace.h"
 #include "ieee802154_enums.h"
 #include "mcp_enums.h"
@@ -83,16 +84,6 @@
 /* USER CODE END PTD */
 
 /* Private constants ---------------------------------------------------------*/
-/* These CBKE Keys are valid with an Extended Address. So we perhaps need to change Extended Adress of Device for tests */
-const uint64_t dlMyExtendedAdress       = 0x00u;
-
-/* To obtains theses keys, you need to connect to Certicom site (www.certicom.com). */
-const uint8_t szZibgeeCbkeCert[CBKE2_CERTIFICATE_SIZE] = { 0, }; /* To fiil by user */
-
-const uint8_t szZibgeeCbkeCaPublic[CBKE2_COMPRESSED_PUBLIC_KEY_SIZE] = { 0, }; /* To fiil by user */
-
-const uint8_t szZibgeeCbkePrivate[CBKE2_PRIVATE_KEY_SIZE] = { 0, };  /* To fiil by user */
-
 /* USER CODE BEGIN PC */
 
 /* USER CODE END PC */
@@ -175,10 +166,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 
@@ -370,7 +358,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 

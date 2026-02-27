@@ -20,6 +20,7 @@
 #include <string.h>
 #include "stm32_hal.h"
 #include "flash_layout.h"
+#include "boot_hal_cfg.h"
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -717,6 +718,6 @@ void NMI_Handler(void)
   else
   {
     /* This exception occurs for another reason than flash double ECC errors */
-    while (1U);
+    Error_Handler();
   }
 }

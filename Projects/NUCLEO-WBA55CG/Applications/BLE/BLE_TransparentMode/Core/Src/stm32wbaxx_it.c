@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32wbaxx_nucleo.h"
+#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -331,6 +332,27 @@ void TIM16_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the PKACTRL Callback */
+    PKACTRL_EndOfProcessCb();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
+}
+
+/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -350,6 +372,20 @@ void RADIO_IRQHandler(void)
   /* USER CODE BEGIN RADIO_IRQn 1 */
 
   /* USER CODE END RADIO_IRQn 1 */
+}
+
+/**
+  * @brief This function handles PWR global WKUP pin interrupt.
+  */
+void WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN WKUP_IRQn 0 */
+
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
 }
 
 /**

@@ -10,7 +10,7 @@ Connectivity, 802.15.4 protocol, Thread, COAP
 
 * This example runs on STM32WBA55xx devices.  
 
-* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
+* This example has been tested with an STMicroelectronics B-WBA5M-WPAN board and can be easily tailored to any other supported device and development board.  
 
 ### __How to use it?__
 
@@ -22,11 +22,7 @@ In order to make the program work, you must do the following:
 - Run the application   
  
 
-If you want to control this application, you can directly send and retrieve Cli commands connecting an HyperTerminal with the FTDI cable as following :  
-
-- TX GPIO 17  
-- RX GPIO 18  
- 
+  
 In a Thread network, nodes are split into two forwarding roles: **Router** or **End Device**.    
 The Thread **Leader** is a Router that is responsible for managing the set of Routers in a Thread network.    
 An End Device (or child) communicates primarily with a **single Router**.    
@@ -38,9 +34,9 @@ The other one will be in Child mode.
  
 Let's name indifferently one board **A** and one board **B**.   
 
-- press the Long press SW2 Push-Button on board A to send a **COAP command (Non-Confirmable)** from board A to board B.  
+- Long press the SW Push-Button on board A to send a **COAP command (Non-Confirmable)** from board A to board B.  
 The board B will receive COAP commands to toggle its **blue LED1**.
-- press the SW2 Push-Button on boad A to send a **COAP command (Confirmable)** from board A to board B.  
+- Press the SW Push-Button on boad A to send a **COAP command (Confirmable)** from board A to board B.  
 The board B will receive COAP commands and send to board A a **Coap Data response** and toggle its **blue LED1**.
 
 Same COAP commands can be sent from board B to board A.    
@@ -52,14 +48,14 @@ Same COAP commands can be sent from board B to board A.
   |_________________________|                       |_________________________|  
   |                         |                       |                         |
   |                         |                       |                         |
-  |     Long press SW2 -->  |======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
+  | Long press Button SW -->|======> COAP =========>| BLUE LED TOGGLE (ON/OFF)|
   |                         | Resource "light"      |                         |
   |                         | Mode: Multicast       |                         |
   |                         | Type: Non-Confirmable |                         |
   |                         | Code: Put             |                         |
   |                         |                       |                         |
   |                         |                       |                         |
-  |                SW2 -->  |=====> COAP ==========>|-------->                |
+  |                   SW -->|=====> COAP ==========>|-------->                |
   |                         | Resource "light"      |         |               |
   |                         | Mode: Multicast       |  CoapRequestHandler()   |
   |                         | Type: Confirmable     |         |               |
@@ -74,7 +70,6 @@ Same COAP commands can be sent from board B to board A.
   ---------------------------                       ---------------------------
   | Role : Child            |                       | Role : Leader           |
   |                         |                       |                         |
-  | LED : Red               |                       | LED : Green             |
   |                         |                       |                         |
   |_________________________|                       |_________________________|
 

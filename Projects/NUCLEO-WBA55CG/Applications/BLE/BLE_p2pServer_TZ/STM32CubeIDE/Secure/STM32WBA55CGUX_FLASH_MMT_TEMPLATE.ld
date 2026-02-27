@@ -58,16 +58,15 @@ MEMORY
 /* Sections */
 SECTIONS
 {
-
-  /* The startup code into "FLASH" Rom type memory */
-  .isr_vector :
+ /*  Unitialized isr_vector section into "isr_vector" isr_vector type memory [MMT section] */
+ .isr_vector :
   {
     . = ALIGN(4);
-    KEEP(*(.isr_vector)) /* Startup code */
+    KEEP (*(.isr_vector))
     . = ALIGN(4);
   } >FLASH
 
-  /* The program code and other data into "FLASH" Rom type memory */
+/* The program code and other data into "FLASH" Rom type memory */
   .text :
   {
     . = ALIGN(4);

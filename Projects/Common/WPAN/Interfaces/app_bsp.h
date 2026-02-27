@@ -28,25 +28,22 @@ extern "C" {
 #include "app_conf.h"
 #include "stm32_rtos.h"
 
-#ifdef STM32WBA55xx
 #ifdef CFG_BSP_ON_DISCOVERY
+#ifdef STM32WBA55xx
 #include "stm32wba55g_discovery.h"
 #if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba55g_discovery_lcd.h"
 #include "stm32_lcd.h"
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-#endif /* CFG_BSP_ON_DISCOVERY */
 #endif /* STM32WBA55xx */
-
 #ifdef STM32WBA65xx
-#ifdef CFG_BSP_ON_DISCOVERY
 #include "stm32wba65i_discovery.h"
 #if (CFG_LCD_SUPPORTED == 1)
 #include "stm32wba65i_discovery_lcd.h"
 #include "stm32_lcd.h"
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-#endif /* CFG_BSP_ON_DISCOVERY */
 #endif /* STM32WBA65xx */
+#endif /* CFG_BSP_ON_DISCOVERY */
 
 #ifdef CFG_BSP_ON_CEB
 #ifdef STM32WBA5Mxx
@@ -56,13 +53,14 @@ extern "C" {
 #include "b_wba6m_wpan.h"
 #endif
 #endif /* CFG_BSP_ON_CEB */
+
 #ifdef CFG_BSP_ON_NUCLEO
 #include "stm32wbaxx_nucleo.h"
-#endif /* CFG_BSP_ON_CEB */
+#endif /* CFG_BSP_ON_NUCLEO */
 
 #ifdef CFG_COAP_MSG
 #include "coap.h"
-#endif
+#endif /* CFG_COAP_MSG */
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -93,7 +91,11 @@ extern "C" {
 extern uint32_t APP_Thread_TransmitPeriod_ms;
 extern uint32_t APP_Thread_CoapPayloadLength_byte;
 extern otCoapType APP_Thread_CoapType;
-#endif
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+extern uint8_t APP_BLE_AdvChannelMap;
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
+
 
 #if (CFG_BUTTON_SUPPORTED == 1)
 #ifdef CFG_BSP_ON_THREADX
@@ -151,6 +153,13 @@ void      APP_BSP_Button3Action           ( void );
 
 void      BSP_PB_Callback                 ( Button_TypeDef button );
 
+#ifdef CFG_BSP_ON_NUCLEO 
+#ifdef STM32WBA65xx
+void      EXTI4_IRQHandler                (void);
+void      EXTI5_IRQHandler                (void);
+#endif /* STM32WBA65xx */
+#endif /* CFG_BSP_ON_NUCLEO */ 
+
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )
 void      APP_BSP_JoystickInit            ( void );
@@ -169,8 +178,16 @@ void      BSP_JOY_Callback                ( JOY_TypeDef joyNb, JOYPin_TypeDef jo
 
 #endif /* CFG_JOYSTICK_SUPPORTED */
 
+
+#if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
 void      APP_BSP_CliInit                 ( void );
+#endif /* CFG_COAP_MSG || CFG_BLE_ADV_CHANNEL_MAP */
+#ifdef CFG_COAP_MSG
 void      APP_BSP_CoapMsgRateAction       ( void );
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+void      APP_BSP_BleAdvChannelMapAction  ( void );
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
 
 #ifdef __cplusplus
 } /* extern "C" */

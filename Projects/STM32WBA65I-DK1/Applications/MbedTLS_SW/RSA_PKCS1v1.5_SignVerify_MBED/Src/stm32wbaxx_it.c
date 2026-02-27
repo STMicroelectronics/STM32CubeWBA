@@ -132,4 +132,3 @@ void SysTick_Handler(void)
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32wbaxx.s).                                               */
-

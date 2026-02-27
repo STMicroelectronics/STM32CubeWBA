@@ -96,8 +96,8 @@
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <ul>
-<li><p>This example runs on STM32WBA55xx devices.</p></li>
-<li><p>This example has been tested with an STMicroelectronics STM32WBA55xx board and can be easily tailored to any other supported device and development board.</p></li>
+<li><p>This example runs on STM32WBA65xx devices.</p></li>
+<li><p>This example has been tested with an STMicroelectronics STM32WBA65xx board and can be easily tailored to any other supported device and development board.</p></li>
 <li><p>You can either run it as standalone tool, or with STM32CubeMonitorRF</p></li>
 </ul>
 <h4 id="stm32cubemonitorrf"><strong>STM32CubeMonitorRF</strong></h4>
@@ -122,7 +122,9 @@
 <h4 id="full-phy-certification-and-dynamic-rx-printing"><strong>Full PHY certification and dynamic RX printing</strong></h4>
 <ul>
 <li>In order to perform a fully exhaustive PHY certification, it may be necessary to enable the “dynamic RX printing” using the <em>rx_start 1</em> command. This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed using default baudrate of 115200.</li>
-<li>By setting FULL_CERTIFICATION_CAPABLE to 1 the Baud rate of USART1 increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.</li>
+<li>By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
+<ul>
+<li>the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay in between.</li>
 <li>Keep in mind this flag disables the STM32CubeMonitorRF compatibility, which explains why it is not enabled by default.</li>
 </ul>
 <h3 id="examples-of-commands"><strong>Examples of commands</strong></h3>

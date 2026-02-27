@@ -629,7 +629,7 @@ void cli_security_dump(void)
     struct ZbNwkSecMaterialT secMaterial;
     uint8_t preconf[ZB_SEC_KEYSIZE];
     uint8_t distrib[ZB_SEC_KEYSIZE];
-    struct ZbApsmeKeyPairT keypair;
+    struct ZbApsmeKeyPairT key_pair;
     char addr_str[32];
     unsigned int i;
 
@@ -650,19 +650,19 @@ void cli_security_dump(void)
     LOG_INFO_APP("%24s: %s", "APS Distrib Key", key_str);
 
     for (i = 0;; i++) {
-        if (ZbApsGetIndex(stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET, &keypair, sizeof(struct ZbApsmeKeyPairT), i)) {
+        if (ZbApsGetIndex(stZigbeeAppInfo.pstZigbee, ZB_APS_IB_ID_DEVICE_KEY_PAIR_SET, &key_pair, sizeof(struct ZbApsmeKeyPairT), i)) {
             break;
         }
-        if (keypair.deviceAddress == 0) {
+        if (key_pair.deviceAddress == 0) {
             continue;
         }
         sprintf(addr_str, LOGFMTx64 " Key",
-                (unsigned int)(keypair.deviceAddress >> 32U),
-                (unsigned int)(keypair.deviceAddress));;
+                (unsigned int)(key_pair.deviceAddress >> 32U),
+                (unsigned int)(key_pair.deviceAddress));;
 
         /* Print keyAttribute? ZB_APSME_KEY_ATTR_UNVERIFIED,
          * ZB_APSME_KEY_ATTR_VERIFIED, ZB_APSME_KEY_ATTR_CBKE */
-        app_hex_bin_to_str(keypair.linkKey, ZB_SEC_KEYSIZE, key_str, sizeof(key_str), ':', 2);
+        app_hex_bin_to_str(key_pair.linkKey, ZB_SEC_KEYSIZE, key_str, sizeof(key_str), ':', 2);
         LOG_INFO_APP("%24s: %s", addr_str, key_str);
     }
 

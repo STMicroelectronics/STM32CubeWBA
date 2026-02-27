@@ -26,6 +26,7 @@
 #include "hrs_app.h"
 #include "ll_sys_if.h"
 #include "timer_if.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,7 +162,7 @@ void MX_FREERTOS_Init(void) {
   HRSAPPMeasurementsTaskHandle = osThreadNew(HRSAPPMeasurementsTask_Entry, NULL, &HRSAPPMeasurementsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -181,7 +182,7 @@ void advertisingTask_Entry(void *argument)
   /* USER CODE BEGIN advertisingTask */
   uint16_t advCmd;
   uint8_t advCmdPrio;
-
+  /* Infinite loop */
   for(;;)
   {
     osMessageQueueGet(advertisingCmdQueueHandle, &advCmd, &advCmdPrio, osWaitForever);

@@ -86,7 +86,7 @@ extern "C" {
 //#define HW_CRYPTO_DPA_GCM
 
 /**
-  * @brief HW_CRYPTO_DPA_CTR_FOR_GCM Allows DPA resistance for GCM through CTR by 
+  * @brief HW_CRYPTO_DPA_CTR_FOR_GCM Allows DPA resistance for GCM through CTR by
   *        using secure crypto processor (SAES) when this option is enabled,
   *        CTR becomes DPA-protected.
   *        CTR protected mode is mixed with software to create GCM protected mode.
@@ -117,7 +117,7 @@ extern "C" {
 
 /**
   * @brief ST_HW_CONTEXT_SAVING Enables ST HASH save context
-  *        The HASH context of the interrupted task can be saved from the HASH 
+  *        The HASH context of the interrupted task can be saved from the HASH
   *        registers to memory, and then be restored from memory to the HASH
   *        registers.
   *

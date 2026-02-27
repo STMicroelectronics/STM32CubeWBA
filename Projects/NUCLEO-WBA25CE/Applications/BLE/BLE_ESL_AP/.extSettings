@@ -1,0 +1,8 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBAxx_Nucleo;../STM32_WPAN/App/NVMDB/Inc;
+
+[Groups]
+Doc=../README.md;
+Drivers/BSP/STM32WBAxx_Nucleo=../../../../../../Drivers/BSP/STM32WBAxx_Nucleo/stm32wbaxx_nucleo.c;
+Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;
+Application/User/STM32_WPAN/App=../STM32_WPAN/App/esl_profile_ap.c;../STM32_WPAN/App/NVMDB/Src/nvm_db.c;../STM32_WPAN/App/NVMDB/Src/nvm_db_conf.c;../STM32_WPAN/App/time_ref.c;../STM32_WPAN/App/image.c;../STM32_WPAN/App/otp_client.c;../STM32_WPAN/App/uart_cmd.c;

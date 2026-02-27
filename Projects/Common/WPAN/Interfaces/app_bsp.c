@@ -129,7 +129,7 @@ typedef struct
 
 /* Private constants ---------------------------------------------------------*/
 #if (CFG_JOYSTICK_SUPPORTED == 1)
-  /* The ADC value gives the pad pressed. It's differents in function of DK board
+  /* The ADC value gives the pad pressed. It depends on the DK board
   WBA55-DK1   WBA65-DK
   JOY_NONE    JOY_NONE  -> around 3,3V  -> ADC value around 4095.
   JOY_DOWN    JOY_RIGHT -> around 2.6V  -> ADC value around 3288.
@@ -352,13 +352,19 @@ void APP_BSP_Init( void )
 /**
  * @brief   Initialisation of CLI commands tasks.
  */
+#if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
 void APP_BSP_CliInit( void )
 {
 #ifdef CFG_COAP_MSG
   /* Task associated with COAP message rate change */
   UTIL_SEQ_RegTask( 1U << CFG_TASK_COAP_MSG_RATE, UTIL_SEQ_RFU, APP_BSP_CoapMsgRateAction );
-#endif
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+  UTIL_SEQ_RegTask( 1U << CFG_TASK_BLE_ADV_CHANNEL_MAP, UTIL_SEQ_RFU, APP_BSP_BleAdvChannelMapAction );
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
 }
+#endif /* CFG_COAP_MSG || CFG_BLE_ADV_CHANNEL_MAP */
+
 
 /**
  * @brief   Verify if Wakeup is not done by a button (or Joystick)
@@ -464,6 +470,7 @@ void APP_BSP_StandbyExit( void )
 #endif /* CFG_BSP_ON_CEB */
 
 #ifdef CFG_BSP_ON_NUCLEO
+  
   /* Buttons HW Initialization */
   BSP_PB_Init( B1, BUTTON_MODE_GPIO );
 
@@ -842,7 +849,7 @@ static JOYPin_TypeDef APP_BSP_JoystickGetState( JOY_TypeDef eJoy )
  */
 static void APP_BSP_JoystickSampleManage( void )
 {
-  JOYPin_TypeDef          eJoystickState;
+  JOYPin_TypeDef          eJoystickState = JOY_NONE;
 #if (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_BUTTON_WITH_TIME) || (CFG_JOYSTICK_USE_TYPE == JOYSTICK_USE_AS_MATTER)
   static bool             bActionDone = false;
   static uint32_t         lStartTime = 0;
@@ -1620,29 +1627,42 @@ HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* PC13 */
 #endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))   */
 #endif
 #endif /* CFG_BSP_ON_CEB */
-#ifdef CFG_BSP_ON_NUCLEO
+#ifdef CFG_BSP_ON_NUCLEO 
+/* WBA Nucleo boards push buttons are configured to pwr wakeup pins
+   except for WBA6 B2 and B3 are configured to GPIO EXTIs.   
+   please refer to the product Reference Manual: PWR wake-up source table */
+  
   BSP_PB_Init( B1, BUTTON_MODE_GPIO );
 
- #ifdef STM32WBA65xx
+#ifdef STM32WBA65xx
   BSP_PB_Init( B2, BUTTON_MODE_EXTI );
   BSP_PB_Init( B3, BUTTON_MODE_EXTI );
- #else /* STM32WBA65xx */
+#else
   BSP_PB_Init( B2, BUTTON_MODE_GPIO );
   BSP_PB_Init( B3, BUTTON_MODE_GPIO );
- #endif  
+#endif /* STM32WBA65xx */
   
   /* StandBy WakeUp via buttons */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_HIGH_1);  /* B1 --> PC13 */
- #ifdef STM32WBA55xx
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_HIGH_2);   /* B2 --> PB6 */
-  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_HIGH_2);   /* B3 --> PB7 */
- #endif /* STM32WBA55xx  */
- 
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN2_LOW_1);  /* B1 --> PC13 / B2 for WBA2 */
+#ifdef STM32WBA55xx
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_2);  /* B2 --> PB6 */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN5_LOW_2);  /* B3 --> PB7 */
+#endif /* STM32WBA55xx */
+#ifdef STM32WBA25xx
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN3_LOW_1);  /* B1 --> PA1 */
+  HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN4_LOW_0);  /* B3 --> PA2 */
+ #endif /* STM32WBA25xx  */
 #if ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))
-  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1 */
+#ifdef STM32WBA25xx
+    SET_BIT(PWR->IORETENRA, ( B1_PIN | B3_PIN ) );                 /* Retention for B1 and B3 */
+    SET_BIT(PWR->IORETENRC, B2_PIN );                              /* Retention for B2 */
+#else
+  SET_BIT(PWR->IORETENRC, B1_PIN );                 /* Retention for B1*/
   #ifdef STM32WBA55xx
    SET_BIT(PWR->IORETENRB, ( B2_PIN | B3_PIN ) );    /* Retention for B2 & B3 */
   #endif /* STM32WBA55xx  */
+#endif /* STM32WBA25xx */
+
  #endif /* ((CFG_LPM_STOP2_SUPPORTED == 1U) || (CFG_LPM_STANDBY_SUPPORTED == 1U))   */
   
 #endif /* CFG_BSP_ON_NUCLEO */
@@ -1792,23 +1812,57 @@ void HAL_PWR_WKUP2_Callback(void)
  BSP_PB_Callback(B1);
 #endif
 #else
+#ifdef STM32WBA25xx
+  BSP_PB_Callback(B2);
+#else
+  BSP_PB_Callback(B1);
+#endif
+#endif
+}
+
+void HAL_PWR_WKUP3_Callback(void)
+{
+#ifdef STM32WBA55xx
+  BSP_PB_Callback(B2);
+#elif  STM32WBA25xx
   BSP_PB_Callback(B1);
 #endif
 }
 
-#ifdef STM32WBA55xx
-
-void HAL_PWR_WKUP3_Callback(void)
+#ifdef STM32WBA25xx
+void HAL_PWR_WKUP4_Callback(void)
 {
-  BSP_PB_Callback(B2);
+  BSP_PB_Callback(B3);
 }
+#endif /* STM32WBA25xx */
 
+#ifdef STM32WBA55xx
 void HAL_PWR_WKUP5_Callback(void)
 {
   BSP_PB_Callback(B3);
 }
+#endif /* STM32WBA55xx */
 
-#endif
+#ifdef CFG_BSP_ON_NUCLEO 
+#ifdef STM32WBA65xx
+/**
+  * @brief This function handles EXTI Line4 interrupt.
+  */
+void EXTI4_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B3);
+}
+
+/**
+  * @brief This function handles EXTI Line5 interrupt.
+  */
+void EXTI5_IRQHandler(void)
+{
+  BSP_PB_IRQHandler(B2);
+}
+#endif /* STM32WBA65xx */
+#endif /* CFG_BSP_ON_NUCLEO */
+
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 
 /**
@@ -1888,7 +1942,7 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
     APP_BSP_SetButtonIsLongPressed(B3);
     iUserChoice = B3;
   }
-#ifdef CFG_COAP_MSG
+#if (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1)) || (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1))
   else
   {
     /* Coap message configuration */
@@ -1905,6 +1959,7 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
       strncpy(configType, (char const*)pRxBuffer, (pDelimiter - (char const*)pRxBuffer));
       configType[(pDelimiter - (char const*)pRxBuffer)] = '\0';
 
+#if (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1))
       if ( (strcmp( configType, "coap msg rate " ) == 0) )
       {
         APP_Thread_TransmitPeriod_ms = atoi (strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer))));
@@ -1931,9 +1986,22 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
           LOG_INFO_APP("Coap type has been changed to OT_COAP_TYPE_NON_CONFIRMABLE");
         }
       }
+#endif /* defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1) */
+#if (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1))
+      if ( (strcmp( configType, "ble adv channel bitmap " ) == 0) )
+      {
+        uint32_t len = iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer);
+    	strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)));
+    	value[len] = '\0';
+    	APP_BLE_AdvChannelMap = strtol(value, NULL, 16);
+    	LOG_INFO_APP("BLE adv channel bitmap has been changed to 0x%02X", APP_BLE_AdvChannelMap);
+
+        UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_ADV_CHANNEL_MAP, CFG_SEQ_PRIO_0 );
+      }
+#endif /* defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1) */
     }
   }
-#endif /* CFG_COAP_MSG */
+#endif /* (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1)) || (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1)) */
 #endif /* CFG_BSP_ON_CEB */
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )

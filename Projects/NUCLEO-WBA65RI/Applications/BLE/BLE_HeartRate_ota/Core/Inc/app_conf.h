@@ -65,10 +65,10 @@
  */
 #define CFG_BD_ADDRESS_TYPE               (GAP_PUBLIC_ADDR)
 
-#define ADV_INTERVAL_MIN                  (80)
-#define ADV_INTERVAL_MAX                  (100)
-#define ADV_LP_INTERVAL_MIN               (1600)
-#define ADV_LP_INTERVAL_MAX               (4000)
+#define ADV_INTERVAL_MIN                  (20)
+#define ADV_INTERVAL_MAX                  (30)
+#define ADV_LP_INTERVAL_MIN               (1000)
+#define ADV_LP_INTERVAL_MAX               (2500)
 #define ADV_TYPE                          ADV_IND
 #define ADV_FILTER                        NO_WHITE_LIST_USE
 
@@ -258,7 +258,7 @@
  *   - 1 : Low power active, mode(s) selected with CFG_LPM_mode_SUPPORTED
  *   - 2 : In addition log and debug are disabled to reach lowest power figures.
  ******************************************************************************/
-#define CFG_LPM_LEVEL               (2U)
+#define CFG_LPM_LEVEL               (1U)
 
 #define CFG_LPM_STOP1_SUPPORTED     (1U)
 #define CFG_LPM_STOP2_SUPPORTED     (1U)
@@ -290,6 +290,7 @@ typedef enum
   CFG_LPM_LOG,
   CFG_LPM_LL_DEEPSLEEP,
   CFG_LPM_LL_HW_RCO_CLBR,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -376,7 +377,7 @@ typedef enum
   CFG_TASK_TEMP_MEAS,
   CFG_TASK_BLE_HOST,
   CFG_TASK_AMM,
-  CFG_TASK_BPKA,
+  CFG_TASK_PKACTRL,
   CFG_TASK_BLE_TIMER_BCKGND,
   CFG_TASK_FLASH_MANAGER,
   /* USER CODE BEGIN CFG_Task_Id_t */
@@ -412,26 +413,17 @@ typedef enum
 #define UTIL_SEQ_CONF_PRIO_NBR              CFG_SEQ_PRIO_NBR
 
 /**
- * This is a bit mapping over 32bits listing all events id supported in the application
- */
-typedef enum
-{
-  CFG_IDLEEVT_PROC_GAP_COMPLETE,
-  /* USER CODE BEGIN CFG_IdleEvt_Id_t */
-  CFG_IDLEEVT_FM_WRITE_CALLBACK_EVT_RSP_ID,
-  CFG_IDLEEVT_FM_ERASE_CALLBACK_EVT_RSP_ID
-
-  /* USER CODE END CFG_IdleEvt_Id_t */
-} CFG_IdleEvt_Id_t;
-
-/**
  * These are the lists of events id registered to the sequencer
  * Each event id shall be in the range [0:31]
  */
 typedef enum
 {
+  CFG_PKA_MUTEX,
+  CFG_PKA_END_OF_PROCESS,
+  CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
-
+  CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID,
+  CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID,
   /* USER CODE END CFG_Event_Id_t */
   CFG_EVENT_NBR                   /* Shall be LAST in the list */
 } CFG_Event_Id_t;
@@ -506,8 +498,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
@@ -533,10 +525,16 @@ typedef enum
 /* USER CODE END HW_RNG_Configuration */
 
 /******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
+
+/******************************************************************************
  * MEMORY MANAGER
  ******************************************************************************/
 
-#define CFG_MM_POOL_SIZE                                  (2000U)  /* bytes */
+#define CFG_MM_POOL_SIZE                                  (3000U)  /* bytes */
 #define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
 #define CFG_AMM_VIRTUAL_BLE_TIMERS                        (1U)
 #define CFG_AMM_VIRTUAL_BLE_TIMERS_BUFFER_SIZE     (400U)  /* words (32 bits) */
@@ -592,6 +590,11 @@ typedef enum
   #define CFG_LPM_STOP2_SUPPORTED   (0U)
   #undef CFG_LPM_STANDBY_SUPPORTED
   #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+#if !defined(PWR_STOP2_SUPPORT)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
 #endif
 
 /*********************************************************************

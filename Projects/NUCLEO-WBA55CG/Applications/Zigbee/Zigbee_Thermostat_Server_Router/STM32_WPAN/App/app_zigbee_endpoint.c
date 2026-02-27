@@ -53,7 +53,7 @@
 /* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
-#define APP_ZIGBEE_CHANNEL                13u
+#define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
 #define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
 
@@ -88,7 +88,8 @@
 #define RELAY_PLAY_HEATING                0x01u
 #define RELAY_PLAY_COOLING                0x02u
 
-#define TEMP_SENSOR_UPDATE_PERIOD         500u              /* 500 ms */
+//#define TEMP_SENSOR_UPDATE_PERIOD         500u              /* 500 ms */
+#define TEMP_SENSOR_UPDATE_PERIOD         5000u              /* 5 s */
 
 /* Tmperature for menu */
 #define MENU_TEMP_MIN                     (int16_t)( TEMP_MEASURED_MIN / 100 ) 
@@ -239,6 +240,7 @@ void APP_ZIGBEE_ApplicationStart( void )
   LOG_INFO_APP( "Use Short Address : 0x%04X", ZbShortAddress( stZigbeeAppInfo.pstZigbee ) );
   LOG_INFO_APP( "%s ready to work !", APP_ZIGBEE_APPLICATION_NAME );
 
+
   /* Start periodic Temperaure Measure */
   UTIL_TIMER_Start( &stTimerSensorUpdate );
 
@@ -246,10 +248,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 
@@ -366,7 +365,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   LOG_INFO_APP( "Network config : CENTRALIZED ROUTER" );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo1 */
-  LOG_INFO_APP( "Application Flashed : Zigbee %s %s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
+  LOG_INFO_APP( "Application Flashed Origin : Zigbee %s %s", APP_ZIGBEE_APPLICATION_NAME, APP_ZIGBEE_APPLICATION_OS_NAME );
 
   /* USER CODE END APP_ZIGBEE_PrintApplicationInfo1 */
   LOG_INFO_APP( "Channel used: %d.", APP_ZIGBEE_CHANNEL );
@@ -374,7 +373,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 

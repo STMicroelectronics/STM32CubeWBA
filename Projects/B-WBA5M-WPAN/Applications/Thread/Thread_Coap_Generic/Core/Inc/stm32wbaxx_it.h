@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -60,10 +60,11 @@ void RCC_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
 void GPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
-void LPUART1_IRQHandler(void);
 void TIM16_IRQHandler(void);
+void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
-void HASH_IRQHandler(void);
+void WKUP_IRQHandler(void);
+void ADC4_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 void WKUP_IRQHandler(void);
 void EXTI6_IRQHandler(void);

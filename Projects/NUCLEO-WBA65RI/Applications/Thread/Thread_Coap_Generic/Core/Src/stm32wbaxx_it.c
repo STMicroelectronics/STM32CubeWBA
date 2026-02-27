@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -384,6 +385,27 @@ void RNG_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the PKACTRL Callback */
+    PKACTRL_EndOfProcessCb();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
+}
+
+/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -442,36 +464,8 @@ void ADC4_IRQHandler(void)
   */
 void WKUP_IRQHandler(void)
 {
-  /* Verif WakeUp Source */
-  
-  /* Clear all WakeUp flags*/
-  LL_PWR_ClearFlag_WU( );
+  HAL_PWR_WKUP_IRQHandler();
 }
 
-/**
-  * @brief This function handles EXTI Line4 interrupt.
-  */
-
-void EXTI4_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
-
-/**
-  * @brief This function handles EXTI Line5 interrupt.
-  */
-
-void EXTI5_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
 
 /* USER CODE END 1 */

@@ -47,6 +47,28 @@ extern "C" {
 /* USER CODE END PD */
 
 /* Exported types ------------------------------------------------------------*/
+typedef enum
+{
+  /* USER CODE BEGIN MT1 */
+  /* USER CODE END MT1 */
+  UTIL_LPM_IDLE_MODE,            /**< Idle mode */
+  /* USER CODE BEGIN MT2 */
+  /* USER CODE END MT2 */
+  UTIL_LPM_SLEEP_MODE,           /**< Sleep mode */
+  /* USER CODE BEGIN MT3 */
+  /* USER CODE END MT3 */
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
+  UTIL_LPM_STOP1_MODE,           /**< Stop 1 mode */
+  /* USER CODE BEGIN MT4 */
+  /* USER CODE END MT4 */
+#endif
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  UTIL_LPM_STANDBY_MODE,         /**< Standby mode */
+  /* USER CODE BEGIN MT6 */
+  /* USER CODE END MT6 */
+#endif
+  UTIL_LPM_NUM_MODES             /**< Number of supported modes */
+} UTIL_LPM_Mode_t;
 
 #define UTIL_LPM_MAX_MODE (UTIL_LPM_NUM_MODES - 1) /**< Highest (most efficient )supported modes */
 
@@ -81,54 +103,29 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 /**
-  * @brief Enters Low Power Off Mode
+  * @brief Handle enter and exit of Idle mode
   */
-void PWR_EnterOffMode( void );
+void LPM_IdleMode(uint32_t param);
 
 /**
-  * @brief Exits Low Power Off Mode
+  * @brief Handle enter and exit of Sleep mode
   */
-void PWR_ExitOffMode( void );
+void LPM_SleepMode(uint32_t param);
 
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
 /**
-  * @brief Enters Low Power Stop2 Mode
+  * @brief Handle enter and exit of Stop1 mode
   */
-void PWR_EnterStop2Mode( void );
+void LPM_Stop1Mode(uint32_t param);
 
+#endif
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
 /**
-  * @brief Exits Low Power Stop2 Mode
+  * @brief Handle enter and exit of Standby mode
   */
-void PWR_ExitStop2Mode( void );
+void LPM_StandbyMode(uint32_t param);
 
-/**
-  * @brief Enters Low Power Stop Mode
-  */
-void PWR_EnterStopMode( void );
-
-/**
-  * @brief Exits Low Power Stop Mode
-  */
-void PWR_ExitStopMode( void );
-
-/**
-  * @brief Enters Low Power Sleep Mode
-  */
-void PWR_EnterSleepMode( void );
-
-/**
-  * @brief Exits Low Power Sleep Mode
-  */
-void PWR_ExitSleepMode( void );
-
-/**
-  * @brief Enable Low Power Sleep Mode
-  */
-void PWR_EnableSleepMode( void );
-
-/**
-  * @brief Disable Low Power Sleep Mode
-  */
-void PWR_DisableSleepMode( void );
+#endif
 
 /**
   * @brief Check if the system is waking-up from standby low power mode.

@@ -43,7 +43,6 @@ extern "C" {
 /* FreeRTOS priorities by default  */
 #define TASK_PRIO_LINK_LAYER                    osPriorityRealtime2
 #define TASK_PRIO_TEMP_MEAS_LL                  osPriorityRealtime2
-#define TASK_PRIO_AMM                           osPriorityNormal
 #define TASK_PRIO_RNG                           osPriorityHigh
 
 #define TASK_PRIO_ZIGBEE_LAYER                  osPriorityRealtime1
@@ -68,7 +67,6 @@ extern "C" {
 /* Tasks stack sizes by default  */
 #define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_AMM                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
 #define TASK_STACK_SIZE_MAC_LAYER               RTOS_STACK_SIZE_MODERATE
 #define TASK_STACK_SIZE_ZIGBEE_LAYER            RTOS_STACK_SIZE_LARGE

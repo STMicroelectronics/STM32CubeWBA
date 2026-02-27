@@ -40,10 +40,10 @@
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)
@@ -762,7 +762,7 @@ void HAP_Notification(HAP_Notification_Evt_t *pNotification)
               if (num_members < p_conn->Size)
               {
                 /* Start scanning */
-                HAPAPP_StartScanning();;
+                HAPAPP_StartScanning();
                 ret = CAP_StartCoordinatedSetMemberDiscoveryProcedure(pNotification->ConnHandle);
                 LOG_INFO_APP("Start Coordinated Set Member Discovery Procedure based on ConnHandle 0x%04X returns status 0x%02X\n",
                              pNotification->ConnHandle,
@@ -2777,7 +2777,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
     {
       APP_ACL_Conn_t *p_conn;
       CSIP_SetMember_Info_t *p_info = (CSIP_SetMember_Info_t *) pNotification->pInfo;
-      LOG_INFO_APP("Coordinated Set Indentification Profile is linked on ConnHandle 0x%04X\n",
+      LOG_INFO_APP("Coordinated Set Identification Profile is linked on ConnHandle 0x%04X\n",
                    pNotification->ConnHandle);
       if (pNotification->Status == BLE_STATUS_SUCCESS)
       {
@@ -2882,7 +2882,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             }
           }
 #if (CFG_BLE_NUM_LINK > 0u)
-          /*Check if a CAP Linkup witha discovered Set Member should started*/
+          /*Check if a CAP Linkup with a discovered Set Member should started*/
           for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
           {
             if (HAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)

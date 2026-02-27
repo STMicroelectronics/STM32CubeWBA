@@ -58,11 +58,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/stm32wbaxx_it.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/STM32_WPAN/App/app_bsp.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_bsp.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/STM32_WPAN/App/app_zigbee.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_zigbee.c</locationURI>
@@ -71,6 +66,11 @@
 			<name>Application/User/STM32_WPAN/App/app_zigbee_endpoint.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_zigbee_endpoint.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/STM32_WPAN/App/app_zigbee_utility.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/App/app_zigbee_utility.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/STM32_WPAN/Target/linklayer_plat.c</name>
@@ -133,6 +133,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</locationURI>
 		</link>
 		<link>
+			<name>Common/WPAN/Interfaces/app_bsp.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/app_bsp.c</locationURI>
+		</link>
+		<link>
 			<name>Common/WPAN/Interfaces/hw_aes.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Interfaces/hw_aes.c</locationURI>
@@ -166,16 +171,6 @@
 			<name>Common/WPAN/Modules/Log/log_module.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/Log/log_module.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>

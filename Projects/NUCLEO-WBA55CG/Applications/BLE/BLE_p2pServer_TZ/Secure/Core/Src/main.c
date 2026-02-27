@@ -86,6 +86,9 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
+  /* Configure The Vector Table address */
+  SCB->VTOR = 0x0C000000;
+
   /* MPU Configuration--------------------------------------------------------*/
   MPU_Config();
 

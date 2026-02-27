@@ -547,7 +547,7 @@ void GHS_APP_UpdateLiveHealthObservation(void)
     hob_length = (ArrayECGWaveform[1]) |
                  ((ArrayECGWaveform[2]) << 8);
     
-    /* By defaut only one segment */
+    /* By default only one segment */
     GHS_APP_Context.LHOChar.SegmentationHeader.FirstSegment = 1;
     GHS_APP_Context.LHOChar.SegmentationHeader.LastSegment = 1;
     GHS_APP_Context.LHOChar.SegmentationHeader.SegmentCounter += 1;
@@ -893,8 +893,8 @@ static tBleStatus ghsapp_send_segment(uint8_t segment_size,
     {
       if(GHS_APP_Context.Lho_Indication_Status == Lho_INDICATION_ON)
       {  
-        UTIL_SEQ_ClrEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
-        UTIL_SEQ_WaitEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
+        UTIL_SEQ_ClrEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
+        UTIL_SEQ_WaitEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
       }
       if(CharOpcode == GHS_LHO)
       {
@@ -937,8 +937,8 @@ static tBleStatus ghsapp_send_segment(uint8_t segment_size,
       {
         if(GHS_APP_Context.Lho_Indication_Status == Lho_INDICATION_ON)
         {  
-          UTIL_SEQ_ClrEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
-          UTIL_SEQ_WaitEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
+          UTIL_SEQ_ClrEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
+          UTIL_SEQ_WaitEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
         }
         if(CharOpcode == GHS_LHO)
         {
@@ -982,8 +982,8 @@ static tBleStatus ghsapp_send_segment(uint8_t segment_size,
     {
       if(GHS_APP_Context.Lho_Indication_Status == Lho_INDICATION_ON)
       {  
-        UTIL_SEQ_ClrEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
-        UTIL_SEQ_WaitEvt(1U << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
+        UTIL_SEQ_ClrEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
+        UTIL_SEQ_WaitEvt(1U << CFG_EVENT_GATT_INDICATION_COMPLETE);
       }
       if(CharOpcode == GHS_LHO)
       {

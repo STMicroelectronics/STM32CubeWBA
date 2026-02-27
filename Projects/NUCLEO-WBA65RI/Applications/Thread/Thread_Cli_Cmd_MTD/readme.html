@@ -22,7 +22,7 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="thread_cli_cmd-application-description"><strong>Thread_Cli_Cmd_MTD Application Description</strong></h2>
-<p>How to control the Thread stack via Cli commands.</p>
+<p>How to control the MTD (Minimal Thread Device) stack via Cli commands.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, 802.15.4 protocol, Thread, CLI</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
@@ -71,6 +71,7 @@
 <li>On the HyperTerminal 1, the user can type the command ‘help’ in order to display the list of all available cli commands. Additional information can be found looking at the OpenThread web site: <a href="https://openthread.io/guides/">https://openthread.io/guides/</a></li>
 <li>On the HyperTerminal 2, traces are displayed.<br />
 If you don’t have the second HyperTerminal automatically, go to STM32CubeProgrammer and upgrade the firmware.<br />
+To send commands through USART2, RTS hardware flow control is required: this needs solder bridge SB4 to be fitted on MB2130 board.<br />
 </li>
 <li>As an example, the user can play the following scenario in order to properly initiate the Thread mesh network by typing the following commands:</li>
 </ul>
@@ -85,11 +86,11 @@ If you don’t have the second HyperTerminal automatically, go to STM32CubeProgr
    Done</code></pre>
 <p>At this point, the user can check the state of its device by using the cli command ‘state’:</p>
 <pre><code>  &gt;state
-   leader
+   detached
    Done</code></pre>
 <p><strong>Note:</strong> With <strong>MTD</strong> config, we have only Child role.</p>
 <ul>
-<li>When running on two STM32WBA65xx Nucleo boards the same Thread_Cli_Cmd_MTD application, and by playing the same scenario as described above on both boards, the first board should reach the state ‘leader’, while the second one should reach the state ‘child’.</li>
+<li>When running on two STM32WBA65xx Nucleo boards the Thread_Cli_Cmd_MTD/Thread_Cli_Cmd_FTD applications, and by playing the same scenario as described above on both boards, the FTD board should reach the state ‘leader’, while the second one should reach the state ‘child’.</li>
 </ul>
 <p><strong>Note:</strong> The application needs to ensure that the SysTick time base is always set to 1 millisecond to have correct HAL operation.</p>
 <h3 id="traces"><strong>Traces</strong></h3>

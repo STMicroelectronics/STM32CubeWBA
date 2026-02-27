@@ -39,7 +39,7 @@ The ZB Persistence is erased by press push button SW3.</p>
 <ul>
 <li><p>The Pressure Measure Server update regularly (500 ms) its <strong>ZCL_PRESS_MEAS_ATTR_MEAS_VAL</strong> attributes (via the measure of a sensor or by random).</p></li>
 <li><p>The Pressure Measure Client send a Report Request to obtains regularly the <strong>ZCL_PRESS_MEAS_ATTR_MEAS_VAL</strong> attributes.</p></li>
-<li><p>The Pressure Measure Server send regularly (500 ms) a Report with the latest value of <strong>ZCL_PRESS_MEAS_ATTR_MEAS_VAL</strong> attributes.</p></li>
+<li><p>The Pressure Measure Server send regularly (60 seconds) a Report with the latest value of <strong>ZCL_PRESS_MEAS_ATTR_MEAS_VAL</strong> attributes.</p></li>
 </ul></li>
 <li>1 read-only attributes is used :
 <ul>
@@ -88,7 +88,7 @@ The ZB Persistence is erased by press push button SW3.</p>
              |           | ------------------------------------------------------------&gt; | toggling  |
              |           | &lt;------------------------------------------------------------ |           |
              |           |                                                               |           |
-             |           | &lt;--- Report (every 5 seconds or 1 minute - see limitation) -- |           |
+             |           | &lt;--- Report ( every 1 minute - see limitation) -------------- |           |
              |           |                                                               |           |
              +-----------+                                                               +-----------+
   
@@ -104,8 +104,7 @@ The ZB Persistence is erased by press push button SW3.</p>
 <li><p>Start the second board. This board is configured as Zigbee router and will be attached to the network created by the coordinator. Do the same for the other boards if applicable.<br />
 → At this stage, Blue LED blinks indicating that the Zigbee network is being created. This usually takes about 15 seconds. It is important to wait until Blue LED becomes ON to start pushing buttons.</p></li>
 <li><p>It is now possible to see the green led toggling on the Server side (periodicity of 0.5s) and periodic tx/rx frames on wireshark or on Uart log every 5 seconds.</p></li>
-<li><p>Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Client_Coord_Persist.PowerOff followed by Zigbee_PressMeas_Client_Coord_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Server_Router_Persist and periodic tx/rx frames on wireshark or on Uart log every 5 seconds.</p></li>
-<li><p>Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Server_Router_Persist.PowerOff followed by Zigbee_PressMeas_Server_Router_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Client_Coord_Persist and periodic tx/rx frames on wireshark or on Uart log every 1 minute. This is a limitation.</p></li>
+<li><p>Retention on the Coordinator can be observed with a sequence of Zigbee_PressMeas_Client_Coord_Persist.PowerOff followed by Zigbee_PressMeas_Client_Coord_Persist.PowerOn followed by a re-connection to the Zigbee_PressMeas_Server_Router_Persist and periodic tx/rx frames on wireshark or on Uart log every 1 minute.</p></li>
 </ol></li>
 </ul>
 <p><strong>Note:</strong> When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.</p>

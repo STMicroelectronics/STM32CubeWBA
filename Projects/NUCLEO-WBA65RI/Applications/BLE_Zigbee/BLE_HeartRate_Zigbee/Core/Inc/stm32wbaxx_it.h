@@ -22,7 +22,7 @@
 #define __STM32WBAxx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Private includes ----------------------------------------------------------*/
@@ -62,12 +62,10 @@ void GPDMA1_Channel1_IRQHandler(void);
 void USART1_IRQHandler(void);
 void TIM16_IRQHandler(void);
 void RADIO_IRQHandler(void);
+void WKUP_IRQHandler(void);
 void HASH_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 void WKUP_IRQHandler(void);
-void EXTI4_IRQHandler(void);
-void EXTI5_IRQHandler(void);
-void EXTI13_IRQHandler(void);
 
 /* USER CODE END EFP */
 

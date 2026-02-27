@@ -213,7 +213,8 @@ VOID USBD_CDC_ACM_Read_Task(VOID)
           break;
 
         default:
-          /* Unknown packet */
+          /* Unknown packet -> Discard */
+          pCurrentRxNode->len = 0;
           return;
       }
 

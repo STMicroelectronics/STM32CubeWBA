@@ -35,8 +35,8 @@
 
 /* External variables --------------------------------------------------------*/
 extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN EV */
@@ -84,37 +84,38 @@ void MX_StandbyExit_PeripheralInit(void)
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
-    /* Setup GPIOA 13, 14, 15 in Analog no pull */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIOA->PUPDR &= ~0xFC000000;
-    GPIOA->MODER |= 0xFC000000;
-    __HAL_RCC_GPIOA_CLK_DISABLE();
+  /* Setup GPIOA 13, 14, 15 in Analog no pull */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIOA->PUPDR &= ~0xFC000000;
+  GPIOA->MODER |= 0xFC000000;
+  __HAL_RCC_GPIOA_CLK_DISABLE();
 
-    /* Setup GPIOB 3, 4 in Analog no pull */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    GPIOB->PUPDR &= ~0x3C0;
-    GPIOB->MODER |= 0x3C0;
-    __HAL_RCC_GPIOB_CLK_DISABLE();
+  /* Setup GPIOB 3, 4 in Analog no pull */
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  GPIOB->PUPDR &= ~0x3C0;
+  GPIOB->MODER |= 0x3C0;
+  __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
 
-    memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
-    memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
-    memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+  memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
+  memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
+  memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
 #if (CFG_LOG_SUPPORTED == 1)
-    memset(&huart1, 0, sizeof(huart1));
+  memset(&huart1, 0, sizeof(huart1));
 #endif
 
   MX_GPIO_Init();
   MX_GPDMA1_Init();
-  MX_RAMCFG_Init();
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
 #endif
   MX_ICACHE_Init();
+  MX_RAMCFG_Init();
   CRCCTRL_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
 #endif /* USE_TEMPERATURE_BASED_RADIO_CALIBRATION */
+
   /* USER CODE BEGIN MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */
 APP_BSP_StandbyExit();
   /* USER CODE END MX_STANDBY_EXIT_PERIPHERAL_INIT_2 */

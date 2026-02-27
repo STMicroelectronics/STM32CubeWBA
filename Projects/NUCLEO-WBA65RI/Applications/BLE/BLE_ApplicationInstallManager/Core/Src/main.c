@@ -33,6 +33,9 @@ typedef void (*fct_t)(void);
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+/* Magic Keyword address offset, defined by the TAG_OTA_START address offset defined in the generated .map file of BLE Application with OTA  */
+#define KEYWORD_ADDRESS_OFFSET              (0x188)
+
 /* Define the NVM size in sector */
 #define CFG_NVM_NB_SECTORS                  (2)
 /* Define the User Data size in sector */
@@ -191,7 +194,6 @@ void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -199,6 +201,12 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* Overwrite HAL Tick functions to not use sysTick start sysTick */
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+{
+  return HAL_OK;
+}
 
 /**
  * Check the Boot mode request
@@ -299,7 +307,9 @@ static uint8_t CheckFwAppValidity( uint8_t page_idx )
   uint8_t status;
   uint32_t magic_keyword_address;
   uint32_t last_user_flash_address;
-  magic_keyword_address = *(uint32_t*)(FLASH_BASE + (page_idx * FLASH_PAGE_SIZE + 0x188));
+
+  magic_keyword_address = *(uint32_t*)(FLASH_BASE + (page_idx * FLASH_PAGE_SIZE + KEYWORD_ADDRESS_OFFSET));
+
   if(page_idx != CFG_ACTIVE_SLOT_START_SECTOR_INDEX)
   {
     /* magic_keyword_address is in the download slot = active slot + APP_SLOT_PAGE_SIZE */
@@ -430,7 +440,7 @@ static void MoveToActiveSlot( uint8_t page_idx )
   dwn_addr = FLASH_BASE + (page_idx * FLASH_PAGE_SIZE);
   act_addr = FLASH_BASE + (CFG_ACTIVE_SLOT_START_SECTOR_INDEX * FLASH_PAGE_SIZE);
   /* Last address of the new binary relative to the start address in the active slot */
-  last_addr = *(uint32_t*)(dwn_addr + 0x188);
+  last_addr = *(uint32_t*)(dwn_addr + KEYWORD_ADDRESS_OFFSET);
   last_addr &= 0xFFFFFFF0;  /* Align on 16-byte boundary */
 
   /**

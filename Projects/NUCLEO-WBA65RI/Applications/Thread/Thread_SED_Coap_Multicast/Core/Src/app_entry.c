@@ -39,6 +39,10 @@
 #include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
+#include "pka_ctrl.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "assert.h"
 #include "stm32_lpm_if.h"
 
@@ -89,6 +93,9 @@ static bool system_startup_done = FALSE;
  */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+static uint8_t PkaMut = 0u;
+static uint8_t EndOfProcSem = 0u;
 
 /* USER CODE BEGIN PV */
 
@@ -263,6 +270,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -414,14 +426,6 @@ void UTIL_SEQ_PostIdle( void )
   (void)ll_sys_dp_slp_exit();
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
-#if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STDBY_SUPPORTED >0 ) )
-  /* Treatment of WakeUp Button */
-  if ( ( PWR->WUSR & PWR_WAKEUP_PIN2 ) != 0 )
-  {
-    PWR->WUSCR = PWR_WAKEUP_PIN2;
-    BSP_PB_Callback( B1 );
-  }
-#endif /* ( CFG_LPM_LEVEL && CFG_LPM_STDBY_SUPPORTED ) */
 
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
@@ -512,6 +516,86 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
 {
   Error_Handler();
   __builtin_unreachable();
+}
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+
+  /* Check if mutex is available */
+  if (0u != PkaMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  /* Increment mutex */
+  PkaMut++;
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+
+  if (0u != PkaMut)
+  {
+    PkaMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+
+  /* Check if semaphore is available */
+  if (0u != EndOfProcSem)
+  {
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
+  }
+
+  /* Increment semaphore */
+  EndOfProcSem++;
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+
+  if (0u != EndOfProcSem)
+  {
+    EndOfProcSem = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

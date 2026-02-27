@@ -96,7 +96,7 @@ typedef struct
 void HAP_IAC_Notification(HAP_IAC_NotificationEvt_t const *pNotification);
 
 /**
-  * @brief  Initialize the Hearing Access Profile as Immmediate Alert Client Role
+  * @brief  Initialize the Hearing Access Profile as Immediate Alert Client Role
   * @retval status of the initialization
   */
 tBleStatus HAP_IAC_Init(void);
@@ -119,7 +119,7 @@ tBleStatus HAP_IAC_Linkup(uint16_t ConnHandle, HAP_LinkupMode_t LinkupMode);
 
 /**
    * @brief  Store GATT Database of the HAP IAS Characteristics and Services
-   * @param  ConnHandle: Connetion Handle of the remote connection
+   * @param  ConnHandle: Connection Handle of the remote connection
    * @param  [in] pData: pointer on buffer in which GATT Database of HAP characteristics in which information is stored
    * @param  [in] MaxDataLen: maximum data length to store
    * @param  [out] len : length in bytes of stored data

@@ -89,8 +89,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
-static UTIL_TIMER_Object_t      stTimerToggle;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,7 +96,6 @@ static UTIL_TIMER_Object_t      stTimerToggle;
 /* USER CODE BEGIN PFP */
 static void APP_ZIGBEE_ApplicationTaskInit    ( void );
 static void APP_ZIGBEE_OnOffClientStart       ( void );
-static void APP_ZIGBEE_TimerToggleCallback    ( void * arg );
 
 /* USER CODE END PFP */
 
@@ -151,10 +148,7 @@ void APP_ZIGBEE_ApplicationStart( void )
 
 #if ( CFG_LPM_LEVEL != 0)
   /* Authorize LowPower now */
-  UTIL_LPM_SetStopMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#if (CFG_LPM_STDBY_SUPPORTED > 0)
-  UTIL_LPM_SetOffMode( 1 << CFG_LPM_APP, UTIL_LPM_ENABLE );
-#endif /* CFG_LPM_STDBY_SUPPORTED */
+  UTIL_LPM_SetMaxMode( 1 << CFG_LPM_APP, UTIL_LPM_MAX_MODE );
 #endif /* CFG_LPM_LEVEL */
 }
 
@@ -279,7 +273,7 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
   APP_ZIGBEE_PrintGenericInfo();
 
   LOG_INFO_APP( "Clusters allocated are:" );
-  LOG_INFO_APP( "%s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
+  LOG_INFO_APP( "  %s on Endpoint %d.", APP_ZIGBEE_CLUSTER_NAME, APP_ZIGBEE_ENDPOINT );
 
   /* USER CODE BEGIN APP_ZIGBEE_PrintApplicationInfo2 */
 
@@ -297,8 +291,6 @@ void APP_ZIGBEE_PrintApplicationInfo(void)
  */
 static void APP_ZIGBEE_ApplicationTaskInit( void )
 {
-  /* Create timer to toggle the OnOff */
-  UTIL_TIMER_Create( &stTimerToggle, APP_ZIGBEE_TOGGLE_PERIOD, UTIL_TIMER_PERIODIC, APP_ZIGBEE_TimerToggleCallback, NULL );
 }
 
 /**
@@ -336,7 +328,6 @@ static void APP_ZIGBEE_OnOffClientStart(void)
     LOG_ERROR_APP( "[BASIC] Error during writing 'Power Source' (0x%02X).", eStatus );
     while(1) {}
   }
-
 }
 
 
@@ -368,43 +359,5 @@ void APP_BSP_Button1Action(void)
   }
 }
 
-
-/**
- * @brief  Management of the toggle OnOff (via Button SW1) with the Timer
- * @param  None
- * @retval None
- */
-static void APP_ZIGBEE_TimerToggleCallback( void * arg )
-{
-  UTIL_SEQ_SetTask( TASK_BSP_BUTTON_B1, CFG_TASK_PRIO_BUTTON_Bx );
-}
-
-
-/**
- * @brief  Management of the SW3 button : Start/Stop Automatic Toggle
- * @param  None
- * @retval None
- */
-void APP_BSP_Button3Action(void)
-{
-  static  uint8_t   cToggleOn = 0;
-  
-  /* First, verify if Appli has already Join a Network  */ 
-  if ( APP_ZIGBEE_IsAppliJoinNetwork() != false )
-  {
-    if ( cToggleOn == 0u )
-    {
-      LOG_INFO_APP( "[ONOFF] SW3 pushed, Start automatic On/Off." );
-      UTIL_TIMER_Start( &stTimerToggle );
-      cToggleOn = 1;
-    }
-    else
-    {
-      LOG_INFO_APP( "[ONOFF] SW3 pushed, Stop automatic On/Off." );
-      UTIL_TIMER_Stop( &stTimerToggle ); 
-      cToggleOn = 0;
-    }
-  }
-}
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */

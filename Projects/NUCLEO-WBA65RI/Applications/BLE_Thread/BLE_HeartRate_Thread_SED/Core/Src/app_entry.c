@@ -43,13 +43,11 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "bpka.h"
+#include "pka_ctrl.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
 #include "app_debug.h"
-#include "ll_sys.h"
-#include "assert.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
 #include "temp_measurement.h"
@@ -57,6 +55,7 @@
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
+#include "assert.h"
 #include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -133,6 +132,9 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
+static uint8_t PkaMut = 0u;
+static uint8_t EndOfProcSem = 0u;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -155,7 +157,11 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 static void APPE_FLASH_MANAGER_Init( void );
 
-static void APPE_BPKA_Init( void );
+static void APPE_PKACTRL_Init( void );
+int PKACTRL_MutexTake(void);
+int PKACTRL_MutexRelease(void);
+int PKACTRL_TakeSemEndOfOperation(void);
+int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -203,33 +209,23 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
 
+  /* Initialize the Flash Manager module */
+  APPE_FLASH_MANAGER_Init();
+
   /* USER CODE BEGIN APPE_Init_1 */
   /* Initialize Peripherals */
   APP_BSP_Init();
 
   /* USER CODE END APPE_Init_1 */
 
-  /* Initialize the Flash Manager module */
-  APPE_FLASH_MANAGER_Init();
-
-  /* USER CODE BEGIN APPE_Init_1 */
-#if (CFG_LED_SUPPORTED == 1)
-  APP_BSP_LedInit();
-#endif /* (CFG_LED_SUPPORTED == 1) */
-#if (CFG_BUTTON_SUPPORTED == 1)
-  APP_BSP_ButtonInit();
-#endif /* (CFG_BUTTON_SUPPORTED == 1) */
-
-  /* USER CODE END APPE_Init_1 */
-
-  /* Initialize the Ble Public Key Accelerator module */
-  APPE_BPKA_Init();
+  /* Initialize the Public Key Accelerator module */
+  APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
-//  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
-//  {
-//    Error_Handler();
-//  }
+  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
+  {
+    Error_Handler();
+  }
 
   APP_BLE_Init();
 
@@ -300,6 +296,10 @@ static void System_Init( void )
   /* Initialize the Timer Server */
   UTIL_TIMER_Init();
 
+  /* USER CODE BEGIN System_Init_1 */
+
+  /* USER CODE END System_Init_1 */
+
   /* Enable wakeup out of standby from RTC ( UTIL_TIMER )*/
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
@@ -348,6 +348,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -438,12 +443,12 @@ static void APPE_FLASH_MANAGER_Init(void)
 }
 
 /**
- * @brief Initialize Ble Public Key Accelerator module
+ * @brief Initialize Public Key Accelerator module
  */
-static void APPE_BPKA_Init(void)
+static void APPE_PKACTRL_Init(void)
 {
-  /* Register Ble Public Key Accelerator task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
+  /* Register Public Key Accelerator task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_PKACTRL, UTIL_SEQ_RFU, PKACTRL_BG_Process);
 }
 
 static void APPE_AMM_Init(void)
@@ -549,9 +554,9 @@ void UTIL_SEQ_PostIdle( void )
   return;
 }
 
-void BPKACB_Process( void )
+void PKACTRL_CB_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BPKA, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_PKACTRL, CFG_SEQ_PRIO_0);
 }
 
 /**
@@ -667,13 +672,93 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-/* USER CODE BEGIN FD_WRAP_FUNCTIONS */
-
-/* USER CODE END FD_WRAP_FUNCTIONS */
+/**
+ * @brief Function Assert AEABI in case of not described on 'libc' libraries.
+ */
 __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int iLine)
 {
   Error_Handler();
   __builtin_unreachable();
+}
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+
+  /* Check if mutex is available */
+  if (0u != PkaMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  /* Increment mutex */
+  PkaMut++;
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+
+  if (0u != PkaMut)
+  {
+    PkaMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+
+  /* Check if semaphore is available */
+  if (0u != EndOfProcSem)
+  {
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
+  }
+
+  /* Increment semaphore */
+  EndOfProcSem++;
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+
+  if (0u != EndOfProcSem)
+  {
+    EndOfProcSem = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

@@ -39,12 +39,17 @@
 #include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
+#include "pka_ctrl.h"
 #include "crc_ctrl.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "timer_if.h"
 #if (CFG_LPM_LEVEL != 0)
 #include "tx_low_power.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
 #include "assert.h"
+#include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -97,6 +102,9 @@ static uint32_t lowPowerTimeDiffRemaining = 0;
  */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+static TX_SEMAPHORE PkaSemaphore;
+static TX_SEMAPHORE PkaEndOfOperationSemaphore;
 
 /* ThreadX objects declaration */
 static TX_THREAD      RngTaskHandle;
@@ -182,6 +190,26 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
 
+  /* Create PKA semaphore */
+  TXstatus = tx_semaphore_create (&PkaSemaphore,
+                            "PKA Semaphore",
+                            1);
+
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "PKA Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
+
+  /* Create PKA end of operation flag semaphore */
+  TXstatus = tx_semaphore_create (&PkaEndOfOperationSemaphore,
+                                  "PKA End of Operation Semaphore",
+                                  1);
+  if( TXstatus != TX_SUCCESS )
+  {
+    LOG_ERROR_APP( "PKA End of Operation Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
+    Error_Handler();
+  }
   /* USER CODE BEGIN APPE_Init_1 */
   /* Initialize Peripherals */
 #if (CFG_LED_SUPPORTED == 1)
@@ -313,6 +341,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -358,8 +391,7 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1) */
 
   /* Disable LowPower during Init */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
-  UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_APP, UTIL_LPM_SLEEP_MODE);
 
   UINT TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_IDLE, TX_NO_WAIT);
 
@@ -387,6 +419,9 @@ static void SystemPower_Config(void)
 static void RNG_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN RNG_Task_Entry_0 */
+
+  /* USER CODE END RNG_Task_Entry_0 */
 
   for(;;)
   {
@@ -433,11 +468,14 @@ static void APPE_RNG_Init(void)
 static void IDLE_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
+  /* USER CODE BEGIN IDLE_Task_Entry_0 */
+
+  /* USER CODE END IDLE_Task_Entry_0 */
 
   while(1)
   {
     /* When no other activities to be done we decide to go in low power
-       This mechansim is in charge to mange low power at application level
+       This mechanism is in charge to mange low power at application level
        without the support of ThreadX low power framework */
     UTILS_ENTER_CRITICAL_SECTION();
     ThreadXLowPowerUserEnter();
@@ -508,7 +546,7 @@ void UTIL_ADV_TRACE_PreSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Disable Stop mode before sending a LOG message over UART */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_DISABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_SLEEP_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PreSendHook */
 
@@ -519,7 +557,7 @@ void UTIL_ADV_TRACE_PostSendHook(void)
 {
 #if (CFG_LPM_LEVEL != 0)
   /* Enable Stop mode after LOG message over UART sent */
-  UTIL_LPM_SetStopMode(1U << CFG_LPM_LOG, UTIL_LPM_ENABLE);
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LOG, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
   /* USER CODE BEGIN UTIL_ADV_TRACE_PostSendHook */
 
@@ -560,9 +598,15 @@ void ThreadXLowPowerUserEnter( void )
   LL_PWR_ClearFlag_STOP();
 
 #if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMode() == UTIL_LPM_OFFMODE ) )
+#if (CFG_LPM_STOP2_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_BLE_EnterDeepSleep();
+    APP_SYS_LPM_EnterLowPowerMode();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
@@ -591,7 +635,7 @@ void ThreadXLowPowerUserEnter( void )
 
   /* Disable SysTick Interrupt */
   SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-  UTIL_LPM_EnterLowPower();
+  UTIL_LPM_Enter(0);
 
   lowPowerTimeAfterSleep = getCurrentTime();
   /* Compute time spent in low power state and report precision loss */
@@ -704,6 +748,82 @@ CRCCTRL_Cmd_Status_t CRCCTRL_MutexRelease(void)
 
   /* USER CODE END CRCCTRL_MutexRelease_1 */
   return crc_status;
+}
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Take the semaphore */
+  TXstatus = tx_semaphore_get(&PkaSemaphore,
+                          TX_WAIT_FOREVER);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Release the semaphore */
+  TXstatus = tx_semaphore_put(&PkaSemaphore);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+  /* Take the semaphore */
+  TXstatus = tx_semaphore_get(&PkaEndOfOperationSemaphore,
+                              TX_WAIT_FOREVER);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+  UINT TXstatus;
+
+  /* Release the semaphore */
+  TXstatus = tx_semaphore_put(&PkaEndOfOperationSemaphore);
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = -1; /* Error */
+  }
+
+  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

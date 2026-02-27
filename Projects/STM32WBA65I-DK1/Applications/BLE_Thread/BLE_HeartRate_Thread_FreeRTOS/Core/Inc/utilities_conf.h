@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -160,7 +160,7 @@ extern "C" {
 /* Maximum number of supported LPM drivers */
 #define UTIL_LPM_DRIVER_MAX_NUM (10)
 /* Enables LPM legacy APIs */
-#define UTIL_LPM_LEGACY_ENABLED (1)
+#define UTIL_LPM_LEGACY_ENABLED (0)
 
 /* USER CODE BEGIN EM */
 

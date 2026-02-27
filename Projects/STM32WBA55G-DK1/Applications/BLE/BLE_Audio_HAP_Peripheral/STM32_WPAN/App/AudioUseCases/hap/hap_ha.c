@@ -1371,7 +1371,7 @@ SVCCTL_EvtAckStatus_t HAS_HandleCtrlPointIndicateComplete(uint16_t ConnHandle)
           }
           else
           {
-            BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed aborted becasue no EATT Bearer is available\n");
+            BLE_DBG_HAP_HA_MSG("Set Read Presets Response executed aborted because no EATT Bearer is available\n");
             HAP_Context.HA.CtrlPointOp.CurrentOp = 0;
             return SVCCTL_EvtAckFlowEnable;
           }

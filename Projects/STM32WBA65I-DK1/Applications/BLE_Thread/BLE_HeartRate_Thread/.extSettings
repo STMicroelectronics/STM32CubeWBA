@@ -1,0 +1,8 @@
+[ProjectFiles]
+HeaderPath=..\..\..\..\..\..\Drivers\BSP\STM32WBA65I-DK1;..\..\..\..\..\..\Drivers\BSP\Components\Common;..\..\..\..\..\..\Drivers\BSP\Components\ssd1315;..\..\..\..\..\..\Utilities\LCD
+[Others]
+
+[Groups]
+Doc=../README.md;
+Drivers/BSP=../../../../../../Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.c;
+Common/WPAN/Interface=../../../../../Common/WPAN/Interfaces/app_bsp.c;

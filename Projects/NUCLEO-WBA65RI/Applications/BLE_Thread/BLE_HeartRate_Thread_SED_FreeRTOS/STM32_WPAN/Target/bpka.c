@@ -136,7 +136,7 @@ int BPKA_Process( void )
   }
 
   /* Check if the current operation is finished */
-  if ( ! HW_PKA_EndOfOperation( ) )
+  if ( 0 != HW_PKA_EndOfOperation( ) )
     return BPKA_BUSY;
 
   switch ( BPKA_state )

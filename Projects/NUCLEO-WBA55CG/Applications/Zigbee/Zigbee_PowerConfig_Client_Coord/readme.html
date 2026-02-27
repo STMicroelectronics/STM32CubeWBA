@@ -64,7 +64,7 @@
            |             | &lt;-------------- Report (every 60 seconds) -------------------------|             |
            |             |                                                                    |             | &lt;= PushB SW1 : Start/Restart 30 s Periodic Timer.               
            |             |                                                                    |             |        
-           |             |                                                                    |             |            
+           |             |                                                                    |             | &lt;= PushB SW2 : Stop 30 s Periodic Timer.	          
            |             |                                                                    |             |    
            |             |                                                                    |             |            
            |             |                                                                    |             |            
@@ -83,7 +83,7 @@
 → At this stage, the Zigbee network is automatically created, and traces on coordinator indicate that new device is added.<br />
 if you want to have the Led Blue on on SED side when attached to the network, you can modify the <strong>CFG_FULL_LOW_POWER</strong> to the value <strong>0</strong>.<br />
 </li>
-<li><p>On Client side, every 60 s, the battery voltage is reported from the Server and the Blue led is toggling. To stop battery voltage evolution on Server, push SW1 push button (in wireshark EndDeviceTimeout immediatly sent with value 3), and to restart it push again SW1 (in wireshark EndDeviceTimeout immediatly sent with value 2).</p></li>
+<li><p>On Client side, every 60 s, the battery voltage is reported from the Server. To stop battery voltage evolution on Server, push SW1 push button, and to restart it push SW2.</p></li>
 </ol></li>
 </ul>
 <p><strong>Note:</strong> When LED Red, Green and Blue are toggling it is indicating an error has occurred on application.</p>

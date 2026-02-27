@@ -221,8 +221,8 @@ extern UART_HandleTypeDef           huart1;
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
@@ -246,21 +246,6 @@ extern UART_HandleTypeDef           huart1;
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
-
-/******************************************************************************
- * MEMORY MANAGER
- ******************************************************************************/
-
-#define CFG_MM_POOL_SIZE                                  (54000U)  /* bytes */
-#define CFG_AMM_VIRTUAL_MEMORY_NUMBER                     (2U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT                 (1U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT_BUFFER_SIZE     (10500U)  /* words (32 bits) */
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP                 (2U)
-#define CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP_BUFFER_SIZE     (3000U)  /* words (32 bits) */
-
-/* USER CODE BEGIN MEMORY_MANAGER_Configuration */
-
-/* USER CODE END MEMORY_MANAGER_Configuration */
 
 /* USER CODE BEGIN Defines */
 /**

@@ -2,11 +2,11 @@
 /**
   ******************************************************************************
   * File Name          : app_freertos.c
-  * Description        : Code for freertos applications
+  * Description        : FreeRTOS applicative file
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,7 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_freertos.h"
-#include "stm32_rtos.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_ble.h"
@@ -52,15 +52,15 @@
 osThreadId_t advertisingTaskHandle;
 const osThreadAttr_t advertisingTask_attributes = {
   .name = "advertisingTask",
-  .priority = CFG_TASK_PRIO_ADVERTISING,
-  .stack_size = TASK_ADVERTISING_STACK_SIZE
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512 * 4
 };
 /* Definitions for HRSAPPMeasurementsTask */
 osThreadId_t HRSAPPMeasurementsTaskHandle;
 const osThreadAttr_t HRSAPPMeasurementsTask_attributes = {
   .name = "HRSAPPMeasurementsTask",
-  .priority = CFG_TASK_PRIO_HRS_APP_MEAS,
-  .stack_size = TASK_HRS_APP_MEAS_STACK_SIZE
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 256 * 4
 };
 /* Definitions for advLowPowerTimer */
 osTimerId_t advLowPowerTimerHandle;
@@ -85,7 +85,12 @@ const osSemaphoreAttr_t HRSAPPMeasurementsSemaphore_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+// osThreadId_t ADVInitTaskHandle;
+// const osThreadAttr_t ADVInitTask_attributes = {
+//   .name = "ADVInitTask",
+//   .priority = (osPriority_t) osPriorityRealtime,
+//   .stack_size = 256 * 4
+// };
 /* USER CODE END FunctionPrototypes */
 
 /* USER CODE BEGIN 4 */
@@ -162,7 +167,7 @@ void MX_FREERTOS_Init(void) {
   HRSAPPMeasurementsTaskHandle = osThreadNew(HRSAPPMeasurementsTask_Entry, NULL, &HRSAPPMeasurementsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  // ADVInitTaskHandle = osThreadNew(ADVInitTask_Entry, NULL, &ADVInitTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -182,7 +187,7 @@ void advertisingTask_Entry(void *argument)
   /* USER CODE BEGIN advertisingTask */
   uint16_t advCmd;
   uint8_t advCmdPrio;
-
+  /* Infinite loop */
   for(;;)
   {
     osMessageQueueGet(advertisingCmdQueueHandle, &advCmd, &advCmdPrio, osWaitForever);
@@ -219,7 +224,9 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
   for(;;)
   {
     osSemaphoreAcquire(HRSAPPMeasurementsSemaphoreHandle, osWaitForever);
+
     HRS_APP_Measurements();
+
     osThreadYield();
   }
   /* USER CODE END HRSAPPMeasurementsTask */
@@ -244,6 +251,12 @@ void HRSAPPMeasurementsTimer_cb(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+// void ADVInitTask_Entry( void * argument )
+// {
+//   osDelay(100);
+//   uint16_t adv_cmd = 0;
+//   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
+//   osThreadExit();
+// }
 /* USER CODE END Application */
 

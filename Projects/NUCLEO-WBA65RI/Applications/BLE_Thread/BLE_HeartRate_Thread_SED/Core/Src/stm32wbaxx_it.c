@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
+#include "pka_ctrl.h"
 
 /* USER CODE END Includes */
 
@@ -67,9 +68,10 @@ extern void (*low_isr_callback)(void);
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
 extern RTC_HandleTypeDef hrtc;
-extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -204,7 +206,6 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -305,6 +306,20 @@ void USART1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM16 global interrupt.
   */
 void TIM16_IRQHandler(void)
@@ -331,6 +346,27 @@ void TIM16_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the PKACTRL Callback */
+    PKACTRL_EndOfProcessCb();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
+}
+
+/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -353,13 +389,27 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles ADC4 (12bits) global interrupt.
+  * @brief This function handles PWR global WKUP pin interrupt.
   */
-void ADC4_IRQHandler(void)
+void WKUP_IRQHandler(void)
 {
-  /* USER CODE BEGIN HASH_IRQn 0 */
+  /* USER CODE BEGIN WKUP_IRQn 0 */
 
-  /* USER CODE END HASH_IRQn 0 */
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+  LL_PWR_ClearFlag_WU( );
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles COMP1 and COMP2 through EXTI Lines interrupts.
+  */
+void COMP_IRQHandler(void)
+{
+  /* USER CODE BEGIN COMP_IRQn 0 */
+
+  /* USER CODE END COMP_IRQn 0 */
 
   /* Disable SW radio low interrupt to prevent nested calls */
   NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
@@ -377,46 +427,14 @@ void ADC4_IRQHandler(void)
   /* Re-enable SW radio low interrupt */
   NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
 
-  /* USER CODE BEGIN HASH_IRQn 1 */
+  /* USER CODE BEGIN COMP_IRQn 1 */
 
-  /* USER CODE END HASH_IRQn 1 */
+  /* USER CODE END COMP_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
 
-/**
-  * @brief This function handles WKUP global interrupt.
-  */
-void WKUP_IRQHandler(void)
-{
-  /* Verif WakeUp Source */
-  
-  /* Clear all WakeUp flags*/
-  LL_PWR_ClearFlag_WU( );
-}
 
-/**
-  * @brief This function handles EXTI Line4 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B3);
-}
-
-/**
-  * @brief This function handles EXTI Line5 interrupt.
-  */
-void EXTI5_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B2);
-}
-
-/* 
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
-{
-  BSP_PB_IRQHandler(B1);
-}
+/* EXTI for Nucleo buttons are managed by 'app_bsp.c' */
 
 /* USER CODE END 1 */

@@ -491,6 +491,10 @@ void HTS_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: HtsSvcHdle = 0x%04X\n",HTS_Context.HtsSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * TEMM
    */

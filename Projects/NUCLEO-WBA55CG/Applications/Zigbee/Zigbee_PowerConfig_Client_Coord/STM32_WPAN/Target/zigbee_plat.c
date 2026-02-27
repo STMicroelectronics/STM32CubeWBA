@@ -25,7 +25,6 @@
 #include "hw.h"
 #include "baes.h"
 #include "zigbee_plat.h"
-#include "advanced_memory_manager.h"
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -186,18 +185,9 @@ bool ZIGBEE_PLAT_ZbHeapInit( void )
  */
 void * ZIGBEE_PLAT_ZbHeapMalloc( uint32_t iSize )
 {
-  void  *ptr = NULL;
+  void  *ptr;
 
-  /* Fix a problem with AMM if iSize is null */
-  if ( iSize == 0u )
-  {
-    iSize = 1;
-  }
-
-  if ( AMM_Alloc( CFG_AMM_VIRTUAL_STACK_ZIGBEE_INIT, BYTES_TO_WORD32(iSize), (uint32_t**)&ptr, NULL ) != AMM_ERROR_OK )
-  {
-    ptr = NULL;
-  }
+  ptr = malloc( iSize );
 
   return ptr;
 }
@@ -209,7 +199,7 @@ void ZIGBEE_PLAT_ZbHeapFree( void * ptr )
 {
   if ( ptr != NULL )
   {
-    AMM_Free( ptr );
+    free( ptr );
   }
   else
   {
@@ -240,18 +230,9 @@ bool ZIGBEE_PLAT_HeapInit( void )
  */
 void * ZIGBEE_PLAT_HeapMalloc( uint32_t iSize )
 {
-  void  *ptr = NULL;
+  void  *ptr;
 
-  /* Fix a problem with AMM if iSize is null */
-  if ( iSize == 0u )
-  {
-    iSize = 1;
-  }
-
-  if ( AMM_Alloc( CFG_AMM_VIRTUAL_STACK_ZIGBEE_HEAP, BYTES_TO_WORD32(iSize), (uint32_t**)&ptr, NULL ) != AMM_ERROR_OK )
-  {
-    ptr = NULL;
-  }
+  ptr = malloc( iSize );
 
   return ptr;
 }
@@ -263,7 +244,7 @@ void ZIGBEE_PLAT_HeapFree( void * ptr )
 {
   if ( ptr != NULL )
   {
-    AMM_Free( ptr );
+    free( ptr );
   }
   else
   {

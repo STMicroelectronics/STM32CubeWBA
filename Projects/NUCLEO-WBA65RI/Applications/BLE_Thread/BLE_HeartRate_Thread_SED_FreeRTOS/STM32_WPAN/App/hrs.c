@@ -58,7 +58,6 @@ typedef struct{
 #define HRS_CNTL_POINT_RESET_ENERGY_EXPENDED      (0x01)
 #define HRS_CNTL_POINT_VALUE_IS_SUPPORTED         (0x00)
 #define HRS_CNTL_POINT_VALUE_NOT_SUPPORTED        (0x80)
-
 /* USER CODE END PD */
 
 /* External variables --------------------------------------------------------*/
@@ -363,6 +362,10 @@ void HRS_Init(void)
   {
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * HRME

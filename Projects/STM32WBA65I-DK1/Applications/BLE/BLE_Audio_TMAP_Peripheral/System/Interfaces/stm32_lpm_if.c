@@ -323,13 +323,12 @@ __WEAK OPTIMIZED void Standby_Restore_GPIO(void)
 }
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 
-#if (CFG_SCM_SUPPORTED != 1)
+#if (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
 OPTIMIZED static void Clock_Switching(void)
 {
   /* Activate HSE clock */
   LL_RCC_HSE_Enable();
   while(LL_RCC_HSE_IsReady() == 0);
-
   /* Apply PWR VOS1 power level */
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1); /* Double write for flag readiness to cope with hw latency */
@@ -351,10 +350,13 @@ OPTIMIZED static void Clock_Switching(void)
   /* Set HDIV 5 */
   LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_1); /* divided by 1 */
 
+  /* Switched to HSE, so disable HSI */
+  LL_RCC_HSI_Disable();
+
   /* Ensure time base clock coherency */
   SystemCoreClockUpdate();
 }
-#endif /* (CFG_SCM_SUPPORTED != 1) */
+#endif /* (CFG_SCM_SUPPORTED != 1) && ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
 #if (CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP1_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)
 OPTIMIZED static void Enter_Stop_Standby_Mode(void)
@@ -398,7 +400,6 @@ OPTIMIZED static void Exit_Stop_Standby_Mode(void)
       SCM_HSE_Clear_SW_HSERDY();
     }
     /* SCM HSE END */
-
     scm_setup();
   }
   else
@@ -529,13 +530,11 @@ OPTIMIZED static void PWR_ExitOffMode( void )
   if ( 1UL == boot_after_standby )
   {
     boot_after_standby = 0;
-
 #if (CFG_SCM_SUPPORTED == 1)
     /* SCM HSE BEGIN */
     SCM_HSE_Clear_SW_HSERDY();
     /* SCM HSE END */
 #endif /* CFG_SCM_SUPPORTED */
-
     HAL_NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_LOW, 0);
     HAL_NVIC_EnableIRQ(RADIO_INTR_NUM);
     HAL_NVIC_SetPriority(RADIO_SW_LOW_INTR_NUM, RADIO_SW_LOW_INTR_PRIO, 0);
@@ -623,7 +622,7 @@ OPTIMIZED static void PWR_ExitOffMode( void )
 #if defined(RCC_LSI2_SUPPORT)
       /** If LSI2 is used for profiling, since the profile value is based on the worst
         * case for LSI2 frequency, the minimum value between the value profiled
-        * and the defaut value is considered for lpm_wakeup_time_standby
+        * and the default value is considered for lpm_wakeup_time_standby
         */
       if (LL_RCC_GetSystickClockSource() == LL_RCC_SYSTICK_CLKSOURCE_LSI)
       {
@@ -718,10 +717,9 @@ OPTIMIZED static void PWR_EnterStop2Mode( void )
   LL_PWR_SetPowerMode(LL_PWR_MODE_STOP2);
 
   /* Set unretained peripherals GPIOs to output mode */
-  /* SPI3 */
   if (READ_BIT(SPI3->CFG2, SPI_CFG2_MASTER) != 0UL)
   {
-    /* SCK */
+    /* SPI3 SCK */
     if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_0) == 1UL)
     {
       LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_0);
@@ -731,11 +729,15 @@ OPTIMIZED static void PWR_EnterStop2Mode( void )
       LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_0);
     }
     LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_0, LL_GPIO_MODE_OUTPUT);
-    /* MOSI */
+    /* SPI3 MOSI */
     LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_8, LL_GPIO_MODE_OUTPUT);
   }
-  /* USART1 */
-  /* TX */
+  else
+  {
+    /* SPI3 MISO */
+    LL_GPIO_SetPinMode(GPIO, LL_GPIO_PIN_, LL_GPIO_MODE_OUTPUT);
+  }
+  /* USART1 TX */
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
   LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_OUTPUT);
 
@@ -781,7 +783,7 @@ OPTIMIZED static void PWR_ExitStop2Mode( void )
     /* SCM HSE END */
 #endif /* (CFG_SCM_SUPPORTED == 1) */
 
-    /* restore unretained peripherals */
+    /* Restore unretained peripherals */
     MX_Stop2Exit_PeripheralInit();
 
 #if (CFG_SCM_SUPPORTED == 1)
@@ -793,10 +795,19 @@ OPTIMIZED static void PWR_ExitStop2Mode( void )
   else
   {
     /* Restore unretained peripherals GPIOs to alternate mode */
-    /* SPI3 */
-    LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_8, LL_GPIO_MODE_ALTERNATE);
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_0, LL_GPIO_MODE_ALTERNATE);
-    /* USART1 */
+    if (READ_BIT(SPI3->CFG2, SPI_CFG2_MASTER) != 0UL)
+    {
+      /* SPI3 SCK */
+      LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_0, LL_GPIO_MODE_ALTERNATE);
+      /* SPI3 MOSI */
+      LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_8, LL_GPIO_MODE_ALTERNATE);
+    }
+    else
+    {
+      /* SPI3 MISO */
+      LL_GPIO_SetPinMode(GPIO, LL_GPIO_PIN_, LL_GPIO_MODE_ALTERNATE);
+    }
+    /* USART1 TX */
     LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_12, LL_GPIO_MODE_ALTERNATE);
 
     Exit_Stop_Standby_Mode();
@@ -884,9 +895,9 @@ OPTIMIZED static void PWR_EnterSleepMode( void )
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
   LL_RCC_SetAHB5Divider(LL_RCC_AHB5_DIVIDER_2);
   LL_RCC_SetAPB7Prescaler(LL_RCC_APB7_DIV_16);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1); /*connot go below for respecting SAI register clock limitation */
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1); /*cannot go below to respect SAI register clock limitation */
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_16);
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_8); /*connot go below otherwise DMA not fast enought */
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_8); /*cannot go below otherwise DMA not fast enough */
 
   /* USER CODE END PWR_EnterSleepMode_1 */
 

@@ -567,7 +567,7 @@ void ENV_GetCaps(void)
   {
     Error_Handler();
   }
-  LOG_INFO_APP("\n Environement Sensor Capabilities: (1 = Supported / 0 = Not Supported) \n\
+  LOG_INFO_APP("\n Environment Sensor Capabilities: (1 = Supported / 0 = Not Supported) \n\
                LowPower:%d\n\
                temperature:%d\n\
                Pressure:%d\n\
@@ -617,7 +617,7 @@ void ENV_GetCaps(void)
     Error_Handler();
   }
   
-  /* Seting Odr is not supported on this sensor */
+  /* Setting Odr is not supported on this sensor */
   ret = BSP_ENV_SENSOR_SetOutputDataRate(ENV_SENSOR_SHT40AD1B_0, ENV_TEMPERATURE, 10);
   if (ret != BSP_ERROR_NONE)
   {
@@ -634,7 +634,7 @@ void ENV_GetCaps(void)
     Error_Handler();
   }
   
-  /* Check that Odr was not changed as it is not suported */
+  /* Check that Odr was not changed as it is not supported */
   ret = BSP_ENV_SENSOR_GetOutputDataRate(ENV_SENSOR_SHT40AD1B_0, ENV_TEMPERATURE, &odrT);
   if (ret != BSP_ERROR_NONE)
   {

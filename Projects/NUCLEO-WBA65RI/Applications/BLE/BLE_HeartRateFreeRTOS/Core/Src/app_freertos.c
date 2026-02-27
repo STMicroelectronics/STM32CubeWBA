@@ -228,7 +228,9 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
 void advLowPowerTimer_cb(void *argument)
 {
   /* USER CODE BEGIN advLowPowerTimer_cb */
-  uint16_t adv_cmd = 1;
+  uint16_t adv_cmd = 2;
+  osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
+  adv_cmd = 1;
   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
   /* USER CODE END advLowPowerTimer_cb */
 }

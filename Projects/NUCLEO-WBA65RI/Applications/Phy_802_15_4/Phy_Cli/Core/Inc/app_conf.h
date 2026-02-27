@@ -83,6 +83,7 @@ extern UART_HandleTypeDef huart1;
 typedef enum
 {
   CFG_LPM_APP,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -184,6 +185,20 @@ typedef enum
   /* USER CODE END CFG_IdleEvt_Id_t */
 } CFG_IdleEvt_Id_t;
 
+/**
+ * These are the lists of events id registered to the sequencer
+ * Each event id shall be in the range [0:31]
+ */
+typedef enum
+{
+  CFG_PKA_MUTEX,
+  CFG_PKA_END_OF_PROCESS,
+  /* USER CODE BEGIN CFG_Event_Id_t */
+
+  /* USER CODE END CFG_Event_Id_t */
+  CFG_EVENT_NBR                   /* Shall be LAST in the list */
+} CFG_Event_Id_t;
+
 /* Sequencer priorities by default  */
 #define CFG_TASK_PRIO_HW_RNG                CFG_SEQ_PRIO_0
 #define CFG_TASK_PRIO_LINK_LAYER            CFG_SEQ_PRIO_0
@@ -264,6 +279,12 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
+
+/******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
 
 /* USER CODE BEGIN RTC */
 

@@ -27,7 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
-
+#include "pka_ctrl.h"
 /* USER CODE END Includes */
 
 /* External functions --------------------------------------------------------*/
@@ -326,6 +326,27 @@ void TIM16_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the HW PKA Callback */
+    PKACTRL_EndOfProcessCb ();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
+}
+
+/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)
@@ -348,13 +369,27 @@ void RADIO_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles HASH global interrupt.
+  * @brief This function handles PWR global WKUP pin interrupt.
   */
-void HASH_IRQHandler(void)
+void WKUP_IRQHandler(void)
 {
-  /* USER CODE BEGIN HASH_IRQn 0 */
+  /* USER CODE BEGIN WKUP_IRQn 0 */
 
-  /* USER CODE END HASH_IRQn 0 */
+  /* USER CODE END WKUP_IRQn 0 */
+  HAL_PWR_WKUP_IRQHandler();
+  /* USER CODE BEGIN WKUP_IRQn 1 */
+
+  /* USER CODE END WKUP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles ADC4 (12bits) global interrupt.
+  */
+void ADC4_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC4_IRQn 0 */
+
+  /* USER CODE END ADC4_IRQn 0 */
 
   /* Disable SW radio low interrupt to prevent nested calls */
   NVIC_DisableIRQ(RADIO_SW_LOW_INTR_NUM);
@@ -372,28 +407,17 @@ void HASH_IRQHandler(void)
   /* Re-enable SW radio low interrupt */
   NVIC_EnableIRQ(RADIO_SW_LOW_INTR_NUM);
 
-  /* USER CODE BEGIN HASH_IRQn 1 */
+  /* USER CODE BEGIN ADC4_IRQn 1 */
 
-  /* USER CODE END HASH_IRQn 1 */
+  /* USER CODE END ADC4_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
 
 /**
-  * @brief This function handles WKUP global interrupt.
+  * @brief This function handles EXTI Line6 interrupt.
   */
-void WKUP_IRQHandler(void)
-{
-  /* Verif WakeUp Source */
-  
-  /* Clear all WakeUp flags*/
-  LL_PWR_ClearFlag_WU( );
-}
-
-/**
-  * @brief This function handles EXTI Line13 interrupt.
-  */
-void EXTI13_IRQHandler(void)
+void EXTI6_IRQHandler(void)
 {
   BSP_PB_IRQHandler(B2);
 }

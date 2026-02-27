@@ -106,8 +106,8 @@
 </ul>
 <h3 id="standalone-binary"><strong>Standalone binary</strong></h3>
 <ul>
-<li>The commands are sent via an CLI UART (USART1) from an HyperTerminal to the STM32WB55A_Nucleo Board.</li>
-<li>The results are sent via an CLI UART (USART1) from the STM32WB55A_Nucleo Board (PC) to an HyperTerminal or STM32CubeMonitorRF.</li>
+<li>The commands are sent via an CLI UART (USART1) from an HyperTerminal to the STM32WB65_Nucleo Board.</li>
+<li>The results are sent via an CLI UART (USART1) from the STM32WB65_Nucleo Board (PC) to an HyperTerminal or STM32CubeMonitorRF.</li>
 <li><p>At startup. ‘802_15_4_CLI Appli’ should be displayed on the PRINT UART Hyperterminal.</p></li>
 <li>The Hyperterminal must be configured as follow :
 <ul>
@@ -124,7 +124,7 @@
 <li>In order to perform a fully exhaustive PHY certification, it may be necessary to enable the “dynamic RX printing” using the <em>rx_start 1</em> command. This option enables print on the UART the payload of the frames received as they arrive. ST does not guarantee that all frames will be displayed using default baudrate of 115200.</li>
 <li>By setting FULL_CERTIFICATION_CAPABLE to 1 the following features are enabled:
 <ul>
-<li>the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay inbetween.</li>
+<li>the Baud rate increases to 576000, where it has been verified that the application can display 1000 frames with a payload of 12 bytes with no delay in between.</li>
 <li>SMPS is enabled at init (ensure the board used is SMPS compatible)</li>
 <li>The <em>tx_on</em> signal is readable at the PA1 GPIO, required for turnaround times certification tests.</li>
 </ul></li>

@@ -363,6 +363,10 @@ void HIDS_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: HidsSvcHdle = 0x%04X\n",HIDS_Context.HidsSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * INPUTREP
    */

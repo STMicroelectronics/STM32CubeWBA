@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stdint.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,11 +40,11 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
-#define DRIFT_TIME_DEFAULT                      (13)
+#define DRIFT_TIME_DEFAULT                      (14)
 #define DRIFT_TIME_EXTRA_LSI2                   (9)
 #define DRIFT_TIME_EXTRA_GCC_DEBUG              (6)
 
-#define EXEC_TIME_DEFAULT                       (24)
+#define EXEC_TIME_DEFAULT                       (28)
 #define EXEC_TIME_EXTRA_LSI2                    (3)
 #define EXEC_TIME_EXTRA_GCC_DEBUG               (4)
 
@@ -63,6 +64,18 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
+#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx)
+/**
+ * @brief Apply CTE degradation settings
+ * @param  None
+ * @retval None
+ */
+void ll_sys_apply_cte_settings(void);
+#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx) */
+#if (CFG_LPM_STANDBY_SUPPORTED == 0)
+void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time, uint32_t* average_drift_time, uint8_t reset);
+#endif
+
 void ll_sys_set_rtl_polling_time(uint8_t rtl_polling_time);
 /* USER CODE BEGIN EFP */
 

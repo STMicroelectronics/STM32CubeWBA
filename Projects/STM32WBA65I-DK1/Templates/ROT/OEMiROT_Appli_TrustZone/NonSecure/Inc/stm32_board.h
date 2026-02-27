@@ -27,7 +27,7 @@
 #define LED3_Pin            GPIO_PIN_8
 #define LED3_GPIO_Port      GPIOD
 #define LED3_CLK_ENABLE()   __HAL_RCC_GPIOD_CLK_ENABLE()
-/* Alias génériques */
+/* Alias definitions for LED */
 #define LED_Pin             LED3_Pin
 #define LED_GPIO_Port       LED3_GPIO_Port
 #define LED_CLK_ENABLE()    LED3_CLK_ENABLE()
@@ -36,7 +36,7 @@
 #define LED3_Pin            GPIO_PIN_15
 #define LED3_GPIO_Port      GPIOB
 #define LED3_CLK_ENABLE()   __HAL_RCC_GPIOB_CLK_ENABLE()
-/* Alias génériques */
+/* Alias definitions for LED */
 #define LED_Pin             LED3_Pin
 #define LED_GPIO_Port       LED3_GPIO_Port
 #define LED_CLK_ENABLE()    LED3_CLK_ENABLE()
@@ -46,7 +46,7 @@
 #define LED1_Pin            GPIO_PIN_8
 #define LED1_GPIO_Port      GPIOD
 #define LED1_CLK_ENABLE()   __HAL_RCC_GPIOD_CLK_ENABLE()
-/* Alias génériques */
+/* Alias definitions for LED */
 #define LED_Pin             LED1_Pin
 #define LED_GPIO_Port       LED1_GPIO_Port
 #define LED_CLK_ENABLE()    LED1_CLK_ENABLE()
@@ -55,7 +55,7 @@
 #define LED1_Pin            GPIO_PIN_4
 #define LED1_GPIO_Port      GPIOB
 #define LED1_CLK_ENABLE()   __HAL_RCC_GPIOB_CLK_ENABLE()
-/* Alias génériques */
+/* Alias definitions for LED */
 #define LED_Pin             LED1_Pin
 #define LED_GPIO_Port       LED1_GPIO_Port
 #define LED_CLK_ENABLE()    LED1_CLK_ENABLE()

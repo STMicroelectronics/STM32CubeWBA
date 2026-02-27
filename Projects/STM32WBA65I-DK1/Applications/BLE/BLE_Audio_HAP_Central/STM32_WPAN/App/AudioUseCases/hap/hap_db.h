@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    tmap_db.h
+  * @file    hap_db.h
   * @author  MCD Application Team
   * @brief   This file contains definitions used for HAP Profile
   *          Database.

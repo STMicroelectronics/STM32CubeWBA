@@ -34,7 +34,7 @@
 #define FLASH_IF_MIN_WRITE_LEN (8U)     /* Flash programming by 64 bits */
 #define NB_PAGE_SECTOR_PER_ERASE  (1U)  /* Nb page erased per erase */
 
-#define ITS_LOCATION         0X080FC000 /* ITS start address */
+#define ITS_LOCATION         ((uint32_t)0X080FC000) /* ITS start address */
 #define ITS_MAX_SIZE         (8*1024U)  /* 8 KBytes */
 #define ITS_SLOT_MAX_NUMBER  (16U)
 #define ITS_SLOT_OFFSET      0x00000080 /* 128 words (32 bits)) */
@@ -60,7 +60,7 @@ static HAL_StatusTypeDef FLASH_If_Erase_Size(void *pStart, uint32_t uLength);
 /* Functions Definition ------------------------------------------------------*/
 
 /**
-  * @brief  Gets the page of a given address
+  * @brief  Gets the page or sector of a given address
   * @param  uAddr: Address of the FLASH Memory
   * @retval The page of a given address
   */
@@ -81,7 +81,6 @@ static uint32_t GetPage(uint32_t uAddr)
 
   return page;
 }
-
 /**
   * @brief  Unlocks Flash for write access
   * @param  None
@@ -126,10 +125,10 @@ static HAL_StatusTypeDef FLASH_If_Init(void)
   */
 static HAL_StatusTypeDef FLASH_If_Erase_Size(void *pStart, uint32_t uLength)
 {
-  uint32_t page_error = 0U;
   uint32_t uStart = (uint32_t)pStart;
   FLASH_EraseInitTypeDef EraseInitStruct;
   HAL_StatusTypeDef e_ret_status = HAL_ERROR;
+  uint32_t page_error = 0U;
   uint32_t first_page = 0U;
   uint32_t nb_pages = 0U;
   uint32_t chunk_nb_pages;
@@ -163,7 +162,8 @@ static HAL_StatusTypeDef FLASH_If_Erase_Size(void *pStart, uint32_t uLength)
           HAL_FLASH_GetError();
           e_ret_status = HAL_ERROR;
         }
-      } while (nb_pages > 0);
+      }
+      while (nb_pages > 0);
 
       /* Lock the Flash to disable the flash control register access (recommended
       to protect the FLASH memory against possible unwanted operation) *********/

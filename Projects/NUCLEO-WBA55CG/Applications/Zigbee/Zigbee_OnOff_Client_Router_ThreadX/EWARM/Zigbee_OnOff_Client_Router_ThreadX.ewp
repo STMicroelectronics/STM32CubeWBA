@@ -245,7 +245,6 @@
                     <state>APPLICATION_USE_NUCLEO</state>
                     <state>APPLICATION_USE_HW_AES</state>
                     <state>APPLICATION_USE_HW_RNG</state>
-                    <state>APPLICATION_USE_AMM</state>
                 </option>
                 <option>
                     <name>CCPreprocFile</name>
@@ -371,6 +370,7 @@
                     <state>$PROJ_DIR$\..\Core\Inc</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\App</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
+                    <state>$PROJ_DIR$\..\System\Config</state>
                     <state>$PROJ_DIR$\..\System\Config\CRC_Ctrl</state>
                     <state>$PROJ_DIR$\..\System\Config\Debug_GPIO</state>
                     <state>$PROJ_DIR$\..\System\Config\Log</state>
@@ -723,7 +723,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -731,7 +731,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>$CONFIG_NAME$.hex</state>
+                    <state>$CONFIG_NAME$.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -833,7 +833,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\stm32wba55xx_flash_threadx.icf</state>
+                    <state>$PROJ_DIR$\stm32wba55xx_flash.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -1223,13 +1223,13 @@
                 <group>
                     <name>App</name>
                     <file>
-                        <name>$PROJ_DIR$\..\STM32_WPAN\App\app_bsp.c</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee.c</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_endpoint.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\STM32_WPAN\App\app_zigbee_utility.c</name>
                     </file>
                 </group>
                 <group>
@@ -1299,6 +1299,9 @@
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\adv_trace_usart_if.c</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\app_bsp.c</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\hw_aes.c</name>
                 </file>
                 <file>
@@ -1326,15 +1329,6 @@
                     <name>Log</name>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\Log\log_module.c</name>
-                    </file>
-                </group>
-                <group>
-                    <name>MemoryManager</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
                     </file>
                 </group>
                 <group>

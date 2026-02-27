@@ -31,7 +31,7 @@ An End Device (or child) communicates primarily with a **single Router**.
 In our Application which uses two devices, one device will act as a Leader (Router) and the other one will act as an End Device(mode child). 
 
 After the reset of the Thread_Coap_Generic board will be in Leader mode (**Green LED2 ON**).    
-The Thread_SED_Coap_Multicast board will be in Child mode (**Red LED3 ON**) after association.  
+The Thread_SED_Coap_Multicast board will be in Child mode (**Red LED3 ON if Low power deactivated**) after association.  
  
 Then Thread_SED_Coap_Multicast board will send a **COAP command (Non-Confirmable)** every second to Thread_Coap_Generic board.  
 The Thread_Coap_Generic board will receive COAP commands to toggle its **blue LED1**.
@@ -62,12 +62,32 @@ Thread_SED_Coap_Multicast is designed as low power device, you can switch low po
   ---------------------------                       ---------------------------
   | Role : Child            |                       | Role : Leader           |
   |                         |                       |                         |
-  | LED : Red               |                       | LED : Green             |
+  | LED : Red if LPM is     |                       | LED : Green             |
+  |   deactivated           |                       |                         |
+  | (CFG_LPM_LEVEL is 0)    |                       |                         |
   |                         |                       |                         |
   |_________________________|                       |_________________________|
 
   
 </pre> 
+
+### __Hardware and Software environment__
+
+* This example runs on STM32WBA55xx devices.  
+
+* This example has been tested with an STMicroelectronics STM32WBA55CGA_Nucleo board and can be easily tailored to any other supported device and development board.  
+
+* On STM32WBA55CGA_Nucleo, the jumpers must be configured as described in this section. Starting from the top left position up to the bottom right position, the jumpers on the Board must be set as follows:
+<br>    
+**JP1:**</br>
+1-2:  [ON]</br>
+3-4:  [OFF]</br>
+5-6:  [OFF]</br>
+7-8:  [OFF]</br>
+9-10: [OFF]</br>
+<br>
+**JP2:**</br>
+1-2:  [ON]  
 
 ### __Traces__
 

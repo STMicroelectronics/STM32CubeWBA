@@ -486,7 +486,7 @@ static SVCCTL_EvtAckStatus_t GHS_EventHandler(void *p_Event)
 
           /* USER CODE BEGIN ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
           LOG_INFO_APP(">>== ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE\n");
-          UTIL_SEQ_SetEvt(1 << CFG_IDLEEVT_GATT_INDICATION_COMPLETE);
+          UTIL_SEQ_SetEvt(1 << CFG_EVENT_GATT_INDICATION_COMPLETE);
 
           /* USER CODE END ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
           break;/* ACI_GATT_SERVER_CONFIRMATION_VSEVT_CODE */
@@ -584,6 +584,10 @@ void GHS_Init(void)
   {
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: GhsSvcHdle = 0x%04X\n",GHS_Context.GhsSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * HSF

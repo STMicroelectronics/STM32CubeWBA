@@ -85,6 +85,7 @@ typedef __PACKED_STRUCT __ALIGNED(4)
 
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_BLE_Init(void);
+void APP_BLE_Deinit(void);
 void BleStack_Process_BG(void);
 const uint8_t* BleGetBdAddress(void);
 void Ble_UserEvtRx(void);

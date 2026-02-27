@@ -71,3 +71,5 @@ On client side when idle:
 
 - B2 clears database.  
 
+Warning: with CubeIDE Debug variant, some transmitted characters may be missed.
+

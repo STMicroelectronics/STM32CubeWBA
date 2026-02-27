@@ -29,6 +29,7 @@
 
 void BLEPLAT_Init( void )
 {
+
   return;
 }
 

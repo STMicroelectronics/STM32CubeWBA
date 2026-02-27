@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    hrs.c
+  * @file    HRS.c
   * @author  MCD Application Team
-  * @brief   hrs definition.
+  * @brief   HRS definition.
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -276,22 +276,7 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
           break;/* ACI_ATT_EXCHANGE_MTU_RESP_VSEVT_CODE */
         }
         /* USER CODE BEGIN BLECORE_EVT */
-        /* Manage ACI_GATT_INDICATION_VSEVT_CODE */
-        case ACI_GATT_INDICATION_VSEVT_CODE:
-        {
-          tBleStatus status = BLE_STATUS_FAILED;
-          aci_gatt_indication_event_rp0 *pr = (void*)p_blecore_evt->data;
-          status = aci_gatt_confirm_indication(pr->Connection_Handle);
-          if (status != BLE_STATUS_SUCCESS)
-          {
-            LOG_INFO_APP("  Fail   : aci_gatt_confirm_indication command, result: 0x%x \n", status);
-          }
-          else
-          {
-            LOG_INFO_APP("  Success: aci_gatt_confirm_indication command\n");
-          }
-          break; /* end ACI_GATT_INDICATION_VSEVT_CODE */
-        }
+
         /* USER CODE END BLECORE_EVT */
         default:
           /* USER CODE BEGIN EVT_DEFAULT */
@@ -372,12 +357,16 @@ void HRS_Init(void)
                              &(HRS_Context.HrsSvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%x \n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: HRS, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: HrsSvcHdle = 0x%04X\n",HRS_Context.HrsSvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * HRME
@@ -395,14 +384,15 @@ void HRS_Init(void)
                           &(HRS_Context.HrmeCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HRME, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : HRME, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrmeCharHdle = 0x%04X\n",HRS_Context.HrmeCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : HrmeCharHdle = 0x%04X\n",HRS_Context.HrmeCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char1 */
+  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char1 */
 
@@ -422,14 +412,15 @@ void HRS_Init(void)
                           &(HRS_Context.BslCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : BSL, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : BSL, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : BslCharHdle = 0x%04X\n",HRS_Context.BslCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : BslCharHdle = 0x%04X\n",HRS_Context.BslCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char2 */
+  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char2 */
 
@@ -449,14 +440,15 @@ void HRS_Init(void)
                           &(HRS_Context.HrcpCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : HRCP, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : HRCP, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : HrcpCharHdle = 0x%04X\n",HRS_Context.HrcpCharHdle);
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : HrcpCharHdle = 0x%04X\n",HRS_Context.HrcpCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService1Char3 */
+  /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_InitService1Char3 */
 
@@ -490,11 +482,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HRME command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value HRME command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HRME command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value HRME command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_1 */
 
@@ -509,11 +501,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value BSL command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value BSL command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value BSL command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value BSL command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_2 */
 
@@ -528,11 +520,11 @@ tBleStatus HRS_UpdateValue(HRS_CharOpcode_t CharOpcode, HRS_Data_t *pData)
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value HRCP command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value HRCP command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value HRCP command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value HRCP command\n");
       }
       /* USER CODE BEGIN Service1_Char_Value_3 */
 

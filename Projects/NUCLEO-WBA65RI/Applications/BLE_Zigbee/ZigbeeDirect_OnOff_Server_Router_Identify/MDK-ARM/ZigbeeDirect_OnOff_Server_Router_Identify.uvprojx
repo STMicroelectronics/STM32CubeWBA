@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00080000) IROM(0x08000000,0x00200000) CPUTYPE("Cortex-M33") FPU3(SFPU) DSP TZ CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -340,7 +340,7 @@
               <MiscControls>-fshort-enums</MiscControls>
               <Define>STM32,STM32WBA,STM32WBA65xx,PHY_40nm_3_40_aSTM32WBA65RIx,USE_HAL_DRIVER,USE_FULL_ASSERT,USE_FULL_LL_DRIVER,MAC,MAC_LAYER,APPLICATION_USE_BAREMETAL,APPLICATION_USE_NUCLEO,APPLICATION_USE_HW_AES,APPLICATION_USE_HW_RNG,APPLICATION_USE_AMM,APPLICATION_USE_SMPS,</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config/Log;../System/Config/LowPower;../System/Interfaces;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/stm32wba;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/utilities;../../../../../../Middlewares/ST/STM32_WPAN/interface;../../../../../../Utilities/conf;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace</IncludePath>
+              <IncludePath>../Core/Inc;../STM32_WPAN/App;../STM32_WPAN/Target;../System/Config/CRC_Ctrl;../System/Config/Debug_GPIO;../System/Config;../System/Config/Log;../System/Config/LowPower;../System/Interfaces;../../../../../../Projects/Common/WPAN/Interfaces;../../../../../../Projects/Common/WPAN/Modules;../../../../../../Projects/Common/WPAN/Modules/BasicAES;../../../../../../Projects/Common/WPAN/Modules/Flash;../../../../../../Projects/Common/WPAN/Modules/Log;../../../../../../Projects/Common/WPAN/Modules/MemoryManager;../../../../../../Projects/Common/WPAN/Modules/RTDebug;../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter;../../../../../../Drivers/CMSIS/Include;../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include;../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc;../../../../../../Drivers/BSP/Components/Common;../../../../../../Drivers/BSP/STM32WBAxx_Nucleo;../../../../../../Middlewares/ST/STM32_WPAN;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/include;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/stm32wba;../../../../../../Middlewares/ST/STM32_WPAN/zigbee/stack/port/mac;../../../../../../Middlewares/ST/STM32_WPAN/mac_802_15_4/core/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/ieee_15_4_basic;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc;../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc/ot_inc;../../../../../../Middlewares/ST/STM32_WPAN/utilities;../../../../../../Middlewares/ST/STM32_WPAN/interface;../../../../../../Utilities/conf;../../../../../../Utilities/lpm/tiny_lpm;../../../../../../Utilities/misc;../../../../../../Utilities/sequencer;../../../../../../Utilities/tim_serv;../../../../../../Utilities/trace/adv_trace</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -417,16 +417,16 @@
               <FileType>1</FileType>
               <FilePath>..\Core\Src\stm32wbaxx_it.c</FilePath>
             </File>
+            <File>
+              <FileName>app_zigbee_utility.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\STM32_WPAN\App\app_zigbee_utility.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Application/User/STM32_WPAN/App</GroupName>
           <Files>
-            <File>
-              <FileName>app_bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\STM32_WPAN\App\app_bsp.c</FilePath>
-            </File>
             <File>
               <FileName>app_zigbee.c</FileName>
               <FileType>1</FileType>
@@ -532,6 +532,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Interfaces\timer_if.c</FilePath>
             </File>
+            <File>
+              <FileName>app_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -567,11 +572,6 @@
         <Group>
           <GroupName>Common/WPAN/Modules/MemoryManager</GroupName>
           <Files>
-            <File>
-              <FileName>advanced_memory_manager.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\..\..\..\Projects\Common\WPAN\Modules\MemoryManager\advanced_memory_manager.c</FilePath>
-            </File>
             <File>
               <FileName>stm32_mm.c</FileName>
               <FileType>1</FileType>

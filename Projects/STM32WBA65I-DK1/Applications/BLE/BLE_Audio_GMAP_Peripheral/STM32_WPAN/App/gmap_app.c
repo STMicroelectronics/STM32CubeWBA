@@ -57,10 +57,10 @@ typedef struct
 #define ADV_FILTER                              NO_WHITE_LIST_USE
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * Theses macro are generic and could be overwriten by the user for a fine tuning
+ * These macro are generic and could be overwritten by the user for a fine tuning
  */
 
-/* Memory pool used by the codec manager for managing audio latencies
+/* Memory pool used by the codec manager to manage audio latencies
  * (8 x LC3 encoded frames (Freq, bitrate, 10ms)) per audio channel
  */
 #define CODEC_POOL_SUB_SIZE                     CODEC_MAX_BAND <= CODEC_SSWB ? (480u) : (960u)
@@ -272,6 +272,7 @@ static uint32_t aCAPMemBuffer[DIVC(CAP_DYN_ALLOC_SIZE,4)];
 static uint32_t aPACSSrvMemBuffer[DIVC(BAP_PACS_SRV_DYN_ALLOC_SIZE,4)];
 #if ((APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)
 static uint32_t aBASSSrvMemBuffer[DIVC(BAP_BASS_SRV_DYN_ALLOC_SIZE,4)];
+static uint32_t aBASEMemBuffer[DIVC(BAP_BASE_TOTAL_BUFFER_SIZE,4)];
 #endif /*((APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)*/
 static uint32_t aASCSSrvMemBuffer[DIVC(BAP_ASCS_SRV_DYN_ALLOC_SIZE,4)];
 static uint32_t aISOChnlMemBuffer[DIVC(BAP_ISO_CHNL_DYN_ALLOC_SIZE,4)];
@@ -1081,7 +1082,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
                      GMAPAPP_Context.AvailableSnkAudioContext,
                      GMAPAPP_Context.AvailableSrcAudioContext);
       }
-      /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+      /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
       for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
       {
         if ((GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&GMAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -1095,7 +1096,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                /* Send an response to the Enable Operation request if no CIS is still up*/
                 if (GMAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1128,7 +1129,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                /* Send an response to the Enable Operation request if no CIS is still up*/
                 if (GMAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1231,7 +1232,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 #if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-          /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+          /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
           for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
           {
             if (GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
@@ -1519,7 +1520,7 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   APP_BAP_Config.MaxNumBleLinks = CFG_BLE_NUM_LINK;
   APP_BAP_Config.MaxNumUSRLinks = MAX_NUM_USR_LINK;
 
-  /*Published Audio Capabilites of Unicast Server and Broadcast Sink Configuration*/
+  /*Published Audio Capabilities of Unicast Server and Broadcast Sink Configuration*/
   APP_BAP_Config.PACSSrvConfig.MaxNumSnkPACRecords = APP_NUM_SNK_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.MaxNumSrcPACRecords = APP_NUM_SRC_PAC_RECORDS;
   APP_BAP_Config.PACSSrvConfig.pStartRamAddr = (uint8_t *)&aPACSSrvMemBuffer;
@@ -1535,6 +1536,14 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
     APP_BAP_Config.BASSSrvConfig.MaxNumBaseSubgroups = MAX_NUM_BASS_BASE_SUBGROUPS;
     APP_BAP_Config.BASSSrvConfig.pStartRamAddr = (uint8_t *)&aBASSSrvMemBuffer;
     APP_BAP_Config.BASSSrvConfig.RamSize = BAP_BASS_SRV_DYN_ALLOC_SIZE;
+  }
+
+  if (((APP_BAP_Config.Role & BAP_ROLE_SCAN_DELEGATOR) == BAP_ROLE_SCAN_DELEGATOR)
+   || ((APP_BAP_Config.Role & BAP_ROLE_BROADCAST_SINK) == BAP_ROLE_BROADCAST_SINK))
+  {
+    /* BASE structure for fragmented PA reports */
+    APP_BAP_Config.BASEStrConfig.pStartRamAddr = (uint8_t *)&aBASEMemBuffer;
+    APP_BAP_Config.BASEStrConfig.RamSize = BAP_BASE_TOTAL_BUFFER_SIZE;
   }
 #endif /*((APP_GMAP_ROLE & GMAP_ROLE_BROADCAST_GAME_RECEIVER) == GMAP_ROLE_BROADCAST_GAME_RECEIVER)*/
 
@@ -1724,6 +1733,18 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
     GMAPAPP_Context.ACL_Conn[conn].AvailableSnkAudioContext = 0x0000u;
     GMAPAPP_Context.ACL_Conn[conn].AvailableSrcAudioContext = 0x0000u;
   }
+
+  /* Initialise BASE report variables */
+  GMAPAPP_Context.BSNK.base_group.pSubgroups = &(GMAPAPP_Context.BSNK.base_subgroups[0]);
+  GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_subgroup[0][0]);
+  GMAPAPP_Context.BSNK.base_subgroups[0].pMetadata = &(GMAPAPP_Context.BSNK.subgroup_metadata[0][0]);
+  GMAPAPP_Context.BSNK.base_subgroups[0].pBIS = &(GMAPAPP_Context.BSNK.base_bis[0]);
+  GMAPAPP_Context.BSNK.base_subgroups[1].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_subgroup[1][0]);
+  GMAPAPP_Context.BSNK.base_subgroups[1].pMetadata = &(GMAPAPP_Context.BSNK.subgroup_metadata[1][0]);
+  GMAPAPP_Context.BSNK.base_subgroups[1].pBIS = &(GMAPAPP_Context.BSNK.base_bis[1]);
+  GMAPAPP_Context.BSNK.base_bis[0].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[0][0]);
+  GMAPAPP_Context.BSNK.base_bis[1].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[1][0]);
+
 
   /*Register the Audio Task */
   UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
@@ -2402,7 +2423,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           Audio_Context_t snk_context = 0;
           Audio_Context_t src_context = 0;
 
-          /* If ASE State Notification is received, we can consider that potential reponse to an Enable Operation Request
+          /* If ASE State Notification is received, we can consider that potential response to an Enable Operation Request
            * is no more expected by remote CAP Initiator
            */
           p_ase->enable_req = 0u;
@@ -2493,7 +2514,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   GMAPAPP_Context.AvailableSrcAudioContext |= AUDIO_CONTEXT_UNSPECIFIED;
                 }
               }
-              /*Set new available audio contexts for BAP Annoucement*/
+              /*Set new available audio contexts for BAP Announcement*/
               status = CAP_SetAvailableAudioContexts(GMAPAPP_Context.AvailableSnkAudioContext,
                                                      GMAPAPP_Context.AvailableSrcAudioContext);
               if (status == BLE_STATUS_SUCCESS)
@@ -2529,7 +2550,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (streaming_ongoing == 0u)
             {
               uint8_t enable_ongoing = 0u;
-              /*check if a reponse to an Enable operation Request is suspended with another CAP Initiator*/
+              /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
               for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
               {
                 if ((GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&GMAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -2543,7 +2564,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                        /* Send an response to the Enable Operation request if no CIS is still up*/
                         if (GMAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2576,7 +2597,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an reponse to the Enable Operation request if no CIS is still up*/
+                        /* Send an response to the Enable Operation request if no CIS is still up*/
                         if (GMAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2735,7 +2756,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                        snk_context,
                        src_context);
 
-          /*Set new available audio contexts for BAP Annoucement*/
+          /*Set new available audio contexts for BAP Announcement*/
           status = CAP_SetAvailableAudioContexts(snk_context,src_context);
           if (status == BLE_STATUS_SUCCESS)
           {
@@ -2859,7 +2880,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               if ((p_other_conn->AvailableSnkAudioContext != GMAPAPP_Context.AvailableSnkAudioContext) \
                   || (p_other_conn->AvailableSrcAudioContext != GMAPAPP_Context.AvailableSrcAudioContext))
               {
-                /*we update the Audio Contexts availablity to other connected CAP Initiator*/
+                /*we update the Audio Contexts availability to other connected CAP Initiator*/
                 ret = CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
                                                        GMAPAPP_Context.AvailableSnkAudioContext,
                                                        GMAPAPP_Context.AvailableSrcAudioContext);
@@ -2890,7 +2911,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                               p_info->ASE_ID,
                               pNotification->ConnHandle);
                 }
-                LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X shall be terminated before send a reponse to the Enable Request\n");
+                LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X shall be terminated before send a response to the Enable Request\n");
                 /*Terminate the streaming with this device*/
                 ret = CAP_Unicast_TerminateAudioStream(p_other_conn->Acl_Conn_Handle);
                 LOG_INFO_APP("Terminate Audio Stream with CAP Initiator on ConnHandle 0x%04X returns status 0x%02X\n",
@@ -3423,7 +3444,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             name_ptr = &data->pAdvertisingData[parse_index + 2];
             name_len = MIN(data->pAdvertisingData[parse_index] - 1, 29);
           }
-          /* Thrid priority to the Broadcast ID */
+          /* Third priority to the Broadcast ID */
           else if (data->pAdvertisingData[parse_index + 1] == AD_TYPE_SERVICE_DATA &&
               data->pAdvertisingData[parse_index + 2] == 0x52 &&
               data->pAdvertisingData[parse_index + 3] == 0x18)
@@ -3463,6 +3484,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
       tBleStatus ret;
       LOG_INFO_APP(">>== CAP_BROADCAST_PA_SYNC_ESTABLISHED_EVT\n");
       BAP_PA_Sync_Established_Data_t *data = (BAP_PA_Sync_Established_Data_t*) pNotification->pInfo;
+      LOG_INFO_APP("     - Status : 0x%02x\n",pNotification->Status);
       LOG_INFO_APP("     - SyncHandle : 0x%02x\n",data->SyncHandle);
       GMAPAPP_Context.BSNK.PASyncHandle = data->SyncHandle;
       GMAPAPP_Context.BSNK.PASyncState = APP_PA_SYNC_STATE_SYNCHRONIZED;
@@ -3496,160 +3518,181 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
 
     case CAP_BROADCAST_BASE_REPORT_EVT:
     {
+      BAP_BASE_Report_Data_t *base_data;
+      uint8_t status;
+      uint8_t index = 0;
+      uint8_t i;
+      uint8_t j;
+      uint8_t k;
+      uint8_t l;
+      uint8_t is_different;
+      uint8_t payload_len = 0;
       LOG_INFO_APP(">>== CAP_BROADCAST_BASE_REPORT_EVT\n");
 
-      if (GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
+      base_data = (BAP_BASE_Report_Data_t*) pNotification->pInfo;
+      if (GMAPAPP_Context.BSNK.PASyncState == APP_PA_SYNC_STATE_SYNCHRONIZED)
       {
-        BAP_BASE_Report_Data_t *base_data;
-        uint8_t status;
-        uint8_t index = 0;
-        uint8_t i;
-        uint8_t j;
-        uint8_t k;
-        uint8_t l;
-
-        base_data = (BAP_BASE_Report_Data_t*) pNotification->pInfo;
-        status = CAP_Broadcast_ParseBASEGroup(base_data->pBasePayload,
+        GMAPAPP_Context.BSNK.PASyncState = APP_PA_SYNC_STATE_BASE_RECEIVED;
+        /* First BASE report after PA sync, force the parsing */
+        is_different = 0x01u;
+      }
+      else
+      {
+        is_different = CAP_Broadcast_IsBASEGroupDifferent(base_data->pBasePayload,
                                               base_data->BasePayloadLength,
                                               &(GMAPAPP_Context.BSNK.base_group),
                                               &(index));
-        GMAPAPP_Context.BSNK.base_group.pSubgroups = &(GMAPAPP_Context.BSNK.base_subgroups[0]);
-        GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_subgroup[0][0]);
-        GMAPAPP_Context.BSNK.base_subgroups[0].pMetadata = &(GMAPAPP_Context.BSNK.subgroup_metadata[0][0]);
-        GMAPAPP_Context.BSNK.base_subgroups[1].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_subgroup[1][0]);
-        GMAPAPP_Context.BSNK.base_subgroups[1].pMetadata = &(GMAPAPP_Context.BSNK.subgroup_metadata[1][0]);
-        GMAPAPP_Context.BSNK.base_bis[0].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[0][0]);
-        GMAPAPP_Context.BSNK.base_bis[1].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[1][0]);
-
-        if(status == BLE_STATUS_SUCCESS)
+      }
+      if (is_different == 0x00u)
+      {
+        payload_len += index;
+        for (i = 0; i < GMAPAPP_Context.BSNK.base_group.NumSubgroups && is_different == 0x00u; i++)
         {
-          LOG_INFO_APP("==>> Start BAP BSNK Parse BASE Group INFO\n");
-          LOG_INFO_APP("   Payload Len role : 0x%02x\n",base_data->BasePayloadLength);
-          LOG_INFO_APP("   Presentation_delay: 0x%08x\n",GMAPAPP_Context.BSNK.base_group.PresentationDelay);
-          LOG_INFO_APP("   Num_subgroups : 0x%02x\n",GMAPAPP_Context.BSNK.base_group.NumSubgroups);
+          is_different = CAP_Broadcast_IsBASESubgroupDifferent(base_data->pBasePayload + payload_len,
+                                                    base_data->BasePayloadLength - payload_len,
+                                                    &(GMAPAPP_Context.BSNK.base_subgroups[i]),
+                                                    &(index));
+          payload_len += index;
+          for (j = 0; (j < GMAPAPP_Context.BSNK.base_subgroups[i].NumBISes && is_different == 0x00u); j++)
+          {
+            is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
+                                                          base_data->BasePayloadLength - payload_len,
+                                                          &(GMAPAPP_Context.BSNK.base_bis[j]),
+                                                          &(index));
+            payload_len += index;
+          }
+        }
+      }
+      if (is_different == 0x00u)
+      {
+        /* BASE report is not different from the one in GMAPAPP_Context.BSNK */
+        /* No need to parse, copy, or log it again*/
+        break;
+      }
+      status = CAP_Broadcast_ParseBASEGroup(base_data->pBasePayload,
+                                            base_data->BasePayloadLength,
+                                            &(GMAPAPP_Context.BSNK.base_group),
+                                            &(index));
+
+      if (status == BLE_STATUS_SUCCESS)
+      {
+        LOG_INFO_APP("==>> Start BAP BSNK Parse BASE Group INFO\n");
+        LOG_INFO_APP("   Payload Len role : 0x%02x\n",base_data->BasePayloadLength);
+        LOG_INFO_APP("   Presentation_delay: 0x%08x\n",GMAPAPP_Context.BSNK.base_group.PresentationDelay);
+        LOG_INFO_APP("   Num_subgroups : 0x%02x\n",GMAPAPP_Context.BSNK.base_group.NumSubgroups);
+        base_data->pBasePayload += index;
+        base_data->BasePayloadLength -= index;
+
+        if(GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
+        {
+          GMAPAPP_Context.BSNK.num_sync_bis = 0;
+        }
+
+        /* Parse Subgroups */
+        for (i = 0; i < GMAPAPP_Context.BSNK.base_group.NumSubgroups && status == BLE_STATUS_SUCCESS; i++)
+        {
+          status = CAP_Broadcast_ParseBASESubgroup(base_data->pBasePayload,
+                                                    base_data->BasePayloadLength,
+                                                    &(GMAPAPP_Context.BSNK.base_subgroups[i]),
+                                                    &(index));
           base_data->pBasePayload += index;
           base_data->BasePayloadLength -= index;
-          if(GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
-          {
-            GMAPAPP_Context.BSNK.num_sync_bis = 0;
-          }
 
-          /* Parse Subgroups */
-          for (i = 0; i < GMAPAPP_Context.BSNK.base_group.NumSubgroups && status == BLE_STATUS_SUCCESS; i++)
+          LOG_INFO_APP("    BAP_BSNK_ParseBASESubgroup INFO Number :%d\n", i);
+          LOG_INFO_APP("    Codec ID : 0x%08x\n",GMAPAPP_Context.BSNK.base_subgroups[i].CodecID);
+          LOG_INFO_APP("    Codec specific config length : %d bytes\n",
+                      GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength);
+          if (GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength > 0u)
           {
-            status = CAP_Broadcast_ParseBASESubgroup(base_data->pBasePayload,
-                                                     base_data->BasePayloadLength,
-                                                     &(GMAPAPP_Context.BSNK.base_subgroups[i]),
-                                                     &(index));
+            for (k = 0;k<GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength;k++)
+            {
+              if (GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k] > 0u)
+              {
+                LOG_INFO_APP("      Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k]);
+                LOG_INFO_APP("        Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k+1u]);
+                LOG_INFO_APP("        Value: 0x");
+                for (l = 0 ;l<(GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k]-1);l++)
+                {
+                  LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k+2u+l]);
+                }
+                LOG_INFO_APP("\n");
+              }
+              k+=GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k];
+            }
+          }
+          LOG_INFO_APP("    Metadata length : %d bytes\n",GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength);
+          if (GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength > 0)
+          {
+            for (k = 0;k<GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength;k++)
+            {
+              if (GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k] > 0u)
+              {
+                LOG_INFO_APP("      Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k]);
+                LOG_INFO_APP("        Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k+1u]);
+                LOG_INFO_APP("        Value: 0x");
+                for (l = 0 ;l<(GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k]-1);l++)
+                {
+                  LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k+2u+l]);
+                }
+                LOG_INFO_APP("\n");
+              }
+              k+=GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k];
+            }
+          }
+          LOG_INFO_APP("    Num_BIS : %d\n",GMAPAPP_Context.BSNK.base_subgroups[i].NumBISes);
+
+          /* Parse BIS */
+          for (j = 0; (j < GMAPAPP_Context.BSNK.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
+          {
+            status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
+                                                base_data->BasePayloadLength,
+                                                &(GMAPAPP_Context.BSNK.base_bis[j]),
+                                                &(index));
             base_data->pBasePayload += index;
             base_data->BasePayloadLength -= index;
-            GMAPAPP_Context.BSNK.base_subgroups[i].pBIS = &(GMAPAPP_Context.BSNK.base_bis[i]);
-            LOG_INFO_APP("    BAP_BSNK_ParseBASESubgroup INFO Number :%d\n", i);
-            LOG_INFO_APP("    Codec ID : 0x%08x\n",GMAPAPP_Context.BSNK.base_subgroups[i].CodecID);
-            LOG_INFO_APP("    Codec specific config length : %d bytes\n",
-                        GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength);
 
-            if (GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength > 0u)
+            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].BIS_Index);
+            LOG_INFO_APP("      Codec specific config length : %d bytes\n",GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
+            Audio_Chnl_Allocation_t channel_alloc = 0x00000000;
+            if (GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength > 0u)
             {
-              for (k = 0;k<GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength;k++)
+              for (int k = 0;k<GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength;k++)
               {
-                if (GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k] > 0u)
+                if (GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k] > 0u)
                 {
-                  LOG_INFO_APP("      Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k]);
-                  LOG_INFO_APP("        Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k+1u]);
-                  LOG_INFO_APP("        Value: 0x");
-                  for (l = 0 ;l<(GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k]-1);l++)
+                  LOG_INFO_APP("        Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]);
+                  LOG_INFO_APP("          Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+1u]);
+                  LOG_INFO_APP("          Value: 0x");
+                  for (int l = 0 ;l<(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]-1);l++)
                   {
-                    LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k+2u+l]);
+                    LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+2u+l]);
                   }
                   LOG_INFO_APP("\n");
                 }
-                k+=GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf[k];
+                k+=GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k];
               }
+              channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf,
+                                                                      GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
             }
-            LOG_INFO_APP("    Metadata length : %d bytes\n",GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength);
-
-            if (GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength > 0)
+            if (channel_alloc == 0x00000000)
             {
-              for (k = 0;k<GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength;k++)
-              {
-                if (GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k] > 0u)
-                {
-                  LOG_INFO_APP("      Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k]);
-                  LOG_INFO_APP("        Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k+1u]);
-                  LOG_INFO_APP("        Value: 0x");
-                  for (l = 0 ;l<(GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k]-1);l++)
-                  {
-                    LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k+2u+l]);
-                  }
-                  LOG_INFO_APP("\n");
-                }
-                k+=GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata[k];
-              }
+              /* No channel alloc on BIS level, get channel alloc on subgroup level */
+              channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf,
+                                                                      GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength);
             }
-            LOG_INFO_APP("    Num_BIS : %d\n",GMAPAPP_Context.BSNK.base_subgroups[i].NumBISes);
-
-            /* Parse BIS */
-            for (j = 0; (j < GMAPAPP_Context.BSNK.base_subgroups[i].NumBISes) && (status == BLE_STATUS_SUCCESS); j++)
+            if(channel_alloc != 0x00000000)
             {
-              status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
-                                                  base_data->BasePayloadLength,
-                                                  &(GMAPAPP_Context.BSNK.base_bis[j]),
-                                                  &(index));
-              base_data->pBasePayload += index;
-              base_data->BasePayloadLength -= index;
-              LOG_INFO_APP("      BIS INDEX : 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].BIS_Index);
-              LOG_INFO_APP("      Codec specific config length : %d bytes\n",GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
-
-              Audio_Chnl_Allocation_t channel_alloc = 0x00000000;
-              if (GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength > 0u)
+              LOG_INFO_APP("      Audio Channels Allocation Configuration : 0x%08X\n",channel_alloc);
+              LOG_INFO_APP("      Number of Audio Channels %d \n",APP_GetBitsAudioChnlAllocations(channel_alloc));
+            }
+            if(GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
+            {
+              if (GMAPAPP_Context.BSNK.Audio_Location != 0x00000000)
               {
-                for (int k = 0;k<GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength;k++)
+                /* check if the Channel allocation matches with the Sink Audio Location supported by the Broadcast Sink */
+                if(channel_alloc != 0x00000000)
                 {
-                  if (GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k] > 0u)
-                  {
-                    LOG_INFO_APP("        Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]);
-                    LOG_INFO_APP("          Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+1u]);
-                    LOG_INFO_APP("          Value: 0x");
-                    for (int l = 0 ;l<(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]-1);l++)
-                    {
-                      LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+2u+l]);
-                    }
-                    LOG_INFO_APP("\n");
-                  }
-                  k+=GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k];
-                }
-                channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf,
-                                                                        GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
-              }
-
-              if (channel_alloc == 0x00000000)
-              {
-                /* No channel alloc on BIS level, get channel alloc on subgroup level */
-                channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_subgroups[i].pCodecSpecificConf,
-                                                                        GMAPAPP_Context.BSNK.base_subgroups[i].CodecSpecificConfLength);
-              }
-
-              if(channel_alloc != 0x00000000)
-              {
-                LOG_INFO_APP("      Audio Channels Allocation Configuration : 0x%08X\n",channel_alloc);
-                LOG_INFO_APP("      Number of Audio Channels %d \n",APP_GetBitsAudioChnlAllocations(channel_alloc));
-              }
-
-              if(GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
-              {
-                if (GMAPAPP_Context.BSNK.Audio_Location != 0x00000000)
-                {
-                  /* check if the Channel allocation matches with the Sink Audio Location supported by the Broadcast Sink */
-                  if(channel_alloc != 0x00000000)
-                  {
-                    if ((GMAPAPP_Context.BSNK.Audio_Location & channel_alloc) != 0x00000000)
-                    {
-                      GMAPAPP_Context.BSNK.sync_bis_index[GMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
-                      GMAPAPP_Context.BSNK.num_sync_bis++;
-                    }
-                  }
-                  else
+                  if ((GMAPAPP_Context.BSNK.Audio_Location & channel_alloc) != 0x00000000)
                   {
                     GMAPAPP_Context.BSNK.sync_bis_index[GMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
                     GMAPAPP_Context.BSNK.num_sync_bis++;
@@ -3661,20 +3704,27 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   GMAPAPP_Context.BSNK.num_sync_bis++;
                 }
               }
+              else
+              {
+                GMAPAPP_Context.BSNK.sync_bis_index[GMAPAPP_Context.BSNK.num_sync_bis] = (j+1);
+                GMAPAPP_Context.BSNK.num_sync_bis++;
+              }
             }
           }
-          LOG_INFO_APP("==>> End Start BAP BSNK Parse BASE Group INFO\n");
+        }
+        LOG_INFO_APP("==>> End Start BAP BSNK Parse BASE Group INFO\n");
 
-          if(GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
-          {
-            memcpy(&GMAPAPP_Context.BSNK.codec_specific_config_subgroup[0],
-                   GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
-                   GMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
-            uint32_t freq = LTV_GetConfiguredSamplingFrequency(GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
-                                                               GMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
-            LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",freq);
-            AudioClock_Init(freq);
-          }
+        if (GMAPAPP_Context.BSNK.BIGSyncState == APP_BIG_SYNC_STATE_IDLE)
+        {
+          memcpy(&GMAPAPP_Context.BSNK.codec_specific_config_subgroup[0],
+                  GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
+                  GMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
+
+          uint32_t freq = LTV_GetConfiguredSamplingFrequency(GMAPAPP_Context.BSNK.base_subgroups[0].pCodecSpecificConf,
+                                                              GMAPAPP_Context.BSNK.base_subgroups[0].CodecSpecificConfLength);
+
+          LOG_INFO_APP("==>> Audio Clock with Sample Frequency Type 0x%02X Initialization\n",freq);
+          AudioClock_Init(freq);
         }
       }
       break;
@@ -3950,7 +4000,7 @@ static uint8_t APP_BroadcastSetupAudio(Audio_Role_t role)
     LOG_INFO_APP("Sampling Frequency in LTV is invalid\n");
     ret = BLE_STATUS_FAILED;
   }
-  LOG_INFO_APP("==>> End PBPAPP_BroadcastSetupAudio function\n");
+  LOG_INFO_APP("==>> End APP_BroadcastSetupAudio function\n");
   return ret;
 }
 
@@ -4082,7 +4132,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                      available_snk_context,
                      available_src_context);
 
-        /*Set new available audio contexts for BAP Annoucement*/
+        /*Set new available audio contexts for BAP Announcement*/
         status = CAP_SetAvailableAudioContexts(available_snk_context,available_src_context);
         if (status == BLE_STATUS_SUCCESS)
         {
@@ -4137,7 +4187,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
               if ((GMAPAPP_Context.ACL_Conn[conn].AvailableSnkAudioContext != GMAPAPP_Context.AvailableSnkAudioContext) \
                   || (GMAPAPP_Context.ACL_Conn[conn].AvailableSrcAudioContext != GMAPAPP_Context.AvailableSrcAudioContext))
               {
-                /* we update the Audio Contexts availablity to other connected CAP Initiators */
+                /* we update the Audio Contexts availability to other connected CAP Initiators */
                 status = CAP_UpdateAvailableAudioContexts(GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
                                                           GMAPAPP_Context.AvailableSnkAudioContext,
                                                           GMAPAPP_Context.AvailableSrcAudioContext);
@@ -4532,7 +4582,7 @@ static uint8_t APP_UnicastSetupAudioDataPath(uint16_t ACL_ConnHandle,
                                p_app_ase2->ID,
                                p_app_ase2->type,
                                target_frequency);
-                  LOG_INFO_APP("Source Decimation Multipler = %d, Sink Decimation Multiplier = %d\n",
+                  LOG_INFO_APP("Source Decimation Multiplier = %d, Sink Decimation Multiplier = %d\n",
                                GMAPAPP_Context.SourceDecimation,
                                GMAPAPP_Context.SinkDecimation);
                   break;

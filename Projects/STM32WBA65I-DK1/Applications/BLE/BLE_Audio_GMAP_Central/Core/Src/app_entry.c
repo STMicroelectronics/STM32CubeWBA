@@ -41,11 +41,14 @@
 #include "app_sys.h"
 #include "otp.h"
 #include "scm.h"
-#include "bpka.h"
+#include "pka_ctrl.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
 #include "app_debug.h"
+#if(CFG_RT_DEBUG_DTB == 1)
+#include "RTDebug_dtb.h"
+#endif /* CFG_RT_DEBUG_DTB */
 #include "stm32_lpm_if.h"
 
 /* Private includes -----------------------------------------------------------*/
@@ -142,6 +145,9 @@ static AMM_InitParameters_t ammInitConfig =
   .p_VirtualMemoryConfigList = vmConfig
 };
 
+static uint8_t PkaMut = 0u;
+static uint8_t EndOfProcSem = 0u;
+
 /* USER CODE BEGIN PV */
 static uint32_t PLL_Target_Clock_Freq = 0;
 static uint8_t MxAudioInit_Flag = 0;
@@ -175,7 +181,11 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 static void APPE_FLASH_MANAGER_Init( void );
 
-static void APPE_BPKA_Init( void );
+static void APPE_PKACTRL_Init( void );
+int PKACTRL_MutexTake(void);
+int PKACTRL_MutexRelease(void);
+int PKACTRL_TakeSemEndOfOperation(void);
+int PKACTRL_ReleaseSemEndOfOperation(void);
 
 /* USER CODE BEGIN PFP */
 static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen);
@@ -236,8 +246,8 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE END APPE_Init_1 */
 
-  /* Initialize the Ble Public Key Accelerator module */
-  APPE_BPKA_Init();
+  /* Initialize the Public Key Accelerator module */
+  APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
   if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
@@ -359,6 +369,11 @@ static void SystemPower_Config(void)
 #if (CFG_SCM_SUPPORTED == 1)
   /* Initialize System Clock Manager */
   scm_init();
+#else
+  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 #endif /* CFG_SCM_SUPPORTED */
 
 #if (CFG_DEBUGGER_LEVEL == 0)
@@ -407,7 +422,6 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-
   /* USER CODE END SystemPower_Config */
 }
 
@@ -446,12 +460,12 @@ static void APPE_FLASH_MANAGER_Init(void)
 }
 
 /**
- * @brief Initialize Ble Public Key Accelerator module
+ * @brief Initialize Public Key Accelerator module
  */
-static void APPE_BPKA_Init(void)
+static void APPE_PKACTRL_Init(void)
 {
-  /* Register Ble Public Key Accelerator task */
-  UTIL_SEQ_RegTask(1U << CFG_TASK_BPKA, UTIL_SEQ_RFU, BPKA_BG_Process);
+  /* Register Public Key Accelerator task */
+  UTIL_SEQ_RegTask(1U << CFG_TASK_PKACTRL, UTIL_SEQ_RFU, PKACTRL_BG_Process);
 }
 
 static void APPE_AMM_Init(void)
@@ -919,7 +933,6 @@ void MX_AudioInit(Audio_Role_t role,
   /* Release Bus for power consumption optimisation */
   BSP_I2C_CLK_DISABLE();
   MxAudioInit_Flag = 1;
-
 }
 
 void MX_AudioDeInit(void)
@@ -953,7 +966,7 @@ void MX_AudioDeInit(void)
 static void Init_AudioBuffer(uint8_t *pSnkBuff, uint16_t SnkBuffLen, uint8_t *pSrcBuff, uint16_t SrcBuffLen)
 {
   /* We start the SAI here but will pause the DMA on the first interrupt.
-     The DMA will be relauched synchronized to the BLE transport for mastering audio latency */
+     The DMA will be relauched synchronized to the BLE transport to master audio latency */
   if ((SnkBuffLen  > 0) && (pSnkBuff != NULL))
   {
     if (BSP_AUDIO_OUT_Play(0, (uint8_t *)pSnkBuff, SnkBuffLen) != BSP_ERROR_NONE)
@@ -1162,17 +1175,17 @@ void UTIL_SEQ_PostIdle( void )
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
-#if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STDBY_SUPPORTED != 0 ) )
+#if ( (CFG_LPM_LEVEL != 0) && ( CFG_LPM_STANDBY_SUPPORTED != 0 ) )
   APP_BSP_PostIdle();
-#endif /* ( CFG_LPM_LEVEL && CFG_LPM_STDBY_SUPPORTED ) */
+#endif /* ( CFG_LPM_LEVEL && CFG_LPM_STANDBY_SUPPORTED ) */
 
   /* USER CODE END UTIL_SEQ_PostIdle_2 */
   return;
 }
 
-void BPKACB_Process( void )
+void PKACTRL_CB_Process( void )
 {
-  UTIL_SEQ_SetTask(1U << CFG_TASK_BPKA, CFG_SEQ_PRIO_0);
+  UTIL_SEQ_SetTask(1U << CFG_TASK_PKACTRL, CFG_SEQ_PRIO_0);
 }
 
 /**
@@ -1284,6 +1297,86 @@ void Serial_CMD_Interpreter_CmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferS
 }
 
 #endif /* (CFG_LOG_SUPPORTED != 0) */
+
+int PKACTRL_MutexTake(void)
+{
+  int error = 0;
+
+  /* Check if mutex is available */
+  if (0u != PkaMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  /* Increment mutex */
+  PkaMut++;
+
+  return error;
+}
+
+int PKACTRL_MutexRelease(void)
+{
+  int error = 0;
+
+  if (0u != PkaMut)
+  {
+    PkaMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
+  }
+
+  return error;
+}
+
+int PKACTRL_TakeSemEndOfOperation(void)
+{
+  int error = 0;
+
+  /* Check if semaphore is available */
+  if (0u != EndOfProcSem)
+  {
+#if (CFG_LPM_LEVEL != 0)
+  /* Avoid going in low power during computation */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
+  }
+
+  /* Increment semaphore */
+  EndOfProcSem++;
+
+  return error;
+}
+
+int PKACTRL_ReleaseSemEndOfOperation(void)
+{
+  int error = 0;
+
+  if (0u != EndOfProcSem)
+  {
+    EndOfProcSem = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
+
+#if (CFG_LPM_LEVEL != 0)
+  /* Restore low power */
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
+#endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
+}
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)

@@ -48,3 +48,6 @@ Once powered the application starts advertising and the configuration phase begi
 - B1 click : Start/stop Notification.  
 - B2 click : Toggle PHY 1M/2M by HCI_LE_SET_PHY.  
 - B3 click : Update connection interval by ACI_L2CAP_CONNECTION_UPDATE_REQ_EVENT.  
+
+For more information, please refer to the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Power_Consumption_Measurement"> 
+STM32WBA Bluetooth LE - Power consumption applications ST wiki.</a>

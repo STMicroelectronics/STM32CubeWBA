@@ -1057,7 +1057,7 @@ tBleStatus HAP_HARC_SetPreviousPreset(uint16_t ConnHandle, uint8_t SyncLocally)
 #if (BLE_CFG_HAP_HARC_ROLE == 1u)
 /**
    * @brief  Store GATT Database of the HAP Characteristics and Services
-   * @param  ConnHandle: Connetion Handle of the remote connection
+   * @param  ConnHandle: Connection Handle of the remote connection
    * @param  [in] pData: pointer on buffer in which GATT Database of HAP characteristics in which information is stored
    * @param  [in] MaxDataLen: maximum data length to store
    * @param  [out] len : length in bytes of stored data
@@ -1126,7 +1126,7 @@ tBleStatus HAP_HARC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t 
           pData[(*len)+1] = (uint8_t) ((p_hap_inst->HAFeaturesChar.ValueHandle>> 8 ));
           /* Characteristic Type*/
           pData[(*len)+2] = UUID_TYPE_16;
-          /* HA Features Charactertistic UUID*/
+          /* HA Features Characteristic UUID*/
           pData[(*len)+3] = (uint8_t) HEARING_AID_FEATURES_UUID;
           pData[(*len)+4] = (uint8_t) ((HEARING_AID_FEATURES_UUID >> 8 ));
           /*value length*/
@@ -1145,7 +1145,7 @@ tBleStatus HAP_HARC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t 
         }
       }
 
-      /* Store Hearing Aid Preset Control Point Charactertistic information*/
+      /* Store Hearing Aid Preset Control Point Characteristic information*/
       if (status == BLE_STATUS_SUCCESS)
       {
         if (remain >= 9u)
@@ -1163,7 +1163,7 @@ tBleStatus HAP_HARC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t 
           pData[(*len)+1] = (uint8_t) ((p_hap_inst->HAPresetControlPointChar.ValueHandle>> 8 ));
           /* Characteristic Type*/
           pData[(*len)+2] = UUID_TYPE_16;
-          /* HA Preset Control Point charactertistic UUID*/
+          /* HA Preset Control Point characteristic UUID*/
           pData[(*len)+3] = (uint8_t) HEARING_AID_PRESET_CONTROL_POINT_UUID;
           pData[(*len)+4] = (uint8_t) ((HEARING_AID_PRESET_CONTROL_POINT_UUID >> 8 ));
           /*value length*/
@@ -1200,7 +1200,7 @@ tBleStatus HAP_HARC_StoreDatabase(uint16_t ConnHandle, uint8_t *pData, uint16_t 
           pData[(*len)+1] = (uint8_t) ((p_hap_inst->ActivePresetIndexChar.ValueHandle>> 8 ));
           /* Characteristic Type*/
           pData[(*len)+2] = UUID_TYPE_16;
-          /* Active Preset Index Charactertistic UUID*/
+          /* Active Preset Index Characteristic UUID*/
           pData[(*len)+3] = (uint8_t) ACTIVE_PRESET_INDEX_UUID;
           pData[(*len)+4] = (uint8_t) ((ACTIVE_PRESET_INDEX_UUID >> 8 ));
           /*value length*/
@@ -1518,7 +1518,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
                           p_hap_inst->HAFeaturesChar.ValueHandle = handle;
                           p_hap_inst->HAFeaturesChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                          p_hap_inst->HAFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->HAFeaturesChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_hap_inst->pGattChar = &p_hap_inst->HAFeaturesChar;
                         break;
                         case HEARING_AID_PRESET_CONTROL_POINT_UUID:
@@ -1528,7 +1528,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
                           p_hap_inst->HAPresetControlPointChar.ValueHandle = handle;
                           p_hap_inst->HAPresetControlPointChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                          p_hap_inst->HAPresetControlPointChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->HAPresetControlPointChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_hap_inst->pGattChar = &p_hap_inst->HAPresetControlPointChar;
                         break;
                         case ACTIVE_PRESET_INDEX_UUID:
@@ -1538,7 +1538,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                           BLE_DBG_HAP_HARC_MSG("Handle = 0x%04X\n",handle);
                           p_hap_inst->ActivePresetIndexChar.ValueHandle = handle;
                           p_hap_inst->ActivePresetIndexChar.EndHandle = p_hap_inst->HASServiceEndHandle;
-                          p_hap_inst->ActivePresetIndexChar.Properties = pr->Handle_Value_Pair_Data[idx-3];;
+                          p_hap_inst->ActivePresetIndexChar.Properties = pr->Handle_Value_Pair_Data[idx-3];
                           p_hap_inst->pGattChar = &p_hap_inst->ActivePresetIndexChar;
                         break;
 
@@ -1942,7 +1942,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                       if (HAP_Context.HARC.OpParams.SyncLocally == 0
                           && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
                       {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        /* Only execute on second device when Local Sync and independent presets are disabled */
                         uint8_t a_value[2] = {
                           HAP_HA_CONTROL_POINT_OP_SET_ACTIVE_PRESET,
                           HAP_Context.HARC.OpParams.PresetIndex
@@ -1981,7 +1981,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                       if (HAP_Context.HARC.OpParams.SyncLocally == 0
                           && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
                       {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        /* Only execute on second device when Local Sync and independent presets are disabled */
                         uint8_t a_value[1] = {
                           HAP_HA_CONTROL_POINT_OP_SET_NEXT_PRESET
                         };
@@ -2021,7 +2021,7 @@ SVCCTL_EvtAckStatus_t HAP_HARC_GATT_Event_Handler(void *pEvent)
                       if (HAP_Context.HARC.OpParams.SyncLocally == 0
                           && ((p_csipmember_hap_inst->HAPFeatures & HAP_INDEPENDANT_PRESETS) == 0))
                       {
-                        /* Only execute on second device when Local Sync and independant presets are disabled */
+                        /* Only execute on second device when Local Sync and independent presets are disabled */
                         uint8_t a_value[1] = {
                           HAP_HA_CONTROL_POINT_OP_SET_PREVIOUS_PRESET
                         };
@@ -2955,7 +2955,7 @@ static SVCCTL_EvtAckStatus_t HAP_HARC_AttNotificationHandle(uint16_t ConnHandle,
   p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_hap_inst != 0)
   {
-    /* Chec if attribute belongs to HAP Service */
+    /* Check if attribute belongs to HAP Service */
     if ((Attribute_Handle >= p_hap_inst->HASServiceStartHandle) \
         && (Attribute_Handle <= p_hap_inst->HASServiceEndHandle))
     {
@@ -3012,7 +3012,7 @@ static SVCCTL_EvtAckStatus_t HAP_HARC_AttIndicationHandle(uint16_t ConnHandle,
   p_hap_inst = HAP_HARC_GetInstance(ConnHandle,&p_eatt_bearer);
   if (p_hap_inst != 0)
   {
-    /* Chec if attribute belongs to HAP Service */
+    /* Check if attribute belongs to HAP Service */
     if ((Attribute_Handle >= p_hap_inst->HASServiceStartHandle) \
         && (Attribute_Handle <= p_hap_inst->HASServiceEndHandle))
     {

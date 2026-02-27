@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -172,7 +172,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_1_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_1_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_1_Disabled_BEGIN */
@@ -184,15 +184,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
-                /* USER CODE BEGIN Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
+                /* USER CODE BEGIN Service3_Char_1_COMSVC_Indication_BEGIN */
 
-                /* USER CODE END Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+                /* USER CODE END Service3_Char_1_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_SECURITY25519AES_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE BEGIN Service3_Char_1_COMSVC_Indication_END */
 
-                /* USER CODE END Service3_Char_1_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE END Service3_Char_1_COMSVC_Indication_END */
                 break;
 
               default:
@@ -217,7 +217,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_2_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_2_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_2_Disabled_BEGIN */
@@ -229,15 +229,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
-                /* USER CODE BEGIN Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
+                /* USER CODE BEGIN Service3_Char_2_COMSVC_Indication_BEGIN */
 
-                /* USER CODE END Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+                /* USER CODE END Service3_Char_2_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_SECURITY25519SHA_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE BEGIN Service3_Char_2_COMSVC_Indication_END */
 
-                /* USER CODE END Service3_Char_2_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE END Service3_Char_2_COMSVC_Indication_END */
                 break;
 
               default:
@@ -263,7 +263,7 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
               /* USER CODE END Service3_Char_3_attribute_modified */
 
               /* Disabled Indication management */
-              case (!(GATT_CHAR_UPDATE_SEND_NOTIFICATION)):
+              case (0x00):
                 /* USER CODE BEGIN Service3_Char_3_Disabled_BEGIN */
 
                 /* USER CODE END Service3_Char_3_Disabled_BEGIN */
@@ -275,15 +275,15 @@ static SVCCTL_EvtAckStatus_t ZDDSECURITY_EventHandler(void *p_Event)
                 break;
 
               /* Enabled Indication management */
-              case GATT_CHAR_UPDATE_SEND_NOTIFICATION:
-                /* USER CODE BEGIN Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+              case GATT_CHAR_UPDATE_SEND_INDICATION:
+                /* USER CODE BEGIN Service3_Char_3_COMSVC_Indication_BEGIN */
 
-                /* USER CODE END Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_BEGIN */
+                /* USER CODE END Service3_Char_3_COMSVC_Indication_BEGIN */
                 notification.EvtOpcode = ZDDSECURITY_P256SHA_INDICATE_ENABLED_EVT;
                 ZDDSECURITY_Notification(&notification);
-                /* USER CODE BEGIN Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE BEGIN Service3_Char_3_COMSVC_Indication_END */
 
-                /* USER CODE END Service3_Char_3_GATT_CHAR_UPDATE_SEND_NOTIFICATION_END */
+                /* USER CODE END Service3_Char_3_COMSVC_Indication_END */
                 break;
 
               default:
@@ -499,12 +499,16 @@ void ZDDSECURITY_Init(void)
                              &(ZDDSECURITY_Context.ZddsecuritySvcHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_service command: ZDDSecurity, error code: 0x%x \n\r", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_service command: ZDDSecurity, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_service command: ZDDSecurity \n\r");
+    LOG_INFO_BLE("  Success: aci_gatt_add_service command: ZddsecuritySvcHdle = 0x%04X\n",ZDDSECURITY_Context.ZddsecuritySvcHdle);
   }
+
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
 
   /**
    * SECURITY25519AES
@@ -522,11 +526,11 @@ void ZDDSECURITY_Init(void)
                           &(ZDDSECURITY_Context.Security25519AesCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : SECURITY25519AES, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : SECURITY25519AES, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SECURITY25519AES\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Security25519AesCharHdle = 0x%04X\n",ZDDSECURITY_Context.Security25519AesCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char1 */
@@ -550,11 +554,11 @@ void ZDDSECURITY_Init(void)
                           &(ZDDSECURITY_Context.Security25519ShaCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : SECURITY25519SHA, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : SECURITY25519SHA, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : SECURITY25519SHA\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : Security25519ShaCharHdle = 0x%04X\n",ZDDSECURITY_Context.Security25519ShaCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char2 */
@@ -578,11 +582,11 @@ void ZDDSECURITY_Init(void)
                           &(ZDDSECURITY_Context.P256ShaCharHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_gatt_add_char command   : P256SHA, error code: 0x%2X\n", ret);
+    LOG_INFO_BLE("  Fail   : aci_gatt_add_char command   : P256SHA, error code: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_gatt_add_char command   : P256SHA\n");
+    LOG_INFO_BLE("  Success: aci_gatt_add_char command   : P256ShaCharHdle = 0x%04X\n",ZDDSECURITY_Context.P256ShaCharHdle);
   }
 
   /* USER CODE BEGIN SVCCTL_InitService3Char3 */
@@ -620,11 +624,11 @@ tBleStatus ZDDSECURITY_UpdateValue(ZDDSECURITY_CharOpcode_t CharOpcode, ZDDSECUR
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SECURITY25519AES command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value SECURITY25519AES command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SECURITY25519AES command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value SECURITY25519AES command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_1 */
 
@@ -639,11 +643,11 @@ tBleStatus ZDDSECURITY_UpdateValue(ZDDSECURITY_CharOpcode_t CharOpcode, ZDDSECUR
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value SECURITY25519SHA command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value SECURITY25519SHA command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value SECURITY25519SHA command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value SECURITY25519SHA command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_2 */
 
@@ -658,11 +662,11 @@ tBleStatus ZDDSECURITY_UpdateValue(ZDDSECURITY_CharOpcode_t CharOpcode, ZDDSECUR
                                        (uint8_t *)pData->p_Payload);
       if (ret != BLE_STATUS_SUCCESS)
       {
-        LOG_INFO_APP("  Fail   : aci_gatt_update_char_value P256SHA command, error code: 0x%2X\n", ret);
+        LOG_INFO_BLE("  Fail   : aci_gatt_update_char_value P256SHA command, error code: 0x%02X\n", ret);
       }
       else
       {
-        LOG_INFO_APP("  Success: aci_gatt_update_char_value P256SHA command\n");
+        LOG_INFO_BLE("  Success: aci_gatt_update_char_value P256SHA command\n");
       }
       /* USER CODE BEGIN Service3_Char_Value_3 */
 

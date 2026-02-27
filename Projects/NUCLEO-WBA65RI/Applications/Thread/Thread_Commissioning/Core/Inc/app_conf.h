@@ -87,6 +87,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
   /* USER CODE END CFG_LPM_Id_t */
@@ -188,9 +189,9 @@ typedef enum
   CFG_TASK_START_COMMISSIONER,
   CFG_TASK_START_JOINER,
   CFG_TASK_CONFIG_LEADER,
-  CFG_TASK_BUTTON_B1,		        /* Task linked to push-button. */
-  CFG_TASK_BUTTON_B2,
-  CFG_TASK_BUTTON_B3,
+  CFG_TASK_BSP_BUTTON_B1,		        /* Task linked to push-button. */
+  CFG_TASK_BSP_BUTTON_B2,
+  CFG_TASK_BSP_BUTTON_B3,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -223,9 +224,9 @@ typedef enum
 #define TASK_START_COMMISSIONER             ( 1U << CFG_TASK_START_COMMISSIONER)
 #define TASK_START_JOINER                   ( 1U << CFG_TASK_START_JOINER)
 #define TASK_CONFIG_LEADER                  ( 1U << CFG_TASK_CONFIG_LEADER)
-#define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BUTTON_B1 )
-#define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BUTTON_B2 )
-#define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BUTTON_B3 )
+#define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BSP_BUTTON_B1 )
+#define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
+#define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BSP_BUTTON_B3 )
 
 /* USER CODE END TASK_ID_Define */
 
@@ -236,6 +237,8 @@ typedef enum
 typedef enum
 {
   CFG_EVENT_PKA_COMPLETED,
+  CFG_PKA_MUTEX,
+  CFG_PKA_END_OF_PROCESS,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */
@@ -294,8 +297,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm
- *   1 -> RF TX output level from -20 dBm to +3 dBm
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 
@@ -319,6 +322,12 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
+
+/******************************************************************************
+ * PKA configuration
+ ******************************************************************************/
+/* PKA IRQ priority of the PKA end of process */
+#define PKA_INTR_PRIO_PROCEND               (7)
 
 /* USER CODE BEGIN Defines */
 #define CFG_BSP_ON_SEQUENCER                    (1)
@@ -374,6 +383,11 @@ typedef enum
   #define CFG_LPM_STOP2_SUPPORTED   (0U)
   #undef CFG_LPM_STANDBY_SUPPORTED
   #define CFG_LPM_STANDBY_SUPPORTED (0U)
+#endif
+
+#if !defined(PWR_STOP2_SUPPORT)
+  #undef CFG_LPM_STOP2_SUPPORTED
+  #define CFG_LPM_STOP2_SUPPORTED   (0U)
 #endif
 
 /*********************************************************************

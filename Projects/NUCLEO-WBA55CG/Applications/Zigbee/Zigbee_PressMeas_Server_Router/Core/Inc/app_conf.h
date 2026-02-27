@@ -183,6 +183,9 @@ typedef enum
   CFG_TASK_ZIGBEE_LAYER,
   CFG_TASK_ZIGBEE_NETWORK_FORM,   /* Tasks linked to Zigbee Start. */
   CFG_TASK_ZIGBEE_APP_START,
+  CFG_TASK_ZIGBEE_PERSISTENCE,
+  CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE,
+  CFG_TASK_ZIGBEE_OTA_START_DOWNLOAD,
   CFG_TASK_ZIGBEE_APP1,           /* Tasks linked to Zigbee Application. */
   CFG_TASK_ZIGBEE_APP2,
   CFG_TASK_ZIGBEE_APP3,
@@ -224,6 +227,9 @@ typedef enum
 #define TASK_ZIGBEE_LAYER                   ( 1u << CFG_TASK_ZIGBEE_LAYER )
 #define TASK_ZIGBEE_NETWORK_FORM            ( 1u << CFG_TASK_ZIGBEE_NETWORK_FORM )
 #define TASK_ZIGBEE_APP_START               ( 1u << CFG_TASK_ZIGBEE_APP_START )
+#define TASK_ZIGBEE_PERSISTENCE             ( 1u << CFG_TASK_ZIGBEE_PERSISTENCE )
+#define TASK_ZIGBEE_OTA_REQUEST_UPGRADE     ( 1u << CFG_TASK_ZIGBEE_OTA_REQUEST_UPGRADE )
+#define TASK_ZIGBEE_OTA_START_DOWNLOAD      ( 1u << CFG_TASK_ZIGBEE_OTA_START_DOWNLOAD )
 #define TASK_ZIGBEE_APP1                    ( 1u << CFG_TASK_ZIGBEE_APP1 )
 #define TASK_ZIGBEE_APP2                    ( 1u << CFG_TASK_ZIGBEE_APP2 )
 #define TASK_ZIGBEE_APP3                    ( 1u << CFG_TASK_ZIGBEE_APP3 )
@@ -247,6 +253,8 @@ typedef enum
   CFG_EVENT_ZIGBEE_CALLBACK_DONE,
   CFG_EVENT_ZIGBEE_RESTART_WAIT,
   CFG_EVENT_ZIGBEE_STARTUP_ENDED,
+  CFG_EVENT_ZIGBEE_STARTUP_PERSISTENCE_ENDED,
+  CFG_EVENT_ZIGBEE_OTA_SERVER_FOUND,
   CFG_EVENT_ZIGBEE_APP1,           /* Events linked to Zigbee Application. */
   CFG_EVENT_ZIGBEE_APP2,
   CFG_EVENT_ZIGBEE_APP3,
@@ -264,6 +272,8 @@ typedef enum
 #define EVENT_ZIGBEE_CALLBACK_DONE      ( 1U << CFG_EVENT_ZIGBEE_CALLBACK_DONE )
 #define EVENT_ZIGBEE_RESTART_WAIT       ( 1U << CFG_EVENT_ZIGBEE_RESTART_WAIT )
 #define EVENT_ZIGBEE_STARTUP_ENDED      ( 1U << CFG_EVENT_ZIGBEE_STARTUP_ENDED )
+#define EVENT_ZIGBEE_STARTUP_PERSISTENCE_ENDED  ( 1U << CFG_EVENT_ZIGBEE_STARTUP_PERSISTENCE_ENDED )
+#define EVENT_ZIGBEE_OTA_SERVER_FOUND   ( 1U << CFG_EVENT_ZIGBEE_OTA_SERVER_FOUND )
 #define EVENT_ZIGBEE_APP1               ( 1U << CFG_EVENT_ZIGBEE_APP1 )
 #define EVENT_ZIGBEE_APP2               ( 1U << CFG_EVENT_ZIGBEE_APP2 )
 #define EVENT_ZIGBEE_APP3               ( 1U << CFG_EVENT_ZIGBEE_APP3 )
@@ -319,8 +329,8 @@ typedef enum
 #define RCC_INTR_PRIO                       (1)           /* HSERDY and PLL1RDY */
 
 /* RF TX power table ID selection:
- *   0 -> RF TX output level from -20 dBm to +10 dBm, with VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm, with VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
+ *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (0)
 

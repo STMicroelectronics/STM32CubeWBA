@@ -318,6 +318,10 @@ void BAS_Init(void)
     LOG_INFO_BLE("  Success: aci_gatt_add_service command: BasSvcHdle = 0x%04X\n",BAS_Context.BasSvcHdle);
   }
 
+  /* USER CODE BEGIN SVCCTL_InitService_2 */
+
+  /* USER CODE END SVCCTL_InitService_2 */
+
   /**
    * BAL
    */
