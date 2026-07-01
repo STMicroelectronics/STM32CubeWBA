@@ -8,8 +8,8 @@ flashsectnbr=0x7F
 select_wba_target=0x65
 
 # STM32CubeProgammer connection
-connect="-c port=SWD mode=UR"
-connect_no_reset="-c port=SWD mode=HotPlug"
+connect="-c port=SWD mode=UR ap=1"
+connect_no_reset="-c port=SWD mode=HotPlug ap=1"
 
 if [ "$select_wba_target" == "0x55" ]; then
   rdp_0="-ob RDP=0xAA TZEN=1 UNLOCK_A=1 UNLOCK_B=1"

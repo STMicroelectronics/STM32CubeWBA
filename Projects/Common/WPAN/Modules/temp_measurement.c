@@ -32,6 +32,9 @@
 #include "ll_intf.h"
 #include "ll_intf_cmn.h"
 
+/* Debug */
+#include "log_module.h"
+
 /* Private defines -----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
@@ -73,17 +76,29 @@ void TEMPMEAS_RequestTemperatureMeasurement (void)
   UTILS_ENTER_LIMITED_CRITICAL_SECTION(RCC_INTR_PRIO<<4);
 
   /* Request ADC IP activation */
-  ADCCTRL_RequestIpState(&LLTempRequest_Handle, ADC_ON);
-
+  if (ADCCTRL_OK != ADCCTRL_RequestIpState(&LLTempRequest_Handle, ADC_ON))
+  {
+    /* Print error */
+    LOG_ERROR_SYSTEM ("\r\nTEMPMEAS_RequestTemperatureMeasurement - Issue on requesting ADC IP activation\r\n");
+  }
   /* Get temperature from ADC dedicated channel */
-  ADCCTRL_RequestTemperature (&LLTempRequest_Handle,
-                              &temperature_value);
-
+  else if (ADCCTRL_OK != ADCCTRL_RequestValues (&LLTempRequest_Handle,
+                                                &temperature_value))
+  {
+    /* Print error */
+    LOG_ERROR_SYSTEM ("\r\nTEMPMEAS_RequestTemperatureMeasurement - Issue on requesting temperature value\r\n");
+  }
   /* Request ADC IP deactivation */
-  ADCCTRL_RequestIpState(&LLTempRequest_Handle, ADC_OFF);
-
-  /* Give shifted value of the temperature to the link layer */
-  ll_intf_cmn_set_temperature_value((uint32_t)(temperature_value + TEMPMEAS_MIN_TEMP_LIMIT));
+  else if (ADCCTRL_OK != ADCCTRL_RequestIpState(&LLTempRequest_Handle, ADC_OFF))
+  {
+    /* Print error */
+    LOG_ERROR_SYSTEM ("\r\nTEMPMEAS_RequestTemperatureMeasurement - Issue on requesting ADC IP deactivation\r\n");
+  }
+  else
+  {
+    /* Give shifted value of the temperature to the link layer */
+    ll_intf_cmn_set_temperature_value((uint32_t)(temperature_value + TEMPMEAS_MIN_TEMP_LIMIT));
+  }
 
   /* Exit limited critical section */
   UTILS_EXIT_LIMITED_CRITICAL_SECTION();

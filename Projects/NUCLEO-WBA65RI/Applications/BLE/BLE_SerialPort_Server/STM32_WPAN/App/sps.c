@@ -233,7 +233,7 @@ static SVCCTL_EvtAckStatus_t SPS_EventHandler(void *p_Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /*USER CODE BEGIN Service1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-#warning user shall call aci_gatt_write_resp() function if allowed
+#warning user shall call aci_gatt_permit_write() function if allowed
             /*USER CODE END Service1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
           }
 

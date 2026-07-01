@@ -387,8 +387,8 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   fill_manuf_data(&exData[11], sizeof(exData));
   /* USER CODE END Ble_Hci_Gap_Gatt_Init */
 
-  ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
-                                  CONFIG_DATA_PUBADDR_LEN,
+  ret = aci_hal_write_config_data(CONFIG_DATA_PUBLIC_ADDRESS_OFFSET,
+                                  CONFIG_DATA_PUBLIC_ADDRESS_LEN,
                                   (uint8_t*) a_MBdAddr);
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -418,6 +418,16 @@ static void Ble_Hci_Gap_Gatt_Init(void)
                        &gap_dev_name_char_handle,
                        &gap_appearance_char_handle);
 
+    if (ret != BLE_STATUS_SUCCESS)
+    {
+      Error_Handler();
+    }
+
+    ret = aci_gatt_update_char_value(gap_service_handle,
+                                     gap_dev_name_char_handle,
+                                     0,
+                                     sizeof(a_GapDeviceName),
+                                     (uint8_t *)a_GapDeviceName);
     if (ret != BLE_STATUS_SUCCESS)
     {
       Error_Handler();

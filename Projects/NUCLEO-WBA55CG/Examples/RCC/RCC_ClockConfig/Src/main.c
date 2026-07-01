@@ -446,6 +446,7 @@ RCC_OscInitStruct.PLL1.PLLState    = RCC_PLL_NONE;
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

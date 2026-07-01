@@ -50,6 +50,7 @@ extern "C" {
 /* Exported variables --------------------------------------------------------*/
 /* ThreadX byte pool pointer for whole WPAN middleware */
 extern TX_BYTE_POOL         *pBytePool;
+extern TX_EVENT_FLAGS_GROUP WpanEventFlag;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */

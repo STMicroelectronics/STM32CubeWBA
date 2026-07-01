@@ -1,24 +1,28 @@
 ## __BLE_ApplicationInstallManager Application Description__
 
-The BLE_ApplicationInstallManager application, associated to a BLE application embedding OTA service, manages the firmware update over the air of a BLE application.  
+The BLE_ApplicationInstallManager application, associated to a BLE application embedding OTA service, manages the firmware update over the air of a BLE application.
 
 ### __Keywords__
 
-Connectivity, BLE, BLE protocol, BLE Firmware Update Over The Air, BLE profile.  
+Connectivity, BLE, BLE protocol, BLE Firmware Update Over The Air, BLE profile.
 
 ### __Hardware and Software environment__
 
-This application runs on STM32WBA55xx devices.  
-    
+  - This application runs on STM32WBA55xx Nucleo board.
+
+  - Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).
+
 ### __How to use it?__
 
-In order to make the program work, you must do the following:  
+In order to make the program work:
 
- - Open your preferred toolchain.  
- - Rebuild all files and load your image into target memory.  
+ - Open the project with your preferred toolchain.
+ - Rebuild all files and load your image into target memory.
+ - Run the example.
 
-The BLE_ApplicationInstallManager application must run with BLE applications embedding OTA service like: BLE_HeartRate_ota or BLE_p2pServer_ota applications.  
+The BLE_ApplicationInstallManager application must run with BLE applications embedding OTA service like: BLE_HeartRate_ota or BLE_p2pServer_ota applications.
 
-__BLE_ApplicationInstallManager__ is loaded at the memory address __0x08000000__ and __BLE_HeartRate_ota__ or __BLE_p2pServer_ota__ application is loaded at the memory address __0x08006000__.  
+__BLE_ApplicationInstallManager__ is loaded at the memory address __0x08000000__ and __BLE_HeartRate_ota__ or __BLE_p2pServer_ota__ application is loaded at the memory address __0x08006000__.
 
-For more details on OTA process please refers to associated readme.html.  
+For more details on OTA process please refers to associated readme.html.
+

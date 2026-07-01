@@ -25,17 +25,15 @@
 <p>Connectivity, BLE, BLE protocol, BLE Direction Finding</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA device.</li>
-<li><p>Connect the Nucleo Board to your PC with a USB cable type A to USB type C to ST-LINK USB connector.</p></li>
+<li><p>This application runs on STM32WBA65xx Nucleo board.</p></li>
+<li>Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).</li>
 <li><p>Another STM32WBA Nucleo board is necessary to run BLE_Beacon_AoA_Tag application.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work:</p>
 <ul>
-<li>Open the project with your preferred toolchain.<br />
-</li>
-<li>Rebuild all files and load your image into target memory.<br />
-</li>
+<li>Open the project with your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
 <li><p>Run the example.</p></li>
 <li>Place BLE_Beacon_Scanner_AoA_Locator device next to a BLE_Beacon_Aoa_Tag device.</li>
 <li>The BLE_Beacon_Scanner_AoA_Locator device synchronizes with periodic advertising from BLE_Beacon_Aoa_Tag device and begin receiving periodic advertising packets.</li>

@@ -1,8 +1,8 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    stm32wbaxx_it.h
-  * @brief   This file contains the headers of the interrupt handlers.
+  * @file    PWR/PWR_STOP2/Inc/stm32wbaxx_it.h
+  * @author  MCD Application Team  * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   * @attention
   *

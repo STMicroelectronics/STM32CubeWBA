@@ -619,6 +619,7 @@ static void Toggle_LED(Led_TypeDef Led_id, uint32_t Wait_time, uint32_t Count)
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

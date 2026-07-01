@@ -628,6 +628,10 @@
 #error "External flash not supported: When MCUBOOT_PRIMARY_ONLY is enabled."
 #endif /* defined(MCUBOOT_PRIMARY_ONLY) && defined(OEMIROT_EXTERNAL_FLASH_ENABLE) */
 
+#if (MCUBOOT_APP_IMAGE_NUMBER == 1) && (FLASH_NS_PARTITION_SIZE > 0)
+#error "Config not supported"
+#endif /* (MCUBOOT_APP_IMAGE_NUMBER=1) && (FLASH_NS_PARTITION_SIZE>0) */
+
 #if (FLASH_S_PARTITION_SIZE == 0)
 #error "Config not supported: Full NonSecure Appli."
 #endif /* FLASH_S_PARTITION_SIZE */

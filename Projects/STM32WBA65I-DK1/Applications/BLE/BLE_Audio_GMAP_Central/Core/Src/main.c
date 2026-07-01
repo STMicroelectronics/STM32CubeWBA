@@ -589,6 +589,7 @@ HAL_StatusTypeDef MX_ADC4_Init(ADC_HandleTypeDef* hadc, MX_ADC_Config_t *MXInit)
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

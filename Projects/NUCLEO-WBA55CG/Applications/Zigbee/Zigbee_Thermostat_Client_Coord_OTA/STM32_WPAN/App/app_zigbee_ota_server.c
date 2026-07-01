@@ -418,10 +418,10 @@ bool AppZbOtaServer_GetBinInfo( void )
 static bool AppZbOtaServer_DiscoverTags( OtaServerImage_st * pstOtaImage )
 {
     uint8_t * pFlashAddress;
-    char    * szTagName;
     bool      bReturn = false;
     uint16_t  iTagId;
     uint32_t  lTagLength, lTagStartOffset, lTagEndOffset, lCurrentOffset;
+    __attribute__((unused)) char  * szTagName;
 
     /* Init Parameters */
     lTagStartOffset = pstOtaImage->stHeader.header_length;
@@ -639,8 +639,8 @@ static enum ZclStatusCodeT AppZbOtaServer_ImageUpgradeEndReqCallback( struct ZbZ
                                                                       struct ZbZclOtaEndResponseTimes *pstEndResponseTimes, struct ZbZclAddrInfoT *pstSourceInfo,
                                                                       void *arg )
 {
-    OtaServerImage_st  * pstOtaImage = (OtaServerImage_st *)arg;
-    double                      dlUpgrateTime, dlUpgrateTroughput = 0;
+    OtaServerImage_st               * pstOtaImage = (OtaServerImage_st *)arg;
+    __attribute__((unused)) double  dlUpgrateTime, dlUpgrateTroughput = 0;
 
     /* Save Update End Time */
     pstOtaImage->lUpdateTimeEnd = HAL_GetTick();

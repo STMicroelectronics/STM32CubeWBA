@@ -349,6 +349,11 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/stm_queue.c</locationURI>
 		</link>
 		<link>
+			<name>Common/WPAN/Modules/wpan_utils.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/wpan_utils.c</locationURI>
+		</link>
+		<link>
 			<name>Common/WPAN/Modules/temp_measurement.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/temp_measurement.c</locationURI>

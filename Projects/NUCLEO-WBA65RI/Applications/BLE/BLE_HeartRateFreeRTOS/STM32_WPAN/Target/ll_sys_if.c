@@ -235,11 +235,6 @@ void ll_sys_config_params(void)
   /* Link Layer power table */
   ll_intf_cmn_select_tx_power_table(CFG_RF_TX_POWER_TABLE_ID);
 
-#if (USE_CTE_DEGRADATION == 1u)
-  /* Apply CTE degradation */
-  ll_sys_apply_cte_settings ();
-#endif /* (USE_CTE_DEGRADATION == 1u) */
-
 /* USER CODE BEGIN ll_sys_config_params_2 */
 
 /* USER CODE END ll_sys_config_params_2 */
@@ -433,12 +428,11 @@ void ll_sys_reset(void)
 
   /* USER CODE END ll_sys_reset_2 */
 }
-#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx)
+
 void ll_sys_apply_cte_settings(void)
 {
   ll_intf_apply_cte_degrad_change();
 }
-#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx) */
 
 #if (CFG_LPM_STANDBY_SUPPORTED == 0)
 void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time, uint32_t* average_drift_time, uint8_t reset)

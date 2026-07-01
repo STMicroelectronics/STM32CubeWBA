@@ -50,16 +50,13 @@
 /* USER CODE END PC */
 
 /* Private variables ---------------------------------------------------------*/
-/* ThreadX objects declaration */
-
-static TX_THREAD        LinkLayerTaskHandle;
-static TX_SEMAPHORE     LinkLayerSemaphore;
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Global variables ----------------------------------------------------------*/
+
+TX_MUTEX                LinkLayerMutex;
 
 /* USER CODE BEGIN GV */
 
@@ -79,25 +76,6 @@ static void ll_sys_sleep_clock_source_selection(void);
 /* USER CODE END EV */
 
 /* Functions Definition ------------------------------------------------------*/
-/**
- * @brief  Link Layer Task for ThreadX
- * @param  ULONG lArgument
- * @retval None
- */
-static void LinkLayer_Task_Entry( ULONG lArgument )
-{
-  UNUSED(lArgument);
-  /* USER CODE BEGIN LinkLayer_Task_Entry_0 */
-
-  /* USER CODE END LinkLayer_Task_Entry_0 */
-
-  for(;;)
-  {
-    tx_semaphore_get( &LinkLayerSemaphore, TX_WAIT_FOREVER );
-    ll_sys_bg_process();
-    tx_thread_relinquish();
-  }
-}
 
 /**
   * @brief  Link Layer background process initialization
@@ -107,21 +85,10 @@ static void LinkLayer_Task_Entry( ULONG lArgument )
 void ll_sys_bg_process_init(void)
 {
   UINT TXstatus;
-  CHAR *pStack;
 
   /* Create Link Layer ThreadX objects */
 
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_LINK_LAYER, TX_NO_WAIT);
-
-  if( TXstatus == TX_SUCCESS )
-  {
-    TXstatus = tx_thread_create(&LinkLayerTaskHandle, "Link Layer  Task", LinkLayer_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_LINK_LAYER,
-                                 TASK_PRIO_LINK_LAYER, TASK_PREEMP_LINK_LAYER,
-                                 TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    TXstatus |= tx_semaphore_create(&LinkLayerSemaphore, "Link Layer Semaphore", 0);
-  }
+  TXstatus = tx_mutex_create(&LinkLayerMutex, "Link Layer Mutex", 0 );
 
   if( TXstatus != TX_SUCCESS )
   {
@@ -137,7 +104,7 @@ void ll_sys_bg_process_init(void)
   */
 void ll_sys_schedule_bg_process(void)
 {
-  tx_semaphore_put( &LinkLayerSemaphore );
+  tx_event_flags_set(&WpanEventFlag, 1U << CFG_RTOS_FLAG_LinkLayer, TX_OR);
 }
 
 /**
@@ -147,7 +114,7 @@ void ll_sys_schedule_bg_process(void)
   */
 void ll_sys_schedule_bg_process_isr(void)
 {
-  tx_semaphore_put( &LinkLayerSemaphore );
+  tx_event_flags_set(&WpanEventFlag, 1U << CFG_RTOS_FLAG_LinkLayer, TX_OR);
 }
 
 /**

@@ -6,7 +6,7 @@
 
 <body style="font-size: 10pt; font-family: Verdana;">
 
-<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.9.0 / 04-February-2026</h3>
+<h3 style="color: blue; text-decoration: underline;">STM32CubeWBA Firmware Package V1.10.0 / 03-June-2026</h3>
 
 <div style="margin-left: 18pt;">
 <p>
@@ -14,64 +14,41 @@
 </p>
 
 <p>
-<b>Release Candidate of STM32CubeWBA Firmware package supporting STM32WBA20xx, STM32WBA23xx, STM32WBA25xx, STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</b>
-</p>
-<p>
-- Introducing following new board support: NUCLEO-WBA25CE.
+<b>Official Release of STM32CubeWBA Firmware package supporting STM32WBA20xx, STM32WBA23xx, STM32WBA25xx, STM32WBA50xx, STM32WBA52xx, STM32WBA54xx, STM32WBA5Mxx, STM32WBA55xx, STM32WBA62xx, STM32WBA63xx, STM32WBA64xx and STM32WBA65xx devices</b>
 </p>
 <p>
 <b>Security</b>
 </p>
 <p>
-<b>- Secure boot:</b>
-</p>
-  - RTC/Tamper management improvements in OEMiRoT
+- Update  MbedTLS V3.6.6
 </p>
 <p>
-  - Improve python V3 installation dependency
+- Update MCUboot  V1.7.2.40
 </p>
 <p>
-  - Ymodem protocol update for Linux compatibility
+- Add support of XiP & OTFDEC for WBA25
 </p>
 <p>
 <b>Connectivity</b>
 </p>
 <p>
 <p>
-<b>- BLE:</b>
+<b>- LinkLayer</b>
 </p>
 <p>
-  - Qualified against Bluetooth® Core 6.2
+- Adopts the new unified Link Layer naming convention LinkLayer_&lt;Techno&gt;_&lt;HW_IP_version&gt;.a.
 </p>
 <p>
-  - The following features are now supported on the WBA25: Periodic Advertising with Responses (PAwR), LE Frame Space Update, Monitoring Advertisers, LL Extended Feature Set
+<b>- BLE</b>
 </p>
 <p>
-  - HCI event architecture has been reworked for Flash memory footprint improvement
+- Reduces the number of BLE Host stack libraries.
 </p>
 <p>
-<b>- BLE Audio:</b>
+<b>- Thread</b>
 </p>
 <p>
-  - No update (moved to BLE section)
-</p>
-<p>
-<b>- 802.15.4 General:</b>
-</p>
-<p>
-  - LSI2 support has been added.
-</p>
-<p>
-<b>- Zigbee:</b>
-</p>
-<p>
-  - Default libraries is now with **no traces**. Added new Libraries with traces.
-</p>
-<p>
-<b>- Thread:</b>
-</p>
-<p>
-  - No update
+- Upgrades OpenThread stack to SHA-1 : b81da07ace250b7d3800928848feaa1fb126fa43 (Feb 2026)
 </p>
 <p>
 <b>Drivers</b>
@@ -90,6 +67,9 @@
 </p>
 <p>
 - Update HAL/LL drivers to include latest corrections and to support of STM32WBA2xx devices
+</p>
+<p>
+- HAL CRYP : SA0076 fixed
 </p>
 <p>
 - BSP Drivers : Update STM32WBAxx_Nucleo to include latest corrections and to support of STM32WBA2xx devices
@@ -120,7 +100,7 @@
 - STM32WBA65I-DK1
 </p>
 <p>
-<b>- Add support of new NUCLEO-WBA25CE board including Applications demonstrating BLE, Thread, Zigbee, RoT & Crypto capabilities, as well as Examples and Templates.</b>
+- NUCLEO-WBA25CE1
 </p>
 </div>
 </body>

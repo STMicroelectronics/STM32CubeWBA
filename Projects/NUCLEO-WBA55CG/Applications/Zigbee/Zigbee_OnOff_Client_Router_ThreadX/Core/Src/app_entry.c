@@ -302,8 +302,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
@@ -381,6 +381,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
@@ -448,7 +453,6 @@ static void APPE_RNG_Init(void)
   CHAR *pStack;
 
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Create Random Number Generator ThreadX objects */
@@ -614,7 +618,7 @@ void ThreadXLowPowerUserEnter( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_LPM_EnterLowPowerMode();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
@@ -681,6 +685,7 @@ void ThreadXLowPowerUserExit( void )
   SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
   (void)ll_sys_dp_slp_exit();
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */

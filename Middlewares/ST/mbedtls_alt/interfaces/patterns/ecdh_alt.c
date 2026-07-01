@@ -57,8 +57,8 @@ static int ecdh_compute_shared_restartable(mbedtls_ecp_group *grp,
 {
 
   PKA_HandleTypeDef hpka = {0};                         /* HAL Pka Handle */
-  PKA_ECCMulInTypeDef ECDH_input = {0};                 /* ECDSA Curve struct */
-  PKA_ECCMulOutTypeDef ECDH_ouput = {0};                /* ECDSA point = shared secret */
+  PKA_ECCMulExInTypeDef ECDH_input = {0};               /* ECDH Curve struct */
+  PKA_ECCMulOutTypeDef ECDH_ouput = {0};                /* ECDH point = shared secret */
   int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;      /* MBED return value */
   uint8_t *d_binary = NULL;                             /* Pointer to private key */
   size_t olen = 0;                                      /* Length of the point, internal use */
@@ -88,6 +88,7 @@ static int ecdh_compute_shared_restartable(mbedtls_ecp_group *grp,
   ECDH_input.modulus         = grp->st_p;
   ECDH_input.scalarMulSize   = grp->st_order_size;
   ECDH_input.primeOrder      = grp->st_n;
+  ECDH_input.primeOrderSize  = grp->st_order_size;
 
   /* Set the public key, this is the remote data */
   Q_binary = mbedtls_calloc((2U * grp->st_modulus_size) + 1U, sizeof(uint8_t));
@@ -98,7 +99,7 @@ static int ecdh_compute_shared_restartable(mbedtls_ecp_group *grp,
   ECDH_input.pointY = Q_binary + grp->st_modulus_size + 1U;
 
   /* Start the ECC scalar multiplication */
-  MBEDTLS_MPI_CHK((HAL_PKA_ECCMul(&hpka, &ECDH_input, ST_ECDH_TIMEOUT) != HAL_OK)
+  MBEDTLS_MPI_CHK((HAL_PKA_ECCMulEx(&hpka, &ECDH_input, ST_ECDH_TIMEOUT) != HAL_OK)
                   ? MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED : 0);
 
   /* Allocate memory space for computed secret */

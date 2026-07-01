@@ -20,33 +20,30 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2pserverthreadx-application-description"><strong>BLE_p2pServerThreadX Application Description</strong></h2>
-<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br />
-For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
-<p>The Peer to Peer Server device is part of the Peer to Peer Profile.<br />
-It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
+<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br /> For more information please refer to the <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
+<p>The Peer to Peer Server device is part of the Peer to Peer Profile.<br /> It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
 <p>The BLE p2pServer application advertises and waits for a connection from either:</p>
 <ul>
-<li>The BLE p2pClient application running on STM32WBAxx devices.<br />
-</li>
+<li>The BLE p2pClient application running on STM32WBAxx devices.</li>
 <li>The remote interface.</li>
 </ul>
 <p>Once connected, the BLE p2pServer can receive messages from the Client and send notification to it.</p>
+<h3 id="notes"><strong>Notes</strong></h3>
+<p>SysTick is used as the timebase by the ThreadX OS.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55xx Nucleo board.<br />
-</li>
-<li>Connect the Nucleo Board to your PC with a USB cable type A to type C to ST-LINK connector (USB_STLINK).<br />
-</li>
-<li>Another STM32WBAxx Nucleo board may be necessary to run the BLE p2pClient or BLE p2pRouter application.</li>
+<li><p>This application runs on STM32WBA55xx Nucleo board.</p></li>
+<li>Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).</li>
+<li><p>Another STM32WBAxx Nucleo board may be necessary to run BLE p2pClient or BLE p2pRouter application.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work:</p>
 <ul>
-<li>Open your preferred toolchain.<br />
-</li>
-<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file.</li>
+<li>Open the project with your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
+<li>Run the example.</li>
 </ul>
 <p>Use one of the following remote interface to interact with your device: <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
 "> Bluetooth LE collector applications for STM32WBA.</a></p>
@@ -54,32 +51,29 @@ It is widely used for direct connection and communication between a GATT-server 
 <ul>
 <li>Open the remote interface:
 <ul>
-<li>Select the p2pS_xx in the device list, where xx are the last 2 digits of the BD ADDRESS.<br />
-</li>
-<li>Connect to it.<br />
-</li>
+<li>Select the p2pS_xx in the device list, where xx are the last 2 digits of the BD ADDRESS.</li>
+<li>Connect to it.</li>
 <li>Select the P2P Server service.</li>
 </ul></li>
 <li>On remote interface, click on the LED icon to switch On/Off LED1 (blue) of the STM32WBAxx Nucleo board.</li>
+<li>After 60s of initial advertising, it is stopped. Pressing B1 restarts it.</li>
 </ul>
+<p>The green LED is flashing at each radio event, allowing to estimate radio activity of the device.</p>
 <p>Each button (B1, B2, B3) on the STM32WBAxx Nucleo board is associated to the following functions:</p>
 <ul>
 <li>B1 :
 <ul>
-<li>Not connected : Launch fast advertising.<br />
-</li>
+<li>Not connected : Launch advertising.</li>
 <li>Connected : Send notification message to the client.</li>
 </ul></li>
 <li>B2 :
 <ul>
-<li>Not connected : Clear security database.<br />
-</li>
-<li>Connected : Launch fast advertising to allow multi-connection.</li>
+<li>Not connected : Clear security database.</li>
+<li>Connected : Launch advertising to allow multi-connection.</li>
 </ul></li>
 <li>B3 :
 <ul>
-<li>Not connected : Not used.<br />
-</li>
+<li>Not connected : Not used.</li>
 <li>Connected : Update connection interval.</li>
 </ul></li>
 </ul>

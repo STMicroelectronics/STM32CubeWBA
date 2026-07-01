@@ -1,4 +1,4 @@
-## __BLE_Thread_SED_FreeRTOS_Generic_FreeRTOS Application Description__
+## __BLE_Thread_SED_FreeRTOS_Generic Application Description__
 
 How to use the Concurrency mode BLE/Thread with COAP messages transmission over Thread for a Sleepy End Device.
 

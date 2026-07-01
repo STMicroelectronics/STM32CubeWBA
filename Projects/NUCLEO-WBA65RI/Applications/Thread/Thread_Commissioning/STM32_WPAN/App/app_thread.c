@@ -54,6 +54,7 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "commissioner.h"
 #include "app_bsp.h"
 
 /* USER CODE END Includes */
@@ -103,6 +104,7 @@ static void APP_THREAD_StartCommissioner(void);
 static void APP_THREAD_AddJoiner(void);
 static void APP_THREAD_TimingElapsed(void *args);
 
+
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
@@ -115,6 +117,43 @@ static UTIL_TIMER_Object_t timerThreadApp_Id;
 /* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
+
+void DeinitThreadStack(void)
+{
+  otInstanceFinalize(PtOpenThreadInstance);
+  otSysDeinit();
+}
+
+void InitThreadStack(void)
+{
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  size_t otInstanceBufferLength = 0;
+  uint8_t *otInstanceBuffer = NULL;
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  otSysInit(0, NULL);
+
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  // Call to query the buffer size
+  (void)otInstanceInit(NULL, &otInstanceBufferLength);
+
+  // Call to allocate the buffer
+  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
+  assert(otInstanceBuffer);
+
+  // Initialize OpenThread with the buffer
+  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
+#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  PtOpenThreadInstance = otInstanceInitSingle();
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  assert(PtOpenThreadInstance);
+
+#if (OT_CLI_USE == 1)
+  APP_THREAD_CliInit(PtOpenThreadInstance);
+#endif // OT_CLI_USE
+  otDispatch_tbl_init(PtOpenThreadInstance);
+}
 
 void ProcessAlarm(void)
 {
@@ -188,35 +227,9 @@ static void APP_THREAD_TaskletsInit(void)
  */
 void Thread_Init(void)
 {
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  size_t otInstanceBufferLength = 0;
-  uint8_t *otInstanceBuffer = NULL;
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
   APP_THREAD_PersistenceStartup();
 
-  otSysInit(0, NULL);
-
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  // Call to query the buffer size
-  (void)otInstanceInit(NULL, &otInstanceBufferLength);
-
-  // Call to allocate the buffer
-  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
-  assert(otInstanceBuffer);
-
-  // Initialize OpenThread with the buffer
-  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
-#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  PtOpenThreadInstance = otInstanceInitSingle();
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
-  assert(PtOpenThreadInstance);
-
-#if (OT_CLI_USE == 1)
-  APP_THREAD_CliInit(PtOpenThreadInstance);
-#endif // OT_CLI_USE
-  otDispatch_tbl_init(PtOpenThreadInstance);
+  InitThreadStack();
 
   /* Register tasks */
   APP_THREAD_AlarmsInit();
@@ -767,5 +780,7 @@ void APP_BSP_Button3Action(void)
   
   APP_THREAD_ConfigJoiner();
 }
+
+
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

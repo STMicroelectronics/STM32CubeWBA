@@ -242,30 +242,30 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_HSF_READ_EVT:
       /* USER CODE BEGIN Service1Char1_READ_EVT */
-      LOG_INFO_APP("HSF READ\r\n");
+      LOG_INFO_APP("HSF READ\n");
       /* USER CODE END Service1Char1_READ_EVT */
       break;
 
     case GHS_HSF_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char1_INDICATE_ENABLED_EVT */
-      LOG_INFO_APP("HSF Indication Enabled\r\n");
+      LOG_INFO_APP("HSF Indication Enabled\n");
       GHS_APP_Context.Hsf_Indication_Status = Hsf_INDICATION_ON;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
       /* USER CODE END Service1Char1_INDICATE_ENABLED_EVT */
       break;
 
     case GHS_HSF_INDICATE_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char1_INDICATE_DISABLED_EVT */
-      LOG_INFO_APP("HSF Indication Disabled\r\n");
+      LOG_INFO_APP("HSF Indication Disabled\n");
       GHS_APP_Context.Hsf_Indication_Status = Hsf_INDICATION_OFF;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
       /* USER CODE END Service1Char1_INDICATE_DISABLED_EVT */
       break;
@@ -284,24 +284,24 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_LHO_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char2_INDICATE_ENABLED_EVT */
-      LOG_INFO_APP("LHO Indication Enabled\r\n");
+      LOG_INFO_APP("LHO Indication Enabled\n");
       GHS_APP_Context.Lho_Indication_Status = Lho_INDICATION_ON;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
       /* USER CODE END Service1Char2_INDICATE_ENABLED_EVT */
       break;
 
     case GHS_LHO_INDICATE_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char2_INDICATE_DISABLED_EVT */
-      LOG_INFO_APP("LHO Indication Disabled\r\n");
+      LOG_INFO_APP("LHO Indication Disabled\n");
       GHS_APP_Context.Lho_Indication_Status = Lho_INDICATION_OFF;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
       /* USER CODE END Service1Char2_INDICATE_DISABLED_EVT */
       break;
@@ -314,12 +314,12 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_GHSCP_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char3_INDICATE_ENABLED_EVT */
-      LOG_INFO_APP("GHSCP Indication Enabled\r\n");
+      LOG_INFO_APP("GHSCP Indication Enabled\n");
       GHS_APP_Context.Ghscp_Indication_Status = Ghscp_INDICATION_ON;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
 
       /* USER CODE END Service1Char3_INDICATE_ENABLED_EVT */
@@ -327,12 +327,12 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_GHSCP_INDICATE_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char3_INDICATE_DISABLED_EVT */
-      LOG_INFO_APP("GHSCP Indication Disabled\r\n");
+      LOG_INFO_APP("GHSCP Indication Disabled\n");
       GHS_APP_Context.Ghscp_Indication_Status = Ghscp_INDICATION_OFF;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
 
       /* USER CODE END Service1Char3_INDICATE_DISABLED_EVT */
@@ -340,12 +340,12 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_OSC_INDICATE_ENABLED_EVT:
       /* USER CODE BEGIN Service1Char4_INDICATE_ENABLED_EVT */
-      LOG_INFO_APP("OSC Indication Enabled\r\n");
+      LOG_INFO_APP("OSC Indication Enabled\n");
       GHS_APP_Context.Osc_Indication_Status = Osc_INDICATION_ON;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
 
       /* USER CODE END Service1Char4_INDICATE_ENABLED_EVT */
@@ -353,12 +353,12 @@ void GHS_Notification(GHS_NotificationEvt_t *p_Notification)
 
     case GHS_OSC_INDICATE_DISABLED_EVT:
       /* USER CODE BEGIN Service1Char4_INDICATE_DISABLED_EVT */
-      LOG_INFO_APP("OSC Indication Disabled\r\n");
+      LOG_INFO_APP("OSC Indication Disabled\n");
       GHS_APP_Context.Osc_Indication_Status = Osc_INDICATION_OFF;
       if(aci_gatt_store_db() != BLE_STATUS_SUCCESS)
       {
         /* Save the descriptor value in GATT database */
-        LOG_INFO_APP("aci_gatt_store_db failed\r\n");
+        LOG_INFO_APP("aci_gatt_store_db failed\n");
       }
 
       /* USER CODE END Service1Char4_INDICATE_DISABLED_EVT */
@@ -813,7 +813,7 @@ static void ghsapp_task_lho(void)
 
 static void ghsapp_start_session( void )
 {    
-  LOG_INFO_APP("ghsapp_start_session\r\n");
+  LOG_INFO_APP("ghsapp_start_session\n");
   
   UTIL_TIMER_Stop(&(GHS_APP_Context.TimerLHO_Id));
     
@@ -823,7 +823,7 @@ static void ghsapp_start_session( void )
 
 static void ghsapp_stop_session( void )
 {
-  LOG_INFO_APP("ghsapp_stop_session\r\n");
+  LOG_INFO_APP("ghsapp_stop_session\n");
 
   UTIL_TIMER_Stop(&(GHS_APP_Context.TimerLHO_Id));
 }

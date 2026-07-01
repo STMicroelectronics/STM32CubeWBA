@@ -67,7 +67,6 @@ extern void (*low_isr_callback)(void);
 
 /* External variables --------------------------------------------------------*/
 extern volatile uint8_t radio_sw_low_isr_is_running_high_prio;
-extern PKA_HandleTypeDef hpka;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
@@ -157,7 +156,7 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
+  * @brief This function handles System service call via SVC instruction.
   */
 void SVC_Handler(void)
 {
@@ -341,41 +340,6 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
-}
-
-/**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
-  * @brief This function handles PKA global interrupt.
-  */
-void PKA_IRQHandler(void)
-{
-  /* USER CODE BEGIN PKA_IRQn 0 */
-  /* Check incoming interrupt */
-  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
-  {
-    /* Clear the interrupt flag */
-    LL_PKA_ClearFlag_PROCEND (PKA);
-    
-    /* Call the HW PKA Callback */
-    PKACTRL_EndOfProcessCb ();
-  }
-  /* USER CODE END PKA_IRQn 0 */
-  HAL_PKA_IRQHandler(&hpka);
-  /* USER CODE BEGIN PKA_IRQn 1 */
-
-  /* USER CODE END PKA_IRQn 1 */
 }
 
 /**

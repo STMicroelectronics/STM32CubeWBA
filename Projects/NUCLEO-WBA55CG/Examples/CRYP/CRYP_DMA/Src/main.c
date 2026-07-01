@@ -600,6 +600,7 @@ static void Display_DecryptedData(uint8_t mode, uint16_t keysize, uint32_t datal
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

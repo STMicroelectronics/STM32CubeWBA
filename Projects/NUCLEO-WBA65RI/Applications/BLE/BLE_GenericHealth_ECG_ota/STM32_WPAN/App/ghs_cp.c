@@ -72,7 +72,7 @@ static tBleStatus GHS_CP_ResponseCode(uint8_t responseCode)
   GHS_Data_t msg_conf;
   uint8_t length = 0;
 
-  LOG_INFO_APP("GHS_CP_ResponseCode >>>\r\n");
+  LOG_INFO_APP("GHS_CP_ResponseCode >>>\n");
 
   a_GHS_UpdateCharData[length++] = responseCode;
 
@@ -80,7 +80,7 @@ static tBleStatus GHS_CP_ResponseCode(uint8_t responseCode)
   msg_conf.p_Payload = a_GHS_UpdateCharData;
   retval = GHS_UpdateValue(GHS_GHSCP, &msg_conf);
 
-  LOG_INFO_APP("GHS_CP_ResponseCode <<<\r\n");
+  LOG_INFO_APP("GHS_CP_ResponseCode <<<\n");
 
   return retval;
 } /* end of GHS_CP_ResponseCode() */
@@ -105,7 +105,7 @@ void GHS_CP_Init(void)
   */
 void GHS_CP_RequestHandler(uint8_t * pRequestData, uint8_t requestDataLength)
 {
-  LOG_INFO_APP("GHS_CP_RequestHandler >>>\r\n");
+  LOG_INFO_APP("GHS_CP_RequestHandler >>>\n");
   LOG_INFO_APP("SRCP Request, request data length: %d\r\n", requestDataLength);
   
   /* Get the requested procedure OpCode */
@@ -118,17 +118,17 @@ void GHS_CP_RequestHandler(uint8_t * pRequestData, uint8_t requestDataLength)
     {
       GHS_CP_App_Event_t AppEvent;
       
-      LOG_INFO_APP("GHS Control Point Start Sending Live Observations\r\n"); 
+      LOG_INFO_APP("GHS Control Point Start Sending Live Observations\n"); 
                 
       AppEvent.EventCode = GHS_CP_START_SENDING_LIVE_OBSERVATIONS_EVENT;
       if (GHS_CP_APP_EventHandler(&AppEvent) == TRUE)
       {
-        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_SUCCESS\r\n"); 
+        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_SUCCESS\n"); 
         GHS_CP_ResponseCode(GHS_CP_SUCCESS);
       }
       else 
       {
-        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_PROCEDURE_NOT_COMPLETED\r\n"); 
+        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_PROCEDURE_NOT_COMPLETED\n"); 
         GHS_CP_ResponseCode(GHS_CP_SUCCESS);
       }
     }
@@ -138,17 +138,17 @@ void GHS_CP_RequestHandler(uint8_t * pRequestData, uint8_t requestDataLength)
     {
       GHS_CP_App_Event_t AppEvent;
       
-      LOG_INFO_APP("GHS Control Point Stop Sending Live Observations\r\n"); 
+      LOG_INFO_APP("GHS Control Point Stop Sending Live Observations\n"); 
                 
       AppEvent.EventCode = GHS_CP_STOP_SENDING_LIVE_OBSERVATIONS_EVENT;
       if (GHS_CP_APP_EventHandler(&AppEvent) == TRUE)
       {
-        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_SUCCESS\r\n"); 
+        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_SUCCESS\n"); 
         GHS_CP_ResponseCode(GHS_CP_SUCCESS);
       }
       else 
       {
-        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_PROCEDURE_NOT_COMPLETED\r\n"); 
+        LOG_INFO_APP("GHS_CP_RESPONSE_CODE_PROCEDURE_NOT_COMPLETED\n"); 
         GHS_CP_ResponseCode(GHS_CP_SUCCESS);
       }
     }
@@ -160,7 +160,7 @@ void GHS_CP_RequestHandler(uint8_t * pRequestData, uint8_t requestDataLength)
     }
     break;
   }
-  LOG_INFO_APP("GHS_CP_RequestHandler <<<\r\n");
+  LOG_INFO_APP("GHS_CP_RequestHandler <<<\n");
 } /* end GHS_CP_RequestHandler() */
 
 
@@ -174,7 +174,7 @@ uint8_t GHS_CP_CheckRequestValid(uint8_t * pRequestData, uint8_t requestDataLeng
 {
   uint8_t retval = 0x00;
   
-  LOG_INFO_APP("GHS_CP_CheckRequestValid >>>\r\n");
+  LOG_INFO_APP("GHS_CP_CheckRequestValid >>>\n");
   GHS_CP_Context.Procedure.OpCode = pRequestData[GHS_CP_OP_CODE_POSITION];
   LOG_INFO_APP("GH CP Procedure OpCode: 0x%02X\r\n", GHS_CP_Context.Procedure.OpCode);
   
@@ -187,13 +187,13 @@ uint8_t GHS_CP_CheckRequestValid(uint8_t * pRequestData, uint8_t requestDataLeng
   {
     case GHS_CP_START_SENDING_LIVE_OBSERVATIONS:
     {
-      LOG_INFO_APP("GHS Control Point START_SENDING_LIVE_OBSERVATIONS\r\n"); 
+      LOG_INFO_APP("GHS Control Point START_SENDING_LIVE_OBSERVATIONS\n"); 
     }
     break;
      
     case GHS_CP_STOP_SENDING_LIVE_OBSERVATIONS:
     {
-      LOG_INFO_APP("GHS Control Point STOP_SENDING_LIVE_OBSERVATIONS\r\n"); 
+      LOG_INFO_APP("GHS Control Point STOP_SENDING_LIVE_OBSERVATIONS\n"); 
     }
     break;
      
@@ -204,7 +204,7 @@ uint8_t GHS_CP_CheckRequestValid(uint8_t * pRequestData, uint8_t requestDataLeng
     break;
   }
   
-  LOG_INFO_APP("GHS_CP_CheckRequestValid <<<\r\n");
+  LOG_INFO_APP("GHS_CP_CheckRequestValid <<<\n");
   return retval;
 } /* end of GHS_CP_CheckRequestValid() */
 

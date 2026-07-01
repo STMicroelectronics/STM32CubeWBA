@@ -378,13 +378,13 @@ typedef struct
 typedef struct
 {
   BAP_BASE_Group_t              base_group;
-  BAP_BASE_Subgroup_t           base_subgroups[2];
-  BAP_BASE_BIS_t                base_bis[2];
-  uint8_t                       codec_specific_config_bis[2][MAX_BSNK_BIS_CODEC_CONFIG_SIZE];
-  uint8_t                       codec_specific_config_subgroup[2][MAX_BSNK_SUBGROUP_CODEC_CONFIG_SIZE];
+  BAP_BASE_Subgroup_t           base_subgroups[MAX_BASE_SUBGROUPS];
+  BAP_BASE_BIS_t                base_bis[MAX_BASE_BIS];
+  uint8_t                       codec_specific_config_bis[MAX_BASE_BIS][MAX_BSNK_BIS_CODEC_CONFIG_SIZE];
+  uint8_t                       codec_specific_config_subgroup[MAX_BASE_SUBGROUPS][MAX_BSNK_SUBGROUP_CODEC_CONFIG_SIZE];
   uint8_t                       RTN;
   uint16_t                      max_transport_latency;
-  uint8_t                       subgroup_metadata[2][MAX_BSNK_METADATA_LEN];
+  uint8_t                       subgroup_metadata[MAX_BASE_SUBGROUPS][MAX_BSNK_METADATA_LEN];
   Target_Phy_t                  phy;
   uint8_t                       encryption;
   uint32_t                      broadcast_code[4u];

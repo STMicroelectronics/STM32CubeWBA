@@ -36,6 +36,8 @@
  * @brief Initial value define for configuration tracking number
  */
 #define ADCCTRL_NO_CONFIG   (uint32_t)(0x00000000u)
+#define ADCCTRL_MAX_USER_RANK_NB  (uint32_t)(7u)
+#define ADCCTRL_MAX_TOTAL_RANK_NB (uint32_t)(8u)
 
 /**
  * @brief Init variable out of expected ADC conversion data range
@@ -61,17 +63,6 @@
  */
 #define TEMPSENSOR_TYP_AVGSLOPE        (( int32_t) 2500)
 
-/* Definitions of environment analog values */
-/**
- * @brief Value of analog reference voltage (Vref+), connected to analog voltage
- *
- * @details supply Vdda (unit: mV).
- *
- */
-#ifndef VDDA_APPLI
-#define VDDA_APPLI      VDD_VALUE
-#endif
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -86,6 +77,11 @@ static uint32_t ClientList;
 static uint32_t CurrentConfig = ADCCTRL_NO_CONFIG;
 
 /**
+ * @brief Tracker of the current configured rank count
+ */
+static uint32_t CurrentConfigRankCount = ADCCTRL_NO_CONFIG;
+
+/**
  * @brief Higher registered handle ID
  */
 static uint32_t MaxRegisteredId = ADCCTRL_NO_CONFIG;
@@ -94,50 +90,6 @@ static uint32_t MaxRegisteredId = ADCCTRL_NO_CONFIG;
  * @brief Handle of the ADC
  */
 static ADC_TypeDef * p_ADCHandle = ADCCTRL_HWADDR;
-
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
-/**
- * @brief ADC Handle configuration for LL VRefInt request
- */
- static ADCCTRL_Handle_t VRefIntRequest_Handle =
- {
-   .Uid = 0x00,
-   .State = ADCCTRL_HANDLE_NOT_REG,
-   .InitConf =
-   {
-     .ConvParams =
-     {
-       .TriggerFrequencyMode = LL_ADC_TRIGGER_FREQ_LOW,
-       .Resolution = LL_ADC_RESOLUTION_12B,
-       .DataAlign = LL_ADC_DATA_ALIGN_RIGHT,
-       .TriggerStart = LL_ADC_REG_TRIG_SOFTWARE,
-       .TriggerEdge = LL_ADC_REG_TRIG_EXT_RISING,
-       .ConversionMode = LL_ADC_REG_CONV_SINGLE,
-       .DmaTransfer = LL_ADC_REG_DMA_TRANSFER_NONE,
-       .Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN,
-       .SamplingTimeCommon1 = LL_ADC_SAMPLINGTIME_814CYCLES_5,
-       .SamplingTimeCommon2 = LL_ADC_SAMPLINGTIME_1CYCLE_5
-     },
-     .SeqParams =
-     {
-       .Setup = LL_ADC_REG_SEQ_CONFIGURABLE,
-       .Length = LL_ADC_REG_SEQ_SCAN_DISABLE,
-       .DiscMode = LL_ADC_REG_SEQ_DISCONT_DISABLE
-     },
-     .LowPowerParams =
-     {
-       .AutoPowerOff = DISABLE,
-       .AutonomousDPD = LL_ADC_LP_AUTONOMOUS_DPD_DISABLE
-     }
-   },
-   .ChannelConf =
-   {
-     .Channel = LL_ADC_CHANNEL_VREFINT,      /* Internal reference voltage channel */
-     .Rank = LL_ADC_REG_RANK_1,
-     .SamplingTime = LL_ADC_SAMPLINGTIME_COMMON_1
-   }
- };
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
 
 /* Global variables ----------------------------------------------------------*/
 /* Error Handler */
@@ -171,14 +123,43 @@ static inline void AdcDeactivate (void);
   * @param  p_Handle: Handle to work with
   * @retval State of the configuration
   */
-static inline ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle);
+static inline ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle,
+                                                 const uint32_t NumberOfRanks);
 
 /**
  * @brief Read the raw value
  * @param  p_Handle: Handle to work with
  * @return Raw value
  */
-static inline uint16_t AdcReadRaw (const ADCCTRL_Handle_t * const p_Handle);
+static inline uint16_t AdcReadRaw (const uint32_t Resolution);
+
+/**
+ * @brief Return rank order value from LL rank define
+ * @param  Rank: LL rank define
+ * @return Rank order in range [1..7], 0 if invalid
+ */
+static inline uint32_t AdcRankToOrder (const uint32_t Rank);
+
+/**
+ * @brief Return LL rank define from rank order value
+ * @param  RankOrder: Rank order in range [1..8]
+ * @return LL rank define, 0 if invalid
+ */
+static inline uint32_t AdcOrderToRank (const uint32_t RankOrder);
+
+/**
+ * @brief Return rank count from LL sequencer length define
+ * @param  SeqLength: LL sequencer length define
+ * @return Rank count in range [1..7], 0 if invalid
+ */
+static inline uint32_t AdcSeqLengthToCount (const uint32_t SeqLength);
+
+/**
+ * @brief Return LL sequencer length define from rank count
+ * @param  RankCount: Sequencer rank count
+ * @return LL sequencer length define, 0 if invalid
+ */
+static inline uint32_t AdcCountToSeqLength (const uint32_t RankCount);
 
 /**
   * @brief  Perform ADC group regular conversion start, poll for conversion
@@ -206,19 +187,13 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_Init (void)
   if (ADCCTRL_OK == error)
   {
     CurrentConfig = ADCCTRL_NO_CONFIG;
+    CurrentConfigRankCount = ADCCTRL_NO_CONFIG;
 
     p_ADCHandle = ADCCTRL_HWADDR;
 
     /* Reset ADC Client list */
     ClientList = 0x00u;
     
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
-    /* Setup the VRefInt handle */
-    MaxRegisteredId = MaxRegisteredId + 1u;
-    VRefIntRequest_Handle.Uid = MaxRegisteredId;
-    VRefIntRequest_Handle.State = ADCCTRL_HANDLE_REG;
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
-
     /* Deactivate the ADC */
     AdcDeactivate();
 
@@ -303,412 +278,150 @@ __WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestIpState (const ADCCTRL_Handle_t * con
   return error;
 }
 
-__WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestRawValue (const ADCCTRL_Handle_t * const p_Handle,
-                                                     uint16_t * const p_ReadValue)
+__WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestValues (const ADCCTRL_Handle_t * const p_Handle,
+                                                   int16_t * const p_ReadValues)
 {
   ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
-
-  /* Null pointer for handle or payload */
-  if ((NULL == p_Handle) || (NULL == p_ReadValue))
-  {
-    error = ADCCTRL_ERROR_NULL_POINTER;
-  }
-  /* Handle not init */
-  else if (ADCCTRL_HANDLE_NOT_REG == p_Handle->State)
-  {
-    error = ADCCTRL_HANDLE_NOT_REGISTERED;
-  }
-  /* Handle not in the range */
-  else if ((MaxRegisteredId < p_Handle->Uid) ||
-           (ADCCTRL_NO_CONFIG >= p_Handle->Uid))
-  {
-    error = ADCCTRL_HANDLE_NOT_VALID;
-  }
-  /* Check ADC state */
-  else if (0x00u == (ClientList & (1U << p_Handle->Uid)))
-  {
-    error = ADCCTRL_ERROR_STATE;
-  }
-  else
-  {
-    /* Try to take the ADC mutex */
-    error = ADCCTRL_MutexTake ();
-
-    if (ADCCTRL_OK == error)
-    {
-      /* Is the current config IS NOT the same as the one requested ? */
-      if (CurrentConfig != p_Handle->Uid)
-      {
-        /* Configure the ADC before use */
-        error = AdcConfigure (p_Handle);
-
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-      }
-
-      if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        *p_ReadValue = AdcReadRaw (p_Handle);
-      }
-      else
-      {
-        error = ADCCTRL_ERROR_CONFIG;
-      }
-
-      /* Release the mutex */
-      ADCCTRL_MutexRelease ();
-    }
-  }
-
-  return error;
-}
-
-__WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t * const p_Handle,
-                                                        int16_t * const p_ReadValue)
-{
-  ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
-
-  /* Variables for ADC conversion data */
-  __IO uint16_t uhADCxConvertedData = 0x00;
-
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
+  uint16_t rawValues[ADCCTRL_MAX_TOTAL_RANK_NB] = {0};
   uint16_t vddValue = 0x00;
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
+  uint32_t maxRank = AdcRankToOrder(LL_ADC_REG_RANK_7);
+  uint32_t numberOfUserRanks = 0u;
+  uint32_t rankIdx = 0u;
 
   SYSTEM_DEBUG_SIGNAL_SET(ADC_TEMPERATURE_ACQUISITION);
 
-  /* Null pointer for handle or payload */
-  if ((NULL == p_Handle) || (NULL == p_ReadValue))
+  if ((NULL == p_Handle) || (NULL == p_ReadValues))
   {
     error = ADCCTRL_ERROR_NULL_POINTER;
   }
-  /* Handle not init */
   else if (ADCCTRL_HANDLE_NOT_REG == p_Handle->State)
   {
     error = ADCCTRL_HANDLE_NOT_REGISTERED;
   }
-  /* Handle not in the range */
   else if ((MaxRegisteredId < p_Handle->Uid) ||
            (ADCCTRL_NO_CONFIG >= p_Handle->Uid))
   {
     error = ADCCTRL_HANDLE_NOT_VALID;
   }
-  /* Check ADC state */
   else if (0x00u == (ClientList & (1U << p_Handle->Uid)))
   {
     error = ADCCTRL_ERROR_STATE;
   }
+  else if (LL_ADC_REG_SEQ_DISCONT_1RANK != p_Handle->InitConf.SeqParams.DiscMode)
+  {
+    error = ADCCTRL_ERROR_CONFIG;
+  }
   else
   {
-    /* Try to take the ADC mutex */
-    error = ADCCTRL_MutexTake ();
+    numberOfUserRanks = AdcSeqLengthToCount(p_Handle->InitConf.SeqParams.Length);
 
-    if (ADCCTRL_OK == error)
+    if ((0u == numberOfUserRanks) || (numberOfUserRanks > maxRank))
     {
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)     
-      /* Configure the ADC before use */
-      error = AdcConfigure (&VRefIntRequest_Handle);
-
-      /* Enable ADC */
-      LL_ADC_Enable(p_ADCHandle);
-
-      if (ADCCTRL_OK == error)
+      error = ADCCTRL_ERROR_CONFIG;
+    }
+    else
+    {
+      for (rankIdx = 0u; 
+           ((rankIdx < numberOfUserRanks) && (ADCCTRL_UNKNOWN == error)); 
+           rankIdx++)
       {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
-
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        vddValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (uhADCxConvertedData,
-                                                     VRefIntRequest_Handle.InitConf.ConvParams.Resolution);
-      }
-      else
-      {
-        error = ADCCTRL_ERROR_CONFIG;
-      }
-      
-      if (ADCCTRL_OK == error)
-      {
-        /* Configure the ADC before use - Temperature handle */
-        error = AdcConfigure (p_Handle);
-        
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-        
-        if (ADCCTRL_NOK == error)
+        if (AdcRankToOrder(p_Handle->ChannelConf[rankIdx].Rank) != (rankIdx + 1u))
         {
           error = ADCCTRL_ERROR_CONFIG;
         }
-      }
-
-      if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
-
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        if(*TEMPSENSOR_CAL1_ADDR == *TEMPSENSOR_CAL2_ADDR)
-        {
-          /* Case of samples not calibrated in production */
-          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE_TYP_PARAMS (TEMPSENSOR_TYP_AVGSLOPE,
-                                                               TEMPSENSOR_TYP_CAL1_V,
-                                                               TEMPSENSOR_CAL1_TEMP,
-                                                               vddValue,
-                                                               uhADCxConvertedData,
-                                                               p_Handle->InitConf.ConvParams.Resolution);
-        }
         else
         {
-          /* Case of samples calibrated in production */
-          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE (vddValue,
-                                                    uhADCxConvertedData,
-                                                    p_Handle->InitConf.ConvParams.Resolution);
+          /* Do nothing */
         }
       }
-#else
-      /* Is the current config IS NOT the same as the one requested ? */
-      if (CurrentConfig != p_Handle->Uid)
-      {
-        /* Configure the ADC before use */
-        error = AdcConfigure (p_Handle);
-
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-      }
-      
-      if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
-
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        if(*TEMPSENSOR_CAL1_ADDR == *TEMPSENSOR_CAL2_ADDR)
-        {
-          /* Case of samples not calibrated in production */
-          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE_TYP_PARAMS (TEMPSENSOR_TYP_AVGSLOPE,
-                                                               TEMPSENSOR_TYP_CAL1_V,
-                                                               TEMPSENSOR_CAL1_TEMP,
-                                                               VDDA_APPLI,
-                                                               uhADCxConvertedData,
-                                                               p_Handle->InitConf.ConvParams.Resolution);
-        }
-        else
-        {
-          /* Case of samples calibrated in production */
-          *p_ReadValue = __LL_ADC_CALC_TEMPERATURE (VDDA_APPLI,
-                                                    uhADCxConvertedData,
-                                                    p_Handle->InitConf.ConvParams.Resolution);
-        }
-      }
-      else
-      {
-        error = ADCCTRL_ERROR_CONFIG;
-      }
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
-
-      /* Release the mutex */
-      ADCCTRL_MutexRelease ();
     }
-  }
 
-  return error;
-}
-
-__WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestCoreVoltage (const ADCCTRL_Handle_t * const p_Handle,
-                                                        uint16_t * const p_ReadValue)
-{
-  ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
-
-  /* Variables for ADC conversion data */
-  __IO uint16_t uhADCxConvertedData = 0x00;  
-
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)
-  uint16_t vddValue = 0x00;
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
-
-  SYSTEM_DEBUG_SIGNAL_SET(ADC_TEMPERATURE_ACQUISITION);
-
-  /* Null pointer for handle or payload */
-  if ((NULL == p_Handle) || (NULL == p_ReadValue))
-  {
-    error = ADCCTRL_ERROR_NULL_POINTER;
-  }
-  /* Handle not init */
-  else if (ADCCTRL_HANDLE_NOT_REG == p_Handle->State)
-  {
-    error = ADCCTRL_HANDLE_NOT_REGISTERED;
-  }
-  /* Handle not in the range */
-  else if ((MaxRegisteredId < p_Handle->Uid) ||
-           (ADCCTRL_NO_CONFIG >= p_Handle->Uid))
-  {
-    error = ADCCTRL_HANDLE_NOT_VALID;
-  }
-  /* Check ADC state */
-  else if (0x00u == (ClientList & (1U << p_Handle->Uid)))
-  {
-    error = ADCCTRL_ERROR_STATE;
-  }
-  else
-  {
-    /* Try to take the ADC mutex */
-    error = ADCCTRL_MutexTake ();
+    if (ADCCTRL_UNKNOWN == error)
+    {
+      error = ADCCTRL_MutexTake ();
+    }
 
     if (ADCCTRL_OK == error)
     {
-#if (ADCCTRL_USE_DYNAMIC_VREF == 1u)      
-      /* Configure the ADC before use */
-      error = AdcConfigure (&VRefIntRequest_Handle);
-
-      /* Enable ADC */
-      LL_ADC_Enable(p_ADCHandle);
-
-      if (ADCCTRL_OK == error)
+      if ((CurrentConfig != p_Handle->Uid) ||
+          (CurrentConfigRankCount != numberOfUserRanks))
       {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
+        error = AdcConfigure (p_Handle,
+                              numberOfUserRanks);
 
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        vddValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (uhADCxConvertedData,
-                                                     VRefIntRequest_Handle.InitConf.ConvParams.Resolution);
-      }
-      else
-      {
-        error = ADCCTRL_ERROR_CONFIG;
-      }
-
-      if (ADCCTRL_OK == error)
-      {
-        /* Configure the ADC before use - Core Voltage handle */
-        error = AdcConfigure (p_Handle);
-        
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-        
-        if (ADCCTRL_NOK == error)
+        if (ADCCTRL_OK == error)
         {
-          error = ADCCTRL_ERROR_CONFIG;
+          LL_ADC_Enable(p_ADCHandle);
         }
       }
-      
-      if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
-
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        *p_ReadValue = __LL_ADC_CALC_DATA_TO_VOLTAGE (vddValue,
-                                                      uhADCxConvertedData,
-                                                      p_Handle->InitConf.ConvParams.Resolution);
-      }
-#else
-      /* Is the current config IS NOT the same as the one requested ? */
-      if (CurrentConfig != p_Handle->Uid)
-      {
-        /* Configure the ADC before use */
-        error = AdcConfigure (p_Handle);
-
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-      }
 
       if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
+      { 
+        /* Read the raw ADC values for all ranks */
+        for (rankIdx = 0u; 
+             rankIdx < (CurrentConfigRankCount + 1u); 
+             rankIdx++)
+        {
+          rawValues[rankIdx] = AdcReadRaw (p_Handle->InitConf.ConvParams.Resolution);
+        }
 
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        *p_ReadValue = __LL_ADC_CALC_DATA_TO_VOLTAGE (VDDA_APPLI,
-                                                      uhADCxConvertedData,
-                                                      p_Handle->InitConf.ConvParams.Resolution);
-      }
-      else
-      {
-        error = ADCCTRL_ERROR_CONFIG;
-      }
-#endif /* (ADCCTRL_USE_DYNAMIC_VREF == 1u) */
-
-      /* Release the mutex */
-      ADCCTRL_MutexRelease ();
-    }
-  }
-
-  return error;
-}
-
-__WEAK ADCCTRL_Cmd_Status_t ADCCTRL_RequestRefVoltage (const ADCCTRL_Handle_t * const p_Handle,
-                                                       uint16_t * const p_ReadValue)
-{
-  ADCCTRL_Cmd_Status_t error = ADCCTRL_UNKNOWN;
-
-  /* Variables for ADC conversion data */
-  __IO uint16_t uhADCxConvertedData = 0x00;
-
-  SYSTEM_DEBUG_SIGNAL_SET(ADC_TEMPERATURE_ACQUISITION);
-
-  /* Null pointer for handle or payload */
-  if ((NULL == p_Handle) || (NULL == p_ReadValue))
-  {
-    error = ADCCTRL_ERROR_NULL_POINTER;
-  }
-  /* Handle not init */
-  else if (ADCCTRL_HANDLE_NOT_REG == p_Handle->State)
-  {
-    error = ADCCTRL_HANDLE_NOT_REGISTERED;
-  }
-  /* Handle not in the range */
-  else if ((MaxRegisteredId < p_Handle->Uid) ||
-           (ADCCTRL_NO_CONFIG >= p_Handle->Uid))
-  {
-    error = ADCCTRL_HANDLE_NOT_VALID;
-  }
-  /* Check ADC state */
-  else if (0x00u == (ClientList & (1U << p_Handle->Uid)))
-  {
-    error = ADCCTRL_ERROR_STATE;
-  }
-  else
-  {
-    /* Try to take the ADC mutex */
-    error = ADCCTRL_MutexTake ();
-
-    if (ADCCTRL_OK == error)
-    {
-      /* Is the current config IS NOT the same as the one requested ? */
-      if (CurrentConfig != p_Handle->Uid)
-      {
-        /* Configure the ADC before use */
-        error = AdcConfigure (p_Handle);
-
-        /* Enable ADC */
-        LL_ADC_Enable(p_ADCHandle);
-      }
-
-      if (ADCCTRL_OK == error)
-      {
-        /* Return the read value */
-        uhADCxConvertedData = AdcReadRaw (p_Handle);
-
-        /* Computation of ADC conversions raw data to physical values             */
-        /* using LL ADC driver helper macro.                                      */
-        *p_ReadValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (uhADCxConvertedData,
-                                                         p_Handle->InitConf.ConvParams.Resolution);
+        vddValue = __LL_ADC_CALC_VREFANALOG_VOLTAGE (rawValues[CurrentConfigRankCount],           
+                                                     p_Handle->InitConf.ConvParams.Resolution);
+        
+        for (rankIdx = 0u; 
+             rankIdx < numberOfUserRanks; 
+             rankIdx++)
+        {
+          /* Compute VREFInt value */
+          if (LL_ADC_CHANNEL_VREFINT == p_Handle->ChannelConf[rankIdx].Channel)
+          {
+            p_ReadValues[rankIdx] = __LL_ADC_CALC_DATA_TO_VOLTAGE(vddValue, 
+                                                                  rawValues[CurrentConfigRankCount], 
+                                                                  p_Handle->InitConf.ConvParams.Resolution);
+          }
+          /* Compute VCore value */
+          else if (LL_ADC_CHANNEL_VCORE == p_Handle->ChannelConf[rankIdx].Channel)
+          {
+            p_ReadValues[rankIdx] = __LL_ADC_CALC_DATA_TO_VOLTAGE(vddValue, 
+                                                                  rawValues[rankIdx], 
+                                                                  p_Handle->InitConf.ConvParams.Resolution);
+          }
+          /* Compute Temperature value */
+          else if (LL_ADC_CHANNEL_TEMPSENSOR == p_Handle->ChannelConf[rankIdx].Channel)
+          {
+            if(*TEMPSENSOR_CAL1_ADDR == *TEMPSENSOR_CAL2_ADDR)
+            {
+              p_ReadValues[rankIdx] = __LL_ADC_CALC_TEMPERATURE_TYP_PARAMS (TEMPSENSOR_TYP_AVGSLOPE,
+                                                                            TEMPSENSOR_TYP_CAL1_V,
+                                                                            TEMPSENSOR_CAL1_TEMP,
+                                                                            vddValue,
+                                                                            rawValues[rankIdx],
+                                                                            p_Handle->InitConf.ConvParams.Resolution);
+            }
+            else
+            {
+              p_ReadValues[rankIdx] = __LL_ADC_CALC_TEMPERATURE (vddValue,
+                                                                 rawValues[rankIdx],
+                                                                 p_Handle->InitConf.ConvParams.Resolution);
+            }
+          }
+          /* Return raw channel values */
+          else
+          {
+            p_ReadValues[rankIdx] = rawValues[rankIdx];
+          }
+        }
       }
       else
       {
         error = ADCCTRL_ERROR_CONFIG;
       }
 
-      /* Release the mutex */
       ADCCTRL_MutexRelease ();
     }
   }
+
+  SYSTEM_DEBUG_SIGNAL_RESET(ADC_TEMPERATURE_ACQUISITION);
 
   return error;
 }
@@ -831,7 +544,8 @@ void AdcDeactivate (void)
   SYSTEM_DEBUG_SIGNAL_RESET(ADC_DEACTIVATION);
 }
 
-ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
+ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle,
+                                   const uint32_t NumberOfRanks)
 {
   ADCCTRL_Cmd_Status_t error = ADCCTRL_OK;
   
@@ -839,6 +553,10 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
 
   LL_ADC_InitTypeDef ADC_InitStruct = {0};
   LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+  uint32_t commonPath = LL_ADC_PATH_INTERNAL_NONE;
+  uint32_t totalRankNumber = NumberOfRanks + 1u;
+  uint32_t totalSeqLength = 0u;
+  uint32_t rankIdx = 0u;
 
   /* DeInit the ADC module */
   if (SUCCESS != LL_ADC_DeInit (p_ADCHandle))
@@ -875,33 +593,46 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
   /* All OK ? */
   if (ADCCTRL_OK == error)
   {
+    totalSeqLength = AdcCountToSeqLength(totalRankNumber);
+
+    if (0u == totalSeqLength)
+    {
+      error = ADCCTRL_NOK;
+    }
+  }
+
+  if (ADCCTRL_OK == error)
+  {
     /* Update init and configuration parameters with requested values */
     ADC_InitStruct.Resolution = p_Handle->InitConf.ConvParams.Resolution;
     ADC_InitStruct.DataAlignment = p_Handle->InitConf.ConvParams.DataAlign;
     
     ADC_REG_InitStruct.TriggerSource = p_Handle->InitConf.ConvParams.TriggerStart;
-    ADC_REG_InitStruct.SequencerLength = p_Handle->InitConf.SeqParams.Length;
+    ADC_REG_InitStruct.SequencerLength = totalSeqLength;
     ADC_REG_InitStruct.SequencerDiscont = p_Handle->InitConf.SeqParams.DiscMode;
     ADC_REG_InitStruct.ContinuousMode = p_Handle->InitConf.ConvParams.ConversionMode;
     ADC_REG_InitStruct.DMATransfer = p_Handle->InitConf.ConvParams.DmaTransfer;
     ADC_REG_InitStruct.Overrun = p_Handle->InitConf.ConvParams.Overrun;
     
-    /* Configure Regular Channel - Only for internal channels */
-    if (LL_ADC_CHANNEL_VREFINT == p_Handle->ChannelConf.Channel)
+    for (rankIdx = 0u; 
+         rankIdx < NumberOfRanks; 
+         rankIdx++)
     {
-      LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
-                                     LL_ADC_PATH_INTERNAL_VREFINT);
+      if (LL_ADC_CHANNEL_TEMPSENSOR == p_Handle->ChannelConf[rankIdx].Channel)
+      {
+        commonPath |= LL_ADC_PATH_INTERNAL_TEMPSENSOR;
+      }
+      else
+      {
+        /* Do nothing */
+      }
     }
-    else if (LL_ADC_CHANNEL_TEMPSENSOR == p_Handle->ChannelConf.Channel)
-    {
-      LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
-                                     LL_ADC_PATH_INTERNAL_TEMPSENSOR);
-    }
-    else 
-    {
-      LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
-                                     LL_ADC_PATH_INTERNAL_NONE);
-    }
+
+    /* VREFINT is always enabled as it is used as reference for better computation */
+    commonPath |= LL_ADC_PATH_INTERNAL_VREFINT;
+
+    LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(p_ADCHandle),
+                                   commonPath);
     
     /* Set trigger frequency */
     LL_ADC_SetTriggerFrequencyMode(p_ADCHandle, 
@@ -941,16 +672,37 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
                                              LL_ADC_SAMPLINGTIME_COMMON_2, 
                                              p_Handle->InitConf.ConvParams.SamplingTimeCommon2);
         
-        /* Configure the channel */
-        LL_ADC_REG_SetSequencerRanks(p_ADCHandle, 
-                                     p_Handle->ChannelConf.Rank, 
-                                     p_Handle->ChannelConf.Channel);
-        LL_ADC_SetChannelSamplingTime(p_ADCHandle, 
-                                      p_Handle->ChannelConf.Channel, 
-                                      p_Handle->ChannelConf.SamplingTime);
+        for (rankIdx = 0u; rankIdx < NumberOfRanks; rankIdx++)
+        {
+          if (LL_ADC_CHANNEL_VREFINT != p_Handle->ChannelConf[rankIdx].Channel)
+          {
+            LL_ADC_REG_SetSequencerRanks(p_ADCHandle,
+                                         p_Handle->ChannelConf[rankIdx].Rank,
+                                         p_Handle->ChannelConf[rankIdx].Channel);
+            LL_ADC_SetChannelSamplingTime(p_ADCHandle,
+                                          p_Handle->ChannelConf[rankIdx].Channel,
+                                          p_Handle->ChannelConf[rankIdx].SamplingTime);
+          }
+          else 
+          {
+            /* Do nothing */
+          }
+        }
+        
+        /* Configure the VREF channel */
+        LL_ADC_REG_SetSequencerRanks(p_ADCHandle,
+                                     AdcOrderToRank(NumberOfRanks + 1u),
+                                     LL_ADC_CHANNEL_VREFINT);
+        LL_ADC_SetChannelSamplingTime(p_ADCHandle,
+                                      LL_ADC_CHANNEL_VREFINT,
+                                      LL_ADC_SAMPLINGTIME_COMMON_1);
         
         /* Update the current configuration */
-        CurrentConfig = p_Handle->Uid; 
+        if (ADCCTRL_OK == error)
+        {
+          CurrentConfig = p_Handle->Uid;
+          CurrentConfigRankCount = NumberOfRanks;
+        }
       }
     }
   }
@@ -958,7 +710,7 @@ ADCCTRL_Cmd_Status_t AdcConfigure (const ADCCTRL_Handle_t * const p_Handle)
   return error;
 }
 
-uint16_t AdcReadRaw (const ADCCTRL_Handle_t * const p_Handle)
+uint16_t AdcReadRaw (const uint32_t Resolution)
 {
   /* Variables for ADC conversion data */
   __IO uint16_t uhADCxConvertedData = 0x00;
@@ -968,7 +720,7 @@ uint16_t AdcReadRaw (const ADCCTRL_Handle_t * const p_Handle)
   ConversionStartPoll_ADC_GrpRegular ();
 
   /* Retrieve ADC conversion data */
-  switch (p_Handle->InitConf.ConvParams.Resolution)
+  switch (Resolution)
   {
     case LL_ADC_RESOLUTION_12B:
     {
@@ -1010,6 +762,180 @@ uint16_t AdcReadRaw (const ADCCTRL_Handle_t * const p_Handle)
   }
 
   return uhADCxConvertedData;
+}
+
+uint32_t AdcRankToOrder (const uint32_t Rank)
+{
+  uint32_t rankOrder = 0u;
+
+  switch (Rank)
+  {
+    case LL_ADC_REG_RANK_1:
+      rankOrder = 1u;
+      break;
+    case LL_ADC_REG_RANK_2:
+      rankOrder = 2u;
+      break;
+    case LL_ADC_REG_RANK_3:
+      rankOrder = 3u;
+      break;
+    case LL_ADC_REG_RANK_4:
+      rankOrder = 4u;
+      break;
+    case LL_ADC_REG_RANK_5:
+      rankOrder = 5u;
+      break;
+    case LL_ADC_REG_RANK_6:
+      rankOrder = 6u;
+      break;
+    case LL_ADC_REG_RANK_7:
+      rankOrder = 7u;
+      break;
+    default:
+      rankOrder = 0u;
+      break;
+  }
+
+  return rankOrder;
+}
+
+uint32_t AdcOrderToRank (const uint32_t RankOrder)
+{
+  uint32_t rank = 0u;
+
+  switch (RankOrder)
+  {
+    case 1u:
+      rank = LL_ADC_REG_RANK_1;
+      break;
+    case 2u:
+      rank = LL_ADC_REG_RANK_2;
+      break;
+    case 3u:
+      rank = LL_ADC_REG_RANK_3;
+      break;
+    case 4u:
+      rank = LL_ADC_REG_RANK_4;
+      break;
+    case 5u:
+      rank = LL_ADC_REG_RANK_5;
+      break;
+    case 6u:
+      rank = LL_ADC_REG_RANK_6;
+      break;
+    case 7u:
+      rank = LL_ADC_REG_RANK_7;
+      break;
+#ifdef LL_ADC_REG_RANK_8
+    case 8u:
+      rank = LL_ADC_REG_RANK_8;
+      break;
+#endif
+    default:
+      rank = 0u;
+      break;
+  }
+
+  return rank;
+}
+
+uint32_t AdcSeqLengthToCount (const uint32_t SeqLength)
+{
+  uint32_t rankCount = 0u;
+
+  switch (SeqLength)
+  {
+    case LL_ADC_REG_SEQ_SCAN_DISABLE:
+      rankCount = 1u;
+      break;
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS:
+      rankCount = 2u;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS:
+      rankCount = 3u;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS:
+      rankCount = 4u;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS:
+      rankCount = 5u;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS:
+      rankCount = 6u;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS
+    case LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS:
+      rankCount = 7u;
+      break;
+#endif
+    default:
+      rankCount = 0u;
+      break;
+  }
+
+  return rankCount;
+}
+
+uint32_t AdcCountToSeqLength (const uint32_t RankCount)
+{
+  uint32_t seqLength = 0u;
+
+  switch (RankCount)
+  {
+    case 1u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_DISABLE;
+      break;
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS
+    case 2u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS
+    case 3u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS
+    case 4u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS
+    case 5u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS
+    case 6u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS
+    case 7u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS;
+      break;
+#endif
+#ifdef LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS
+    case 8u:
+      seqLength = LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS;
+      break;
+#endif
+    default:
+      seqLength = 0u;
+      break;
+  }
+
+  return seqLength;
 }
 
 void ConversionStartPoll_ADC_GrpRegular (void)

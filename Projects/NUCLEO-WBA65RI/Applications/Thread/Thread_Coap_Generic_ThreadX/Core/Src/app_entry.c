@@ -39,8 +39,6 @@
 #include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
-#include "pka_ctrl.h"
-#include "crc_ctrl.h"
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
@@ -64,6 +62,7 @@
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
+#define RTOS_FLAG_ALL_MASK ((1U << CFG_RTOS_FLAG_LAST) - 1)
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -103,14 +102,8 @@ static uint32_t lowPowerTimeDiffRemaining = 0;
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
 
-static TX_SEMAPHORE PkaSemaphore;
-static TX_SEMAPHORE PkaEndOfOperationSemaphore;
-
 /* ThreadX objects declaration */
-static TX_THREAD      RngTaskHandle;
-static TX_SEMAPHORE   RngSemaphore;
-
-static TX_MUTEX       crcCtrlMutex;
+static TX_THREAD      WpanTaskHandle;
 #if (CFG_LPM_LEVEL != 0)
 static TX_THREAD      IdleTaskHandle;
 #endif
@@ -126,6 +119,8 @@ static TX_THREAD      IdleTaskHandle;
 TX_BYTE_POOL  * pBytePool;
 CHAR          * pStack;
 
+TX_EVENT_FLAGS_GROUP WpanEventFlag;
+
 /* USER CODE BEGIN GV */
 
 /* USER CODE END GV */
@@ -136,8 +131,7 @@ static void SystemPower_Config( void );
 static void Config_HSE(void);
 static void APPE_RNG_Init( void );
 
-static void RNG_Task_Entry(ULONG lArgument);
-
+static void Wpan_Task_Entry(ULONG lArgument);
 #if (CFG_LPM_LEVEL != 0)
 static void IDLE_Task_Entry(ULONG lArgument);
 #endif
@@ -190,26 +184,6 @@ uint32_t MX_APPE_Init(void *p_param)
   /* Initialize the Random Number Generator module */
   APPE_RNG_Init();
 
-  /* Create PKA semaphore */
-  TXstatus = tx_semaphore_create (&PkaSemaphore,
-                            "PKA Semaphore",
-                            1);
-
-  if( TXstatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "PKA Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
-    Error_Handler();
-  }
-
-  /* Create PKA end of operation flag semaphore */
-  TXstatus = tx_semaphore_create (&PkaEndOfOperationSemaphore,
-                                  "PKA End of Operation Semaphore",
-                                  1);
-  if( TXstatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "PKA End of Operation Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
-    Error_Handler();
-  }
   /* USER CODE BEGIN APPE_Init_1 */
   /* Initialize Peripherals */
 #if (CFG_LED_SUPPORTED == 1)
@@ -221,13 +195,24 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* USER CODE END APPE_Init_1 */
 
-  TXstatus = tx_mutex_create(&crcCtrlMutex, "CRC CTRL Mutex", 0 );
+  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_WPAN, TX_NO_WAIT);
+
+  if( TXstatus == TX_SUCCESS )
+  {
+    TXstatus = tx_thread_create(&WpanTaskHandle, "Wpan Task", Wpan_Task_Entry, 0,
+                                 pStack, TASK_STACK_SIZE_WPAN,
+                                 TASK_PRIO_WPAN, TASK_PREEMP_WPAN,
+                                 TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    TXstatus |= tx_event_flags_create(&WpanEventFlag, "Wpan EventFlag");
+  }
 
   if( TXstatus != TX_SUCCESS )
   {
-    LOG_ERROR_APP( "CRC CTRL ThreadX objects creation FAILED, status: %d", TXstatus);
+    LOG_ERROR_APP( "Wpan ThreadX objects creation FAILED, status: %d", TXstatus);
     Error_Handler();
   }
+
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   TXstatus = tx_mutex_create(&adcCtrlMutex, "ADC CTRL Mutex", 0 );
 
@@ -299,8 +284,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
@@ -378,6 +363,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
@@ -416,18 +406,64 @@ static void SystemPower_Config(void)
   /* USER CODE END SystemPower_Config */
 }
 
-static void RNG_Task_Entry(ULONG lArgument)
+static void Wpan_Task_Entry(ULONG lArgument)
 {
   UNUSED(lArgument);
-  /* USER CODE BEGIN RNG_Task_Entry_0 */
+  /* USER CODE BEGIN Wpan_Task_Entry_0 */
 
-  /* USER CODE END RNG_Task_Entry_0 */
+  /* USER CODE END Wpan_Task_Entry_0 */
+
+  ULONG actual_flags;
 
   for(;;)
   {
-    tx_semaphore_get( &RngSemaphore, TX_WAIT_FOREVER );
-    HW_RNG_Process();
-    tx_thread_relinquish();
+    tx_event_flags_get( &WpanEventFlag, UINT32_MAX,
+                        TX_OR_CLEAR, &actual_flags, TX_WAIT_FOREVER);
+
+    if( actual_flags & (1U << CFG_RTOS_FLAG_RNG) )
+    {
+      HW_RNG_Process();
+    }
+
+    /* Link Layer related */
+    if( actual_flags & (1U << CFG_RTOS_FLAG_LinkLayer) )
+    {
+      tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+      ll_sys_bg_process();
+      tx_mutex_put(&LinkLayerMutex);
+    }
+
+    /* OT related */
+    if( actual_flags & (1U << CFG_RTOS_FLAG_OT_Tasklet) )
+    {
+      tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+      APP_THREAD_ProcessOpenThreadTasklets(NULL);
+      tx_mutex_put(&LinkLayerMutex);
+    }
+
+    if( actual_flags & (1U << CFG_RTOS_FLAG_OT_Alarm_ms) )
+    {
+      tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+      APP_THREAD_ProcessAlarm(NULL);
+      tx_mutex_put(&LinkLayerMutex);
+    }
+
+    if( actual_flags & (1U << CFG_RTOS_FLAG_OT_Alarm_us) )
+    {
+      tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+      APP_THREAD_ProcessUsAlarm(NULL);
+      tx_mutex_put(&LinkLayerMutex);
+    }
+
+#if (OT_CLI_USE == 1)
+    if( actual_flags & (1U << CFG_RTOS_FLAG_OT_CLIuart) )
+    {
+      tx_mutex_get(&LinkLayerMutex, TX_WAIT_FOREVER);
+      APP_THREAD_ProcessUart(NULL);
+      tx_mutex_put(&LinkLayerMutex);
+    }
+#endif
+
   }
 }
 
@@ -436,32 +472,10 @@ static void RNG_Task_Entry(ULONG lArgument)
  */
 static void APPE_RNG_Init(void)
 {
-  UINT TXstatus;
-  CHAR *pStack;
 
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
 
-  /* Create Random Number Generator ThreadX objects */
-
-  TXstatus = tx_byte_allocate(pBytePool, (void **)&pStack, TASK_STACK_SIZE_RNG, TX_NO_WAIT);
-
-  if( TXstatus == TX_SUCCESS )
-  {
-    TXstatus = tx_thread_create(&RngTaskHandle, "RNG Task", RNG_Task_Entry, 0,
-                                 pStack, TASK_STACK_SIZE_RNG,
-                                 TASK_PRIO_RNG, TASK_PREEMP_RNG,
-                                 TX_NO_TIME_SLICE, TX_AUTO_START);
-
-    TXstatus |= tx_semaphore_create(&RngSemaphore, "RNG Semaphore", 0);
-  }
-
-  if( TXstatus != TX_SUCCESS )
-  {
-    LOG_ERROR_APP( "RNG ThreadX objects creation FAILED, status: %d", TXstatus);
-    Error_Handler();
-  }
 }
 
 #if (CFG_LPM_LEVEL != 0)
@@ -507,10 +521,7 @@ static uint32_t getCurrentTime(void)
  */
 void HWCB_RNG_Process( void )
 {
-  if (RngSemaphore.tx_semaphore_count == 0)
-  {
-    tx_semaphore_put(&RngSemaphore);
-  }
+  tx_event_flags_set(&WpanEventFlag, 1U << CFG_RTOS_FLAG_RNG, TX_OR);
 }
 
 #if ((CFG_LOG_SUPPORTED == 0) && (CFG_LPM_LEVEL != 0))
@@ -606,7 +617,7 @@ void ThreadXLowPowerUserEnter( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_LPM_EnterLowPowerMode();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
@@ -673,6 +684,7 @@ void ThreadXLowPowerUserExit( void )
   SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
   LL_AHB5_GRP1_EnableClock( LL_AHB5_GRP1_PERIPH_RADIO );
   (void)ll_sys_dp_slp_exit();
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
 
   /* USER CODE BEGIN ThreadXLowPowerUserExit_2 */
@@ -688,142 +700,6 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
 {
   Error_Handler();
   __builtin_unreachable();
-}
-
-CRCCTRL_Cmd_Status_t CRCCTRL_MutexTake(void)
-{
-  UINT TXstatus;
-  CRCCTRL_Cmd_Status_t crc_status;
-  /* USER CODE BEGIN CRCCTRL_MutexTake_0 */
-
-  /* USER CODE END CRCCTRL_MutexTake_0 */
-  if(TX_THREAD_GET_SYSTEM_STATE() == TX_INITIALIZE_IS_FINISHED)
-  {
-    TXstatus = tx_mutex_get(&crcCtrlMutex, TX_WAIT_FOREVER);
-  }
-  else
-  {
-    TXstatus = TX_SUCCESS;
-  }
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    crc_status = CRCCTRL_NOK;
-  }
-  else
-  {
-    crc_status = CRCCTRL_OK;
-  }
-  /* USER CODE BEGIN CRCCTRL_MutexTake_1 */
-
-  /* USER CODE END CRCCTRL_MutexTake_1 */
-  return crc_status;
-}
-
-CRCCTRL_Cmd_Status_t CRCCTRL_MutexRelease(void)
-{
-  UINT TXstatus;
-  CRCCTRL_Cmd_Status_t crc_status;
-  /* USER CODE BEGIN CRCCTRL_MutexRelease_0 */
-
-  /* USER CODE END CRCCTRL_MutexRelease_0 */
-  if(TX_THREAD_GET_SYSTEM_STATE() == TX_INITIALIZE_IS_FINISHED)
-  {
-    TXstatus = tx_mutex_put(&crcCtrlMutex);
-  }
-  else
-  {
-    TXstatus = TX_SUCCESS;
-  }
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    crc_status = CRCCTRL_NOK;
-  }
-  else
-  {
-    crc_status = CRCCTRL_OK;
-  }
-  /* USER CODE BEGIN CRCCTRL_MutexRelease_1 */
-
-  /* USER CODE END CRCCTRL_MutexRelease_1 */
-  return crc_status;
-}
-
-int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-  UINT TXstatus;
-
-  /* Take the semaphore */
-  TXstatus = tx_semaphore_get(&PkaSemaphore,
-                          TX_WAIT_FOREVER);
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-  UINT TXstatus;
-
-  /* Release the semaphore */
-  TXstatus = tx_semaphore_put(&PkaSemaphore);
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-  UINT TXstatus;
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Avoid going in low power during computation */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-  /* Take the semaphore */
-  TXstatus = tx_semaphore_get(&PkaEndOfOperationSemaphore,
-                              TX_WAIT_FOREVER);
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-  UINT TXstatus;
-
-  /* Release the semaphore */
-  TXstatus = tx_semaphore_put(&PkaEndOfOperationSemaphore);
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore low power */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-  if(TXstatus != TX_SUCCESS)
-  {
-    error = -1; /* Error */
-  }
-
-  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

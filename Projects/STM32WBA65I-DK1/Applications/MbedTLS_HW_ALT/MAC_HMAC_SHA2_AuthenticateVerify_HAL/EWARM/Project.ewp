@@ -1214,6 +1214,9 @@
       <file>
         <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mbedtls\library\md.c</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\Third_Party\mbedtls\library\psa_crypto_random.c</name>
+      </file>
     </group>
   </group>
   <group>

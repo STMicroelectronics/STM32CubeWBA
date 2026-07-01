@@ -39,7 +39,6 @@ set overwrite=1
 
 set s_code_image=%oemurot_appli_secure%
 set ns_code_image=%oemurot_appli_non_secure%
-set one_code_image=%oemurot_appli_assembly_sign%
 set s_data_image=s_data_init_sign.bin
 set ns_data_image=ns_data_init_sign.bin
 
@@ -155,13 +154,6 @@ echo %action%
 %stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%s_code_image% %slot0% -v --skipErase
 IF !errorlevel! NEQ 0 goto :error
 echo "Appli Full Secure Written"
-) else (
-set "action=Write One image Appli"
-echo %action%
-%stm32programmercli% %connect_no_reset% -d %appli_dir%\Binary\%one_code_image% %slot0% -v --skipErase
-IF !errorlevel! NEQ 0 goto :error
-
-echo "TZ Appli Written"
 )
 )
 

@@ -16,7 +16,7 @@
         <TargetCommonOption>
           <Device>STM32WBA55CGUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.5.0</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B02</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x30010000-0x3001FFFF) IROM(0x0c000000-0xC07DFFF) IROM2(0x0c07e000-0xC07FFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -462,16 +462,6 @@
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_pka.c</FilePath>
             </File>
             <File>
-              <FileName>stm32wbaxx_ll_utils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32wbaxx_ll_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32wbaxx_hal_cortex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_cortex.c</FilePath>
@@ -530,6 +520,11 @@
               <FileName>stm32wbaxx_hal_pwr_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32wbaxx_ll_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../../Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</FilePath>
             </File>
             <File>
               <FileName>stm32wbaxx_hal_gtzc.c</FileName>

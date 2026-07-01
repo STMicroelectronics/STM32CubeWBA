@@ -723,15 +723,15 @@ uint8_t compare_array(uint8_t *X, uint8_t *Y, uint8_t dim)
         {
           charPropVal = 0x0001;
           
-          bleStatus = aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                       a_ClientContext[index].SPCNotificationDescHdl,
-                                       2,
-                                       (uint8_t *) &charPropVal);
+          bleStatus = aci_gatt_write_char_value(a_ClientContext[index].connHdl,
+                                                a_ClientContext[index].SPCNotificationDescHdl,
+                                                2,
+                                                (uint8_t *) &charPropVal);
 
           if (bleStatus == BLE_STATUS_SUCCESS)
           {
           gatt_cmd_resp_wait();
-            LOG_INFO_APP("aci_gatt_write_char_desc success SPCNotificationDescHdl =0x%04X\n",a_ClientContext[index].SPCNotificationDescHdl);
+            LOG_INFO_APP("aci_gatt_write_char_value success SPCNotificationDescHdl =0x%04X\n",a_ClientContext[index].SPCNotificationDescHdl);
           }
           else
           {

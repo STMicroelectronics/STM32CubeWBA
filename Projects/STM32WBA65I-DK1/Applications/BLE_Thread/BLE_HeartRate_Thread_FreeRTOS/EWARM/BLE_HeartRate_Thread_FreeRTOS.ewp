@@ -397,7 +397,7 @@
           <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_basic_15_4</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
@@ -424,6 +424,8 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/portable/IAR/ARM_CM33_NTZ/non_secure/</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/RTOS2/Include/</state>
+          <state>$PROJ_DIR$/../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -718,15 +720,15 @@
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash</state>
+          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug</state>
           <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter</state>
-          <state>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/misc</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/tim_serv</state>
           <state>$PROJ_DIR$/../../../../../../Utilities/lpm/tiny_lpm</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN</state>
-          <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
+          <state>$PROJ_DIR$/../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/config/concurrent/ble_thread</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Device/ST/STM32WBAxx/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/inc</state>
@@ -747,6 +749,7 @@
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/src/core/config</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/thread/openthread/stack/third_party/mbedtls</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include</state>
+          <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/psa</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/mbedtls/include/mbedtls</state>
           <state>$PROJ_DIR$/../../../../../../Drivers/CMSIS/Include</state>
           <state>$PROJ_DIR$/../../../../../../Middlewares/Third_Party/FreeRTOS/Source/include/</state>
@@ -1400,6 +1403,15 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
           </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
+          </file>
         </group>
         <group>
           <name>Flash</name>
@@ -1415,11 +1427,26 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Flash\simple_nvm_arbiter.c</name>
           </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_driver.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/flash_manager.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/rf_timing_synchro.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Flash/simple_nvm_arbiter.c</name>
+          </file>
         </group>
         <group>
           <name>Log</name>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\Log\log_module.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
           </file>
         </group>
         <group>
@@ -1430,6 +1457,12 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\MemoryManager\stm32_mm.c</name>
           </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager/advanced_memory_manager.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
+          </file>
         </group>
         <group>
           <name>RTDebug</name>
@@ -1439,11 +1472,20 @@
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\RTDebug\RTDebug_dtb.c</name>
           </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug_dtb.c</name>
+          </file>
         </group>
         <group>
           <name>SerialCmdInterpreter</name>
           <file>
             <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\SerialCmdInterpreter\serial_cmd_interpreter.c</name>
+          </file>
+          <file>
+            <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
           </file>
         </group>
         <file>
@@ -1472,33 +1514,6 @@
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\temp_measurement.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/adc_ctrl.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/app_sys.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/crc_ctrl.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/scm.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_list.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/temp_measurement.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
@@ -1538,6 +1553,36 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/Log/log_module.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/adc_ctrl.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/app_sys.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/crc_ctrl.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/scm.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_list.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/temp_measurement.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/wpan_utils.c</name>
         </file>
       </group>
       <group>
@@ -1720,13 +1765,13 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Thread_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_802_15_4_V3_0.a</name>
         </file>
       </group>
       <group>
         <name>BLE</name>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_basic.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_full.a</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/ble/svc/Src/svc_ctl.c</name>

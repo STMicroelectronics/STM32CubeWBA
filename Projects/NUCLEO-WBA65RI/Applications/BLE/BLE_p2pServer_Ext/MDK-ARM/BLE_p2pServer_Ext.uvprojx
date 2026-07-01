@@ -641,6 +641,11 @@
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/temp_measurement.c</FilePath>
             </File>
+            <File>
+              <FileName>wpan_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/wpan_utils.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1014,9 +1019,9 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</FilePath>
             </File>
             <File>
-              <FileName>WBA6_LinkLayer_BLE_Basic_Plus_lib.a</FileName>
+              <FileName>LinkLayer_BLE_Basic_Plus_V3_0.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Basic_Plus_lib.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Basic_Plus_V3_0.a</FilePath>
             </File>
           </Files>
         </Group>
@@ -1026,9 +1031,9 @@
             <File>
             </File>
             <File>
-              <FileName>stm32wba_ble_stack_basic_plus.a</FileName>
+              <FileName>stm32wba_ble_stack_full.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_basic_plus.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/ble/stack/lib/stm32wba_ble_stack_full.a</FilePath>
             </File>
             <File>
               <FileName>svc_ctl.c</FileName>

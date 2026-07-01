@@ -263,6 +263,11 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/mbedtls/library/sha256.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/mbedtls/psa_crypto_random.c</name>
+			<type>1</type>
+			<locationURI>PARENT-6-PROJECT_LOC/Middlewares/Third_Party/mbedtls/library/psa_crypto_random.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/BSP/STM32WBA65I-DK1/stm32wba65i_discovery.c</locationURI>

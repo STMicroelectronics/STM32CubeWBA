@@ -117,8 +117,8 @@ void RT_DEBUG_DTBConfig(void)
 
 /*
  ** Monitor DTB **
- * A0  o PA0 AF15 DTB[0] mode 1 rx_on
- * A1  o PA1 AF15 DTB[1] mode 1 tx_on
+ * A0  o PA0 AF15 DTB[0] mode 1 rx_on (radio active in RX state only)
+ * A1  o PA1 AF15 DTB[1] mode 1 tx_on (radio active in TX or RX state)
  * A2  o PB9 AF15 DTB[4] mode 5 radio_bbclk
  * A3  o PA7 AF15 DTB[7] mode 3 slptmr_irq
  * A4  o PA2 AF15 DTB[2] mode 5 CM33_sleepdeep
@@ -131,9 +131,9 @@ void RT_DEBUG_DTBConfig(void)
  **/
 
   RT_DEBUG_SetDTBMode(6, 3) ; /* Radio IRQ */
-  RT_DEBUG_SetDTBMode(1, 1); /* tx_on */
+  RT_DEBUG_SetDTBMode(1, 1); /* tx_on (radio active in TX or RX state) */
 
-  //RT_DEBUG_SetDTBMode(0, 1); /* rx_on */
+  //RT_DEBUG_SetDTBMode(0, 1); /* rx_on (radio active in RX state only) */
   //RT_DEBUG_SetDTBMode(1, 3); /* sleep timer irq */
   //RT_DEBUG_SetDTBMode(2, 5); /* CM33_sleepdeep */
   //RT_DEBUG_SetDTBMode(4, 5); /* radio_bbclk */

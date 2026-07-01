@@ -7,8 +7,8 @@ set flashsectnbr=0x7F
 set select_wba_target=0x65
 
 :: STM32CubeProgammer connection
-set connect=-c port=SWD mode=UR
-set connect_no_reset=-c port=SWD mode=HotPlug
+set connect=-c port=SWD mode=UR ap=1
+set connect_no_reset=-c port=SWD mode=HotPlug ap=1
 
 IF "%select_wba_target%" == "0x65" (goto ob_stm32wba65xx)
 set rdp_0=-ob RDP=0xAA TZEN=1 UNLOCK_A=1 UNLOCK_B=1

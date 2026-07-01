@@ -37,6 +37,7 @@ typedef enum _vdd_ldo_value_e {
 /* Private macros ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
+/* Table ID 0: max power table, output range up to +10 dBm. */
 const power_table_entry ll_tx_power_table_max_power[] = {
   {0x02, 0x02, 0x01, -20}, /* Actual_Power = -20.4 dBm */
   {0x02, 0x03, 0x01, -19}, /* Actual_Power = -19.4 dBm */
@@ -71,6 +72,7 @@ const power_table_entry ll_tx_power_table_max_power[] = {
   {0x0D, 0x19, 0x01, 10},  /* Actual_Power = 10 dBm */
 };
 
+/* Table ID 1: low power table, output range up to +2.6 dBm. */
 const power_table_entry ll_tx_power_table_low_power[] = {
   {0x02, 0x02, 0x01, -20}, /* Actual_Power = -20.5 dBm */
   {0x02, 0x03, 0x01, -19}, /* Actual_Power = -19.5 dBm */

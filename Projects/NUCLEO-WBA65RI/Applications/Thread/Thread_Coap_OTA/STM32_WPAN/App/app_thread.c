@@ -147,6 +147,7 @@ static void APP_THREAD_CoapDataRespHandler( void                * aContext,
 
 static void APP_THREAD_FuotaRebootTimerCb(void *args);
 
+
 /* USER CODE END PFP */
 
 /* Private variables -----------------------------------------------*/
@@ -171,6 +172,43 @@ __attribute__((used)) PLACE_IN_SECTION("TAG_OTA_START") const uint32_t lMagicKey
 /* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
+
+void DeinitThreadStack(void)
+{
+  otInstanceFinalize(PtOpenThreadInstance);
+  otSysDeinit();
+}
+
+void InitThreadStack(void)
+{
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  size_t otInstanceBufferLength = 0;
+  uint8_t *otInstanceBuffer = NULL;
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  otSysInit(0, NULL);
+
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  // Call to query the buffer size
+  (void)otInstanceInit(NULL, &otInstanceBufferLength);
+
+  // Call to allocate the buffer
+  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
+  assert(otInstanceBuffer);
+
+  // Initialize OpenThread with the buffer
+  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
+#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  PtOpenThreadInstance = otInstanceInitSingle();
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  assert(PtOpenThreadInstance);
+
+#if (OT_CLI_USE == 1)
+  APP_THREAD_CliInit(PtOpenThreadInstance);
+#endif // OT_CLI_USE
+  otDispatch_tbl_init(PtOpenThreadInstance);
+}
 
 void ProcessAlarm(void)
 {
@@ -244,35 +282,9 @@ static void APP_THREAD_TaskletsInit(void)
  */
 void Thread_Init(void)
 {
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  size_t otInstanceBufferLength = 0;
-  uint8_t *otInstanceBuffer = NULL;
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
   APP_THREAD_PersistenceStartup();
 
-  otSysInit(0, NULL);
-
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  // Call to query the buffer size
-  (void)otInstanceInit(NULL, &otInstanceBufferLength);
-
-  // Call to allocate the buffer
-  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
-  assert(otInstanceBuffer);
-
-  // Initialize OpenThread with the buffer
-  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
-#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  PtOpenThreadInstance = otInstanceInitSingle();
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
-  assert(PtOpenThreadInstance);
-
-#if (OT_CLI_USE == 1)
-  APP_THREAD_CliInit(PtOpenThreadInstance);
-#endif // OT_CLI_USE
-  otDispatch_tbl_init(PtOpenThreadInstance);
+  InitThreadStack();
 
   /* Register tasks */
   APP_THREAD_AlarmsInit();
@@ -469,6 +481,14 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
         APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_SEND_RESPONSE ",ErrCode);
         break;
 
+    case ERR_THREAD_COAP_NEW_MSG :
+        APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_NEW_MSG ",ErrCode);
+        break;
+
+    case ERR_THREAD_COAP_INIT :
+        APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_INIT ",ErrCode);
+        break;
+
     case ERR_THREAD_COAP_APPEND :
         APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_APPEND ",ErrCode);
         break;
@@ -624,7 +644,13 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
       break;
     }
 
-    otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
+    error = otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
+    if (error != OT_ERROR_NONE)
+    {
+      APP_THREAD_Error(ERR_THREAD_COAP_INIT,error);
+      break;
+    }
+
     (void)otCoapMessageAppendUriPathOptions(pOT_Message, aCoapRessource->mUriPath);
     (void)otCoapMessageSetPayloadMarker(pOT_Message);
 
@@ -924,6 +950,8 @@ static void APP_THREAD_FuotaRebootTimerCb(void *args)
   
   NVIC_SystemReset();
 }
+
+
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

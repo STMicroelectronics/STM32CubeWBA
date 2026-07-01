@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    rf_external_pa.c
@@ -16,7 +15,6 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 #include "rf_external_pa.h"
 #include "power_table.h"
@@ -63,7 +61,7 @@ static uint8_t RF_CONTROL_ExternalPA_Enable_cb(uint8_t epa_enable)
   {
     HAL_GPIO_WritePin(rf_external_pa_gpio_table[RF_EPA_SIGNAL_CSD].GPIO_port, rf_external_pa_gpio_table[RF_EPA_SIGNAL_CSD].GPIO_pin, GPIO_PIN_RESET);
   }
-  
+
   return 0;
 }
 

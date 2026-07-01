@@ -37,6 +37,12 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum
+{
+  ADV_CMD_START = 0,
+  ADV_CMD_LOW_POWER,
+  ADV_CMD_STOP
+} adv_cmd_t;
 
 /* USER CODE END ET */
 

@@ -501,11 +501,6 @@
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</FilePath>
             </File>
             <File>
-              <FileName>hw_aes.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_aes.c</FilePath>
-            </File>
-            <File>
               <FileName>hw_otp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</FilePath>
@@ -546,11 +541,6 @@
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/otp.c</FilePath>
             </File>
             <File>
-              <FileName>pka_ctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</FilePath>
-            </File>
-            <File>
               <FileName>scm.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/scm.c</FilePath>
@@ -564,26 +554,6 @@
               <FileName>stm_queue.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
-          <Files>
-            <File>
-              <FileName>baes_cmac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ccm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ecb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -851,9 +821,9 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</FilePath>
             </File>
             <File>
-              <FileName>WBA6_LinkLayer_Thread_lib.a</FileName>
+              <FileName>LinkLayer_802_15_4_V3_0.a</FileName>
               <FileType>4</FileType>
-              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer_Thread_lib.a</FilePath>
+              <FilePath>..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_802_15_4_V3_0.a</FilePath>
             </File>
           </Files>
         </Group>

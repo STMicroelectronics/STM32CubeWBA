@@ -395,7 +395,7 @@ static SVCCTL_EvtAckStatus_t GHS_EventHandler(void *p_Event)
                                     p_write_perm_req->Data_Length,
                                     p_write_perm_req->Data);
           
-              LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> PERMITTED\r\n");
+              LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> PERMITTED\n");
               GHS_CP_RequestHandler(p_write_perm_req->Data, p_write_perm_req->Data_Length);
             }
             else 
@@ -406,7 +406,7 @@ static SVCCTL_EvtAckStatus_t GHS_EventHandler(void *p_Event)
                                     error_code,
                                     p_write_perm_req->Data_Length,
                                     p_write_perm_req->Data);
-              LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> NOT PERMITTED\r\n");
+              LOG_INFO_APP("ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE GHS_CP >>> NOT PERMITTED\n");
             }
 
             /*USER CODE END Service1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/

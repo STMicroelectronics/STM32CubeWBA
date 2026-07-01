@@ -265,12 +265,11 @@ void ll_sys_reset(void)
 
   /* USER CODE END ll_sys_reset_2 */
 }
-#if defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx)
+
 void ll_sys_apply_cte_settings(void)
 {
   ll_intf_apply_cte_degrad_change();
 }
-#endif /* defined(STM32WBA52xx) || defined(STM32WBA54xx) || defined(STM32WBA55xx) || defined(STM32WBA65xx) */
 
 #if (CFG_LPM_STANDBY_SUPPORTED == 0)
 void ll_sys_get_ble_profile_statistics(uint32_t* exec_time, uint32_t* drift_time, uint32_t* average_drift_time, uint8_t reset)

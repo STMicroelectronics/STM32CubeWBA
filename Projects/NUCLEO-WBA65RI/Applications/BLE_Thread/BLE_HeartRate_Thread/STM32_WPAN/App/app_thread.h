@@ -26,6 +26,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+/* USER CODE BEGIN Includes */
+#include "app_tests_commands.h"
+
+/* USER CODE END Includes  */
+
 /* Exported types ------------------------------------------------------------*/
 /*
  *  List of all errors tracked by the Thread application.
@@ -50,6 +55,7 @@ typedef enum
   ERR_THREAD_MESSAGE_READ,
   ERR_THREAD_COAP_SEND_RESPONSE,
   ERR_THREAD_COAP_NEW_MSG,
+  ERR_THREAD_COAP_INIT,
   ERR_THREAD_COAP_APPEND,
   ERR_THREAD_COAP_SEND_REQUEST,
   ERR_THREAD_COAP_DATA_RESPONSE,
@@ -58,6 +64,7 @@ typedef enum
   ERR_TIMER_START,
   ERR_THREAD_MSG_COMPARE_FAILED,
   ERR_THREAD_COAP_ADDRESS_NOT_DEFINED,
+
   /* USER CODE END ERROR_APPLI_ENUM */
   ERR_THREAD_CHECK_WIRELESS
 } ErrAppliIdEnum_t;
@@ -77,6 +84,16 @@ typedef enum
 #define MULTICAST_FTD_BORDER_ROUTER   "ff03::2"
 
 /* USER CODE BEGIN EC */
+#define C_RESSOURCE                   "light"
+#define COAP_PAYLOAD_LENGTH           (2u)
+
+#ifndef GRL_TEST
+/* Enable periodic CoAp message transmission to Thread Leader */
+#define APP_THREAD_PERIODIC_TRANSMIT
+#endif /* !GRL_TEST */
+
+#define APP_THREAD_TRANSMIT_PERIOD    (1u * 1000u)        /**< 1000ms */
+#define MAX_COAP_PAYLOAD_LENGTH       (1024u)
 
 /* USER CODE END EC */
 
@@ -91,6 +108,9 @@ void ProcessOpenThreadTasklets(void);
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
+
+void InitThreadStack(void);
+void DeinitThreadStack(void);
 
 /* USER CODE BEGIN EFP */
 

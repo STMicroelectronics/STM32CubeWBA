@@ -43,6 +43,9 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 #define WPAN_SUCCESS 0u
 
+#define RTOS_TICK_LESS_ACTIVE   1U
+#define RTOS_TICK_LESS_INACTIVE 0U
+
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
@@ -61,6 +64,7 @@ extern "C" {
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
 void MX_APPE_LinkLayerInit(void);
+void MX_APPE_SetTicklessIdleState(uint8_t state);
 
 /* USER CODE BEGIN EFP */
 

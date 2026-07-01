@@ -700,10 +700,10 @@ void GATT_CLIENT_APP_DiscoverServicesWithIndex(uint8_t index)
         uint16_t enable = 0x0001;
         if(a_ClientContext[index].P2PNotificationDescHdl != 0x0000)
         {
-          bleStatus |= aci_gatt_write_char_desc(a_ClientContext[index].connHdl,
-                                            a_ClientContext[index].P2PNotificationDescHdl,
-                                            2,
-                                            (uint8_t *) &enable);
+          bleStatus |= aci_gatt_write_char_value(a_ClientContext[index].connHdl,
+                                                 a_ClientContext[index].P2PNotificationDescHdl,
+                                                 2,
+                                                 (uint8_t *) &enable);
           gatt_cmd_resp_wait();
           LOG_INFO_APP(" P2PNotificationDescHdl =0x%04X\n",a_ClientContext[index].P2PNotificationDescHdl);
         }

@@ -178,17 +178,6 @@ void      BSP_JOY_Callback                ( JOY_TypeDef joyNb, JOYPin_TypeDef jo
 
 #endif /* CFG_JOYSTICK_SUPPORTED */
 
-
-#if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
-void      APP_BSP_CliInit                 ( void );
-#endif /* CFG_COAP_MSG || CFG_BLE_ADV_CHANNEL_MAP */
-#ifdef CFG_COAP_MSG
-void      APP_BSP_CoapMsgRateAction       ( void );
-#endif /* CFG_COAP_MSG */
-#ifdef CFG_BLE_ADV_CHANNEL_MAP
-void      APP_BSP_BleAdvChannelMapAction  ( void );
-#endif /* CFG_BLE_ADV_CHANNEL_MAP */
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

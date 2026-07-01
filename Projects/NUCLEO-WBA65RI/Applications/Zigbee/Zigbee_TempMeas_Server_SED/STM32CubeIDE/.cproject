@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1405028736">
@@ -50,7 +50,7 @@
 									<listOptionValue builtIn="false" value="MAC"/>
 									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_END_DEVICE"/>
-									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_SLEEPY_DEVICE"/>
+									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_SLEEPY_END_DEVICE"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_BAREMETAL"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_NUCLEO"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_HW_AES"/>
@@ -60,9 +60,9 @@
 									<listOptionValue builtIn="false" value="../../Core/Inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
+									<listOptionValue builtIn="false" value="../../System/Config"/>
 									<listOptionValue builtIn="false" value="../../System/Config/CRC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Debug_GPIO"/>
-									<listOptionValue builtIn="false" value="../../System/Config"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
 									<listOptionValue builtIn="false" value="../../System/Config/LowPower"/>
 									<listOptionValue builtIn="false" value="../../System/Interfaces"/>
@@ -107,7 +107,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.1134093999" name="MCU GCC Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.1002805284" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" useByScannerDiscovery="false" value="${workspace_loc:/${ProjName}/STM32WBA65RIVX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value=":WBA6_LinkLayer15_4.a"/>
+									<listOptionValue builtIn="false" value=":LinkLayer_802_15_4_V3_0.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClusters.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR23_RFD.a"/>
@@ -190,7 +190,7 @@
 									<listOptionValue builtIn="false" value="MAC"/>
 									<listOptionValue builtIn="false" value="MAC_LAYER"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_END_DEVICE"/>
-									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_SLEEPY_DEVICE"/>
+									<listOptionValue builtIn="false" value="APPLICATION_USE_AS_SLEEPY_END_DEVICE"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_BAREMETAL"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_NUCLEO"/>
 									<listOptionValue builtIn="false" value="APPLICATION_USE_HW_AES"/>
@@ -200,9 +200,9 @@
 									<listOptionValue builtIn="false" value="../../Core/Inc"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/App"/>
 									<listOptionValue builtIn="false" value="../../STM32_WPAN/Target"/>
+									<listOptionValue builtIn="false" value="../../System/Config"/>
 									<listOptionValue builtIn="false" value="../../System/Config/CRC_Ctrl"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Debug_GPIO"/>
-									<listOptionValue builtIn="false" value="../../System/Config"/>
 									<listOptionValue builtIn="false" value="../../System/Config/Log"/>
 									<listOptionValue builtIn="false" value="../../System/Config/LowPower"/>
 									<listOptionValue builtIn="false" value="../../System/Interfaces"/>
@@ -247,7 +247,7 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.1291090824" name="MCU GCC Linker" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker">
 								<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script.6645661" name="Linker Script (-T)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.script" value="${workspace_loc:/${ProjName}/STM32WBA65RIVX_FLASH.ld}" valueType="string"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries.202567051" name="Libraries (-l)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.linker.option.libraries" useByScannerDiscovery="false" valueType="libs">
-									<listOptionValue builtIn="false" value=":WBA6_LinkLayer15_4.a"/>
+									<listOptionValue builtIn="false" value=":LinkLayer_802_15_4_V3_0.a"/>
 									<listOptionValue builtIn="false" value=":wba_mac_lib.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeClusters.a"/>
 									<listOptionValue builtIn="false" value=":ZigBeeProR23_RFD.a"/>

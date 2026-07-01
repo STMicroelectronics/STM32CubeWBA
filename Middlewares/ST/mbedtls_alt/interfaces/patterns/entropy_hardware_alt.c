@@ -18,8 +18,8 @@
   */
 
 #include "entropy_hardware_alt.h"
+#if defined (MBEDTLS_ENTROPY_HARDWARE_ALT)
 #if defined (MBEDTLS_HAL_ENTROPY_HARDWARE_ALT)
-extern void Error_Handler(void);
 
 static RNG_HandleTypeDef handle;
 static uint8_t users = 0U;
@@ -39,7 +39,7 @@ static uint8_t atomic_incr_u8(__IO uint8_t *valuePtr, uint8_t delta)
   return newValue;
 }
 
-void RNG_Init(void)
+int RNG_Init(void)
 {
   uint32_t dummy;
   RNG_ConfigTypeDef rng_conf;
@@ -47,7 +47,7 @@ void RNG_Init(void)
   /*  We're only supporting a single user of RNG */
   if (atomic_incr_u8(&users, 1U) > 1U)
   {
-    Error_Handler();
+    return -1;
   }
 
   /* Select RNG clock source */
@@ -63,7 +63,7 @@ void RNG_Init(void)
 
   if (HAL_RNG_Init(&handle) != HAL_OK)
   {
-    Error_Handler();
+    return -1;
   }
 
   /* Set NIST configuration for better security */
@@ -76,14 +76,19 @@ void RNG_Init(void)
   rng_conf.HealthTest = 0x0000AEC7UL;
   if (HAL_RNGEx_SetConfig(&handle, &rng_conf) != HAL_OK)
   {
-    Error_Handler();
+    return -1;
   }
 
   /* first random number generated after setting the RNGEN bit should not be used */
-  HAL_RNG_GenerateRandomNumber(&handle, &dummy);
+  if (HAL_RNG_GenerateRandomNumber(&handle, &dummy) != HAL_OK)
+  {
+    return -1;
+  }
+
+  return 0;
 }
 
-void RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length)
+int RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length)
 {
   int32_t ret = 0;
   uint8_t try = 0U;
@@ -120,16 +125,23 @@ void RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length)
   {
     *output_length = 0;
   }
+
+  return ret;
 }
 
-void RNG_DeInit(void)
+int RNG_DeInit(void)
 {
   /*Disable the RNG peripheral */
-  HAL_RNG_DeInit(&handle);
+  if (HAL_RNG_DeInit(&handle) != HAL_OK)
+  {
+    return -1;
+  }
   /* RNG Peripheral clock disable - assume we're the only users of RNG  */
   __HAL_RCC_RNG_CLK_DISABLE();
 
   users = 0;
+
+  return 0;
 }
 
 /*  interface for mbed-crypto */
@@ -139,11 +151,17 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 
   if (init_ctx == 0U)
   {
-    RNG_Init();
+    if (RNG_Init() != 0)
+    {
+      return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+    }
     init_ctx = 1U;
   }
 
-  RNG_GetBytes(output, len, olen);
+  if (RNG_GetBytes(output, len, olen) != 0)
+  {
+    return MBEDTLS_ERR_ENTROPY_SOURCE_FAILED;
+  }
 
   if (*olen != len)
   {
@@ -153,4 +171,4 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
   return 0;
 }
 #endif /* MBEDTLS_HAL_ENTROPY_HARDWARE_ALT */
-
+#endif /* MBEDTLS_ENTROPY_HARDWARE_ALT */

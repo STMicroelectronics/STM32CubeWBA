@@ -29,6 +29,11 @@ extern "C" {
 #include "stm32_adv_trace.h"
 
 /******************************************************************************
+ * Operating System configuration
+ ******************************************************************************/
+ #define CFG_USE_SEQUENCER 1
+
+/******************************************************************************
  * System Clock Manager (SCM) configuration
  ******************************************************************************/
 typedef enum {
@@ -38,7 +43,7 @@ typedef enum {
   /* USER CODE BEGIN SCM_E */
 
   /* USER CODE END SCM_E */
-  TOTAL_CLIENT_NUM, /* To be at the end of the enum */
+  SCM_USER_MAX /* To be at the end of the enum */
 } scm_user_id_t;
 
 /* USER CODE BEGIN SCM_DBG1 */
@@ -55,6 +60,15 @@ typedef enum {
 #define SCM_DBG_PRINTF(...)
 #endif /* SCM_DEBUG */
 
+#if !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx))
+
+/* Level of the IRQ of SCM TIMER*/
+#define CFG_SCM_TIMER_IRQ_PRIO 1
+#endif /* !(defined(STM32WBA20xx) || defined(STM32WBA23xx) || defined(STM32WBA24xx) || defined(STM32WBA25xx)) */
+
+/* USER CODE BEGIN SCM_3 */
+
+/* USER CODE END SCM_3 */
 /******************************************************************************
  * Timer Interface configuration
  ******************************************************************************/
@@ -79,6 +93,19 @@ typedef enum {
 #else
 #define TIMER_IF_DBG_PRINTF(...)
 #endif /* TIF_DEBUG */
+
+/******************************************************************************
+ * Application System configuration (app_sys)
+ ******************************************************************************/
+/**
+ * Defines time to wake up from standby before radio event to meet timings
+ * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
+ */
+#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
+
+/* USER CODE BEGIN AS_C */
+
+/* USER CODE END AS_C */
 
 #ifdef __cplusplus
 }

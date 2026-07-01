@@ -244,7 +244,7 @@ VOID USBX_Device_Process(VOID *arg)
   * @param  GPIO_Pin: Specifies the port pin connected to corresponding EXTI line.
   * @retval None
   */
-void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
   /* Check if EXTI from User Button */
   if (GPIO_Pin == BUTTON_USER_Pin)

@@ -33,10 +33,6 @@
 /* USER CODE END Includes */
 
 /* External variables --------------------------------------------------------*/
-/**
-  * @brief  Missed HCI event flag
-  */
-extern uint8_t missed_hci_event_flag;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -76,11 +72,7 @@ void BleStackCB_Process(void)
   /* USER CODE BEGIN BleStackCB_Process 0 */
 
   /* USER CODE END BleStackCB_Process 0 */
-  if (missed_hci_event_flag)
-  {
-    missed_hci_event_flag = 0;
-    /* missed event, Link Layer fifo full */
-  }
+
   /* BLE Host stack processing through background task */
   osThreadFlagsSet(WpanTaskHandle, 1U << CFG_RTOS_FLAG_BLEhost);
 

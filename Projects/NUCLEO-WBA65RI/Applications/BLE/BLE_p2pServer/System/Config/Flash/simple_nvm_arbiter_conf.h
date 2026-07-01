@@ -58,12 +58,12 @@ extern "C" {
 
 /* NVM ID #1 */
 #define SNVMA_NVM_ID_1
-#define SNVMA_NVM_ID_1_BANK_NUMBER      2u
-#define SNVMA_NVM_ID_1_BANK_SIZE        1u
+#define SNVMA_NVM_ID_1_BANK_SIZE        (1u) /* Size of a NVM bank in sector (=FLASH_PAGE_SIZE) unit */
+#define SNVMA_NVM_ID_1_BANK_COUNT       (2u) /* Number of Banks for SNVMA erase/write sequence (minimum 2) */
 
-#if (SNVMA_NVM_ID_1_BANK_NUMBER == 0u) || (SNVMA_NVM_ID_1_BANK_SIZE == 0u)
+#if (SNVMA_NVM_ID_1_BANK_COUNT == 0u) || (SNVMA_NVM_ID_1_BANK_SIZE == 0u)
 #error NVM ID #1 => Bank not initialized
-#elif (SNVMA_NVM_ID_1_BANK_NUMBER < SNVMA_MIN_NUMBER_BANK)
+#elif (SNVMA_NVM_ID_1_BANK_COUNT < SNVMA_MIN_NUMBER_BANK)
 #error NVM ID #1 => Not enough bank
 #endif
 
@@ -72,10 +72,14 @@ extern "C" {
 /* ========================================================================== */
 
 /* Compute the number of sectors required */
+#define SNVMA_NUMBER_OF_SECTOR_NEEDED \
+		((SNVMA_NVM_ID_1_BANK_COUNT * SNVMA_NVM_ID_1_BANK_SIZE))
+/* Equals to 2u */
 
-#define SNVMA_NUMBER_OF_SECTOR_NEEDED (SNVMA_NVM_ID_1_BANK_NUMBER * SNVMA_NVM_ID_1_BANK_SIZE)
-
-#define SNVMA_NUMBER_OF_BANKS (SNVMA_NVM_ID_1_BANK_NUMBER)
+/* Compute the total number of banks used */
+#define SNVMA_NUMBER_OF_BANKS \
+		((SNVMA_NVM_ID_1_BANK_COUNT))
+/* Equals to 2u */
 
 /* Check that required number of sector does not exceed Flash capacities */
 #if SNVMA_NUMBER_OF_SECTOR_NEEDED == 0u
@@ -93,16 +97,25 @@ extern "C" {
 /**
  * @brief Enumeration of the Buffer IDs available
  *
- * @details Each NVM can handle up to 4 user IDs
+ * @details Each NVM can handle up to 4 user IDs (NVM ID 1 => BufferId 1_1, 1_2, 1_3, 1_4).
  *
- * @details Enumeration member can be renamed to fit user needs - ie: SNVMA_BufferId_4 => SNVMA_BleNvmId
+ * @details There are dummy buffer IDs for padding to ensure buffers are in the right NVM ID.
+ *
+ * @details Enumeration member can be renamed to fit user needs - ie: SNVMA_BufferId_1_4 => SNVMA_BleNvmId
  *
  */
 typedef enum SNVMA_BufferId
 {
-  APP_BLE_NvmBuffer,
+  APP_BLE_Host_SNVMA_BufferId_1_1,
+  dummy_SNVMA_BufferId_1_2,
+  dummy_SNVMA_BufferId_1_3,
+  dummy_SNVMA_BufferId_1_4,
   SNVMA_BufferId_Max  /* End of the enumeration */
 }SNVMA_BufferId_t;
+
+/* Size of the buffers in NVMs in bytes*/
+/* NVM ID #1 */
+#define SNVMA_NVM_ID_1_BUFFER_1_SIZE      (2048u)
 
 /* Exported variables --------------------------------------------------------*/
 extern SNVMA_NvmElt_t SNVMA_NvmConfiguration [SNVMA_NVM_NUMBER];

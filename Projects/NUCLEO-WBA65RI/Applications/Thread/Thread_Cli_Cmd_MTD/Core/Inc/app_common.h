@@ -35,6 +35,7 @@ extern "C"{
 #include "app_conf.h"
 #include "hw.h"
 #include "ll_sys.h"
+#include "wpan_utils.h"
 
 /* -------------------------------- *
  *  Basic definitions               *

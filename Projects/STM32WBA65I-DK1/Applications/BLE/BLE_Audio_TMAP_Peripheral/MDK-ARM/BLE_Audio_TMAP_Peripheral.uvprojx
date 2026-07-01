@@ -1132,9 +1132,9 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</FilePath>
             </File>
             <File>
-              <FileName>WBA6_LinkLayer_BLE_Full_lib.a</FileName>
+              <FileName>LinkLayer_BLE_Full_V3_0.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Full_lib.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Full_V3_0.a</FilePath>
             </File>
           </Files>
         </Group>

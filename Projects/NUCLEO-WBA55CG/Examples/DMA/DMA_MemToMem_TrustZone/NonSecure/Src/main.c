@@ -494,6 +494,7 @@ static void NonSecureSecureTransferCompleteCallback(DMA_HandleTypeDef *hdma_memt
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

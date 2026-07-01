@@ -64,7 +64,7 @@ typedef struct
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* Dummy value for NVM buffer in RAM for BLE Host stack */
-#define CFG_BLE_NVM_SIZE_MAX            4
+#define BLE_HOST_NVM_SIZE_U64          4
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
@@ -128,6 +128,7 @@ void APP_BLE_Init(void)
 {
   /* USER CODE BEGIN APP_BLE_Init_1 */
   tBleStatus ret;
+  UNUSED(bleAppContext.dummy);
 
   /* USER CODE END APP_BLE_Init_1 */
 
@@ -136,11 +137,6 @@ void APP_BLE_Init(void)
   /* Register BLE Host tasks */
   UTIL_SEQ_RegTask(1U << CFG_TASK_BLE_HOST, UTIL_SEQ_RFU, BleStack_Process_BG);
   UTIL_SEQ_RegTask(1U << CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, Ble_UserEvtRx);
-
-  /* USER CODE BEGIN APP_BLE_Init_Buffers */
-  UNUSED(bleAppContext.dummy);
-
-  /* USER CODE END APP_BLE_Init_Buffers */
 
   /* Initialize BLE related modules */
   BAES_Reset( );
@@ -533,16 +529,16 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   /* USER CODE END BD_Address_Mngt */
 
-  ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
-                                  CONFIG_DATA_PUBADDR_LEN,
+  ret = aci_hal_write_config_data(CONFIG_DATA_PUBLIC_ADDRESS_OFFSET,
+                                  CONFIG_DATA_PUBLIC_ADDRESS_LEN,
                                   (uint8_t*) p_bd_addr);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET, result: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET\n");
+    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET\n");
     LOG_INFO_APP("  Public Bluetooth Address: %02x:%02x:%02x:%02x:%02x:%02x\n",p_bd_addr[5],p_bd_addr[4],p_bd_addr[3],p_bd_addr[2],p_bd_addr[1],p_bd_addr[0]);
   }
 

@@ -32,7 +32,6 @@
 #include "stm32_lpm.h"
 #include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
-
 /* USER CODE BEGIN Includes */
 #include "codec_if.h"
 #include "ll_sys_if.h"
@@ -43,9 +42,6 @@
 /* 2.4GHz RADIO ISR callbacks */
 void (*radio_callback)(void) = NULL;
 void (*low_isr_callback)(void) = NULL;
-
-/* RNG handle */
-extern RNG_HandleTypeDef hrng;
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -451,7 +447,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
       local_basepri_value = __get_BASEPRI();
 
       /* Mask all other interrupts with lower priority that link layer SW low ISR */
-      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW<<4);
+      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW << 4 );
     }
   }
 }

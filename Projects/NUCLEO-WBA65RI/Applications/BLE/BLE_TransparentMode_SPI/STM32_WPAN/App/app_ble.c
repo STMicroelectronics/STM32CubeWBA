@@ -119,6 +119,9 @@ volatile Tm_Tl_SpiProtoType spi_proto_state = SPI_PROT_INIT_STATE;
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
 
+/* 2 words are reserved for SNVMA management */
+#define BLE_HOST_NVM_SIZE_U64          ((SNVMA_NVM_ID_1_BUFFER_1_SIZE / sizeof(uint64_t) ) - 2)
+
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* Definitions for "tm_rx_state" */
@@ -156,7 +159,7 @@ static BleStack_init_t pInitParams;
 PLACE_IN_SECTION("TAG_HostStack") static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 PLACE_IN_SECTION("TAG_HostStack") static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 PLACE_IN_SECTION("TAG_HostStack") static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 2)];
-PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
+PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[BLE_HOST_NVM_SIZE_U64];
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 
@@ -217,15 +220,21 @@ void APP_BLE_Init(void)
   host_nvm_buffer[0] = 0;
 
   /* Register A NVM buffer for BLE Host stack */
-  SNVMA_Register(APP_BLE_NvmBuffer,
+  uint8_t status = SNVMA_Register(APP_BLE_Host_SNVMA_BufferId_1_1,
                   (uint32_t *)host_nvm_buffer,
-                  (CFG_BLE_NVM_SIZE_MAX * 2));
+                  (BLE_HOST_NVM_SIZE_U64 * sizeof(uint64_t)) / sizeof(uint32_t) );
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Host stack failed with status: %d", status);
+    Error_Handler();
+  }
 
-  /* Realize a restore */
-  SNVMA_Restore(APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Realize a restore */
+  SNVMA_Restore(APP_BLE_Host_SNVMA_BufferId_1_1);
 
   /* Initialize BLE related modules */
   BAES_Reset( );
@@ -288,8 +297,8 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.host_event_fifo_buffer  = host_event_buffer;
   pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
-  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
+  pInitParams.nvm_cache_max_size      = BLE_HOST_NVM_SIZE_U64;
+  pInitParams.nvm_cache_size          = BLE_HOST_NVM_SIZE_U64 - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -364,11 +373,6 @@ static void TM_SysLocalCmd (uint8_t *data)
     case LHCI_OPCODE_C1_DEVICE_INF:
       LHCI_C1_Read_Device_Information((BleCmdSerial_t*)data);
       break;
-
-    case LHCI_OPCODE_C1_RF_CONTROL_ANTENNA_SWITCH:
-      LHCI_C1_RF_CONTROL_AntennaSwitch((BleCmdSerial_t*)data);
-      break;
-
     default:
       ((TL_CcEvt_t*)(((BleEvtSerial_t*)data)->evt.payload))->cmdcode = lcmd_opcode;
       ((TL_CcEvt_t*)(((BleEvtSerial_t*)data)->evt.payload))->payload[0] = 0x01;

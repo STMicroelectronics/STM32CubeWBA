@@ -26,6 +26,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes  */
+
 /* Exported types ------------------------------------------------------------*/
 /*
  *  List of all errors tracked by the Thread application.
@@ -92,6 +96,9 @@ void ProcessOpenThreadTasklets(void);
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
+
+void InitThreadStack(void);
+void DeinitThreadStack(void);
 
 /* USER CODE BEGIN EFP */
 

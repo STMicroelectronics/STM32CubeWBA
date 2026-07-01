@@ -43,6 +43,9 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 #define WPAN_SUCCESS 0u
 
+#define RTOS_TICK_LESS_ACTIVE   1U
+#define RTOS_TICK_LESS_INACTIVE 0U
+
 /* USER CODE BEGIN EC */
 /******************************************************************************
  * Information Table
@@ -58,7 +61,7 @@ extern "C" {
 #define WPAN_FW_BUILD              (0)
 #define WPAN_FW_BRANCH             (0)
 #define WPAN_FW_SUBVERSION         (0)
-#define WPAN_FW_MINOR_VERSION      (9)
+#define WPAN_FW_MINOR_VERSION      (10)
 #define WPAN_FW_MAJOR_VERSION      (1)
 
 /* USER CODE END EC */
@@ -76,6 +79,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void MX_APPE_Config(void);
 uint32_t MX_APPE_Init(void *p_param);
+void MX_APPE_SetTicklessIdleState(uint8_t state);
 
 /* USER CODE BEGIN EFP */
 

@@ -161,7 +161,8 @@ typedef struct AMM_InitParameters
  */
 typedef struct AMM_VirtualMemoryCallbackFunction
 {
-  /* Next and previous callbacks in the list */
+  /* Next and previous callbacks in the list.
+     Shall be initialized to NULL before first use. */
   AMM_VirtualMemoryCallbackHeader_t Header;
   /* Callback function pointer to invoke once memory has been freed */
   void (* Callback) (void);
@@ -223,6 +224,8 @@ AMM_Function_Error_t AMM_DeInit (void);
                                                      = 4 * 32bits
                                                      = 128 bits
  * @param  p_CallBackFunction: Pointer onto the Callback to call in case of failure - Can be NULL -
+                                If not NULL, Header.next and Header.prev shall be initialized to NULL
+                                before first use.
  * @param  pp_AllocBuffer: Pointer onto the allocated buffer
  * @return Status of the allocation
  * @retval AMM_Function_Error_t::AMM_ERROR_OK

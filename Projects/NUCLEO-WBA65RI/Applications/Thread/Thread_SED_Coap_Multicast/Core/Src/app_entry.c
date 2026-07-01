@@ -39,7 +39,6 @@
 #include "app_thread.h"
 #include "otp.h"
 #include "scm.h"
-#include "pka_ctrl.h"
 #if(CFG_RT_DEBUG_DTB == 1)
 #include "RTDebug_dtb.h"
 #endif /* CFG_RT_DEBUG_DTB */
@@ -93,9 +92,6 @@ static bool system_startup_done = FALSE;
  */
 static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVEL, .region_mask = APPLI_CONFIG_LOG_REGION };
 #endif /* (CFG_LOG_SUPPORTED != 0) */
-
-static uint8_t PkaMut = 0u;
-static uint8_t EndOfProcSem = 0u;
 
 /* USER CODE BEGIN PV */
 
@@ -228,8 +224,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
@@ -307,6 +303,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
@@ -324,7 +325,17 @@ static void SystemPower_Config(void)
 #endif /* (CFG_LPM_LEVEL != 0)  */
 
   /* USER CODE BEGIN SystemPower_Config */
-
+  /* Linker script is configured to use only SRAM1, so we can disable some RAM retention */
+#if (CFG_LPM_LEVEL != 0)
+#if (CFG_LPM_STANDBY_SUPPORTED == 1)
+    LL_PWR_SetSRAM1SBRetention(LL_PWR_SRAM1_SB_FULL_RETENTION);
+    LL_PWR_SetSRAM2SBRetention(LL_PWR_SRAM2_SB_NO_RETENTION);
+#endif
+#if (CFG_LPM_STOP1_SUPPORTED == 1)
+  LL_PWR_SetSRAM1StopRetention(LL_PWR_SRAM1_STOP_FULL_RETENTION);
+  LL_PWR_SetSRAM2StopRetention(LL_PWR_SRAM2_STOP_NO_RETENTION);
+#endif /* CFG_LPM_STOP */
+#endif /* (CFG_LPM_LEVEL != 0)  */
   /* USER CODE END SystemPower_Config */
 }
 
@@ -334,9 +345,7 @@ static void SystemPower_Config(void)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
-
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
@@ -390,7 +399,7 @@ void UTIL_SEQ_PreIdle( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_LPM_EnterLowPowerMode();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
@@ -424,6 +433,7 @@ void UTIL_SEQ_PostIdle( void )
 #if ( CFG_LPM_LEVEL != 0)
   LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
   (void)ll_sys_dp_slp_exit();
+  UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
 #endif /* CFG_LPM_LEVEL */
   /* USER CODE BEGIN UTIL_SEQ_PostIdle_2 */
 
@@ -516,86 +526,6 @@ __WEAK void __aeabi_assert(const char * szExpression, const char * szFile, int i
 {
   Error_Handler();
   __builtin_unreachable();
-}
-
-int PKACTRL_MutexTake(void)
-{
-  int error = 0;
-
-  /* Check if mutex is available */
-  if (0u != PkaMut)
-  {
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_MUTEX));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  /* Increment mutex */
-  PkaMut++;
-
-  return error;
-}
-
-int PKACTRL_MutexRelease(void)
-{
-  int error = 0;
-
-  if (0u != PkaMut)
-  {
-    PkaMut = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_MUTEX));
-  }
-
-  return error;
-}
-
-int PKACTRL_TakeSemEndOfOperation(void)
-{
-  int error = 0;
-
-  /* Check if semaphore is available */
-  if (0u != EndOfProcSem)
-  {
-#if (CFG_LPM_LEVEL != 0)
-  /* Avoid going in low power during computation */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_SLEEP_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-
-    /* Clear flag */
-    UTIL_SEQ_ClrEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-    /* Wait for flag to be raised */
-    UTIL_SEQ_WaitEvt ((1u << CFG_PKA_END_OF_PROCESS));
-  }
-
-  /* Increment semaphore */
-  EndOfProcSem++;
-
-  return error;
-}
-
-int PKACTRL_ReleaseSemEndOfOperation(void)
-{
-  int error = 0;
-
-  if (0u != EndOfProcSem)
-  {
-    EndOfProcSem = 0u;
-
-    /* Set the flag up */
-    UTIL_SEQ_SetEvt ((1u << CFG_PKA_END_OF_PROCESS));
-
-#if (CFG_LPM_LEVEL != 0)
-  /* Restore low power */
-  UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
-#endif /* (CFG_LPM_LEVEL != 0) */
-  }
-
-  return error;
 }
 
 /* USER CODE BEGIN FD_WRAP_FUNCTIONS */

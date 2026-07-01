@@ -1318,8 +1318,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_Thread_lib.a</PathWithFileName>
-      <FilenameWithoutPath>WBA6_LinkLayer_Thread_lib.a</FilenameWithoutPath>
+      <PathWithFileName>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_802_15_4_V3_0.a</PathWithFileName>
+      <FilenameWithoutPath>LinkLayer_802_15_4_V3_0.a</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

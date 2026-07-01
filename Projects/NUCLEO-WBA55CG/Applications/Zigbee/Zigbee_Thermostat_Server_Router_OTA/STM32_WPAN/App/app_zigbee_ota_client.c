@@ -41,7 +41,15 @@
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_LED_TOGGLE_MS            1000u
 
-#define HW_FLASH_WIDTH                      16u   // Flash Write by 4 words / 16 bytes.
+#ifdef FLASH_DOUBLEWORD_SUPPORT
+/* Flash Write need 2 Words (8 bytes). */
+#define HW_FLASH_TYPE_PROGRAM               FLASH_TYPEPROGRAM_DOUBLEWORD
+#define HW_FLASH_WIDTH                      (8u)
+#else /* defined(FLASH_DOUBLEWORD_SUPPORT) */
+/* Flash Write need 4 Words (16 bytes). */
+#define HW_FLASH_TYPE_PROGRAM               FLASH_TYPEPROGRAM_QUADWORD
+#define HW_FLASH_WIDTH                      (16u)
+#endif /* defined(FLASH_DOUBLEWORD_SUPPORT) */
 
 #define CFG_TASK_PRIO_OTA_REQUEST_UPGRADE   CFG_SEQ_PRIO_1
 #define CFG_TASK_PRIO_OTA_START_DOWNLOAD    CFG_SEQ_PRIO_1
@@ -426,7 +434,7 @@ static inline bool AppZbOtaClient_WriteFirmwareData( uint32_t lFlashAddress, uin
 
     (void)HAL_FLASH_Unlock();
 
-    eHalStatus = HAL_FLASH_Program( FLASH_TYPEPROGRAM_QUADWORD, lFlashAddress + lIndex, ( uint32_t )&pcFirmwareBuffer[lIndex] );
+    eHalStatus = HAL_FLASH_Program( HW_FLASH_TYPE_PROGRAM, lFlashAddress + lIndex, ( uint32_t )&pcFirmwareBuffer[lIndex] );
     if ( eHalStatus != HAL_OK )
     {
       LOG_INFO_APP( "[OTA] Error, HAL_FLASH_Program failed (0x%02X).", eHalStatus );
@@ -536,16 +544,15 @@ static enum ZclStatusCodeT AppZbOtaClient_WriteImageCallback( struct ZbZclCluste
   return ZCL_STATUS_SUCCESS;
 }
 
-
 /**
  *
  */
 static enum ZclStatusCodeT AppZbOtaClient_UpgradeEndCallback( struct ZbZclClusterT * pstCluster, struct ZbZclOtaHeader * pstHeader, uint32_t lCurrentTime, uint32_t lUpgradeTime, void * arg )
 {
-  uint32_t      lFirmwareBufferRemainingSize;
-  double        lDownloadElaspedTime;
-  double        lDownloadThroughput;
-  enum ZclStatusCodeT   eStatus = ZCL_STATUS_SUCCESS;
+  uint32_t                        lFirmwareBufferRemainingSize;
+  __attribute__((unused)) double  lDownloadElaspedTime;
+  __attribute__((unused)) double  lDownloadThroughput;
+  enum ZclStatusCodeT             eStatus = ZCL_STATUS_SUCCESS;
 
   lFirmwareBufferRemainingSize = stOtaClientBlockTransfer.lFirmwareBufferCurrentOffset;
   if ( lFirmwareBufferRemainingSize != 0u )
@@ -569,7 +576,7 @@ static enum ZclStatusCodeT AppZbOtaClient_UpgradeEndCallback( struct ZbZclCluste
       /* Record the end time */
       stOtaClientBlockTransfer.lDownloadEndTime = HAL_GetTick();
 
-      /* Calculate the performance */
+      /* Calculate & Display the performance */
       lDownloadElaspedTime = ( double )( stOtaClientBlockTransfer.lDownloadEndTime - stOtaClientBlockTransfer.lDownloadStartTime ) / 1000.f;
       lDownloadThroughput = ( double )( stOtaClientBlockTransfer.lFlashCurrentAddr - stCurrentOtaClientInfo.lBaseAddress ) / lDownloadElaspedTime * 8.f / 1000.f;
       LOG_INFO_APP( "  Image download timing data:" );
@@ -759,8 +766,8 @@ static enum ZclStatusCodeT AppZbOtaClient_RawDataCallback (struct ZbZclClusterT 
  */
 static void AppZbOtaClient_DiscoverCompleteCallback( struct ZbZclClusterT * pstCluster, enum ZclStatusCodeT eStatus, void * arg )
 {
-  enum ZclStatusCodeT   eInternalStatus = ZCL_STATUS_SUCCESS;
-  uint64_t              lRequestedServerExt = 0;
+  enum ZclStatusCodeT                 eInternalStatus = ZCL_STATUS_SUCCESS;
+  __attribute__((unused)) uint64_t   lRequestedServerExt = 0;
 
   if ( eStatus == ZCL_STATUS_SUCCESS )
   {
@@ -873,4 +880,3 @@ static void AppZbOtaClient_RequestUpgrade( void )
     LOG_INFO_APP( "[OTA] Error, pointer on Client Info is NULL." );
   }
 }
-

@@ -43,14 +43,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* ThreadX priorities by default  */
-#define TASK_PRIO_LINK_LAYER                    (7u)
-#define TASK_PREEMP_LINK_LAYER                  (0u)
-
-#define TASK_PRIO_TEMP_MEAS_LL                  (7u)
-#define TASK_PREEMP_TEMP_MEAS_LL                (0u)
-
-#define TASK_PRIO_RNG                           (11u)
-#define TASK_PREEMP_RNG                         (0u)
+#define TASK_PRIO_WPAN                          (11u)
+#define TASK_PREEMP_WPAN                        (0u)
 
 #define TASK_PRIO_ALARM                         (6u)
 #define TASK_PREEMP_ALARM                       (6u)
@@ -92,16 +86,7 @@ extern "C" {
 #define RTOS_STACK_SIZE_TINY                    ( configMINIMAL_STACK_SIZE )
 
 /* Tasks stack sizes by default  */
-#define TASK_STACK_SIZE_LINK_LAYER              RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_TEMP_MEAS_LL            RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_RNG                     RTOS_STACK_SIZE_REDUCED
-#define TASK_STACK_SIZE_ALARM                   RTOS_STACK_SIZE_MODERATE
-#define TASK_STACK_SIZE_ALARM_US                RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_TASKLETS                RTOS_STACK_SIZE_LARGE
-#define TASK_STACK_SIZE_CLI_UART                RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_SEND                    RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_PKA                     RTOS_STACK_SIZE_NORMAL
-#define TASK_STACK_SIZE_RCP_SPINEL_RX           RTOS_STACK_SIZE_NORMAL
+#define TASK_STACK_SIZE_WPAN                    RTOS_STACK_SIZE_LARGE
 #define TASK_STACK_SIZE_IDLE                    RTOS_STACK_SIZE_REDUCED
 /* USER CODE BEGIN TASK_Size_Define */
 // TODO #define TASK_BUTTON_SWx_STACK_SIZE              RTOS_STACK_SIZE_SMALL

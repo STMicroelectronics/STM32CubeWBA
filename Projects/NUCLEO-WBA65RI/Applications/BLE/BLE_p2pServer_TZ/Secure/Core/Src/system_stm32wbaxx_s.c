@@ -298,7 +298,7 @@ void SystemInit(void)
   *         other parameters.
   *
   * @note   Depending on secure or non-secure compilation, the adequate RCC peripheral
-  *         memory are is accessed thanks to RCC alias defined in stm32wbxxxx.h device file
+  *         memory are is accessed thanks to RCC alias defined in stm32wbaxx.h device file
   *         so either from RCC_S peripheral register mapped memory in secure or from
   *         RCC_NS peripheral register mapped memory in non-secure.
   *

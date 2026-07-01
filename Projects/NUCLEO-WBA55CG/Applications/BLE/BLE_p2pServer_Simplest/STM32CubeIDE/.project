@@ -114,16 +114,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_rtc_ex.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_hal_tim_ex.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_hal_tim_ex.c</locationURI>
-		</link>
-		<link>
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_exti.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_exti.c</locationURI>
@@ -147,11 +137,6 @@
 			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_tim.c</name>
 			<type>1</type>
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_tim.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/Core/app_entry.c</name>

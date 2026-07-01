@@ -1344,7 +1344,7 @@
     <group>
         <name>lib</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA5_LinkLayer15_4.a</name>
+            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_802_15_4_V3_0.a</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>

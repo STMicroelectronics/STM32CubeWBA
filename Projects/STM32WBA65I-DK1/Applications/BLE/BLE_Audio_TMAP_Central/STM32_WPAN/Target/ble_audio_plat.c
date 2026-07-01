@@ -71,7 +71,7 @@ void BLE_AUDIO_PLAT_NvmStore( const uint32_t* ptr, uint32_t size )
 #if (CFG_LOG_SUPPORTED != 0)
   status =
 #endif
-  SNVMA_Write (APP_AUDIO_NvmBuffer,BLE_AUDIO_NvmCallback);
+  SNVMA_Write (APP_AUDIO_SNVMA_BufferId_1_2,BLE_AUDIO_NvmCallback);
   LOG_INFO_APP("SNVMA_Write() for AUDIO NVM Buffer returns status 0x%02X\n",status);
 }
 
@@ -180,7 +180,7 @@ static void BLE_AUDIO_NvmCallback (SNVMA_Callback_Status_t CbkStatus)
     status =
 #endif
     /* Retry the write operation */
-    SNVMA_Write (APP_AUDIO_NvmBuffer,BLE_AUDIO_NvmCallback);
+    SNVMA_Write (APP_AUDIO_SNVMA_BufferId_1_2,BLE_AUDIO_NvmCallback);
     LOG_INFO_APP("SNVMA_Write() for AUDIO NVM Buffer returns status 0x%02X\n",status);
   }
 }

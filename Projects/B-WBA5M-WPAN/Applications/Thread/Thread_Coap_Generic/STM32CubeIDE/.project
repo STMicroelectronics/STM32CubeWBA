@@ -349,11 +349,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/STM32_WPAN/Target/power_table.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/System/Interfaces/hw_aes.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_aes.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/System/Interfaces/hw_rng.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_rng.c</locationURI>
@@ -392,11 +387,6 @@
 			<name>Application/User/System/Modules/otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/pka_ctrl.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/pka_ctrl.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/System/Modules/scm.c</name>
@@ -457,21 +447,6 @@
 			<name>Application/User/System/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/SerialCmdInterpreter/serial_cmd_interpreter.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Modules/baes/baes_ccm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ccm.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Modules/baes/baes_cmac.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_cmac.c</locationURI>
-		</link>
-		<link>
-			<name>Application/User/System/Modules/baes/baes_ecb.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ecb.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

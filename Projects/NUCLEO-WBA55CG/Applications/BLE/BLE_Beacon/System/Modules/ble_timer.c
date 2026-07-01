@@ -83,7 +83,7 @@ void BLE_TIMER_Deinit(void)
 
 }
 
-uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
+int8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
 {
   BLE_TIMER_t *timer = NULL;
 
@@ -94,25 +94,25 @@ uint8_t BLE_TIMER_Start(uint16_t id, uint32_t timeout)
   timer = (BLE_TIMER_t *)malloc(sizeof(BLE_TIMER_t));
   if(timer == NULL)
   {
-    return BLE_STATUS_INSUFFICIENT_RESOURCES;
+    return BLEPLAT_FULL;
   }
 
   if(UTIL_TIMER_Create(&timer->timerObject, timeout, UTIL_TIMER_ONESHOT, &BLE_TIMER_Callback, timer) != UTIL_TIMER_OK)
   {
     free(timer);
-    return BLE_STATUS_FAILED;
+    return BLEPLAT_ERROR;
   }
 
   if(UTIL_TIMER_Start(&timer->timerObject) != UTIL_TIMER_OK)
   {
     free(timer);
-    return BLE_STATUS_FAILED;
+    return BLEPLAT_ERROR;
   }
 
   timer->id = id;
   LST_insert_tail(&BLE_TIMER_RunningList, (tListNode *)timer);
 
-  return BLE_STATUS_SUCCESS;
+  return BLEPLAT_OK;
 }
 
 void BLE_TIMER_Stop(uint16_t id)

@@ -37,7 +37,7 @@ extern "C" {
 #define ITS_IV_SIZE               (16U)
 #endif /* MBEDTLS_HAL_GCM_ALT */
 #define ITS_TAG_SIZE              (16U)
-#define ITS_MAX_OBJECT_DATA_SIZE  (512U)
+#define ITS_MAX_OBJECT_DATA_SIZE  (1024U)
 
 /* Exported types ------------------------------------------------------------*/
 typedef struct

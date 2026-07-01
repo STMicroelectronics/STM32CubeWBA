@@ -37,9 +37,10 @@
 /**< generic parameters ******************************************************/
 
 /**
- * Define Tx Power
+ * Define Tx Power for RF transmission.
+ * Actual output power depends on CFG_RF_TX_POWER_TABLE_ID.
  */
-#define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
+#define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.4 dBm */
 
 /**
  * Definition of public BD Address,
@@ -263,12 +264,6 @@
  */
 #define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
-/**
- * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
- */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
-
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -314,7 +309,6 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -472,6 +466,7 @@ typedef enum
   CFG_EVENT_ZIGBEE_APP4,
   CFG_PKA_MUTEX,
   CFG_PKA_END_OF_PROCESS,
+  CFG_FLASH_MUTEX,
   CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
@@ -500,12 +495,9 @@ typedef enum
  * NVM configuration
  ******************************************************************************/
 
-#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - 2u)
+/* NVM area is placed at the end of the flash memory */
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
 
-#define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
-
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLE_NVM_SIZE_MAX          ((2048/8)-4)
   /**
    * This is the max size of data the THREAD Stack needs to write in NVM
    * This is different to the size allocated in the EEPROM emulator
@@ -552,9 +544,6 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
-#define USE_CTE_DEGRADATION                 (0)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -566,9 +555,9 @@ typedef enum
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
  */
-#define CFG_RF_TX_POWER_TABLE_ID            (0)
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* Radio sleep clock LSE accuracy configuration */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)

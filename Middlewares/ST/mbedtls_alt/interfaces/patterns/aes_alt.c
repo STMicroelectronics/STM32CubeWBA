@@ -110,13 +110,13 @@ static int aes_set_key(mbedtls_aes_context *ctx,
 
 #if defined(HW_CRYPTO_DPA_AES)
   ctx->hcryp_aes.Instance = SAES;
+  ctx->hcryp_aes.Init.KeyMode = CRYP_KEYMODE_NORMAL;
 #else
   ctx->hcryp_aes.Instance = AES;
 #endif /* HW_CRYPTO_DPA_AES */
   ctx->hcryp_aes.Init.DataType = CRYP_BYTE_SWAP;
   ctx->hcryp_aes.Init.DataWidthUnit = CRYP_DATAWIDTHUNIT_BYTE;
   ctx->hcryp_aes.Init.pKey = ctx->aes_key;
-  ctx->hcryp_aes.Init.KeyMode = CRYP_KEYMODE_NORMAL;
 #if defined(HW_CRYPTO_DPA_AES)
   if (keybits == 0)
   {
@@ -783,36 +783,63 @@ int mbedtls_aes_crypt_ctr(mbedtls_aes_context *ctx,
                           const unsigned char *input,
                           unsigned char *output)
 {
-  int c = 0;
-  int i = 0;
-  size_t n = 0;
 
-  n = *nc_off;
+  size_t in_length = 0;
+  size_t last_bytes = 0;
+  __ALIGN_BEGIN static uint32_t iv_32B[4] __ALIGN_END;
+  __ALIGN_BEGIN unsigned char work_buf[16] __ALIGN_END;
 
-  while (length--)
+  last_bytes = length % 16U;
+  in_length = length - last_bytes;
+
+  /* allow multi-instance of CRYP use: restore context for CRYP hw module */
+  ctx->hcryp_aes.Instance->CR = ctx->ctx_save_cr;
+
+  /* Set the Algo if not configured till now */
+  if (CRYP_AES_CTR != ctx->Algorithm)
   {
-    if (n == 0)
-    {
-      if (mbedtls_aes_crypt_ecb(ctx, MBEDTLS_AES_ENCRYPT, nonce_counter, stream_block) != 0)
-      {
-        return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
-      }
-
-      for (i = 16; i > 0; i--)
-      {
-        if (++nonce_counter[i - 1] != 0)
-        {
-          break;
-        }
-      }
-    }
-    c = *input++;
-    *output++ = (unsigned char)(c ^ stream_block[n]);
-
-    n = (n + 1) & 0x0F;
+    ctx->hcryp_aes.Init.Algorithm = ctx->Algorithm = CRYP_AES_CTR;
   }
 
-  *nc_off = n;
+  /* Set IV with invert endianness */
+  GET_UINT32_BE(iv_32B[0], nonce_counter, 0);
+  GET_UINT32_BE(iv_32B[1], nonce_counter, 4);
+  GET_UINT32_BE(iv_32B[2], nonce_counter, 8);
+  GET_UINT32_BE(iv_32B[3], nonce_counter, 12);
+
+  ctx->hcryp_aes.Init.pInitVect = iv_32B;
+  ctx->hcryp_aes.Init.KeyIVConfigSkip = CRYP_IVCONFIG_ONCE;
+
+  /* Set AES configuration */
+  if (HAL_CRYP_SetConfig(&ctx->hcryp_aes, &ctx->hcryp_aes.Init) != HAL_OK)
+  {
+    return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
+  }
+
+  if (HAL_CRYP_Encrypt(&ctx->hcryp_aes, (uint32_t *)input, in_length, (uint32_t *)output, ST_AES_TIMEOUT) != HAL_OK)
+  {
+    return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
+  }
+
+  if (last_bytes)
+  {
+    memset(work_buf, 0U, sizeof(work_buf));
+    memcpy(work_buf, input + in_length, last_bytes);
+    if (HAL_CRYP_Encrypt(&ctx->hcryp_aes, (uint32_t *)work_buf, 16U, (uint32_t *)(output + in_length),
+                         ST_AES_TIMEOUT) != HAL_OK)
+    {
+      return MBEDTLS_ERR_PLATFORM_HW_ACCEL_FAILED;
+    }
+  }
+
+  /* Get IV vector for the next call */
+  PUT_UINT32_BE(ctx->hcryp_aes.Instance->IVR3, nonce_counter, 0);
+  PUT_UINT32_BE(ctx->hcryp_aes.Instance->IVR2, nonce_counter, 4);
+  PUT_UINT32_BE(ctx->hcryp_aes.Instance->IVR1, nonce_counter, 8);
+  PUT_UINT32_BE(ctx->hcryp_aes.Instance->IVR0, nonce_counter, 12);
+
+  /* allow multi-instance of CRYP use: save context for CRYP HW module CR */
+  ctx->ctx_save_cr = ctx->hcryp_aes.Instance->CR;
 
   return 0;
 }

@@ -98,13 +98,15 @@ UTIL_ADV_TRACE_Status_t UART_DeInit( void )
 UTIL_ADV_TRACE_Status_t UART_StartRx( void (*pCallbackFunction)(uint8_t * pData, uint16_t iSize, uint8_t cError ) )
 {
   /* Configure UART in Receive mode */
-  HAL_UART_Receive_IT( &LOG_UART_HANDLER, &cCharRx, 1 );
   LOG_UART_HANDLER.RxCpltCallback = &UsartIf_RxCpltCallback;
 
   if ( pCallbackFunction != NULL )
   {
     RxCpltCallback = pCallbackFunction;
   }
+
+  /* Start UART reception in interrupt mode */
+  HAL_UART_Receive_IT( &LOG_UART_HANDLER, &cCharRx, 1 );
 
   return UTIL_ADV_TRACE_OK;
 }

@@ -193,6 +193,7 @@ typedef enum
 {
   CFG_PKA_MUTEX,
   CFG_PKA_END_OF_PROCESS,
+  CFG_FLASH_MUTEX,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
   /* USER CODE END CFG_Event_Id_t */

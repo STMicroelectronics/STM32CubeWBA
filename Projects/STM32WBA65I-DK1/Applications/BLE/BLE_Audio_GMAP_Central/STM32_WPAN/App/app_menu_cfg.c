@@ -620,7 +620,8 @@ static void Menu_StartStreamGameVoice(void)
   GMAPAPP_StartStream(LC3_QOS_32_2_gs,
                       2,
                       AUDIO_CONTEXT_GAME,
-                      LC3_QOS_16_2_gs, 1,
+                      LC3_QOS_16_2_gs, 
+                      1,
                       AUDIO_CONTEXT_CONVERSATIONAL,
                       AUDIO_DRIVER_CONFIG_LINEIN);
 }

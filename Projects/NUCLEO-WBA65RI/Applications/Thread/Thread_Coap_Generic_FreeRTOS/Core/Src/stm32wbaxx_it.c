@@ -287,40 +287,6 @@ void TIM16_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RNG global interrupt.
-  */
-void RNG_IRQHandler(void)
-{
-  /* USER CODE BEGIN RNG_IRQn 0 */
-
-  /* USER CODE END RNG_IRQn 0 */
-  /* USER CODE BEGIN RNG_IRQn 1 */
-
-  /* USER CODE END RNG_IRQn 1 */
-}
-
-/**
-  * @brief This function handles PKA global interrupt.
-  */
-void PKA_IRQHandler(void)
-{
-  /* USER CODE BEGIN PKA_IRQn 0 */
-  /* Check incoming interrupt */
-  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
-  {
-    /* Clear the interrupt flag */
-    LL_PKA_ClearFlag_PROCEND (PKA);
-
-    /* Call the PKACTRL Callback */
-    PKACTRL_EndOfProcessCb();
-  }
-  /* USER CODE END PKA_IRQn 0 */
-  /* USER CODE BEGIN PKA_IRQn 1 */
-
-  /* USER CODE END PKA_IRQn 1 */
-}
-
-/**
   * @brief This function handles 2.4GHz RADIO global interrupt.
   */
 void RADIO_IRQHandler(void)

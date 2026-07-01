@@ -21,7 +21,7 @@
 #include "secure_nsc.h"
 #include <stdio.h>
 
-/** @addtogroup STM32L5xx_HAL_Examples
+/** @addtogroup STM32WBAxx_HAL_Examples
   * @{
   */
 

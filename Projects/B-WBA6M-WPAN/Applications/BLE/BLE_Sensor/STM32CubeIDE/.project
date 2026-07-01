@@ -359,6 +359,11 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/temp_measurement.c</locationURI>
 		</link>
 		<link>
+			<name>Common/WPAN/Modules/wpan_utils.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/wpan_utils.c</locationURI>
+		</link>
+		<link>
 			<name>Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</locationURI>

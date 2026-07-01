@@ -1256,9 +1256,6 @@
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\app_bsp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_aes.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces\hw_otp.c</name>
         </file>
         <file>
@@ -1269,9 +1266,6 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_aes.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</name>
@@ -1285,18 +1279,6 @@
       </group>
       <group>
         <name>Modules</name>
-        <group>
-          <name>BasicAES</name>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ccm.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_cmac.c</name>
-          </file>
-          <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Modules\BasicAES\baes_ecb.c</name>
-          </file>
-        </group>
         <group>
           <name>Flash</name>
           <file>
@@ -1355,9 +1337,6 @@
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/otp.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</name>
-        </file>
-        <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/scm.c</name>
         </file>
         <file>
@@ -1365,15 +1344,6 @@
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
         </file>
         <file>
           <name>$PROJ_DIR$/../../../../../../Projects/Common/WPAN/Modules/RTDebug/RTDebug.c</name>
@@ -1571,7 +1541,7 @@
           <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_Thread_lib.a</name>
+          <name>$PROJ_DIR$/../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_802_15_4_V3_0.a</name>
         </file>
       </group>
       <group>

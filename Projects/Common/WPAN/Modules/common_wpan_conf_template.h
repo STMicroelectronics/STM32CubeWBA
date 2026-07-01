@@ -33,7 +33,7 @@ typedef enum {
   SCM_USER_APP,
   SCM_USER_LL_FW,
   SCM_USER_LL_HW_RCO_CLBR,
-  TOTAL_CLIENT_NUM, /* To be at the end of the enum */
+  SCM_USER_MAX /* To be at the end of the enum */
 } scm_user_id_t;
 
 #ifdef SCM_DEBUG

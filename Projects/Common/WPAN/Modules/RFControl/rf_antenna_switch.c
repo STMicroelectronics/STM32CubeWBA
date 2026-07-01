@@ -22,6 +22,10 @@
 
 #if (SUPPORT_AOA_AOD == 1) || (SUPPORT_ANT_DIV == 1)
 
+#ifndef CFG_RADIO_NUM_OF_ANTENNAS
+#define CFG_RADIO_NUM_OF_ANTENNAS 8
+#endif
+
 static void RF_CONTROL_AntennaSwitch_Enable(void);
 static void RF_CONTROL_AntennaSwitch_Disable(void);
 

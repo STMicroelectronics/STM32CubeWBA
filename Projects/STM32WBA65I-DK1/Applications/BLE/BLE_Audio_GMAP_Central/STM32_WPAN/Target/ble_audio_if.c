@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 #include "app_conf.h"
-#include "svc_ctl.h"
 #include "main.h"
 /* Defines ------------------------------------------------------------------*/
 /**
@@ -128,527 +127,213 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions prototype------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/
-void BAP_USR_Task(void);
-SVCCTL_EvtAckStatus_t BAP_USR_GattEventHandler(void *pEvent);
-SVCCTL_EvtAckStatus_t BAP_UCL_GattEventHandler(void *pEvent);
-void CAP_INITIATOR_UnicastEventHandler(void *pEvent);void BAP_UNICAST_HciEventHandler(void *pEvent);
-void BAP_BSRC_HciEventHandler(void *pEvent);
-void BAP_BSNK_HciEventHandler(void *pEvent);
-SVCCTL_EvtAckStatus_t BAP_SDE_GattEventHandler(void *pEvent);
-void BAP_SDE_HciEventHandler(void *pEvent);
-SVCCTL_EvtAckStatus_t BAP_BA_GattEventHandler(void *pEvent);
-void BAP_BA_HciEventHandler(void *pEvent);
-void CAP_COMMANDER_BAEventHandler(void *pEvent);
-void CCP_SERVER_Task(void);
-SVCCTL_EvtAckStatus_t CCP_SERVER_GattEventHandler(void *pEvent);
-void CCP_SERVER_HciEventHandler(void *pEvent);
-SVCCTL_EvtAckStatus_t CCP_CLIENT_GattEventHandler(void *pEvent);
-void CCP_CLIENT_HciEventHandler(void *pEvent);
-void MCP_SERVER_Task(void);
-SVCCTL_EvtAckStatus_t MCP_SERVER_GattEventHandler(void *pEvent);
-void MCP_SERVER_HciEventHandler(void *pEvent);
-SVCCTL_EvtAckStatus_t MCP_CLIENT_GattEventHandler(void *pEvent);
-void MCP_CLIENT_HciEventHandler(void *pEvent);
-void CSIP_SET_MEMBER_Task(void);
-SVCCTL_EvtAckStatus_t CSIP_SET_MEMBER_GattEventHandler(void *pEvent);
-void CSIP_SET_MEMBER_HciEventHandler(void *pEvent);
-void CSIP_SET_COORDINATOR_Task(void);
-SVCCTL_EvtAckStatus_t CSIP_SET_COORDINATOR_GattEventHandler(void *pEvent);
-void CSIP_SET_COORDINATOR_HciEventHandler(void *pEvent);
-void CAP_SetCoordinatorEventHandler(void *pEvent);
-void VCP_RENDERER_Task(void);
-SVCCTL_EvtAckStatus_t VCP_RENDERER_GattEventHandler(void *pEvent);
-void VCP_CONTROLLER_Task(void);
-SVCCTL_EvtAckStatus_t VCP_CONTROLLER_GattEventHandler(void *pEvent);
-void VCP_CONTROLLER_HciEventHandler(void *pEvent);
-void MICP_DEVICE_Task(void);
-SVCCTL_EvtAckStatus_t MICP_DEVICE_GattEventHandler(void *pEvent);
-void MICP_CONTROLLER_Task(void);
-SVCCTL_EvtAckStatus_t MICP_CONTROLLER_GattEventHandler(void *pEvent);
-void MICP_CONTROLLER_HciEventHandler(void *pEvent);
+void CAP_COMMANDER_FunctionTable_Init(void);
+void CAP_INITIATOR_FunctionTable_Init(void);
+void CAP_ACCEPTOR_FunctionTable_Init(void);
+
+void BAP_USR_FunctionTable_Init(void);
+void BAP_UCL_FunctionTable_Init(void);
+void BAP_BSRC_FunctionTable_Init(void);
+void BAP_BSNK_FunctionTable_Init(void);
+void BAP_SDE_FunctionTable_Init(void);
+void BAP_BA_FunctionTable_Init(void);
+
+void ASCS_SERVER_FunctionTable_Init(void);
+void ASCS_CLIENT_FunctionTable_Init(void);
+void PACS_SERVER_FunctionTable_Init(void);
+void PACS_CLIENT_FunctionTable_Init(void);
+void BASS_SERVER_FunctionTable_Init(void);
+void BASS_CLIENT_FunctionTable_Init(void);
+
+void CCP_SERVER_FunctionTable_Init(void);
+void CCP_CLIENT_FunctionTable_Init(void);
+void MCP_SERVER_FunctionTable_Init(void);
+void MCP_CLIENT_FunctionTable_Init(void);
+void VCP_CONTROLLER_FunctionTable_Init(void);
+void VCP_RENDERER_FunctionTable_Init(void);
+void CSIP_SET_MEMBER_FunctionTable_Init(void);
+void CSIP_SET_COORDINATOR_FunctionTable_Init(void);
+void MICP_DEVICE_FunctionTable_Init(void);
+void MICP_CONTROLLER_FunctionTable_Init(void);
+
+void BLE_Audio_LinkerError(void);
+
 /* Private user code ---------------------------------------------------------*/
 #if (LINK_BAP_UNICAST_SERVER == 0)
-/**
-  * @brief This function is used to execute BAP Unicast Server Task in the BAP Profile.
-  */
-void BAP_USR_Task(void)
+void BAP_USR_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
+
 }
 
-/**
-  * @brief This function is used by the Unicast Server in the BAP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-
-SVCCTL_EvtAckStatus_t BAP_USR_GattEventHandler(void *pEvent)
+void ASCS_SERVER_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
+
 }
 #endif /* (LINK_BAP_UNICAST_SERVER == 0) */
 
+
 #if (LINK_BAP_UNICAST_CLIENT == 0)
-/**
-  * @brief This function is used by the Unicast Client in the BAP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t BAP_UCL_GattEventHandler(void *pEvent)
+void BAP_UCL_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
+
 }
 
-/**
-  * @brief This function is used by the CAP Initiator in the CAP Profile to handle Unicast Client Events
-  *        received from the BAP Profile.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CAP_INITIATOR_UnicastEventHandler(void *pEvent)
+void ASCS_CLIENT_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
+
 }
 #endif /* (LINK_BAP_UNICAST_CLIENT == 0) */
 
 
-#if ((LINK_BAP_UNICAST_SERVER == 0) && (LINK_BAP_UNICAST_CLIENT == 0))
-/**
-  * @brief This function is used by the Unicast Server or the Unicast Client in the BAP Profile to handle HCI Events
-  *        received from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void BAP_UNICAST_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-}
-#endif /*((LINK_BAP_UNICAST_SERVER == 0) && (LINK_BAP_UNICAST_CLIENT == 0))*/
-
 #if (LINK_BAP_BROADCAST_SOURCE == 0)
-/**
-  * @brief This function is used by the Broadcast Source in the BAP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void BAP_BSRC_HciEventHandler(void *pEvent)
+void BAP_BSRC_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
+
 }
 #endif /* (LINK_BAP_BROADCAST_SOURCE == 0) */
 
+
 #if (LINK_BAP_BROADCAST_SINK == 0)
-/**
-  * @brief This function is used by the Broadcast Sink in the BAP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void BAP_BSNK_HciEventHandler(void *pEvent)
+void BAP_BSNK_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
+
 }
 #endif /* (LINK_BAP_BROADCAST_SINK == 0) */
 
 
-
 #if (LINK_BAP_SCAN_DELEGATOR == 0)
-/** @brief This function is used by the Scan Delegator in the BAP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t BAP_SDE_GattEventHandler(void *pEvent)
+void BAP_SDE_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
+
 }
 
-/** @brief This function is used by the Scan Delegator in the BAP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void BAP_SDE_HciEventHandler(void *pEvent)
+void BASS_SERVER_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
+
 }
 #endif /* (LINK_BAP_SCAN_DELEGATOR == 0) */
 
 
 #if (LINK_BAP_BROADCAST_ASSISTANT == 0)
-/** @brief This function is used by the Broadcast Assistant in the BAP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t BAP_BA_GattEventHandler(void *pEvent)
+void BAP_BA_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
 }
 
-/** @brief This function is used by the Broadcast Assistant in the BAP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void BAP_BA_HciEventHandler(void *pEvent)
+void BASS_CLIENT_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/**
-  * @brief This function is used by the CAP Commander in the CAP Profile to handle Broadcast Assistant Events
-  *        received from the BAP Profile.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CAP_COMMANDER_BAEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /* (LINK_BAP_BROADCAST_ASSISTANT == 0) */
 
 
+#if ((LINK_BAP_BROADCAST_ASSISTANT == 0) && (LINK_BAP_UNICAST_CLIENT == 0))
+void PACS_CLIENT_FunctionTable_Init(void)
+{
+}
+#endif
+
+
+#if ((LINK_BAP_SCAN_DELEGATOR == 0) && (LINK_BAP_UNICAST_SERVER == 0))
+void PACS_SERVER_FunctionTable_Init(void)
+{
+}
+#endif
+
+
 #if (LINK_CCP_SERVER == 0u)
-/**
-  * @brief This function is used to execute Call Control Server Task in the CCP Profile.
-  */
-void CCP_SERVER_Task(void)
+void CCP_SERVER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Call Control Server in the CCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t CCP_SERVER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Call Control Server in the CCP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CCP_SERVER_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_CCP_SERVER == 0u)*/
 
+
 #if (LINK_CCP_CLIENT == 0u)
-
-/** @brief This function is used by the Call Control Client in the CCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t CCP_CLIENT_GattEventHandler(void *pEvent)
+void CCP_CLIENT_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Call Control Client in the CCP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CCP_CLIENT_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_CCP_CLIENT == 0u)*/
 
 
 #if (LINK_MCP_SERVER == 0u)
-/**
-  * @brief This function is used to execute Media Control Server Task in the MCP Profile.
-  */
-void MCP_SERVER_Task(void)
+void MCP_SERVER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Media Control Server in the MCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t MCP_SERVER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Media Control Server in the MCP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void MCP_SERVER_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_MCP_SERVER == 0u)*/
 
-#if (LINK_MCP_CLIENT == 0u)
-/** @brief This function is used by the Media Control Client in the MCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t MCP_CLIENT_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
 
-/** @brief This function is used by the Media Control Client in the MCP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void MCP_CLIENT_HciEventHandler(void *pEvent)
+#if (LINK_MCP_CLIENT == 0u)
+void MCP_CLIENT_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_MCP_CLIENT == 0u)*/
 
+
 #if (LINK_CSIP_SET_MEMBER == 0u)
-/**
-  * @brief This function is used to execute Set Member Task in the CSIP Profile.
-  */
-void CSIP_SET_MEMBER_Task(void)
+void CSIP_SET_MEMBER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Set Member in the CSIP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t CSIP_SET_MEMBER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Set Member in the CSIP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CSIP_SET_MEMBER_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_CSIP_SET_MEMBER == 0u)*/
 
+
 #if (LINK_CSIP_SET_COORDINATOR == 0u)
-/**
-  * @brief This function is used to execute Set Coordinator Task in the CSIP Profile.
-  */
-void CSIP_SET_COORDINATOR_Task(void)
+void CSIP_SET_COORDINATOR_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Set Coordinator in the CSIP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t CSIP_SET_COORDINATOR_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Set Coordinator in the CSIP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CSIP_SET_COORDINATOR_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the CAP Initiator or the CAP Commander in the CAP Profile to handle
-  *        CSIP Set Coordinator Events receive from the CSIP Profile.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void CAP_SetCoordinatorEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_CSIP_SET_COORDINATOR == 0u)*/
 
 
 #if (LINK_VCP_RENDERER == 0u)
-/**
-  * @brief This function is used to execute Renderer Task in the VCP Profile.
-  */
-void VCP_RENDERER_Task(void)
+void VCP_RENDERER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Renderer in the VCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t VCP_RENDERER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
 }
 #endif /*(LINK_VCP_RENDERER == 0u)*/
+
+
 #if (LINK_VCP_CONTROLLER == 0u)
-/**
-  * @brief This function is used to execute Controller Task in the VCP Profile.
-  */
-void VCP_CONTROLLER_Task(void)
+void VCP_CONTROLLER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Controller in the VCP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t VCP_CONTROLLER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Controller in the VCP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void VCP_CONTROLLER_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_VCP_CONTROLLER == 0u)*/
 
-#if (LINK_MICP_DEVICE == 0u)
-/**
-  * @brief This function is used to execute Device Task in the MICP Profile.
-  */
-void MICP_DEVICE_Task(void)
-{
-  /*should not be reached*/
-  Error_Handler();
-}
 
-/** @brief This function is used by the Device in the MICP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t MICP_DEVICE_GattEventHandler(void *pEvent)
+#if (LINK_MICP_DEVICE == 0u)
+void MICP_DEVICE_FunctionTable_Init(void)
 {
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
 }
 #endif /*(LINK_MICP_DEVICE == 0u)*/
+
+
 #if (LINK_MICP_CONTROLLER == 0u)
-/**
-  * @brief This function is used to execute Controller Task in the MICP Profile.
-  */
-void MICP_CONTROLLER_Task(void)
+void MICP_CONTROLLER_FunctionTable_Init(void)
 {
-  /*should not be reached*/
-  Error_Handler();
-}
-
-/** @brief This function is used by the Controller in the MICP Profile to handle GATT Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  * @retval Ack: Return whether the Event has been managed or not
-  */
-SVCCTL_EvtAckStatus_t MICP_CONTROLLER_GattEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
-  return SVCCTL_EvtNotAck;
-}
-
-/** @brief This function is used by the Controller in the MICP Profile to handle HCI Events received
-  *        from the BLE core device.
-  * @param  Event: Address of the buffer holding the Event
-  */
-void MICP_CONTROLLER_HciEventHandler(void *pEvent)
-{
-  UNUSED(pEvent);
-  /*should not be reached*/
-  Error_Handler();
 }
 #endif /*(LINK_MICP_CONTROLLER == 0u)*/
+
+
+#if ((APP_CAP_ROLE & CAP_ROLE_COMMANDER) == 0)
+void CAP_COMMANDER_FunctionTable_Init(void)
+{
+
+}
+#endif /* ((APP_CAP_ROLE & CAP_ROLE_COMMANDER) == 0) */
+
+
+#if ((APP_CAP_ROLE & CAP_ROLE_ACCEPTOR) == 0)
+void CAP_ACCEPTOR_FunctionTable_Init(void)
+{
+
+}
+#endif /*  ((APP_CAP_ROLE & CAP_ROLE_ACCEPTOR) == 0) */
+
+
+#if ((APP_CAP_ROLE & CAP_ROLE_INITATOR) == 0)
+void CAP_INITIATOR_FunctionTable_Init(void)
+{
+
+}
+#endif /*  ((APP_CAP_ROLE & CAP_ROLE_INITATOR) == 0)*/
+
+
+void BLE_Audio_LinkerError(void)
+{
+  Error_Handler();
+}

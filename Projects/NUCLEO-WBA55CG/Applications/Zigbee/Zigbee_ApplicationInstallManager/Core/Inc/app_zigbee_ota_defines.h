@@ -48,8 +48,14 @@ extern "C" {
 #define FUOTA_FW_APP_HARDWARE_VERSION           (uint16_t)0x02u   /* STM3WBA5x Application Processor. */
   
 /* Flash Memory defines */
-#define FUOTA_APP_DOWNLOAD_BINARY_ADDRESS       0x08080000        /* Application Download Binary Address. For STM32WBA5x. */
-#define FUOTA_APP_DOWNLOAD_BINARY_BANK          FLASH_BANK_1      /* Application Download Binary in the First Bank for STM32WBA5x */
+#ifdef STM32WBA55xx
+#define FUOTA_APP_DOWNLOAD_BINARY_ADDRESS       0x08080000        /* Application Download Binary Address. For STM32WBA55xx. */
+#define FUOTA_APP_DOWNLOAD_BINARY_BANK          FLASH_BANK_1      /* Application Download Binary in the First Bank for STM32WBA55xx */
+#endif // STM32WBA55xx
+#ifdef STM32WBA6xx
+#define FUOTA_APP_DOWNLOAD_BINARY_ADDRESS       0x08100000        /* Application Download Binary Address. For STM32WBA6x. */
+#define FUOTA_APP_DOWNLOAD_BINARY_BANK          FLASH_BANK_2      /* Application Download Binary in the Second Bank for STM32WBA6x */
+#endif // STM32WBA6xx
 
 #define FUOTA_APP_FW_BINARY_ADDRESS             0x08006000        /* Application FW Binary Address */
 #define FUOTA_APP_FW_TAG_OFFSET                 0x400u            /* Offset of the OTA TAFG on the FW Application */

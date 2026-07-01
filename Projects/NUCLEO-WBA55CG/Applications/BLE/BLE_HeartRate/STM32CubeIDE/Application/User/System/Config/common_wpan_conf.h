@@ -38,7 +38,7 @@ typedef enum {
   /* USER CODE BEGIN SCM_E */
 
   /* USER CODE END SCM_E */
-  TOTAL_CLIENT_NUM, /* To be at the end of the enum */
+  SCM_USER_MAX /* To be at the end of the enum */
 } scm_user_id_t;
 
 /* USER CODE BEGIN SCM_DBG1 */

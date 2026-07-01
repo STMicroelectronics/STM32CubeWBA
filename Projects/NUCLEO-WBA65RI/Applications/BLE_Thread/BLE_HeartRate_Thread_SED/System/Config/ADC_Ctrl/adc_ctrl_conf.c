@@ -58,7 +58,7 @@ ADCCTRL_Handle_t LLTempRequest_Handle =
     {
       .Setup = LL_ADC_REG_SEQ_CONFIGURABLE,
       .Length = LL_ADC_REG_SEQ_SCAN_DISABLE,
-      .DiscMode = LL_ADC_REG_SEQ_DISCONT_DISABLE
+      .DiscMode = LL_ADC_REG_SEQ_DISCONT_1RANK
     },
     .LowPowerParams =
     {
@@ -68,9 +68,11 @@ ADCCTRL_Handle_t LLTempRequest_Handle =
   },
   .ChannelConf =
   {
-    .Channel = LL_ADC_CHANNEL_TEMPSENSOR,
-    .Rank = LL_ADC_REG_RANK_1,
-    .SamplingTime = LL_ADC_SAMPLINGTIME_COMMON_1
+    {
+      .Channel = LL_ADC_CHANNEL_TEMPSENSOR,
+      .Rank = LL_ADC_REG_RANK_1,
+      .SamplingTime = LL_ADC_SAMPLINGTIME_COMMON_1
+    },
   }
 };
 #endif /* (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1) */

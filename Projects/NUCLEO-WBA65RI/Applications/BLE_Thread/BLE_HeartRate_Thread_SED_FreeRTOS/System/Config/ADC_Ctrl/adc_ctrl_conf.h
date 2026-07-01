@@ -36,12 +36,6 @@
 #define ADCCTRL_HWADDR   ADC4
 
 /**
- * @brief Flag to determine whether the dynamic VRefInt is performed or not
- * @details Enable: 1u, Disable: 0u
- */
-#define ADCCTRL_USE_DYNAMIC_VREF  (0u)
-
-/**
  * @brief Set ADC Clock source
  */
 #define ADCTCTRL_SET_CLOCK_SOURCE() \

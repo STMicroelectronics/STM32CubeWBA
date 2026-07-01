@@ -607,6 +607,11 @@
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/temp_measurement.c</FilePath>
             </File>
+            <File>
+              <FileName>wpan_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Projects/Common/WPAN/Modules/wpan_utils.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -666,21 +671,6 @@
               <FileName>stm32_mm.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/MemoryManager/stm32_mm.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/RFControl</GroupName>
-          <Files>
-            <File>
-              <FileName>rf_antenna_switch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</FilePath>
-            </File>
-            <File>
-              <FileName>rf_external_pa.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/RFControl/rf_external_pa.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -998,9 +988,9 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</FilePath>
             </File>
             <File>
-              <FileName>WBA6_LinkLayer_BLE_Full_lib.a</FileName>
+              <FileName>LinkLayer_BLE_Full_V3_0.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_BLE_Full_lib.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_BLE_Full_V3_0.a</FilePath>
             </File>
           </Files>
         </Group>

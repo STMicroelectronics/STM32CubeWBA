@@ -28,6 +28,10 @@
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #include "stm32_lpm_if.h"
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+#if (CFG_LOG_SUPPORTED == 1)
+#include "stm32_adv_trace.h"
+#include "serial_cmd_interpreter.h"
+#endif /* (CFG_LOG_SUPPORTED == 1) */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
@@ -65,7 +69,7 @@ void MX_StandbyExit_PeripheralInit(void)
     /* Select SysTick source clock */
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
-    /* Initialize SysTick */
+    /* Initialize HAL Tick */
     if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
     {
       assert_param(0);
@@ -97,6 +101,8 @@ void MX_StandbyExit_PeripheralInit(void)
   __HAL_RCC_GPIOB_CLK_DISABLE();
 #endif /* CFG_DEBUGGER_LEVEL */
 
+  _tx_initialize_low_level();
+
   memset(&hramcfg_SRAM1, 0, sizeof(hramcfg_SRAM1));
   memset(&handle_GPDMA1_Channel1, 0, sizeof(handle_GPDMA1_Channel1));
   memset(&handle_GPDMA1_Channel0, 0, sizeof(handle_GPDMA1_Channel0));
@@ -109,6 +115,8 @@ void MX_StandbyExit_PeripheralInit(void)
   MX_RAMCFG_Init();
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
+  UTIL_ADV_TRACE_Init();
+  Serial_CMD_Interpreter_Init();
 #endif
   MX_ICACHE_Init();
   CRCCTRL_Init();

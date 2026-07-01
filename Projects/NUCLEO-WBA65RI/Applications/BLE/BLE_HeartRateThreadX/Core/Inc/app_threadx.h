@@ -35,6 +35,12 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum
+{
+  ADV_CMD_START = 0,
+  ADV_CMD_LOW_POWER,
+  ADV_CMD_STOP
+} adv_cmd_t;
 
 /* ADV_TASK related resources */
 extern TX_THREAD                 ADV_Thread;

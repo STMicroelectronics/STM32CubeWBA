@@ -27,19 +27,20 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include <stddef.h>
 #include "mbedtls/entropy.h"
+#include "entropy_poll.h"
 
 #if defined(RCC_RNGCLKSOURCE_HSI48)
 #define RNGCLKSOURCE_HSI RCC_RNGCLKSOURCE_HSI48
+#elif defined(RCC_RNGCLKSOURCE_HSI16KER)
+#define RNGCLKSOURCE_HSI RCC_RNGCLKSOURCE_HSI16KER
 #else
 #define RNGCLKSOURCE_HSI RCC_RNGCLKSOURCE_HSI
 #endif /* RCC_RNGCLKSOURCE_HSI48 */
 
 /* Exported functions ------------------------------------------------------- */
-void RNG_DeInit(void);
-void RNG_Init(void);
-int mbedtls_hardware_poll(void *data, unsigned char *output,
-                          size_t len, size_t *olen);
-void RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length);
+int RNG_DeInit(void);
+int RNG_Init(void);
+int RNG_GetBytes(uint8_t *output, size_t length, size_t *output_length);
 
 #ifdef __cplusplus
 }

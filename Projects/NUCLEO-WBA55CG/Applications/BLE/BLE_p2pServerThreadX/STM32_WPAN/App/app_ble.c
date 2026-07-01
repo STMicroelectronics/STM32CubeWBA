@@ -111,8 +111,6 @@ typedef struct
 
   APP_BLE_ConnStatus_t Device_Connection_Status;
   /* USER CODE BEGIN PTD_1 */
-  /* Advertising timeout timerID*/
-  UTIL_TIMER_Object_t Advertising_mgr_timer_Id;
   /* Led Timeout timerID */
   UTIL_TIMER_Object_t SwitchOffGPIO_timer_Id;
 
@@ -138,11 +136,13 @@ typedef struct
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
 
+/* 2 words are reserved for SNVMA management */
+#define BLE_HOST_NVM_SIZE_U64          ((SNVMA_NVM_ID_1_BUFFER_1_SIZE / sizeof(uint64_t) ) - 2)
+
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* USER CODE BEGIN PD */
 #define LED_ON_TIMEOUT_MS              (5)
-#define ADV_TIMEOUT_MS                 (60 * 1000)
 
 /* Device Info Characteristic UUID */
 #define COPY_UUID_128(uuid_struct, uuid_15, uuid_14, uuid_13, uuid_12, uuid_11, uuid_10, uuid_9, uuid_8, uuid_7, uuid_6, uuid_5, uuid_4, uuid_3, uuid_2, uuid_1, uuid_0) \
@@ -153,11 +153,6 @@ do {\
     uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
 }while(0)
 #define COPY_DEVINFO_UUID(uuid_struct)       COPY_UUID_128(uuid_struct,0x00,0x00,0xfe,0x31,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-
-/* ADV_CANCEL_TASK related defines */
-#define ADV_CANCEL_TASK_STACK_SIZE    (1024)
-#define ADV_CANCEL_TASK_PRIO          (15)
-#define ADV_CANCEL_TASK_PREEM_TRES    (0)
 
 /* USER CODE END PD */
 
@@ -208,7 +203,7 @@ static BleStack_init_t pInitParams;
 PLACE_IN_SECTION("TAG_HostStack") static uint32_t host_buffer[DIVC(BLE_DYN_ALLOC_SIZE, 4)];
 PLACE_IN_SECTION("TAG_HostStack") static uint32_t gatt_buffer[DIVC(BLE_GATT_BUF_SIZE, 4)];
 PLACE_IN_SECTION("TAG_HostStack") static uint16_t host_event_buffer[DIVC(BLE_HOST_EVENT_BUF_SIZE, 2)];
-PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[CFG_BLE_NVM_SIZE_MAX];
+PLACE_IN_SECTION("TAG_HostStack") static uint64_t host_nvm_buffer[BLE_HOST_NVM_SIZE_U64];
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t long_write_buffer[CFG_BLE_LONG_WRITE_DATA_BUF_SIZE];
 PLACE_IN_SECTION("TAG_HostStack") static uint8_t extra_data_buffer[CFG_BLE_EXTRA_DATA_BUF_SIZE];
 
@@ -229,8 +224,7 @@ TX_SEMAPHORE          BleHostSemaphore;
 TX_SEMAPHORE          GapProcCompleteSemaphore;
 
 /* USER CODE BEGIN GV */
-TX_THREAD ADV_CANCEL_Thread;
-TX_SEMAPHORE ADV_CANCEL_Thread_Sem;
+
 
 /* USER CODE END GV */
 
@@ -248,10 +242,10 @@ static void BLE_HOST_Task_Entry(ULONG lArgument);
 static void HciAsyncEvt_Task_Entry(ULONG lArgument);
 /* USER CODE BEGIN PFP */
 static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t *p_bd_addr);
-static void Adv_Cancel_Req(void *arg);
-static void Adv_Cancel(void);
+static void APP_BLE_StartAdvTimer(void);
+static void APP_BLE_AdvStart(void);
+static void APP_BLE_AdvStop(void);
 static void Switch_OFF_GPIO(void *arg);
-static void Adv_Cancel_Entry(unsigned long thread_input);
 
 /* USER CODE END PFP */
 
@@ -328,15 +322,21 @@ void APP_BLE_Init(void)
   host_nvm_buffer[0] = 0;
 
   /* Register A NVM buffer for BLE Host stack */
-  SNVMA_Register(APP_BLE_NvmBuffer,
+  uint8_t status = SNVMA_Register(APP_BLE_Host_SNVMA_BufferId_1_1,
                   (uint32_t *)host_nvm_buffer,
-                  (CFG_BLE_NVM_SIZE_MAX * 2));
+                  (BLE_HOST_NVM_SIZE_U64 * sizeof(uint64_t)) / sizeof(uint32_t) );
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Host stack failed with status: %d", status);
+    Error_Handler();
+  }
 
-  /* Realize a restore */
-  SNVMA_Restore(APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Realize a restore */
+  SNVMA_Restore(APP_BLE_Host_SNVMA_BufferId_1_1);
 
   /* Initialize BLE related modules */
   BAES_Reset( );
@@ -359,30 +359,6 @@ void APP_BLE_Init(void)
     /* From here, all initialization are BLE application specific */
 
     /* USER CODE BEGIN APP_BLE_Init_4 */
-    CHAR *pStack;
-
-    if (tx_byte_allocate(pBytePool, (void **) &pStack, ADV_CANCEL_TASK_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
-    {
-      Error_Handler();
-    }
-    if (tx_semaphore_create(&ADV_CANCEL_Thread_Sem, "ADV_CANCEL_Thread_Sem", 0)!= TX_SUCCESS )
-    {
-      Error_Handler();
-    }
-    if (tx_thread_create(&ADV_CANCEL_Thread, "ADV_CANCEL_Thread", Adv_Cancel_Entry, 0,
-                           pStack, ADV_CANCEL_TASK_STACK_SIZE,
-                           ADV_CANCEL_TASK_PRIO, ADV_CANCEL_TASK_PREEM_TRES,
-                           TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
-    {
-      Error_Handler();
-    }
-
-    /* Create timer to handle the Advertising Stop */
-    UTIL_TIMER_Create(&(bleAppContext.Advertising_mgr_timer_Id),
-                      0,
-                      UTIL_TIMER_ONESHOT,
-                      &Adv_Cancel_Req,
-                      0);
     /* Create timer to handle the Led Switch OFF */
     UTIL_TIMER_Create(&(bleAppContext.SwitchOffGPIO_timer_Id),
                       0,
@@ -411,10 +387,8 @@ void APP_BLE_Init(void)
     }
 
     /* Start to Advertise to accept a connection */
-    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-
-    /* Start a timer to stop advertising after a while */
-    UTIL_TIMER_StartWithPeriod(&bleAppContext.Advertising_mgr_timer_Id, ADV_TIMEOUT_MS);
+    ULONG adv_cmd = ADV_CMD_START;
+    tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
 
     /* USER CODE END APP_BLE_Init_3 */
 
@@ -611,8 +585,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       P2P_SERVERHandleNotification.ConnectionHandle = p_disconnection_complete_event->Connection_Handle;
       P2P_SERVER_APP_EvtRx(&P2P_SERVERHandleNotification);
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE */
-      APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-      UTIL_TIMER_StartWithPeriod(&bleAppContext.Advertising_mgr_timer_Id, ADV_TIMEOUT_MS);
+      ULONG adv_cmd = ADV_CMD_START;
+      tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
 
       /* USER CODE END EVT_DISCONN_COMPLETE */
       break; /* HCI_DISCONNECTION_COMPLETE_EVT_CODE */
@@ -711,8 +685,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           P2P_SERVERHandleNotification.ConnectionHandle = p_enhanced_conn_complete->Connection_Handle;
           P2P_SERVER_APP_EvtRx(&P2P_SERVERHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
-          /* The connection is done, there is no need anymore to schedule the LP ADV */
-          UTIL_TIMER_Stop(&(bleAppContext.Advertising_mgr_timer_Id));
+          ULONG adv_cmd = ADV_CMD_STOP;
+          tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
 
           /* USER CODE END HCI_EVT_LE_ENHANCED_CONN_COMPLETE */
           break; /* HCI_LE_ENHANCED_CONNECTION_COMPLETE_SUBEVT_CODE */
@@ -756,8 +730,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
           P2P_SERVERHandleNotification.ConnectionHandle = p_conn_complete->Connection_Handle;
           P2P_SERVER_APP_EvtRx(&P2P_SERVERHandleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-          /* The connection is done, there is no need anymore to schedule the LP ADV */
-          UTIL_TIMER_Stop(&(bleAppContext.Advertising_mgr_timer_Id));
+          ULONG adv_cmd = ADV_CMD_STOP;
+          tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
 
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
           break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
@@ -1369,7 +1343,7 @@ tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len)
 void APP_BLE_HostNvmStore(void)
 {
   /* Start SNVMA write procedure */
-  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+  SNVMA_Write(APP_BLE_Host_SNVMA_BufferId_1_1, BLE_NvmCallback);
 }
 
 void BleStack_Process_BG(void)
@@ -1386,6 +1360,34 @@ void BleStack_Process_BG(void)
 }
 
 /* USER CODE BEGIN FD */
+void APP_BLE_Adv_Entry(unsigned long thread_input)
+{
+  (void)(thread_input);
+  ULONG advCmd = 4;
+
+  while(1)
+  {
+    if (tx_queue_receive(&ADV_Queue, &advCmd, TX_WAIT_FOREVER) != TX_SUCCESS)
+    {
+      Error_Handler();
+    }
+    else
+    {
+      switch (advCmd)
+      {
+        case ADV_CMD_START:
+          APP_BLE_AdvStart();
+          break;
+        case ADV_CMD_LOW_POWER:
+        case ADV_CMD_STOP:
+          APP_BLE_AdvStop();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
 
 /* USER CODE END FD */
 
@@ -1419,8 +1421,8 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.host_event_fifo_buffer  = host_event_buffer;
   pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
-  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
+  pInitParams.nvm_cache_max_size      = BLE_HOST_NVM_SIZE_U64;
+  pInitParams.nvm_cache_size          = BLE_HOST_NVM_SIZE_U64 - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -1470,16 +1472,16 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   /* USER CODE END BD_Address_Mngt */
 
-  ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
-                                  CONFIG_DATA_PUBADDR_LEN,
+  ret = aci_hal_write_config_data(CONFIG_DATA_PUBLIC_ADDRESS_OFFSET,
+                                  CONFIG_DATA_PUBLIC_ADDRESS_LEN,
                                   (uint8_t*) p_bd_addr);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET, result: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET\n");
+    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET\n");
     LOG_INFO_APP("  Public Bluetooth Address: %02x:%02x:%02x:%02x:%02x:%02x\n",p_bd_addr[5],p_bd_addr[4],p_bd_addr[3],p_bd_addr[2],p_bd_addr[1],p_bd_addr[0]);
   }
 
@@ -1647,20 +1649,6 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   else
   {
     LOG_INFO_APP("  Success: aci_gap_set_authentication_requirement command\n");
-  }
-
-  /* Initialize whitelist */
-  if (bleAppContext.bleSecurityParam.bonding_mode)
-  {
-    ret = aci_gap_configure_whitelist();
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : aci_gap_configure_whitelist command, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
-    }
   }
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2 */
@@ -2008,7 +1996,7 @@ static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus)
   if (CbkStatus != SNVMA_OPERATION_COMPLETE)
   {
     /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
+    SNVMA_Write (APP_BLE_Host_SNVMA_BufferId_1_1, BLE_NvmCallback);
   }
 }
 
@@ -2089,37 +2077,28 @@ static void fill_advData(uint8_t *p_adv_data, uint8_t tab_size, const uint8_t* p
   }
 }
 
-static void Adv_Cancel_Req(void *arg)
+static void APP_BLE_StartAdvTimer(void)
 {
-  tx_semaphore_put(&ADV_CANCEL_Thread_Sem);
-  return;
+  tx_timer_deactivate(&Advertising_mgr_timer);
+  tx_timer_activate(&Advertising_mgr_timer);
+}
+
+static void APP_BLE_AdvStart(void)
+{
+  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
+  APP_BLE_StartAdvTimer();
+}
+
+static void APP_BLE_AdvStop(void)
+{
+  tx_timer_deactivate(&Advertising_mgr_timer);
+  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
 }
 
 static void Switch_OFF_GPIO(void *arg)
 {
   APP_BSP_LED_Off(LED_GREEN);
   return;
-}
-
-static void Adv_Cancel(void)
-{
-  APP_BSP_LED_Off(LED_GREEN);
-
-  APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_STOP);
-
-  return;
-}
-
-void Adv_Cancel_Entry(unsigned long thread_input)
-{
-  (void)(thread_input);
-
-  while(1)
-  {
-    tx_semaphore_get(&ADV_CANCEL_Thread_Sem, TX_WAIT_FOREVER);
-    Adv_Cancel();
-    tx_thread_relinquish();
-  }
 }
 
 /* USER CODE END FD_LOCAL_FUNCTION */
@@ -2224,8 +2203,8 @@ void APP_BSP_Button1Action(void)
   if (bleAppContext.Device_Connection_Status == APP_BLE_IDLE)
   {
     /* Relaunch advertising */
-    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-    UTIL_TIMER_StartWithPeriod(&bleAppContext.Advertising_mgr_timer_Id, ADV_TIMEOUT_MS);
+    ULONG adv_cmd = ADV_CMD_START;
+    tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
   }
   else
   {
@@ -2254,8 +2233,8 @@ void APP_BSP_Button2Action(void)
   else
   {
     /* Launch advertising for multi connection */
-    APP_BLE_Procedure_Gap_Peripheral(PROC_GAP_PERIPH_ADVERTISE_START_FAST);
-    UTIL_TIMER_StartWithPeriod(&bleAppContext.Advertising_mgr_timer_Id, ADV_TIMEOUT_MS);
+    ULONG adv_cmd = ADV_CMD_START;
+    tx_queue_send(&ADV_Queue, &adv_cmd, TX_NO_WAIT);
   }
 
   return;

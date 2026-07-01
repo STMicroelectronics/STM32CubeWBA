@@ -39,7 +39,7 @@ SNVMA_NvmElt_t SNVMA_NvmConfiguration [SNVMA_NVM_NUMBER] =
 {
   /* NVM ID #1 */
   {
-    .BankNumber = SNVMA_NVM_ID_1_BANK_NUMBER,
+    .BankNumber = SNVMA_NVM_ID_1_BANK_COUNT,
     .BankSize = SNVMA_NVM_ID_1_BANK_SIZE,
   },
 };

@@ -1,9 +1,11 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    stm32wbaxx_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
+  * @file    PWR/PWR_STOP2/Src/stm32wbaxx_it.c
+  * @author  MCD Application Team
+  * @brief   Main Interrupt Service Routines.
+  *          This file provides template for all exceptions handler and
+  *          peripherals interrupt service routine.  ******************************************************************************
   * @attention
   *
   * Copyright (c) 2025 STMicroelectronics.
@@ -139,7 +141,7 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
+  * @brief This function handles System service call via SVC instruction.
   */
 void SVC_Handler(void)
 {

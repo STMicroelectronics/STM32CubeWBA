@@ -183,16 +183,16 @@ void advertisingTask_Entry(void *argument)
   for(;;)
   {
     osMessageQueueGet(advertisingCmdQueueHandle, &advCmd, &advCmdPrio, osWaitForever);
- 
+
     switch (advCmd)
     {
-      case 0:
+      case ADV_CMD_START:
         APP_BLE_AdvStart();
         break;
-      case 1:
+      case ADV_CMD_LOW_POWER:
         APP_BLE_AdvLowPower();
         break;
-      case 2:
+      case ADV_CMD_STOP:
         APP_BLE_AdvStop();
         break;
       default:
@@ -228,9 +228,9 @@ void HRSAPPMeasurementsTask_Entry(void *argument)
 void advLowPowerTimer_cb(void *argument)
 {
   /* USER CODE BEGIN advLowPowerTimer_cb */
-  uint16_t adv_cmd = 2;
+  uint16_t adv_cmd = ADV_CMD_STOP;
   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
-  adv_cmd = 1;
+  adv_cmd = ADV_CMD_LOW_POWER;
   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
   /* USER CODE END advLowPowerTimer_cb */
 }

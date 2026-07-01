@@ -78,7 +78,7 @@ static void APP_MENU_DisplayMenu( void )
 
 static void APP_MENU_DisplayOption( void )
 {
-  int16_t   iDiv;
+  __attribute__((unused)) int16_t   iDiv;
   
   strncpy( szText, pstMenuButton[iMenuIndex].szSubMenu, sizeof( szText ) );
   if ( pstMenuButton[iMenuIndex].pszOptionList != NULL )

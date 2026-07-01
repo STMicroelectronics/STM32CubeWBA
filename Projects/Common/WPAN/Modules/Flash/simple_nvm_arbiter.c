@@ -148,6 +148,17 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status);
 /* Private function prototypes -----------------------------------------------*/
 
 /**
+ * @brief Verify the presence of a bank header
+ *
+ * @param p_BankStartAddress: Bank start address to verify header
+ *
+ * @return State of the Header presence
+ * @retval TRUE: Header is not present
+ * @retval FALSE: Header may be present
+ */
+static inline uint8_t IsHeaderPresent (const uint32_t * const p_BankStartAddress);
+
+/**
  * @brief Verify the credibility of a bank header
  *
  * @param p_BankStartAddress: Bank start address to verify header
@@ -322,56 +333,65 @@ SNVMA_Cmd_Status_t SNVMA_Init (const uint32_t * p_NvmStartAddress)
           {
             /* ... compute bank addresses */
             SNVMA_BankConfiguration[bankConfIdx].p_StartAddr = (uint32_t *)((uint32_t)p_NvmStartAddress + addressOffset);
-
-            /* Shall this bank be the one in use */
-            if (IsHeaderOk (SNVMA_BankConfiguration[bankConfIdx].p_StartAddr,
-                            nvmIdx) == FALSE)
+            
+            /* First check that header is present */
+            if (IsHeaderPresent(SNVMA_BankConfiguration[bankConfIdx].p_StartAddr) == TRUE)
             {
-              /* Erase the bank */
-              while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
-                                  SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
-
-              LOG_ERROR_SYSTEM("\r\nSNVMA_Init - Corrupted banks erases [IsHeaderOk]");
-            }
-            /* Check if CRC OK */
-            else if (IsCrcOk (SNVMA_BankConfiguration[bankConfIdx].p_StartAddr) == FALSE)
-            {
-              /* Erase the bank */
-              while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
-                                  SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
-
-              LOG_ERROR_SYSTEM("\r\nSNVMA_Init - Corrupted banks erases [IsCrcOk]");
-            }
-            /* Valid bank */
-            else
-            {
-              /* Compute buffer addresses in the bank */
-              if (SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore == NULL)
+              /* Pursue the checks */
+              /* Shall this bank be the one in use */
+              if (IsHeaderOk (SNVMA_BankConfiguration[bankConfIdx].p_StartAddr,
+                              nvmIdx) == FALSE)
               {
-                SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore = &SNVMA_BankConfiguration[bankConfIdx];
+                /* Erase the bank */
+                while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
+                                    SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+
+                LOG_ERROR_SYSTEM("\r\nSNVMA_Init - Corrupted banks erases [IsHeaderOk]");
               }
+              /* Check if CRC OK */
+              else if (IsCrcOk (SNVMA_BankConfiguration[bankConfIdx].p_StartAddr) == FALSE)
+              {
+                /* Erase the bank */
+                while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
+                                    SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+
+                LOG_ERROR_SYSTEM("\r\nSNVMA_Init - Corrupted banks erases [IsCrcOk]");
+              }
+              /* Valid bank */
               else
               {
-                /* Get the current bank in use for this NVM */
-                p_currentRestoreBank = SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore;
-
-                /* Already have a valid bank in use, determine which bank is the newest */
-                SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore = GetNewestBank (p_currentRestoreBank,
-                                                                                &SNVMA_BankConfiguration[bankConfIdx]);
-
-                if (SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore == p_currentRestoreBank)
+                /* Compute buffer addresses in the bank */
+                if (SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore == NULL)
                 {
-                  /* Erase &SNVMA_BankConfiguration[bankConfIdx] */
-                  while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
-                                      SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+                  SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore = &SNVMA_BankConfiguration[bankConfIdx];
                 }
                 else
                 {
-                  /* Erase p_currentRestoreBank */
-                  while (EraseSector ((((uint32_t)p_currentRestoreBank->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
-                                      SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+                  /* Get the current bank in use for this NVM */
+                  p_currentRestoreBank = SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore;
+
+                  /* Already have a valid bank in use, determine which bank is the newest */
+                  SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore = GetNewestBank (p_currentRestoreBank,
+                                                                                  &SNVMA_BankConfiguration[bankConfIdx]);
+
+                  if (SNVMA_NvmConfiguration[nvmIdx].p_BankForRestore == p_currentRestoreBank)
+                  {
+                    /* Erase &SNVMA_BankConfiguration[bankConfIdx] */
+                    while (EraseSector (((nvmOffset + addressOffset) / FLASH_PAGE_SIZE),
+                                        SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+                  }
+                  else
+                  {
+                    /* Erase p_currentRestoreBank */
+                    while (EraseSector ((((uint32_t)p_currentRestoreBank->p_StartAddr - FLASH_BASE_NS) / FLASH_PAGE_SIZE),
+                                        SNVMA_NvmConfiguration[nvmIdx].BankSize) == FALSE);
+                  }
                 }
               }
+            }
+            else 
+            {
+              /* Keep going, nothing to do as the bank might be empty */
             }
 
             /* Determine the next write bank, is there any bank for restore ? */
@@ -576,10 +596,15 @@ SNVMA_Cmd_Status_t SNVMA_Restore (const SNVMA_BufferId_t BufferId)
 
     /* Leave critical section */
     UTILS_EXIT_CRITICAL_SECTION();
-
+    
+    /* Check bank integrity - Header presence */
+    if (IsHeaderPresent (SNVMA_NvmConfiguration[nvmId].p_BankForRestore->p_StartAddr) == FALSE)
+    {
+      error = SNVMA_ERROR_NVM_BANK_CORRUPTED;
+    }
     /* Check bank integrity - Header plausibility */
-    if (IsHeaderOk (SNVMA_NvmConfiguration[nvmId].p_BankForRestore->p_StartAddr,
-                    nvmId) == FALSE)
+    else if (IsHeaderOk (SNVMA_NvmConfiguration[nvmId].p_BankForRestore->p_StartAddr,
+                         nvmId) == FALSE)
     {
       error = SNVMA_ERROR_NVM_BANK_CORRUPTED;
     }
@@ -1469,11 +1494,10 @@ void SNVMA_FlashManagerCallback(FM_FlashOp_Status_t Status)
 
 /* Private functions Definition ------------------------------------------------------*/
 
-uint8_t IsHeaderOk (const uint32_t * const p_BankStartAddress, const uint8_t NvmId)
+uint8_t IsHeaderPresent (const uint32_t * const p_BankStartAddress)
 {
-  uint8_t error = FALSE;
+  uint8_t error = TRUE;
 
-  /* Check all the struct members to verify if the header could be any good */
   /* First, check if it is not erased */
   if ((((SNVMA_BankHeader_t *)p_BankStartAddress)->Empty == (uint8_t)SNVMA_ERASED_CONTENT) &&
       (((SNVMA_BankHeader_t *)p_BankStartAddress)->Counter == (uint8_t)SNVMA_ERASED_CONTENT) &&
@@ -1489,12 +1513,21 @@ uint8_t IsHeaderOk (const uint32_t * const p_BankStartAddress, const uint8_t Nvm
   {
     error = FALSE;
   }
+
+  return error;
+}
+
+uint8_t IsHeaderOk (const uint32_t * const p_BankStartAddress, const uint8_t NvmId)
+{
+  uint8_t error = FALSE;
+
+  /* Check all the struct members to verify if the header could be any good */
   /* Check that written sizes does not overlap the bank */
-  else if ((((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1 +
-            ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2 +
-            ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3 +
-            ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4) >
-           ((SNVMA_NvmConfiguration[NvmId].BankSize * FLASH_PAGE_SIZE) / sizeof (uint32_t)))
+  if ((((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId1 +
+       ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId2 +
+       ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId3 +
+       ((SNVMA_BankHeader_t *)p_BankStartAddress)->SizeId4) >
+      ((SNVMA_NvmConfiguration[NvmId].BankSize * FLASH_PAGE_SIZE) / sizeof (uint32_t)))
   {
     error = FALSE;
   }

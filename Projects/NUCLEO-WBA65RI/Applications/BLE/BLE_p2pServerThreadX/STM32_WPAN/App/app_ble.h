@@ -194,6 +194,7 @@ tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len);
 void Ble_UserEvtRx(void);
 void APP_BLE_HostNvmStore(void);
 /* USER CODE BEGIN EFP */
+void APP_BLE_Adv_Entry(unsigned long thread_input);
 
 /* USER CODE END EFP */
 

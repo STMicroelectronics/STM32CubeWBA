@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    mbedtls_alt_config_template.h
+  * @file    mbedtls_alt_config.h
   * @author  GPM Application Team
   * @brief   Config file for mbedtls_alt middleware
   *          This file should be copied to the application folder and renamed
@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-/* This file needs hal header. Example : stm32wbaxx_hal.h, stm32u5xx_hal.h     */
+/* This file needs hal header. Example : stm32wbaxx_hal.h */
 #include "stm32wbaxx_hal.h"
 
 /* Exported types ------------------------------------------------------------*/

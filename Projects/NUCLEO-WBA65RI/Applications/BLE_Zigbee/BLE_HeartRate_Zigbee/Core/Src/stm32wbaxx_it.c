@@ -153,7 +153,7 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
+  * @brief This function handles System service call via SVC instruction.
   */
 void SVC_Handler(void)
 {
@@ -323,6 +323,27 @@ void TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM16_IRQn 1 */
 
   /* USER CODE END TIM16_IRQn 1 */
+}
+
+/**
+  * @brief This function handles PKA global interrupt.
+  */
+void PKA_IRQHandler(void)
+{
+  /* USER CODE BEGIN PKA_IRQn 0 */
+  /* Check incoming interrupt */
+  if (0u != LL_PKA_IsActiveFlag_PROCEND (PKA))
+  {
+    /* Clear the interrupt flag */
+    LL_PKA_ClearFlag_PROCEND (PKA);
+
+    /* Call the PKACTRL Callback */
+    PKACTRL_EndOfProcessCb();
+  }
+  /* USER CODE END PKA_IRQn 0 */
+  /* USER CODE BEGIN PKA_IRQn 1 */
+
+  /* USER CODE END PKA_IRQn 1 */
 }
 
 /**

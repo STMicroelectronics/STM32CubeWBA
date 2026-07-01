@@ -53,7 +53,7 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -78,18 +78,17 @@ typedef struct
         MAX(CODEC_LC3_NUM_ENCODER_CHANNEL > 0 ? CODEC_GET_ENCODER_STACK_SIZE(CODEC_MAX_BAND) : 0, \
             CODEC_LC3_NUM_DECODER_CHANNEL > 0 ? CODEC_GET_DECODER_STACK_SIZE(CODEC_MAX_BAND) : 0)
 
-/* Broadcast Source Config
- *  16_2_1 is 3
- *  32_2_1 is 7
- *  48_4_1 is 13
- */
-#define BROADCAST_SOURCE_BAP_CONFIG             (13u)
+/* Broadcast Source Config */
+#define BROADCAST_SOURCE_BAP_CONFIG             (LC3_QOS_48_4_1)
 #define BROADCAST_SOURCE_FRAME_BLOCK_PER_SDU    (1u)
-#define BROADCAST_SOURCE_NUM_BIS                (1u)
+#define BROADCAST_SOURCE_NUM_BIS                (2u)
+#if (BROADCAST_SOURCE_NUM_BIS == 1)
 #define BROADCAST_SOURCE_CHANNEL_ALLOC_1        (FRONT_LEFT|FRONT_RIGHT)
+#elif (BROADCAST_SOURCE_NUM_BIS == 2)
+#define BROADCAST_SOURCE_CHANNEL_ALLOC_1        (FRONT_LEFT)
 #define BROADCAST_SOURCE_CHANNEL_ALLOC_2        (FRONT_RIGHT)
+#endif /* (BROADCAST_SOURCE_NUM_BIS == 2) */
 #define BROADCAST_CONTROLLER_DELAY              (20000u)
-#define BAP_BROADCAST_MAX_TRANSPORT_LATENCY     (20u)
 #define BAP_BROADCAST_ENCRYPTION                (0u)
 #define BIG_HANDLE                              (0u)
 
@@ -224,7 +223,7 @@ BAP_Extended_Advertising_Params_t extended_adv_params = {
   {0,0,0,0,0,0}, /* Peer Address */
   0x7F,          /* TX Power */
   0x00,          /* Secondary Advertising Max Skip */
-  0x01           /* Secondary Adv PHY */
+  0x02           /* Secondary Adv PHY */
 };
 BAP_Periodic_Advertising_Params_t periodic_adv_params = {
   64,  /* Advertising Interval Min */
@@ -340,14 +339,25 @@ void BLE_AUDIO_STACK_NotifyToRun(void)
 uint8_t PBPAPP_InitSource(void)
 {
   uint8_t ret = 0;
-  uint32_t a_channel_allocation[2] = {BROADCAST_SOURCE_CHANNEL_ALLOC_1, BROADCAST_SOURCE_CHANNEL_ALLOC_2};
+  BAP_Role_t BAP_role = 0;
+  uint32_t a_channel_allocation[BROADCAST_SOURCE_NUM_BIS];
   uint8_t metadata_len = 4;
   uint8_t a_metadata[4] = {0x03, METADATA_STREAMING_AUDIO_CONTEXTS,
                            STREAMING_AUDIO_CONTEXT & 0xFF,
                            (STREAMING_AUDIO_CONTEXT >> 8) & 0xFF};
 
+  a_channel_allocation[0] = BROADCAST_SOURCE_CHANNEL_ALLOC_1;
+#if (BROADCAST_SOURCE_NUM_BIS == 2)
+  a_channel_allocation[1] = BROADCAST_SOURCE_CHANNEL_ALLOC_2;
+#endif /* (BROADCAST_SOURCE_NUM_BIS == 2) */
+
+#if (APP_BAP_ROLE_BROADCAST_SOURCE_SUPPORT == 1)
+  /* this role is mandatory in this project */
+  BAP_role = BAP_ROLE_BROADCAST_SOURCE;
+#endif /* (APP_BAP_ROLE_BROADCAST_SOURCE_SUPPORT == 1) */
+
   LOG_INFO_APP(">>==  Start CAP Initiator initialization\n");
-  ret = PBPAPP_Init(CAP_ROLE_INITIATOR, BAP_ROLE_BROADCAST_SOURCE);
+  ret = PBPAPP_Init(APP_CAP_ROLE, BAP_role);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : PBPAPP_Init() function, result: 0x%02X\n", ret);
@@ -423,6 +433,13 @@ uint8_t PBPAPP_StartSource(void)
 
   snprintf(broadcast_name_string, BROADCAST_NAME_LENGTH+1, "%s", aPBPAPP_BroadcastName);
   UTIL_LCD_DisplayStringAt(0, 5+12+2, (uint8_t *) broadcast_name_string, CENTER_MODE);
+
+  /* enable ISO cohabitation scheduling mode for extended advertising */
+  const uint8_t iso_ext_adv_schl = 1;
+  aci_write_config_data(CONFIG_DATA_LL_ISO_SCHED_MODE_OFFSET, 1, &iso_ext_adv_schl);
+
+  /* enable scheduling of the radio calibration from ISR context to avoid conflicts with app tasks */
+  ll_intf_le_set_phy_clbr_context(PHY_CALIBRATION_CONTEXT_ISR);
 
   pbp_audio_start_params.pBroadcastAudioStartParams = &cap_audio_start_params;
   pbp_audio_start_params.StandardQuality = 0;

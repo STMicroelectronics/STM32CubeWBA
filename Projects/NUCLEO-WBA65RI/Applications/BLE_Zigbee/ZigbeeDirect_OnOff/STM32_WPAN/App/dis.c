@@ -169,7 +169,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_1_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
@@ -182,7 +182,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_2_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
@@ -195,7 +195,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_3_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
@@ -208,7 +208,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_4_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
@@ -221,7 +221,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }
@@ -234,7 +234,7 @@ static SVCCTL_EvtAckStatus_t DIS_EventHandler(void *p_Event)
             /*USER CODE END Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             /*USER CODE END Service1_Char_6_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2*/
           }

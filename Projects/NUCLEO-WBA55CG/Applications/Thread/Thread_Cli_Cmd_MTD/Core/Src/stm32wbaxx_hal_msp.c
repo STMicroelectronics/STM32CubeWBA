@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* USER CODE BEGIN Includes */
@@ -89,89 +88,6 @@ void HAL_MspInit(void)
   /* USER CODE BEGIN MspInit 1 */
   
   /* USER CODE END MspInit 1 */
-}
-
-/**
-  * @brief CRYP MSP Initialization
-  * This function configures the hardware resources used in this example
-  * @param hcryp: CRYP handle pointer
-  * @retval None
-  */
-void HAL_CRYP_MspInit(CRYP_HandleTypeDef* hcryp)
-{
-  if(hcryp->Instance==AES)
-  {
-    /* USER CODE BEGIN AES_MspInit 0 */
-
-    /* USER CODE END AES_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_AES_CLK_ENABLE();
-    /* USER CODE BEGIN AES_MspInit 1 */
-
-    /* USER CODE END AES_MspInit 1 */
-
-  }
-
-}
-
-/**
-  * @brief CRYP MSP De-Initialization
-  * This function freeze the hardware resources used in this example
-  * @param hcryp: CRYP handle pointer
-  * @retval None
-  */
-void HAL_CRYP_MspDeInit(CRYP_HandleTypeDef* hcryp)
-{
-  if(hcryp->Instance==AES)
-  {
-    /* USER CODE BEGIN AES_MspDeInit 0 */
-
-    /* USER CODE END AES_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_AES_CLK_DISABLE();
-    /* USER CODE BEGIN AES_MspDeInit 1 */
-
-    /* USER CODE END AES_MspDeInit 1 */
-  }
-
-}
-
-/**
-  * @brief HASH MSP Initialization
-  * This function configures the hardware resources used in this example
-  * @param hhash: HASH handle pointer
-  * @retval None
-  */
-void HAL_HASH_MspInit(HASH_HandleTypeDef* hhash)
-{
-    /* USER CODE BEGIN HASH_MspInit 0 */
-
-    /* USER CODE END HASH_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_HASH_CLK_ENABLE();
-    /* USER CODE BEGIN HASH_MspInit 1 */
-
-    /* USER CODE END HASH_MspInit 1 */
-
-}
-
-/**
-  * @brief HASH MSP De-Initialization
-  * This function freeze the hardware resources used in this example
-  * @param hhash: HASH handle pointer
-  * @retval None
-  */
-void HAL_HASH_MspDeInit(HASH_HandleTypeDef* hhash)
-{
-    /* USER CODE BEGIN HASH_MspDeInit 0 */
-
-    /* USER CODE END HASH_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_HASH_CLK_DISABLE();
-    /* USER CODE BEGIN HASH_MspDeInit 1 */
-
-    /* USER CODE END HASH_MspDeInit 1 */
-
 }
 
 /**
@@ -451,60 +367,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 }
 
 /**
-  * @brief PKA MSP Initialization
-  * This function configures the hardware resources used in this example
-  * @param hpka: PKA handle pointer
-  * @retval None
-  */
-void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
-{
-  if(hpka->Instance==PKA)
-  {
-    /* USER CODE BEGIN PKA_MspInit 0 */
-
-    /* USER CODE END PKA_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_PKA_CLK_ENABLE();
-    /* PKA interrupt Init */
-    HAL_NVIC_SetPriority(PKA_IRQn, 7, 0);
-    HAL_NVIC_EnableIRQ(PKA_IRQn);
-    /* USER CODE BEGIN PKA_MspInit 1 */
-    HW_RNG_EnableClock(0x04);
-    /* USER CODE END PKA_MspInit 1 */
-
-  }
-
-}
-
-/**
-  * @brief PKA MSP De-Initialization
-  * This function freeze the hardware resources used in this example
-  * @param hpka: PKA handle pointer
-  * @retval None
-  */
-void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
-{
-  if(hpka->Instance==PKA)
-  {
-    /* USER CODE BEGIN PKA_MspDeInit 0 */
-    /* Enable PKA reset state */
-    __HAL_RCC_PKA_FORCE_RESET();
-    /* Release PKA from reset state */
-    __HAL_RCC_PKA_RELEASE_RESET();
-    /* USER CODE END PKA_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_PKA_CLK_DISABLE();
-
-    /* PKA interrupt DeInit */
-    HAL_NVIC_DisableIRQ(PKA_IRQn);
-    /* USER CODE BEGIN PKA_MspDeInit 1 */
-    HW_RNG_DisableClock(0x04);
-    /* USER CODE END PKA_MspDeInit 1 */
-  }
-
-}
-
-/**
   * @brief RAMCFG MSP Initialization
   * This function configures the hardware resources used in this example
   * @param hramcfg: RAMCFG handle pointer
@@ -605,5 +467,36 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
 }
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief PKA MSP Initialization
+  * This function configures the hardware resources used in this example
+  * @param hpka: PKA handle pointer
+  * @retval None
+  */
+void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_PKA_CLK_ENABLE();
 
+    HW_RNG_EnableClock(0x04);
+  }
+}
+
+/**
+  * @brief PKA MSP De-Initialization
+  * This function freeze the hardware resources used in this example
+  * @param hpka: PKA handle pointer
+  * @retval None
+  */
+void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
+{
+  if(hpka->Instance==PKA)
+  {
+    __HAL_RCC_PKA_CLK_DISABLE();
+
+    HW_RNG_DisableClock(0x04);
+  }
+}
 /* USER CODE END 1 */

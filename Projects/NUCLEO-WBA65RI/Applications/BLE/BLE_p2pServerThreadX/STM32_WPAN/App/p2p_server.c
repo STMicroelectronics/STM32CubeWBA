@@ -341,7 +341,6 @@ void P2P_SERVER_Init(void)
   max_attr_record = 6;
 
   /* USER CODE BEGIN SVCCTL_InitService */
-  /* max_attr_record to be updated if descriptors have been added */
 
   /* USER CODE END SVCCTL_InitService */
 

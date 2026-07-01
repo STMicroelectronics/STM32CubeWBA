@@ -45,7 +45,7 @@ typedef struct
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -330,7 +330,7 @@ BAP_Extended_Advertising_Params_t extended_adv_params = {
   {0,0,0,0,0,0}, /* Peer Address */
   0x7F,          /* TX Power */
   0x00,          /* Secondary Advertising Max Skip */
-  0x01           /* Secondary Adv PHY */
+  0x02           /* Secondary Adv PHY */
 };
 BAP_Periodic_Advertising_Params_t periodic_adv_params = {
   64,  /* Advertising Interval Min */
@@ -403,12 +403,18 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  SNVMA_Register(APP_AUDIO_NvmBuffer,
-                 (uint32_t *)audio_buffer_nvm,
-                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                         (uint32_t *)audio_buffer_nvm,
+                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+    Error_Handler();
+  }
 
   /* Realize a restore */
-  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+  SNVMA_Restore (APP_AUDIO_SNVMA_BufferId_1_2);
 
   /* Initialize the Audio IP*/
   pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
@@ -718,16 +724,16 @@ uint8_t GMAPAPP_StartScanning(void)
   scan_param_phy.Scan_Interval = 0x50;
   scan_param_phy.Scan_Window = 0x50;
 
-  status = aci_gap_ext_start_scan(0x00,
-                                   GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
-                                   0x00,
-                                   0x01,
-                                   0x0000,
-                                   0x0000,
-                                   0x00,
-                                   0x01,
-                                   &scan_param_phy);
-  LOG_INFO_APP("aci_gap_ext_start_scan() returns status 0x%02X\n",status);
+  status = aci_gap_start_scan( 0x00,
+                               GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
+                               0x00,
+                               0x01,
+                               0x0000,
+                               0x0000,
+                               0x00,
+                               0x01,
+                               &scan_param_phy);
+  LOG_INFO_APP("aci_gap_start_scan() returns status 0x%02X\n",status);
 
   LOG_INFO_APP("GMAPAPP_StartScanning() returns status 0x%02X\n",status);
   return status;
@@ -961,9 +967,9 @@ uint8_t GMAPAPP_StartStream(uint8_t QOSConfIdSink, uint8_t NumChannelSink, Audio
 
           if ((role & AUDIO_ROLE_SINK ) == AUDIO_ROLE_SINK)
           {
-            pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id_sink%16].freq;
-            pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_sink%16].frame_duration;
-            pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_sink%16].octets_per_codec_frame;
+            pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id_sink].freq;
+            pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_sink].frame_duration;
+            pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_sink].octets_per_codec_frame;
 
             pQoS_Conf->SDUInterval = APP_QoSConf[QOSConfIdSink].sdu_interval;
             pQoS_Conf->Framing = APP_QoSConf[QOSConfIdSink].framing;
@@ -996,9 +1002,9 @@ uint8_t GMAPAPP_StartStream(uint8_t QOSConfIdSink, uint8_t NumChannelSink, Audio
           }
           else if ((role & AUDIO_ROLE_SOURCE ) == AUDIO_ROLE_SOURCE)
           {
-            pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id_source%16].freq;
-            pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_source%16].frame_duration;
-            pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_source%16].octets_per_codec_frame;
+            pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id_source].freq;
+            pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id_source].frame_duration;
+            pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id_source].octets_per_codec_frame;
 
             pQoS_Conf->SDUInterval = APP_QoSConf[QOSConfIdSource].sdu_interval;
             pQoS_Conf->Framing = APP_QoSConf[QOSConfIdSource].framing;
@@ -1298,6 +1304,10 @@ tBleStatus GMAPAPP_StartBroadcastSource(uint8_t QOSConfId)
   a_additional_adv_data[12] = Hex_To_Char(Pb_Addr[1] & 0x0F);
   a_additional_adv_data[13] = Hex_To_Char((Pb_Addr[0] & 0xF0) >> 4);
   a_additional_adv_data[14] = Hex_To_Char(Pb_Addr[0] & 0x0F);
+
+  /* enable ISO cohabitation scheduling mode for extended advertising */
+  const uint8_t iso_ext_adv_schl = 1;
+  aci_write_config_data(CONFIG_DATA_LL_ISO_SCHED_MODE_OFFSET, 1, &iso_ext_adv_schl);
 
   GMAPAPP_SetupBASE(QOSConfId);
 
@@ -2664,7 +2674,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               LOG_INFO_APP("Terminate GAP Procedure 0x%02x returns status 0x%x\n",GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,hciCmdResult);
             }
 #if (CFG_BLE_NUM_LINK > 0u)
-            /*Check if a CAP Linkup with a discovered Set Member should started*/
+            /* Check if a CAP Linkup with a discovered Set Member should started */
             for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
             {
               if (GMAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)
@@ -3318,144 +3328,16 @@ static tBleStatus GMAPAPP_BroadcastSetupAudio(void)
 /*Audio Source */
 static int32_t start_audio_source(void)
 {
-  int32_t status;
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  status = Start_RxAudio();
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    char sink_samplerate_text[8];
-    char source_samplerate_text[8];
-
-    switch (GMAPAPP_Context.ConfiguredSinkSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&sink_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    switch (GMAPAPP_Context.ConfiguredSourceSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&source_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&source_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
-  return status;
+  return Start_RxAudio();
 }
 
 /*Audio Sink */
 static int32_t start_audio_sink(void)
 {
-  int32_t status;
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  status = Start_TxAudio();
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    char sink_samplerate_text[8];
-    char source_samplerate_text[8];
-
-    switch (GMAPAPP_Context.ConfiguredSinkSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&sink_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    switch (GMAPAPP_Context.ConfiguredSourceSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&source_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&source_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
-  return status;
+  return Start_TxAudio();
 }
 
 #if (APP_VCP_ROLE_CONTROLLER_SUPPORT == 1u)

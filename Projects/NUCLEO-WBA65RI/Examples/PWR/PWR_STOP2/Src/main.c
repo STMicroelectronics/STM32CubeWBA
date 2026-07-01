@@ -1,9 +1,10 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
+  * @file    PWR/PWR_STOP2/Src/main.c
+  * @author  MCD Application Team
+  * @brief   This sample code shows how to use STM32WBAxx PWR HAL API to enter
+  *          and exit the STOP 2 mode.  ******************************************************************************
   * @attention
   *
   * Copyright (c) 2025 STMicroelectronics.
@@ -21,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32wbaxx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,9 +53,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ICACHE_Init(void);
 /* USER CODE BEGIN PFP */
-/* Private function prototypes -----------------------------------------------*/
-static void SYSCLKConfig_STOP(void);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,7 +98,8 @@ int main(void)
   /* Enable Power Clock */
   __HAL_RCC_PWR_CLK_ENABLE();
 
-
+  /* Enable Ultra Low Power Mode */
+  HAL_PWREx_EnableUltraLowPowerMode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,15 +111,26 @@ int main(void)
     /* USER CODE BEGIN 3 */
     /* Insert 5 second delay */
     HAL_Delay(5000);
+    /* Turn OFF LED's */
     BSP_LED_Off(LD1);
-  
+    BSP_LED_Off(LD3);
+
+    /*Deactivate Debug of Stop/Standby mode to have the best consumption */
+
+    CLEAR_BIT(DBGMCU->SCR, DBGMCU_SCR_DBG_STOP);
+    CLEAR_BIT(DBGMCU->SCR, DBGMCU_SCR_DBG_STANDBY);
+
     /* Enter STOP 2 mode */
-    HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
+    HAL_PWR_EnterSTOPMode(PWR_LOWPOWERMODE_STOP2, PWR_STOPENTRY_WFI);
+
+    /* Configure system clock after wake-up from STOP: enable HSE, PLL and select
+    PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+    SystemClock_Config();
 
     /* ... STOP 2 mode ... */
     /* Configure system clock after wake-up from STOP: enable HSE, PLL and select
-       PLL as system clock source (HSE and PLL are disabled in STOP mode) */
-    SYSCLKConfig_STOP();
+    PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+
   }
   /* USER CODE END 3 */
 }
@@ -267,45 +277,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/**
-  * @brief  Configures system clock after wake-up from STOP: enable HSE, PLL
-  *         and select PLL as system clock source.
-  * @param  None
-  * @retval None
-  */
-static void SYSCLKConfig_STOP(void)
-{
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  uint32_t pFLatency = 0;
 
-  /* Enable Power Control clock */
-  __HAL_RCC_PWR_CLK_ENABLE();
-
-  /* Get the Oscillators configuration according to the internal RCC registers */
-  HAL_RCC_GetOscConfig(&RCC_OscInitStruct);
-
-  /* After wake-up from STOP reconfigure the system clock: Enable HSE and PLL */
-  RCC_OscInitStruct.OscillatorType  = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState        = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL1.PLLState    = RCC_PLL_ON;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* Get the Clocks configuration according to the internal RCC registers */
-  HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, &pFLatency);
-
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
-     clocks dividers */
-  RCC_ClkInitStruct.ClockType     = RCC_CLOCKTYPE_SYSCLK;
-  RCC_ClkInitStruct.SYSCLKSource  = RCC_SYSCLKSOURCE_PLLCLK;
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, pFLatency) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
 
 /**
   * @brief SYSTICK callback
@@ -347,6 +319,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)
@@ -360,8 +333,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

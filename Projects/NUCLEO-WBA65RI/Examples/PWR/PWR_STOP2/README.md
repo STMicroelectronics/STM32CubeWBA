@@ -1,11 +1,3 @@
-
----
-pagetitle: Readme
-lang: en
----
-::: {.row}
-::: {.col-sm-12 .col-lg-8}
-
 ## <b>PWR_STOP2 Example Description</b> 
 
 This example shows how to enter the system in STOP 2 mode and wake-up from this
@@ -54,14 +46,14 @@ Power, PWR, Stop mode, Interrupt, EXTI, Wakeup, Low Power,
 
 ### <b>Directory contents</b>
 
-    - PWR/PWR_STOP2/Inc/stm32wbaxx_nucleo_conf.h     BSP configuration file
-    - PWR/PWR_STOP2/Inc/stm32wbaxx_conf.h            HAL Configuration file
-    - PWR/PWR_STOP2/Inc/stm32wbaxx_it.h              Header for stm32wbaxx_it.c
-    - PWR/PWR_STOP2/Inc/main.h                       Header file for main.c
-    - PWR/PWR_STOP2/Src/system_stm32wbaxx.c          STM32WBAxx system clock configuration file
-    - PWR/PWR_STOP2/Src/stm32wbaxx_it.c              Interrupt handlers
-    - PWR/PWR_STOP2/Src/main.c                       Main program
-    - PWR/PWR_STOP2/Src/stm32wbaxx_hal_msp.c         HAL MSP module
+  - PWR/PWR_STOP2/Inc/stm32wbaxx_nucleo_conf.h     BSP configuration file
+  - PWR/PWR_STOP2/Inc/stm32wbaxx_conf.h            HAL Configuration file
+  - PWR/PWR_STOP2/Inc/stm32wbaxx_it.h              Header for stm32wbaxx_it.c
+  - PWR/PWR_STOP2/Inc/main.h                       Header file for main.c
+  - PWR/PWR_STOP2/Src/system_stm32wbaxx.c          STM32WBAxx system clock configuration file
+  - PWR/PWR_STOP2/Src/stm32wbaxx_it.c              Interrupt handlers
+  - PWR/PWR_STOP2/Src/main.c                       Main program
+  - PWR/PWR_STOP2/Src/stm32wbaxx_hal_msp.c         HAL MSP module
 
 ### <b>Hardware and Software environment</b>
 
@@ -72,6 +64,7 @@ Power, PWR, Stop mode, Interrupt, EXTI, Wakeup, Low Power,
     and development board.
 
   - NUCLEO-WBA65RI set-up:
+  
     - Use LD1 and LD3 connected respectively to PD.08 and PB.08 pins
     - USER push-button connected to pin PC.13 (External line 13)
 
@@ -81,13 +74,8 @@ Power, PWR, Stop mode, Interrupt, EXTI, Wakeup, Low Power,
 In order to make the program work, you must do the following :
 
  - Open your preferred toolchain 
- 
  - Rebuild all files and load your image into target memory
- 
  - Run the example
-
  - Unplug then Plug STLINK connection to perform a power-on-reset
 
-:::
-:::
 

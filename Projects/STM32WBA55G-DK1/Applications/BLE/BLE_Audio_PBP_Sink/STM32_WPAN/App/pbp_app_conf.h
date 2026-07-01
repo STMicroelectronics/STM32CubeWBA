@@ -30,6 +30,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /*Audio Profiles Roles configuration*/
+#define APP_CAP_ROLE                                    (CAP_ROLE_ACCEPTOR)
+
 #define APP_BAP_ROLE_UNICAST_SERVER_SUPPORT             (0u)
 #define APP_BAP_ROLE_UNICAST_CLIENT_SUPPORT             (0u)
 #define APP_BAP_ROLE_BROADCAST_SOURCE_SUPPORT           (0u)

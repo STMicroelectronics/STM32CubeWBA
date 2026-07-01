@@ -39,7 +39,6 @@ echo. >> %current_log_file%
 ::=================================================================================================
 set s_code_bin="%projectdir%\..\Binary\oemirot_tz_s_app.bin"
 set ns_code_bin="%projectdir%\..\Binary\oemirot_tz_ns_app.bin"
-set one_code_bin="%projectdir%\..\Binary\oemirot_tz_app.bin"
 
 ::=================================================================================================
 ::image xml configuration files
@@ -128,18 +127,6 @@ set "applicfg=%cube_fw_path%\Utilities\PC_Software\ROT_AppliConfig\AppliCfg.py"
 
 echo Postbuild %signing% image >> %current_log_file% 2>>&1
 
-IF "%app_image_number%" == "2" (
-goto :continue
-)
-IF %signing% == "nonsecure" (
-echo Creating only one image >> %current_log_file% 2>>&1
-%python%%applicfg% oneimage -fb %s_code_bin% -o %image_s_size% -sb %ns_code_bin% -i 0x0 -ob %one_code_bin% --vb >> %current_log_file% 2>>&1
-IF !errorlevel! neq 0 goto :error
-set ns_app_enc_sign_bin_xml_field="%bin_path_xml_field%\oemirot_tz_app_enc_sign.bin"
-set ns_app_bin_xml_field="%bin_path_xml_field%\oemirot_tz_app.bin"
-)
-
-:continue
 IF %signing% == "secure" (
 echo Creating secure image  >> %current_log_file% 2>>&1
 

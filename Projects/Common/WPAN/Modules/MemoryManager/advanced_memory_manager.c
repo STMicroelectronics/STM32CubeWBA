@@ -684,8 +684,11 @@ void pushPending (AMM_VirtualMemoryCallbackFunction_t * const p_CallbackElt)
 {
   if (p_CallbackElt != NULL)
   {
-    /* Add the new callback */
-    LST_insert_tail (&AmmPendingCallback, (tListNode *)p_CallbackElt);
+    /* Add the new callback only if not already part of a list */
+    if ((p_CallbackElt->Header.next == NULL) && (p_CallbackElt->Header.prev == NULL))
+    {
+      LST_insert_tail (&AmmPendingCallback, (tListNode *)p_CallbackElt);
+    }
   }
 }
 
@@ -710,6 +713,10 @@ AMM_VirtualMemoryCallbackFunction_t * popActive (void)
   {
     /* Remove last element */
     LST_remove_head (&AmmActiveCallback, (tListNode**)&p_error);
+
+    /* Mark callback element as not in a list anymore */
+    p_error->Header.next = NULL;
+    p_error->Header.prev = NULL;
   }
 
   return p_error;

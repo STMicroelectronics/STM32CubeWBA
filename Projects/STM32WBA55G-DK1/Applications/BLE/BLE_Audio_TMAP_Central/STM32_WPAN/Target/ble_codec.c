@@ -36,7 +36,7 @@
  */
 #define NUM_ISO_DATA_PATH               MIN(MAX_PATH_NB, NUM_OF_ISO_LINKS*2)
 
-#define LL_MAX_NUMBER_OF_ISO_DATA       13
+#define LL_MAX_NUMBER_OF_ISO_DATA       14
 
 #define ISO_SDU_STATUS_IDLE             0
 #define ISO_SDU_STATUS_BUSY             1
@@ -978,12 +978,12 @@ uint8_t BLECB_SendIsoData( uint16_t conn_handle,
       {
         /* Data need to pass through the codec by calling CODEC_SendData() */
         /* But the vendor specific data path should rather be used for latency management */
-        status = BLE_STATUS_PENDING;
+        status = BLE_STATUS_SUCCESS;
       }
       else
       {
         /* Data is directly send to the Link Layer, no need to pass through the codec */
-        status = BLE_STATUS_SUCCESS;
+        status = BLE_STATUS_PENDING;
       }
       break;
     }

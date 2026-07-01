@@ -515,6 +515,11 @@
               <FileType>1</FileType>
               <FilePath>../../../../../../Middlewares/Third_Party/mbedtls/library/md.c</FilePath>
             </File>
+            <File>
+              <FileName>psa_crypto_random.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../../../../../Middlewares/Third_Party/mbedtls/library/psa_crypto_random.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

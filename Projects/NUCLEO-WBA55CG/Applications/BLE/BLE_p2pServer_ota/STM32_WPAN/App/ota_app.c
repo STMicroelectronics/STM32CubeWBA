@@ -34,6 +34,7 @@
 #include "stm32_timer.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
+#include "simple_nvm_arbiter.h"
 
 /* USER CODE END Includes */
 
@@ -220,7 +221,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               {
                 OTA_APP_Context.sectors = 0;
               }
-              
+
               OTA_APP_Context.write_value_index = 0;
               OTA_APP_Context.Conf_Indication_Status = OTA_APP_Ready_Pending;
               first_valid_address = USER_CFG_SLOT_START_SECTOR_INDEX * FLASH_PAGE_SIZE + FLASH_BASE;
@@ -238,13 +239,13 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
 
                 /* Erase targeted sectors */
                 while(error != FM_OK)
-                {  
+                {
                   /* Flash manager erase */
                   if(OTA_APP_Context.sectors == 0)
                   {
                     OTA_APP_Context.sectors = CFG_USER_DATA_SECTORS_NB;
                   }
-                  error = FM_Erase((uint32_t)USER_CFG_SLOT_START_SECTOR_INDEX, 
+                  error = FM_Erase((uint32_t)USER_CFG_SLOT_START_SECTOR_INDEX,
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
 
@@ -268,7 +269,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   {
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-                    
+
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
@@ -300,7 +301,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
             {
               uint32_t first_valid_address;
               FM_Cmd_Status_t error = FM_ERROR;
-              
+
               OTA_APP_Context.file_type = FILE_TYPE_FW_APP;
               ((uint8_t*)&OTA_APP_Context.base_address)[0] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[2];
               ((uint8_t*)&OTA_APP_Context.base_address)[1] = (((uint8_t*)((OTA_Base_Addr_Event_Format_t*)(p_Notification->DataTransfered.p_Payload))->Base_Addr))[1];
@@ -315,7 +316,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
               {
                 OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
               }
-              
+
               OTA_APP_Context.write_value_index = 0;
               OTA_APP_Context.Conf_Indication_Status = OTA_APP_Ready_Pending;
               first_valid_address = ((CFG_ACTIVE_SLOT_START_SECTOR_INDEX + APP_SLOT_PAGE_SIZE) * FLASH_PAGE_SIZE) + FLASH_BASE;
@@ -332,13 +333,13 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                 UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
 
                 while(error != FM_OK)
-                {  
+                {
                   /* Flash manager Erase */
                   if(OTA_APP_Context.sectors == 0)
                   {
                     OTA_APP_Context.sectors = APP_SLOT_PAGE_SIZE;
                   }
-                  error = FM_Erase((uint32_t)((OTA_APP_Context.base_address - FLASH_BASE) >> 13), 
+                  error = FM_Erase((uint32_t)((OTA_APP_Context.base_address - FLASH_BASE) >> 13),
                                    (uint32_t)(OTA_APP_Context.sectors),
                                    &FM_EraseStatusCallback);
 
@@ -362,7 +363,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
                   {
                     /* Wait for Erase callback to be invoked */
                     UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
-                    
+
                     /* Clear events before start testing */
                     UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_ERASE_CALLBACK_EVT_RSP_ID);
                   }
@@ -436,12 +437,12 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service2Char3_WRITE_NO_RESP_EVT */
       {
         FM_Cmd_Status_t error = FM_ERROR;
-        
+
         /**
          * Write in Flash the data received in the BLE packet
          */
         size_left = p_Notification->DataTransfered.Length;
-        
+
         /**
          * For the flash manager the address of the data to be stored in FLASH shall be 32bits aligned
          * and the address where the data shall be written shall be 128bits aligned
@@ -454,7 +455,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
         UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
 
         while(error != FM_OK)
-        {  
+        {
           /* Flash manager Write */
           error = FM_Write ((uint32_t *)(&OTA_APP_Context.write_value[0]),
                             (uint32_t *)((OTA_APP_Context.base_address) + address_offset),
@@ -481,7 +482,7 @@ void OTA_Notification(OTA_NotificationEvt_t *p_Notification)
           {
             /* Wait for Write callback to be invoked */
             UTIL_SEQ_WaitEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
-            
+
             /* Clear events before start testing */
             UTIL_SEQ_ClrEvt ( 1 << CFG_EVENT_FM_WRITE_CALLBACK_EVT_RSP_ID);
           }

@@ -33,7 +33,6 @@
 #include "stm32_lpm.h"
 #include "stm32_lpm_if.h"
 #endif /* (CFG_LPM_LEVEL != 0) */
-
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -43,9 +42,6 @@
 /* 2.4GHz RADIO ISR callbacks */
 void (*radio_callback)(void) = NULL;
 void (*low_isr_callback)(void) = NULL;
-
-/* RNG handle */
-extern RNG_HandleTypeDef hrng;
 
 /* Radio critical sections */
 static uint32_t primask_bit = 0;
@@ -451,7 +447,7 @@ void LINKLAYER_PLAT_DisableSpecificIRQ(uint8_t isr_type)
       local_basepri_value = __get_BASEPRI();
 
       /* Mask all other interrupts with lower priority that link layer SW low ISR */
-      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW<<4);
+      __set_BASEPRI_MAX(RADIO_INTR_PRIO_LOW << 4 );
     }
   }
 }
@@ -499,6 +495,9 @@ void LINKLAYER_PLAT_DisableRadioIT(void)
   */
 void LINKLAYER_PLAT_StartRadioEvt(void)
 {
+#if ( CFG_LPM_LEVEL != 0)
+  MX_APPE_SetTicklessIdleState(RTOS_TICK_LESS_INACTIVE);
+#endif /* ( CFG_LPM_LEVEL != 0) */
   __HAL_RCC_RADIO_CLK_SLEEP_ENABLE();
   NVIC_SetPriority(RADIO_INTR_NUM, RADIO_INTR_PRIO_HIGH);
 #if (CFG_SCM_SUPPORTED == 1)
@@ -518,6 +517,9 @@ void LINKLAYER_PLAT_StopRadioEvt(void)
 #if (CFG_SCM_SUPPORTED == 1)
   scm_notifyradiostate(SCM_RADIO_NOT_ACTIVE);
 #endif /* CFG_SCM_SUPPORTED */
+#if ( CFG_LPM_LEVEL != 0)
+  MX_APPE_SetTicklessIdleState(RTOS_TICK_LESS_ACTIVE);
+#endif /* ( CFG_LPM_LEVEL != 0) */
 }
 
 /**

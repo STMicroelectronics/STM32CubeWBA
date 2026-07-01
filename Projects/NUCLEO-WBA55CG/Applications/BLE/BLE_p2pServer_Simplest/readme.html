@@ -20,28 +20,28 @@
 <div class="row">
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_p2pserver_simplest-application-description"><strong>BLE_p2pServer_Simplest Application Description</strong></h2>
-<p>How to demonstrate Point-to-Point communication using BLE as simple as possible.</p>
-<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits).<br />
-For more information please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
-<p>The Peer to Peer Server device is part of Peer to Peer Profile.<br />
-It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
+<p>How to demonstrate Point-to-Point communication using BLE as simple as possible. Minimal system modules so reduced features and performance.</p>
+<p>The Peer to Peer Profile is a Generic Attribute Profile (GATT) based low-energy profile defined by STMicroelectronics with proprietary UUIDs(128 bits). For more information please refer to <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Peer_To_Peer#STM32WBA_Peer_to_Peer_Server_application"> STM32WBA Peer To Peer Server Applications.</a></p>
+<p>The Peer to Peer Server device is part of Peer to Peer Profile. It is widely used for direct connection and communication between a GATT-server of a Peer to Peer Server device, and a GATT-client Collector device, such as a smartphone, STM32WBA Peer to Peer Client or Peer to Peer Router devices.</p>
 <p>The BLE p2pServer application advertises and waits for a connection from either:</p>
 <ul>
-<li>The BLE p2pClient application running on STM32WBA65xx devices.<br />
-</li>
+<li>The BLE p2pClient application running on STM32WBAxx devices.</li>
 <li>The remote interface.</li>
 </ul>
 <p>Once connected, BLE p2pServer can receive messages from the Client and send notification to it.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
-<p>This application runs on STM32WBA55xx devices.</p>
+<ul>
+<li><p>This application runs on STM32WBA55xx Nucleo board.</p></li>
+<li><p>Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).</p></li>
+</ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work:</p>
 <ul>
-<li>Open your preferred toolchain.<br />
-</li>
-<li>Rebuild all files and flash the STM32WBAxx Nucleo board at the address 0x08000000 with the executable file.</li>
+<li>Open the project with your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
+<li>Run the example.</li>
 </ul>
 <p>Use one of the following remote interface to interact with your device <a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:BLE_smartphone_applications#Bluetooth-C2-AE_LE_collector_applications_for_STM32WBA
 "> Bluetooth LE collector applications for STM32WBA.</a></p>
@@ -49,15 +49,11 @@ It is widely used for direct connection and communication between a GATT-server 
 <ul>
 <li>Open remote interface:
 <ul>
-<li>Select the p2pS_SI in the device list.<br />
-</li>
-<li>Connect to it.<br />
-</li>
-<li>Select the P2P Server service.<br />
-</li>
+<li>Select the p2pS_SI in the device list.</li>
+<li>Connect to it.</li>
+<li>Select the P2P Server service.</li>
 </ul></li>
-<li>On remote interface, click on the LED icon to switchLED1 (blue) of the STM32WBAxx Nucleo board On/Off.<br />
-</li>
+<li>On remote interface, click on the LED icon to switchLED1 (blue) of the STM32WBAxx Nucleo board On/Off.</li>
 <li>On the STM32WBAxx Nucleo board click on B1 to send a notification to the remote interface.</li>
 </ul>
 </div>

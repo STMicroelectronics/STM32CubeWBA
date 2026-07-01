@@ -83,7 +83,6 @@ fi
 #=================================================================================================
 s_code_bin="$project_dir/../Binary/oemirot_tz_s_app.bin"
 ns_code_bin="$project_dir/../Binary/oemirot_tz_ns_app.bin"
-one_code_bin="$project_dir/../Binary/oemirot_tz_app.bin"
 
 #=================================================================================================
 #image xml configuration files
@@ -147,14 +146,6 @@ applicfg="$cube_fw_path/Utilities/PC_Software/ROT_AppliConfig/AppliCfg.py"
 
 #postbuild
 echo "Postbuild $signing image" >> $current_log_file 2>&1
-
-if  [ $app_image_number -eq 1 ] && [ $signing == "nonsecure" ]; then
-    echo "Creating only one image" >> $current_log_file 2>&1
-    $python$applicfg oneimage -fb $s_code_bin -o $image_s_size -sb $ns_code_bin -i 0x0 -ob $one_code_bin --vb >> $current_log_file 2>&1
-    if [ $? != 0 ]; then error; fi
-    ns_app_enc_sign_bin_xml_field="$bin_path_xml_field/oemirot_tz_app_enc_sign.bin"
-    ns_app_bin_xml_field="$bin_path_xml_field/oemirot_tz_app.bin"
-fi
 
 if  [ $signing == "secure" ]; then
     echo "Creating secure image"  >> $current_log_file 2>&1

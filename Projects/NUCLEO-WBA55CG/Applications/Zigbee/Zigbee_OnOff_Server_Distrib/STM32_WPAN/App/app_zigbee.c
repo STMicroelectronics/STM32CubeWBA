@@ -64,10 +64,10 @@ ZigbeeAppInfo_t                                     stZigbeeAppInfo;
 #define APP_ZIGBEE_CHIP_VERSION                     0x20        // Cut 2.0
 #define APP_ZIGBEE_BOARD_POWER                      0x00        // No Power
 
-#define APP_ZIGBEE_APP_DATE_CODE                    "20260301"
-#define APP_ZIGBEE_APP_BUILD_ID                     "V1.9"
-#define APP_ZIGBEE_APP_VERSION                      0x19                    // Application Version v1.9
-#define APP_ZIGBEE_STACK_VERSION                    ( ( 26u << 2u ) | 1u )  // Stack Version 2026.1
+#define APP_ZIGBEE_APP_DATE_CODE                    "20260601"
+#define APP_ZIGBEE_APP_BUILD_ID                     "V1.10"
+#define APP_ZIGBEE_APP_VERSION                      0x1A                    // Application Version v1.10
+#define APP_ZIGBEE_STACK_VERSION                    ( ( 26u << 2u ) | 6u )  // Stack Version 2026.6
 
 /* USER CODE BEGIN PD */
 
@@ -592,6 +592,10 @@ char * APP_ZIGBEE_GetDisplaySecKey( const uint8_t * szCode, uint16_t iLength, bo
  */
 void APP_ZIGBEE_PrintGenericInfo( void )
 {
+  /* Display HW Version */
+  LOG_INFO_APP( "Chip Name : %s-Rev%s", WpanUtils_GetDeviceName(), WpanUtils_GetDeviceRevName() );
+  LOG_INFO_APP( "Chip Package : %s", WpanUtils_GetDevicePackageName() );
+
   /* Display Application Version. */
   LOG_INFO_APP( "Application Version : %d.%d", ( APP_ZIGBEE_APP_VERSION >> 4u ), ( APP_ZIGBEE_APP_VERSION & 0x0F ) );
 

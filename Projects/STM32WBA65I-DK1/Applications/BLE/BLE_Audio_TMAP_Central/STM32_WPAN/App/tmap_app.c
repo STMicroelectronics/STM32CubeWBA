@@ -39,7 +39,7 @@
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -337,7 +337,7 @@ BAP_Extended_Advertising_Params_t extended_adv_params = {
   {0,0,0,0,0,0}, /* Peer Address */
   0x7F,          /* TX Power */
   0x00,          /* Secondary Advertising Max Skip */
-  0x01           /* Secondary Adv PHY */
+  0x02           /* Secondary Adv PHY */
 };
 BAP_Periodic_Advertising_Params_t periodic_adv_params = {
   64,  /* Advertising Interval Min */
@@ -405,12 +405,18 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  SNVMA_Register(APP_AUDIO_NvmBuffer,
-                 (uint32_t *)audio_buffer_nvm,
-                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                         (uint32_t *)audio_buffer_nvm,
+                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+    Error_Handler();
+  }
 
   /* Realize a restore */
-  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+  SNVMA_Restore (APP_AUDIO_SNVMA_BufferId_1_2);
 
   /* Initialize the Audio IP*/
   pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
@@ -707,16 +713,16 @@ uint8_t TMAPAPP_StartScanning(void)
   scan_param_phy.Scan_Interval = 0x50;
   scan_param_phy.Scan_Window = 0x50;
 
-  status = aci_gap_ext_start_scan(0x00,
-                                   GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
-                                   0x00,
-                                   0x01,
-                                   0x0000,
-                                   0x0000,
-                                   0x00,
-                                   HCI_SCANNING_PHYS_LE_1M,
-                                   &scan_param_phy);
-  LOG_INFO_APP("aci_gap_ext_start_scan() returns status 0x%02X\n",status);
+  status = aci_gap_start_scan( 0x00,
+                               GAP_GENERAL_CONNECTION_ESTABLISHMENT_PROC,
+                               0x00,
+                               0x01,
+                               0x0000,
+                               0x0000,
+                               0x00,
+                               HCI_SCANNING_PHYS_LE_1M,
+                               &scan_param_phy);
+  LOG_INFO_APP("aci_gap_start_scan() returns status 0x%02X\n",status);
 
   LOG_INFO_APP("TMAPAPP_StartScanning() returns status 0x%02X\n",status);
   return status;
@@ -838,14 +844,12 @@ uint8_t TMAPAPP_StartMediaStream(void)
     metadata_snk_len = 0u;
     p_conn = APP_GetACLConn(StartStreamParams[i].ConnHandle);
     uint8_t qos_conf_id = TARGET_MEDIA_STREAM_QOS_CONFIG;
-    uint8_t codec_conf_id = TARGET_MEDIA_STREAM_QOS_CONFIG % 16;
     if (p_conn != 0)
     {
       if (p_conn->TargetedMediaQoSConfSupported == 0)
       {
         LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 24_2\n", TARGET_MEDIA_STREAM_QOS_CONFIG);
-        qos_conf_id = LC3_QOS_24_2_2;
-        codec_conf_id = LC3_24_2;
+        qos_conf_id = LC3_QOS_24_2_1;
       }
 
       CodecConfSnk[i].TargetLatency = TARGET_LATENCY_LOW;
@@ -853,10 +857,10 @@ uint8_t TMAPAPP_StartMediaStream(void)
       CodecConfSnk[i].CodecID.CodingFormat = 0x06;
       CodecConfSnk[i].CodecID.CompanyID = 0x0000;
       CodecConfSnk[i].CodecID.VsCodecID = 0x0000;
-      CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
-      CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
+      CodecConfSnk[i].CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[qos_conf_id%16].freq;
+      CodecConfSnk[i].CodecSpecificConfParams.FrameDuration = APP_CodecConf[qos_conf_id%16].frame_duration;
       CodecConfSnk[i].CodecSpecificConfParams.FrameBlockPerSdu = 1;
-      CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
+      CodecConfSnk[i].CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[qos_conf_id%16].octets_per_codec_frame;
       if (num_acceptors == MAX_UNICAST_ACCEPTORS)
       {
         if ((p_conn->UnicastServerInfo.SnkAudioLocations & FRONT_LEFT) == FRONT_LEFT)
@@ -971,7 +975,6 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
   uint8_t metadata_src_len = 0;
   uint8_t num_acceptors = 0u;
   uint8_t conn_ref = 0u;
-  uint8_t codec_conf_id = TARGET_TELEPHONY_STREAM_QOS_CONFIG % 16;
   uint8_t qos_conf_id = TARGET_TELEPHONY_STREAM_QOS_CONFIG;
   APP_ACL_Conn_t *p_conn;
   CAP_Set_Acceptors_t set_type = CAP_SET_TYPE_AD_HOC;
@@ -1033,7 +1036,6 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
   /* Check if we need to decrease the audio configuration to support topology */
   if (num_acceptors == MAX_UNICAST_ACCEPTORS)
   {
-    codec_conf_id = LC3_16_2;
     qos_conf_id = LC3_QOS_16_2_1;
   }
 
@@ -1048,7 +1050,6 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
       {
         LOG_INFO_APP("Remote Unicast Server doesn't support QoS Conf %d, fallback on 16_2\n",
                      TARGET_TELEPHONY_STREAM_QOS_CONFIG);
-        codec_conf_id = LC3_16_2;
         qos_conf_id = LC3_QOS_16_2_1;
       }
 
@@ -1076,10 +1077,10 @@ uint8_t TMAPAPP_StartTelephonyStream(void)
           pCodecConf->CodecID.CodingFormat = 0x06;
           pCodecConf->CodecID.CompanyID = 0x0000;
           pCodecConf->CodecID.VsCodecID = 0x0000;
-          pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[codec_conf_id%16].freq;
-          pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[codec_conf_id%16].frame_duration;
+          pCodecConf->CodecSpecificConfParams.SamplingFrequency = APP_CodecConf[qos_conf_id%16].freq;
+          pCodecConf->CodecSpecificConfParams.FrameDuration = APP_CodecConf[qos_conf_id%16].frame_duration;
           pCodecConf->CodecSpecificConfParams.FrameBlockPerSdu = 1;
-          pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[codec_conf_id%16].octets_per_codec_frame;
+          pCodecConf->CodecSpecificConfParams.OctetPerCodecFrame = APP_CodecConf[qos_conf_id%16].octets_per_codec_frame;
 
           /* Set Mono channel for telephony as microphone IN is mono */
           pCodecConf->AudioChannelAllocation = 0;
@@ -1615,6 +1616,10 @@ tBleStatus TMAPAPP_StartBroadcastSource(uint8_t BAPConfID)
   a_additional_adv_data[12] = Hex_To_Char(Pb_Addr[1] & 0x0F);
   a_additional_adv_data[13] = Hex_To_Char((Pb_Addr[0] & 0xF0) >> 4);
   a_additional_adv_data[14] = Hex_To_Char(Pb_Addr[0] & 0x0F);
+
+  /* enable ISO cohabitation scheduling mode for extended advertising */
+  const uint8_t iso_ext_adv_schl = 1;
+  aci_write_config_data(CONFIG_DATA_LL_ISO_SCHED_MODE_OFFSET, 1, &iso_ext_adv_schl);
 
   TMAPAPP_SetupBASE(BAPConfID);
 
@@ -3080,7 +3085,7 @@ static void TMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                            hciCmdResult);
             }
 #if (CFG_BLE_NUM_LINK > 0u)
-            /*Check if a CAP Linkup with a discovered Set Member should started*/
+            /* Check if a CAP Linkup with a discovered Set Member should started */
             for (uint8_t i = 0; i < CFG_BLE_NUM_LINK; i++)
             {
               if (TMAPAPP_Context.ACL_Conn[i].CSIPDiscovered == 1u)

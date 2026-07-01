@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    Examples_LL/PWR/PWR_SMPS_64MHZ_HSI_PLL/Inc/stm32wlxx_it.h
+  * @file    Examples_LL/PWR/PWR_SMPS_64MHZ_HSI_PLL/Inc/stm32wbaxx_it.h
   * @author  MCD Application Team
   * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************

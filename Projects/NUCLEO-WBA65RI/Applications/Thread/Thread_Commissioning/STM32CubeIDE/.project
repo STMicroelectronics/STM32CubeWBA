@@ -274,11 +274,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/app_bsp.c</locationURI>
 		</link>
 		<link>
-			<name>Common/WPAN/Interface/hw_aes.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_aes.c</locationURI>
-		</link>
-		<link>
 			<name>Common/WPAN/Interface/hw_otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Interfaces/hw_otp.c</locationURI>
@@ -307,11 +302,6 @@
 			<name>Common/WPAN/Modules/otp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/otp.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/pka_ctrl.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/pka_ctrl.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/scm.c</name>
@@ -437,21 +427,6 @@
 			<name>Application/User/System/Interfaces/stm32_lpm_if.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/System/Interfaces/stm32_lpm_if.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_ccm.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ccm.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_cmac.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_cmac.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/BasicAES/baes_ecb.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/BasicAES/baes_ecb.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/Log/log_module.c</name>

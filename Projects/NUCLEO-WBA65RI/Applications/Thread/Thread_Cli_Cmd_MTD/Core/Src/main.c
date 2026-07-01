@@ -41,8 +41,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-PKA_HandleTypeDef hpka;
-
 RAMCFG_HandleTypeDef hramcfg_SRAM1;
 
 RTC_HandleTypeDef hrtc;
@@ -108,7 +106,6 @@ int main(void)
   MX_RAMCFG_Init();
   MX_RTC_Init();
   MX_USART2_UART_Init();
-  MX_PKA_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -276,32 +273,6 @@ void MX_ICACHE_Init(void)
   /* USER CODE BEGIN ICACHE_Init 2 */
 
   /* USER CODE END ICACHE_Init 2 */
-
-}
-
-/**
-  * @brief PKA Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_PKA_Init(void)
-{
-
-  /* USER CODE BEGIN PKA_Init 0 */
-
-  /* USER CODE END PKA_Init 0 */
-
-  /* USER CODE BEGIN PKA_Init 1 */
-
-  /* USER CODE END PKA_Init 1 */
-  hpka.Instance = PKA;
-  if (HAL_PKA_Init(&hpka) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN PKA_Init 2 */
-
-  /* USER CODE END PKA_Init 2 */
 
 }
 
@@ -529,6 +500,7 @@ void MX_GPIO_Init(void)
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

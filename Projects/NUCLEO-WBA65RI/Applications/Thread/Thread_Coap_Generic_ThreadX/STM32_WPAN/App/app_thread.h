@@ -26,6 +26,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes  */
+
 /* Exported types ------------------------------------------------------------*/
 /*
  *  List of all errors tracked by the Thread application.
@@ -50,6 +54,7 @@ typedef enum
   ERR_THREAD_MESSAGE_READ,
   ERR_THREAD_COAP_SEND_RESPONSE,
   ERR_THREAD_COAP_NEW_MSG,
+  ERR_THREAD_COAP_INIT,
   ERR_THREAD_COAP_APPEND,
   ERR_THREAD_COAP_SEND_REQUEST,
   ERR_THREAD_COAP_DATA_RESPONSE,
@@ -87,6 +92,15 @@ void Thread_Init(void);
 void APP_THREAD_Init(void);
 void APP_THREAD_ScheduleUART(void);
 void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode);
+void APP_THREAD_ProcessAlarm(void *argument);
+void APP_THREAD_ProcessUsAlarm(void *argument);
+void APP_THREAD_ProcessOpenThreadTasklets(void *argument);
+#if (OT_CLI_USE == 1)
+void APP_THREAD_ProcessUart(ULONG lArgument);
+#endif
+
+void InitThreadStack(void);
+void DeinitThreadStack(void);
 
 /* USER CODE BEGIN EFP */
 

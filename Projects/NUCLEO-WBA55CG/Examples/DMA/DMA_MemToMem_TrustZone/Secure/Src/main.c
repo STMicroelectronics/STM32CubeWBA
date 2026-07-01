@@ -446,6 +446,7 @@ static void SecureToSecureTransferError(DMA_HandleTypeDef *hdma_memtomem_dma1_ch
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

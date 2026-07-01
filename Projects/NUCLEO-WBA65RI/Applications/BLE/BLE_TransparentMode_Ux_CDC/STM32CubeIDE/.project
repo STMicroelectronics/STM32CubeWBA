@@ -264,11 +264,6 @@
 			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_usb.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/STM32WBAxx_HAL_Driver/stm32wbaxx_ll_utils.c</name>
-			<type>1</type>
-			<locationURI>PARENT-6-PROJECT_LOC/Drivers/STM32WBAxx_HAL_Driver/Src/stm32wbaxx_ll_utils.c</locationURI>
-		</link>
-		<link>
 			<name>Application/User/Core/app_entry.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_entry.c</locationURI>
@@ -357,6 +352,11 @@
 			<name>Common/WPAN/Modules/temp_measurement.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/temp_measurement.c</locationURI>
+		</link>
+		<link>
+			<name>Common/WPAN/Modules/wpan_utils.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/wpan_utils.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Startup/stm32wbaxx_ResetHandler_GCC.s</name>
@@ -932,16 +932,6 @@
 			<name>Common/WPAN/Modules/MemoryManager/stm32_mm.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/MemoryManager/stm32_mm.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/RFControl/rf_antenna_switch.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RFControl/rf_antenna_switch.c</locationURI>
-		</link>
-		<link>
-			<name>Common/WPAN/Modules/RFControl/rf_external_pa.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/Common/WPAN/Modules/RFControl/rf_external_pa.c</locationURI>
 		</link>
 		<link>
 			<name>Common/WPAN/Modules/RTDebug/RTDebug.c</name>

@@ -120,11 +120,11 @@ uint8_t stream_active = 0;
 uint8_t broadcast_freq_id = 4;
 
 uint8_t a_broadcast_conf_id[5] = {
-  1,  /* 8_2_1 */
-  3,  /* 16_2_1 */
-  5,  /* 24_2_1 */
-  7,  /* 32_2_1 */
-  13,  /* 48_4_1 */
+  LC3_QOS_8_2_1,
+  LC3_QOS_16_2_1,
+  LC3_QOS_24_2_1,
+  LC3_QOS_32_2_1,
+  LC3_QOS_48_4_1,
 };
 char *a_broadcast_freq_name[5] = {
   "8KHz",

@@ -59,12 +59,12 @@
 /**
   * @brief  Values used for timer driver
   */
-#define CLOCK_PRESCALER         98               /* (98.304MHz / 98) provides approximately 1us timer */
+#define CLOCK_PRESCALER         96               /* (98.304MHz / 96) provides approximately 1us timer */
 #define TIMER_IT_PRIO           4
 
 #define AS_CAPTURE_PRESCALER    0
 #define AS_AUTORELOAD           0x000FFFFF      /* maximum value */
-#define AS_COMPARE_MAX          1000000         /* 1s */
+#define AS_COMPARE_MAX          1024000         /* approximately 1s */
 #define AS_ACCEPTABLE_WINDOWS   100u            /* windows in ticks around the interrupt for generating the event to the codec */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -257,6 +257,16 @@ uint32_t CODEC_CLK_GetHostTimestamp( void )
   {
     as_cnt_val = RCC->ASCNTR; /* 20 bits value */
   }
+
+  /* check if auto reload interrupt is pending since the function may be called from critical section */
+  if (READ_REG(RCC->ASSR) & RCC_ASIER_COIE_Msk)
+  {
+    if (IsTimerAutoreloading && (as_cnt_val != AS_COMPARE_MAX))
+    {
+      as_cnt_val += (AS_COMPARE_MAX + 1);
+    }
+  }
+
   return AudioTimerCnt + as_cnt_val;
 }
 
@@ -453,7 +463,7 @@ static void manage_compare_it(void)
 
       WAIT_RCC_AS_EDGE();
 
-      AudioTimerCnt += RCC->ASCNTR+1; /* incremented AudioTimerCnt since the cnt register will be reset */
+      AudioTimerCnt += (RCC->ASCNTR + 1); /* incremented AudioTimerCnt since the cnt register will be reset */
 
       /* clear CEN lead to resetting all register */
       CLEAR_BIT(RCC->ASCR, RCC_ASCR_CEN);
@@ -481,6 +491,13 @@ void RCC_AUDIOSYNC_IRQHandler(void)
 {
   uint32_t status_reg = READ_REG(RCC->ASSR);
 
+  if (status_reg & RCC_ASIER_COIE_Msk)
+  {
+    /*compare it*/
+    manage_compare_it();
+    CLEAR_BIT(RCC->ASSR, RCC_ASIER_COIE_Msk);
+  }
+
   if (status_reg & RCC_ASIER_CAIE_Msk)
   {
     /*capture it*/
@@ -492,13 +509,6 @@ void RCC_AUDIOSYNC_IRQHandler(void)
     }
 #endif
     CLEAR_BIT(RCC->ASSR, RCC_ASIER_CAIE_Msk);
-  }
-
-  if (status_reg & RCC_ASIER_COIE_Msk)
-  {
-    /*compare it*/
-    manage_compare_it();
-    CLEAR_BIT(RCC->ASSR, RCC_ASIER_COIE_Msk);
   }
 
   if (status_reg & RCC_ASIER_CAEIE_Msk)
@@ -547,3 +557,14 @@ LC3_Status lc3_decoder_channel_init(void *hSession, void *handle, uint32_t bitra
   return LC3_UNKNOWN_ERROR;
 }
 #endif /* LINK_LC3_DECODER */
+
+#if (CODEC_MAX_BAND <= CODEC_SSWB)
+/* remove constants used for SWB and FB */
+void lc3_link_7ms5_swb_fb_const(void)
+{
+}
+
+void lc3_link_10ms_swb_fb_const(void)
+{
+}
+#endif /* (CODEC_MAX_BAND <= CODEC_SSWB) */

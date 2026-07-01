@@ -35,6 +35,16 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum
+{
+  ADV_CMD_START = 0,
+  ADV_CMD_LOW_POWER,
+  ADV_CMD_STOP
+} adv_cmd_t;
+
+extern TX_THREAD                 ADV_Thread;
+extern TX_QUEUE                  ADV_Queue;
+extern TX_TIMER                  Advertising_mgr_timer;
 
 /* USER CODE END ET */
 

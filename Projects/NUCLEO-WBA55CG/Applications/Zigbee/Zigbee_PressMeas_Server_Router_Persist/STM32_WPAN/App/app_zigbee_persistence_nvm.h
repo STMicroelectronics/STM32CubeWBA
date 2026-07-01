@@ -39,7 +39,15 @@
 /* USER CODE END EV */
 
 /* Exported defines ------------------------------------------------------------*/
-#define HW_FLASH_WIDTH                                  16u         // Flash Write need 4 Words (16 bytes).
+#ifdef FLASH_DOUBLEWORD_SUPPORT
+/* Flash Write need 2 Words (8 bytes). */
+#define HW_FLASH_TYPE_PROGRAM                           FLASH_TYPEPROGRAM_DOUBLEWORD
+#define HW_FLASH_WIDTH                                  (8u)
+#else /* FLASH_DOUBLEWORD_SUPPORT */
+/* Flash Write need 4 Words (16 bytes). */
+#define HW_FLASH_TYPE_PROGRAM                           FLASH_TYPEPROGRAM_QUADWORD
+#define HW_FLASH_WIDTH                                  (16u)
+#endif /* FLASH_DOUBLEWORD_SUPPORT */
 
 #define APP_ZB_PERSISTENCE_TYPE_DISABLED                0x00u
 #define APP_ZB_PERSISTENCE_TYPE_ENABLED                 0x01u

@@ -350,23 +350,6 @@ void APP_BSP_Init( void )
 }
 
 /**
- * @brief   Initialisation of CLI commands tasks.
- */
-#if defined(CFG_COAP_MSG) || defined(CFG_BLE_ADV_CHANNEL_MAP)
-void APP_BSP_CliInit( void )
-{
-#ifdef CFG_COAP_MSG
-  /* Task associated with COAP message rate change */
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_COAP_MSG_RATE, UTIL_SEQ_RFU, APP_BSP_CoapMsgRateAction );
-#endif /* CFG_COAP_MSG */
-#ifdef CFG_BLE_ADV_CHANNEL_MAP
-  UTIL_SEQ_RegTask( 1U << CFG_TASK_BLE_ADV_CHANNEL_MAP, UTIL_SEQ_RFU, APP_BSP_BleAdvChannelMapAction );
-#endif /* CFG_BLE_ADV_CHANNEL_MAP */
-}
-#endif /* CFG_COAP_MSG || CFG_BLE_ADV_CHANNEL_MAP */
-
-
-/**
  * @brief   Verify if Wakeup is not done by a button (or Joystick)
  */
 void APP_BSP_PostIdle( void )
@@ -761,7 +744,7 @@ static void Joystick_LaunchActionTask( JOYPin_TypeDef joystickState )
         break;
 
     case JOY_NONE:
-        tx_semaphore_put( JoystickNoneSemaphore );
+        tx_semaphore_put( &JoystickNoneSemaphore );
         break;
 #endif /* CFG_BSP_ON_THREADX */
 #ifdef CFG_BSP_ON_SEQUENCER
@@ -1176,7 +1159,7 @@ static void JoystickRightTask( ULONG lArgument )
   for(;;)
   {
     tx_semaphore_get( &JoystickRightSemaphore, TX_WAIT_FOREVER );
-    APP_BSP_JoystickRigthAction();
+    APP_BSP_JoystickRightAction();
   }
 }
 
@@ -1273,7 +1256,7 @@ static void Joystick_InitTask( void )
   }
 
   /* Register Semaphore to launch the Joystick Right Task */
-  f ( ThreadXStatus == TX_SUCCESS )
+  if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_semaphore_create( &JoystickRightSemaphore, "JoystickRight Semaphore", 0 );
     ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_RIGHT, TX_NO_WAIT);
@@ -1286,7 +1269,7 @@ static void Joystick_InitTask( void )
   }
 
   /* Register Semaphore to launch the Joystick Down Task */
-  f ( ThreadXStatus == TX_SUCCESS )
+  if ( ThreadXStatus == TX_SUCCESS )
   {
     ThreadXStatus = tx_semaphore_create( &JoystickDownSemaphore, "JoystickDown Semaphore", 0 );
     ThreadXStatus |= tx_byte_allocate( pBytePool, (VOID**) &pStack, TASK_STACK_SIZE_JOYSTICK_DOWN, TX_NO_WAIT);
@@ -1942,66 +1925,6 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
     APP_BSP_SetButtonIsLongPressed(B3);
     iUserChoice = B3;
   }
-#if (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1)) || (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1))
-  else
-  {
-    /* Coap message configuration */
-    char* pDelimiter = NULL;
-    char delimiter[] = "=";
-    char configType[20] = {0};
-    char value[30] = {0};
-
-    /* Extract the configuration type */
-    pDelimiter = strstr((char const*)pRxBuffer, delimiter);
-    LOG_INFO_APP( "\"%s\" is received by serial command.", pRxBuffer );
-    if(  pDelimiter )
-    {
-      strncpy(configType, (char const*)pRxBuffer, (pDelimiter - (char const*)pRxBuffer));
-      configType[(pDelimiter - (char const*)pRxBuffer)] = '\0';
-
-#if (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1))
-      if ( (strcmp( configType, "coap msg rate " ) == 0) )
-      {
-        APP_Thread_TransmitPeriod_ms = atoi (strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer))));
-        LOG_INFO_APP("Transmission rate has been changed to 1msg/%dms", APP_Thread_TransmitPeriod_ms);
-        UTIL_SEQ_SetTask( 1U << CFG_TASK_COAP_MSG_RATE, CFG_SEQ_PRIO_0 );
-      }
-      else if ( (strcmp( configType, "coap msg size " ) == 0) )
-      {
-        APP_Thread_CoapPayloadLength_byte = atoi (strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer))));
-        LOG_INFO_APP("Coap payload length has been changed to %d", APP_Thread_CoapPayloadLength_byte);
-      }
-      else if ( (strcmp( configType, "coap msg type " ) == 0) )
-      {
-        strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)));
-        value[(iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)) + 1] = '\0';
-        if (strcmp(value, "OT_COAP_TYPE_CONFIRMABLE") == 0)
-        {
-          APP_Thread_CoapType = OT_COAP_TYPE_CONFIRMABLE;
-          LOG_INFO_APP("Coap type has been changed to OT_COAP_TYPE_CONFIRMABLE");
-        }
-        else if (strcmp(value, "OT_COAP_TYPE_NON_CONFIRMABLE") == 0)
-        {
-          APP_Thread_CoapType =  OT_COAP_TYPE_NON_CONFIRMABLE;
-          LOG_INFO_APP("Coap type has been changed to OT_COAP_TYPE_NON_CONFIRMABLE");
-        }
-      }
-#endif /* defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1) */
-#if (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1))
-      if ( (strcmp( configType, "ble adv channel bitmap " ) == 0) )
-      {
-        uint32_t len = iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer);
-    	strncpy(value, (pDelimiter + 2), (iRxBufferSize - ((pDelimiter + 2) - (char const*)pRxBuffer)));
-    	value[len] = '\0';
-    	APP_BLE_AdvChannelMap = strtol(value, NULL, 16);
-    	LOG_INFO_APP("BLE adv channel bitmap has been changed to 0x%02X", APP_BLE_AdvChannelMap);
-
-        UTIL_SEQ_SetTask( 1U << CFG_TASK_BLE_ADV_CHANNEL_MAP, CFG_SEQ_PRIO_0 );
-      }
-#endif /* defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1) */
-    }
-  }
-#endif /* (defined(CFG_COAP_MSG) && (CFG_COAP_MSG == 1)) || (defined(CFG_BLE_ADV_CHANNEL_MAP) && (CFG_BLE_ADV_CHANNEL_MAP == 1)) */
 #endif /* CFG_BSP_ON_CEB */
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 )  */
 #if ( CFG_JOYSTICK_SUPPORTED == 1 )
@@ -2030,7 +1953,7 @@ uint8_t APP_BSP_SerialCmdExecute( uint8_t * pRxBuffer, uint16_t iRxBufferSize )
   if ( iUserChoice != UINT16_MAX )
   {
     /* Launch Command */
-    LOG_INFO_APP( "%s pressed by Serial Command.", pRxBuffer );
+    LOG_INFO_APP( "%s pressed by Serial Command.\n", pRxBuffer );
 #if ( CFG_BUTTON_SUPPORTED == 1 )
     Button_LaunchActionTask( (Button_TypeDef)iUserChoice );
 #endif /* ( CFG_BUTTON_SUPPORTED == 1 ) */

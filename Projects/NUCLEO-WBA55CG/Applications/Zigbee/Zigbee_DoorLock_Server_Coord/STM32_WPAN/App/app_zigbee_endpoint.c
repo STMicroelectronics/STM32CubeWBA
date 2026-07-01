@@ -51,9 +51,9 @@
 /* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
-#define APP_ZIGBEE_CHANNEL                13u
+#define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
-#define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
+#define APP_ZIGBEE_TX_POWER               ((int8_t) 0)    /* TX-Power is at 0 dBm by default. */
 
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
@@ -136,7 +136,7 @@
 struct DoorLockInfoT
 {
   uint8_t  cDummy;
-  
+
 /* USER CODE BEGIN PTD_1 */
   uint8_t 	                      cCurrentNbUsers;
   struct ZbZclDoorLockSetPinReqT 	stUserTable[MAX_PIN_NB_USERS];
@@ -179,8 +179,8 @@ static UTIL_TIMER_Object_t      stTimerPassageDuration, stTimerAutoRelockTime;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Time Server Callbacks */
-static uint32_t APP_ZIGBEE_TimeServerGetTimeCallback( struct ZbZclClusterT * pstCluster, void * arg );
-static void APP_ZIGBEE_TimeServerSetTimeCallback( struct ZbZclClusterT * pstCluster, uint32_t lTimeValue, void * arg );
+static uint32_t             APP_ZIGBEE_TimeServerGetTimeCallback            ( struct ZbZclClusterT * pstCluster, void * arg );
+static void                 APP_ZIGBEE_TimeServerSetTimeCallback            ( struct ZbZclClusterT * pstCluster, uint32_t lTimeValue, void * arg );
 
 static struct ZbZclTimeServerCallbacks stTimeServerCallbacks =
 {
@@ -189,9 +189,9 @@ static struct ZbZclTimeServerCallbacks stTimeServerCallbacks =
 };
 
 /* DoorLock Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_DoorLockServerLockCallback( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockLockDoorReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
-static enum ZclStatusCodeT APP_ZIGBEE_DoorLockServerUnlockCallback( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockUnlockDoorReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
-static enum ZclStatusCodeT APP_ZIGBEE_DoorLockServerSetPinCallback( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockSetPinReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_DoorLockServerLockCallback           ( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockLockDoorReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_DoorLockServerUnlockCallback         ( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockUnlockDoorReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_DoorLockServerSetPinCallback         ( struct ZbZclClusterT * pstCluster, struct ZbZclDoorLockSetPinReqT * pstRequest, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 
 static struct ZbZclDoorLockServerCallbacksT stDoorLockServerCallbacks =
 {
@@ -329,7 +329,7 @@ void APP_ZIGBEE_ConfigEndpoints(void)
 bool APP_ZIGBEE_ConfigGroupAddr( void )
 {
   /* Not used */
-  
+
   return false;
 }
 

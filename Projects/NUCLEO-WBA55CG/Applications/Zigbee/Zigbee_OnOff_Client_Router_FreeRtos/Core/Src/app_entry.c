@@ -79,6 +79,9 @@ extern void ll_sys_mac_cntrl_init( void );
 /* Private variables ---------------------------------------------------------*/
 #if ( CFG_LPM_LEVEL != 0)
 static bool system_startup_done = FALSE;
+
+static uint8_t rtos_tick_less_IDLE_state = 1U;
+static uint8_t rtos_tick_less_IDLE_flag = 0U;
 #endif /* ( CFG_LPM_LEVEL != 0) */
 
 #if (CFG_LOG_SUPPORTED != 0)
@@ -99,8 +102,10 @@ static Log_Module_t Log_Module_Config = { .verbose_level = APPLI_CONFIG_LOG_LEVE
 
 /* Timer for OS tick declaration */
 static UTIL_TIMER_Object_t TimerOsTick_Id;
+#if (HAL_TICK_RTC == 1)
 /* Timer for HAL tick declaration */
 static UTIL_TIMER_Object_t TimerHalTick_Id;
+#endif /* HAL_TICK_RTC */
 
 #if ( CFG_LPM_LEVEL != 0)
 /* Holds maximum number of FreeRTOS tick periods that can be suppressed */
@@ -281,6 +286,22 @@ uint32_t MX_APPE_Init(void *p_param)
   return WPAN_SUCCESS;
 }
 
+#if ( CFG_LPM_LEVEL != 0)
+void MX_APPE_SetTicklessIdleState(uint8_t state)
+{
+  if(state != 0U)
+  {
+    rtos_tick_less_IDLE_state = RTOS_TICK_LESS_ACTIVE;
+    UTIL_LPM_SetMaxMode(1U << CFG_LPM_RTOS, UTIL_LPM_MAX_MODE);
+  }
+  else
+  {
+    rtos_tick_less_IDLE_state = RTOS_TICK_LESS_INACTIVE;
+    UTIL_LPM_SetMaxMode(1U << CFG_LPM_RTOS, UTIL_LPM_STOP1_MODE);
+  }
+}
+#endif /* ( CFG_LPM_LEVEL != 0) */
+
 /* USER CODE BEGIN FD */
 
 /* USER CODE END FD */
@@ -333,8 +354,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
   Log_Module_Set_Region( LOG_REGION_APP );
@@ -412,6 +433,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
@@ -458,9 +484,7 @@ static void RNG_Task_Entry(void *argument)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
-
   /* Create Random Number Generator FreeRTOS objects */
 
   RngSemaphore = osSemaphoreNew(1U, 0U, &RngSemaphore_attributes);
@@ -622,8 +646,18 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   uint32_t lowPowerTimeBeforeSleep, lowPowerTimeAfterSleep, lowPowerTimeDiff, timeDiff;
   eSleepModeStatus eSleepStatus;
 
-  /* Stop the timer that is generating the OS tick interrupt. */
-  UTIL_TIMER_Stop(&TimerOsTick_Id);
+  if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() ==  UTIL_LPM_IDLE_MODE) )
+  {
+    return;
+  }
+
+  rtos_tick_less_IDLE_flag = 0U;
+  if(rtos_tick_less_IDLE_state != 0)
+  {
+    rtos_tick_less_IDLE_flag = 1U;
+    /* Stop the timer that is generating the OS tick interrupt. */
+    UTIL_TIMER_Stop(&TimerOsTick_Id);
+  }
 
   /* Make sure the SysTick reload value does not overflow the counter. */
   if( xExpectedIdleTime > maximumPossibleSuppressedTicks )
@@ -637,102 +671,127 @@ void vPortSuppressTicksAndSleep( uint32_t xExpectedIdleTime )
   __asm volatile ( "dsb" );
   __asm volatile ( "isb" );
 
-  eSleepStatus = eTaskConfirmSleepModeStatus();
-
-  /* If a context switch is pending or a task is waiting for the scheduler
-   * to be unsuspended then abandon the low power entry. */
-  if( eSleepStatus == eAbortSleep )
+  /* If tick less IDLE state is not consistent then abandon the low power entry. */
+  if(rtos_tick_less_IDLE_state != rtos_tick_less_IDLE_flag)
   {
-    /* Restart the timer that is generating the OS tick interrupt. */
-    UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
+    if(rtos_tick_less_IDLE_flag != 0)
+    {
+      /* Restart the timer that is generating the OS tick interrupt. */
+      UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
+    }
 
     /* Re-enable interrupts - see comments above the cpsid instruction above. */
     __asm volatile ( "cpsie i" ::: "memory" );
   }
   else
   {
-    if( eSleepStatus != eNoTasksWaitingTimeout )
+    eSleepStatus = eTaskConfirmSleepModeStatus();
+
+    /* If a context switch is pending or a task is waiting for the scheduler
+    * to be unsuspended then abandon the low power entry. */
+    if( eSleepStatus == eAbortSleep )
     {
-      /* Configure an interrupt to bring the microcontroller out of its low
-         power state at the time the kernel next needs to execute. The
-         interrupt must be generated from a source that remains operational
-         when the microcontroller is in a low power state. */
-      UTIL_TIMER_StartWithPeriod(&TimerOSwakeup_Id, (xExpectedIdleTime - 1) * portTICK_PERIOD_MS);
+      if(rtos_tick_less_IDLE_flag != 0U)
+      {
+        /* Restart the timer that is generating the OS tick interrupt. */
+        UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
+      }
+
+      /* Re-enable interrupts - see comments above the cpsid instruction above. */
+      __asm volatile ( "cpsie i" ::: "memory" );
     }
-
-    /* Read the current time from RTC, maintainned in standby */
-    lowPowerTimeBeforeSleep = getCurrentTime();
-
-    /* Enter the low power state. */
-
-    LL_PWR_ClearFlag_STOP();
-#if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
-#if (CFG_LPM_STOP2_SUPPORTED == 1)
-    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
-#else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
-#if (CFG_LPM_STANDBY_SUPPORTED == 1)
-    if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
-#endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
-#endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+    else
     {
-      APP_SYS_LPM_EnterLowPowerMode();
+      if( eSleepStatus != eNoTasksWaitingTimeout )
+      {
+        /* Configure an interrupt to bring the microcontroller out of its low
+          power state at the time the kernel next needs to execute. The
+          interrupt must be generated from a source that remains operational
+          when the microcontroller is in a low power state. */
+        UTIL_TIMER_StartWithPeriod(&TimerOSwakeup_Id, (xExpectedIdleTime - 1) * portTICK_PERIOD_MS);
+      }
+
+      /* Read the current time from RTC, maintainned in standby */
+      lowPowerTimeBeforeSleep = getCurrentTime();
+
+      /* Enter the low power state. */
+
+      LL_PWR_ClearFlag_STOP();
+  #if ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1))
+  #if (CFG_LPM_STOP2_SUPPORTED == 1)
+      if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STOP2_MODE ) )
+  #else /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+  #if (CFG_LPM_STANDBY_SUPPORTED == 1)
+      if ( ( system_startup_done != FALSE ) && ( UTIL_LPM_GetMaxMode() >= UTIL_LPM_STANDBY_MODE ) )
+  #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
+  #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
+      {
+        APP_SYS_EnterDeepSleep();
+      }
+  #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
+      LL_RCC_ClearResetFlags();
+
+      HAL_SuspendTick();
+      UTIL_LPM_Enter(0); /* WFI instruction call is inside this API */
+      HAL_ResumeTick();
+
+      /* Stop the timer that may wakeup us as wakeup source can be another one */
+      UTIL_TIMER_Stop(&TimerOSwakeup_Id);
+
+      if(rtos_tick_less_IDLE_flag != 0U)
+      {
+        /* Determine how long the microcontroller was actually in a low power
+        state for, which will be less than xExpectedIdleTime if the
+        microcontroller was brought out of low power mode by an interrupt
+        other than that configured by the vSetWakeTimeInterrupt() call.
+        Note that the scheduler is suspended before
+        portSUPPRESS_TICKS_AND_SLEEP() is called, and resumed when
+        portSUPPRESS_TICKS_AND_SLEEP() returns.  Therefore no other tasks will
+        execute until this function completes. */
+        lowPowerTimeAfterSleep = getCurrentTime();
+
+        /* Compute time spent in low power state and report precision loss */
+        lowPowerTimeDiff = (lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) + lowPowerTimeDiffRemaining;
+        /* Store precision loss during RTC time conversion to report it for next OS tick. */
+        timeDiff = TIMER_IF_Convert_Tick2ms(lowPowerTimeDiff);
+        lowPowerTimeDiffRemaining = lowPowerTimeDiff - TIMER_IF_Convert_ms2Tick(timeDiff);
+        /* Report precision loss */
+        timeDiff += timeDiffRemaining;
+        /* Store precision loss during OS tick time conversion to report it for next OS tick. */
+        timeDiffRemaining = timeDiff % portTICK_PERIOD_MS;
+
+        /* Correct the kernel tick count to account for the time spent in the low power state. */
+        if( (timeDiff / portTICK_PERIOD_MS) != 0U)
+        {
+          vTaskStepTick( timeDiff / portTICK_PERIOD_MS );
+        }
+      }
+
+      /* Re-enable interrupts to allow the interrupt that brought the MCU
+      * out of sleep mode to execute immediately.  See comments above
+      * the cpsid instruction above. */
+      __asm volatile ( "cpsie i" ::: "memory" );
+      __asm volatile ( "dsb" );
+      __asm volatile ( "isb" );
+
+      /* Put the radio in active state */
+      if( system_startup_done != FALSE )
+      {
+        LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
+        (void)ll_sys_dp_slp_exit();
+      }
+      UTIL_LPM_SetMaxMode(1U << CFG_LPM_LL_DEEPSLEEP, UTIL_LPM_MAX_MODE);
+      
+      if(rtos_tick_less_IDLE_flag != 0U)
+      {
+        /* Restart the timer that is generating the OS tick interrupt. */
+        UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
+      }
+
+      /* USER CODE BEGIN vPortSuppressTicksAndSleep */
+
+      /* USER CODE END vPortSuppressTicksAndSleep */
     }
-#endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
-    LL_RCC_ClearResetFlags();
-
-    HAL_SuspendTick();
-    UTIL_LPM_Enter(0); /* WFI instruction call is inside this API */
-    HAL_ResumeTick();
-
-    /* Stop the timer that may wakeup us as wakeup source can be another one */
-    UTIL_TIMER_Stop(&TimerOSwakeup_Id);
-
-    /* Determine how long the microcontroller was actually in a low power
-     state for, which will be less than xExpectedIdleTime if the
-     microcontroller was brought out of low power mode by an interrupt
-     other than that configured by the vSetWakeTimeInterrupt() call.
-     Note that the scheduler is suspended before
-     portSUPPRESS_TICKS_AND_SLEEP() is called, and resumed when
-     portSUPPRESS_TICKS_AND_SLEEP() returns.  Therefore no other tasks will
-     execute until this function completes. */
-    lowPowerTimeAfterSleep = getCurrentTime();
-
-    /* Compute time spent in low power state and report precision loss */
-    lowPowerTimeDiff = (lowPowerTimeAfterSleep - lowPowerTimeBeforeSleep) + lowPowerTimeDiffRemaining;
-    /* Store precision loss during RTC time conversion to report it for next OS tick. */
-    timeDiff = TIMER_IF_Convert_Tick2ms(lowPowerTimeDiff);
-    lowPowerTimeDiffRemaining = lowPowerTimeDiff - TIMER_IF_Convert_ms2Tick(timeDiff);
-    /* Report precision loss */
-    timeDiff += timeDiffRemaining;
-    /* Store precision loss during OS tick time conversion to report it for next OS tick. */
-    timeDiffRemaining = timeDiff % portTICK_PERIOD_MS;
-
-    /* Correct the kernel tick count to account for the time spent in the low power state. */
-    if( (timeDiff / portTICK_PERIOD_MS) != 0U)
-    {
-      vTaskStepTick( timeDiff / portTICK_PERIOD_MS );
-    }
-
-    /* Re-enable interrupts to allow the interrupt that brought the MCU
-     * out of sleep mode to execute immediately.  See comments above
-     * the cpsid instruction above. */
-    __asm volatile ( "cpsie i" ::: "memory" );
-    __asm volatile ( "dsb" );
-    __asm volatile ( "isb" );
-
-    /* Put the radio in active state */
-    if( system_startup_done != FALSE )
-    {
-      LL_AHB5_GRP1_EnableClock(LL_AHB5_GRP1_PERIPH_RADIO);
-      (void)ll_sys_dp_slp_exit();
-    }
-
-    /* Restart the timer that is generating the OS tick interrupt. */
-    UTIL_TIMER_StartWithPeriod(&TimerOsTick_Id, portTICK_PERIOD_MS);
-
-    /* USER CODE BEGIN vPortSuppressTicksAndSleep */
-
-    /* USER CODE END vPortSuppressTicksAndSleep */
   }
   return;
 }

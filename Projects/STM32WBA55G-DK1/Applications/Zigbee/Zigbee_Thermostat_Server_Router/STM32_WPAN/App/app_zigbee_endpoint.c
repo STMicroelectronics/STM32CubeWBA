@@ -55,7 +55,7 @@
 /* Private defines -----------------------------------------------------------*/
 #define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
-#define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
+#define APP_ZIGBEE_TX_POWER               ((int8_t) 0)    /* TX-Power is at 0 dBm by default. */
 
 #define APP_ZIGBEE_ENDPOINT               17u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
@@ -113,6 +113,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct 
+{
+  uint8_t     cRelayState;
+  uint8_t     cRelayPlay;
+
+  int16_t     iControlOper;
+  int16_t     iSysMode;
+  
+  int16_t     iTempCurrent;
+  int16_t     iTempCooling;
+  int16_t     iTempHeating;
+} ThermSettings_st;
 
 /* USER CODE END PTD */
 
@@ -143,9 +155,11 @@ static const AppMenuSentenceT szSysModeList[] =
   { "Sleep" },
 }; 
    
+#if (CFG_LOG_SUPPORTED != 0)
 /* Description of Relay State/Play */
 static const char szRelayState[2][8] = { "Open", "Close" };
 static const char szRelayPlay[3][15] = { "", "for heating", "for cooling" };
+#endif /* (CFG_LOG_SUPPORTED != 0) */
 
 /* Link Menu/Attributes */
 static const enum ZbZclThermAttrT eMenuAttributesList[] = { ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT, ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT,
@@ -157,18 +171,16 @@ static const enum ZbZclThermAttrT eMenuAttributesList[] = { ZCL_THERM_SVR_ATTR_O
 /* USER CODE BEGIN PV */
 static UTIL_TIMER_Object_t      stTimerSensorUpdate, stTimerMenuExit;
 
-static uint8_t                  cRelayState, cRelayPlay;
-static int16_t                  iTemperatureCurrent;
-static int16_t                  iTemperatureCooling, iTemperatureHeating, iControlOper, iSysMode;
+static ThermSettings_st         stThermSettings;
 static AppMenuButtonsT          eUsedButton;
 
 /* Description of Menu : MenuList, MenuName, List do display, linked variables, values min & max */
 static const struct MenuButtonsT stMenuButtonList[] = 
 {
-  { "Menu Cooling", "Cooling Temp " , NULL,           &iTemperatureCooling, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
-  { "Menu Heating", "Heating Temp " , NULL,           &iTemperatureHeating, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
-  { "Menu Control", "Control: " ,     szControlList,  &iControlOper,        ZCL_THERM_CONTROL_OPERCOOL_ONLY,  ZCL_THERM_CONTROL_OPERCOOL_HEAT_REHEAT, 1, 1 },
-  { "Menu SysMode", "SysMode: " ,     szSysModeList,  &iSysMode,            ZCL_THERM_SYSMODE_OFF,            ZCL_THERM_SYSMODE_SLEEP,                1, 1 },
+  { "Menu Cooling", "Cooling Temp " , NULL,           &stThermSettings.iTempCooling, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
+  { "Menu Heating", "Heating Temp " , NULL,           &stThermSettings.iTempHeating, TEMP_MEASURED_MIN,                TEMP_MEASURED_MAX,  TEMP_TOLERANCE, TEMP_DISPLAY_SCALE },
+  { "Menu Control", "Control: " ,     szControlList,  &stThermSettings.iControlOper,        ZCL_THERM_CONTROL_OPERCOOL_ONLY,  ZCL_THERM_CONTROL_OPERCOOL_HEAT_REHEAT, 1, 1 },
+  { "Menu SysMode", "SysMode: " ,     szSysModeList,  &stThermSettings.iSysMode,            ZCL_THERM_SYSMODE_OFF,            ZCL_THERM_SYSMODE_SLEEP,                1, 1 },
   { APP_MENU_EXIT,  "" ,              NULL,           NULL,                 0,                                0,                  0,              0 },
 };
 
@@ -448,20 +460,20 @@ static void APP_ZIGBEE_ThermostatServerStart( void )
   iTemperature = TEMP_SIMU_START_DEFAULT + ( cTemp * 10 );
   
   /* Update default values for Thermostats. Diff between heating/cooling setpoint is 5 degrees Celsius and default mode is 'Auto'. */
-  iTemperatureCurrent = iTemperature;
-  iTemperatureCooling = TEMP_MEASURED_DEFAULT + 100;
-  iTemperatureHeating = TEMP_MEASURED_DEFAULT - 400;
-  iControlOper = ZCL_THERM_CONTROL_OPERCOOL_HEAT;
-  iSysMode = ZCL_THERM_SYSMODE_AUTO;
-  cRelayState = RELAY_STATE_OPEN;
-  cRelayPlay = RELAY_NO_PLAY;
+  stThermSettings.iTempCurrent = iTemperature;
+  stThermSettings.iTempCooling = TEMP_MEASURED_DEFAULT + 100;
+  stThermSettings.iTempHeating = TEMP_MEASURED_DEFAULT - 400;
+  stThermSettings.iControlOper = ZCL_THERM_CONTROL_OPERCOOL_HEAT;
+  stThermSettings.iSysMode = ZCL_THERM_SYSMODE_AUTO;
+  stThermSettings.cRelayState = RELAY_STATE_OPEN;
+  stThermSettings.cRelayPlay = RELAY_NO_PLAY;
   
   /* Update Attributes */
-  eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_LOCAL_TEMP, iTemperatureCurrent );
-  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT, iTemperatureCooling );
-  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT, iTemperatureHeating );
-  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_CONTROL_SEQ_OPER, iControlOper );
-  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_SYSTEM_MODE, iSysMode );
+  eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_LOCAL_TEMP, stThermSettings.iTempCurrent );
+  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT, stThermSettings.iTempCooling );
+  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT, stThermSettings.iTempHeating );
+  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_CONTROL_SEQ_OPER, stThermSettings.iControlOper );
+  eStatus |= ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_SYSTEM_MODE, stThermSettings.iSysMode );
   if ( eStatus != ZCL_STATUS_SUCCESS )
   {
     LOG_ERROR_APP( "[THERMOSTAT] Error during an attribute write (0x%02X)", eStatus );
@@ -560,19 +572,19 @@ static void APP_ZIGBEE_MenuUpdate( void )
           iValue = *(stMenuButtonList[iIndexChange].piOptionValue);
           
           // -- In all case, verify if TempCooling & TempHeating are good */
-          if ( ( eMenuAttributesList[iIndexChange] == ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT ) && ( iValue <= iTemperatureHeating ) )
+          if ( ( eMenuAttributesList[iIndexChange] == ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT ) && ( iValue <= stThermSettings.iTempHeating ) )
           {
-            sprintf(szText, "%d.%02d", ( iTemperatureHeating / TEMP_DISPLAY_SCALE ),  (uint8_t)( iTemperatureHeating % TEMP_DISPLAY_SCALE ) );
+            sprintf(szText, "%d.%02d", ( stThermSettings.iTempHeating / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempHeating % TEMP_DISPLAY_SCALE ) );
             LOG_ERROR_APP( "ERROR : 'Cooling Temp' setpoint need to be more than 'Heating Temp' setpoint (%s C)", szText );
-            iTemperatureCooling = (int16_t) ZbZclAttrIntegerRead(stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT, &eDataType , &eStatus );
+            stThermSettings.iTempCooling = (int16_t) ZbZclAttrIntegerRead(stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_COOL_SETPOINT, &eDataType , &eStatus );
           }
           else
           {
-            if ( ( eMenuAttributesList[iIndexChange] == ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT ) && ( iValue >= iTemperatureCooling ) )
+            if ( ( eMenuAttributesList[iIndexChange] == ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT ) && ( iValue >= stThermSettings.iTempCooling ) )
             {
-              sprintf(szText, "%d.%02d", ( iTemperatureCooling / TEMP_DISPLAY_SCALE ),  (uint8_t)( iTemperatureCooling % TEMP_DISPLAY_SCALE ) );
+              sprintf(szText, "%d.%02d", ( stThermSettings.iTempCooling / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempCooling % TEMP_DISPLAY_SCALE ) );
               LOG_ERROR_APP( "ERROR : 'Heating Temp' setpoint need to be less than 'Cooling Temp' setpoint (%s C)", szText );
-              iTemperatureHeating = (int16_t) ZbZclAttrIntegerRead(stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT, &eDataType , &eStatus );
+              stThermSettings.iTempHeating = (int16_t) ZbZclAttrIntegerRead(stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_OCCUP_HEAT_SETPOINT, &eDataType , &eStatus );
             }
             else
             {
@@ -625,18 +637,18 @@ static void APP_ZIGBEE_TempSensorGenerateRandom( int16_t iTempIncrement )
   ZIGBEE_PLAT_RngGet( 1, &cTempVariation );
   if ( cTempVariation > 128 )
   { 
-    iTemperatureCurrent += iTempIncrement; 
-    if ( iTemperatureCurrent > TEMP_MEASURED_MAX )
+    stThermSettings.iTempCurrent += iTempIncrement; 
+    if ( stThermSettings.iTempCurrent > TEMP_MEASURED_MAX )
     { 
-      iTemperatureCurrent = TEMP_MEASURED_MAX; 
+      stThermSettings.iTempCurrent = TEMP_MEASURED_MAX; 
     }
   }
   else
   { 
-    iTemperatureCurrent -= iTempIncrement; 
-    if ( iTemperatureCurrent < TEMP_MEASURED_MIN )
+    stThermSettings.iTempCurrent -= iTempIncrement; 
+    if ( stThermSettings.iTempCurrent < TEMP_MEASURED_MIN )
     { 
-      iTemperatureCurrent = TEMP_MEASURED_MIN; 
+      stThermSettings.iTempCurrent = TEMP_MEASURED_MIN; 
     }
   }
 }
@@ -665,62 +677,62 @@ static void APP_ZIGBEE_TempSensorRead( void )
   }
     
   /* Update Temperature in function of Thermostat state */
-  switch ( iSysMode )
+  switch ( stThermSettings.iSysMode )
   {
     case ZCL_THERM_SYSMODE_COOL :
     case ZCL_THERM_SYSMODE_PRECOOL :
     case ZCL_THERM_SYSMODE_FAN :
-        if ( iTemperatureCurrent > iTemperatureCooling )
+        if ( stThermSettings.iTempCurrent > stThermSettings.iTempCooling )
         {
-          iTemperatureCurrent -= iTempIncrement;
-          cRelayState = RELAY_STATE_CLOSE;
-          cRelayPlay = RELAY_PLAY_COOLING;
+          stThermSettings.iTempCurrent -= iTempIncrement;
+          stThermSettings.cRelayState = RELAY_STATE_CLOSE;
+          stThermSettings.cRelayPlay = RELAY_PLAY_COOLING;
         }
         else
         { 
-          cRelayState = RELAY_STATE_OPEN;
-          cRelayPlay = RELAY_NO_PLAY;
-          iTemperatureCurrent += iTempIncrement;
+          stThermSettings.cRelayState = RELAY_STATE_OPEN;
+          stThermSettings.cRelayPlay = RELAY_NO_PLAY;
+          stThermSettings.iTempCurrent += iTempIncrement;
         }
         break;
       
     case ZCL_THERM_SYSMODE_HEAT :
     case ZCL_THERM_SYSMODE_EHEAT :
     case ZCL_THERM_SYSMODE_DRY :
-        if ( iTemperatureCurrent < iTemperatureHeating )
+        if ( stThermSettings.iTempCurrent < stThermSettings.iTempHeating )
         {
-          iTemperatureCurrent += iTempIncrement;
-          cRelayState = RELAY_STATE_CLOSE;
-          cRelayPlay = RELAY_PLAY_HEATING;
+          stThermSettings.iTempCurrent += iTempIncrement;
+          stThermSettings.cRelayState = RELAY_STATE_CLOSE;
+          stThermSettings.cRelayPlay = RELAY_PLAY_HEATING;
         }
         else
         {
-          cRelayState = RELAY_STATE_OPEN;
-          cRelayPlay = RELAY_NO_PLAY;
-          iTemperatureCurrent -= iTempIncrement;
+          stThermSettings.cRelayState = RELAY_STATE_OPEN;
+          stThermSettings.cRelayPlay = RELAY_NO_PLAY;
+          stThermSettings.iTempCurrent -= iTempIncrement;
         }
         break;
           
     case ZCL_THERM_SYSMODE_AUTO :
-        if ( iTemperatureCurrent < iTemperatureHeating )
+        if ( stThermSettings.iTempCurrent < stThermSettings.iTempHeating )
         {
-          iTemperatureCurrent += iTempIncrement;
-          cRelayState = RELAY_STATE_CLOSE;
-          cRelayPlay = RELAY_PLAY_HEATING;
+          stThermSettings.iTempCurrent += iTempIncrement;
+          stThermSettings.cRelayState = RELAY_STATE_CLOSE;
+          stThermSettings.cRelayPlay = RELAY_PLAY_HEATING;
         }
         else
         {
-          if ( iTemperatureCurrent > iTemperatureCooling )
+          if ( stThermSettings.iTempCurrent > stThermSettings.iTempCooling )
           {
-            iTemperatureCurrent -= iTempIncrement;
-            cRelayState = RELAY_STATE_CLOSE;
-            cRelayPlay = RELAY_PLAY_COOLING;
+            stThermSettings.iTempCurrent -= iTempIncrement;
+            stThermSettings.cRelayState = RELAY_STATE_CLOSE;
+            stThermSettings.cRelayPlay = RELAY_PLAY_COOLING;
           }
           else
           {
             APP_ZIGBEE_TempSensorGenerateRandom( iTempIncrement );
-            cRelayState = RELAY_STATE_OPEN;
-            cRelayPlay = RELAY_NO_PLAY;
+            stThermSettings.cRelayState = RELAY_STATE_OPEN;
+            stThermSettings.cRelayPlay = RELAY_NO_PLAY;
           }
         }
         break;
@@ -733,8 +745,8 @@ static void APP_ZIGBEE_TempSensorRead( void )
   /* Display (if not Menu On) & Save Updated Temperature */
   if ( APP_MENU_IsMenuDisplayed() == FALSE )
   {
-    sprintf(szText, "%d.%02d", ( iTemperatureCurrent / TEMP_DISPLAY_SCALE ),  (uint8_t)( iTemperatureCurrent % TEMP_DISPLAY_SCALE ) );
-    LOG_INFO_APP( "[THERMOSTAT] Update TempMeasure : %s C and Relay is : %s %s", szText, szRelayState[cRelayState], szRelayPlay[cRelayPlay] );
+    sprintf(szText, "%d.%02d", ( stThermSettings.iTempCurrent / TEMP_DISPLAY_SCALE ),  (uint8_t)( stThermSettings.iTempCurrent % TEMP_DISPLAY_SCALE ) );
+    LOG_INFO_APP( "[THERMOSTAT] Update TempMeasure : %s C and Relay is : %s %s", szText, szRelayState[stThermSettings.cRelayState], szRelayPlay[stThermSettings.cRelayPlay] );
     
 #if (CFG_LCD_SUPPORTED == 1)
     UTIL_LCD_DisplayStringAtLine( 3, (uint8_t *)szText );
@@ -742,7 +754,7 @@ static void APP_ZIGBEE_TempSensorRead( void )
 #endif /* (CFG_LCD_SUPPORTED == 1) */
   }
   
-  eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_LOCAL_TEMP, iTemperatureCurrent);
+  eStatus = ZbZclAttrIntegerWrite( stZigbeeAppInfo.ThermostatServer, ZCL_THERM_SVR_ATTR_LOCAL_TEMP, stThermSettings.iTempCurrent);
   if ( eStatus != ZCL_STATUS_SUCCESS )
   {
     LOG_ERROR_APP( "[THERMOSTAT] Error during 'Local Temp' attribute write (0x%02X)", eStatus );

@@ -224,6 +224,43 @@ CRC_HandleTypeDef    stOtaCrcHandle;
 
 /* Functions Definition ------------------------------------------------------*/
 
+void DeinitThreadStack(void)
+{
+  otInstanceFinalize(PtOpenThreadInstance);
+  otSysDeinit();
+}
+
+void InitThreadStack(void)
+{
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  size_t otInstanceBufferLength = 0;
+  uint8_t *otInstanceBuffer = NULL;
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  otSysInit(0, NULL);
+
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  // Call to query the buffer size
+  (void)otInstanceInit(NULL, &otInstanceBufferLength);
+
+  // Call to allocate the buffer
+  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
+  assert(otInstanceBuffer);
+
+  // Initialize OpenThread with the buffer
+  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
+#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  PtOpenThreadInstance = otInstanceInitSingle();
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  assert(PtOpenThreadInstance);
+
+#if (OT_CLI_USE == 1)
+  APP_THREAD_CliInit(PtOpenThreadInstance);
+#endif // OT_CLI_USE
+  otDispatch_tbl_init(PtOpenThreadInstance);
+}
+
 void ProcessAlarm(void)
 {
   arcAlarmProcess(PtOpenThreadInstance);
@@ -296,35 +333,9 @@ static void APP_THREAD_TaskletsInit(void)
  */
 void Thread_Init(void)
 {
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  size_t otInstanceBufferLength = 0;
-  uint8_t *otInstanceBuffer = NULL;
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
   APP_THREAD_PersistenceStartup();
 
-  otSysInit(0, NULL);
-
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  // Call to query the buffer size
-  (void)otInstanceInit(NULL, &otInstanceBufferLength);
-
-  // Call to allocate the buffer
-  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
-  assert(otInstanceBuffer);
-
-  // Initialize OpenThread with the buffer
-  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
-#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  PtOpenThreadInstance = otInstanceInitSingle();
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
-  assert(PtOpenThreadInstance);
-
-#if (OT_CLI_USE == 1)
-  APP_THREAD_CliInit(PtOpenThreadInstance);
-#endif // OT_CLI_USE
-  otDispatch_tbl_init(PtOpenThreadInstance);
+  InitThreadStack();
 
   /* Register tasks */
   APP_THREAD_AlarmsInit();
@@ -1354,6 +1365,7 @@ static bool CheckFwAppValidity( void )
   }
   return status;
 }
+
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

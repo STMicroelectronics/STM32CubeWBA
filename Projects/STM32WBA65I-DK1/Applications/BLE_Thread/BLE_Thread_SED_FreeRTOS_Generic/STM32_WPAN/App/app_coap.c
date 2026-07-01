@@ -181,7 +181,13 @@ static void APP_COAP_SendRequest(otCoapResource        *aCoapResource,
       break;
     }
 
-    otCoapMessageInit(sMessage, aCoapType, aCoapCode);
+	error = otCoapMessageInit(sMessage, aCoapType, aCoapCode);
+    if (error != OT_ERROR_NONE)
+    {
+      APP_THREAD_Error(ERR_THREAD_COAP_INIT,error);
+      break;
+    }
+	
     (void)otCoapMessageAppendUriPathOptions(sMessage, aCoapResource->mUriPath);
     (void)otCoapMessageSetPayloadMarker(sMessage);
 
@@ -328,7 +334,6 @@ static void APP_COAP_JoystickTogglePeriodicWithLabel(const char *directionString
   {
     APP_COAP_StartPeriodic();
 #if (CFG_LCD_SUPPORTED == 1)
-    BSP_SPI3_Init();
     UTIL_LCD_DisplayStringAt(0, 0, (uint8_t *)"periodic coap", CENTER_MODE);
     UTIL_LCD_DisplayStringAt(0, 20, (uint8_t *)"start", CENTER_MODE);
 #endif
@@ -337,7 +342,6 @@ static void APP_COAP_JoystickTogglePeriodicWithLabel(const char *directionString
   {
     APP_COAP_StopPeriodic();
 #if (CFG_LCD_SUPPORTED == 1)
-    BSP_SPI3_Init();
     UTIL_LCD_DisplayStringAt(0, 0, (uint8_t *)"periodic coap", CENTER_MODE);
     UTIL_LCD_DisplayStringAt(0, 20, (uint8_t *)"stop", CENTER_MODE);
 #endif
@@ -349,7 +353,6 @@ static void APP_COAP_JoystickTogglePeriodicWithLabel(const char *directionString
   osDelay(100);
   UTIL_LCD_Clear(LCD_COLOR_BLACK);
   BSP_LCD_Refresh(0);
-  BSP_SPI3_DeInit();
 #endif
 }
 
@@ -385,14 +388,12 @@ void APP_BSP_JoystickLeftAction(void)
   uint16_t adv_cmd = 0;
   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
 #if (CFG_LCD_SUPPORTED == 1)
-  BSP_SPI3_Init();
   UTIL_LCD_DisplayStringAt(0, 0, (uint8_t *)"BLE adv start", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, 40, (uint8_t *)"Joystick left", CENTER_MODE);
   BSP_LCD_Refresh(0);
   osDelay(100);
   UTIL_LCD_Clear( LCD_COLOR_BLACK );
   BSP_LCD_Refresh(0);
-  BSP_SPI3_DeInit();
 #endif
 }
 
@@ -407,14 +408,12 @@ void APP_BSP_JoystickSelectAction(void)
   uint16_t adv_cmd = 2;
   osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
 #if (CFG_LCD_SUPPORTED == 1)
-  BSP_SPI3_Init();
   UTIL_LCD_DisplayStringAt(0, 0, (uint8_t *)"BLE adv stop", CENTER_MODE);
   UTIL_LCD_DisplayStringAt(0, 40, (uint8_t *)"Joystick select", CENTER_MODE);
   BSP_LCD_Refresh(0);
   osDelay(100);
   UTIL_LCD_Clear( LCD_COLOR_BLACK );
   BSP_LCD_Refresh(0);
-  BSP_SPI3_DeInit();
 #endif
 }
 

@@ -206,7 +206,7 @@ Connectivity, I2C, Communication, Transmission, Reception, SCL, SDA, Interrupt, 
 
 ### <b>Hardware and Software environment</b>
 
-  - This example runs on STM32U575xx devices.
+  - This example runs on STM32WBAxx devices.
 
   - This example has been tested with NUCLEO-WBA55CG board and can be
     easily tailored to any other supported device and development board.    

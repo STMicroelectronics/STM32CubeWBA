@@ -35,7 +35,7 @@
 /* Private defines -----------------------------------------------------------*/
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -370,7 +370,7 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           {
             is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
                                                           base_data->BasePayloadLength - payload_len,
-                                                          &(PBPAPP_Context.base_bis[j]),
+                                                          &(PBPAPP_Context.base_bis[j+i]),
                                                           &(index));
             payload_len += index;
           }
@@ -454,29 +454,29 @@ void PBP_Notification(PBP_Notification_Evt_t *pNotification)
           {
             status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
                                                 base_data->BasePayloadLength,
-                                                &(PBPAPP_Context.base_bis[j]),
+                                                &(PBPAPP_Context.base_bis[j+i]),
                                                 &(index));
             base_data->pBasePayload += index;
             base_data->BasePayloadLength -= index;
 
-            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j].BIS_Index);
-            LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j].CodecSpecificConfLength);
-            if (PBPAPP_Context.base_bis[j].CodecSpecificConfLength > 0u)
+            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",PBPAPP_Context.base_bis[j+i].BIS_Index);
+            LOG_INFO_APP("      Codec specific config length : %d bytes\n",PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength);
+            if (PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength > 0u)
             {
-              for (int k = 0;k<PBPAPP_Context.base_bis[j].CodecSpecificConfLength;k++)
+              for (int k = 0;k<PBPAPP_Context.base_bis[j+i].CodecSpecificConfLength;k++)
               {
-                if (PBPAPP_Context.base_bis[j].pCodecSpecificConf[k] > 0u)
+                if (PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k] > 0u)
                 {
-                  LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]);
-                  LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+1u]);
+                  LOG_INFO_APP("        Length: 0x%02x\n",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k]);
+                  LOG_INFO_APP("          Type: 0x%02x\n",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k+1u]);
                   LOG_INFO_APP("          Value: 0x");
-                  for (int l = 0 ;l<(PBPAPP_Context.base_bis[j].pCodecSpecificConf[k]-1);l++)
+                  for (int l = 0 ;l<(PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k]-1);l++)
                   {
-                    LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[j].pCodecSpecificConf[k+2u+l]);
+                    LOG_INFO_APP("%02x",PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k+2u+l]);
                   }
                   LOG_INFO_APP("\n");
                 }
-                k+=PBPAPP_Context.base_bis[j].pCodecSpecificConf[k];
+                k+=PBPAPP_Context.base_bis[j+i].pCodecSpecificConf[k];
               }
             }
           }
@@ -595,12 +595,21 @@ void BLE_AUDIO_STACK_NotifyToRun(void)
 uint8_t PBPAPP_InitSink(void)
 {
   uint8_t ret = 0;
+  BAP_Role_t BAP_role = 0;
 
   PBPAPP_Context.phy = 0x02;
   PBPAPP_Context.audio_driver_config = AUDIO_DRIVER_CONFIG_LINEIN;
 
+#if (APP_BAP_ROLE_BROADCAST_SINK_SUPPORT == 1)
+  /* this role is mandatory in this project */
+  BAP_role = BAP_ROLE_BROADCAST_SINK;
+#endif /* (APP_BAP_ROLE_BROADCAST_SINK_SUPPORT == 1) */
+#if (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1)
+  BAP_role |= BAP_ROLE_SCAN_DELEGATOR;
+#endif /* (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1) */
+
   LOG_INFO_APP(">>==  Start CAP Acceptor initialization\n");
-  ret = PBPAPP_Init(CAP_ROLE_ACCEPTOR, (BAP_ROLE_BROADCAST_SINK | BAP_ROLE_SCAN_DELEGATOR));
+  ret = PBPAPP_Init(APP_CAP_ROLE, BAP_role);
   if (ret != BLE_STATUS_SUCCESS)
   {
     LOG_INFO_APP("  Fail   : PBPAPP_Init() function, result: 0x%02X\n", ret);
@@ -669,24 +678,24 @@ uint8_t PBPAPP_StartSink(void)
     scan_param_phy.Scan_Interval = SCAN_INTERVAL;
     scan_param_phy.Scan_Window   = SCAN_WINDOW;
     /* Starts an Observation procedure */
-    ret = aci_gap_ext_start_scan( 0x00,
-                                    GAP_OBSERVATION_PROC,
-                                    0x00,                         /* Address type: Public */
-                                    0x00,                         /* Filter duplicates: No */
-                                    0x00,                         /* Scan continuously until explicitly disable */
-                                    0x00,                         /* Scan continuously */
-                                    0x00,                         /* Filter policy: Accept all */
-                                    HCI_SCANNING_PHYS_LE_1M,
-                                    &scan_param_phy);
+    ret = aci_gap_start_scan( 0x00,
+                              GAP_OBSERVATION_PROC,
+                              0x00,                         /* Address type: Public */
+                              0x00,                         /* Filter duplicates: No */
+                              0x00,                         /* Scan continuously until explicitly disable */
+                              0x00,                         /* Scan continuously */
+                              0x00,                         /* Filter policy: Accept all */
+                              HCI_SCANNING_PHYS_LE_1M,
+                              &scan_param_phy);
     if (ret != BLE_STATUS_SUCCESS)
     {
-      LOG_INFO_APP("  Fail   : aci_gap_ext_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
+      LOG_INFO_APP("  Fail   : aci_gap_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
                    GAP_OBSERVATION_PROC,
                    ret);
     }
     else
     {
-      LOG_INFO_APP("  Success: aci_gap_ext_start_scan() function with Scan procedure 0x%02X\n",
+      LOG_INFO_APP("  Success: aci_gap_start_scan() function with Scan procedure 0x%02X\n",
                    GAP_OBSERVATION_PROC);
       PBPAPP_Context.ScanState = PBPAPP_SCAN_STATE_SCANNING;
     }

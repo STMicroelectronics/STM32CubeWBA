@@ -275,7 +275,7 @@ static SVCCTL_EvtAckStatus_t ZIGBEEDIRECTCOMM_EventHandler(void *p_Event)
             /*USER CODE END Service2_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_1*/
 
             /*USER CODE BEGIN Service2_Char_5_ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE_2 */
-            aci_gatt_allow_read(p_read_req->Connection_Handle);
+            aci_gatt_permit_read(p_read_req->Connection_Handle, 0, 0, 0);
             LOG_INFO_APP("Allow read (handle = 0x%04x)", p_read_req->Attribute_Handle);
             notification.EvtOpcode = ZIGBEEDIRECTCOMM_COMMSTATUS_READ_EVT;
             ZIGBEEDIRECTCOMM_Notification(&notification);

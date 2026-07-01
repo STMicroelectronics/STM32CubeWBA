@@ -74,7 +74,7 @@
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>STM32WBA65CG	ST STM32WBA65CG</state>
+                    <state>STM32WBA65RI	ST STM32WBA65RI</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -120,7 +120,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>STM32WBA65CG	ST STM32WBA65CG</state>
+                    <state>STM32WBA65RI	ST STM32WBA65RI</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -232,6 +232,7 @@
                 <option>
                     <name>CCDefines</name>
                     <state>STM32WBA65xx</state>
+                    <state>USE_HAL_DRIVER</state>
                     <state>USE_FULL_ASSERT</state>
                     <state>USE_FULL_LL_DRIVER</state>
                     <state>LOGGER_ENABLE=0</state>
@@ -371,6 +372,7 @@
                     <state>$PROJ_DIR$\..\System\Config\LowPower</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\App\cli_runner</state>
                     <state>$PROJ_DIR$\..\STM32_WPAN\Target</state>
+                    <state>$PROJ_DIR$/../../../../../../Drivers/STM32WBAxx_HAL_Driver/Inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\CMSIS\Device\ST\STM32WBAxx\Include</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Drivers\STM32WBAxx_HAL_Driver\Inc</state>
@@ -387,7 +389,9 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\config\thread</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\inc\ot_inc</state>
-                    <state>$PROJ_DIR$\..\..\..\..\..\Common\WPAN\Interfaces</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Interfaces</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules</state>
+                    <state>$PROJ_DIR$\..\..\..\..\..\..\Projects\Common\WPAN\Modules\RTDebug</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -811,7 +815,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\stm32wba55xx_flash.icf</state>
+                    <state>$PROJ_DIR$\stm32wba65xx_flash.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -1344,7 +1348,7 @@
     <group>
         <name>lib</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\WBA6_LinkLayer15_4.a</name>
+            <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\link_layer\ll_cmd_lib\lib\LinkLayer_802_15_4_V3_0.a</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\..\..\..\Middlewares\ST\STM32_WPAN\mac_802_15_4\lib\wba_mac_lib.a</name>

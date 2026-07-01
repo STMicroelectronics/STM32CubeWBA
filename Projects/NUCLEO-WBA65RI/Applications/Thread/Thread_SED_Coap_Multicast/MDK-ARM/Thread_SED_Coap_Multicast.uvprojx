@@ -10,13 +10,13 @@
       <TargetName>Thread_SED_Coap_Multicast</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6140001::V6.14.1::ARMCLANG</pCCUsed>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32WBA65RIVx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32WBAxx_DFP.1.6.0-B01</PackID>
+          <PackID>Keil.STM32WBAxx_DFP.2.2.0-RC1</PackID>
           <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x2007FFFF) IROM(0x8000000-0x81FFFFF) CLOCK(8000000) FPU3(SFPU) CPUTYPE("Cortex-M33") ELITTLE TZ</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -501,11 +501,6 @@
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/adv_trace_usart_if.c</FilePath>
             </File>
             <File>
-              <FileName>hw_aes.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_aes.c</FilePath>
-            </File>
-            <File>
               <FileName>hw_otp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Interfaces/hw_otp.c</FilePath>
@@ -546,11 +541,6 @@
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/otp.c</FilePath>
             </File>
             <File>
-              <FileName>pka_ctrl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/pka_ctrl.c</FilePath>
-            </File>
-            <File>
               <FileName>scm.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/scm.c</FilePath>
@@ -564,26 +554,6 @@
               <FileName>stm_queue.c</FileName>
               <FileType>1</FileType>
               <FilePath>../../../../../../Projects/Common/WPAN/Modules/stm_queue.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Common/WPAN/Modules/BasicAES</GroupName>
-          <Files>
-            <File>
-              <FileName>baes_cmac.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_cmac.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ccm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ccm.c</FilePath>
-            </File>
-            <File>
-              <FileName>baes_ecb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../../../../../Projects/Common/WPAN/Modules/BasicAES/baes_ecb.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -846,9 +816,9 @@
               <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_sys/src/ll_sys_startup.c</FilePath>
             </File>
             <File>
-              <FileName>WBA6_LinkLayer_Thread_lib.a</FileName>
+              <FileName>LinkLayer_802_15_4_V3_0.a</FileName>
               <FileType>4</FileType>
-              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/WBA6_LinkLayer_Thread_lib.a</FilePath>
+              <FilePath>../../../../../../Middlewares/ST/STM32_WPAN/link_layer/ll_cmd_lib/lib/LinkLayer_802_15_4_V3_0.a</FilePath>
             </File>
           </Files>
         </Group>

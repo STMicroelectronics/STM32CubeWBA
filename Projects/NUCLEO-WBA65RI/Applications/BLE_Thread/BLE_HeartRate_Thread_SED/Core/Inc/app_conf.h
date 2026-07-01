@@ -37,9 +37,10 @@
 /**< generic parameters ******************************************************/
 
 /**
- * Define Tx Power
+ * Define Tx Power for RF transmission.
+ * Actual output power depends on CFG_RF_TX_POWER_TABLE_ID.
  */
-#define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.3 dBm */
+#define CFG_TX_POWER                      (0x19) /* 0x19 <=> -0.4 dBm */
 
 /**
  * Definition of public BD Address,
@@ -110,6 +111,9 @@
 #define CFG_BLE_ER  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 /* USER CODE BEGIN Generic_Parameters */
+
+#define CFG_COAP_MSG              (1U)
+#define CFG_BLE_ADV_CHANNEL_MAP   (1U)
 
 /* USER CODE END Generic_Parameters */
 
@@ -254,12 +258,6 @@
  */
 #define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
-/**
- * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
- */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
-
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -276,6 +274,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_THREAD_RX_ACK,
   CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -307,7 +306,6 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (0U)
 
@@ -384,10 +382,15 @@ typedef enum
   CFG_TASK_BSP_BUTTON_B1,
   CFG_TASK_BSP_BUTTON_B2,
   CFG_TASK_BSP_BUTTON_B3,
+#ifdef CFG_COAP_MSG
+  CFG_TASK_COAP_MSG_RATE,
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+  CFG_TASK_BLE_ADV_CHANNEL_MAP,
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
   CFG_TASK_MEAS_REQ_ID,
   CFG_TASK_ADV_LP_REQ_ID,
-
-  CFG_TASK_SEND_COAP_MSG,
+  CFG_TASK_COAP_SEND_MSG,
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -418,6 +421,12 @@ typedef enum
 #define TASK_LINK_LAYER                     ( 1u << CFG_TASK_LINK_LAYER )
 #define TASK_FLASH_MNGR                     ( 1u << CFG_TASK_FLASH_MANAGER )
 /* USER CODE BEGIN TASK_ID_Define */
+#ifdef CFG_COAP_MSG
+#define TASK_COAP_MSG_RATE                  ( 1u << CFG_TASK_COAP_MSG_RATE )
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+#define TASK_BLE_ADV_CHANNEL_MAP            ( 1u << CFG_TASK_BLE_ADV_CHANNEL_MAP )
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
 
 /* USER CODE END TASK_ID_Define */
 
@@ -430,6 +439,7 @@ typedef enum
   CFG_EVENT_PKA_COMPLETED,
   CFG_PKA_MUTEX,
   CFG_PKA_END_OF_PROCESS,
+  CFG_FLASH_MUTEX,
   CFG_EVENT_PROC_GAP_COMPLETE,
   /* USER CODE BEGIN CFG_Event_Id_t */
 
@@ -446,12 +456,9 @@ typedef enum
  * NVM configuration
  ******************************************************************************/
 
-#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - 2u)
+/* NVM area is placed at the end of the flash memory */
+#define CFG_SNVMA_START_SECTOR_ID     ((FLASH_SIZE / FLASH_PAGE_SIZE) - SNVMA_NUMBER_OF_SECTOR_NEEDED)
 
-#define CFG_SNVMA_START_ADDRESS       (FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))
-
-/* Number of 64-bit words in NVM flash area */
-#define CFG_BLE_NVM_SIZE_MAX          ((2048/8)-4)
   /**
    * This is the max size of data the THREAD Stack needs to write in NVM
    * This is different to the size allocated in the EEPROM emulator
@@ -501,9 +508,6 @@ typedef enum
 /* Link Layer uses temperature based calibration (0 --> NO ; 1 --> YES) */
 #define USE_TEMPERATURE_BASED_RADIO_CALIBRATION  (1)
 
-/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
-#define USE_CTE_DEGRADATION                 (0)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (7)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -515,7 +519,7 @@ typedef enum
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
  */
 #define CFG_RF_TX_POWER_TABLE_ID            (1)
 
@@ -570,6 +574,7 @@ typedef enum
  * When CFG_LED_SUPPORTED is set, LEDS are activated if requested
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
+
 #define CFG_LED_SUPPORTED                       (1)
 #define CFG_BUTTON_SUPPORTED                    (1)
 
@@ -582,6 +587,16 @@ typedef enum
     #define CFG_LED_SUPPORTED      (0)
   #endif /* CFG_LED_SUPPORTED */
 #endif /* CFG_LPM_LEVEL */
+
+#if ( CFG_LED_SUPPORTED == 1 )
+#define APP_LED_ON( LED )           BSP_LED_On( LED )
+#define APP_LED_OFF( LED )          BSP_LED_Off( LED )
+#define APP_LED_TOGGLE( LED )       BSP_LED_Toggle( LED )
+#else /* ( CFG_LED_SUPPORTED == 1 ) */
+#define APP_LED_ON( LED )
+#define APP_LED_OFF( LED )
+#define APP_LED_TOGGLE( LED )
+#endif  /* ( CFG_LED_SUPPORTED == 1 ) */
 
 /* USER CODE END Defines */
 
@@ -635,20 +650,6 @@ typedef enum
 #undef BLE_RADIO_ACTIVITY_ON_LED_SUPPORT
 #define BLE_RADIO_ACTIVITY_ON_LED_SUPPORT               (0)
 #endif 
-
-/*********************************************************************
- * CAUTION: CFG_LPM_STDBY_SUPPORTED is deprecated and must be removed
- * Please use a combination of previous defines instead
- * Temporary define for backward compatibility
- *********************************************************************/
- #if (CFG_LPM_STANDBY_SUPPORTED == 1U)
- #define CFG_LPM_STDBY_SUPPORTED (1U)
- #else
- #define CFG_LPM_STDBY_SUPPORTED (0U)
- #endif
-
-/* USER CODE BEGIN Defines_2 */
-
 /* USER CODE END Defines_2 */
 
 #endif /*APP_CONF_H */

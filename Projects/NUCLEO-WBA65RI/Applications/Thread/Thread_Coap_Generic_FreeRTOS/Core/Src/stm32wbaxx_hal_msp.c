@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 /* USER CODE BEGIN Includes */
@@ -354,9 +353,6 @@ void HAL_PKA_MspInit(PKA_HandleTypeDef* hpka)
   {
     /* Peripheral clock enable */
     __HAL_RCC_PKA_CLK_ENABLE();
-    /* PKA interrupt Init */
-    HAL_NVIC_SetPriority(PKA_IRQn, 7, 0);
-    HAL_NVIC_EnableIRQ(PKA_IRQn);
 
     HW_RNG_EnableClock(0x04);
   }
@@ -373,9 +369,6 @@ void HAL_PKA_MspDeInit(PKA_HandleTypeDef* hpka)
   if(hpka->Instance==PKA)
   {
     __HAL_RCC_PKA_CLK_DISABLE();
-
-    /* PKA interrupt DeInit */
-    HAL_NVIC_DisableIRQ(PKA_IRQn);
 
     HW_RNG_DisableClock(0x04);
   }

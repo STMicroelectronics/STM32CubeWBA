@@ -142,6 +142,8 @@ static AMM_InitParameters_t ammInitConfig =
 static uint8_t PkaMut = 0u;
 static uint8_t EndOfProcSem = 0u;
 
+static uint8_t FlashMut = 0u;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -163,6 +165,8 @@ static uint32_t * AMM_WrapperAllocate(const uint32_t BufferSize);
 static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 
 static void APPE_FLASH_MANAGER_Init( void );
+FM_Cmd_Status_t FM_MutexTake(void);
+FM_Cmd_Status_t FM_MutexRelease(void);
 
 static void APPE_PKACTRL_Init( void );
 int PKACTRL_MutexTake(void);
@@ -238,7 +242,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
-  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
+  if( SNVMA_Init((uint32_t *)(FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))) != SNVMA_ERROR_OK )
   {
     Error_Handler();
   }
@@ -323,8 +327,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -400,6 +404,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_SCM_SUPPORTED == 1)
   /* Set the HSE clock to 32MHz */
   scm_setsystemclock(SCM_USER_APP, HSE_32MHZ);
@@ -434,9 +443,7 @@ static void SystemPower_Config(void)
 static void APPE_RNG_Init(void)
 {
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
-
   /* Register Random Number Generator task */
   UTIL_SEQ_RegTask(1U << CFG_TASK_HW_RNG, UTIL_SEQ_RFU, (void (*)(void))HW_RNG_Process);
 }
@@ -525,7 +532,7 @@ void UTIL_SEQ_PreIdle( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_BLE_EnterDeepSleep();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
   LL_RCC_ClearResetFlags();
@@ -769,6 +776,41 @@ int PKACTRL_ReleaseSemEndOfOperation(void)
   /* Restore low power */
   UTIL_LPM_SetMaxMode(1U << CFG_LPM_PKA_OVR_IT, UTIL_LPM_MAX_MODE);
 #endif /* (CFG_LPM_LEVEL != 0) */
+  }
+
+  return error;
+}
+
+FM_Cmd_Status_t FM_MutexTake(void)
+{
+  FM_Cmd_Status_t error = FM_OK;
+
+  /* Check if mutex is available */
+  if (0u != FlashMut)
+  {
+    /* Clear flag */
+    UTIL_SEQ_ClrEvt ((1u << CFG_FLASH_MUTEX));
+
+    /* Wait for flag to be raised */
+    UTIL_SEQ_WaitEvt ((1u << CFG_FLASH_MUTEX));
+  }
+
+  /* Increment mutex */
+  FlashMut++;
+
+  return error;
+}
+
+FM_Cmd_Status_t FM_MutexRelease(void)
+{
+  FM_Cmd_Status_t error = FM_OK;
+
+  if (0u != FlashMut)
+  {
+    FlashMut = 0u;
+
+    /* Set the flag up */
+    UTIL_SEQ_SetEvt ((1u << CFG_FLASH_MUTEX));
   }
 
   return error;

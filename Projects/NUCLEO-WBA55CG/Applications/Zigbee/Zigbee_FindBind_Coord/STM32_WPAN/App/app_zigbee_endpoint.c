@@ -53,9 +53,9 @@
 /* USER CODE END PI */
 
 /* Private defines -----------------------------------------------------------*/
-#define APP_ZIGBEE_CHANNEL                13u
+#define APP_ZIGBEE_CHANNEL                14u
 #define APP_ZIGBEE_CHANNEL_MASK           ( 1u << APP_ZIGBEE_CHANNEL )
-#define APP_ZIGBEE_TX_POWER               ((int8_t) 10)    /* TX-Power is at +10 dBm. */
+#define APP_ZIGBEE_TX_POWER               ((int8_t) 0)    /* TX-Power is at 0 dBm by default. */
 
 #define APP_ZIGBEE_ENDPOINT               10u
 #define APP_ZIGBEE_PROFILE_ID             ZCL_PROFILE_HOME_AUTOMATION
@@ -127,9 +127,9 @@ static uint64_t   dlDeviceExtendedAddress[10];
 /* Private function prototypes -----------------------------------------------*/
 
 /* OnOff Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOffCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
-static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerOnCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
-static enum ZclStatusCodeT APP_ZIGBEE_OnOffServerToggleCallback( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOffCallback               ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerOnCallback                ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
+static enum ZclStatusCodeT  APP_ZIGBEE_OnOffServerToggleCallback            ( struct ZbZclClusterT * pstCluster, struct ZbZclAddrInfoT * pstSrcInfo, void * arg );
 
 static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
 {
@@ -139,8 +139,8 @@ static struct ZbZclOnOffServerCallbacksT stOnOffServerCallbacks =
 };
 
 /* IasWd Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_IasWdServerStartWarningCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclIasWdClientStartWarningReqT * pstRequest );
-static enum ZclStatusCodeT APP_ZIGBEE_IasWdServerSquawkCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclIasWdClientSquawkReqT * pstRequest );
+static enum ZclStatusCodeT  APP_ZIGBEE_IasWdServerStartWarningCallback      ( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclIasWdClientStartWarningReqT * pstRequest );
+static enum ZclStatusCodeT  APP_ZIGBEE_IasWdServerSquawkCallback            ( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclIasWdClientSquawkReqT * pstRequest );
 
 static struct ZbZclIasWdServerCallbacksT stIasWdServerCallbacks =
 {
@@ -149,8 +149,8 @@ static struct ZbZclIasWdServerCallbacksT stIasWdServerCallbacks =
 };
 
 /* Messaging Server Callbacks */
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
-static enum ZclStatusCodeT APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerGetLastMessageCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclAddrInfoT * pstSrcInfo );
+static enum ZclStatusCodeT  APP_ZIGBEE_MessagingServerMessageConfirmationCallback( struct ZbZclClusterT * pstCluster, void * arg, struct ZbZclMsgMessageConfT * pstMessageConfirm, struct ZbZclAddrInfoT * pstSrcInfo );
 
 static struct ZbZclMsgServerCallbacksT stMessagingServerCallbacks =
 {

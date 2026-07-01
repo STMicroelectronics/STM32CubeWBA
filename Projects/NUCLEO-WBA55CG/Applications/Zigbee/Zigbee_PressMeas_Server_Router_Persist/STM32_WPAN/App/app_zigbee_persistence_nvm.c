@@ -34,7 +34,6 @@
 
 #include "zigbee.h"
 
-
 /* Private includes ---------------------------------------------------------*/
 extern void Error_Handler         ( void );
 
@@ -54,8 +53,8 @@ typedef struct PersistHeader_t
 
 typedef struct PersistInfo_t
 {
-  uint32_t  lBufferAddress;
-  uint16_t  iBufferLength;
+  uint32_t  lDataAddress;
+  uint16_t  iDataSize;
 } PersistInfo_st;
 
 /* USER CODE BEGIN PT */
@@ -68,10 +67,13 @@ typedef struct PersistInfo_t
 /* USER CODE END PC */
 
 /* Private defines ------------------------------------------------------------*/
-#define PERSISTENCE_NB_PAGES        ( 4u )
-//#define PERSISTENCE_END_ADDRESS     ( 0x08100000u )     // For WBA55 - 1MB
-#define PERSISTENCE_END_ADDRESS     ( 0x08080000u )     // For WBA55 - 512KB
-#define PERSISTENCE_START_ADDRESS   ( PERSISTENCE_END_ADDRESS - ( PERSISTENCE_NB_PAGES * FLASH_PAGE_SIZE ) )
+#define PERSISTENCE_SIZE            ( 24u * 1024u )                     // Maximum Size for Persistence (to be compliant with OTA).
+#define PERSISTENCE_END_ADDRESS     ( FLASH_BASE + FLASH_SIZE )         // End of Second Flash Page (to be compliant with OTA).
+#define PERSISTENCE_START_ADDRESS   ( PERSISTENCE_END_ADDRESS - PERSISTENCE_SIZE )
+#define PERSISTENCE_NB_PAGES        ( PERSISTENCE_SIZE / FLASH_PAGE_SIZE )
+#ifdef FLASH_DBANK_SUPPORT
+#define PERSISTENCE_NUM_BANK        FLASH_BANK_2                        // Used for WBA65 with 2 Banks.
+#endif /* FLASH_DBANK_SUPPORT */
 
 /* Define Polynoms for CRC */
 #define CRC16_CCITT             0x1021u         // X.25, V.41, HDLC FCS, Bluetooth, ...
@@ -154,6 +156,9 @@ bool AppZbPersistence_EraseAllData( void )
   stEraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
   stEraseInit.Page = ( PERSISTENCE_START_ADDRESS - FLASH_BASE ) / FLASH_PAGE_SIZE;
   stEraseInit.NbPages = PERSISTENCE_NB_PAGES;
+#ifdef FLASH_DBANK_SUPPORT
+  stEraseInit.Banks = PERSISTENCE_NUM_BANK;
+#endif /* FLASH_DBANK_SUPPORT */
 
   /* Delete the flash sectors */
   HAL_FLASH_Unlock();
@@ -183,6 +188,9 @@ static bool AppZbPersistence_ErasePage( uint32_t lFlashAddress )
   stEraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
   stEraseInit.Page = ( lFlashAddress - FLASH_BASE ) / FLASH_PAGE_SIZE;
   stEraseInit.NbPages = 1;
+#ifdef FLASH_DBANK_SUPPORT
+  stEraseInit.Banks = PERSISTENCE_NUM_BANK;
+#endif /* FLASH_DBANK_SUPPORT */
 
   /* Delete the flash sectors */
   HAL_FLASH_Unlock();
@@ -200,11 +208,11 @@ static bool AppZbPersistence_ErasePage( uint32_t lFlashAddress )
  * @param pBuffer
  * @param iBufferLength
  */
-bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
+bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iDataSize )
 {
   bool                bStatus = true;
   uint8_t             szFlashData[HW_FLASH_WIDTH];
-  uint16_t            iFinalBufferSize, iNbCopy, iBufferIndex, iNbRetry = 0;
+  uint16_t            iHeaderSize, iBufferSize, iFinalBufferSize, iNbCopy, iBufferIndex, iNbRetry = 0;
   uint32_t            lFinalAddress, lTempAddress, lPersistenceStartAddress;
   PersistHeader_st    stPersistHeader;
 
@@ -212,9 +220,12 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
   /* A save is always a multiple of HW_FLASH_WIDTH */
 
   /* First, verify if new data are different of previous. If not, Save is not needed */
-  if ( iBufferLength == stLastPersistInfo.iBufferLength )
+  iHeaderSize = sizeof(stPersistHeader);
+  iBufferSize = iDataSize + iHeaderSize;
+
+  if ( iDataSize == stLastPersistInfo.iDataSize )
   {
-    if ( memcmp( pBuffer, (uint8_t *)stLastPersistInfo.lBufferAddress, iBufferLength ) == 0u )
+    if ( memcmp( &pBuffer[iHeaderSize], (uint8_t *)stLastPersistInfo.lDataAddress, iDataSize ) == 0u )
     {
       LOG_INFO_APP( "  Same data as previous ..." );
       return bStatus;
@@ -222,7 +233,7 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
   }
 
   /* Verify if Buffer Size if a multiple of Flash Width */
-  iFinalBufferSize = iBufferLength + sizeof(stPersistHeader);
+  iFinalBufferSize = iBufferSize;
   if ( iFinalBufferSize % HW_FLASH_WIDTH != 0u )
   {
     iFinalBufferSize = ( ( iFinalBufferSize / HW_FLASH_WIDTH ) * HW_FLASH_WIDTH ) + HW_FLASH_WIDTH;
@@ -263,11 +274,11 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
   {
     /* First Data are Count + Size + Data */
     stPersistHeader.iCount = iPersistenceCurrentCount;
-    stPersistHeader.iDataSize = iBufferLength;
+    stPersistHeader.iDataSize = iDataSize;
     stPersistHeader.iNvmSize = iFinalBufferSize;
-    stPersistHeader.iDataCrc = AppZbPersistence_CalcCrc16( pBuffer, iBufferLength );
+    stPersistHeader.iDataCrc = AppZbPersistence_CalcCrc16( &pBuffer[iHeaderSize], iDataSize );
     stPersistHeader.iHeaderCrc = AppZbPersistence_CalcCrcHeader( &stPersistHeader );
-    memcpy( szFlashData, &stPersistHeader, sizeof(stPersistHeader) );
+    memcpy( pBuffer, &stPersistHeader, iHeaderSize );
 
     /* Update Data */
     iPersistenceCurrentCount++;
@@ -280,25 +291,18 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
       bStatus = true;
       iBufferIndex = 0;
 
-      /* Copy first Persistence Data */
-      iNbCopy = HW_FLASH_WIDTH - sizeof(stPersistHeader);
-      if ( iNbCopy > iBufferLength )
-      {
-        iNbCopy = iBufferLength - sizeof(stPersistHeader);
-      }
-      memcpy( &szFlashData[sizeof(stPersistHeader)], pBuffer, iNbCopy );
-
       /* Flash NVM with Persistence Data */
-      LOG_INFO_APP( "  Save %d data on NVM @ 0x%08X ...", iBufferLength, lPersistenceCurrentAddress );
+      LOG_INFO_APP( "  Save %d data on NVM @ 0x%08X ...", iDataSize, lPersistenceCurrentAddress );
 
       lPersistenceStartAddress = lPersistenceCurrentAddress;
+      memcpy( szFlashData, pBuffer, HW_FLASH_WIDTH );
 
       /* Unlock the Flash to enable the flash control register access */
       HAL_FLASH_Unlock();
 
       do
       {
-        if ( HAL_FLASH_Program( FLASH_TYPEPROGRAM_QUADWORD, lPersistenceCurrentAddress, ( uint32_t )&szFlashData ) != HAL_OK )
+        if ( HAL_FLASH_Program( HW_FLASH_TYPE_PROGRAM, lPersistenceCurrentAddress, ( uint32_t )&szFlashData ) != HAL_OK )
         {
           bStatus = false;
           LOG_ERROR_APP( "  Error, Flash Data failed @ 0x%08X ...", lPersistenceCurrentAddress );
@@ -315,22 +319,25 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
           {
             /* Update Data for next iteration */
             lPersistenceCurrentAddress += HW_FLASH_WIDTH;
-            iBufferIndex += iNbCopy;
+            iBufferIndex += HW_FLASH_WIDTH;
 
-            iNbCopy = HW_FLASH_WIDTH;
-            if ( ( iBufferIndex + iNbCopy ) > iBufferLength )
+            if ( iBufferIndex < iBufferSize )
             {
-              iNbCopy = iBufferLength - iBufferIndex;
-            }
-            memcpy( szFlashData, &pBuffer[iBufferIndex], iNbCopy );
-            if ( iNbCopy < HW_FLASH_WIDTH )
-            {
-              memset( &szFlashData[iNbCopy], 0, (HW_FLASH_WIDTH - iNbCopy ) );
+              iNbCopy = HW_FLASH_WIDTH;
+              if ( ( iBufferIndex + iNbCopy ) > iBufferSize )
+              {
+                iNbCopy = iBufferSize - iBufferIndex;
+              }
+              memcpy( szFlashData, &pBuffer[iBufferIndex], iNbCopy );
+              if ( iNbCopy < HW_FLASH_WIDTH )
+              {
+                memset( &szFlashData[iNbCopy], 0, (HW_FLASH_WIDTH - iNbCopy ) );
+              }
             }
           }
         }
       }
-      while( ( iBufferIndex < iBufferLength ) && ( bStatus != false ) );
+      while( ( iBufferIndex < iBufferSize ) && ( bStatus != false ) );
 
       /* Lock the Flash to disable the flash control register access */
       HAL_FLASH_Lock();
@@ -364,8 +371,8 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
   if ( bStatus != false )
   {
     /* If OK, update Last Persist Information */
-    stLastPersistInfo.lBufferAddress = lPersistenceStartAddress + + sizeof(stPersistHeader);
-    stLastPersistInfo.iBufferLength = iBufferLength;
+    stLastPersistInfo.lDataAddress = lPersistenceStartAddress + iHeaderSize;
+    stLastPersistInfo.iDataSize = iDataSize;
   }
 
   return( bStatus );
@@ -379,28 +386,29 @@ bool AppZbPersistence_SaveData( uint8_t * pBuffer, uint16_t iBufferLength )
 static void AppZbPersistence_SaveCallback( struct ZigBeeT * pstZigbee, void *arg)
 {
   bool        bStatus;
-  uint16_t    iPersistLength;
+  uint16_t    iPersistLength, iHeaderLength;
   uint8_t     *pszPersistData;
 
   LOG_INFO_APP( "Persistence Callback ..." );
   iPersistLength = ZbPersistGet( pstZigbee, NULL, 0 );
+  iHeaderLength = sizeof( PersistHeader_st );
 
 #ifdef PERSISTANCE_TESTS
   iPersistLength = 2560;    // 2.5k buffer size
 #endif // PERSISTANCE_TESTS
 
   /* First verify if Persist is not more that Flash Page */
-  if ( iPersistLength >= ( FLASH_PAGE_SIZE - sizeof( PersistHeader_st ) - HW_FLASH_WIDTH  ) )
+  if ( iPersistLength >= ( FLASH_PAGE_SIZE - iHeaderLength - HW_FLASH_WIDTH  ) )
   {
     LOG_ERROR_APP( "  Error : Persistence to big for Flash (%d bytes).", iPersistLength );
   }
   else
   {
-    pszPersistData = malloc( iPersistLength );
+    pszPersistData = malloc( iPersistLength + iHeaderLength );
     if ( pszPersistData != NULL )
     {
       LOG_DEBUG_APP( "  Need %d data to save.", iPersistLength );
-      (void)ZbPersistGet( pstZigbee, pszPersistData, iPersistLength );
+      (void)ZbPersistGet( pstZigbee, &pszPersistData[iHeaderLength], iPersistLength );
 
       bStatus = AppZbPersistence_SaveData( pszPersistData, iPersistLength );
       if ( bStatus != false )
@@ -460,13 +468,13 @@ static bool AppZbPersistence_SearchLatestData( PersistInfo_st * pstLastPersistIn
           iDataCrc = AppZbPersistence_CalcCrc16( (uint8_t *)( lCurrentAddress + sizeof(stPersistHeader) ), stPersistHeader.iDataSize );
           if ( iDataCrc == stPersistHeader.iDataCrc )
           {
-            pstLastPersistInfo->lBufferAddress = lCurrentAddress + sizeof(stPersistHeader);
-            pstLastPersistInfo->iBufferLength = stPersistHeader.iDataSize;
+            pstLastPersistInfo->lDataAddress = lCurrentAddress + sizeof(stPersistHeader);
+            pstLastPersistInfo->iDataSize = stPersistHeader.iDataSize;
             lPersistenceCurrentAddress = lCurrentAddress + stPersistHeader.iNvmSize;
             iPersistenceCurrentCount = stPersistHeader.iCount + 1u;
             bFound = true;
 
-            LOG_DEBUG_APP( "Found %d data on NVM @ 0x%08X.", stLastPersistInfo.iBufferLength, lCurrentAddress );
+            LOG_DEBUG_APP( "Found %d data on NVM @ 0x%08X.", stLastPersistInfo.iDataSize, lCurrentAddress );
             LOG_DEBUG_APP( "Next Data are on NVM @ 0x%08X.", lPersistenceCurrentAddress );
           }
           else
@@ -523,10 +531,10 @@ static HAL_StatusTypeDef AppZbPersistence_Startup( struct ZigBeeT * pstZigbee, s
   HAL_StatusTypeDef   eStatus = HAL_ERROR;
   enum ZbStatusCodeT  eZbStatus;
 
-  LOG_INFO_APP( "Persistence : startup with Persistence data (%d data @ 0x%08X).", pstPersistInfo->iBufferLength, pstPersistInfo->lBufferAddress );
+  LOG_INFO_APP( "Persistence : startup with Persistence data (%d data @ 0x%08X).", pstPersistInfo->iDataSize, pstPersistInfo->lDataAddress );
   UTIL_SEQ_ClrEvt( TASK_ZIGBEE_PERSISTENCE );
 
-  eZbStatus = ZbStartupPersist( pstZigbee, (uint8_t *)pstPersistInfo->lBufferAddress, pstPersistInfo->iBufferLength, pstConfig, AppZbPersistence_StartupCallback, NULL );
+  eZbStatus = ZbStartupPersist( pstZigbee, (uint8_t *)pstPersistInfo->lDataAddress, pstPersistInfo->iDataSize, pstConfig, AppZbPersistence_StartupCallback, NULL );
   if ( eZbStatus == ZB_STATUS_SUCCESS )
   {
     UTIL_SEQ_WaitEvt( TASK_ZIGBEE_PERSISTENCE );
@@ -591,7 +599,7 @@ HAL_StatusTypeDef AppZbPersistence_Init( struct ZigBeeT * pstZigbee, struct ZbSt
         if ( AppZbPersistence_SearchLatestData( &stLastPersistInfo ) != false )
         {
           HAL_Delay(200);
-          LOG_INFO_APP( "Persistence : retrieve %d data on NVM.", stLastPersistInfo.iBufferLength );
+          LOG_INFO_APP( "Persistence : retrieve %d data on NVM.", stLastPersistInfo.iDataSize );
           eStatus = AppZbPersistence_Startup( pstZigbee, pstConfig, &stLastPersistInfo );
         }
         else

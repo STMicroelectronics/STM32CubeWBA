@@ -44,7 +44,6 @@ select_wba_target=0x65
 
 s_code_image=$oemirot_appli_secure
 ns_code_image=$oemirot_appli_non_secure
-one_code_image=$oemirot_appli_assembly_sign
 s_data_image=s_data_init_sign.bin
 ns_data_image=ns_data_init_sign.bin
 
@@ -155,13 +154,6 @@ if [ "$app_image_number" == "1" ]; then
         "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$s_code_image" $slot0 -v --skipErase
         if [ $? -ne 0 ]; then error; return 1; fi
         echo "Appli Full Secure Written"
-    else
-        action="Write One image Appli"
-        echo "$action"
-        "$stm32programmercli" $connect_no_reset -d "$appli_dir/Binary/$one_code_image" $slot0 -v --skipErase
-        if [ $? -ne 0 ]; then error; return 1; fi
-
-        echo "TZ Appli Written"
     fi
 fi
 

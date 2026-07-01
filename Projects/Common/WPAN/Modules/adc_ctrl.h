@@ -159,10 +159,11 @@ typedef struct ADCCTRL_ChannelConfig
  */
 typedef struct ADCCTRL_Handle
 {
-  uint32_t Uid;                           /* Id of the Handle instance */
-  ADCCTRL_HandleState_t State;            /* State of the ADC Controller handle */
-  ADCCTRL_InitConfig_t InitConf;          /* Init configuration of the ADC */
-  ADCCTRL_ChannelConfig_t ChannelConf;    /* Channel configuration of the ADC */
+  uint32_t Uid;                             /* Id of the Handle instance */
+  ADCCTRL_HandleState_t State;              /* State of the ADC Controller handle */
+  ADCCTRL_InitConfig_t InitConf;            /* Init configuration of the ADC */
+  ADCCTRL_ChannelConfig_t ChannelConf[];    /* Channel configuration of the ADC - 
+                                               Maximum number shall be <= LL_ADC_REG_RANK_7 */
 } ADCCTRL_Handle_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -197,54 +198,22 @@ ADCCTRL_Cmd_Status_t ADCCTRL_RequestIpState (const ADCCTRL_Handle_t * const p_Ha
                                              const ADCCTRL_Ip_State_t State);
 
 /**
-  * @brief  Read raw value of the ADC
+  * @brief  Read multiple ADC rank values
+  *
+  * @details This API supports only discontinuous sequencer mode. Values are
+  *          returned only for user configured ranks and are limited to 7.
+  *          VREFINT is always acquired internally on rank 8.
+  *          converted according to rank channel type:
+  *          - TEMPSENSOR: °C
+  *          - Other     : mV (using dynamic Vref from internal rank 8)
   *
   * @param p_Handle: ADC handle
-  * @param p_ReadValue: Raw ADC value
+  * @param p_ReadValues: Buffer receiving converted values
   *
   * @retval Operation state
   */
-ADCCTRL_Cmd_Status_t ADCCTRL_RequestRawValue (const ADCCTRL_Handle_t * const p_Handle,
-                                              uint16_t * const p_ReadValue);
-
-/**
-  * @brief  Read temperature from ADC temperature sensor
-  *
-  * @details The returned value is actual temperature sensor value
-  *
-  * @param p_Handle: ADC handle
-  * @param p_ReadValue: Temperature measurement
-  *
-  * @retval Operation state
-  */
-ADCCTRL_Cmd_Status_t ADCCTRL_RequestTemperature (const ADCCTRL_Handle_t * const p_Handle,
-                                                 int16_t * const p_ReadValue);
-
-/**
-  * @brief  Read Voltage from ADC
-  *
-  * @details The returned value is actual Voltage value in mVolts
-  *
-  * @param p_Handle: ADC handle
-  * @param p_ReadValue: Core Voltage measurement
-  *
-  * @retval Operation state
-  */
-ADCCTRL_Cmd_Status_t ADCCTRL_RequestCoreVoltage (const ADCCTRL_Handle_t * const p_Handle,
-                                                 uint16_t * const p_ReadValue);
-
-/**
-  * @brief  Read reference Voltage from ADC
-  *
-  * @details The returned value is actual reference Voltage value in mVolts
-  *
-  * @param p_Handle: ADC handle
-  * @param p_ReadValue: Reference Voltage measurement
-  *
-  * @retval Operation state
-  */
-ADCCTRL_Cmd_Status_t ADCCTRL_RequestRefVoltage (const ADCCTRL_Handle_t * const p_Handle,
-                                                uint16_t * const p_ReadValue);
+ADCCTRL_Cmd_Status_t ADCCTRL_RequestValues (const ADCCTRL_Handle_t * const p_Handle,
+                                            int16_t * const p_ReadValues);
 
 /* Exported functions to be implemented by the user ------------------------- */
 /**

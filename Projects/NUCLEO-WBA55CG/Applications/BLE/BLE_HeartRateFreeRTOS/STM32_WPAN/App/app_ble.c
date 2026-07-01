@@ -136,6 +136,9 @@ typedef struct
 #define BLE_DYN_ALLOC_SIZE \
         (BLE_TOTAL_BUFFER_SIZE(CFG_BLE_NUM_LINK, MBLOCK_COUNT, (CFG_BLE_EATT_BEARER_PER_LINK * CFG_BLE_NUM_LINK)))
 
+/* 2 words are reserved for SNVMA management */
+#define BLE_HOST_NVM_SIZE_U64          ((SNVMA_NVM_ID_1_BUFFER_1_SIZE / sizeof(uint64_t) ) - 2)
+
 #define BLE_DEFAULT_PIN            (111111) /* Default PIN code for pairing */
 
 /* USER CODE BEGIN PD */
@@ -312,7 +315,7 @@ void APP_BLE_Init(void)
   host_pool = osMemoryPoolNew(1, BLE_DYN_ALLOC_SIZE, NULL);
   gatt_pool = osMemoryPoolNew(1, BLE_GATT_BUF_SIZE, NULL);
   host_event_pool = osMemoryPoolNew(1, BLE_HOST_EVENT_BUF_SIZE, NULL);
-  host_nvm_pool = osMemoryPoolNew(1, CFG_BLE_NVM_SIZE_MAX*8, NULL);
+  host_nvm_pool = osMemoryPoolNew(1, BLE_HOST_NVM_SIZE_U64 * sizeof(uint64_t), NULL);
   long_write_pool = osMemoryPoolNew(1, CFG_BLE_LONG_WRITE_DATA_BUF_SIZE, NULL);
   extra_data_pool = osMemoryPoolNew(1, CFG_BLE_EXTRA_DATA_BUF_SIZE, NULL);
 
@@ -328,7 +331,7 @@ void APP_BLE_Init(void)
   if (((host_buffer == NULL) && (BLE_DYN_ALLOC_SIZE != 0))
       || ((gatt_buffer == NULL) && (BLE_GATT_BUF_SIZE != 0))
       || ((host_event_buffer == NULL) && (BLE_HOST_EVENT_BUF_SIZE != 0))
-      || ((host_nvm_buffer == NULL) && (CFG_BLE_NVM_SIZE_MAX != 0))
+      || ((host_nvm_buffer == NULL) && (BLE_HOST_NVM_SIZE_U64 != 0))
       || ((long_write_buffer == NULL) && (CFG_BLE_LONG_WRITE_DATA_BUF_SIZE != 0))
       || ((extra_data_buffer == NULL) && (CFG_BLE_EXTRA_DATA_BUF_SIZE != 0)))
   {
@@ -362,15 +365,21 @@ void APP_BLE_Init(void)
   host_nvm_buffer[0] = 0;
 
   /* Register A NVM buffer for BLE Host stack */
-  SNVMA_Register(APP_BLE_NvmBuffer,
+  uint8_t status = SNVMA_Register(APP_BLE_Host_SNVMA_BufferId_1_1,
                   (uint32_t *)host_nvm_buffer,
-                  (CFG_BLE_NVM_SIZE_MAX * 2));
+                  (BLE_HOST_NVM_SIZE_U64 * sizeof(uint64_t)) / sizeof(uint32_t) );
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Host stack failed with status: %d", status);
+    Error_Handler();
+  }
 
-  /* Realize a restore */
-  SNVMA_Restore(APP_BLE_NvmBuffer);
   /* USER CODE BEGIN APP_BLE_Init_Buffers */
 
   /* USER CODE END APP_BLE_Init_Buffers */
+
+  /* Realize a restore */
+  SNVMA_Restore(APP_BLE_Host_SNVMA_BufferId_1_1);
 
   /* Initialize BLE related modules */
   BAES_Reset( );
@@ -412,7 +421,7 @@ void APP_BLE_Init(void)
 
     /* USER CODE BEGIN APP_BLE_Init_3 */
     /* Start to Advertise to accept a connection */
-    uint16_t adv_cmd = 0;
+    uint16_t adv_cmd = ADV_CMD_START;
     osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
 
     /* USER CODE END APP_BLE_Init_3 */
@@ -594,7 +603,7 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification(void *p_Pckt)
       HRS_APP_EvtRx(&HRSHandleNotification);
       DIS_APP_EvtRx(&DISHandleNotification);
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE */
-      uint16_t adv_cmd = 0;
+      uint16_t adv_cmd = ADV_CMD_START;
       osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
 
       /* USER CODE END EVT_DISCONN_COMPLETE */
@@ -1353,7 +1362,7 @@ tBleStatus SetGapDeviceName(uint8_t *devicename, uint8_t devicename_len)
 void APP_BLE_HostNvmStore(void)
 {
   /* Start SNVMA write procedure */
-  SNVMA_Write(APP_BLE_NvmBuffer, BLE_NvmCallback);
+  SNVMA_Write(APP_BLE_Host_SNVMA_BufferId_1_1, BLE_NvmCallback);
 }
 
 void BleStack_Process_BG(void)
@@ -1421,8 +1430,8 @@ static uint8_t HOST_BLE_Init(void)
   pInitParams.host_event_fifo_buffer  = host_event_buffer;
   pInitParams.host_event_fifo_buffer_size = DIVC(BLE_HOST_EVENT_BUF_SIZE, 2);
   pInitParams.nvm_cache_buffer        = host_nvm_buffer;
-  pInitParams.nvm_cache_max_size      = CFG_BLE_NVM_SIZE_MAX;
-  pInitParams.nvm_cache_size          = CFG_BLE_NVM_SIZE_MAX - 1;
+  pInitParams.nvm_cache_max_size      = BLE_HOST_NVM_SIZE_U64;
+  pInitParams.nvm_cache_size          = BLE_HOST_NVM_SIZE_U64 - 1;
   pInitParams.options                 = CFG_BLE_OPTIONS;
   pInitParams.debug                   = 0U;
 /* USER CODE BEGIN HOST_BLE_Init_Params */
@@ -1472,16 +1481,16 @@ static void Ble_Hci_Gap_Gatt_Init(void)
 
   /* USER CODE END BD_Address_Mngt */
 
-  ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
-                                  CONFIG_DATA_PUBADDR_LEN,
+  ret = aci_hal_write_config_data(CONFIG_DATA_PUBLIC_ADDRESS_OFFSET,
+                                  CONFIG_DATA_PUBLIC_ADDRESS_LEN,
                                   (uint8_t*) p_bd_addr);
   if (ret != BLE_STATUS_SUCCESS)
   {
-    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET, result: 0x%02X\n", ret);
+    LOG_INFO_APP("  Fail   : aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET, result: 0x%02X\n", ret);
   }
   else
   {
-    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBADDR_OFFSET\n");
+    LOG_INFO_APP("  Success: aci_hal_write_config_data command - CONFIG_DATA_PUBLIC_ADDRESS_OFFSET\n");
     LOG_INFO_APP("  Public Bluetooth Address: %02x:%02x:%02x:%02x:%02x:%02x\n",p_bd_addr[5],p_bd_addr[4],p_bd_addr[3],p_bd_addr[2],p_bd_addr[1],p_bd_addr[0]);
   }
 
@@ -1649,20 +1658,6 @@ static void Ble_Hci_Gap_Gatt_Init(void)
   else
   {
     LOG_INFO_APP("  Success: aci_gap_set_authentication_requirement command\n");
-  }
-
-  /* Initialize whitelist */
-  if (bleAppContext.bleSecurityParam.bonding_mode)
-  {
-    ret = aci_gap_configure_whitelist();
-    if (ret != BLE_STATUS_SUCCESS)
-    {
-      LOG_INFO_APP("  Fail   : aci_gap_configure_whitelist command, result: 0x%02X\n", ret);
-    }
-    else
-    {
-      LOG_INFO_APP("  Success: aci_gap_configure_whitelist command\n");
-    }
   }
 
   /* USER CODE BEGIN Ble_Hci_Gap_Gatt_Init_2 */
@@ -2010,7 +2005,7 @@ static void BLE_NvmCallback(SNVMA_Callback_Status_t CbkStatus)
   if (CbkStatus != SNVMA_OPERATION_COMPLETE)
   {
     /* Retry the write operation */
-    SNVMA_Write (APP_BLE_NvmBuffer, BLE_NvmCallback);
+    SNVMA_Write (APP_BLE_Host_SNVMA_BufferId_1_1, BLE_NvmCallback);
   }
 }
 
@@ -2190,15 +2185,15 @@ void APP_BSP_Button1Action(void)
 {
   if (bleAppContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
   {
-    uint16_t adv_cmd = 0;
+    uint16_t adv_cmd = ADV_CMD_START;
     /* Relaunch fast advertising */
     if (bleAppContext.Device_Connection_Status != APP_BLE_IDLE)
     {
-      adv_cmd = 2;
+      adv_cmd = ADV_CMD_STOP;
       osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
     }
 
-    adv_cmd = 0;
+    adv_cmd = ADV_CMD_START;
     osMessageQueuePut(advertisingCmdQueueHandle, &adv_cmd, 0U, 0U);
   }
   else
@@ -2229,15 +2224,15 @@ void APP_BSP_Button2Action(void)
   else
   {
     /* Security Request */
-    ret = aci_gap_slave_security_req(bleAppContext.connectionHandle);
+    ret = aci_gap_peripheral_security_req(bleAppContext.connectionHandle);
 
     if (ret != BLE_STATUS_SUCCESS)
     {
-      LOG_INFO_APP("==>> aci_gap_slave_security_req() Fail , result: %d \n", ret);
+      LOG_INFO_APP("==>> aci_gap_peripheral_security_req() Fail , result: %d \n", ret);
     }
     else
     {
-      LOG_INFO_APP("===>> aci_gap_slave_security_req - Success\n");
+      LOG_INFO_APP("===>> aci_gap_peripheral_security_req - Success\n");
     }
   }
 

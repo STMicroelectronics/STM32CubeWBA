@@ -69,16 +69,7 @@
 #define C_CCA_THRESHOLD         (-70)
 
 /* USER CODE BEGIN PD */
-#define C_RESSOURCE                   "light"
-#define COAP_PAYLOAD_LENGTH           (2U)
 
-#ifndef GRL_TEST
-/* Enable periodic CoAp message transmission to Thread Leader */
-#define APP_THREAD_PERIODIC_TRANSMIT
-#endif
-
-#define APP_THREAD_TRANSMIT_PERIOD      (1*1000)        /**< 1000ms */
-#define MAX_COAP_PAYLOAD_LENGTH      (1024)
 /* USER CODE END PD */
 
 /* Private macros ------------------------------------------------------------*/
@@ -141,15 +132,53 @@ static uint8_t PayloadRead[COAP_PAYLOAD_LENGTH]= {0};
 static uint8_t CounterRole= {0};
 
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-static UTIL_TIMER_Object_t APP_Thread_transmitTimerId;
-#endif
+UTIL_TIMER_Object_t APP_Thread_transmitTimerId;
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
 
 uint32_t APP_Thread_TransmitPeriod_ms = APP_THREAD_TRANSMIT_PERIOD;
 uint32_t APP_Thread_CoapPayloadLength_byte = COAP_PAYLOAD_LENGTH;
 otCoapType APP_Thread_CoapType = OT_COAP_TYPE_NON_CONFIRMABLE;
+
 /* USER CODE END PV */
 
 /* Functions Definition ------------------------------------------------------*/
+
+void DeinitThreadStack(void)
+{
+  otInstanceFinalize(PtOpenThreadInstance);
+  otSysDeinit();
+}
+
+void InitThreadStack(void)
+{
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  size_t otInstanceBufferLength = 0;
+  uint8_t *otInstanceBuffer = NULL;
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  otSysInit(0, NULL);
+
+#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  // Call to query the buffer size
+  (void)otInstanceInit(NULL, &otInstanceBufferLength);
+
+  // Call to allocate the buffer
+  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
+  assert(otInstanceBuffer);
+
+  // Initialize OpenThread with the buffer
+  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
+#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+  PtOpenThreadInstance = otInstanceInitSingle();
+#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
+
+  assert(PtOpenThreadInstance);
+
+#if (OT_CLI_USE == 1)
+  APP_THREAD_CliInit(PtOpenThreadInstance);
+#endif // OT_CLI_USE
+  otDispatch_tbl_init(PtOpenThreadInstance);
+}
 
 void ProcessAlarm(void)
 {
@@ -223,35 +252,9 @@ static void APP_THREAD_TaskletsInit(void)
  */
 void Thread_Init(void)
 {
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  size_t otInstanceBufferLength = 0;
-  uint8_t *otInstanceBuffer = NULL;
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
   APP_THREAD_PersistenceStartup();
 
-  otSysInit(0, NULL);
-
-#if OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  // Call to query the buffer size
-  (void)otInstanceInit(NULL, &otInstanceBufferLength);
-
-  // Call to allocate the buffer
-  otInstanceBuffer = (uint8_t *)malloc(otInstanceBufferLength);
-  assert(otInstanceBuffer);
-
-  // Initialize OpenThread with the buffer
-  PtOpenThreadInstance = otInstanceInit(otInstanceBuffer, &otInstanceBufferLength);
-#else // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-  PtOpenThreadInstance = otInstanceInitSingle();
-#endif // OPENTHREAD_CONFIG_MULTIPLE_INSTANCE_ENABLE
-
-  assert(PtOpenThreadInstance);
-
-#if (OT_CLI_USE == 1)
-  APP_THREAD_CliInit(PtOpenThreadInstance);
-#endif // OT_CLI_USE
-  otDispatch_tbl_init(PtOpenThreadInstance);
+  InitThreadStack();
 
   /* Register tasks */
   APP_THREAD_AlarmsInit();
@@ -445,6 +448,14 @@ void APP_THREAD_Error(uint32_t ErrId, uint32_t ErrCode)
         APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_SEND_RESPONSE ",ErrCode);
         break;
 
+    case ERR_THREAD_COAP_NEW_MSG :
+        APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_NEW_MSG ",ErrCode);
+        break;
+
+    case ERR_THREAD_COAP_INIT :
+        APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_INIT ",ErrCode);
+        break;
+
     case ERR_THREAD_COAP_APPEND :
         APP_THREAD_TraceError("ERROR : ERR_THREAD_COAP_APPEND ",ErrCode);
         break;
@@ -492,10 +503,9 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           /* Stop timer for periodic CoAp msg transmission */
           UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
           LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
           CounterRole++;
           LOG_INFO_APP("INFO: Role is DISABLED. CounterRole value = %d",CounterRole);
-
-#endif
           /* USER CODE END OT_DEVICE_ROLE_DISABLED */
           break;
 
@@ -509,7 +519,7 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
           LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
           CounterRole++;
           LOG_INFO_APP("INFO: Role is DETACHED. CounterRole value = %d",CounterRole);
-#endif
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
           /* USER CODE END OT_DEVICE_ROLE_DETACHED */
           break;
 
@@ -525,9 +535,9 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
             UTIL_TIMER_StartWithPeriod(&APP_Thread_transmitTimerId, APP_Thread_TransmitPeriod_ms);
             LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
           }
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
           CounterRole++;
           LOG_INFO_APP("INFO: Role is CHILD. CounterRole value = %d",CounterRole);
-#endif
           /* USER CODE END OT_DEVICE_ROLE_CHILD */
           break;
 
@@ -543,9 +553,9 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
             UTIL_TIMER_StartWithPeriod(&APP_Thread_transmitTimerId, APP_Thread_TransmitPeriod_ms);
             LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
           }
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
           CounterRole++;
           LOG_INFO_APP("INFO: Role is ROUTER. CounterRole value = %d",CounterRole);
-#endif
           /* USER CODE END OT_DEVICE_ROLE_ROUTER */
           break;
 
@@ -561,9 +571,9 @@ static void APP_THREAD_StateNotif(uint32_t NotifFlags, void *pContext)
             UTIL_TIMER_StartWithPeriod(&APP_Thread_transmitTimerId, APP_Thread_TransmitPeriod_ms);
             LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
           }
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
           CounterRole++;
           LOG_INFO_APP("INFO: Role is LEADER. CounterRole value = %d",CounterRole);
-#endif
           /* USER CODE END OT_DEVICE_ROLE_LEADER */
           break;
 
@@ -648,7 +658,13 @@ static void APP_THREAD_CoapSendRequest( otCoapResource        * aCoapRessource,
       break;
     }
 
-    otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
+    error = otCoapMessageInit(pOT_Message, aCoapType, aCoapCode);
+    if (error != OT_ERROR_NONE)
+    {
+      APP_THREAD_Error(ERR_THREAD_COAP_INIT,error);
+      break;
+    }
+
     (void)otCoapMessageAppendUriPathOptions(pOT_Message, aCoapRessource->mUriPath);
     (void)otCoapMessageSetPayloadMarker(pOT_Message);
 
@@ -785,7 +801,7 @@ static void APP_THREAD_InitPayloadWrite(void)
 {
   uint32_t i;
   
-  for(i = 0; i < APP_Thread_CoapPayloadLength_byte; i++)
+  for (i = 0; i < sizeof(PayloadWrite); i++)
   {
     PayloadWrite[i] = 0xFF;
   }
@@ -822,6 +838,7 @@ static bool APP_THREAD_CheckMsgValidity(void)
 }
 
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
+
 /**
  * @brief  Set Task associated to the push button 1.
  * @param  arg
@@ -831,7 +848,8 @@ static void APP_THREAD_SetButton1Action(void *arg)
 {
   UTIL_SEQ_SetTask(TASK_BUTTON_B1, CFG_SEQ_PRIO_1);
 }
-#endif
+
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
 
 static void APP_THREAD_AppInit(void)
 {
@@ -842,7 +860,7 @@ static void APP_THREAD_AppInit(void)
                     UTIL_TIMER_PERIODIC,
                     &APP_THREAD_SetButton1Action,
                     0);
-#endif
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
 }
 
 /**
@@ -852,7 +870,6 @@ static void APP_THREAD_AppInit(void)
  */
 void APP_BSP_Button1Action(void)
 {
-  /* USER CODE BEGIN Button1Action */
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
   /* If timer for periodic CoAp msg transmission is not running */
   if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 0U)
@@ -861,9 +878,9 @@ void APP_BSP_Button1Action(void)
     UTIL_TIMER_StartWithPeriod(&APP_Thread_transmitTimerId, APP_Thread_TransmitPeriod_ms);
     LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer started");
   }
-#endif
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
 
-  if(APP_Thread_CoapType == OT_COAP_TYPE_NON_CONFIRMABLE)
+  if (APP_Thread_CoapType == OT_COAP_TYPE_NON_CONFIRMABLE)
   {
     LOG_INFO_APP("Send a CoAP NON-CONFIRMABLE PUT Request");
   }
@@ -872,13 +889,12 @@ void APP_BSP_Button1Action(void)
     LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
   }
 
-  if(APP_Thread_CoapPayloadLength_byte != COAP_PAYLOAD_LENGTH)
+  if (APP_Thread_CoapPayloadLength_byte != COAP_PAYLOAD_LENGTH)
   {
-	  APP_THREAD_InitPayloadWrite();
+    APP_THREAD_InitPayloadWrite();
   }
   APP_THREAD_CoapSendRequest(&OT_Ressource, APP_Thread_CoapType, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
                               NULL, PayloadWrite, APP_Thread_CoapPayloadLength_byte, NULL, NULL);
-  /* USER CODE END Button1Action */
 }
 
 /**
@@ -918,35 +934,15 @@ void APP_BSP_Button2Action(void)
 {
   LOG_INFO_APP("Send a CoAP CONFIRMABLE PUT Request");
 #ifdef APP_THREAD_PERIODIC_TRANSMIT
-  /* USER CODE BEGIN Button2Action */
   UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
   LOG_INFO_APP("INFO: PERIODIC_TRANSMIT timer stopped");
-  /* USER CODE END Button2Action */
-#endif
+#endif /* APP_THREAD_PERIODIC_TRANSMIT */
+
   /* Send a CONFIRMABLE PUT Request */
   APP_THREAD_CoapSendRequest(&OT_Ressource, OT_COAP_TYPE_CONFIRMABLE, OT_COAP_CODE_PUT, MULTICAST_FTD_MED,
                              NULL, PayloadWrite, APP_Thread_CoapPayloadLength_byte, APP_THREAD_CoapDataRespHandler, NULL);
 }
 
-
-/**
- * @brief Task associated to the COAP message rate change command.
- * @param  None
- * @retval None
- */
-#ifdef CFG_COAP_MSG
-void APP_BSP_CoapMsgRateAction(void)
-{
-#ifdef APP_THREAD_PERIODIC_TRANSMIT
-  /* If timer for periodic CoAp msg transmission is running, then restart it with the new configured period */
-  if (UTIL_TIMER_IsRunning(&APP_Thread_transmitTimerId) == 1U)
-  {
-    UTIL_TIMER_Stop(&APP_Thread_transmitTimerId);
-    UTIL_TIMER_StartWithPeriod(&APP_Thread_transmitTimerId, APP_Thread_TransmitPeriod_ms);
-  }
-#endif
-}
-#endif /* CFG_COAP_MSG */
 
 /* USER CODE END FD_LOCAL_FUNCTIONS */
 

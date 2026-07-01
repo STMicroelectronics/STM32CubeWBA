@@ -78,7 +78,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 /**
   * @brief will restore MCU context if wakeup from standby
-  * @note called in startup_stm32wl55xx_cm4.s
+  * @note called in startup assembly file
   */
 uint32_t is_boot_from_standby(void);
 

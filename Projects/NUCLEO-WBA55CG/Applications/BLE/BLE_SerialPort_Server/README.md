@@ -1,30 +1,31 @@
 ## __BLE_SerialPort_Server Application Description__
 
-Demonstrate Point-to-Point communication using Bluetooth Low Energy GATT component. 
+Demonstrate Point-to-Point communication using Bluetooth Low Energy GATT component.
 
-The Nucleo board flashed with BLE_SerialPort_Server application acts as GAP peripheral.
+The Nucleo board flashed with BLE_SerialPort_Server application acts as GAP peripheral.<br />
 BLE_SerialPort_Client application scans and connects to BLE_SerialPort_Server device.
 
 Once connected, BLE_SerialPort_Client can write to the BLE_SerialPort_Server and receive notification from it.
 
 ### __Keywords__
-  
+
 Connectivity, BLE, BLE protocol, BLE pairing, BLE profile
 
 ### __Hardware and Software environment__
-  
-  - This example runs on STM32WBA55xx devices.
-    Connect the Nucleo Board to your PC with a USB cable type A to USB type C to ST-LINK USB connector.
-    
+
+  - This application runs on STM32WBA55xx Nucleo board.
+
+  - Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).
+
 ### __How to use it?__
-  
-In order to make the program work:  
 
- - Open the project with your preferred toolchain.  
- - Rebuild all files and load your image into target memory.  
- - Run the example.  
+In order to make the program work:
 
-This is a demo that shows how to implement a simple 2-way Bluetooth LE communication between two STM32WBA5xx nucleo boards emulating serial communication. 
+ - Open the project with your preferred toolchain.
+ - Rebuild all files and load your image into target memory.
+ - Run the example.
+
+This is a demo that shows how to implement a simple 2-way Bluetooth LE communication between two STM32WBA nucleo boards emulating serial communication.
 
 One board must be configured as a Central with BLE_SerialPort_Client application and the other as a Peripheral with BLE_SerialCom_Peripheral.
 
@@ -54,10 +55,10 @@ On client side when connected:
 
 On client side when idle:
 
-  - B2 clears bonding database  
+  - B2 clears bonding database
 
 ### __Notes__
-                                            
+
  - On Keil framework, the following compilation setting are applied:
    - diag_suppress L6312W          (Hide "Empty < type> region description for region < region>" warning)
    - diag_suppress L6314W          (Hide "No section matches pattern < module>(< section>" warning)

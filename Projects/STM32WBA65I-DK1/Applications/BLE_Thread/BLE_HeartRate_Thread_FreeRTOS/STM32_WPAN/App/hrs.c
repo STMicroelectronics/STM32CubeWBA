@@ -221,12 +221,12 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
             if (p_write_perm_req->Data[0] == HRS_CNTL_POINT_RESET_ENERGY_EXPENDED)
             {
               /* received a correct value for HRM control point char */
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x00, /* write_status = 0 (no error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_IS_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x00, /* write_status = 0 (no error))*/
+                                    (uint8_t)HRS_CNTL_POINT_VALUE_IS_SUPPORTED, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
 
               /**
                * Notify the application to Reset The Energy Expended Value
@@ -237,12 +237,12 @@ static SVCCTL_EvtAckStatus_t HRS_EventHandler(void *p_Event)
             else
             {
               /* received value of HRM control point char is incorrect */
-              aci_gatt_write_resp(p_write_perm_req->Connection_Handle,
-                                  p_write_perm_req->Attribute_Handle,
-                                  0x1, /* write_status = 1 (error))*/
-                                  (uint8_t)HRS_CNTL_POINT_VALUE_NOT_SUPPORTED, /* err_code */
-                                  p_write_perm_req->Data_Length,
-                                  (uint8_t *)&p_write_perm_req->Data[0]);
+              aci_gatt_permit_write(p_write_perm_req->Connection_Handle,
+                                    p_write_perm_req->Attribute_Handle,
+                                    0x1, /* write_status = 1 (error))*/
+                                    (uint8_t)HRS_CNTL_POINT_VALUE_NOT_SUPPORTED, /* err_code */
+                                    p_write_perm_req->Data_Length,
+                                    (uint8_t *)&p_write_perm_req->Data[0]);
             }
 
             /*USER CODE END Service1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/

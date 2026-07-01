@@ -64,12 +64,6 @@
  */
 #define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
-/**
- * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
- */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
-
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -86,6 +80,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_THREAD_RX_ACK,
   CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -117,7 +112,6 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -277,9 +271,6 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
-#define USE_CTE_DEGRADATION                 (0)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -291,9 +282,9 @@ typedef enum
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
  */
-#define CFG_RF_TX_POWER_TABLE_ID            (0)
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* Radio sleep clock LSE accuracy configuration */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
@@ -315,12 +306,6 @@ typedef enum
 /* USER CODE BEGIN HW_RNG_Configuration */
 
 /* USER CODE END HW_RNG_Configuration */
-
-/******************************************************************************
- * PKA configuration
- ******************************************************************************/
-/* PKA IRQ priority of the PKA end of process */
-#define PKA_INTR_PRIO_PROCEND               (7)
 
 /* USER CODE BEGIN Defines */
 #define CFG_BSP_ON_SEQUENCER                    (1)

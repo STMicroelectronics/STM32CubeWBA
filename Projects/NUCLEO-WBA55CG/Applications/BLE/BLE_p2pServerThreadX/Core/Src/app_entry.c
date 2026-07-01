@@ -45,8 +45,8 @@
 #include "flash_driver.h"
 #include "flash_manager.h"
 #include "simple_nvm_arbiter.h"
-#include "app_debug.h"
 #include "crc_ctrl.h"
+#include "app_debug.h"
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
 #include "adc_ctrl.h"
 #include "temp_measurement.h"
@@ -141,6 +141,8 @@ static AMM_InitParameters_t ammInitConfig =
 static TX_SEMAPHORE PkaSemaphore;
 static TX_SEMAPHORE PkaEndOfOperationSemaphore;
 
+static TX_SEMAPHORE FlashSemaphore;
+
 /* ThreadX objects declaration */
 static TX_THREAD      AmmTaskHandle;
 static TX_SEMAPHORE   AmmSemaphore;
@@ -193,6 +195,8 @@ static void AMM_WrapperFree(uint32_t * const p_BufferAddr);
 static void RNG_Task_Entry(ULONG lArgument);
 
 static void APPE_FLASH_MANAGER_Init( void );
+FM_Cmd_Status_t FM_MutexTake(void);
+FM_Cmd_Status_t FM_MutexRelease(void);
 static void FLASH_Manager_Task_Entry(ULONG lArgument);
 
 static void APPE_PKACTRL_Init( void );
@@ -200,6 +204,7 @@ int PKACTRL_MutexTake(void);
 int PKACTRL_MutexRelease(void);
 int PKACTRL_TakeSemEndOfOperation(void);
 int PKACTRL_ReleaseSemEndOfOperation(void);
+
 static void PKACTRL_Task_Entry(ULONG lArgument);
 
 #if (CFG_LPM_LEVEL != 0)
@@ -265,6 +270,16 @@ uint32_t MX_APPE_Init(void *p_param)
 
   /* Initialize the Flash Manager module */
   APPE_FLASH_MANAGER_Init();
+  /* Create Flash semaphore (binary) */
+  TXstatus = tx_semaphore_create (&FlashSemaphore,
+    "FLASH Semaphore",
+    1);
+
+  if( TXstatus != TX_SUCCESS )
+  {
+  LOG_ERROR_APP( "FLASH Semaphore ThreadX objects creation FAILED, status: %d", TXstatus);
+  Error_Handler();
+  }
 
   /* Create PKA semaphore */
   TXstatus = tx_semaphore_create (&PkaSemaphore,
@@ -317,7 +332,7 @@ uint32_t MX_APPE_Init(void *p_param)
   APPE_PKACTRL_Init();
 
   /* Initialize the Simple Non Volatile Memory Arbiter */
-  if( SNVMA_Init((uint32_t *)CFG_SNVMA_START_ADDRESS) != SNVMA_ERROR_OK )
+  if( SNVMA_Init((uint32_t *)(FLASH_BASE + (FLASH_PAGE_SIZE * (CFG_SNVMA_START_SECTOR_ID)))) != SNVMA_ERROR_OK )
   {
     Error_Handler();
   }
@@ -387,8 +402,8 @@ static void System_Init( void )
   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN7_HIGH_3);
 
 #if (CFG_LOG_SUPPORTED != 0)
+  /* Initialize the UART used for logs */
   MX_USART1_UART_Init();
-
   /* Initialize the logs ( using the USART ) */
   Log_Module_Init( Log_Module_Config );
 
@@ -468,6 +483,11 @@ static void SystemPower_Config(void)
   }
 #endif /* CFG_DEBUGGER_LEVEL */
 
+#if (CFG_DEBUGGER_LEVEL > 1)
+  LL_DBGMCU_EnableDBGStandbyMode();
+  LL_DBGMCU_EnableDBGStopMode();
+#endif /* CFG_DEBUGGER_LEVEL */
+
 #if (CFG_LPM_LEVEL != 0)
   /* Initialize low Power Manager. By default enabled */
   UTIL_LPM_Init();
@@ -528,7 +548,6 @@ static void APPE_RNG_Init(void)
   CHAR *pStack;
 
   HW_RNG_SetPoolThreshold(CFG_HW_RNG_POOL_THRESHOLD);
-  HW_RNG_Init();
   HW_RNG_Start();
 
   /* Create Random Number Generator ThreadX objects */
@@ -878,7 +897,7 @@ void ThreadXLowPowerUserEnter( void )
 #endif /* (CFG_LPM_STANDBY_SUPPORTED == 1) */
 #endif /* (CFG_LPM_STOP2_SUPPORTED == 1) */
   {
-    APP_SYS_BLE_EnterDeepSleep();
+    APP_SYS_EnterDeepSleep();
   }
 #endif /* ((CFG_LPM_STANDBY_SUPPORTED == 1) || (CFG_LPM_STOP2_SUPPORTED == 1)) */
 
@@ -1147,6 +1166,41 @@ int PKACTRL_ReleaseSemEndOfOperation(void)
   if(TXstatus != TX_SUCCESS)
   {
     error = -1; /* Error */
+  }
+
+  return error;
+}
+
+FM_Cmd_Status_t FM_MutexTake(void)
+{
+  FM_Cmd_Status_t error = FM_OK;
+  UINT TXstatus;
+
+  /* Take the mutex */
+  TXstatus = tx_semaphore_get(&FlashSemaphore,
+                          TX_WAIT_FOREVER);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = FM_ERROR; /* Error */
+    assert_param(0);
+  }
+
+  return error;
+}
+
+FM_Cmd_Status_t FM_MutexRelease(void)
+{
+  FM_Cmd_Status_t error = FM_OK;
+  UINT TXstatus;
+
+  /* Release the semaphore */
+  TXstatus = tx_semaphore_put(&FlashSemaphore);
+
+  if(TXstatus != TX_SUCCESS)
+  {
+    error = FM_ERROR; /* Error */
+    assert_param(0);
   }
 
   return error;

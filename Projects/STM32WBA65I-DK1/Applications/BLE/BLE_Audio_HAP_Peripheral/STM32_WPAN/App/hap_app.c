@@ -47,7 +47,7 @@
 #define LINKUP_RETRY_TIMEOUT                    (4000u)
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -353,12 +353,18 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  SNVMA_Register(APP_AUDIO_NvmBuffer,
-                 (uint32_t *)audio_buffer_nvm,
-                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                         (uint32_t *)audio_buffer_nvm,
+                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+    Error_Handler();
+  }
 
   /* Realize a restore */
-  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+  SNVMA_Restore (APP_AUDIO_SNVMA_BufferId_1_2);
 
   /* Initialize the Audio IP*/
   pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
@@ -1278,7 +1284,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
                      HAPAPP_Context.AvailableSnkAudioContext,
                      HAPAPP_Context.AvailableSrcAudioContext);
       }
-      /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+      /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
       for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
       {
         if ((HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -1292,7 +1298,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an response to the Enable Operation request if no CIS is still up*/
+                /* Send a response to the Enable Operation request if no CIS is still up */
                 if (HAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1325,7 +1331,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an response to the Enable Operation request if no CIS is still up*/
+                /* Send a response to the Enable Operation request if no CIS is still up */
                 if (HAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1422,7 +1428,7 @@ void HAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 #if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-          /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+          /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
           for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
           {
             if (HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
@@ -2452,7 +2458,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                 }
               }
 
-              /*Set new available audio contexts for BAP Announcement*/
+              /* Set new available audio contexts for BAP Announcement */
               status = CAP_SetAvailableAudioContexts(HAPAPP_Context.AvailableSnkAudioContext,
                                                      HAPAPP_Context.AvailableSrcAudioContext);
               if (status == BLE_STATUS_SUCCESS)
@@ -2481,7 +2487,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (streaming_ongoing == 0u)
             {
               uint8_t enable_ongoing = 0u;
-              /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+              /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
               for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
               {
                 if ((HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&HAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -2495,7 +2501,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an response to the Enable Operation request if no CIS is still up*/
+                        /* Send a response to the Enable Operation request if no CIS is still up */
                         if (HAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2528,7 +2534,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an response to the Enable Operation request if no CIS is still up*/
+                        /* Send a response to the Enable Operation request if no CIS is still up */
                         if (HAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2687,7 +2693,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                        snk_context,
                        src_context);
 
-          /*Set new available audio contexts for BAP Announcement*/
+          /* Set new available audio contexts for BAP Announcement */
           status = CAP_SetAvailableAudioContexts(snk_context,src_context);
           if (status == BLE_STATUS_SUCCESS)
           {
@@ -2807,7 +2813,7 @@ static void HAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               if ((p_other_conn->AvailableSnkAudioContext != HAPAPP_Context.AvailableSnkAudioContext) \
                   || (p_other_conn->AvailableSrcAudioContext != HAPAPP_Context.AvailableSrcAudioContext))
               {
-                /*we update the Audio Contexts availability to other connected CAP Initiator*/
+                /* Update the Audio Contexts availability to other connected CAP Initiator */
                 ret = CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
                                                        HAPAPP_Context.AvailableSnkAudioContext,
                                                        HAPAPP_Context.AvailableSrcAudioContext);
@@ -3466,7 +3472,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                      available_snk_context,
                      available_src_context);
 
-        /*Set new available audio contexts for BAP Announcement*/
+        /* Set new available audio contexts for BAP Announcement */
         status = CAP_SetAvailableAudioContexts(available_snk_context,available_src_context);
         if (status == BLE_STATUS_SUCCESS)
         {
@@ -3521,7 +3527,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
               if ((HAPAPP_Context.ACL_Conn[conn].AvailableSnkAudioContext != HAPAPP_Context.AvailableSnkAudioContext) \
                   || (HAPAPP_Context.ACL_Conn[conn].AvailableSrcAudioContext != HAPAPP_Context.AvailableSrcAudioContext))
               {
-                /* we update the Audio Contexts availability to other connected CAP Initiators */
+                /* Update the Audio Contexts availability to other connected CAP Initiators */
                 status = CAP_UpdateAvailableAudioContexts(HAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
                                                           HAPAPP_Context.AvailableSnkAudioContext,
                                                           HAPAPP_Context.AvailableSrcAudioContext);

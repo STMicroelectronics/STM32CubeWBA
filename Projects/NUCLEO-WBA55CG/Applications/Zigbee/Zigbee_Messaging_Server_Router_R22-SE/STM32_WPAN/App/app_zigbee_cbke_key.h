@@ -34,11 +34,9 @@
 /* These CBKE Keys are valid with an Extended Address. So we perhaps need to change Extended Address of Device for tests */
 extern const uint64_t   dlMyExtendedAdress;
 
-
 /* Constants for CBKE Elliptic Crypto for Server */
 extern const uint8_t    szZibgeeCbkeCert[];
 extern const uint8_t    szZibgeeCbkeCaPublic[];
 extern const uint8_t    szZibgeeCbkePrivate[];
-
 
 #endif /* APP_ZIGBEE_CBKE_KEY_H */

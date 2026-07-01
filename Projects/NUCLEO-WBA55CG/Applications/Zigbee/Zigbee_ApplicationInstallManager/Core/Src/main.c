@@ -48,8 +48,7 @@ typedef void (* ResetHandler_t)(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config               (void);
-
+void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void     BootModeCheck                ( void );
 uint32_t CheckFwAppValidity           ( void );
@@ -452,6 +451,7 @@ static void JumpSelectionOnPowerUp( void )
 
 /**
   * @brief  This function is executed in case of error occurrence.
+  * @param None
   * @retval None
   */
 void Error_Handler(void)

@@ -36,6 +36,9 @@
 /**< generic parameters ******************************************************/
 /* USER CODE BEGIN Generic_Parameters */
 
+#define CFG_COAP_MSG              (1U)
+//#define CFG_BLE_ADV_CHANNEL_MAP   (1U)
+
 /* USER CODE END Generic_Parameters */
 
 /**< specific parameters */
@@ -65,12 +68,6 @@
  */
 #define CFG_LPM_WAKEUP_TIME_PROFILING (1U)
 
-/**
- * Defines time to wake up from standby before radio event to meet timings
- * This value will be dynamically updated when using CFG_LPM_WAKEUP_TIME_PROFILING
- */
-#define CFG_LPM_STDBY_WAKEUP_TIME (1500U)
-
 /* USER CODE BEGIN Low_Power 0 */
 
 /* USER CODE END Low_Power 0 */
@@ -87,6 +84,7 @@ typedef enum
   CFG_LPM_LL_HW_RCO_CLBR,
   CFG_LPM_APP_THREAD,
   CFG_LPM_PKA,
+  CFG_LPM_THREAD_RX_ACK,
   CFG_LPM_PKA_OVR_IT,
   /* USER CODE BEGIN CFG_LPM_Id_t */
 
@@ -118,7 +116,6 @@ typedef enum
 /**
  * Enable or disable LOG over UART in the application.
  * Low power level(CFG_LPM_LEVEL) above 1 will disable LOG.
- * Enabled low power modes above STOP1 (STOP2 or STANDBY) will disable LOG.
  */
 #define CFG_LOG_SUPPORTED           (1U)
 
@@ -186,9 +183,15 @@ typedef enum
   CFG_TASK_SET_THREAD_MODE,
   CFG_TASK_PKA,
   /* USER CODE BEGIN CFG_Task_Id_t */
-  CFG_TASK_BSP_BUTTON_B1,		        /* Task linked to push-button. */
+  CFG_TASK_BSP_BUTTON_B1,
   CFG_TASK_BSP_BUTTON_B2,
   CFG_TASK_BSP_BUTTON_B3,
+#ifdef CFG_COAP_MSG
+  CFG_TASK_COAP_MSG_RATE,
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+  CFG_TASK_BLE_ADV_CHANNEL_MAP,
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
   /* USER CODE END CFG_Task_Id_t */
   CFG_TASK_NBR /* Shall be LAST in the list */
 } CFG_Task_Id_t;
@@ -221,6 +224,13 @@ typedef enum
 #define TASK_BUTTON_B1                      ( 1u << CFG_TASK_BSP_BUTTON_B1 )
 #define TASK_BUTTON_B2                      ( 1u << CFG_TASK_BSP_BUTTON_B2 )
 #define TASK_BUTTON_B3                      ( 1u << CFG_TASK_BSP_BUTTON_B3 )
+
+#ifdef CFG_COAP_MSG
+#define TASK_COAP_MSG_RATE                  ( 1u << CFG_TASK_COAP_MSG_RATE )
+#endif /* CFG_COAP_MSG */
+#ifdef CFG_BLE_ADV_CHANNEL_MAP
+#define TASK_BLE_ADV_CHANNEL_MAP            ( 1u << CFG_TASK_BLE_ADV_CHANNEL_MAP )
+#endif /* CFG_BLE_ADV_CHANNEL_MAP */
 
 /* USER CODE END TASK_ID_Define */
 
@@ -278,9 +288,6 @@ typedef enum
 /******************************************************************************
  * HW RADIO configuration
  ******************************************************************************/
-/* Link Layer CTE degradation switch from FCC (0 --> NO ; 1 --> YES) */
-#define USE_CTE_DEGRADATION                 (0)
-
 #define RADIO_INTR_NUM                      RADIO_IRQn     /* 2.4GHz RADIO global interrupt */
 #define RADIO_INTR_PRIO_HIGH                (0)            /* 2.4GHz RADIO interrupt priority when radio is Active */
 #define RADIO_INTR_PRIO_LOW                 (5)            /* 2.4GHz RADIO interrupt priority when radio is Not Active - Sleep Timer Only */
@@ -292,9 +299,9 @@ typedef enum
 
 /* RF TX power table ID selection:
  *   0 -> RF TX output level from -20 dBm to +10 dBm. VDDRFPA at VDD level.
- *   1 -> RF TX output level from -20 dBm to +3 dBm. VDDRFPA at VDD11 level like on ST MB1803 and MB2130 boards.
+ *   1 -> RF TX output level from -20 dBm to +2.6 dBm. VDDRFPA at VDD11 level like on ST MB1803, MB2130 and MB2293 boards.
  */
-#define CFG_RF_TX_POWER_TABLE_ID            (0)
+#define CFG_RF_TX_POWER_TABLE_ID            (1)
 
 /* Radio sleep clock LSE accuracy configuration */
 #define CFG_RADIO_LSE_SLEEP_TIMER_CUSTOM_SCA_RANGE (0x00)
@@ -317,12 +324,6 @@ typedef enum
 
 /* USER CODE END HW_RNG_Configuration */
 
-/******************************************************************************
- * PKA configuration
- ******************************************************************************/
-/* PKA IRQ priority of the PKA end of process */
-#define PKA_INTR_PRIO_PROCEND               (7)
-
 /* USER CODE BEGIN Defines */
 #define CFG_BSP_ON_SEQUENCER                    (1)
 #define CFG_BSP_ON_NUCLEO                       (1)
@@ -333,16 +334,18 @@ typedef enum
  * When CFG_BUTTON_SUPPORTED is set, the push button are activated if requested
  */
 
-#define CFG_LED_SUPPORTED           (1)
-#define CFG_BUTTON_SUPPORTED        (1)
+#define CFG_LED_SUPPORTED                       (1)
+#define CFG_BUTTON_SUPPORTED                    (1)
 
 /**
- * If CFG_LPM_LEVEL at 2, make sure LED are disabled
+ * Overwrite some configuration imposed by Low Power level selected.
  */
 #if (CFG_LPM_LEVEL > 1)
-//  #undef  CFG_LED_SUPPORTED
-//  #define CFG_LED_SUPPORTED         (0)
-#endif /* CFG_FULL_LOW_POWER */
+  #if CFG_LED_SUPPORTED
+    #undef  CFG_LED_SUPPORTED
+    #define CFG_LED_SUPPORTED      (0)
+  #endif /* CFG_LED_SUPPORTED */
+#endif /* CFG_LPM_LEVEL */
 
 #if ( CFG_LED_SUPPORTED == 1 )
 #define APP_LED_ON( LED )           BSP_LED_On( LED )

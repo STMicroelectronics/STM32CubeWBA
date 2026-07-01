@@ -230,11 +230,11 @@ void HIDS_Notification(HIDS_NotificationEvt_t *p_Notification)
       /* USER CODE BEGIN Service1Char4_WRITE_NO_RESP_EVT */
       if(((p_Notification->DataTransfered.p_Payload[0]) & 0x01) == 0x00)
       {
-        LOG_INFO_APP("Suspend\r\n");
+        LOG_INFO_APP("Suspend\n");
       }
       else
       {
-        LOG_INFO_APP("Exit suspend\r\n");
+        LOG_INFO_APP("Exit suspend\n");
       }
       /* USER CODE END Service1Char4_WRITE_NO_RESP_EVT */
       break;

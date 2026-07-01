@@ -21,40 +21,39 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_power_central-application-description"><strong>BLE_Power_Central Application Description</strong></h2>
 <p>How to measure Central power consumption using BLE.</p>
-<p>BLE_Power_Central application usage:<br />
-- The BLE_Power_Central application needs to be used with BLE_Power_Peripheral application (2 Hardware boards needed).<br />
-- Configuration phase (Red led is active or toggling): buttons are active and user can select the desired configuration to measure.<br />
-- Power consumption measurement phase (Red led if off): buttons are disabled and power measurement can be done.</p>
+<p>BLE_Power_Central application usage:</p>
+<ul>
+<li>The BLE_Power_Central application needs to be used with BLE_Power_Peripheral application (2 Hardware boards needed).</li>
+<li>Configuration phase (Red led is active or toggling): buttons are active and user can select the desired configuration to measure.</li>
+<li>Power consumption measurement phase (Red led if off): buttons are disabled and power measurement can be done.</li>
+</ul>
 <p>BLE_Power_Central can be used to measure:</p>
 <ul>
-<li>Central power consumption on Idle state.<br />
-</li>
+<li>Central power consumption on Idle state.</li>
 <li>Central power consumption on Data transfer state.</li>
 </ul>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile.</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This application runs on STM32WBA55 Nucleo board.<br />
-</li>
-<li>Another Nucleo board may be necessary to run BLE_Power_Peripheral application.<br />
-</li>
-<li>For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.</li>
+<li><p>This application runs on STM32WBA55xx Nucleo board.</p></li>
+<li>Another Nucleo board may be necessary to run BLE_Power_Peripheral application.</li>
+<li><p>For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.</p></li>
+<li>Connect the Nucleo Board to your PC with a USB cable to USB type C to ST-LINK connector (USB_STLINK).</li>
+<li>Another Nucleo board may be necessary to run BLE_Power_Peripheral application.</li>
+<li><p>For power measurement: STLINK-V3PWR or STM32 Power shield can be used with STM32CubeMonitor-Power Graphical tool.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
 <p>In order to make the program work:</p>
 <ul>
-<li>Open your preferred toolchain.<br />
-</li>
-<li>Rebuild all files and load your image into target memory.<br />
-</li>
+<li>Open the project with your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
 <li>Run the example.</li>
 </ul>
 <p>Note: CFG_PERIPH_BD_ADDRESS must be configured in BLE_Power_Central; it must contain the BLE_Power_Peripheral BD address.</p>
 <p>Once powered, the application automatically connects to the BLE_Power_Peripheral and the configuration phase starts for 10sec. Buttons can be used to select the desired configuration:</p>
 <ul>
-<li>B1 click : Start data transfer to the BLE_Power_Peripheral.<br />
-</li>
+<li>B1 click : Start data transfer to the BLE_Power_Peripheral.</li>
 <li>B3 click : Switch the Connection Interval.</li>
 </ul>
 <p>For more information, please refer to the<a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:STM32WBA_Power_Consumption_Measurement"> STM32WBA Bluetooth LE - Power consumption applications ST wiki.</a></p>

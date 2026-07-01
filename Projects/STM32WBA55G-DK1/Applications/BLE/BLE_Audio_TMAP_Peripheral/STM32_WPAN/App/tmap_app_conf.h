@@ -196,6 +196,8 @@ extern "C" {
 /**
  * Broadcast Sink Settings
  */
+#define MAX_BASE_BIS                            (2u)    /* Maximum number of BIS in the BASE structure accross all subgroups */
+#define MAX_BASE_SUBGROUPS                      (2u)    /* Maximum number of subgroups in the BASE structure */
 #define MAX_BSNK_SUBGROUP_CODEC_CONFIG_SIZE     (19u)   /* Maximum size of the Codec Specific Configuration for each subgroup used by TMAP Broadcast Media Receiver role */
 #define MAX_BSNK_BIS_CODEC_CONFIG_SIZE          (6u)    /* Maximum size of the Codec Specific Configuration for each BIS in each subgroup used by TMAP Broadcast Media Receiver role */
 #define MAX_BSNK_METADATA_LEN                   (50u)   /* Size of the metadata associated to the subgroup used by TMAP Broadcast Media Receiver role */

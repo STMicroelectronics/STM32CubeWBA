@@ -21,62 +21,79 @@
 <div class="col-sm-12 col-lg-8">
 <h2 id="ble_audio_gmap_peripheral-application-description"><strong>BLE_Audio_GMAP_Peripheral Application Description</strong></h2>
 <p>How to use the Gaming Audio Profile profile in Unicast Server role (Unicast Game Terminal) and Broadcast Sink role (Broadcast Game Receiver) as specified by the Bluetooth SIG.</p>
-<p>The GMAP Peripheral application, in <strong>Unicast Server role</strong>, performs the following actions:<br> - Advertises and accept connection from remote devices.<br> - Accepts Isochronous Connection from a remote GMAP Central (Unicast Game Gateway).<br> - Supports Volume Control, and Microphone Control features.<br></p>
-<p>The GMAP Peripheral application, in <strong>Broadcast Sink role</strong>, scans and synchronizes audio streams from remote Broadcast Sources.<br></p>
+<p>The GMAP Peripheral application, in <strong>Unicast Server role</strong>, performs the following actions:</p>
+<ul>
+<li>Advertises and accepts connection from remote devices.</li>
+<li>Accepts Isochronous Connection from a remote GMAP Central (Unicast Game Gateway).</li>
+<li>Supports Volume Control, and Microphone Control features.</li>
+</ul>
+<p>The GMAP Peripheral application, in <strong>Broadcast Sink role</strong>, scans and synchronizes audio streams from remote Broadcast Sources.</p>
 <h3 id="keywords"><strong>Keywords</strong></h3>
 <p>Connectivity, BLE, BLE protocol, BLE pairing, BLE profile, BLE audio</p>
 <h3 id="hardware-and-software-environment"><strong>Hardware and Software environment</strong></h3>
 <ul>
-<li>This example runs on STM32WBA65xx devices with SMPS. <br>Connect the Discovery Board to your PC with a USB cable type C <br>Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3.</li>
+<li><p>This application runs on STM32WBA65xx Discovery kit.</p></li>
+<li>Connect the Discovery Board to your PC with a USB cable type C.</li>
+<li><p>Connect a headset (optionally with microphone to enable bidirectional streams) on Jack Connector CN3.</p></li>
 </ul>
 <h3 id="how-to-use-it"><strong>How to use it?</strong></h3>
-<p>In order to make the program work, you must do the following:</p>
+<p>In order to make the program work:</p>
 <ul>
-<li>Open your preferred toolchain</li>
-<li>Rebuild all files and load your image into target memory</li>
-<li>Run the example <br> <br></li>
-<li><strong>At Startup</strong> <br>After pressing the Right direction on the joystick, the user accesses a menu offering following actions:
+<li>Open the project with your preferred toolchain.</li>
+<li>Rebuild all files and load your image into target memory.</li>
+<li><p>Run the example.</p></li>
+<li><strong>At Startup</strong>:
 <ul>
-<li><strong>Start Unicast</strong> : the application starts the features associated to the GMAP Unicast Server role (Unicast Server, Media Control, Call Control, Volume Control).<br></li>
-<li><strong>Start Broadcast</strong> : the application starts the features associated to the GMAP Broadcast Sink role.<br> <strong>Audio Config</strong> : configure Audio device type of the GMAP Peripheral <br></li>
-<li><strong>Clear Sec. DB</strong> : clear all the information of the bonded devices <br></li>
+<li>After pressing the Right direction on the joystick, the user accesses a menu offering following actions:
+<ul>
+<li><strong>Start Unicast</strong>: the application starts the features associated to the GMAP Unicast Server role (Unicast Server, Media Control, Call Control, Volume Control).</li>
+<li><strong>Start Broadcast</strong>: the application starts the features associated to the GMAP Broadcast Sink role.</li>
+<li><strong>Audio Config</strong>: configure Audio device type of the GMAP Peripheral.</li>
+<li><strong>Clear Sec. DB</strong>: clear all the information of the bonded devices.</li>
 </ul></li>
-<li><strong>Start Unicast </strong> <br>Once “Start Unicast” in GMAP Peripheral is executed, the GMAP Peripheral starts advertising with a name displayed on the screen and wait for an incoming connection from a remote Unicast Client.
+</ul></li>
+<li><strong>Start Unicast </strong>
 <ul>
+<li>Once “Start Unicast” in GMAP Peripheral is executed, the GMAP Peripheral starts advertising with a name displayed on the screen and wait for an incoming connection from a remote Unicast Client.</li>
 <li>Using a device compatible with BLE Audio Unicast Client role (Smartphone supporting LE Audio Feature for example), connect to the GMAP Peripheral and perform Link-Up of available services.</li>
 <li>Once the Unicast Client is connected, it can start a streaming procedure to send audio to the GMAP Peripheral. High Quality Media unidirectional streams can be established, as well as conversational bidirectional streams</li>
 <li>Once connected to the Unicast Client, use the Right direction on the joystick to access the menu:
 <ul>
-<li><strong>Select Remote Volume</strong>: Access a panel where the volume of the remote device can be adjusted using the VCP as VCP Renderer role (Volume Up / Volume Down / Mute)<br></li>
-<li><strong>Select Microphone Control</strong>: Access a panel where the mute state of the microphone can be set (Microphone Mute / Microphone Unmute)<br></li>
-<li><strong>Select Disconnect</strong>: Disconnect the connected devices <br></li>
+<li><strong>Select Remote Volume</strong>: Access a panel where the volume of the remote device can be adjusted using the VCP as VCP Renderer role (Volume Up / Volume Down / Mute).</li>
+<li><strong>Select Microphone Control</strong>: Access a panel where the mute state of the microphone can be set (Microphone Mute / Microphone Unmute).</li>
+<li><strong>Select Disconnect</strong>: Disconnect the connected devices</li>
 </ul></li>
 </ul></li>
-<li><strong>Start Broadcast</strong> <br>Once “Start Broadcast” in GMAP Peripheral is executed, the application scans the remote Broadcast Sources and display them on the LCD.
+<li><strong>Start Broadcast</strong>
 <ul>
+<li>Once “Start Broadcast” in GMAP Peripheral is executed, the application scans the remote Broadcast Sources and display them on the LCD.</li>
 <li>Select with the Joystick the Broadcast Source to synchronize to.</li>
 <li>Once the GMAP Peripheral is synchronized to the Broadcast Source and Audio Stream is received, Audio is available on Jack Connector.</li>
-<li>Once synchronization with the Broadcast Source is complete, using the Right direction on the joystick, local volume can be modified and Audio Sink can be stopped (Broadcast desynchronization). <br></li>
+<li>Once synchronization with the Broadcast Source is complete, using the Right direction on the joystick, local volume can be modified and Audio Sink can be stopped (Broadcast desynchronization).</li>
 </ul></li>
-<li><strong>Audio Config</strong> <br>Once “Audio Config” in GMAP Peripheral is executed, use the Joystck Up/Down direction to select one of the Audio device configuration:
+<li><strong>Audio Config</strong>
 <ul>
-<li><strong>Headphone</strong><br></li>
-<li><strong>Earbud Right</strong><br></li>
-<li><strong>Earbud Left</strong><br></li>
-</ul>
-Push Left direction on the joystick to validate the Audio Configuration <br></li>
-<li><strong>Clear Security Database</strong> <br>Once “Clear Sec. DB” in GMAP Peripheral is executed, all the information stored in Non-Volatile Memory related to bonded devices are removed.</li>
+<li>Once “Audio Config” in GMAP Peripheral is executed, use the Joystck Up/Down direction to select one of the Audio device configuration:
+<ul>
+<li><strong>Headphone</strong></li>
+<li><strong>Earbud Right</strong></li>
+<li><strong>Earbud Left</strong></li>
+</ul></li>
+<li>Push Left direction on the joystick to validate the Audio Configuration</li>
+</ul></li>
+<li><strong>Clear Security Database</strong>
+<ul>
+<li>Once “Clear Sec. DB” in GMAP Peripheral is executed, all the information stored in Non-Volatile Memory related to bonded devices are removed.</li>
+</ul></li>
 </ul>
 <h3 id="documentation"><strong>Documentation</strong></h3>
+<p>Wiki pages related to the LE Audio solutions developed by STMicroelectronics are available here:</p>
 <ul>
-<li>Wiki pages related to the LE Audio solutions developed by STMicroelectronics are available here:
-<ul>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth® Low Energy Audio</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth® Low Energy audio - STM32WBA LC3 codec and audio data path</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth® Low Energy audio - STM32WBA Architecture and Integration</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth® Low Energy audio - Content Control</a></li>
-<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Gaming_Audio_Profile"> Bluetooth® Low Energy audio - Gaming Audio Profile</a></li>
-</ul></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Introduction_to_Bluetooth_LE_Audio"> Introduction to Bluetooth Low Energy Audio</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_LC3_Codec"> Bluetooth Low Energy Audio - STM32WBA LC3 codec and audio data path</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Architecture_and_Integration"> Bluetooth Low Energy Audio - STM32WBA Architecture and Integration</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_Content_Control"> Bluetooth Low Energy Audio - Content Control</a></li>
+<li><a href="https://wiki.st.com/stm32mcu/wiki/Connectivity:Bluetooth_LE_Audio_-_STM32WBA_Gaming_Audio_Profile"> Bluetooth Low Energy Audio - Gaming Audio Profile</a></li>
 </ul>
 </div>
 </div>

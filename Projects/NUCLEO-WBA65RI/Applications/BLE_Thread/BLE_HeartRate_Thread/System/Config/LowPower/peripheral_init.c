@@ -28,6 +28,10 @@
 #if (CFG_LPM_WAKEUP_TIME_PROFILING == 1)
 #include "stm32_lpm_if.h"
 #endif /* CFG_LPM_WAKEUP_TIME_PROFILING */
+#if (CFG_LOG_SUPPORTED == 1)
+#include "stm32_adv_trace.h"
+#include "serial_cmd_interpreter.h"
+#endif /* (CFG_LOG_SUPPORTED == 1) */
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_bsp.h"
@@ -38,6 +42,7 @@ extern RAMCFG_HandleTypeDef hramcfg_SRAM1;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN EV */
 
@@ -65,7 +70,7 @@ void MX_StandbyExit_PeripheralInit(void)
     /* Select SysTick source clock */
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_LSE);
 
-    /* Initialize SysTick */
+    /* Initialize HAL Tick */
     if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK)
     {
       assert_param(0);
@@ -103,14 +108,18 @@ void MX_StandbyExit_PeripheralInit(void)
 #if (CFG_LOG_SUPPORTED == 1)
   memset(&huart1, 0, sizeof(huart1));
 #endif
+  memset(&huart2, 0, sizeof(huart2));
 
   MX_GPIO_Init();
   MX_GPDMA1_Init();
 #if (CFG_LOG_SUPPORTED == 1)
   MX_USART1_UART_Init();
+  UTIL_ADV_TRACE_Init();
+  Serial_CMD_Interpreter_Init();
 #endif
   MX_ICACHE_Init();
   MX_RAMCFG_Init();
+  MX_USART2_UART_Init();
   CRCCTRL_Init();
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();
@@ -127,6 +136,8 @@ void MX_Stop2Exit_PeripheralInit(void)
 {
   /* USER CODE BEGIN MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
   /* USER CODE END MX_STOP2_EXIT_PERIPHERAL_INIT_1 */
+
+    memset(&huart2, 0, sizeof(huart2));
 
 #if (USE_TEMPERATURE_BASED_RADIO_CALIBRATION == 1)
   ADCCTRL_Init();

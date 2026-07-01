@@ -57,7 +57,7 @@ typedef struct
 #define ADV_FILTER                              NO_WHITE_LIST_USE
 
 /* Audio chain memory sizing: must be aligned with PAC (frame len) and ASEs (channels nb)
- * These macro are generic and could be overwritten by the user for a fine tuning
+ * These macros are generic and could be overwritten by the user for a fine tuning
  */
 
 /* Memory pool used by the codec manager to manage audio latencies
@@ -164,6 +164,9 @@ typedef struct
 
 #define VOLUME_STEP                             10
 #define BASE_VOLUME                             128
+
+/* Preferred language to synchronize (ISO 639-3 code) */
+#define SCAN_DEL_PREFERRED_LANGUAGE             "eng"
 
 /* Private macros ------------------------------------------------------------*/
 
@@ -406,12 +409,18 @@ tBleStatus APP_AUDIO_STACK_Init(void)
   tBleStatus status;
 
   /* First register the APP BLE Audio buffer */
-  SNVMA_Register(APP_AUDIO_NvmBuffer,
-                 (uint32_t *)audio_buffer_nvm,
-                 (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+  status = SNVMA_Register(APP_AUDIO_SNVMA_BufferId_1_2,
+                         (uint32_t *)audio_buffer_nvm,
+                         (CFG_BLE_AUDIO_PLAT_NVM_MAX_SIZE * 2u));
+
+  if (status != SNVMA_ERROR_OK)
+  {
+    LOG_ERROR_APP( "SNVMA registration for BLE Audio failed with status: %d", status);
+    Error_Handler();
+  }
 
   /* Realize a restore */
-  SNVMA_Restore (APP_AUDIO_NvmBuffer);
+  SNVMA_Restore (APP_AUDIO_SNVMA_BufferId_1_2);
 
   /* Initialize the Audio IP*/
   pBleAudioInit.NumOfLinks = CFG_BLE_NUM_LINK;
@@ -1082,7 +1091,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
                      GMAPAPP_Context.AvailableSnkAudioContext,
                      GMAPAPP_Context.AvailableSrcAudioContext);
       }
-      /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+      /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
       for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
       {
         if ((GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&GMAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -1096,7 +1105,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an response to the Enable Operation request if no CIS is still up*/
+                /* Send a response to the Enable Operation request if no CIS is still up */
                 if (GMAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1129,7 +1138,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
               if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
               {
                 enable_ongoing = 1u;
-                /* Send an response to the Enable Operation request if no CIS is still up*/
+                /* Send a response to the Enable Operation request if no CIS is still up */
                 if (GMAPAPP_Context.num_cis_established == 0u)
                 {
                   status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -1232,7 +1241,7 @@ void GMAPAPP_LinkDisconnected(uint16_t Conn_Handle,uint8_t Reason)
 #if (CFG_LCD_SUPPORTED == 1)
           Menu_SetNoStreamPage();
 #endif /* (CFG_LCD_SUPPORTED == 1) */
-          /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+          /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
           for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
           {
             if (GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu)
@@ -1341,24 +1350,24 @@ uint8_t GMAPAPP_StartSink(void)
     scan_param_phy.Scan_Interval = SCAN_INTERVAL;
     scan_param_phy.Scan_Window   = SCAN_WINDOW;
     /* Starts an Observation procedure */
-    ret = aci_gap_ext_start_scan( 0x00,
-                                  GAP_OBSERVATION_PROC,
-                                  0x00,                         /* Address type: Public */
-                                  0x00,                         /* Filter duplicates: No */
-                                  0x00,                         /* Scan continuously until explicitly disable */
-                                  0x00,                         /* Scan continuously */
-                                  0x00,                         /* Filter policy: Accept all */
-                                  HCI_SCANNING_PHYS_LE_1M,
-                                  &scan_param_phy);
+    ret = aci_gap_start_scan( 0x00,
+                              GAP_OBSERVATION_PROC,
+                              0x00,                         /* Address type: Public */
+                              0x00,                         /* Filter duplicates: No */
+                              0x00,                         /* Scan continuously until explicitly disable */
+                              0x00,                         /* Scan continuously */
+                              0x00,                         /* Filter policy: Accept all */
+                              HCI_SCANNING_PHYS_LE_1M,
+                              &scan_param_phy);
     if (ret != BLE_STATUS_SUCCESS)
     {
-      LOG_INFO_APP("  Fail   : aci_gap_ext_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
+      LOG_INFO_APP("  Fail   : aci_gap_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
                    GAP_OBSERVATION_PROC,
                    ret);
     }
     else
     {
-      LOG_INFO_APP("  Success: aci_gap_ext_start_scan() function with Scan procedure 0x%02X\n",
+      LOG_INFO_APP("  Success: aci_gap_start_scan() function with Scan procedure 0x%02X\n",
                    GAP_OBSERVATION_PROC);
       GMAPAPP_Context.BSNK.ScanState = APP_SCAN_STATE_SCANNING;
     }
@@ -1744,7 +1753,6 @@ static tBleStatus CAPAPP_Init(Audio_Role_t AudioRole, uint8_t csip_config_id)
   GMAPAPP_Context.BSNK.base_subgroups[1].pBIS = &(GMAPAPP_Context.BSNK.base_bis[1]);
   GMAPAPP_Context.BSNK.base_bis[0].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[0][0]);
   GMAPAPP_Context.BSNK.base_bis[1].pCodecSpecificConf = &(GMAPAPP_Context.BSNK.codec_specific_config_bis[1][0]);
-
 
   /*Register the Audio Task */
   UTIL_SEQ_RegTask( 1<<CFG_TASK_AUDIO_ID, UTIL_SEQ_RFU, BLE_AUDIO_STACK_Task);
@@ -2514,7 +2522,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                   GMAPAPP_Context.AvailableSrcAudioContext |= AUDIO_CONTEXT_UNSPECIFIED;
                 }
               }
-              /*Set new available audio contexts for BAP Announcement*/
+              /* Set new available audio contexts for BAP Announcement */
               status = CAP_SetAvailableAudioContexts(GMAPAPP_Context.AvailableSnkAudioContext,
                                                      GMAPAPP_Context.AvailableSrcAudioContext);
               if (status == BLE_STATUS_SUCCESS)
@@ -2550,7 +2558,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
             if (streaming_ongoing == 0u)
             {
               uint8_t enable_ongoing = 0u;
-              /*check if a response to an Enable operation Request is suspended with another CAP Initiator*/
+              /* Check if a response to an Enable operation Request is suspended with another CAP Initiator */
               for (uint8_t conn = 0u; conn < CFG_BLE_NUM_LINK ; conn++)
               {
                 if ((GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle != 0xFFFFu) && (&GMAPAPP_Context.ACL_Conn[conn] != p_conn))
@@ -2564,7 +2572,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSnkASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an response to the Enable Operation request if no CIS is still up*/
+                        /* Send a response to the Enable Operation request if no CIS is still up */
                         if (GMAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2597,7 +2605,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                       if (p_other_conn->pASEs->aSrcASE[i].enable_req == 1)
                       {
                         enable_ongoing = 1u;
-                        /* Send an response to the Enable Operation request if no CIS is still up*/
+                        /* Send a response to the Enable Operation request if no CIS is still up */
                         if (GMAPAPP_Context.num_cis_established == 0u)
                         {
                           status = CAP_Unicast_EnableOpRsp(p_other_conn->Acl_Conn_Handle,
@@ -2756,7 +2764,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
                        snk_context,
                        src_context);
 
-          /*Set new available audio contexts for BAP Announcement*/
+          /* Set new available audio contexts for BAP Announcement */
           status = CAP_SetAvailableAudioContexts(snk_context,src_context);
           if (status == BLE_STATUS_SUCCESS)
           {
@@ -2880,7 +2888,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
               if ((p_other_conn->AvailableSnkAudioContext != GMAPAPP_Context.AvailableSnkAudioContext) \
                   || (p_other_conn->AvailableSrcAudioContext != GMAPAPP_Context.AvailableSrcAudioContext))
               {
-                /*we update the Audio Contexts availability to other connected CAP Initiator*/
+                /* Update the Audio Contexts availability to other connected CAP Initiator */
                 ret = CAP_UpdateAvailableAudioContexts(p_other_conn->Acl_Conn_Handle,
                                                        GMAPAPP_Context.AvailableSnkAudioContext,
                                                        GMAPAPP_Context.AvailableSrcAudioContext);
@@ -3557,7 +3565,7 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             is_different = CAP_Broadcast_IsBASEBISDifferent(base_data->pBasePayload + payload_len,
                                                           base_data->BasePayloadLength - payload_len,
-                                                          &(GMAPAPP_Context.BSNK.base_bis[j]),
+                                                          &(GMAPAPP_Context.BSNK.base_bis[j+i]),
                                                           &(index));
             payload_len += index;
           }
@@ -3646,33 +3654,33 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           {
             status = CAP_Broadcast_ParseBASEBIS(base_data->pBasePayload,
                                                 base_data->BasePayloadLength,
-                                                &(GMAPAPP_Context.BSNK.base_bis[j]),
+                                                &(GMAPAPP_Context.BSNK.base_bis[j+i]),
                                                 &(index));
             base_data->pBasePayload += index;
             base_data->BasePayloadLength -= index;
 
-            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].BIS_Index);
-            LOG_INFO_APP("      Codec specific config length : %d bytes\n",GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
+            LOG_INFO_APP("      BIS INDEX : 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j+i].BIS_Index);
+            LOG_INFO_APP("      Codec specific config length : %d bytes\n",GMAPAPP_Context.BSNK.base_bis[j+i].CodecSpecificConfLength);
             Audio_Chnl_Allocation_t channel_alloc = 0x00000000;
-            if (GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength > 0u)
+            if (GMAPAPP_Context.BSNK.base_bis[j+i].CodecSpecificConfLength > 0u)
             {
-              for (int k = 0;k<GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength;k++)
+              for (int k = 0;k<GMAPAPP_Context.BSNK.base_bis[j+i].CodecSpecificConfLength;k++)
               {
-                if (GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k] > 0u)
+                if (GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k] > 0u)
                 {
-                  LOG_INFO_APP("        Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]);
-                  LOG_INFO_APP("          Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+1u]);
+                  LOG_INFO_APP("        Length: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k]);
+                  LOG_INFO_APP("          Type: 0x%02x\n",GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k+1u]);
                   LOG_INFO_APP("          Value: 0x");
-                  for (int l = 0 ;l<(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k]-1);l++)
+                  for (int l = 0 ;l<(GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k]-1);l++)
                   {
-                    LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k+2u+l]);
+                    LOG_INFO_APP("%02x",GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k+2u+l]);
                   }
                   LOG_INFO_APP("\n");
                 }
-                k+=GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf[k];
+                k+=GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf[k];
               }
-              channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_bis[j].pCodecSpecificConf,
-                                                                      GMAPAPP_Context.BSNK.base_bis[j].CodecSpecificConfLength);
+              channel_alloc = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_bis[j+i].pCodecSpecificConf,
+                                                                      GMAPAPP_Context.BSNK.base_bis[j+i].CodecSpecificConfLength);
             }
             if (channel_alloc == 0x00000000)
             {
@@ -3727,6 +3735,64 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
           AudioClock_Init(freq);
         }
       }
+      break;
+    }
+
+    case CAP_BROADCAST_SDE_BIS_PREFERENCE_REQ_EVT:
+    {
+#if (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1)
+      int32_t i;
+      uint32_t *pBIS_preference;
+      uint32_t preferred_subgroup = 0; /* default prefered subgroup if language not found */
+      uint32_t preferred_channel = GMAPAPP_Context.SnkAudioLocations;
+
+      pBIS_preference = (uint32_t*)pNotification->pInfo;
+
+      /* When the broadcast assistant does not provide preferrence on the subgroup to synchronize, this event is generated.
+         This example tries to find the SDE_PREFERRED_LANGUAGE in the metadata and to match the audio location to select
+         the subgroup and BISs to synchronize */
+      for (i=0 ; i<GMAPAPP_Context.BSNK.base_group.NumSubgroups ; i++)
+      {
+        /* clear field */
+        pBIS_preference[i] = 0;
+
+        /* search prefered subgroup base on the language */
+        uint8_t *pMetaData = GMAPAPP_Context.BSNK.base_subgroups[i].pMetadata;
+        uint8_t offset = 0;
+        while(offset < GMAPAPP_Context.BSNK.base_subgroups[i].MetadataLength)
+        {
+          uint8_t len = pMetaData[0]+1;
+          uint8_t type = pMetaData[1];
+          if (type == METADATA_LANGUAGE)
+          {
+            if (strcmp((char*)&pMetaData[2] , SCAN_DEL_PREFERRED_LANGUAGE) == 0)
+            {
+              preferred_subgroup = i;
+            }
+          }
+          offset += len;
+          pMetaData += len;
+        }
+      }
+
+      /* search prefered BIS based on channel allocation */
+      for (i=0 ; i<GMAPAPP_Context.BSNK.base_subgroups[preferred_subgroup].NumBISes ; i++)
+      {
+        uint32_t channel = LTV_GetConfiguredAudioChannelAllocation(GMAPAPP_Context.BSNK.base_subgroups[preferred_subgroup].pBIS[i].pCodecSpecificConf,
+                                                                   GMAPAPP_Context.BSNK.base_subgroups[preferred_subgroup].pBIS[i].CodecSpecificConfLength);
+
+        if (channel & preferred_channel)
+        {
+          pBIS_preference[preferred_subgroup] |= 1 << i;
+        }
+      }
+
+      /* if no channel allocation is present, take the first BIS */
+      if (pBIS_preference[preferred_subgroup] == 0)
+      {
+        pBIS_preference[preferred_subgroup] = 0b1;
+      }
+#endif /* (APP_BAP_ROLE_SCAN_DELEGATOR_SUPPORT == 1) */
       break;
     }
 
@@ -3867,24 +3933,24 @@ static void GMAPAPP_CAPNotification(CAP_Notification_Evt_t *pNotification)
         scan_param_phy.Scan_Interval = SCAN_INTERVAL;
         scan_param_phy.Scan_Window   = SCAN_WINDOW;
         /* Starts an Observation procedure */
-        status = aci_gap_ext_start_scan( 0x00,
-                                        GAP_OBSERVATION_PROC,
-                                        0x00,                         /* Address type: Public */
-                                        0x00,                         /* Filter duplicates: No */
-                                        0x00,                         /* Scan continuously until explicitly disable */
-                                        0x00,                         /* Scan continuously */
-                                        0x00,                         /* Filter policy: Accept all */
-                                        HCI_SCANNING_PHYS_LE_1M,
-                                        &scan_param_phy);
+        status = aci_gap_start_scan( 0x00,
+                                     GAP_OBSERVATION_PROC,
+                                     0x00,                         /* Address type: Public */
+                                     0x00,                         /* Filter duplicates: No */
+                                     0x00,                         /* Scan continuously until explicitly disable */
+                                     0x00,                         /* Scan continuously */
+                                     0x00,                         /* Filter policy: Accept all */
+                                     HCI_SCANNING_PHYS_LE_1M,
+                                     &scan_param_phy);
         if (status != BLE_STATUS_SUCCESS)
         {
-          LOG_INFO_APP("  Fail   : aci_gap_ext_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
+          LOG_INFO_APP("  Fail   : aci_gap_start_scan() function with Scan procedure 0x%02X, result: 0x%02X\n",
                        GAP_OBSERVATION_PROC,
                        status);
         }
         else
         {
-          LOG_INFO_APP("  Success: aci_gap_ext_start_scan() function with Scan procedure 0x%02X\n",
+          LOG_INFO_APP("  Success: aci_gap_start_scan() function with Scan procedure 0x%02X\n",
                        GAP_OBSERVATION_PROC);
         }
       }
@@ -4132,7 +4198,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
                      available_snk_context,
                      available_src_context);
 
-        /*Set new available audio contexts for BAP Announcement*/
+        /* Set new available audio contexts for BAP Announcement */
         status = CAP_SetAvailableAudioContexts(available_snk_context,available_src_context);
         if (status == BLE_STATUS_SUCCESS)
         {
@@ -4187,7 +4253,7 @@ static void APP_ParseMetadataParams(APP_ASE_Info_t *pASE,
               if ((GMAPAPP_Context.ACL_Conn[conn].AvailableSnkAudioContext != GMAPAPP_Context.AvailableSnkAudioContext) \
                   || (GMAPAPP_Context.ACL_Conn[conn].AvailableSrcAudioContext != GMAPAPP_Context.AvailableSrcAudioContext))
               {
-                /* we update the Audio Contexts availability to other connected CAP Initiators */
+                /* Update the Audio Contexts availability to other connected CAP Initiators */
                 status = CAP_UpdateAvailableAudioContexts(GMAPAPP_Context.ACL_Conn[conn].Acl_Conn_Handle,
                                                           GMAPAPP_Context.AvailableSnkAudioContext,
                                                           GMAPAPP_Context.AvailableSrcAudioContext);
@@ -4730,144 +4796,16 @@ static uint8_t APP_GetBitsAudioChnlAllocations(Audio_Chnl_Allocation_t ChnlLocat
 /*Audio Source */
 static int32_t start_audio_source(void)
 {
-  int32_t status;
-  LOG_INFO_APP("START AUDIO SOURCE (input)\n");
-  status = Start_RxAudio();
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    char sink_samplerate_text[8];
-    char source_samplerate_text[8];
-
-    switch (GMAPAPP_Context.ConfiguredSinkSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&sink_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    switch (GMAPAPP_Context.ConfiguredSourceSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&source_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&source_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
-  return status;
+  return Start_RxAudio();
 }
 
 /*Audio Sink */
 static int32_t start_audio_sink(void)
 {
-  int32_t status;
   /* reset numbers of active channels */
   Nb_Active_Ch = 0;
 
-  LOG_INFO_APP("START AUDIO SINK (output)\n");
-  status = Start_TxAudio();
-
-#if (CFG_LCD_SUPPORTED == 1)
-
-  if ((GMAPAPP_Context.num_cis_established > 0u) && (GMAPAPP_Context.audio_role_setup != 0x00))
-  {
-    char sink_samplerate_text[8];
-    char source_samplerate_text[8];
-
-    switch (GMAPAPP_Context.ConfiguredSinkSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&sink_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&sink_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    switch (GMAPAPP_Context.ConfiguredSourceSampleFrequency)
-    {
-      case SAMPLE_FREQ_8000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "8KHz");
-        break;
-      case SAMPLE_FREQ_16000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "16KHz");
-        break;
-      case SAMPLE_FREQ_24000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "24KHz");
-        break;
-      case SAMPLE_FREQ_32000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "32KHz");
-        break;
-      case SAMPLE_FREQ_44100_HZ:
-        snprintf(&source_samplerate_text[0], 8, "44.1KHz");
-        break;
-      case SAMPLE_FREQ_48000_HZ:
-        snprintf(&source_samplerate_text[0], 8, "48KHz");
-        break;
-      default:
-        snprintf(&source_samplerate_text[0], 8, "??KHz");
-        break;
-    }
-
-    Menu_SetStreamingPage(sink_samplerate_text, source_samplerate_text, GMAPAPP_Context.audio_role_setup);
-  }
-#endif /* (CFG_LCD_SUPPORTED == 1) */
-  return status;
+  return Start_TxAudio();
 }
 
 #if (APP_VCP_ROLE_RENDERER_SUPPORT == 1u)

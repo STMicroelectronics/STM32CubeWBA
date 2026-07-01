@@ -448,10 +448,10 @@
 //   <o.27> RNG_IRQn              <1=> Non-Secure state
 //   <o.28> FPU_IRQn              <0=> Secure state
 //   <o.29> HASH_IRQn             <1=> Non-Secure state
-//   <o.30> PKA_IRQn              <0=> Secure state
+//   <o.30> PKA_IRQn              <1=> Non-Secure state
 //   <o.31> SPI3_IRQn             <0=> Secure state
 */
-#define NVIC_INIT_ITNS1_VAL      0x28084000
+#define NVIC_INIT_ITNS1_VAL      0x68084000
 
 /*
 //   </e>

@@ -59,8 +59,6 @@ void GPDMA1_Channel1_IRQHandler(void);
 void TIM2_IRQHandler(void);
 void USART1_IRQHandler(void);
 void TIM16_IRQHandler(void);
-void RNG_IRQHandler(void);
-void PKA_IRQHandler(void);
 void RADIO_IRQHandler(void);
 void ADC4_IRQHandler(void);
 /* USER CODE BEGIN EFP */

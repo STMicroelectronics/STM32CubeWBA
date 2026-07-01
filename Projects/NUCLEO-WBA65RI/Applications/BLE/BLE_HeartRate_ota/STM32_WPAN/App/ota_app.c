@@ -34,6 +34,7 @@
 #include "stm32_timer.h"
 #include "flash_driver.h"
 #include "flash_manager.h"
+#include "simple_nvm_arbiter.h"
 
 /* USER CODE END Includes */
 
