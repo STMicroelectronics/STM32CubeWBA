@@ -3,10 +3,10 @@
 ; *************************************************************
 
 ; Flash : 0x08000000 to 0x081FFFFF
-LR_IROM1 0x08000000 0x00200000  
+LR_IROM1 0x08000000 0x001fc000  
 {
   ; load address = execution address
-  ER_IROM1      0x08000000 0x00200000  
+  ER_IROM1      0x08000000 0x001fc000  
   {
     *.o (RESET, +First)
     *(InRoot$$Sections)
